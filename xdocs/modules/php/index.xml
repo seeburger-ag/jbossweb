@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="index.html">
+
+  &project;
+
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>Overview</title>
+  </properties>
+
+<body>
+
+<section name="Introduction">
+<p>The PHP Module is a servlet that allows to run PHP embedded scripts.
+The servlet calls a native embedded PHP engine with libraries extentions.
+The PHP servlet allows to run most of the existing PHP scripts.
+</p>
+</section>
+
+<section name="Building">
+<p>
+To build simply run buildphp.sh.
+The buildphp.sh will detect you platform, download and build the dynamic libraries the PHP library needs and
+build the PHP servlet itself. Should should get a tarfile that contains the libraries and a war file with the examples.
+</p>
+Already build PHP servlets and libraries are available at:
+<todo>Work in progress</todo>
+</section>
+
+<section name="Installing">
+After extracting the tarball corresponding to you platform in $CATALINA_BASE do the following:
+Edit in the &lt;Server/&gt; of <code>$CATALINA_BASE/conf/server.xml</code> and add a Listener following:
+<source>
+    &lt;Listener className="org.apache.catalina.servlets.php.LifecycleListener"/&gt;
+</source>
+If you want to enable php in all contexts edit  <code>$CATALINA_BASE/conf/web.xml</code> and add the following:
+<source>
+   &lt;servlet&gt;
+        &lt;servlet-name&gt;php&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.apache.catalina.servlets.php.Handler&lt;/servlet-class&gt;
+        &lt;init-param&gt;
+          &lt;param-name&gt;debug&lt;/param-name&gt;
+          &lt;param-value&gt;0&lt;/param-value&gt;
+        &lt;/init-param&gt;
+         &lt;load-on-startup&gt;6&lt;/load-on-startup&gt;
+    &lt;/servlet&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;phps&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.apache.catalina.servlets.php.Highlight&lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;php&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;*.php&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;phps&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;*.phps&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+</source>
+Edit the <code>$CATALINA_BASE/bin/setenv.sh</code> add the <code>LD_LIBRARY_PATH</code> variable and modify/add
+the java.library.path parameter of the JVM:
+<source>
+CATALINA_OPTS="$CATALINA_OPTS -Djava.library.path=$CATALINA_HOME/PHP/lib"
+LD_LIBRARY_PATH=$CATALINA_HOME/PHP/lib
+export LD_LIBRARY_PATH
+</source>
+</section>
+<section name="Using the php demo scripts">
+The <code>php-examples.war</code> warfile of the tarball contains some php demo scripts.
+They are deployed under /php-examples to use them you only need to modify the <code>$CATALINA_BASE/bin/setenv.sh</code> as described above. You don't have to modify the <code>$CATALINA_BASE/conf/web.xml</code>
+nor the <code>$CATALINA_BASE/conf/server.xml</code> files.
+You have to start and restart the servlet container because of the environment modifications.
+To use the examples, try <code>http://localhost:8080/php-examples/index.php</code>.
+</section>
+<section name="Additing extension libraries">
+For the moment this feature is only supported on Solaris.
+Edit the <code>php.ini</code> file and add your library extensions as in the following example:
+<source>
+extension_dir=/home/jfclere/SunOS_i386_tools/PHP/lib/php/extensions/no-debug-zts-20050922
+extension=openssl.so
+extension=pdo_pgsql.so
+extension=pgsql.so
+</source>
+</section>
+</body>
+</document>

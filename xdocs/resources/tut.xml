@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="tut.html">
+
+  &project;
+
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>Tutorials</title>
+  </properties>
+
+<body>
+
+<section name="Using the tutorial">
+  <p>If you just want to learn how to run a stand-alone JBossWeb server with the
+  demonstrations supplied, start at the  <a href="tut01.html">Getting Started</a>
+  section. This should give you a good feel for JBossWeb.
+  </p>
+</section>
+</body>
+</document>

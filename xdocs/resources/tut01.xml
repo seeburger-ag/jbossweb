@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="tut.html">
+
+  &project;
+
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>Getting started tutorial</title>
+  </properties>
+
+<body>
+
+<section name="Introduction">
+  <p>Firstly, if you haven't already done it, you need to download JBossWeb.
+  </p>
+</section>
+</body>
+</document>
