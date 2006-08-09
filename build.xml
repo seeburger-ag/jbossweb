@@ -169,13 +169,11 @@
       	<exclude name="catalina.jar" />
       	<exclude name="catalina-ant.jar" />
         <exclude name="commons-modeler.jar" />
-        <exclude name="el-api.jar" />
       	<exclude name="jasper.jar" />
         <exclude name="jasper-el.jar" />
-        <exclude name="jsp-api.jar" />
-        <exclude name="servlet-api.jar" />
         <exclude name="tomcat-coyote.jar" />
         <exclude name="tomcat-dbcp.jar" />
+        <exclude name="tomcat-i18n-*.jar" />
 
       	<exclude name="server.xml" />
       	<exclude name="conf/**" />
@@ -226,6 +224,7 @@
         <include name="README.txt"/>
       </fileset>
     </copy>
+  	<!--
     <copy todir="${jbossweb.build}/native">
       <fileset dir="src/share/native">
         <include name="php5servlet/php5servlet.*"/>
@@ -253,67 +252,43 @@
       </fileset>
     </copy>
     <chmod dir="${jbossweb.build}/${final.name}/bin" includes="*.sh" perm="+x"/>      
+    -->
 
-    <!-- JBoss Web Main -->
+    <!-- Common Annotations 1.0 JAR File -->
+    <jar  jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/annotations-api-temp.jar">
+      <fileset dir="${jbossweb.build}/classes">
+        <include name="javax/annotation/*" />
+        <include name="javax/annotation/security/*" />
+        <include name="javax/ejb/*" />
+        <include name="javax/persistence/*" />
+        <include name="javax/xml/ws/*" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+    <!-- Catalina Main JAR File -->
     <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/jbossweb.jar" index="true">
       <fileset dir="${jbossweb.build}/classes">
-        <exclude name="org/apache/catalina/servlets/CGI*" />
-        <exclude name="org/apache/catalina/servlets/Invoker*" />
-        <exclude name="org/apache/catalina/ssi/**" />
-        <exclude name="org/apache/catalina/servlets/Webdav*" />
-        <exclude name="org/apache/catalina/servlets/php/**" />
-        <exclude name="org/jboss/web/rewrite/**" />
+        <include name="org/apache/AnnotationProcessor.class" />
+        <include name="org/apache/catalina/**" />
+        <include name="org/apache/naming/**" />
+        <include name="org/apache/coyote/**" />
+        <include name="org/apache/tomcat/jni/**" />
+        <include name="org/apache/tomcat/util/**" />
+        <include name="org/apache/jasper/**" />
+        <include name="org/apache/el/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-     </fileset>
-    </jar>
-
-    <!-- Servlets - CGI Servlet -->
-    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/servlets-cgi.jar" index="true">
-      <fileset dir="${jbossweb.build}/classes">
-        <include name="org/apache/catalina/servlets/CGI*" />
-      </fileset>
-    </jar>
-
-    <!-- Servlets - Invoker Servlet -->
-    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/servlets-invoker.jar" index="true">
-      <fileset dir="${jbossweb.build}/classes">
-        <include name="org/apache/catalina/servlets/Invoker*" />
-      </fileset>
-    </jar>
-
-    <!-- Servlets - SSI Servlet -->
-    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/servlets-ssi.jar" index="true">
-      <fileset dir="${jbossweb.build}/classes">
-        <include name="org/apache/catalina/ssi/**" />
-        <!-- Javadoc and i18n exclusions -->
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-      </fileset>
-    </jar>
-
-    <!-- Servlets - Webdav Servlet -->
-    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/servlets-webdav.jar" index="true">
-      <fileset dir="${jbossweb.build}/classes">
-        <include name="org/apache/catalina/servlets/Webdav*" />
-      </fileset>
-    </jar>
-
-    <!-- JBoss Web - PHP Servlet -->
-    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/servlets-php.jar" index="true">
-      <fileset dir="${jbossweb.build}/classes">
-        <include name="org/apache/catalina/servlets/php/**" />
-        <!-- Javadoc and i18n exclusions -->
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
       </fileset>
     </jar>
 
     <!-- JBoss Web - Rewrite Valve -->
-    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/jbossweb-rewrite.jar" index="true">
+    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/jbossweb-extras.jar" index="true">
       <fileset dir="${jbossweb.build}/classes">
         <include name="org/jboss/web/rewrite/**" />
+        <include name="org/jboss/web/php/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
         <exclude name="**/LocalStrings_*" />
