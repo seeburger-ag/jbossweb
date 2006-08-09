@@ -21,7 +21,7 @@
   <property name="version.number"        value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
   <property name="version"               value="${version.major}.${version.minor}.${version.build}.${version.patch}${version.flag}" />
 
-  <property name="jboss.version.major"         value="4" />
+  <property name="jboss.version.major"         value="5" />
   <property name="jboss.version.minor"         value="0" />
   <property name="jboss.version.build"         value="0" />
   <property name="jboss.version.patch"         value="DR" />
@@ -52,7 +52,7 @@
 
   <path id="catalina.classpath">
     <fileset dir="${jboss.build}/server/all">
-      <include name="deploy/jbossweb-tomcat60.sar/jasper-compiler-jdt.jar"/>
+      <include name="deploy/jbossweb-tomcat6.sar/jasper-jdt.jar"/>
       <include name="lib/commons-logging.jar" />
     </fileset>
     <fileset dir="${jboss.build}/lib">
@@ -157,29 +157,25 @@
         <include name="deploy/properties-service.xml" />
         <include name="deploy/tc5-cluster-service.xml" />
 
-        <exclude name="deploy/jbossweb-tomcat55.sar/**" />
+        <exclude name="deploy/jbossweb-tomcat6.sar/**" />
 
       </fileset>
 
     </copy>
 
     <copy todir="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar">
-      <fileset dir="${jboss.build}/server/all/deploy/jbossweb-tomcat55.sar">
+      <fileset dir="${jboss.build}/server/all/deploy/jbossweb-tomcat6.sar">
 
       	<exclude name="catalina.jar" />
-        <exclude name="catalina-manager.jar" />
-        <exclude name="catalina-optional.jar" />
-      	<exclude name="jasper-compiler.jar" />
-        <exclude name="jasper-runtime.jar" />
-        <exclude name="servlets-default.jar" />
-        <exclude name="servlets-invoker.jar" />
-        <exclude name="servlets-webdav.jar" />
-        <exclude name="naming-resources.jar" />
-        <exclude name="tomcat-ajp.jar" />
-        <exclude name="tomcat-apr.jar" />
+      	<exclude name="catalina-ant.jar" />
+        <exclude name="commons-modeler.jar" />
+        <exclude name="el-api.jar" />
+      	<exclude name="jasper.jar" />
+        <exclude name="jasper-el.jar" />
+        <exclude name="jsp-api.jar" />
+        <exclude name="servlet-api.jar" />
         <exclude name="tomcat-coyote.jar" />
-        <exclude name="tomcat-http.jar" />
-        <exclude name="tomcat-util.jar" />
+        <exclude name="tomcat-dbcp.jar" />
 
       	<exclude name="server.xml" />
       	<exclude name="conf/**" />

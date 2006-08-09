@@ -10,16 +10,16 @@
 # -----------------------------------------------------------------------------
 
 # ----- Vesion Control Flags -----
-version.major=1
+version.major=2
 version.minor=0
-version.build=1
+version.build=0
 version.patch=dev
 
 # ----- Vesion Control Flags -----
-jboss.version.major=4
+jboss.version.major=5
 jboss.version.minor=0
-jboss.version.build=4
-jboss.version.patch=GA
+jboss.version.build=0
+jboss.version.patch=Beta
 
 # ----- Compile Control Flags -----
 compile.debug=on
