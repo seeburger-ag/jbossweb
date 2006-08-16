@@ -1,4 +1,4 @@
-<project name="JBoss Web" default="deploy" basedir=".">
+<project name="JBoss Web" default="build" basedir=".">
 
 
   <!-- ===================== Initialize Property Values =================== -->
@@ -51,12 +51,13 @@
   <property name="compile.source"       value="1.5" />
 
   <path id="catalina.classpath">
+    <fileset dir="lib">
+        <include name="jasper-jdt.jar"/>
+        <include name="commons-logging.jar" />
+    </fileset>
     <fileset dir="${jboss.build}/server/all">
       <include name="deploy/jbossweb-tomcat6.sar/jasper-jdt.jar"/>
       <include name="lib/commons-logging.jar" />
-    </fileset>
-    <fileset dir="${jboss.build}/lib">
-      <include name="jboss-jmx.jar" />
     </fileset>
   </path>
 
@@ -93,6 +94,153 @@
   </target>
 
   
+  <!-- ====================== DEPLOY: Build classes and JARs =================== -->
+  <target name="build">
+  	
+    <mkdir dir="${jbossweb.build}/classes" />
+    <mkdir dir="${jbossweb.build}/native" />
+    <mkdir dir="${jbossweb.build}/jars" />
+
+    <javac srcdir="src/share/classes" destdir="${jbossweb.build}/classes"
+           debug="${compile.debug}"
+           deprecation="${compile.deprecation}"
+           source="${compile.source}"
+           optimize="${compile.optimize}"
+           excludes="**/CVS/**,**/.svn/**">
+      <classpath refid="catalina.classpath" />
+      <exclude name="**/*TestCase.java" />
+    </javac>
+
+    <tstamp>
+        <format property="TODAY" pattern="MMM d yyyy" locale="en"/>
+        <format property="TSTAMP" pattern="hh:mm:ss"/>
+    </tstamp>
+
+  	<!-- Copy static resource files -->
+    <filter token="VERSION" value="${version}"/>
+    <filter token="VERSION_MAJOR" value="${version.major}"/>
+    <filter token="VERSION_MINOR" value="${version.minor}"/>
+    <filter token="VERSION_NUMBER" value="${version.number}"/>
+    <filter token="VERSION_BUILT" value="${TODAY} ${TSTAMP}"/>
+    <copy todir="${jbossweb.build}/classes" filtering="yes">
+      <fileset dir="src/share/classes">
+        <include name="**/*.xml"/>
+        <include name="**/*.dtd"/>
+        <include name="**/*.xsd"/>
+        <include name="**/*.properties"/>
+      </fileset>
+    </copy>
+    <copy todir="${jbossweb.build}" filtering="yes">
+      <fileset dir="">
+        <include name="README.txt"/>
+      </fileset>
+    </copy>
+  	<!--
+    <copy todir="${jbossweb.build}/native">
+      <fileset dir="src/share/native">
+        <include name="php5servlet/php5servlet.*"/>
+      </fileset>
+    </copy>
+    <copy todir="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar" filtering="yes">
+      <fileset dir="src/share/resources">
+        <include name="**/*.xml"/>
+      </fileset>
+    </copy>
+    <copy todir="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/ROOT.war" overwrite="yes">
+      <fileset dir="src/share/resources/ROOT.war">
+        <include name="**/*"/>
+      </fileset>
+    </copy>
+    <copy todir="${jbossweb.build}/${final.name}/bin" filtering="yes" overwrite="yes">
+      <fileset dir="src/share/resources/bin">
+        <include name="**/*.bat"/>
+        <include name="**/*.sh"/>
+      </fileset>
+    </copy>
+    <copy todir="${jbossweb.build}/${final.name}/bin" overwrite="yes">
+      <fileset dir="src/share/resources/bin">
+        <include name="**/*.ico"/>
+      </fileset>
+    </copy>
+    <chmod dir="${jbossweb.build}/${final.name}/bin" includes="*.sh" perm="+x"/>      
+    -->
+
+    <!-- Common Annotations 1.0 JAR File -->
+    <jar  jarfile="${jbossweb.build}/jars/annotations-api-temp.jar">
+      <fileset dir="${jbossweb.build}/classes">
+        <include name="javax/annotation/*" />
+        <include name="javax/annotation/security/*" />
+        <include name="javax/ejb/*" />
+        <include name="javax/persistence/*" />
+        <include name="javax/xml/ws/*" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+    <!-- Servlet 2.5 Implementation JAR File -->
+    <jar  jarfile="${jbossweb.build}/jars/servlet-api.jar">
+      <fileset dir="${jbossweb.build}/classes">
+        <include name="javax/servlet/*" />
+        <include name="javax/servlet/http/*" />
+        <include name="javax/servlet/resources/*" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+    <!-- JSP 2.1 Implementation JAR File -->
+    <jar  jarfile="${jbossweb.build}/jars/jsp-api.jar">
+      <fileset dir="${jbossweb.build}/classes">
+        <include name="javax/servlet/jsp/**" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+    <!-- JSP 2.1 EL Implementation JAR File -->
+    <jar  jarfile="${jbossweb.build}/jars/el-api.jar">
+      <fileset dir="${jbossweb.build}/classes">
+        <include name="javax/el/*" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+    <!-- Catalina Main JAR File -->
+    <jar jarfile="${jbossweb.build}/jars/jbossweb.jar" index="true">
+      <fileset dir="${jbossweb.build}/classes">
+        <include name="org/apache/AnnotationProcessor.class" />
+        <include name="org/apache/catalina/**" />
+        <include name="org/apache/naming/**" />
+        <include name="org/apache/coyote/**" />
+        <include name="org/apache/tomcat/jni/**" />
+        <include name="org/apache/tomcat/util/**" />
+        <include name="org/apache/jasper/**" />
+        <include name="org/apache/el/**" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+      </fileset>
+    </jar>
+
+    <!-- JBoss Web - Rewrite Valve -->
+    <jar jarfile="${jbossweb.build}/jars/jbossweb-extras.jar" index="true">
+      <fileset dir="${jbossweb.build}/classes">
+        <include name="org/jboss/web/rewrite/**" />
+        <include name="org/jboss/web/php/**" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+  </target>
+
+  	
   <!-- ====================== DEPLOY: Copy Static Files =================== -->
   <target name="deploy-static" depends="init">
 
@@ -185,116 +333,11 @@
 
   </target>
 
-  <target name="deploy" depends="deploy-static">
+  <target name="deploy" depends="build,deploy-static">
 
-    <mkdir dir="${jbossweb.build}/classes" />
-    <mkdir dir="${jbossweb.build}/native" />
-
-    <javac srcdir="src/share/classes" destdir="${jbossweb.build}/classes"
-           debug="${compile.debug}"
-           deprecation="${compile.deprecation}"
-           source="${compile.source}"
-           optimize="${compile.optimize}"
-           excludes="**/CVS/**,**/.svn/**">
-      <classpath refid="catalina.classpath" />
-      <exclude name="**/*TestCase.java" />
-      <!-- Uses Java 5 -->
-      <exclude name="**/SemaphoreValve.java" />
-    </javac>
-
-    <tstamp>
-        <format property="TODAY" pattern="MMM d yyyy" locale="en"/>
-        <format property="TSTAMP" pattern="hh:mm:ss"/>
-    </tstamp>
-
-  	<!-- Copy static resource files -->
-    <filter token="VERSION" value="${version}"/>
-    <filter token="VERSION_MAJOR" value="${version.major}"/>
-    <filter token="VERSION_MINOR" value="${version.minor}"/>
-    <filter token="VERSION_NUMBER" value="${version.number}"/>
-    <filter token="VERSION_BUILT" value="${TODAY} ${TSTAMP}"/>
-    <copy todir="${jbossweb.build}/classes" filtering="yes">
-      <fileset dir="src/share/classes">
-        <include name="**/*.xml"/>
-        <include name="**/*.properties"/>
-      </fileset>
-    </copy>
-    <copy todir="${jbossweb.build}" filtering="yes">
-      <fileset dir="">
-        <include name="README.txt"/>
-      </fileset>
-    </copy>
-  	<!--
-    <copy todir="${jbossweb.build}/native">
-      <fileset dir="src/share/native">
-        <include name="php5servlet/php5servlet.*"/>
-      </fileset>
-    </copy>
-    <copy todir="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar" filtering="yes">
-      <fileset dir="src/share/resources">
-        <include name="**/*.xml"/>
-      </fileset>
-    </copy>
-    <copy todir="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/ROOT.war" overwrite="yes">
-      <fileset dir="src/share/resources/ROOT.war">
-        <include name="**/*"/>
-      </fileset>
-    </copy>
-    <copy todir="${jbossweb.build}/${final.name}/bin" filtering="yes" overwrite="yes">
-      <fileset dir="src/share/resources/bin">
-        <include name="**/*.bat"/>
-        <include name="**/*.sh"/>
-      </fileset>
-    </copy>
-    <copy todir="${jbossweb.build}/${final.name}/bin" overwrite="yes">
-      <fileset dir="src/share/resources/bin">
-        <include name="**/*.ico"/>
-      </fileset>
-    </copy>
-    <chmod dir="${jbossweb.build}/${final.name}/bin" includes="*.sh" perm="+x"/>      
-    -->
-
-    <!-- Common Annotations 1.0 JAR File -->
-    <jar  jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/annotations-api-temp.jar">
-      <fileset dir="${jbossweb.build}/classes">
-        <include name="javax/annotation/*" />
-        <include name="javax/annotation/security/*" />
-        <include name="javax/ejb/*" />
-        <include name="javax/persistence/*" />
-        <include name="javax/xml/ws/*" />
-        <!-- Javadoc and i18n exclusions -->
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-      </fileset>
-    </jar>
-
-    <!-- Catalina Main JAR File -->
-    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/jbossweb.jar" index="true">
-      <fileset dir="${jbossweb.build}/classes">
-        <include name="org/apache/AnnotationProcessor.class" />
-        <include name="org/apache/catalina/**" />
-        <include name="org/apache/naming/**" />
-        <include name="org/apache/coyote/**" />
-        <include name="org/apache/tomcat/jni/**" />
-        <include name="org/apache/tomcat/util/**" />
-        <include name="org/apache/jasper/**" />
-        <include name="org/apache/el/**" />
-        <!-- Javadoc and i18n exclusions -->
-        <exclude name="**/package.html" />
-      </fileset>
-    </jar>
-
-    <!-- JBoss Web - Rewrite Valve -->
-    <jar jarfile="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/jbossweb-extras.jar" index="true">
-      <fileset dir="${jbossweb.build}/classes">
-        <include name="org/jboss/web/rewrite/**" />
-        <include name="org/jboss/web/php/**" />
-        <!-- Javadoc and i18n exclusions -->
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-      </fileset>
-    </jar>
-
+  	<copy todir="${jbossweb.build}/${final.name}/server/default/deploy/jbossweb.sar/"
+  	      dir="${jbossweb.build}/jars" />
+  	
 </target>
 
   <target name="clean">
