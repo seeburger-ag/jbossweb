@@ -18,6 +18,7 @@ package org.apache.coyote.http11;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.OutputBuffer;
@@ -27,11 +28,9 @@ import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.HttpMessages;
 import org.apache.tomcat.util.http.MimeHeaders;
-import org.apache.tomcat.util.res.StringManager;
-import java.nio.channels.SelectionKey;
-import org.apache.tomcat.util.net.NioEndpoint;
-import java.nio.channels.Selector;
 import org.apache.tomcat.util.net.NioChannel;
+import org.apache.tomcat.util.net.NioEndpoint;
+import org.apache.tomcat.util.res.StringManager;
 
 /**
  * Output buffer.
@@ -49,8 +48,7 @@ public class InternalNioOutputBuffer
     // ----------------------------------------------------------- Constructors
     int bbufLimit = 0;
     
-    Selector selector;
-
+    
     /**
      * Default constructor.
      */
@@ -180,10 +178,6 @@ public class InternalNioOutputBuffer
      */
     public void setSocket(NioChannel socket) {
         this.socket = socket;
-    }
-
-    public void setSelector(Selector selector) {
-        this.selector = selector;
     }
 
     /**
@@ -715,7 +709,7 @@ public class InternalNioOutputBuffer
         throws IOException {
 
         //prevent timeout for async,
-        SelectionKey key = socket.getIOChannel().keyFor(selector);
+        SelectionKey key = socket.getIOChannel().keyFor(socket.getPoller().getSelector());
         if (key != null) {
             NioEndpoint.KeyAttachment attach = (NioEndpoint.KeyAttachment) key.attachment();
             attach.access();
