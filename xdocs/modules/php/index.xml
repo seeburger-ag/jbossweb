@@ -27,16 +27,18 @@ The buildphp.sh will detect you platform, download and build the dynamic librari
 build the PHP servlet itself. Should should get a tarfile that contains the libraries and a war file with the examples.
 </p>
 Already build PHP servlets and libraries are available at:
-<todo>Work in progress</todo>
+<a href="http://labs.jboss.com/portal/jbossweb/downloads/native">JBossWeb download area</a>
 </section>
 
 <section name="Installing">
-After extracting the tarball corresponding to you platform in $CATALINA_BASE do the following:
-Edit in the &lt;Server/&gt; of <code>$CATALINA_BASE/conf/server.xml</code> and add a Listener following:
+After extracting the tarball corresponding to you platform in $CATALINA_BASE (CATALINA_BASE should be
+something like jbossweb-1.0.0.GA/server/default/deploy/jbossweb.sar) do the following:
+Edit in the &lt;Server/&gt; of <code>$CATALINA_BASE/server.xml</code> and uncomment the following Listener entry:
 <source>
     &lt;Listener className="org.apache.catalina.servlets.php.LifecycleListener"/&gt;
 </source>
-If you want to enable php in all contexts edit  <code>$CATALINA_BASE/conf/web.xml</code> and add the following:
+If you want to enable php in all contexts edit  <code>$CATALINA_BASE/conf/web.xml</code> and uncomment the php servlet
+description and its mapping:
 <source>
    &lt;servlet&gt;
         &lt;servlet-name&gt;php&lt;/servlet-name&gt;
@@ -51,7 +53,8 @@ If you want to enable php in all contexts edit  <code>$CATALINA_BASE/conf/web.xm
         &lt;servlet-name&gt;phps&lt;/servlet-name&gt;
         &lt;servlet-class&gt;org.apache.catalina.servlets.php.Highlight&lt;/servlet-class&gt;
     &lt;/servlet&gt;
-
+<source>
+</source>
     &lt;servlet-mapping&gt;
         &lt;servlet-name&gt;php&lt;/servlet-name&gt;
         &lt;url-pattern&gt;*.php&lt;/url-pattern&gt;
@@ -61,15 +64,16 @@ If you want to enable php in all contexts edit  <code>$CATALINA_BASE/conf/web.xm
         &lt;url-pattern&gt;*.phps&lt;/url-pattern&gt;
     &lt;/servlet-mapping&gt;
 </source>
-Edit the <code>$CATALINA_BASE/bin/setenv.sh</code> add the <code>LD_LIBRARY_PATH</code> variable and modify/add
+Edit the <code>$JBOSS_HOME/bin/run.conf</code> (JBOSS_HOME should be something like jbossweb-1.0.0.GA) add the <code>LD_LIBRARY_PATH</code> variable and modify/add
 the java.library.path parameter of the JVM:
 <source>
-CATALINA_OPTS="$CATALINA_OPTS -Djava.library.path=$CATALINA_HOME/PHP/lib"
-LD_LIBRARY_PATH=$CATALINA_HOME/PHP/lib
+LD_LIBRARY_PATH=$BOSS_HOME/server/default/deploy/jbossweb.sar/PHP/lib
 export LD_LIBRARY_PATH
 </source>
+Copy the 2 libraries libphp5.so and libphp5servlet.so in $BOSS_HOME/bin/native.
 </section>
 <section name="Using the php demo scripts">
+<todo>That is a Tomcat howto description</todo>
 The <code>php-examples.war</code> warfile of the tarball contains some php demo scripts.
 They are deployed under /php-examples to use them you only need to modify the <code>$CATALINA_BASE/bin/setenv.sh</code> as described above. You don't have to modify the <code>$CATALINA_BASE/conf/web.xml</code>
 nor the <code>$CATALINA_BASE/conf/server.xml</code> files.
