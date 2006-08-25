@@ -67,14 +67,14 @@ description and its mapping:
 Edit the <code>$JBOSS_HOME/bin/run.conf</code> (JBOSS_HOME should be something like jbossweb-1.0.0.GA) add the <code>LD_LIBRARY_PATH</code> variable and modify/add
 the java.library.path parameter of the JVM:
 <source>
-LD_LIBRARY_PATH=$BOSS_HOME/server/default/deploy/jbossweb.sar/PHP/lib
+LD_LIBRARY_PATH=$JBOSS_HOME/server/default/deploy/jbossweb.sar/PHP/lib
 export LD_LIBRARY_PATH
 </source>
-Copy the 2 libraries libphp5.so and libphp5servlet.so in $BOSS_HOME/bin/native.
+Copy the 2 libraries libphp5.so and libphp5servlet.so in $JBOSS_HOME/bin/native.
 </section>
 <section name="Using the php demo scripts">
 The <code>php-examples.war</code> warfile of the tarball contains some php demo scripts.
-They are deployed under /php-examples to use them you only need to modify the <code>$BOSS_HOME/bin/run.conf</code> as described above. You don't have to modify the <code>$CATALINA_BASE/conf/web.xml</code>
+They are deployed under /php-examples to use them you only need to modify the <code>$JBOSS_HOME/bin/run.conf</code> as described above. You don't have to modify the <code>$CATALINA_BASE/conf/web.xml</code>
 nor the <code>$CATALINA_BASE/server.xml</code> files.
 You have to start and restart the servlet container because of the environment modifications.
 To use the examples, try <code>http://localhost:8080/php-examples/index.php</code>.
