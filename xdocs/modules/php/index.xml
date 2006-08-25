@@ -8,6 +8,7 @@
 
   <properties>
     <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <author email="jfrederic.clere@jboss.com">Jean-Frederic Clere</author>
     <title>Overview</title>
   </properties>
 
@@ -31,8 +32,10 @@ Already build PHP servlets and libraries are available at:
 </section>
 
 <section name="Installing">
-After extracting the tarball corresponding to you platform in $CATALINA_BASE (CATALINA_BASE should be
-something like jbossweb-1.0.0.GA/server/default/deploy/jbossweb.sar) do the following:
+After extracting the tarball corresponding to you platform. (For example in $JBOSS_HOME,
+where JBOSS_HOME should be something like jbossweb-1.0.0.GA).<br/>
+In $CATALINA_BASE (CATALINA_BASE should be
+something like jbossweb-1.0.0.GA/server/default/deploy/jbossweb.sar) do the following:<br/>
 Edit in the &lt;Server/&gt; of <code>$CATALINA_BASE/server.xml</code> and uncomment the following Listener entry:
 <source>
     &lt;Listener className="org.apache.catalina.servlets.php.LifecycleListener"/&gt;
@@ -67,20 +70,22 @@ description and its mapping:
 Edit the <code>$JBOSS_HOME/bin/run.conf</code> (JBOSS_HOME should be something like jbossweb-1.0.0.GA) add the <code>LD_LIBRARY_PATH</code> variable and modify/add
 the java.library.path parameter of the JVM:
 <source>
-LD_LIBRARY_PATH=$JBOSS_HOME/server/default/deploy/jbossweb.sar/PHP/lib
+LD_LIBRARY_PATH=$JBOSS_HOME/PHP/lib
 export LD_LIBRARY_PATH
 </source>
-Copy the 2 libraries libphp5.so and libphp5servlet.so in $JBOSS_HOME/bin/native.
+Copy the 2 libraries libphp5.so and libphp5servlet.so in $JBOSS_HOME/bin/native, something like:
 <source>
-cp ./server/default/deploy/jbossweb.sar/PHP/lib/libphp5.so bin/native
-cp ./server/default/deploy/jbossweb.sar/PHP/lib/libphp5servlet.so bin/native
+cp ./PHP/lib/libphp5.so bin/native
+cp ./PHP/lib/libphp5servlet.so bin/native
 </source>
 </section>
 <section name="Using the php demo scripts">
 The <code>php-examples.war</code> warfile of the tarball contains some php demo scripts.
-They are deployed under /php-examples to use them you only need to modify the <code>$JBOSS_HOME/bin/run.conf</code> as described above. You don't have to modify the <code>$CATALINA_BASE/conf/web.xml</code>
+The warfile should be located in $CATALINA_BASE.
+They are deployed under /php-examples to use them you only need to modify the <code>$JBOSS_HOME/bin/run.conf</code> as described above.<br/>
+You don't have to modify the <code>$CATALINA_BASE/conf/web.xml</code>
 nor the <code>$CATALINA_BASE/server.xml</code> files.
-You have to start and restart the servlet container because of the environment modifications.
+You have to start and restart the servlet container because of the environment modifications.<br/>
 To use the examples, try <code>http://localhost:8080/php-examples/index.php</code>.
 </section>
 <section name="Additing extension libraries">
