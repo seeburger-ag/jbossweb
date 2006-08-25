@@ -71,6 +71,10 @@ LD_LIBRARY_PATH=$JBOSS_HOME/server/default/deploy/jbossweb.sar/PHP/lib
 export LD_LIBRARY_PATH
 </source>
 Copy the 2 libraries libphp5.so and libphp5servlet.so in $JBOSS_HOME/bin/native.
+<source>
+cp ./server/default/deploy/jbossweb.sar/PHP/lib/libphp5.so bin/native
+cp ./server/default/deploy/jbossweb.sar/PHP/lib/libphp5servlet.so bin/native
+</source>
 </section>
 <section name="Using the php demo scripts">
 The <code>php-examples.war</code> warfile of the tarball contains some php demo scripts.
