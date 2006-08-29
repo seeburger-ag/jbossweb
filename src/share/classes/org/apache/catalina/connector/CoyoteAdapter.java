@@ -19,6 +19,8 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 
+import javax.servlet.Servlet;
+
 import org.apache.catalina.CometProcessor;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
@@ -117,30 +119,21 @@ public class CoyoteAdapter
 
         if (request.getWrapper() != null) {
             
+            CometProcessor servlet = null;
+
             // Bind the context CL to the current thread
             if (request.getContext().getLoader() != null ) {
                 Thread.currentThread().setContextClassLoader
                         (request.getContext().getLoader().getClassLoader());
             }
             
-            CometProcessor servlet = null;
             try {
                 servlet = (CometProcessor) request.getWrapper().allocate();
-            } catch (Throwable t) {
-                log.error(sm.getString("coyoteAdapter.service"), t);
-                request.removeAttribute("org.apache.tomcat.comet");
-                // Restore the context classloader
-                Thread.currentThread().setContextClassLoader
-                    (CoyoteAdapter.class.getClassLoader());
-                return false;
-            }
-            try {
                 if (error) {
                     servlet.error(request.getRequest(), response.getResponse());
                 } else {
                     if (!servlet.read(request.getRequest(), response.getResponse())) {
                         error = true;
-                        request.removeAttribute("org.apache.tomcat.comet");
                         try {
                             servlet.error(request.getRequest(), response.getResponse());
                         } catch (Throwable th) {
@@ -148,12 +141,15 @@ public class CoyoteAdapter
                         }
                     }
                 }
+                if (response.isClosed()) {
+                    res.action(ActionCode.ACTION_COMET_END, null);
+                }
                 return (!error);
             } catch (Throwable t) {
                 if (!(t instanceof IOException)) {
                     log.error(sm.getString("coyoteAdapter.service"), t);
                 }
-                request.removeAttribute("org.apache.tomcat.comet");
+                error = true;
                 try {
                     servlet.error(request.getRequest(), response.getResponse());
                 } catch (Throwable th) {
@@ -161,14 +157,19 @@ public class CoyoteAdapter
                 }
                 return false;
             } finally {
-                // Recycle the wrapper request and response
-                if (request.getAttribute("org.apache.tomcat.comet") == null) {
-                    request.recycle();
-                    response.recycle();
-                }
                 // Restore the context classloader
                 Thread.currentThread().setContextClassLoader
                     (CoyoteAdapter.class.getClassLoader());
+                try {
+                    request.getWrapper().deallocate((Servlet) servlet);
+                } catch (Exception e) {
+                    log.error(sm.getString("coyoteAdapter.service"), e);
+                }
+                // Recycle the wrapper request and response
+                if (error || response.isClosed()) {
+                    request.recycle();
+                    response.recycle();
+                }
             }
         }
         return true;
@@ -217,19 +218,23 @@ public class CoyoteAdapter
 
             // Parse and set Catalina and configuration specific 
             // request parameters
-            if ( postParseRequest(req, request, res, response) ) {
+            if (postParseRequest(req, request, res, response)) {
+
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().invoke(request, response);
-            }
 
-            if (request.getAttribute("org.apache.tomcat.comet") == Boolean.TRUE
-                    && request.getWrapper().allocate() instanceof CometProcessor) {
-                comet = true;
+                if (request.getWrapper().getServlet() instanceof CometProcessor 
+                        && !response.isClosed()
+                        && req.getAttribute("org.apache.tomcat.comet.support") == Boolean.TRUE) {
+                    comet = true;
+                    res.action(ActionCode.ACTION_COMET_BEGIN, null);
+                }
+
             }
 
             if (!comet) {
                 response.finishResponse();
-                req.action( ActionCode.ACTION_POST_REQUEST , null);
+                req.action(ActionCode.ACTION_POST_REQUEST , null);
             }
 
         } catch (IOException e) {
