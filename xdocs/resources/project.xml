@@ -6,7 +6,6 @@
 
     <menu name="Resources">
         <item name="FAQs"                    href="faq.html"/>
-        <item name="Tutorial"                href="tut.html"/>
         <item name="Lists &amp; Forums"      href="mail.html"/>
     </menu>
     <menu name="FAQs">
@@ -14,9 +13,6 @@
         <item name="HTTP"                    href="faq02.html"/>
         <item name="HTTPS"                   href="faq03.html"/>
         <item name="AJP"                     href="faq04.html"/>
-    </menu>
-    <menu name="Tutorial">
-        <item name="Geting started"          href="tut01.html"/>
     </menu>
     <menu name="Links">
         <item name="Documentation Home"      href="../index.html"/>

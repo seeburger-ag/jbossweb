@@ -29,7 +29,6 @@
 
     <menu name="Resources">
         <item name="FAQs"                   href="resources/faq.html"/>
-        <item name="Tutorial"               href="resources/tut.html"/>
         <item name="Lists &amp; Forums"     href="resources/mail.html"/>
     </menu>
 
