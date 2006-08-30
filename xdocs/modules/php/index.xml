@@ -67,7 +67,7 @@ description and its mapping:
         &lt;url-pattern&gt;*.phps&lt;/url-pattern&gt;
     &lt;/servlet-mapping&gt;
 </source>
-Edit the <code>$JBOSS_HOME/bin/run.conf</code> (JBOSS_HOME should be something like jbossweb-1.0.0.GA) add the <code>LD_LIBRARY_PATH</code> variable and modify/add
+Edit the <code>$JBOSS_HOME/bin/run.conf</code> (JBOSS_HOME should be something like jbossweb-1.0.0.GA) add the <code>LD_LIBRARY_PATH</code> variable and modify/add (replace $JBOSS_HOME by its value)
 the java.library.path parameter of the JVM:
 <source>
 LD_LIBRARY_PATH=$JBOSS_HOME/PHP/lib
