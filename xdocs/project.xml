@@ -35,7 +35,6 @@
 
     <menu name="News">
         <item name="News &amp; Status"      href="news/2006.html"/>
-        <item name="Roadmap"                href="news/roadmap.html"/>
         <item name="Changelog"              href="news/changelog.html"/>
     </menu>
 </body>
