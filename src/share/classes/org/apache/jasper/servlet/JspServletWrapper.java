@@ -17,12 +17,11 @@
 package org.apache.jasper.servlet;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.tagext.TagInfo;
 
+import org.apache.AnnotationProcessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.jasper.JasperException;
@@ -146,10 +146,17 @@ public class JspServletWrapper {
                     try {
                         servletClass = ctxt.load();
                         theServlet = (Servlet) servletClass.newInstance();
-                    } catch( IllegalAccessException ex1 ) {
-                        throw new JasperException( ex1 );
-                    } catch( InstantiationException ex ) {
-                        throw new JasperException( ex );
+                        AnnotationProcessor annotationProcessor = (AnnotationProcessor) config.getServletContext().getAttribute(AnnotationProcessor.class.getName());
+                        if (annotationProcessor != null) {
+                           annotationProcessor.processAnnotations(theServlet);
+                           annotationProcessor.postConstruct(theServlet);
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new JasperException(e);
+                    } catch (InstantiationException e) {
+                        throw new JasperException(e);
+                    } catch (Exception e) {
+                        throw new JasperException(e);
                     }
                     
                     theServlet.init(config);
@@ -402,6 +409,16 @@ public class JspServletWrapper {
     public void destroy() {
         if (theServlet != null) {
             theServlet.destroy();
+            AnnotationProcessor annotationProcessor = (AnnotationProcessor) config.getServletContext().getAttribute(AnnotationProcessor.class.getName());
+            if (annotationProcessor != null) {
+                try {
+                    annotationProcessor.preDestroy(theServlet);
+                } catch (Exception e) {
+                    // Log any exception, since it can't be passed along
+                    log.error(Localizer.getMessage("jsp.error.file.not.found",
+                           e.getMessage()), e);
+                }
+            }
         }
     }
 
