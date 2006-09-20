@@ -43,13 +43,9 @@ import org.apache.jasper.servlet.JspServletWrapper;
  * @author Mark Roth
  */
 public abstract class Compiler {
+    
     protected org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
             .getLog(Compiler.class);
-
-    // ----------------------------------------------------------------- Static
-
-    // Some javac are not thread safe; use a lock to serialize compilation,
-    static Object javacLock = new Object();
 
     // ----------------------------------------------------- Instance Variables
 
@@ -133,7 +129,16 @@ public abstract class Compiler {
         if (jspProperty.getIncludeCoda() != null) {
             pageInfo.setIncludeCoda(jspProperty.getIncludeCoda());
         }
+        if (jspProperty.isDeferedSyntaxAllowedAsLiteral() != null) {
+            pageInfo.setDeferredSyntaxAllowedAsLiteral(JspUtil.booleanValue(jspProperty
+                    .isDeferedSyntaxAllowedAsLiteral()));
+        }
+        if (jspProperty.isTrimDirectiveWhitespaces() != null) {
+            pageInfo.setTrimDirectiveWhitespaces(JspUtil.booleanValue(jspProperty
+                    .isTrimDirectiveWhitespaces()));
+        }
 
+        ctxt.checkOutputDir();
         String javaFileName = ctxt.getServletJavaFileName();
         ServletWriter writer = null;
 
