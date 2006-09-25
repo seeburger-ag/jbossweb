@@ -52,6 +52,7 @@ import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.net.AprEndpoint;
+import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.AprEndpoint.Handler.SocketState;
 import org.apache.tomcat.util.res.StringManager;
 
@@ -736,14 +737,14 @@ public class Http11AprProcessor implements ActionHook {
      *
      * @throws IOException error during an I/O operation
      */
-    public SocketState event(boolean error)
+    public SocketState event(SocketStatus status)
         throws IOException {
         
         RequestInfo rp = request.getRequestProcessor();
         
         try {
             rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
-            error = !adapter.event(request, response, error);
+            error = !adapter.event(request, response, status);
         } catch (InterruptedIOException e) {
             error = true;
         } catch (Throwable t) {
@@ -759,8 +760,8 @@ public class Http11AprProcessor implements ActionHook {
             recycle();
             return SocketState.CLOSED;
         } else if (!comet) {
-            recycle();
             endpoint.getPoller().add(socket);
+            recycle();
             return SocketState.OPEN;
         } else {
             endpoint.getCometPoller().add(socket);
