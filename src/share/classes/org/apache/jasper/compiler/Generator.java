@@ -2817,6 +2817,24 @@ class Generator {
                     sb.append(',');
                     sb.append(returnType);
                     sb.append("))");
+                    // should the expression be evaluated before passing to
+                    // the setter?
+                    boolean evaluate = false;
+                    if (tai.canBeRequestTime()) {
+                        evaluate = true; // JSP.2.3.2
+                    }
+                    if (attr.isDeferredInput()) {
+                        evaluate = false; // JSP.2.3.3
+                    }
+                    if (attr.isDeferredInput() && tai.canBeRequestTime()) {
+                        evaluate = !attrValue.contains("#{"); // JSP.2.3.5
+                    }
+                    if (evaluate) {
+                        sb.append(".getValue(");
+                        sb.append(getJspContextVar());
+                        sb.append(".getELContext()");
+                        sb.append(")");
+                    } 
                     attrValue = sb.toString();
                 } else if (attr.isDeferredMethodInput()
                         || MethodExpression.class.getName().equals(type)) {
@@ -3276,7 +3294,7 @@ class Generator {
         out.printil("out = _jspx_out;");
         out.printil("if (out != null && out.getBufferSize() != 0)");
         out.pushIndent();
-        out.printil("out.clearBuffer();");
+        out.printil("try { out.clearBuffer(); } catch (java.io.IOException e) {}");
         out.popIndent();
 
         out
