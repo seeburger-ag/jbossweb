@@ -39,6 +39,13 @@
       </update>      
     </changelog>
   </subsection>
+  <subsection name="PHP Module">
+    <changelog>
+      <update>
+      Upgrade PHP to 5.1.5 and move files in the distribution to fit to the documentation.
+      </update>
+    </changelog>
+  </subsection>
 </section> 
 </body>
 </document>
