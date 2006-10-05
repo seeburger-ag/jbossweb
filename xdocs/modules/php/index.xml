@@ -98,5 +98,10 @@ extension=pdo_pgsql.so
 extension=pgsql.so
 </source>
 </section>
+<section name="Installing on win32 machines">
+Copy the demo webapps/php-examples.war to ./server/default/deploy.<br/>
+Edit server/default/deploy/jbossweb.sar/server.xml as in other OS.<br/>
+Copy the dlls in bin/native
+</section>
 </body>
 </document>
