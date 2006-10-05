@@ -23,6 +23,15 @@
           (jbossweb-4.0.4beta-linux-i686, for example) contains the JBoss Web instance. </p>
       </subsection>
 
+      <subsection name="Adjusting run.conf">
+         On some system you may have to do an extra step.
+         Edit the $JBOSS_HOME/bin/run.conf (JBOSS_HOME should be something like jbossweb-1.0.0.GA) add the LD_LIBRARY_PATH
+         variable and modify/add (replace $JBOSS_HOME by its value):
+<source>
+LD_LIBRARY_PATH=$JBOSS_HOME/bin/native
+export LD_LIBRARY_PATH
+</source>
+      </subsection>
 
       <subsection name="Runnning JBoss Web">
 
