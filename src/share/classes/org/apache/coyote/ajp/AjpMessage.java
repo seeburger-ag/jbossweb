@@ -47,13 +47,21 @@ public class AjpMessage {
         StringManager.getManager(Constants.Package);
 
 
+    // ------------------------------------------------------------ Constructor
+
+    
+    public AjpMessage(int packetSize) {
+        buf = new byte[packetSize];
+    }
+    
+
     // ----------------------------------------------------- Instance Variables
 
 
     /**
      * Fixed size buffer.
      */
-    protected byte buf[] = new byte[8 * 1024];
+    protected byte buf[] = null;
 
 
     /**
@@ -267,7 +275,7 @@ public class AjpMessage {
      * @param numBytes The number of bytes to copy.  
      */
     public void appendBytes(byte[] b, int off, int numBytes) {
-        if (pos + numBytes + 3 >= buf.length) {
+        if (pos + numBytes + 3 > buf.length) {
             log.error(sm.getString("ajpmessage.overflow", "" + numBytes, "" + pos),
                     new ArrayIndexOutOfBoundsException());
             if (log.isDebugEnabled()) {
@@ -373,6 +381,11 @@ public class AjpMessage {
         return 4;
     }
 
+    
+    public int getPacketSize() {
+        return buf.length;
+    }
+    
     
     public int processHeader() {
         pos = 0;
