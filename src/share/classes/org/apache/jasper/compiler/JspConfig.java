@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004-2006 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -113,7 +114,7 @@ public class JspConfig {
                 String isXml = null;
                 Vector includePrelude = new Vector();
                 Vector includeCoda = new Vector();
-                String deferedSyntaxAllowedAsLiteral = null;
+                String deferredSyntaxAllowedAsLiteral = null;
                 String trimDirectiveWhitespaces = null;
 
                 while (list.hasNext()) {
@@ -136,7 +137,7 @@ public class JspConfig {
                     else if ("include-coda".equals(tname))
                         includeCoda.addElement(element.getBody());
                     else if ("deferred-syntax-allowed-as-literal".equals(tname))
-                        deferedSyntaxAllowedAsLiteral = element.getBody();
+                        deferredSyntaxAllowedAsLiteral = element.getBody();
                     else if ("trim-directive-whitespaces".equals(tname))
                         trimDirectiveWhitespaces = element.getBody();
                 }
@@ -194,7 +195,7 @@ public class JspConfig {
                             pageEncoding,
                             includePrelude,
                             includeCoda,
-                            deferedSyntaxAllowedAsLiteral,
+                            deferredSyntaxAllowedAsLiteral,
                             trimDirectiveWhitespaces);
                     JspPropertyGroup propertyGroup =
                         new JspPropertyGroup(path, extension, property);
