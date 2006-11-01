@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -67,6 +68,8 @@ class TagFileProcessor {
                 new JspUtil.ValidAttribute("pageEncoding"),
                 new JspUtil.ValidAttribute("language"),
                 new JspUtil.ValidAttribute("import"),
+                new JspUtil.ValidAttribute("deferredSyntaxAllowedAsLiteral"), // JSP 2.1
+                new JspUtil.ValidAttribute("trimDirectiveWhitespaces"), // JSP 2.1
                 new JspUtil.ValidAttribute("isELIgnored") };
 
         private static final JspUtil.ValidAttribute[] attributeDirectiveAttrs = {

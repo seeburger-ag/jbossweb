@@ -664,7 +664,9 @@ class Validator {
 
             // JSP.2.2 - '#{' not allowed in template text
             if (n.getType() == '#') {
-                if (!pageInfo.isDeferredSyntaxAllowedAsLiteral()) {
+                if (!pageInfo.isDeferredSyntaxAllowedAsLiteral()
+                        && (tagInfo == null 
+                                || ((tagInfo != null) && !tagInfo.getTagLibrary().getRequiredVersion().equals("2.0")))) {
                     err.jspError(n, "jsp.error.el.template.deferred");
                 } else {
                     return;
@@ -982,9 +984,18 @@ class Validator {
                             && (attrs.getURI(i) == null
                                     || attrs.getURI(i).length() == 0 || attrs
                                     .getURI(i).equals(n.getURI()))) {
-                        if (tldAttrs[j].canBeRequestTime()
-                                || tldAttrs[j].isDeferredMethod() // JSP 2.1
-                                || tldAttrs[j].isDeferredValue()) { // JSP 2.1
+                        boolean el = true;
+                        boolean deferredValue = false;
+                        if (!tagInfo.getTagLibrary().getRequiredVersion().equals("2.0") 
+                                && attrs.getValue(i).indexOf("#{") != -1) {
+                            el = false;
+                            if (!pageInfo.isELIgnored() && !pageInfo.isDeferredSyntaxAllowedAsLiteral()) {
+                                deferredValue = true;
+                            }
+                        }
+                        if ((el && tldAttrs[j].canBeRequestTime())
+                                || (deferredValue && tldAttrs[j].isDeferredMethod()) // JSP 2.1
+                                || (deferredValue && tldAttrs[j].isDeferredValue())) { // JSP 2.1
                             Class expectedType = String.class;
                             try {
                                 String typeStr = tldAttrs[j].getTypeName();
@@ -1008,8 +1019,9 @@ class Validator {
                         } else {
                             // Attribute does not accept any expressions.
                             // Make sure its value does not contain any.
-                            if (isExpression(n, attrs.getValue(i))) {
-                                err .jspError(n, "jsp.error.attribute.custom.non_rt_with_expr",
+                            if (isExpression(n, attrs.getValue(i), 
+                                    !tagInfo.getTagLibrary().getRequiredVersion().equals("2.0"))) {
+                                err.jspError(n, "jsp.error.attribute.custom.non_rt_with_expr",
                                                 tldAttrs[j].getName());
                             }
                             jspAttrs[i] = new Node.JspAttribute(tldAttrs[j],
@@ -1193,11 +1205,11 @@ class Validator {
          * Checks to see if the given attribute value represents a runtime or EL
          * expression.
          */
-        private boolean isExpression(Node n, String value) {
+        private boolean isExpression(Node n, String value, boolean checkDeferred) {
             if ((n.getRoot().isXmlSyntax() && value.startsWith("%="))
                     || (!n.getRoot().isXmlSyntax() && value.startsWith("<%="))
                     || (value.indexOf("${") != -1 && !pageInfo.isELIgnored())
-                    || (value.indexOf("#{") != -1 && !pageInfo.isELIgnored()
+                    || (checkDeferred && value.indexOf("#{") != -1 && !pageInfo.isELIgnored()
                             && !pageInfo.isDeferredSyntaxAllowedAsLiteral()))
                 return true;
             else
@@ -1213,7 +1225,7 @@ class Validator {
                 String actionName) throws JasperException {
             if (n.getAttributes() != null
                     && n.getAttributes().getValue(attrName) != null
-                    && isExpression(n, n.getAttributes().getValue(attrName))) {
+                    && isExpression(n, n.getAttributes().getValue(attrName), true)) {
                 err.jspError(n,
                         "jsp.error.attribute.standard.non_rt_with_expr",
                         attrName, actionName);
