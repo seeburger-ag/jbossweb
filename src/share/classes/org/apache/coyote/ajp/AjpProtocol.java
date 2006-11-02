@@ -195,6 +195,9 @@ public class AjpProtocol
         }
         if (log.isInfoEnabled()) {
             log.info(sm.getString("ajpprotocol.init", getName()));
+            if (packetSize != Constants.MAX_PACKET_SIZE) {
+                log.info(sm.getString("ajpprotocol.packetsize", "" + packetSize));
+            }            
         }
     }
 
