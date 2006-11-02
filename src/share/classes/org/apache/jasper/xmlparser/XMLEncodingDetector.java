@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -42,6 +43,7 @@ public class XMLEncodingDetector {
     private InputStream stream;
     private String encoding;
     private boolean isEncodingSetInProlog;
+    private boolean isBomPresent;
     private Boolean isBigEndian;
     private Reader reader;
     
@@ -120,7 +122,8 @@ public class XMLEncodingDetector {
         scanXMLDecl();
 	
         return new Object[] { this.encoding,
-                              new Boolean(this.isEncodingSetInProlog) };
+                              new Boolean(this.isEncodingSetInProlog),
+                              new Boolean(this.isBomPresent) };
     }
     
     // stub method
@@ -146,6 +149,11 @@ public class XMLEncodingDetector {
 		Object [] encodingDesc = getEncodingName(b4, count);
 		encoding = (String)(encodingDesc[0]);
 		isBigEndian = (Boolean)(encodingDesc[1]);
+        if (encodingDesc.length > 2) {
+            isBomPresent = (Boolean)(encodingDesc[2]);
+        } else {
+            isBomPresent = true;
+        }
 
 		stream.reset();
 		// Special case UTF-8 files with BOM created by Microsoft
@@ -277,7 +285,7 @@ public class XMLEncodingDetector {
     private Object[] getEncodingName(byte[] b4, int count) {
 
         if (count < 2) {
-            return new Object[]{"UTF-8", null};
+            return new Object[]{"UTF-8", null, Boolean.FALSE};
         }
 
         // UTF-16, with BOM
@@ -285,17 +293,17 @@ public class XMLEncodingDetector {
         int b1 = b4[1] & 0xFF;
         if (b0 == 0xFE && b1 == 0xFF) {
             // UTF-16, big-endian
-            return new Object [] {"UTF-16BE", new Boolean(true)};
+            return new Object [] {"UTF-16BE", Boolean.TRUE};
         }
         if (b0 == 0xFF && b1 == 0xFE) {
             // UTF-16, little-endian
-            return new Object [] {"UTF-16LE", new Boolean(false)};
+            return new Object [] {"UTF-16LE", Boolean.FALSE};
         }
 
         // default to UTF-8 if we don't have enough bytes to make a
         // good determination of the encoding
         if (count < 3) {
-            return new Object [] {"UTF-8", null};
+            return new Object [] {"UTF-8", null, Boolean.FALSE};
         }
 
         // UTF-8 with a BOM
@@ -348,7 +356,7 @@ public class XMLEncodingDetector {
         }
 
         // default encoding
-        return new Object [] {"UTF-8", null};
+        return new Object [] {"UTF-8", null, Boolean.FALSE};
 
     }
 

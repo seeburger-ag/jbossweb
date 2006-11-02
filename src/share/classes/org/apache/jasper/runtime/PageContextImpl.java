@@ -206,9 +206,9 @@ public class PageContextImpl extends PageContext {
 				((JspWriterImpl) out).flushBuffer();
 			}
 		} catch (IOException ex) {
-			log.warn("Internal error flushing the buffer in release()");
-		}
-
+	            IllegalStateException ise = new IllegalStateException("Internal error flushing the buffer in release()", ex);
+        	    throw ise;
+		} finally {
 		servlet = null;
 		config = null;
 		context = null;
@@ -225,6 +225,7 @@ public class PageContextImpl extends PageContext {
 		session = null;
 
 		attributes.clear();
+	        }
 	}
 
 	public Object getAttribute(final String name) {
