@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
@@ -37,6 +36,7 @@ import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.servlet.jsp.tagext.ValidationMessage;
 
+import org.apache.el.lang.ELSupport;
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
@@ -1027,43 +1027,107 @@ class Validator {
                             && (attrs.getURI(i) == null
                                     || attrs.getURI(i).length() == 0 || attrs
                                     .getURI(i).equals(n.getURI()))) {
-                        boolean el = true;
-                        boolean deferredValue = false;
-                        if (!tagInfo.getTagLibrary().getRequiredVersion().equals("2.0") 
-                                && attrs.getValue(i).indexOf("#{") != -1) {
-                            el = false;
-                            if (!pageInfo.isELIgnored() && !pageInfo.isDeferredSyntaxAllowedAsLiteral()) {
-                                deferredValue = true;
+                        boolean checkDeferred = !tagInfo.getTagLibrary().getRequiredVersion().equals("2.0");
+                        boolean deferred = false;
+                        boolean deferredValueIsLiteral = false;
+                        boolean expression = isExpression(n, attrs.getValue(i), checkDeferred);
+                        if (checkDeferred && attrs.getValue(i).indexOf("#{") != -1) {
+                            deferred = true;
+                            if (pageInfo.isELIgnored()) {
+                                deferredValueIsLiteral = true;
                             }
                         }
-                        if ((el && tldAttrs[j].canBeRequestTime())
-                                || (deferredValue && tldAttrs[j].isDeferredMethod()) // JSP 2.1
-                                || (deferredValue && tldAttrs[j].isDeferredValue())) { // JSP 2.1
-                            Class expectedType = String.class;
-                            try {
-                                String typeStr = tldAttrs[j].getTypeName();
-                                if (tldAttrs[j].isFragment()) {
-                                    expectedType = JspFragment.class;
-                                } else if (typeStr != null) {
-                                    expectedType = JspUtil.toClass(typeStr,
-                                            loader);
+                        
+                        if (tldAttrs[j].canBeRequestTime()
+                                || tldAttrs[j].isDeferredMethod() || tldAttrs[j].isDeferredValue()) { // JSP 2.1
+                            
+                            if (!expression) {
+                                
+                                if (deferredValueIsLiteral && !pageInfo.isDeferredSyntaxAllowedAsLiteral()) {
+                                    err.jspError(n, "jsp.error.attribute.custom.non_rt_with_expr",
+                                            tldAttrs[j].getName());
                                 }
-                                jspAttrs[i] = getJspAttribute(tldAttrs[j],
-                                        attrs.getQName(i), attrs.getURI(i),
-                                        attrs.getLocalName(i), attrs
-                                                .getValue(i), expectedType, n,
-                                        false);
-                            } catch (ClassNotFoundException e) {
-                                err.jspError(n,
-                                        "jsp.error.unknown_attribute_type",
-                                        tldAttrs[j].getName(), tldAttrs[j]
-                                                .getTypeName());
+                                
+                                String expectedType = null;
+                                if (tldAttrs[j].isDeferredMethod()) {
+                                    // The String litteral must be castable to what is declared as type
+                                    // for the attribute
+                                    String m = tldAttrs[j].getMethodSignature();
+                                    if (m != null) {
+                                        int rti = m.trim().indexOf(' ');
+                                        if (rti > 0) {
+                                            expectedType = m.substring(0, rti).trim();
+                                        }
+                                    } else {
+                                        expectedType = "java.lang.Object";
+                                    }
+                                }
+                                if (tldAttrs[j].isDeferredValue()) {
+                                    // The String litteral must be castable to what is declared as type
+                                    // for the attribute
+                                    expectedType = tldAttrs[j].getExpectedTypeName();
+                                }
+                                if (expectedType != null) {
+                                    Class expectedClass = String.class;
+                                    try {
+                                        expectedClass = JspUtil.toClass(expectedType, loader);
+                                    } catch (ClassNotFoundException e) {
+                                        err.jspError
+                                            (n, "jsp.error.unknown_attribute_type",
+                                             tldAttrs[j].getName(), expectedType);
+                                    }
+                                    // Check casting
+                                    try {
+                                        ELSupport.coerceToType(attrs.getValue(i), expectedClass);
+                                    } catch (Exception e) {
+                                        err.jspError
+                                            (n, "jsp.error.coerce_to_type",
+                                             tldAttrs[j].getName(), expectedType, attrs.getValue(i));
+                                    }
+                                }
+
+                                jspAttrs[i] = new Node.JspAttribute(tldAttrs[j],
+                                        attrs.getQName(i), attrs.getURI(i), attrs
+                                                .getLocalName(i),
+                                        attrs.getValue(i), false, null, false);
+                            } else {
+                                
+                                if (deferred && !tldAttrs[j].isDeferredMethod() && !tldAttrs[j].isDeferredValue()) {
+                                    // No deferred expressions allowed for this attribute
+                                    err.jspError(n, "jsp.error.attribute.custom.non_rt_with_expr",
+                                            tldAttrs[j].getName());
+                                }
+                                if (!deferred && (tldAttrs[j].isDeferredMethod() || tldAttrs[j].isDeferredValue())) {
+                                    // Only deferred expressions are allowed for this attribute
+                                    err.jspError(n, "jsp.error.attribute.custom.non_rt_with_expr",
+                                            tldAttrs[j].getName());
+                                }
+                                
+                                Class expectedType = String.class;
+                                try {
+                                    String typeStr = tldAttrs[j].getTypeName();
+                                    if (tldAttrs[j].isFragment()) {
+                                        expectedType = JspFragment.class;
+                                    } else if (typeStr != null) {
+                                        expectedType = JspUtil.toClass(typeStr,
+                                                loader);
+                                    }
+                                    jspAttrs[i] = getJspAttribute(tldAttrs[j],
+                                            attrs.getQName(i), attrs.getURI(i),
+                                            attrs.getLocalName(i), attrs
+                                            .getValue(i), expectedType, n,
+                                            false);
+                                } catch (ClassNotFoundException e) {
+                                    err.jspError
+                                        (n, "jsp.error.unknown_attribute_type",
+                                         tldAttrs[j].getName(), tldAttrs[j].getTypeName());
+                                }
                             }
+                            
                         } else {
                             // Attribute does not accept any expressions.
                             // Make sure its value does not contain any.
-                            if (isExpression(n, attrs.getValue(i), 
-                                    !tagInfo.getTagLibrary().getRequiredVersion().equals("2.0"))) {
+                            if (expression) {
                                 err.jspError(n, "jsp.error.attribute.custom.non_rt_with_expr",
                                                 tldAttrs[j].getName());
                             }
@@ -1196,7 +1260,10 @@ class Validator {
                     // expression(s)
                     ELNode.Nodes el = ELParser.parse(value);
 
-                    if (el.containsEL() && !pageInfo.isELIgnored()) {
+                    if (el.containsEL() && !pageInfo.isELIgnored()
+                            && ((!pageInfo.isDeferredSyntaxAllowedAsLiteral() && value.startsWith("#{"))
+                                    || value.startsWith("${"))) {
+
                         validateFunctions(el, n);
 
                         result = new Node.JspAttribute(tai, qName, uri,
