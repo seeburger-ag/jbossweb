@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -44,9 +45,11 @@ abstract class ELNode {
     public static class Root extends ELNode {
 
 	private ELNode.Nodes expr;
+    private char type;
 
-	Root(ELNode.Nodes expr) {
+	Root(ELNode.Nodes expr, char type) {
 	    this.expr = expr;
+        this.type = type;
 	}
 
 	public void accept(Visitor v) throws JasperException {
@@ -56,6 +59,10 @@ abstract class ELNode {
 	public ELNode.Nodes getExpression() {
 	    return expr;
 	}
+
+    public char getType() {
+        return type;
+    }
     }
 
     /**
@@ -194,7 +201,7 @@ abstract class ELNode {
 	    }
 	}
 
-	public Iterator iterator() {
+	public Iterator<ELNode> iterator() {
 	    return list.iterator();
 	}
 
@@ -223,6 +230,7 @@ abstract class ELNode {
 	public String getMapName() {
 	    return mapName;
 	}
+    
     }
 
     /*
