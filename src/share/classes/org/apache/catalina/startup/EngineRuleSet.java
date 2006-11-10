@@ -1,12 +1,13 @@
 /*
- * Copyright 1999-2001,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +31,7 @@ import org.apache.tomcat.util.digester.RuleSetBase;
  * <code>ContextRuleSet</code>, respectively.</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 303970 $ $Date: 2005-06-30 15:08:14 +0200 (jeu., 30 juin 2005) $
+ * @version $Revision: 468957 $ $Date: 2006-10-29 20:28:37 +0100 (dim., 29 oct. 2006) $
  */
 
 public class EngineRuleSet extends RuleSetBase {
@@ -119,13 +120,6 @@ public class EngineRuleSet extends RuleSetBase {
                             "addLifecycleListener",
                             "org.apache.catalina.LifecycleListener");
 
-        digester.addObjectCreate(prefix + "Engine/Logger",
-                                 null, // MUST be specified in the element
-                                 "className");
-        digester.addSetProperties(prefix + "Engine/Logger");
-        digester.addSetNext(prefix + "Engine/Logger",
-                            "setLogger",
-                            "org.apache.catalina.Logger");
 
         digester.addObjectCreate(prefix + "Engine/Realm",
                                  null, // MUST be specified in the element

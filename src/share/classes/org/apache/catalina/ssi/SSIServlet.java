@@ -33,7 +33,7 @@ import org.apache.catalina.Globals;
  * @author Amy Roh
  * @author Dan Sandberg
  * @author David Becker
- * @version $Revision: 303882 $, $Date: 2005-04-23 12:22:37 +0200 (sam., 23 avr. 2005) $
+ * @version $Revision: 467222 $, $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 public class SSIServlet extends HttpServlet {
     /** Debug level for this servlet. */
@@ -58,50 +58,26 @@ public class SSIServlet extends HttpServlet {
      *                if an error occurs
      */
     public void init() throws ServletException {
-        String value = null;
-        try {
-            value = getServletConfig().getInitParameter("debug");
-            debug = Integer.parseInt(value);
-        } catch (Throwable t) {
-            ;
-        }
-        try {
-            value = getServletConfig().getInitParameter(
-                    "isVirtualWebappRelative");
-            isVirtualWebappRelative = Integer.parseInt(value) > 0?true:false;
-        } catch (Throwable t) {
-            ;
-        }
-        try {
-            value = getServletConfig().getInitParameter("expires");
-            expires = Long.valueOf(value);
-        } catch (NumberFormatException e) {
-            expires = null;
-            log("Invalid format for expires initParam; expected integer (seconds)");
-        } catch (Throwable t) {
-            ;
-        }
-        try {
-            value = getServletConfig().getInitParameter("buffered");
-            buffered = Integer.parseInt(value) > 0?true:false;
-        } catch (Throwable t) {
-            ;
-        }
-        try {
-            inputEncoding = getServletConfig().getInitParameter("inputEncoding");
-        } catch (Throwable t) {
-            ;
-        }
-        try {
-            value = getServletConfig().getInitParameter("outputEncoding");
-            if (value != null) {
-                outputEncoding = value;
-            }
-        } catch (Throwable t) {
-            ;
-        }
+        
+        if (getServletConfig().getInitParameter("debug") != null)
+            debug = Integer.parseInt(getServletConfig().getInitParameter("debug"));
+        
+        isVirtualWebappRelative = 
+            Boolean.parseBoolean(getServletConfig().getInitParameter("isVirtualWebappRelative"));
+        
+        if (getServletConfig().getInitParameter("expires") != null)
+            expires = Long.valueOf(getServletConfig().getInitParameter("expires"));
+        
+        buffered = Boolean.parseBoolean(getServletConfig().getInitParameter("buffered"));
+        
+        inputEncoding = getServletConfig().getInitParameter("inputEncoding");
+        
+        if (getServletConfig().getInitParameter("outputEncoding") != null)
+            outputEncoding = getServletConfig().getInitParameter("outputEncoding");
+        
         if (debug > 0)
             log("SSIServlet.init() SSI invoker started with 'debug'=" + debug);
+
     }
 
 

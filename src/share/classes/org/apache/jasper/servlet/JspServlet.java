@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -27,9 +28,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.PeriodicEventListener;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.apache.jasper.Constants;
 import org.apache.jasper.EmbeddedServletOptions;
 import org.apache.jasper.Options;
@@ -52,7 +54,7 @@ import org.apache.jasper.compiler.Localizer;
  * @author Kin-man Chung
  * @author Glenn Nielsen
  */
-public class JspServlet extends HttpServlet {
+public class JspServlet extends HttpServlet implements PeriodicEventListener {
 
     // Logger
     private Log log = LogFactory.getLog(JspServlet.class);
@@ -283,6 +285,10 @@ public class JspServlet extends HttpServlet {
     }
 
 
+    public void periodicEvent() {
+        rctxt.checkCompile();
+    }
+
     // -------------------------------------------------------- Private Methods
 
     private void serviceJspFile(HttpServletRequest request,
@@ -314,5 +320,6 @@ public class JspServlet extends HttpServlet {
         wrapper.service(request, response, precompile);
 
     }
+
 
 }

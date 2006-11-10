@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004-2005 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -48,7 +49,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 349505 $ $Date: 2005-11-28 22:14:21 +0100 (lun., 28 nov. 2005) $
+ * @version $Revision: 470756 $ $Date: 2006-11-03 11:56:25 +0100 (ven., 03 nov. 2006) $
  */
 
 
@@ -58,6 +59,13 @@ public class Connector
     private static Log log = LogFactory.getLog(Connector.class);
 
 
+    /**
+     * Alternate flag to enable recycling of facades.
+     */
+    public static final boolean RECYCLE_FACADES =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.RECYCLE_FACADES", "false")).booleanValue();
+
+    
     // ------------------------------------------------------------ Constructor
 
 

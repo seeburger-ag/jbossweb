@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -65,7 +66,7 @@ import org.xml.sax.SAXException;
  * are handled by the DefaultServlet.
  *
  * @author Remy Maucherat
- * @version $Revision: 303599 $ $Date: 2004-12-20 19:54:14 +0100 (lun., 20 déc. 2004) $
+ * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 
 public class WebdavServlet
@@ -213,15 +214,8 @@ public class WebdavServlet
 
         super.init();
 
-        String value = null;
-        try {
-            value = getServletConfig().getInitParameter("secret");
-            if (value != null)
-                secret = value;
-        } catch (Throwable t) {
-            ;
-        }
-
+        if (getServletConfig().getInitParameter("secret") != null)
+            secret = getServletConfig().getInitParameter("secret");
 
         // Load the MD5 helper used to calculate signatures.
         try {
@@ -415,9 +409,10 @@ public class WebdavServlet
                     break;
                 }
             }
-        } catch(Exception e) {
+        } catch (SAXException e) {
             // Most likely there was no content : we use the defaults.
-            // TODO : Enhance that !
+        } catch (IOException e) {
+            // Most likely there was no content : we use the defaults.
         }
 
         if (type == FIND_BY_PROPERTY) {
@@ -862,7 +857,9 @@ public class WebdavServlet
             // Get the root element of the document
             Element rootElement = document.getDocumentElement();
             lockInfoNode = rootElement;
-        } catch(Exception e) {
+        } catch (IOException e) {
+            lockRequestType = LOCK_REFRESH;
+        } catch (SAXException e) {
             lockRequestType = LOCK_REFRESH;
         }
 

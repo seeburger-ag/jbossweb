@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004-2006 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -45,6 +46,7 @@ import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.startup.HostConfig;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
+import org.apache.catalina.core.ContainerBase;
 
 
 /**
@@ -92,7 +94,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 384293 $ $Date: 2006-03-08 19:09:36 +0100 (mer., 08 mars 2006) $
+ * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 
 public class HostManagerServlet
@@ -444,7 +446,7 @@ public class HostManagerServlet
 
         // Add host aliases
         if ((aliases != null) && !("".equals(aliases))) {
-            StringTokenizer tok = new StringTokenizer(aliases, ",");
+            StringTokenizer tok = new StringTokenizer(aliases, ", ");
             while (tok.hasMoreTokens()) {
                 host.addAlias(tok.nextToken());
             }
@@ -511,7 +513,9 @@ public class HostManagerServlet
         // Remove host
         // Note that the host will not get physically removed
         try {
-            engine.removeChild(engine.findChild(name));
+            Container child = engine.findChild(name);
+            engine.removeChild(child);
+            if ( child instanceof ContainerBase ) ((ContainerBase)child).destroy();
         } catch (Exception e) {
             writer.println(sm.getString("hostManagerServlet.exception",
                                         e.toString()));

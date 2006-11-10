@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Represents a parsed expression.
  * 
- * @version $Revision: 303166 $
+ * @version $Revision: 467222 $
  * @author Paul Speed
  */
 public class ExpressionParseTree {

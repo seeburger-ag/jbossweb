@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -27,9 +28,9 @@ import javax.servlet.jsp.JspFactory;
 import javax.servlet.jsp.JspEngineInfo;
 import javax.servlet.jsp.PageContext;
 
-import org.apache.jasper.util.SimplePool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.jasper.util.SimplePool;
 
 /**
  * Implementation of JspFactory.
@@ -95,17 +96,17 @@ public class JspFactoryImpl extends JspFactory {
 					       int bufferSize, 
 					       boolean autoflush) {
         try {
-	    PageContext pc;
-	    if( USE_POOL ) {
+            PageContext pc;
+            if( USE_POOL ) {
                 pc = (PageContext) pool.get();
-		if( pc == null ) {
-		    pc= new PageContextImpl(this);
-		}
-	    } else {
-		pc = new PageContextImpl(this);
-	    }
-	    pc.initialize(servlet, request, response, errorPageURL, 
-                          needsSession, bufferSize, autoflush);
+                if( pc == null ) {
+                    pc = new PageContextImpl();
+                }
+            } else {
+                pc = new PageContextImpl();
+            }
+            pc.initialize(servlet, request, response, errorPageURL, 
+                    needsSession, bufferSize, autoflush);
             return pc;
         } catch (Throwable ex) {
             /* FIXME: need to do something reasonable here!! */

@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -57,7 +58,7 @@ import org.apache.tomcat.util.net.URL;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision: 371866 $ $Date: 2006-01-24 09:52:54 +0100 (mar., 24 janv. 2006) $
+ * @version $Revision: 470756 $ $Date: 2006-11-03 11:56:25 +0100 (ven., 03 nov. 2006) $
  */
 
 public class Response
@@ -267,7 +268,7 @@ public class Response
         
         cookies.clear();
 
-        if (Constants.SECURITY) {
+        if (Constants.SECURITY || Connector.RECYCLE_FACADES) {
             if (facade != null) {
                 facade.clear();
                 facade = null;

@@ -1,9 +1,10 @@
 /*
- * Copyright 2006 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -34,7 +35,7 @@ public interface CometEvent {
     /**
      * Enumeration describing the major events that the container can invoke 
      * the CometProcessors event() method with
-     * BEGIN - will be called by the main service method of the servlet at the beginning 
+     * BEGIN - will be called at the beginning 
      *  of the processing of the connection. It can be used to initialize any relevant 
      *  fields using the request and response objects. Between the end of the processing 
      *  of this event, and the beginning of the processing of the end or error events,
@@ -67,7 +68,8 @@ public interface CometEvent {
     
     /**
      * Event details
-     * TIMEOUT - the connection timed out (sub type of ERROR)
+     * TIMEOUT - the connection timed out (sub type of ERROR); note that this ERROR type is not fatal, and
+     *   the connection will not be closed unless the servlet uses the close method of the event
      * CLIENT_DISCONNECT - the client connection was closed (sub type of ERROR)
      * IOEXCEPTION - an IO exception occurred, such as invalid content, for example, an invalid chunk block (sub type of ERROR)
      * WEBAPP_RELOAD - the webapplication is being reloaded (sub type of END)
@@ -78,33 +80,40 @@ public interface CometEvent {
     
     
     /**
-     * Returns the HttpServletRequest or the last HttpServletRequestWrapper if a filter was applied
+     * Returns the HttpServletRequest.
+     * 
      * @return HttpServletRequest
      */
     public HttpServletRequest getHttpServletRequest();
     
     /**
-     * Returns the HttpServletResponse or the last HttpServletResponseWrapper
+     * Returns the HttpServletResponse.
+     * 
      * @return HttpServletResponse
      */
     public HttpServletResponse getHttpServletResponse();
     
     /**
-     * Returns the event type
+     * Returns the event type.
+     * 
      * @return EventType
      */
     public EventType getEventType();
     
     /**
-     * Returns 
+     * Returns the sub type of this event.
+     * 
      * @return EventSubType
      */
     public EventSubType getEventSubType();
     
     /**
      * Ends the Comet session. This signals to the container that 
-     * the container wants to end the comet session.
-     * The container may invoke event(CometEvent.END) synchronously or asynchronously
+     * the container wants to end the comet session. This will send back to the
+     * client a notice that the server has no more data to send as part of this
+     * request. The servlet should perform any needed cleanup as if it had recieved
+     * an END or ERROR event. 
+     * 
      * @throws IOException if an IO exception occurs
      */
     public void close() throws IOException;
@@ -119,6 +128,7 @@ public interface CometEvent {
      * web application SHOULD NOT attempt to reuse the request and response objects after a timeout
      * as the <code>error(HttpServletRequest, HttpServletResponse)</code> method indicates.<br/>
      * This method should not be called asynchronously, as that will have no effect.
+     * 
      * @param timeout The timeout in milliseconds for this connection, must be a positive value, larger than 0
      * @throws IOException An IOException may be thrown to indicate an IO error, 
      *         or that the EOF has been reached on the connection

@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -98,7 +99,7 @@ import org.apache.tomcat.util.IntrospectionUtils;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision$ $Date: 2006-05-19 19:52:46 -0700 (Fri, 19 May 2006) $
+ * @version $Revision: 471263 $ $Date: 2006-11-04 22:21:07 +0100 (sam., 04 nov. 2006) $
  */
 public class WebappClassLoader
     extends URLClassLoader
@@ -1757,63 +1758,58 @@ public class WebappClassLoader
         if (clazz != null)
             return clazz;
 
-        synchronized (this) {
+        synchronized (entry) {
             if (entry.binaryContent == null && entry.loadedClass == null)
                 throw new ClassNotFoundException(name);
-        }
 
-        // Looking up the package
-        String packageName = null;
-        int pos = name.lastIndexOf('.');
-        if (pos != -1)
-            packageName = name.substring(0, pos);
-
-        Package pkg = null;
-
-        if (packageName != null) {
-
-            pkg = getPackage(packageName);
-
-            // Define the package (if null)
-            if (pkg == null) {
-                if (entry.manifest == null) {
-                    definePackage(packageName, null, null, null, null, null,
-                                  null, null);
-                } else {
-                    definePackage(packageName, entry.manifest, entry.codeBase);
+            // Looking up the package
+            String packageName = null;
+            int pos = name.lastIndexOf('.');
+            if (pos != -1)
+                packageName = name.substring(0, pos);
+        
+            Package pkg = null;
+        
+            if (packageName != null) {
+                synchronized (this) {
+                    pkg = getPackage(packageName);
+            
+                    // Define the package (if null)
+                    if (pkg == null) {
+                        if (entry.manifest == null) {
+                            definePackage(packageName, null, null, null, null,
+                                    null, null, null);
+                        } else {
+                            definePackage(packageName, entry.manifest,
+                                    entry.codeBase);
+                        }
+                    }
                 }
             }
+    
+            if (securityManager != null) {
 
-        }
-
-        // Create the code source object
-        CodeSource codeSource =
-            new CodeSource(entry.codeBase, entry.certificates);
-
-        if (securityManager != null) {
-
-            // Checking sealing
-            if (pkg != null) {
-                boolean sealCheck = true;
-                if (pkg.isSealed()) {
-                    sealCheck = pkg.isSealed(entry.codeBase);
-                } else {
-                    sealCheck = (entry.manifest == null)
-                        || !isPackageSealed(packageName, entry.manifest);
+                // Checking sealing
+                if (pkg != null) {
+                    boolean sealCheck = true;
+                    if (pkg.isSealed()) {
+                        sealCheck = pkg.isSealed(entry.codeBase);
+                    } else {
+                        sealCheck = (entry.manifest == null)
+                            || !isPackageSealed(packageName, entry.manifest);
+                    }
+                    if (!sealCheck)
+                        throw new SecurityException
+                            ("Sealing violation loading " + name + " : Package "
+                             + packageName + " is sealed.");
                 }
-                if (!sealCheck)
-                    throw new SecurityException
-                        ("Sealing violation loading " + name + " : Package "
-                         + packageName + " is sealed.");
+    
             }
 
-        }
-
-        synchronized (this) {
             if (entry.loadedClass == null) {
                 clazz = defineClass(name, entry.binaryContent, 0,
                         entry.binaryContent.length, 
-                        codeSource);
+                        new CodeSource(entry.codeBase, entry.certificates));
                 entry.loadedClass = clazz;
                 entry.binaryContent = null;
                 entry.source = null;

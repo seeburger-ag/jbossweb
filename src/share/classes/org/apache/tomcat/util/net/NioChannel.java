@@ -1,18 +1,21 @@
 /*
- *  Copyright 2005-2006 The Apache Software Foundation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+
 package org.apache.tomcat.util.net;
 
 import java.io.IOException;
@@ -22,6 +25,8 @@ import java.nio.channels.SocketChannel;
 
 import org.apache.tomcat.util.net.NioEndpoint.Poller;
 import org.apache.tomcat.util.net.SecureNioChannel.ApplicationBufferHandler;
+import java.nio.channels.Selector;
+import java.nio.channels.SelectionKey;
 
 /**
  * 
@@ -33,23 +38,31 @@ import org.apache.tomcat.util.net.SecureNioChannel.ApplicationBufferHandler;
  * @version 1.0
  */
 public class NioChannel implements ByteChannel{
-    
+
     protected static ByteBuffer emptyBuf = ByteBuffer.allocate(0);
 
     protected SocketChannel sc = null;
 
     protected ApplicationBufferHandler bufHandler;
-    
+
     protected Poller poller;
 
     public NioChannel(SocketChannel channel, ApplicationBufferHandler bufHandler) throws IOException {
         this.sc = channel;
         this.bufHandler = bufHandler;
     }
-    
+
     public void reset() throws IOException {
         bufHandler.getReadBuffer().clear();
         bufHandler.getWriteBuffer().clear();
+    }
+    
+    public int getBufferSize() {
+        if ( bufHandler == null ) return 0;
+        int size = 0;
+        size += bufHandler.getReadBuffer()!=null?bufHandler.getReadBuffer().capacity():0;
+        size += bufHandler.getWriteBuffer()!=null?bufHandler.getWriteBuffer().capacity():0;
+        return size;
     }
 
     /**
@@ -57,7 +70,7 @@ public class NioChannel implements ByteChannel{
      * been flushed out and is empty
      * @return boolean
      */
-    public boolean flush() throws IOException {
+    public boolean flush(Selector s) throws IOException {
         return true; //no network buffer in the regular channel
     }
 
@@ -70,7 +83,7 @@ public class NioChannel implements ByteChannel{
      */
     public void close() throws IOException {
         getIOChannel().socket().close();
-        sc.close();
+        getIOChannel().close();
     }
 
     public void close(boolean force) throws IOException {
@@ -110,7 +123,14 @@ public class NioChannel implements ByteChannel{
         return sc.read(dst);
     }
 
-
+    public Object getAttachment(boolean remove) {
+        Poller pol = getPoller();
+        Selector sel = pol!=null?pol.getSelector():null;
+        SelectionKey key = sel!=null?getIOChannel().keyFor(sel):null;
+        Object att = key!=null?key.attachment():null;
+        if (key != null && att != null && remove ) key.attach(null);
+        return att;
+    }
     /**
      * getBufHandler
      *
@@ -153,7 +173,7 @@ public class NioChannel implements ByteChannel{
     public boolean isInitHandshakeComplete() {
         return true;
     }
-    
+
     public int handshake(boolean read, boolean write) throws IOException {
         return 0;
     }

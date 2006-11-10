@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004-2005 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -108,7 +109,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 386331 $ $Date: 2006-03-16 15:03:12 +0100 (jeu., 16 mars 2006) $
+ * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 
 public class StandardContext
@@ -4180,21 +4181,6 @@ public class StandardContext
         if (log.isDebugEnabled())
             log.debug("Processing standard container startup");
 
-        // Acquire clustered manager
-        Manager contextManager = null;
-        if (manager == null) {
-        	if ((getCluster() != null) && distributable) {
-        		try {
-        			contextManager = getCluster().createManager(getName());
-        		} catch (Exception ex) {
-        			log.error("standardContext.clusterFail", ex);
-        			ok = false;
-        		}
-        	} else {
-        		contextManager = new StandardManager();
-        	}
-        }
-        
         
         // Binding thread
         ClassLoader oldCCL = bindThread();
@@ -4250,11 +4236,33 @@ public class StandardContext
                 
                 // Notify our interested LifecycleListeners
                 lifecycle.fireLifecycleEvent(START_EVENT, null);
-
+                
+                // Acquire clustered manager
+                Manager contextManager = null;
+                if (manager == null) {
+                    if ( (getCluster() != null) && distributable) {
+                        try {
+                            contextManager = getCluster().createManager(getName());
+                        } catch (Exception ex) {
+                            log.error("standardContext.clusterFail", ex);
+                            ok = false;
+                        }
+                    } else {
+                        contextManager = new StandardManager();
+                    }
+                } 
+                
                 // Configure default manager if none was specified
                 if (contextManager != null) {
-                	setManager(contextManager);
+                    setManager(contextManager);
                 }
+
+                if (manager!=null && (getCluster() != null) && distributable) {
+                    //let the cluster know that there is a context that is distributable
+                    //and that it has its own manager
+                    getCluster().registerManager(manager);
+                }
+
                 
                 // Start manager
                 if ((manager != null) && (manager instanceof Lifecycle)) {

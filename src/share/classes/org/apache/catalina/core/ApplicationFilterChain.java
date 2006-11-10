@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -35,6 +36,7 @@ import org.apache.catalina.CometEvent;
 import org.apache.catalina.CometFilter;
 import org.apache.catalina.CometFilterChain;
 import org.apache.catalina.CometProcessor;
+import org.apache.catalina.Globals;
 import org.apache.catalina.InstanceEvent;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.InstanceSupport;
@@ -48,11 +50,24 @@ import org.apache.catalina.util.StringManager;
  * method itself.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 303523 $ $Date: 2004-11-22 17:35:18 +0100 (lun., 22 nov. 2004) $
+ * @version $Revision: 471281 $ $Date: 2006-11-04 23:35:15 +0100 (sam., 04 nov. 2006) $
  */
 
 final class ApplicationFilterChain implements FilterChain, CometFilterChain {
 
+    // Used to enforce requirements of SRV.8.2 / SRV.14.2.5.1
+    private final static ThreadLocal lastServicedRequest;
+    private final static ThreadLocal lastServicedResponse;
+
+    static {
+        if (Globals.STRICT_SERVLET_COMPLIANCE) {
+            lastServicedRequest = new ThreadLocal();
+            lastServicedResponse = new ThreadLocal();
+        } else {
+            lastServicedRequest = null;
+            lastServicedResponse = null;
+        }
+    }
 
     // -------------------------------------------------------------- Constants
 
@@ -249,6 +264,11 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
 
         // We fell off the end of the chain -- call the servlet instance
         try {
+            if (Globals.STRICT_SERVLET_COMPLIANCE) {
+                lastServicedRequest.set(request);
+                lastServicedResponse.set(response);
+            }
+
             support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
                                       servlet, request, response);
             if ((request instanceof HttpServletRequest) &&
@@ -292,6 +312,11 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
                                       servlet, request, response, e);
             throw new ServletException
               (sm.getString("filterChain.servlet"), e);
+        } finally {
+            if (Globals.STRICT_SERVLET_COMPLIANCE) {
+                lastServicedRequest.set(null);
+                lastServicedResponse.set(null);
+            }
         }
 
     }
@@ -339,6 +364,29 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
         }
     }
 
+    
+    /**
+     * The last request passed to a servlet for servicing from the current
+     * thread.
+     * 
+     * @return The last request to be serviced. 
+     */
+    public static ServletRequest getLastServicedRequest() {
+        return (ServletRequest) lastServicedRequest.get();
+    }
+
+    
+    /**
+     * The last response passed to a servlet for servicing from the current
+     * thread.
+     * 
+     * @return The last response to be serviced. 
+     */
+    public static ServletResponse getLastServicedResponse() {
+        return (ServletResponse) lastServicedResponse.get();
+    }
+    
+    
     private void internalDoFilterEvent(CometEvent event)
         throws IOException, ServletException {
 

@@ -1,9 +1,10 @@
 /*
- *  Copyright 1999-2004 The Apache Software Foundation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -509,8 +510,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration
     /**
      * SSL engine.
      */
-    public String getSSLEngine() { return ep.getSSLEngine(); }
-    public void setSSLEngine(String SSLEngine) { ep.setSSLEngine(SSLEngine); }
+    public boolean isSSLEnabled() { return ep.isSSLEnabled(); }
+    public void setSSLEnabled(boolean SSLEnabled) { ep.setSSLEnabled(SSLEnabled); }
 
 
     /**

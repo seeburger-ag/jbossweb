@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -30,7 +31,7 @@ import java.net.URL;
  * @author Bip Thelin
  * @author Remy Maucherat
  * @author Filip Hanik
- * @version $Revision: 303857 $, $Date: 2005-04-15 22:15:45 +0200 (ven., 15 avr. 2005) $
+ * @version $Revision: 467222 $, $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 
 public interface Cluster {
@@ -100,6 +101,20 @@ public interface Cluster {
      * associated
      */
     public Manager createManager(String name);
+    
+    /**
+     * Register a manager with the cluster. If the cluster is not responsible 
+     * for creating a manager, then the container will at least notify the 
+     * cluster that this mananger is participating in the cluster.
+     * @param manager Manager
+     */
+    public void registerManager(Manager manager);
+    
+    /**
+     * Removes a manager from the cluster
+     * @param manager Manager
+     */
+    public void removeManager(Manager manager);
 
     // --------------------------------------------------------- Cluster Wide Deployments
     

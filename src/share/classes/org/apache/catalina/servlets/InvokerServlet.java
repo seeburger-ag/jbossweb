@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -40,7 +41,7 @@ import org.apache.catalina.util.StringManager;
  * in the web application deployment descriptor.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 302726 $ $Date: 2004-02-27 15:59:07 +0100 (ven., 27 févr. 2004) $
+ * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 
 public final class InvokerServlet
@@ -182,13 +183,9 @@ public final class InvokerServlet
                 (sm.getString("invokerServlet.noWrapper"));
 
         // Set our properties from the initialization parameters
-        String value = null;
-        try {
-            value = getServletConfig().getInitParameter("debug");
-            debug = Integer.parseInt(value);
-        } catch (Throwable t) {
-            ;
-        }
+        if (getServletConfig().getInitParameter("debug") != null)
+            debug = Integer.parseInt(getServletConfig().getInitParameter("debug"));
+
         if (debug >= 1)
             log("init: Associated with Context '" + context.getPath() + "'");
 
@@ -264,9 +261,6 @@ public final class InvokerServlet
         String pathInfo = inPathInfo;
         String servletClass = pathInfo.substring(1);
         int slash = servletClass.indexOf('/');
-        //        if (debug >= 2)
-        //            log("  Calculating with servletClass='" + servletClass +
-        //                "', pathInfo='" + pathInfo + "', slash=" + slash);
         if (slash >= 0) {
             pathInfo = servletClass.substring(slash);
             servletClass = servletClass.substring(0, slash);
@@ -325,15 +319,15 @@ public final class InvokerServlet
                     wrapper.setServletClass(servletClass);
                     context.addChild(wrapper);
                     context.addServletMapping(pattern, name);
-                } catch (Throwable t) {
+                } catch (Exception e) {
                     log(sm.getString("invokerServlet.cannotCreate",
-                                     inRequestURI), t);
+                                     inRequestURI), e);
                     context.removeServletMapping(pattern);
                     context.removeChild(wrapper);
                     if (included)
                         throw new ServletException
                             (sm.getString("invokerServlet.cannotCreate",
-                                          inRequestURI), t);
+                                          inRequestURI), e);
                     else {
                         response.sendError(HttpServletResponse.SC_NOT_FOUND,
                                            inRequestURI);
@@ -364,8 +358,6 @@ public final class InvokerServlet
         // Allocate a servlet instance to perform this request
         Servlet instance = null;
         try {
-            //            if (debug >= 2)
-            //                log("  Allocating servlet instance");
             instance = wrapper.allocate();
         } catch (ServletException e) {
             log(sm.getString("invokerServlet.allocate", inRequestURI), e);
@@ -389,12 +381,6 @@ public final class InvokerServlet
                     (sm.getString("invokerServlet.allocate", inRequestURI),
                      rootCause);
             }
-        } catch (Throwable e) {
-            log(sm.getString("invokerServlet.allocate", inRequestURI), e);
-            context.removeServletMapping(pattern);
-            context.removeChild(wrapper);
-            throw new ServletException
-                (sm.getString("invokerServlet.allocate", inRequestURI), e);
         }
 
         // After loading the wrapper, restore some of the fields when including
@@ -413,82 +399,20 @@ public final class InvokerServlet
                 request.removeAttribute(Globals.JSP_FILE_ATTR);
             request.setAttribute(Globals.INVOKED_ATTR,
                                  request.getServletPath());
-            //            if (debug >= 2)
-            //                log("  Calling service() method, jspFile=" +
-            //                    jspFile);
             instance.service(wrequest, response);
-            request.removeAttribute(Globals.INVOKED_ATTR);
-            request.removeAttribute(Globals.JSP_FILE_ATTR);
-        } catch (IOException e) {
-            //            if (debug >= 2)
-            //                log("  service() method IOException", e);
-            request.removeAttribute(Globals.INVOKED_ATTR);
-            request.removeAttribute(Globals.JSP_FILE_ATTR);
-            try {
-                wrapper.deallocate(instance);
-            } catch (Throwable f) {
-                ;
-            }
-            throw e;
         } catch (UnavailableException e) {
-            //            if (debug >= 2)
-            //                log("  service() method UnavailableException", e);
             context.removeServletMapping(pattern);
+            throw e;
+        } finally {
             request.removeAttribute(Globals.INVOKED_ATTR);
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            // Deallocate the allocated servlet instance
             try {
                 wrapper.deallocate(instance);
-            } catch (Throwable f) {
-                ;
+            } catch (ServletException e) {
+                log(sm.getString("invokerServlet.deallocate", inRequestURI), e);
+                throw e;
             }
-            throw e;
-        } catch (ServletException e) {
-            //            if (debug >= 2)
-            //                log("  service() method ServletException", e);
-            request.removeAttribute(Globals.INVOKED_ATTR);
-            request.removeAttribute(Globals.JSP_FILE_ATTR);
-            try {
-                wrapper.deallocate(instance);
-            } catch (Throwable f) {
-                ;
-            }
-            throw e;
-        } catch (RuntimeException e) {
-            //            if (debug >= 2)
-            //                log("  service() method RuntimeException", e);
-            request.removeAttribute(Globals.INVOKED_ATTR);
-            request.removeAttribute(Globals.JSP_FILE_ATTR);
-            try {
-                wrapper.deallocate(instance);
-            } catch (Throwable f) {
-                ;
-            }
-            throw e;
-        } catch (Throwable e) {
-            //            if (debug >= 2)
-            //                log("  service() method Throwable", e);
-            request.removeAttribute(Globals.INVOKED_ATTR);
-            request.removeAttribute(Globals.JSP_FILE_ATTR);
-            try {
-                wrapper.deallocate(instance);
-            } catch (Throwable f) {
-                ;
-            }
-            throw new ServletException("Invoker service() exception", e);
-        }
-
-        // Deallocate the allocated servlet instance
-        try {
-            //            if (debug >= 2)
-            //                log("  deallocate servlet instance");
-            wrapper.deallocate(instance);
-        } catch (ServletException e) {
-            log(sm.getString("invokerServlet.deallocate", inRequestURI), e);
-            throw e;
-        } catch (Throwable e) {
-            log(sm.getString("invokerServlet.deallocate", inRequestURI), e);
-            throw new ServletException
-                (sm.getString("invokerServlet.deallocate", inRequestURI), e);
         }
 
     }

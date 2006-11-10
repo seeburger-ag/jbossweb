@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -23,10 +24,9 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
 
 import javax.el.ELContext;
-import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 import javax.servlet.Servlet;
@@ -56,6 +56,7 @@ import org.apache.jasper.el.ExpressionEvaluatorImpl;
 import org.apache.jasper.el.FunctionMapperImpl;
 import org.apache.jasper.el.VariableResolverImpl;
 import org.apache.jasper.security.SecurityUtil;
+import org.apache.jasper.util.Enumerator;
 
 /**
  * Implementation of the PageContext class from the JSP spec. Also doubles as a
@@ -85,27 +86,17 @@ public class PageContextImpl extends PageContext {
 
 	private ServletContext context;
 
-	private JspFactory factory;
-	
 	private JspApplicationContextImpl applicationContext;
-
-	private boolean needsSession;
 
 	private String errorPageURL;
 
-	private boolean autoFlush;
-
-	private int bufferSize;
-
 	// page-scope attributes
-	private transient Hashtable attributes;
+	private transient HashMap<String, Object> attributes;
 
 	// per-request state
 	private transient ServletRequest request;
 
 	private transient ServletResponse response;
-
-	private transient Object page;
 
 	private transient HttpSession session;
 	
@@ -114,8 +105,6 @@ public class PageContextImpl extends PageContext {
 	private boolean isIncluded;
 	
 	
-	// 
-
 	// initial output stream
 	private transient JspWriter out;
 
@@ -124,10 +113,9 @@ public class PageContextImpl extends PageContext {
 	/*
 	 * Constructor.
 	 */
-	PageContextImpl(JspFactory factory) {
-		this.factory = factory;
+	PageContextImpl() {
 		this.outs = new BodyContentImpl[0];
-		this.attributes = new Hashtable(16);
+		this.attributes = new HashMap<String, Object>(16);
 		this.depth = -1;
 	}
 
@@ -149,10 +137,7 @@ public class PageContextImpl extends PageContext {
 		this.servlet = servlet;
 		this.config = servlet.getServletConfig();
 		this.context = config.getServletContext();
-		this.needsSession = needsSession;
 		this.errorPageURL = errorPageURL;
-		this.bufferSize = bufferSize;
-		this.autoFlush = autoFlush;
 		this.request = request;
 		this.response = response;
 		
@@ -206,26 +191,22 @@ public class PageContextImpl extends PageContext {
 				((JspWriterImpl) out).flushBuffer();
 			}
 		} catch (IOException ex) {
-	            IllegalStateException ise = new IllegalStateException("Internal error flushing the buffer in release()", ex);
-        	    throw ise;
+            IllegalStateException ise = new IllegalStateException(Localizer.getMessage("jsp.error.flush"), ex);
+            throw ise;
 		} finally {
-		servlet = null;
-		config = null;
-		context = null;
-        applicationContext = null;
-        elContext = null;
-		needsSession = false;
-		errorPageURL = null;
-		bufferSize = JspWriter.DEFAULT_BUFFER;
-		autoFlush = true;
-		request = null;
-		response = null;
-		depth = -1;
-		baseOut.recycle();
-		session = null;
-
-		attributes.clear();
-	        }
+		    servlet = null;
+		    config = null;
+		    context = null;
+		    applicationContext = null;
+		    elContext = null;
+		    errorPageURL = null;
+		    request = null;
+		    response = null;
+		    depth = -1;
+		    baseOut.recycle();
+		    session = null;
+		    attributes.clear();
+        }
 	}
 
 	public Object getAttribute(final String name) {
@@ -510,7 +491,7 @@ public class PageContextImpl extends PageContext {
 	private Enumeration doGetAttributeNamesInScope(int scope) {
 		switch (scope) {
 		case PAGE_SCOPE:
-			return attributes.keys();
+			return new Enumerator(attributes.keySet().iterator());
 
 		case REQUEST_SCOPE:
 			return request.getAttributeNames();

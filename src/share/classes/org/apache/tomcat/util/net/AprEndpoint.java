@@ -1,9 +1,10 @@
 /*
- *  Copyright 2005-2006 The Apache Software Foundation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -379,9 +380,9 @@ public class AprEndpoint {
     /**
      * SSL engine.
      */
-    protected String SSLEngine = "off";
-    public String getSSLEngine() { return SSLEngine; }
-    public void setSSLEngine(String SSLEngine) { this.SSLEngine = SSLEngine; }
+    protected boolean SSLEnabled = false;
+    public boolean isSSLEnabled() { return SSLEnabled; }
+    public void setSSLEnabled(boolean SSLEnabled) { this.SSLEnabled = SSLEnabled; }
 
 
     /**
@@ -649,14 +650,8 @@ public class AprEndpoint {
         Socket.optSet(serverSock, Socket.APR_TCP_DEFER_ACCEPT, 1);
 
         // Initialize SSL if needed
-        if (!"off".equalsIgnoreCase(SSLEngine)) {
-            // Initialize SSL
-            // FIXME: one per VM call ?
-            if ("on".equalsIgnoreCase(SSLEngine)) {
-                SSL.initialize(null);
-            } else {
-                SSL.initialize(SSLEngine);
-            }
+        if (SSLEnabled) {
+            
             // SSL protocol
             int value = SSL.SSL_PROTOCOL_ALL;
             if ("SSLv2".equalsIgnoreCase(SSLProtocol)) {

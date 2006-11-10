@@ -23,7 +23,7 @@ import org.apache.catalina.util.Strftime;
  * @author Paul Speed
  * @author Dan Sandberg
  * @author David Becker
- * @version $Revision: 304061 $, $Date: 2005-08-17 23:21:37 +0200 (mer., 17 août 2005) $
+ * @version $Revision: 467222 $, $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 public final class SSIFlastmod implements SSICommand {
     /**

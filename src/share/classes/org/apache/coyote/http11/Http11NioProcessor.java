@@ -1,9 +1,10 @@
 /*
- *  Copyright 1999-2004 The Apache Software Foundation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -82,7 +83,7 @@ public class Http11NioProcessor implements ActionHook {
     // ----------------------------------------------------------- Constructors
 
 
-    public Http11NioProcessor(int headerBufferSize, NioEndpoint endpoint) {
+    public Http11NioProcessor(int rxBufSize, int txBufSize, int maxHttpHeaderSize, NioEndpoint endpoint) {
 
         this.endpoint = endpoint;
 
@@ -94,16 +95,16 @@ public class Http11NioProcessor implements ActionHook {
             readTimeout = timeout;
             //readTimeout = -1;
         }
-        inputBuffer = new InternalNioInputBuffer(request, headerBufferSize,readTimeout);
+        inputBuffer = new InternalNioInputBuffer(request, maxHttpHeaderSize,readTimeout);
         request.setInputBuffer(inputBuffer);
 
         response = new Response();
         response.setHook(this);
-        outputBuffer = new InternalNioOutputBuffer(response, headerBufferSize);
+        outputBuffer = new InternalNioOutputBuffer(response, maxHttpHeaderSize,readTimeout);
         response.setOutputBuffer(outputBuffer);
         request.setResponse(response);
 
-        ssl = endpoint.getSecure();
+        ssl = endpoint.isSSLEnabled();
 
         initializeFilters();
 
@@ -805,6 +806,8 @@ public class Http11NioProcessor implements ActionHook {
         this.socket = socket;
         inputBuffer.setSocket(socket);
         outputBuffer.setSocket(socket);
+        inputBuffer.setSelectorPool(endpoint.getSelectorPool());
+        outputBuffer.setSelectorPool(endpoint.getSelectorPool());
 
         // Error flag
         error = false;
@@ -820,7 +823,7 @@ public class Http11NioProcessor implements ActionHook {
 
         boolean keptAlive = false;
         boolean openSocket = false;
-
+        boolean recycle = true;
         while (!error && keepAlive && !comet) {
 
             // Parsing the request header
@@ -829,8 +832,7 @@ public class Http11NioProcessor implements ActionHook {
                     socket.getIOChannel().socket().setSoTimeout((int)soTimeout);
                     inputBuffer.readTimeout = soTimeout;
                 }
-                if (!inputBuffer.parseRequestLine
-                        (keptAlive && (endpoint.getCurrentThreadsBusy() > limit))) {
+                if (!inputBuffer.parseRequestLine(keptAlive && (endpoint.getCurrentThreadsBusy() > limit))) {
                     // This means that no data is available right now
                     // (long keepalive), so that the processor should be recycled
                     // and the method should return true
@@ -839,13 +841,18 @@ public class Http11NioProcessor implements ActionHook {
                     socket.getPoller().add(socket);
                     break;
                 }
-                request.setStartTime(System.currentTimeMillis());
                 keptAlive = true;
-                if (!disableUploadTimeout) {
+                if ( !inputBuffer.parseHeaders() ) {
+                    openSocket = true;
+                    socket.getPoller().add(socket);
+                    recycle = false;
+                    break;
+                }
+                request.setStartTime(System.currentTimeMillis());
+                if (!disableUploadTimeout) { //only for body, not for request headers
                     socket.getIOChannel().socket().setSoTimeout((int)timeout);
                     inputBuffer.readTimeout = soTimeout;
                 }
-                inputBuffer.parseHeaders();
             } catch (IOException e) {
                 error = true;
                 break;
@@ -934,7 +941,7 @@ public class Http11NioProcessor implements ActionHook {
                 return SocketState.LONG;
             }
         } else {
-            recycle();
+            if ( recycle ) recycle();
             return (openSocket) ? SocketState.OPEN : SocketState.CLOSED;
         }
 
@@ -997,8 +1004,9 @@ public class Http11NioProcessor implements ActionHook {
                 return;
 
             // Validate and write response headers
-            prepareResponse();
+            
             try {
+                prepareResponse();
                 outputBuffer.commit();
             } catch (IOException e) {
                 // Set error flag
@@ -1049,6 +1057,7 @@ public class Http11NioProcessor implements ActionHook {
                     //then execute the connection closure at the next selector loop
                     request.getAttributes().remove("org.apache.tomcat.comet.timeout");
                     attach.setError(true);
+                    attach.setComet(false);
                 }
             }
 
@@ -1545,7 +1554,7 @@ public class Http11NioProcessor implements ActionHook {
      * When committing the response, we have to validate the set of headers, as
      * well as setup the response filters.
      */
-    protected void prepareResponse() {
+    protected void prepareResponse() throws IOException {
 
         boolean entityBody = true;
         contentDelimitation = false;

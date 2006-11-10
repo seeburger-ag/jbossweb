@@ -1,9 +1,10 @@
 /*
- * Copyright 2002,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -25,13 +26,17 @@ import org.apache.catalina.util.StringManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.lang.reflect.InvocationTargetException;
+
+
 
 /**
  * Implementation of <code>LifecycleListener</code> that will init and
  * and destroy APR.
  *
  * @author Remy Maucherat
- * @version $Revision: 441786 $ $Date: 2006-09-09 14:26:11 +0200 (sam., 09 sept. 2006) $
+ * @author Filip Hanik
+ * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  * @since 4.1
  */
 
@@ -53,11 +58,14 @@ public class AprLifecycleListener
     protected static final int REQUIRED_MAJOR = 1;
     protected static final int REQUIRED_MINOR = 1;
     protected static final int REQUIRED_PATCH = 3;
-    protected static final int RECOMMENDED_PV = 4;
+    protected static final int RECOMMENDED_PV = 6;
 
 
+    // ---------------------------------------------- Properties
+    protected static String SSLEngine = "on"; //default on
+    protected static boolean sslInitialized = false;
+    
     // ---------------------------------------------- LifecycleListener Methods
-
 
     /**
      * Primary entry point for startup and shutdown events.
@@ -109,6 +117,11 @@ public class AprLifecycleListener
                             + REQUIRED_MINOR + "." + RECOMMENDED_PV));
                 }                
             }
+            try {
+                initializeSSL();
+            }catch ( Throwable t ) {
+                log.error(sm.getString("aprListener.sslInit",t.getMessage()),t);
+            }
         } else if (Lifecycle.AFTER_STOP_EVENT.equals(event.getType())) {
             try {
                 String methodName = "terminate";
@@ -123,6 +136,24 @@ public class AprLifecycleListener
                 }
             }
         }
+
+    }
+    
+    public static synchronized void initializeSSL() 
+        throws ClassNotFoundException,NoSuchMethodException,
+               IllegalAccessException,InvocationTargetException{
+        
+        if ("off".equalsIgnoreCase(SSLEngine) ) return;
+        if ( sslInitialized ) return; //only once per VM
+        String methodName = "initialize";
+        Class paramTypes[] = new Class[1];
+        paramTypes[0] = String.class;
+        Object paramValues[] = new Object[1];
+        paramValues[0] = "on".equalsIgnoreCase(SSLEngine)?null:SSLEngine;
+        Class clazz = Class.forName("org.apache.tomcat.jni.SSL");
+        Method method = clazz.getMethod(methodName, paramTypes);
+        method.invoke(null, paramValues);
+        sslInitialized = true;
 
     }
 

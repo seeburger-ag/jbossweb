@@ -18,7 +18,7 @@ package org.apache.catalina.ssi;
  * 
  * @author Paul Speed
  * @author Dan Sandberg
- * @version $Revision: 303166 $, $Date: 2004-09-01 20:33:33 +0200 (mer., 01 sept. 2004) $
+ * @version $Revision: 467222 $, $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 public class SSIStopProcessingException extends Exception {
 }

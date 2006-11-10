@@ -1,9 +1,10 @@
 /*
- *  Copyright 1999-2006 The Apache Software Foundation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -146,7 +147,7 @@ public class Http11Protocol
 
         // Verify the validity of the configured socket factory
         try {
-            if (secure) {
+            if (isSSLEnabled()) {
                 sslImplementation =
                     SSLImplementation.getInstance(sslImplementationName);
                 socketFactory = sslImplementation.getServerSocketFactory();
@@ -251,7 +252,10 @@ public class Http11Protocol
     protected boolean secure;
     public boolean getSecure() { return secure; }
     public void setSecure(boolean b) { secure = b; }
-    
+
+    protected boolean SSLEnabled = false;
+    public boolean isSSLEnabled() { return SSLEnabled;}
+    public void setSSLEnabled(boolean SSLEnabled) {this.SSLEnabled = SSLEnabled;}    
     
     /**
      * Name of the socket factory.

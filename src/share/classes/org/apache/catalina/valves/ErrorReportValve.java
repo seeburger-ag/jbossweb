@@ -1,9 +1,10 @@
 /*
- * Copyright 1999-2001,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -47,7 +48,7 @@ import org.apache.tomcat.util.IntrospectionUtils;
  * @author <a href="mailto:nicolaken@supereva.it">Nicola Ken Barozzi</a> Aisa
  * @author <a href="mailto:stefano@apache.org">Stefano Mazzocchi</a>
  * @author Yoav Shapira
- * @version $Revision: 304023 $ $Date: 2005-07-26 14:45:22 +0200 (mar., 26 juil. 2005) $
+ * @version $Revision: 470756 $ $Date: 2006-11-03 11:56:25 +0100 (ven., 03 nov. 2006) $
  */
 
 public class ErrorReportValve
@@ -152,8 +153,7 @@ public class ErrorReportValve
      *  a root cause exception
      */
     protected void report(Request request, Response response,
-                          Throwable throwable)
-        throws IOException {
+                          Throwable throwable) {
 
         // Do nothing on non-HTTP responses
         int statusCode = response.getStatus();
@@ -226,7 +226,8 @@ public class ErrorReportValve
             sb.append(RequestUtil.filter(stackTrace));
             sb.append("</pre></p>");
 
-            while (rootCause != null) {
+            int loops = 0;
+            while (rootCause != null && (loops < 10)) {
                 stackTrace = getPartialServletStackTrace(rootCause);
                 sb.append("<p><b>");
                 sb.append(sm.getString("errorReportValve.rootCause"));
@@ -234,12 +235,8 @@ public class ErrorReportValve
                 sb.append(RequestUtil.filter(stackTrace));
                 sb.append("</pre></p>");
                 // In case root cause is somehow heavily nested
-                try {
-                    rootCause = (Throwable)IntrospectionUtils.getProperty
-                                                (rootCause, "rootCause");
-                } catch (ClassCastException e) {
-                    rootCause = null;
-                }
+                rootCause = rootCause.getCause();
+                loops++;
             }
 
             sb.append("<p><b>");

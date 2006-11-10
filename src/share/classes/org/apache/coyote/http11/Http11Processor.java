@@ -1,9 +1,10 @@
 /*
- *  Copyright 1999-2006 The Apache Software Foundation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -753,13 +754,7 @@ public class Http11Processor implements ActionHook {
 
         int threadRatio = (endpoint.getCurrentThreadsBusy() * 100)
                 / endpoint.getMaxThreads();
-        if ((threadRatio > 33) && (threadRatio <= 66)) {
-            soTimeout = soTimeout / 2;
-        } else if ((threadRatio > 66) && (threadRatio <= 90)) {
-            soTimeout = soTimeout / 3;
-            keepAliveLeft = 1;
-        } else if (threadRatio > 90) {
-            soTimeout = soTimeout / 20;
+        if (threadRatio > 75) {
             keepAliveLeft = 1;
         }
         

@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -22,13 +23,13 @@ import java.util.*;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.jasper.compiler.TldLocationsCache;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.TagPluginManager;
 import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.xmlparser.ParserUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A class to hold all init parameters specific to the JSP engine. 
@@ -178,6 +179,13 @@ public final class EmbeddedServletOptions implements Options {
      * Is generation of X-Powered-By response header enabled/disabled?
      */
     private boolean xpoweredBy;
+    
+    /**
+     * Should we include a source fragment in exception messages, which could be displayed
+     * to the developer ?
+     */
+    private boolean displaySourceFragment = true;
+
     
     public String getProperty(String name ) {
         return settings.getProperty( name );
@@ -365,6 +373,14 @@ public final class EmbeddedServletOptions implements Options {
     
     public Map getCache() {
         return null;
+    }
+
+    /**
+     * Should we include a source fragment in exception messages, which could be displayed
+     * to the developer ?
+     */
+    public boolean getDisplaySourceFragment() {
+        return displaySourceFragment;
     }
 
     /**
@@ -649,6 +665,19 @@ public final class EmbeddedServletOptions implements Options {
             } else {
                 if (log.isWarnEnabled()) {
                     log.warn(Localizer.getMessage("jsp.warning.xpoweredBy"));
+                }
+            }
+        }
+        
+        String displaySourceFragment = config.getInitParameter("displaySourceFragment"); 
+        if (displaySourceFragment != null) {
+            if (displaySourceFragment.equalsIgnoreCase("true")) {
+                this.displaySourceFragment = true;
+            } else if (displaySourceFragment.equalsIgnoreCase("false")) {
+                this.displaySourceFragment = false;
+            } else {
+                if (log.isWarnEnabled()) {
+                    log.warn(Localizer.getMessage("jsp.warning.displaySourceFragment"));
                 }
             }
         }

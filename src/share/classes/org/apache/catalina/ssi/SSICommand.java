@@ -19,7 +19,7 @@ import java.io.PrintWriter;
  * @author Bip Thelin
  * @author Dan Sandberg
  * @author David Becker
- * @version $Revision: 303882 $, $Date: 2005-04-23 12:22:37 +0200 (sam., 23 avr. 2005) $
+ * @version $Revision: 467222 $, $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 public interface SSICommand {
     /**

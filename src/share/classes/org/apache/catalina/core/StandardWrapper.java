@@ -1,9 +1,10 @@
 /*
- * Copyright 1999-2002,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -47,6 +48,7 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.apache.PeriodicEventListener;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
 import org.apache.catalina.Context;
@@ -69,7 +71,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 345286 $ $Date: 2005-11-17 18:00:24 +0100 (jeu., 17 nov. 2005) $
+ * @version $Revision: 467989 $ $Date: 2006-10-26 15:08:58 +0200 (jeu., 26 oct. 2006) $
  */
 public class StandardWrapper
     extends ContainerBase
@@ -103,10 +105,10 @@ public class StandardWrapper
                 if (is != null) {
                     restrictedServlets.load(is);
                 } else {
-                    log.error(sm.getString("standardWrapper.restrictedServletsResources"));
+                    log.error(sm.getString("standardWrapper.restrictedServletsResource"));
                 }
             } catch (IOException e) {
-                log.error(sm.getString("standardWrapper.restrictedServletsResources"), e);
+                log.error(sm.getString("standardWrapper.restrictedServletsResource"), e);
             }
         }
         
@@ -652,6 +654,23 @@ public class StandardWrapper
 
 
     /**
+     * Execute a periodic task, such as reloading, etc. This method will be
+     * invoked inside the classloading context of this container. Unexpected
+     * throwables will be caught and logged.
+     */
+    public void backgroundProcess() {
+        super.backgroundProcess();
+        
+        if (!started)
+            return;
+        
+        if (getServlet() != null && (getServlet() instanceof PeriodicEventListener)) {
+            ((PeriodicEventListener) getServlet()).periodicEvent();
+        }
+    }
+    
+    
+    /**
      * Extract the root cause from a servlet exception.
      * 
      * @param e The servlet exception
@@ -660,17 +679,13 @@ public class StandardWrapper
         Throwable rootCause = e;
         Throwable rootCauseCheck = null;
         // Extra aggressive rootCause finding
+        int loops = 0;
         do {
-            try {
-                rootCauseCheck = (Throwable)IntrospectionUtils.getProperty
-                                            (rootCause, "rootCause");
-                if (rootCauseCheck!=null)
-                    rootCause = rootCauseCheck;
-
-            } catch (ClassCastException ex) {
-                rootCauseCheck = null;
-            }
-        } while (rootCauseCheck != null);
+            loops++;
+            rootCauseCheck = rootCause.getCause();
+            if (rootCauseCheck != null)
+                rootCause = rootCauseCheck;
+        } while (rootCauseCheck != null && (loops < 20));
         return rootCause;
     }
 

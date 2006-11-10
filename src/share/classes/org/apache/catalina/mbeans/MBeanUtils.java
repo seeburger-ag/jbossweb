@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -59,7 +60,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Amy Roh
- * @version $Revision: 303558 $ $Date: 2004-12-01 12:17:34 +0100 (mer., 01 déc. 2004) $
+ * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
  */
 
 public class MBeanUtils {
@@ -1366,7 +1367,7 @@ public class MBeanUtils {
             registry.loadDescriptors("org.apache.catalina.session", cl);
             registry.loadDescriptors("org.apache.catalina.startup", cl);
             registry.loadDescriptors("org.apache.catalina.users", cl);
-            registry.loadDescriptors("org.apache.catalina.cluster", cl);
+            registry.loadDescriptors("org.apache.catalina.ha", cl);
             registry.loadDescriptors("org.apache.catalina.connector", cl);
             registry.loadDescriptors("org.apache.catalina.valves",  cl);
         }
