@@ -25,7 +25,11 @@
                is="true"
                type="boolean"/>
       
-     <attribute name="annotationProcessor"
+    <attribute name="altDDName"
+               description="The alternate deployment descriptor name"
+               type="java.lang.String"/>
+
+    <attribute name="annotationProcessor"
                 description="Object that processes things like injection annotations"
                 type="org.apache.AnnotationProcessor" />
 
