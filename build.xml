@@ -238,6 +238,14 @@
       </fileset>
     </jar>
 
+    <!-- Create a source jar of the jbossweb/servlet classes -->
+    <zip destfile="${jbossweb.build}/jars/jbossweb-src.zip">
+      <fileset dir="src/share/classes">
+        <include name="org/**" />
+        <include name="javax/servlet/**" />
+        <include name="javax/el/**" />
+      </fileset>
+    </zip>
   </target>
 
   	
