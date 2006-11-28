@@ -55,10 +55,6 @@
         <include name="jasper-jdt.jar"/>
         <include name="commons-logging.jar" />
     </fileset>
-    <fileset dir="${jboss.build}/server/all">
-      <include name="deploy/jbossweb-tomcat6.sar/jasper-jdt.jar"/>
-      <include name="lib/commons-logging.jar" />
-    </fileset>
   </path>
 
   <!-- ===================== DEPLOY: Create Directories =================== -->
