@@ -63,6 +63,10 @@
                description="Object names of all children"
                type="[Ljavax.management.ObjectName;"/>
                
+    <attribute name="configClass"
+               description="The class name of the context configurator"
+               type="java.lang.String"/>
+
     <attribute name="configFile"
                description="Location of the context.xml resource or file"
                type="java.lang.String"/>
@@ -418,6 +422,10 @@
                description="The configuration class for contexts"
                type="java.lang.String"/>
       
+    <attribute name="deployerClass"
+               description="The class name of the webapp deployer"
+               type="java.lang.String"/>
+
     <attribute name="deployOnStartup"
                description="The deploy on startup flag for this Host"
                type="boolean"/>

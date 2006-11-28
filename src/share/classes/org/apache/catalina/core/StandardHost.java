@@ -26,8 +26,8 @@ import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Valve;
-import org.apache.catalina.startup.HostConfig;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.modeler.Registry;
 
@@ -103,6 +103,13 @@ public class StandardHost
 
 
     /**
+     * The Java class name of the default deployer implementation class.
+     */
+    private String deployerClass =
+        "org.apache.catalina.startup.HostConfig";
+
+
+    /**
      * The deploy on startup flag for this Host.
      */
     private boolean deployOnStartup = true;
@@ -131,12 +138,6 @@ public class StandardHost
      */
     private static final String info =
         "org.apache.catalina.core.StandardHost/1.0";
-
-
-    /**
-     * The live deploy flag for this Host.
-     */
-    private boolean liveDeploy = true;
 
 
     /**
@@ -268,6 +269,33 @@ public class StandardHost
         this.contextClass = contextClass;
         support.firePropertyChange("contextClass",
                                    oldContextClass, this.contextClass);
+
+    }
+
+
+    /**
+     * Return the Java class name of the lifecylcle listener implementation class
+     * which performs webapp deployment.
+     */
+    public String getDeployerClass() {
+
+        return (this.deployerClass);
+
+    }
+
+
+    /**
+     * Set the Java class name of the lifecylcle listener implementation class
+     * which performs webapp deployment.
+     *
+     * @param deployerClass The new deployer implementation class
+     */
+    public void setDeployerClass(String deployerClass) {
+
+        String oldDeployerClass = this.deployerClass;
+        this.deployerClass = deployerClass;
+        support.firePropertyChange("deployerClass",
+                                   oldDeployerClass, this.deployerClass);
 
     }
 
@@ -759,7 +787,7 @@ public class StandardHost
                 ObjectName serviceName=new ObjectName(domain + 
                                         ":type=Engine");
 
-                HostConfig deployer = new HostConfig();
+                LifecycleListener deployer = (LifecycleListener) Class.forName(deployerClass).newInstance();
                 addLifecycleListener(deployer);                
                 if( mserver.isRegistered( serviceName )) {
                     if(log.isDebugEnabled())
