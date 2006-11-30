@@ -657,8 +657,7 @@ public class StandardManager
 
         // Validate and update our current component state
         if (!started)
-            throw new LifecycleException
-                (sm.getString("standardManager.notStarted"));
+            return;
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
