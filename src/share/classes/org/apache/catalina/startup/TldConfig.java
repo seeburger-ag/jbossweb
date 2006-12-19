@@ -63,49 +63,39 @@ import org.xml.sax.InputSource;
 public final class TldConfig  {
 
     // Names of JARs that are known not to contain any TLDs
-    private static HashSet noTldJars;
+    private static HashSet<String> noTldJars;
 
     private static org.apache.commons.logging.Log log=
         org.apache.commons.logging.LogFactory.getLog( TldConfig.class );
-
-    private static final String FILE_URL_PREFIX = "file:";
-    private static final int FILE_URL_PREFIX_LEN = FILE_URL_PREFIX.length();
-
 
     /*
      * Initializes the set of JARs that are known not to contain any TLDs
      */
     static {
-        noTldJars = new HashSet();
+        noTldJars = new HashSet<String>();
+        // Bootstrap JARs
+        noTldJars.add("bootstrap.jar");
+        noTldJars.add("commons-daemon.jar");
+        noTldJars.add("tomcat-juli.jar");
+        // Main JARs
+        noTldJars.add("annotations-api.jar");
         noTldJars.add("catalina.jar");
         noTldJars.add("catalina-ant.jar");
-        noTldJars.add("catalina-cluster.jar");
-        noTldJars.add("catalina-optional.jar");
-        noTldJars.add("commons-el.jar");
-        noTldJars.add("commons-logging-api.jar");
-        noTldJars.add("commons-modeler.jar");
-        noTldJars.add("jasper-compiler.jar");
-        noTldJars.add("jasper-compiler-jdt.jar");
-        noTldJars.add("jasper-runtime.jar");
+        noTldJars.add("catalina-ha.jar");
+        noTldJars.add("catalina-tribes.jar");
+        noTldJars.add("el-api.jar");
+        noTldJars.add("jasper.jar");
+        noTldJars.add("jasper-el.jar");
+        noTldJars.add("jasper-jdt.jar");
         noTldJars.add("jsp-api.jar");
-        noTldJars.add("naming-resources.jar");
-        noTldJars.add("naming-factory.jar");
-        noTldJars.add("naming-factory-dbcp.jar");
         noTldJars.add("servlet-api.jar");
-        noTldJars.add("servlets-cgi.jar");
-        noTldJars.add("servlets-default.jar");
-        noTldJars.add("servlets-invoker.jar");
-        noTldJars.add("servlets-ssi.jar");
-        noTldJars.add("servlets-webdav.jar");
-        noTldJars.add("tomcat-ajp.jar");
         noTldJars.add("tomcat-coyote.jar");
-        noTldJars.add("tomcat-http.jar");
-        noTldJars.add("tomcat-util.jar");
+        noTldJars.add("tomcat-dbcp.jar");
         // i18n JARs
-        noTldJars.add("catalina-i18n-en.jar");
-        noTldJars.add("catalina-i18n-es.jar");
-        noTldJars.add("catalina-i18n-fr.jar");
-        noTldJars.add("catalina-i18n-ja.jar");
+        noTldJars.add("tomcat-i18n-en.jar");
+        noTldJars.add("tomcat-i18n-es.jar");
+        noTldJars.add("tomcat-i18n-fr.jar");
+        noTldJars.add("tomcat-i18n-ja.jar");
         // Misc JARs not included with Tomcat
         noTldJars.add("ant.jar");
         noTldJars.add("commons-dbcp.jar");
@@ -125,6 +115,8 @@ public final class TldConfig  {
         noTldJars.add("ldapsec.jar");
         noTldJars.add("localedata.jar");
         noTldJars.add("dnsns.jar");
+        noTldJars.add("tools.jar");
+        noTldJars.add("sunpkcs11.jar");
     }
 
 
@@ -162,7 +154,7 @@ public final class TldConfig  {
 
     private boolean rescan=true;
 
-    private ArrayList listeners=new ArrayList();
+    private ArrayList<String> listeners = new ArrayList<String>();
 
     // --------------------------------------------------------- Public Methods
 

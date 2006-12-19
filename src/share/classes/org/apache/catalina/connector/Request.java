@@ -77,7 +77,7 @@ import org.apache.catalina.util.StringParser;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision: 470756 $ $Date: 2006-11-03 11:56:25 +0100 (ven., 03 nov. 2006) $
+ * @version $Revision: 488498 $ $Date: 2006-12-19 02:44:02 +0100 (mar., 19 déc. 2006) $
  */
 
 public class Request
@@ -2426,26 +2426,31 @@ public class Request
         if (len > 0) {
             int maxPostSize = connector.getMaxPostSize();
             if ((maxPostSize > 0) && (len > maxPostSize)) {
-                context.getLogger().info
-                    (sm.getString("coyoteRequest.postTooLarge"));
-                throw new IllegalStateException("Post too large");
+                if (context.getLogger().isDebugEnabled()) {
+                    context.getLogger().debug("Post too large");
+                }
+                return;
+            }
+            byte[] formData = null;
+            if (len < CACHED_POST_LEN) {
+                if (postData == null)
+                    postData = new byte[CACHED_POST_LEN];
+                formData = postData;
+            } else {
+                formData = new byte[len];
             }
             try {
-                byte[] formData = null;
-                if (len < CACHED_POST_LEN) {
-                    if (postData == null)
-                        postData = new byte[CACHED_POST_LEN];
-                    formData = postData;
-                } else {
-                    formData = new byte[len];
+                if (readPostBody(formData, len) != len) {
+                    return;
                 }
-                int actualLen = readPostBody(formData, len);
-                if (actualLen == len) {
-                    parameters.processParameters(formData, 0, len);
+            } catch (IOException e) {
+                // Client disconnect
+                if (context.getLogger().isDebugEnabled()) {
+                    context.getLogger().debug(
+                            sm.getString("coyoteRequest.parseParameters"), e);
                 }
-            } catch (Throwable t) {
-                ; // Ignore
             }
+            parameters.processParameters(formData, 0, len);
         }
 
     }
@@ -2565,6 +2570,9 @@ public class Request
                     variant = "";
                 }
             }
+            if (!isAlpha(language) || !isAlpha(country) || !isAlpha(variant)) {
+                continue;
+            }
 
             // Add a new Locale to the list of Locales for this quality level
             Locale locale = new Locale(language, country, variant);
@@ -2593,4 +2601,15 @@ public class Request
 
     }
 
+    
+    protected static final boolean isAlpha(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
 }

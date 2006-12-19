@@ -50,7 +50,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 487694 $ $Date: 2006-12-15 23:30:51 +0100 (ven., 15 déc. 2006) $
  */
 
 final class StandardHostValve
@@ -343,6 +343,8 @@ final class StandardHostValve
             if (custom(request, response, errorPage)) {
                 try {
                     response.flushBuffer();
+                } catch (ClientAbortException e) {
+                    // Ignore
                 } catch (IOException e) {
                     container.getLogger().warn("Exception Processing " + errorPage, e);
                 }

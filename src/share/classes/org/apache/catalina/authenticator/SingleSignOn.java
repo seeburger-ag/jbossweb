@@ -59,7 +59,7 @@ import org.apache.catalina.valves.ValveBase;
  * </ul>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 482797 $ $Date: 2006-12-05 22:49:09 +0100 (mar., 05 déc. 2006) $
  */
 
 public class SingleSignOn
@@ -401,7 +401,7 @@ public class SingleSignOn
         if (entry != null) {
             if (containerLog.isDebugEnabled())
                 containerLog.debug(" Found cached principal '" +
-                    entry.getPrincipal().getName() + "' with auth type '" +
+                    (entry.getPrincipal() != null ? entry.getPrincipal().getName() : "") + "' with auth type '" +
                     entry.getAuthType() + "'");
             request.setNote(Constants.REQ_SSOID_NOTE, cookie.getValue());
             // Only set security elements if reauthentication is not required
@@ -600,7 +600,7 @@ public class SingleSignOn
 
         if (containerLog.isDebugEnabled())
             containerLog.debug("Registering sso id '" + ssoId + "' for user '" +
-                principal.getName() + "' with auth type '" + authType + "'");
+                (principal != null ? principal.getName() : "") + "' with auth type '" + authType + "'");
 
         synchronized (cache) {
             cache.put(ssoId, new SingleSignOnEntry(principal, authType,

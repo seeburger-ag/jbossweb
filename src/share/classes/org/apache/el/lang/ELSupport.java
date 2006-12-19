@@ -32,7 +32,7 @@ import org.apache.el.util.MessageFactory;
  * A helper class that implements the EL Specification
  * 
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: markt $
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: remm $
  */
 public class ELSupport {
 
@@ -313,6 +313,25 @@ public class ELSupport {
             return ((Enum) obj).name();
         } else {
             return obj.toString();
+        }
+    }
+
+    public final static void checkType(final Object obj, final Class type)
+        throws IllegalArgumentException {
+        if (String.class.equals(type)) {
+            coerceToString(obj);
+        }
+        if (ELArithmetic.isNumberType(type)) {
+            coerceToNumber(obj, type);
+        }
+        if (Character.class.equals(type) || Character.TYPE == type) {
+            coerceToCharacter(obj);
+        }
+        if (Boolean.class.equals(type) || Boolean.TYPE == type) {
+            coerceToBoolean(obj);
+        }
+        if (type.isEnum()) {
+            coerceToEnum(obj, type);
         }
     }
 

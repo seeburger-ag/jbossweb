@@ -90,10 +90,11 @@ public class AjpAprProcessor implements ActionHook {
         responseHeaderMessage = new AjpMessage(packetSize);
         bodyMessage = new AjpMessage(packetSize);
         
-        if (endpoint.getFirstReadTimeout() > 0) {
-            readTimeout = endpoint.getFirstReadTimeout() * 1000;
-        } else {
+        readTimeout = endpoint.getFirstReadTimeout() * 1000;
+        if (readTimeout == 0) {
             readTimeout = 100 * 1000;
+        } else if (readTimeout < 0) {
+            readTimeout = -1;
         }
 
         // Allocate input and output buffers
@@ -960,9 +961,15 @@ public class AjpAprProcessor implements ActionHook {
         // Other headers
         int numHeaders = headers.size();
         responseHeaderMessage.appendInt(numHeaders);
-        for (int i = 0; i < numHeaders; i++) {
+        for (int i = 0; i < numHeaders; i++) {            
             MessageBytes hN = headers.getName(i);
-            responseHeaderMessage.appendBytes(hN);
+            int hC = Constants.getResponseAjpIndex(hN.toString());
+            if (hC > 0) {
+                responseHeaderMessage.appendInt(hC);
+            }
+            else {
+                responseHeaderMessage.appendBytes(hN);
+            }
             MessageBytes hV=headers.getValue(i);
             responseHeaderMessage.appendBytes(hV);
         }
@@ -1018,8 +1025,9 @@ public class AjpAprProcessor implements ActionHook {
             inputBuffer.limit(inputBuffer.position());
             inputBuffer.position(0);
         }
+        int nRead;
         while (inputBuffer.remaining() < n) {
-            int nRead = Socket.recvbb
+            nRead = Socket.recvbb
                 (socket, inputBuffer.limit(),
                         inputBuffer.capacity() - inputBuffer.limit());
             if (nRead > 0) {
@@ -1050,10 +1058,17 @@ public class AjpAprProcessor implements ActionHook {
             inputBuffer.limit(inputBuffer.position());
             inputBuffer.position(0);
         }
+        int nRead;
         while (inputBuffer.remaining() < n) {
-            int nRead = Socket.recvbbt
-                (socket, inputBuffer.limit(),
+            if (readTimeout > 0) {
+                nRead = Socket.recvbbt
+                    (socket, inputBuffer.limit(),
                         inputBuffer.capacity() - inputBuffer.limit(), readTimeout);
+            } else {
+                nRead = Socket.recvbb
+                    (socket, inputBuffer.limit(),
+                        inputBuffer.capacity() - inputBuffer.limit());
+            }
             if (nRead > 0) {
                 inputBuffer.limit(inputBuffer.limit() + nRead);
             } else {
@@ -1187,7 +1202,7 @@ public class AjpAprProcessor implements ActionHook {
         throws IOException {
         if (outputBuffer.position() > 0) {
             if (Socket.sendbb(socket, 0, outputBuffer.position()) < 0) {
-                throw new IOException();
+                throw new IOException(sm.getString("ajpprocessor.failedsend"));
             }
             outputBuffer.clear();
         }
