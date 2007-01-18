@@ -27,45 +27,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.InvocationTargetException;
+
 public class ClusterRuleSetFactory {
     
     public static Log log = LogFactory.getLog(ClusterRuleSetFactory.class);
     
     public static RuleSetBase getClusterRuleSet(String prefix) {
         
-        //OLD CLUSTER 1
-        //first try the same classloader as this class server/lib
         try {
-            return loadRuleSet(prefix,"org.apache.catalina.cluster.ClusterRuleSet",ClusterRuleSetFactory.class.getClassLoader());
+            return loadRuleSet(prefix,"org.apache.catalina.ha.ClusterRuleSet", 
+                    ClusterRuleSetFactory.class.getClassLoader());
         } catch ( Exception x ) {
             //display warning
-            if ( log.isDebugEnabled() ) log.debug("Unable to load ClusterRuleSet (org.apache.catalina.cluster.ClusterRuleSet), falling back on context classloader");
-        }
-        //try to load it from the context class loader
-        try {
-            return loadRuleSet(prefix,"org.apache.catalina.cluster.ClusterRuleSet",Thread.currentThread().getContextClassLoader());
-        } catch ( Exception x ) {
-            //display warning
-            if ( log.isDebugEnabled() ) log.debug("Unable to load ClusterRuleSet (org.apache.catalina.cluster.ClusterRuleSet), will try to load the HA cluster");
-        }
-        
-        //NEW CLUSTER 2
-        //first try the same classloader as this class server/lib
-        try {
-            return loadRuleSet(prefix,"org.apache.catalina.ha.ClusterRuleSet",ClusterRuleSetFactory.class.getClassLoader());
-        } catch ( Exception x ) {
-            //display warning
-            if ( log.isDebugEnabled() ) log.debug("Unable to load HA ClusterRuleSet (org.apache.catalina.ha.ClusterRuleSet), falling back on context classloader");
-        }
-        //try to load it from the context class loader
-        try {
-            return loadRuleSet(prefix,"org.apache.catalina.ha.ClusterRuleSet",Thread.currentThread().getContextClassLoader());
-        } catch ( Exception x ) {
-            //display warning
-            if ( log.isDebugEnabled() ) log.debug("Unable to load HA ClusterRuleSet (org.apache.catalina.ha.ClusterRuleSet), falling back on DefaultClusterRuleSet");
+            if ( log.isDebugEnabled() ) 
+                log.debug("Unable to load HA ClusterRuleSet (org.apache.catalina.ha.ClusterRuleSet)");
         }
 
-        log.info("Unable to find a cluster rule set in the classpath. Will load the default rule set.");
         return new DefaultClusterRuleSet(prefix);
     }
     
