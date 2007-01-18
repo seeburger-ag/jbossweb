@@ -161,8 +161,8 @@
     <chmod dir="${jbossweb.build}/${final.name}/bin" includes="*.sh" perm="+x"/>      
     -->
 
-    <!-- Common Annotations 1.0 JAR File 
-    <jar  jarfile="${jbossweb.build}/jars/annotations-api-temp.jar">
+    <!-- Common Annotations 1.0 JAR File -->
+    <jar  jarfile="${jbossweb.build}/jars/annotations-api.jar">
       <fileset dir="${jbossweb.build}/classes">
         <include name="javax/annotation/*" />
         <include name="javax/annotation/security/*" />
@@ -173,7 +173,6 @@
         <exclude name="**/LocalStrings_*" />
       </fileset>
     </jar>
-    -->
 
     <!-- Servlet 2.5 Implementation JAR File -->
     <jar  jarfile="${jbossweb.build}/jars/servlet-api.jar">
