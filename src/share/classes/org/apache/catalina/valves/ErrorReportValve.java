@@ -48,7 +48,7 @@ import org.apache.tomcat.util.IntrospectionUtils;
  * @author <a href="mailto:nicolaken@supereva.it">Nicola Ken Barozzi</a> Aisa
  * @author <a href="mailto:stefano@apache.org">Stefano Mazzocchi</a>
  * @author Yoav Shapira
- * @version $Revision: 470756 $ $Date: 2006-11-03 11:56:25 +0100 (ven., 03 nov. 2006) $
+ * @version $Revision: 496373 $ $Date: 2007-01-15 16:41:36 +0100 (lun., 15 janv. 2007) $
  */
 
 public class ErrorReportValve
@@ -163,15 +163,6 @@ public class ErrorReportValve
         if ((statusCode < 400) || (response.getContentCount() > 0))
             return;
 
-        Throwable rootCause = null;
-
-        if (throwable != null) {
-
-            if (throwable instanceof ServletException)
-                rootCause = ((ServletException) throwable).getRootCause();
-
-        }
-
         String message = RequestUtil.filter(response.getMessage());
         if (message == null)
             message = "";
@@ -227,6 +218,7 @@ public class ErrorReportValve
             sb.append("</pre></p>");
 
             int loops = 0;
+            Throwable rootCause = throwable.getCause();
             while (rootCause != null && (loops < 10)) {
                 stackTrace = getPartialServletStackTrace(rootCause);
                 sb.append("<p><b>");

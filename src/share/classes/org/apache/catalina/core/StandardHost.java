@@ -738,11 +738,11 @@ public class StandardHost
                      errorReportValveClass));
             }
         }
-        if(log.isInfoEnabled()) {
+        if(log.isDebugEnabled()) {
             if (xmlValidation)
-                log.info( sm.getString("standardHost.validationEnabled"));
+                log.debug( sm.getString("standardHost.validationEnabled"));
             else
-                log.info( sm.getString("standardHost.validationDisabled"));
+                log.debug( sm.getString("standardHost.validationDisabled"));
         }
         super.start();
 
