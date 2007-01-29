@@ -3,5 +3,5 @@ How to build
 
 - Install Ant 1.6.5
 - put a JBoss AS binary distribution in the "jboss" folder (the version number must match what is in build.properties.default)
-- Alternatively type "and download" to download the JBoss AS binary matching the build.properties.default defined version
+- Alternatively type "ant download" to download the JBoss AS binary matching the build.properties.default defined version
 - type "ant"; the result is in "output/jbossweb-versionnumber"
