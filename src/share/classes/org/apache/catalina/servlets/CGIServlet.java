@@ -235,7 +235,7 @@ import org.apache.catalina.util.IOTools;
  *
  * @author Martin T Dengler [root@martindengler.com]
  * @author Amy Roh
- * @version $Revision: 471267 $, $Date: 2006-11-04 22:40:59 +0100 (sam., 04 nov. 2006) $
+ * @version $Revision: 479052 $, $Date: 2006-11-25 00:58:18 +0100 (sam., 25 nov. 2006) $
  * @since Tomcat 4.0
  *
  */
@@ -694,7 +694,7 @@ public final class CGIServlet extends HttpServlet {
      * <p>
      * </p>
      *
-     * @version  $Revision: 471267 $, $Date: 2006-11-04 22:40:59 +0100 (sam., 04 nov. 2006) $
+     * @version  $Revision: 479052 $, $Date: 2006-11-25 00:58:18 +0100 (sam., 25 nov. 2006) $
      * @since    Tomcat 4.0
      *
      */
@@ -794,30 +794,22 @@ public final class CGIServlet extends HttpServlet {
                 this.pathInfo = this.servletPath;
             }
             
-            // If request is HEAD or GET and Query String does not contain
-            // an unencoded "=" this is an indexed query. Parsed Query String
-            // forms command line parameters for cgi command.
-            if (!"GET".equals(req.getMethod()) &&
-                    !"HEAD".equals(req.getMethod()))
-                return;
-            
-            String qs = req.getQueryString();
-            
-            if (qs == null || qs.indexOf("=")>0)
-                return;
-            
-            int delimIndex = 0;
-            int lastDelimIndex = 0;
-            delimIndex = qs.indexOf("+");
-            
-            while (delimIndex >0) {
-                cmdLineParameters.add(URLDecoder.decode(qs.substring(
-                        lastDelimIndex,delimIndex),parameterEncoding));
-                lastDelimIndex = delimIndex + 1;
-                delimIndex = qs.indexOf("+",lastDelimIndex);
+            // If the request method is GET, POST or HEAD and the query string
+            // does not contain an unencoded "=" this is an indexed query.
+            // The parsed query string becomes the command line parameters
+            // for the cgi command.
+            if (req.getMethod().equals("GET")
+                || req.getMethod().equals("POST")
+                || req.getMethod().equals("HEAD")) {
+                String qs = req.getQueryString();
+                if (qs != null && qs.indexOf("=") == -1) {
+                    StringTokenizer qsTokens = new StringTokenizer(qs, "+");
+                    while ( qsTokens.hasMoreTokens() ) {
+                        cmdLineParameters.add(URLDecoder.decode(qsTokens.nextToken(),
+                                              parameterEncoding));
+                    }
+                }
             }
-            cmdLineParameters.add(URLDecoder.decode(qs.substring(
-                    lastDelimIndex),parameterEncoding));
         }
 
 
@@ -1421,7 +1413,7 @@ public final class CGIServlet extends HttpServlet {
      * and <code>setResponse</code> methods, respectively.
      * </p>
      *
-     * @version   $Revision: 471267 $, $Date: 2006-11-04 22:40:59 +0100 (sam., 04 nov. 2006) $
+     * @version   $Revision: 479052 $, $Date: 2006-11-25 00:58:18 +0100 (sam., 25 nov. 2006) $
      */
 
     protected class CGIRunner {

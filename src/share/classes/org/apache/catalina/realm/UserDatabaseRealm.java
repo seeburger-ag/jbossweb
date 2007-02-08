@@ -33,7 +33,6 @@ import org.apache.catalina.ServerFactory;
 import org.apache.catalina.User;
 import org.apache.catalina.UserDatabase;
 import org.apache.catalina.core.StandardServer;
-import org.apache.catalina.users.MemoryUser;
 import org.apache.catalina.util.StringManager;
 
 
@@ -45,7 +44,7 @@ import org.apache.catalina.util.StringManager;
  * of <code>UserDatabase</code> that we should consult.</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 500684 $ $Date: 2007-01-28 00:27:18 +0100 (dim., 28 janv. 2007) $
  * @since 4.1
  */
 

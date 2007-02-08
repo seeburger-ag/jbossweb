@@ -36,7 +36,7 @@ import java.util.logging.SimpleFormatter;
  * named {prefix}.{date}.{suffix} in a configured directory, with an
  * optional preceding timestamp.
  *
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 483782 $ $Date: 2006-12-08 03:24:30 +0100 (ven., 08 déc. 2006) $
  */
 
 public class FileHandler
@@ -47,16 +47,16 @@ public class FileHandler
 
     
     public FileHandler() {
-        configure();
-        open();
+        this(null, null, null);
     }
     
     
     public FileHandler(String directory, String prefix, String suffix) {
-        this();
         this.directory = directory;
         this.prefix = prefix;
         this.suffix = suffix;
+        configure();
+        open();
     }
     
 
@@ -189,15 +189,17 @@ public class FileHandler
         String tsString = ts.toString().substring(0, 19);
         date = tsString.substring(0, 10);
 
-        LogManager manager = LogManager.getLogManager();
         String className = FileHandler.class.getName();
         
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         
         // Retrieve configuration of logging file name
-        directory = getProperty(className + ".directory", "logs");
-        prefix = getProperty(className + ".prefix", "juli.");
-        suffix = getProperty(className + ".suffix", ".log");
+        if (directory == null)
+            directory = getProperty(className + ".directory", "logs");
+        if (prefix == null)
+            prefix = getProperty(className + ".prefix", "juli.");
+        if (suffix == null)
+            suffix = getProperty(className + ".suffix", ".log");
 
         // Get logging level for the handler
         setLevel(Level.parse(getProperty(className + ".level", "" + Level.ALL)));

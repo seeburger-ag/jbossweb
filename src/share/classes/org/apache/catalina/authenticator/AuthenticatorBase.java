@@ -70,7 +70,7 @@ import org.apache.commons.logging.LogFactory;
  * requests.  Requests of any other type will simply be passed through.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 500626 $ $Date: 2007-01-27 22:25:41 +0100 (sam., 27 janv. 2007) $
  */
 
 
@@ -743,6 +743,9 @@ public abstract class AuthenticatorBase
             cookie.setMaxAge(-1);
             cookie.setPath("/");
             
+            // Bugzilla 41217
+            cookie.setSecure(request.isSecure());
+
             // Bugzilla 34724
             String ssoDomain = sso.getCookieDomain();
             if(ssoDomain != null) {

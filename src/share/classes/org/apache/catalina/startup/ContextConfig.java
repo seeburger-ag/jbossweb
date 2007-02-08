@@ -64,7 +64,7 @@ import org.xml.sax.SAXParseException;
  *
  * @author Craig R. McClanahan
  * @author Jean-Francois Arcand
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 500616 $ $Date: 2007-01-27 22:00:07 +0100 (sam., 27 janv. 2007) $
  */
 
 public class ContextConfig
@@ -780,8 +780,8 @@ public class ContextConfig
                 context.addWatchedResource(file.getAbsolutePath());
             }
         } catch (Exception e) {
-            log.error(sm.getString("contextConfig.defaultMissing") 
-                      + " " + resourceName + " " + file , e);
+            log.error(sm.getString("contextConfig.contextMissing",  
+                      resourceName + " " + file) , e);
         }
         
         if (source == null)
@@ -805,13 +805,15 @@ public class ContextConfig
                     log.debug("Successfully processed context [" + context.getName() 
                             + "] configuration file " + baseDir + " " + resourceName);
             } catch (SAXParseException e) {
-                log.error(sm.getString("contextConfig.defaultParse"), e);
+                log.error(sm.getString("contextConfig.contextParse",
+                        context.getName()), e);
                 log.error(sm.getString("contextConfig.defaultPosition",
                                  "" + e.getLineNumber(),
                                  "" + e.getColumnNumber()));
                 ok = false;
             } catch (Exception e) {
-                log.error(sm.getString("contextConfig.defaultParse"), e);
+                log.error(sm.getString("contextConfig.contextParse",
+                        context.getName()), e);
                 ok = false;
             } finally {
                 contextDigester.reset();
@@ -821,7 +823,7 @@ public class ContextConfig
                         stream.close();
                     }
                 } catch (IOException e) {
-                    log.error(sm.getString("contextConfig.defaultClose"), e);
+                    log.error(sm.getString("contextConfig.contextClose"), e);
                 }
             }
         }

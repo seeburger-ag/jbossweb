@@ -15,13 +15,11 @@
  */
 package org.apache.tomcat.util.net;
 
-import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.nio.channels.Selector;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.nio.channels.SelectionKey;
 import java.io.EOFException;
 import java.net.SocketTimeoutException;
@@ -105,6 +103,10 @@ public class NioSelectorPool {
         boolean timedout = false;
         int keycount = 1; //assume we can write
         long time = System.currentTimeMillis(); //start the timeout timer
+        if ( socket.getBufHandler().getWriteBuffer()!= buf ) {
+            socket.getBufHandler().getWriteBuffer().put(buf);
+            buf = socket.getBufHandler().getWriteBuffer();
+        }
         try {
             while ( (!timedout) && buf.hasRemaining() ) {
                 if ( keycount > 0 ) { //only write if we were registered for a write

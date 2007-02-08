@@ -60,7 +60,6 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
-import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.log.SystemLogHandler;
 import org.apache.tomcat.util.modeler.Registry;
 
@@ -71,7 +70,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 467989 $ $Date: 2006-10-26 15:08:58 +0200 (jeu., 26 oct. 2006) $
+ * @version $Revision: 500918 $ $Date: 2007-01-29 02:45:06 +0100 (lun., 29 janv. 2007) $
  */
 public class StandardWrapper
     extends ContainerBase

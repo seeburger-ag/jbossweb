@@ -39,7 +39,7 @@ import org.apache.catalina.deploy.LoginConfig;
  * that utilizes SSL certificates to identify client users.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 500629 $ $Date: 2007-01-27 22:32:52 +0100 (sam., 27 janv. 2007) $
  */
 
 public class SSLAuthenticator
@@ -102,7 +102,7 @@ public class SSLAuthenticator
 
         // NOTE: We don't try to reauthenticate using any existing SSO session,
         // because that will only work if the original authentication was
-        // BASIC or FORM, which are less secure than the CLIENT-CERT auth-type
+        // BASIC or FORM, which are less secure than the CLIENT_CERT auth-type
         // specified for this webapp
         //
         // Uncomment below to allow previous FORM or BASIC authentications

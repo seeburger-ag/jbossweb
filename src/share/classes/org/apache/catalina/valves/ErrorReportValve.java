@@ -33,7 +33,6 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.IntrospectionUtils;
 
 /**
  * <p>Implementation of a Valve that outputs HTML error pages.</p>
@@ -48,7 +47,7 @@ import org.apache.tomcat.util.IntrospectionUtils;
  * @author <a href="mailto:nicolaken@supereva.it">Nicola Ken Barozzi</a> Aisa
  * @author <a href="mailto:stefano@apache.org">Stefano Mazzocchi</a>
  * @author Yoav Shapira
- * @version $Revision: 496373 $ $Date: 2007-01-15 16:41:36 +0100 (lun., 15 janv. 2007) $
+ * @version $Revision: 500918 $ $Date: 2007-01-29 02:45:06 +0100 (lun., 29 janv. 2007) $
  */
 
 public class ErrorReportValve

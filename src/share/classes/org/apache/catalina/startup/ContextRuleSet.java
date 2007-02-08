@@ -19,14 +19,8 @@
 package org.apache.catalina.startup;
 
 
-import java.lang.reflect.Constructor;
-
-import org.apache.catalina.Container;
-import org.apache.catalina.Loader;
 import org.apache.tomcat.util.digester.Digester;
-import org.apache.tomcat.util.digester.Rule;
 import org.apache.tomcat.util.digester.RuleSetBase;
-import org.xml.sax.Attributes;
 
 
 /**
@@ -35,7 +29,7 @@ import org.xml.sax.Attributes;
  * DefaultContext, be sure to specify a prefix that ends with "/Default".</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 500684 $ $Date: 2007-01-28 00:27:18 +0100 (dim., 28 janv. 2007) $
  */
 
 public class ContextRuleSet extends RuleSetBase {

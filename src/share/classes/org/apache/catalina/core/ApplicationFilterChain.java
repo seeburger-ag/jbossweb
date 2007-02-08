@@ -50,7 +50,7 @@ import org.apache.catalina.util.StringManager;
  * method itself.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 471281 $ $Date: 2006-11-04 23:35:15 +0100 (sam., 04 nov. 2006) $
+ * @version $Revision: 480558 $ $Date: 2006-11-29 13:59:22 +0100 (mer., 29 nov. 2006) $
  */
 
 final class ApplicationFilterChain implements FilterChain, CometFilterChain {
@@ -529,6 +529,9 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
      */
     void release() {
 
+        for (int i = 0; i < n; i++) {
+            filters[i] = null;
+        }
         n = 0;
         pos = 0;
         servlet = null;
