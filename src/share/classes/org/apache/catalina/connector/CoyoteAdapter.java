@@ -44,7 +44,7 @@ import org.apache.tomcat.util.net.SocketStatus;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 506200 $ $Date: 2007-02-12 02:02:03 +0100 (lun., 12 févr. 2007) $
  */
 
 public class CoyoteAdapter
@@ -56,6 +56,10 @@ public class CoyoteAdapter
 
 
     public static final int ADAPTER_NOTES = 1;
+
+
+    protected static final boolean ALLOW_BACKSLASH = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", "false")).booleanValue();
 
 
     // ----------------------------------------------------------- Constructors
@@ -310,8 +314,8 @@ public class CoyoteAdapter
                 req.getURLDecoder().convert(decodedURI, false);
             } catch (IOException ioe) {
                 res.setStatus(400);
-                res.setMessage("Invalid URI");
-                throw ioe;
+                res.setMessage("Invalid URI: " + ioe.getMessage());
+                return false;
             }
             // Normalization
             if (!normalize(req.decodedURI())) {
@@ -505,8 +509,9 @@ public class CoyoteAdapter
         throws Exception {
 
         ByteChunk bc = uri.getByteChunk();
+        int length = bc.getLength();
         CharChunk cc = uri.getCharChunk();
-        cc.allocate(bc.getLength(), -1);
+        cc.allocate(length, -1);
 
         String enc = connector.getURIEncoding();
         if (enc != null) {
@@ -540,10 +545,10 @@ public class CoyoteAdapter
         byte[] bbuf = bc.getBuffer();
         char[] cbuf = cc.getBuffer();
         int start = bc.getStart();
-        for (int i = 0; i < bc.getLength(); i++) {
+        for (int i = 0; i < length; i++) {
             cbuf[i] = (char) (bbuf[i + start] & 0xff);
         }
-        uri.setChars(cbuf, 0, bc.getLength());
+        uri.setChars(cbuf, 0, length);
 
     }
 
@@ -559,16 +564,17 @@ public class CoyoteAdapter
         
         ByteChunk bc = mb.getByteChunk();
         CharChunk cc = mb.getCharChunk();
-        cc.allocate(bc.getLength(), -1);
+        int length = bc.getLength();
+        cc.allocate(length, -1);
 
         // Default encoding: fast conversion
         byte[] bbuf = bc.getBuffer();
         char[] cbuf = cc.getBuffer();
         int start = bc.getStart();
-        for (int i = 0; i < bc.getLength(); i++) {
+        for (int i = 0; i < length; i++) {
             cbuf[i] = (char) (bbuf[i + start] & 0xff);
         }
-        mb.setChars(cbuf, 0, bc.getLength());
+        mb.setChars(cbuf, 0, length);
 
     }
 
@@ -599,10 +605,16 @@ public class CoyoteAdapter
         // Replace '\' with '/'
         // Check for null byte
         for (pos = start; pos < end; pos++) {
-            if (b[pos] == (byte) '\\')
-                b[pos] = (byte) '/';
-            if (b[pos] == (byte) 0)
+            if (b[pos] == (byte) '\\') {
+                if (ALLOW_BACKSLASH) {
+                    b[pos] = (byte) '/';
+                } else {
+                    return false;
+                }
+            }
+            if (b[pos] == (byte) 0) {
                 return false;
+            }
         }
 
         // The URL must start with '/'

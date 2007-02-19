@@ -61,7 +61,7 @@ import org.apache.commons.logging.LogFactory;
  * <code>javax.servlet.ServletResponseWrapper</code>.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 491619 $ $Date: 2007-01-01 20:31:29 +0100 (lun., 01 janv. 2007) $
+ * @version $Revision: 505593 $ $Date: 2007-02-10 01:54:56 +0100 (sam., 10 févr. 2007) $
  */
 
 final class ApplicationDispatcher
@@ -287,7 +287,7 @@ final class ApplicationDispatcher
     public void forward(ServletRequest request, ServletResponse response)
         throws ServletException, IOException
     {
-        if (System.getSecurityManager() != null) {
+        if (Globals.IS_SECURITY_ENABLED) {
             try {
                 PrivilegedForward dp = new PrivilegedForward(request,response);
                 AccessController.doPrivileged(dp);
@@ -490,7 +490,7 @@ final class ApplicationDispatcher
     public void include(ServletRequest request, ServletResponse response)
         throws ServletException, IOException
     {
-        if (System.getSecurityManager() != null) {
+        if (Globals.IS_SECURITY_ENABLED) {
             try {
                 PrivilegedInclude dp = new PrivilegedInclude(request,response);
                 AccessController.doPrivileged(dp);

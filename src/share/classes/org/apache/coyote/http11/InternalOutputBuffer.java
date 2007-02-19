@@ -446,7 +446,7 @@ public class InternalOutputBuffer
         }
 
         // End the response status line
-        if (System.getSecurityManager() != null){
+        if (org.apache.coyote.Constants.IS_SECURITY_ENABLED){
            AccessController.doPrivileged(
                 new PrivilegedAction(){
                     public Object run(){
@@ -464,7 +464,7 @@ public class InternalOutputBuffer
     }
 
     private String getMessage(final int message){
-        if (System.getSecurityManager() != null){
+        if (org.apache.coyote.Constants.IS_SECURITY_ENABLED){
            return (String)AccessController.doPrivileged(
                 new PrivilegedAction(){
                     public Object run(){
@@ -631,9 +631,9 @@ public class InternalOutputBuffer
     protected void write(ByteChunk bc) {
 
         // Writing the byte chunk to the output buffer
-        System.arraycopy(bc.getBytes(), bc.getStart(), buf, pos,
-                         bc.getLength());
-        pos = pos + bc.getLength();
+        int length = bc.getLength();
+        System.arraycopy(bc.getBytes(), bc.getStart(), buf, pos, length);
+        pos = pos + length;
 
     }
 
@@ -756,14 +756,15 @@ public class InternalOutputBuffer
         public int doWrite(ByteChunk chunk, Response res) 
             throws IOException {
 
+            int length = chunk.getLength();
             if (useSocketBuffer) {
                 socketBuffer.append(chunk.getBuffer(), chunk.getStart(), 
-                                   chunk.getLength());
+                                    length);
             } else {
                 outputStream.write(chunk.getBuffer(), chunk.getStart(), 
-                                   chunk.getLength());
+                                   length);
             }
-            return chunk.getLength();
+            return length;
 
         }
 

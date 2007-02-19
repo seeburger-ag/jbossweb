@@ -36,6 +36,7 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.apache.catalina.Globals;
 import org.apache.catalina.security.SecurityUtil;
 
 
@@ -45,7 +46,7 @@ import org.apache.catalina.security.SecurityUtil;
  *
  * @author Remy Maucherat
  * @author Jean-Francois Arcand
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 505593 $ $Date: 2007-02-10 01:54:56 +0100 (sam., 10 févr. 2007) $
  */
 
 public final class ApplicationContextFacade
@@ -161,7 +162,7 @@ public final class ApplicationContextFacade
 
     public URL getResource(String path)
         throws MalformedURLException {
-        if (System.getSecurityManager() != null) {
+        if (Globals.IS_SECURITY_ENABLED) {
             try {
                 return (URL) invokeMethod(context, "getResource", 
                                           new Object[]{path});

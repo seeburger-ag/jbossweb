@@ -45,7 +45,7 @@ import org.apache.naming.resources.ResourceAttributes;
  * content is directly returned.
  * 
  * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @version $Revision: 467222 $
+ * @version $Revision: 505593 $
  */
 public class DirContextURLConnection 
     extends URLConnection {
@@ -59,7 +59,7 @@ public class DirContextURLConnection
         if (context == null)
             throw new IllegalArgumentException
                 ("Directory context can't be null");
-        if (System.getSecurityManager() != null) {
+        if (org.apache.naming.Constants.IS_SECURITY_ENABLED) {
             this.permission = new JndiPermission(url.toString());
 	}
         this.context = context;

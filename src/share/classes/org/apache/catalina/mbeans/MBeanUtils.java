@@ -25,7 +25,6 @@ import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.modelmbean.ModelMBean;
 
 import org.apache.catalina.Contained;
 import org.apache.catalina.Container;
@@ -60,7 +59,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Amy Roh
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 500684 $ $Date: 2007-01-28 00:27:18 +0100 (dim., 28 janv. 2007) $
  */
 
 public class MBeanUtils {

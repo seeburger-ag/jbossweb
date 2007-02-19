@@ -58,7 +58,7 @@ import org.apache.tomcat.util.net.URL;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision: 470756 $ $Date: 2006-11-03 11:56:25 +0100 (ven., 03 nov. 2006) $
+ * @version $Revision: 505616 $ $Date: 2007-02-10 03:18:19 +0100 (sam., 10 févr. 2007) $
  */
 
 public class Response
@@ -268,7 +268,7 @@ public class Response
         
         cookies.clear();
 
-        if (Constants.SECURITY || Connector.RECYCLE_FACADES) {
+        if (Globals.IS_SECURITY_ENABLED || Connector.RECYCLE_FACADES) {
             if (facade != null) {
                 facade.clear();
                 facade = null;

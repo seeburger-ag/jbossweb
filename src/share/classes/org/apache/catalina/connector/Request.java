@@ -77,7 +77,7 @@ import org.apache.catalina.util.StringParser;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision: 488498 $ $Date: 2006-12-19 02:44:02 +0100 (mar., 19 déc. 2006) $
+ * @version $Revision: 505593 $ $Date: 2007-02-10 01:54:56 +0100 (sam., 10 févr. 2007) $
  */
 
 public class Request
@@ -423,7 +423,7 @@ public class Request
         requestedSessionId = null;
         requestedSessionURL = false;
 
-        if (Constants.SECURITY || Connector.RECYCLE_FACADES) {
+        if (Globals.IS_SECURITY_ENABLED || Connector.RECYCLE_FACADES) {
             parameterMap = new ParameterMap();
         } else {
             parameterMap.setLocked(false);
@@ -432,7 +432,7 @@ public class Request
 
         mappingData.recycle();
 
-        if (Constants.SECURITY || Connector.RECYCLE_FACADES) {
+        if (Globals.IS_SECURITY_ENABLED || Connector.RECYCLE_FACADES) {
             if (facade != null) {
                 facade.clear();
                 facade = null;
@@ -1738,7 +1738,7 @@ public class Request
      */
     public void setUserPrincipal(Principal principal) {
 
-        if (System.getSecurityManager() != null){
+        if (Globals.IS_SECURITY_ENABLED){
             HttpSession session = getSession(false);
             if ( (subject != null) && 
                  (!subject.getPrincipals().contains(principal)) ){

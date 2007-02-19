@@ -235,7 +235,7 @@ import org.apache.catalina.util.IOTools;
  *
  * @author Martin T Dengler [root@martindengler.com]
  * @author Amy Roh
- * @version $Revision: 479052 $, $Date: 2006-11-25 00:58:18 +0100 (sam., 25 nov. 2006) $
+ * @version $Revision: 505743 $, $Date: 2007-02-10 19:55:08 +0100 (sam., 10 févr. 2007) $
  * @since Tomcat 4.0
  *
  */
@@ -694,7 +694,7 @@ public final class CGIServlet extends HttpServlet {
      * <p>
      * </p>
      *
-     * @version  $Revision: 479052 $, $Date: 2006-11-25 00:58:18 +0100 (sam., 25 nov. 2006) $
+     * @version  $Revision: 505743 $, $Date: 2007-02-10 19:55:08 +0100 (sam., 10 févr. 2007) $
      * @since    Tomcat 4.0
      *
      */
@@ -884,7 +884,7 @@ public final class CGIServlet extends HttpServlet {
             String path = null;
             String name = null;
             String scriptname = null;
-            String cginame = null;
+            String cginame = "";
 
             if ((webAppRootDir != null)
                 && (webAppRootDir.lastIndexOf(File.separator) ==
@@ -913,8 +913,9 @@ public final class CGIServlet extends HttpServlet {
                 if (debug >= 3) {
                     log("findCGI: currentLoc=" + currentLocation);
                 }
-                currentLocation = new File(currentLocation,
-                                           (String) dirWalker.nextElement());
+                String nextElement = (String) dirWalker.nextElement();
+                currentLocation = new File(currentLocation, nextElement);
+                cginame = cginame + "/" + nextElement;
             }
             if (!currentLocation.isFile()) {
                 return new String[] { null, null, null, null };
@@ -924,13 +925,14 @@ public final class CGIServlet extends HttpServlet {
                 }
                 path = currentLocation.getAbsolutePath();
                 name = currentLocation.getName();
-                cginame = (currentLocation.getParent() + File.separator).
-                        substring(webAppRootDir.length()) + name;
 
                 if (".".equals(contextPath)) {
-                    scriptname = servletPath + cginame;
+                    scriptname = servletPath;
                 } else {
-                    scriptname = contextPath + servletPath + cginame;
+                    scriptname = contextPath + servletPath;
+                }
+                if (!servletPath.equals(cginame)) {
+                    scriptname = scriptname + cginame;
                 }
             }
 
@@ -1413,7 +1415,7 @@ public final class CGIServlet extends HttpServlet {
      * and <code>setResponse</code> methods, respectively.
      * </p>
      *
-     * @version   $Revision: 479052 $, $Date: 2006-11-25 00:58:18 +0100 (sam., 25 nov. 2006) $
+     * @version   $Revision: 505743 $, $Date: 2007-02-10 19:55:08 +0100 (sam., 10 févr. 2007) $
      */
 
     protected class CGIRunner {

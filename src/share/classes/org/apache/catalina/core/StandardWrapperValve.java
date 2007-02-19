@@ -47,7 +47,7 @@ import org.apache.tomcat.util.log.SystemLogHandler;
  * <code>StandardWrapper</code> container implementation.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 508295 $ $Date: 2007-02-16 04:09:39 +0100 (ven., 16 févr. 2007) $
  */
 
 final class StandardWrapperValve
@@ -238,13 +238,13 @@ final class StandardWrapperValve
             exception(request, response, e);
         } catch (IOException e) {
         	request.removeAttribute(Globals.JSP_FILE_ATTR);
-            container.getLogger().warn(sm.getString("standardWrapper.serviceException",
+            container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             throwable = e;
             exception(request, response, e);
         } catch (UnavailableException e) {
         	request.removeAttribute(Globals.JSP_FILE_ATTR);
-            container.getLogger().warn(sm.getString("standardWrapper.serviceException",
+            container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             //            throwable = e;
             //            exception(request, response, e);
@@ -425,13 +425,13 @@ final class StandardWrapperValve
             exception(request, response, e);
         } catch (IOException e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
-            container.getLogger().warn(sm.getString("standardWrapper.serviceException",
+            container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             throwable = e;
             exception(request, response, e);
         } catch (UnavailableException e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
-            container.getLogger().warn(sm.getString("standardWrapper.serviceException",
+            container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             // Do not save exception in 'throwable', because we
             // do not want to do exception(request, response, e) processing

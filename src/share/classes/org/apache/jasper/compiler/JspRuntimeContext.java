@@ -53,7 +53,7 @@ import org.apache.jasper.servlet.JspServletWrapper;
  * Only used if a web application context is a directory.
  *
  * @author Glenn L. Nielsen
- * @version $Revision: 504727 $
+ * @version $Revision: 505593 $
  */
 public final class JspRuntimeContext {
 
@@ -133,7 +133,7 @@ public final class JspRuntimeContext {
 	    return;
 	}
 
-        if (System.getSecurityManager() != null) {
+        if (Constants.IS_SECURITY_ENABLED) {
             initSecurity();
         }
 

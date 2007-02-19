@@ -44,6 +44,7 @@ import javax.management.ObjectName;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
+import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
@@ -60,7 +61,7 @@ import org.apache.tomcat.util.modeler.Registry;
  * be subclassed to create more sophisticated Manager implementations.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 505593 $ $Date: 2007-02-10 01:54:56 +0100 (sam., 10 févr. 2007) $
  */
 
 public abstract class ManagerBase implements Manager, MBeanRegistration {
@@ -506,7 +507,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public void setRandomFile( String s ) {
         // as a hack, you can use a static file - and genarate the same
         // session ids ( good for strange debugging )
-        if (System.getSecurityManager() != null){
+        if (Globals.IS_SECURITY_ENABLED){
             randomIS = (DataInputStream)AccessController.doPrivileged(new PrivilegedSetRandomFile());          
         } else {
             try{

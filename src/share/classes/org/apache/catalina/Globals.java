@@ -23,7 +23,7 @@ package org.apache.catalina;
  * Global constants that are applicable to multiple packages within Catalina.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 505593 $ $Date: 2007-02-10 01:54:56 +0100 (sam., 10 févr. 2007) $
  */
 
 public final class Globals {
@@ -328,6 +328,13 @@ public final class Globals {
      */
     public static final boolean STRICT_SERVLET_COMPLIANCE =
         Boolean.valueOf(System.getProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "true")).booleanValue();
+
+
+    /**
+     * Has security been turned on?
+     */
+    public static final boolean IS_SECURITY_ENABLED =
+        (System.getSecurityManager() != null);
 
 
 }
