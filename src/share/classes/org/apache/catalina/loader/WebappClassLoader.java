@@ -99,7 +99,7 @@ import org.apache.tomcat.util.IntrospectionUtils;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision: 482586 $ $Date: 2006-12-05 11:55:38 +0100 (mar., 05 déc. 2006) $
+ * @version $Revision: 510041 $ $Date: 2007-02-21 15:48:39 +0100 (mer., 21 févr. 2007) $
  */
 public class WebappClassLoader
     extends URLClassLoader
@@ -1763,7 +1763,7 @@ public class WebappClassLoader
         if (clazz != null)
             return clazz;
 
-        synchronized (entry) {
+        synchronized (this) {
             if (entry.binaryContent == null && entry.loadedClass == null)
                 throw new ClassNotFoundException(name);
 
@@ -1776,11 +1776,10 @@ public class WebappClassLoader
             Package pkg = null;
         
             if (packageName != null) {
-                synchronized (this) {
-                    pkg = getPackage(packageName);
-            
-                    // Define the package (if null)
-                    if (pkg == null) {
+                pkg = getPackage(packageName);
+                // Define the package (if null)
+                if (pkg == null) {
+                    try {
                         if (entry.manifest == null) {
                             definePackage(packageName, null, null, null, null,
                                     null, null, null);
@@ -1788,7 +1787,10 @@ public class WebappClassLoader
                             definePackage(packageName, entry.manifest,
                                     entry.codeBase);
                         }
+                    } catch (IllegalArgumentException e) {
+                        // Ignore: normal error due to dual definition of package
                     }
+                    pkg = getPackage(packageName);
                 }
             }
     
