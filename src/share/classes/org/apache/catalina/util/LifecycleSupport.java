@@ -29,7 +29,7 @@ import org.apache.catalina.LifecycleListener;
  * registered LifecycleListeners.
  *
  * @author Craig R. McClanahan
- * @version $Id: LifecycleSupport.java 467222 2006-10-24 03:17:11Z markt $
+ * @version $Id: LifecycleSupport.java 510482 2007-02-22 12:34:36Z remm $
  */
 
 public final class LifecycleSupport {
@@ -112,10 +112,7 @@ public final class LifecycleSupport {
     public void fireLifecycleEvent(String type, Object data) {
 
         LifecycleEvent event = new LifecycleEvent(lifecycle, type, data);
-        LifecycleListener interested[] = null;
-        synchronized (listeners) {
-            interested = (LifecycleListener[]) listeners.clone();
-        }
+        LifecycleListener interested[] = listeners;
         for (int i = 0; i < interested.length; i++)
             interested[i].lifecycleEvent(event);
 
