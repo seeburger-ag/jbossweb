@@ -379,7 +379,7 @@ public class NioEndpoint {
     /**
      * Acceptor thread count.
      */
-    protected int acceptorThreadCount = 0;
+    protected int acceptorThreadCount = 1;
     public void setAcceptorThreadCount(int acceptorThreadCount) { this.acceptorThreadCount = acceptorThreadCount; }
     public int getAcceptorThreadCount() { return acceptorThreadCount; }
 
@@ -438,6 +438,8 @@ public class NioEndpoint {
                 IntrospectionUtils.setProperty(selectorPool, name.substring(selectorPoolName.length()), value);
             } else if (name.startsWith(socketName)) {
                 IntrospectionUtils.setProperty(socketProperties, name.substring(socketName.length()), value);
+            } else {
+                IntrospectionUtils.setProperty(this,name,value);
             }
         }catch ( Exception x ) {
             log.error("Unable to set attribute \""+name+"\" to \""+value+"\"",x);
@@ -807,13 +809,13 @@ public class NioEndpoint {
                 if (sslContext != null) {
                     SSLEngine engine = createSSLEngine();
                     int appbufsize = engine.getSession().getApplicationBufferSize();
-                    NioBufferHandler bufhandler = new NioBufferHandler(Math.max(appbufsize,getReadBufSize()),
-                                                                       Math.max(appbufsize,getWriteBufSize()),
+                    NioBufferHandler bufhandler = new NioBufferHandler(Math.max(appbufsize,socketProperties.getAppReadBufSize()),
+                                                                       Math.max(appbufsize,socketProperties.getAppWriteBufSize()),
                                                                        socketProperties.getDirectBuffer());
                     channel = new SecureNioChannel(socket, engine, bufhandler, selectorPool);
                 } else {
-                    NioBufferHandler bufhandler = new NioBufferHandler(getReadBufSize(),
-                                                                       getWriteBufSize(),
+                    NioBufferHandler bufhandler = new NioBufferHandler(socketProperties.getAppReadBufSize(),
+                                                                       socketProperties.getAppWriteBufSize(),
                                                                        socketProperties.getDirectBuffer());
 
                     channel = new NioChannel(socket, bufhandler);

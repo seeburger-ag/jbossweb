@@ -95,6 +95,8 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
     public void setProperty(String name, String value) {
         if ( name!=null && (name.startsWith("socket.") ||name.startsWith("selectorPool.")) ){
             ep.setProperty(name, value);
+        } else {
+            ep.setProperty(name,value); //make sure we at least try to set all properties
         }
         setAttribute(name, value);
     }
@@ -515,6 +517,9 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
     
     public String getKeystorePass() { return ep.getKeystorePass();}
     public void setKeystorePass(String s ) { ep.setKeystorePass(s);}
+    public void setKeypass(String s) { setKeystorePass(s);}
+    public String getKeypass() { return getKeystorePass();}
+    
     
     public String getKeystoreType() { return ep.getKeystoreType();}
     public void setKeystoreType(String s ) { ep.setKeystoreType(s);}
@@ -690,8 +695,8 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
         }
     }
 
-    protected static org.apache.commons.logging.Log log
-        = org.apache.commons.logging.LogFactory.getLog(Http11NioProtocol.class);
+    protected static org.apache.juli.logging.Log log
+        = org.apache.juli.logging.LogFactory.getLog(Http11NioProtocol.class);
 
     // -------------------- Various implementation classes --------------------
 

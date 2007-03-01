@@ -18,38 +18,38 @@ package org.apache.tomcat.util.net;
 import java.net.Socket;
 import java.net.SocketException;
 /**
- * Properties that can be set in the &lt;Connector&gt; element 
+ * Properties that can be set in the &lt;Connector&gt; element
  * in server.xml. All properties are prefixed with &quot;socket.&quot;
  * and are currently only working for the Nio connector
- * 
+ *
  * @author Filip Hanik
  */
 public class SocketProperties {
     /**
-     * Enable/disable key cache, this bounced cache stores 
+     * Enable/disable key cache, this bounced cache stores
      * KeyAttachment objects to reduce GC
      * Default is 100
      * -1 is unlimited
      * 0 is disabled
      */
     protected int keyCache = 500;
-    
+
     /**
-     * Enable/disable poller event cache, this bounded cache stores 
+     * Enable/disable poller event cache, this bounded cache stores
      * PollerEvent objects to reduce GC for the poller
      * Default is -1 (unlimited)
      * -1 is unlimited
      * 0 is disabled
      * >0 the max number of objects to keep in cache.
      */
-    protected int eventCache = -1;
-    
+    protected int eventCache = 500;
+
 
     /**
      * Enable/disable direct buffers for the network buffers
      * Default value is enabled
      */
-    protected boolean directBuffer = true;
+    protected boolean directBuffer = false;
     /**
      * Socket receive buffer size in bytes (SO_RCVBUF)
      * Default value is 25188
@@ -60,7 +60,19 @@ public class SocketProperties {
      * Default value is 43800
      */
     protected int txBufSize = 43800;
-    
+
+    /**
+     * The application read buffer size in bytes.
+     * Default value is rxBufSize
+     */
+    protected int appReadBufSize = 8192;
+
+    /**
+     * The application write buffer size in bytes
+     * Default value is txBufSize
+     */
+    protected int appWriteBufSize = 8192;
+
     /**
      * NioChannel pool size for the endpoint,
      * this value is how many channels
@@ -68,7 +80,7 @@ public class SocketProperties {
      * Default value is 500
      */
     protected int bufferPool = 500;
-    
+
 
     /**
      * Buffer pool size in bytes to be cached
@@ -76,7 +88,7 @@ public class SocketProperties {
      * Default value is 100MB (1024*1024*100 bytes)
      */
     protected int bufferPoolSize = 1024*1024*100;
-    
+
     /**
      * TCP_NO_DELAY option, default is true
      */
@@ -223,6 +235,14 @@ public class SocketProperties {
         return properties;
     }
 
+    public int getAppReadBufSize() {
+        return appReadBufSize;
+    }
+
+    public int getAppWriteBufSize() {
+        return appWriteBufSize;
+    }
+
     public int getDirectBufferPool() {
         return bufferPool;
     }
@@ -297,6 +317,14 @@ public class SocketProperties {
 
     public void setKeyCache(int keyCache) {
         this.keyCache = keyCache;
+    }
+
+    public void setAppReadBufSize(int appReadBufSize) {
+        this.appReadBufSize = appReadBufSize;
+    }
+
+    public void setAppWriteBufSize(int appWriteBufSize) {
+        this.appWriteBufSize = appWriteBufSize;
     }
 
     public void setDirectBufferPool(int directBufferPool) {
