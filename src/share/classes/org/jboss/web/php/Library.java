@@ -1,5 +1,4 @@
 /*
-/*
  * JBoss, Home of Professional Open Source
  * Copyright 2006, JBoss Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
@@ -41,6 +40,8 @@ public class Library {
     private static Library engine = null;
     private static boolean inited = false;
 
+    static PhpThread phpthread = null;
+
     private Library()
     {
         boolean loaded = false;
@@ -80,7 +81,7 @@ public class Library {
     /* Initialize PHP Engine
      * This has to be the first call to PHP Module.
      */
-    private static native boolean startup();
+    public static native boolean startup();
 
     /* destroy global PHP Engine
      * This has to be the last call to PHP Module.
@@ -107,7 +108,14 @@ public class Library {
             PHP_MINOR_VERSION  = version(2);
             PHP_PATCH_VERSION  = version(3);
         }
-        inited = startup();
+        
+        phpthread = new PhpThread();
+        phpthread.setDaemon(true);
+        phpthread.start();
+        // Wait until the startup is done.
+        while (!inited &&  phpthread.isAlive()) {
+            Thread.currentThread().sleep(3000);
+        }
         return inited;
     }
 
@@ -125,9 +133,14 @@ public class Library {
     public static void terminate()
     {
         if (engine != null) {
-            shutdown();
+            if (phpthread != null && phpthread.isAlive()) {
+                phpthread.interrupt();
+            }
             engine = null;
             inited = false;
         }
+    }
+    public static void StartUp() {
+        inited = startup();
     }
 }
