@@ -31,6 +31,7 @@ import org.apache.tomcat.util.digester.CallParamRule;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.Rule;
 import org.apache.tomcat.util.digester.RuleSetBase;
+import org.apache.tomcat.util.digester.SetNextRule;
 import org.xml.sax.Attributes;
 
 
@@ -39,7 +40,7 @@ import org.xml.sax.Attributes;
  * deployment descriptor (<code>/WEB-INF/web.xml</code>) resource.</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 513349 $ $Date: 2007-03-01 15:33:06 +0100 (jeu., 01 mars 2007) $
  */
 
 public class WebRuleSet extends RuleSetBase {
@@ -375,7 +376,7 @@ public class WebRuleSet extends RuleSetBase {
         digester.addRule(prefix + "web-app/service-ref",
                          new SetNextNamingRule("addService",
                          "org.apache.catalina.deploy.ContextService"));
-        
+
         digester.addCallMethod(prefix + "web-app/service-ref/description",
                                "setDescription", 0);
         digester.addCallMethod(prefix + "web-app/service-ref/display-name",
@@ -385,24 +386,50 @@ public class WebRuleSet extends RuleSetBase {
         digester.addCallMethod(prefix + "web-app/service-ref/service-ref-name",
                                "setName", 0);
         digester.addCallMethod(prefix + "web-app/service-ref/service-interface",
-                               "setServiceinterface", 0);
+                               "setType", 0);
         digester.addCallMethod(prefix + "web-app/service-ref/wsdl-file",
                                "setWsdlfile", 0);
         digester.addCallMethod(prefix + "web-app/service-ref/jaxrpc-mapping-file",
                                "setJaxrpcmappingfile", 0);
         digester.addCallMethod(prefix + "web-app/service-ref/service-qname/namespaceURI",
-                               "setNamespaceURI", 0);
+                               "setServiceqnameNamespaceURI", 0);
         digester.addCallMethod(prefix + "web-app/service-ref/service-qname/localpart",
-                               "setLocalpart", 0);
-        digester.addCallMethod(prefix + 
-                               "web-app/service-ref/port-component/service-endpoint-interface",
-                               "setServiceendpoint", 0);
-        digester.addCallMethod(prefix + "web-app/service-ref/port-component/port-component-link",
-                               "setPortlink", 0);
-        digester.addCallMethod(prefix + "web-app/service-ref/handler",
-                               "setHandler", 0);
-        digester.addCallMethod(prefix + "web-app/service-ref/service-ref-type",
-                               "setType", 0);
+                               "setServiceqnameLocalpart", 0);
+
+        digester.addRule(prefix + "web-app/service-ref/port-component-ref",
+                               new CallMethodMultiRule("addPortcomponent", 2, 1));
+        digester.addCallParam(prefix + "web-app/service-ref/port-component-ref/service-endpoint-interface", 0);
+        digester.addRule(prefix + "web-app/service-ref/port-component-ref/port-component-link", new CallParamMultiRule(1));
+
+        digester.addObjectCreate(prefix + "web-app/service-ref/handler",
+                                 "org.apache.catalina.deploy.ContextHandler");
+        digester.addRule(prefix + "web-app/service-ref/handler",
+                         new SetNextRule("addHandler",
+                         "org.apache.catalina.deploy.ContextHandler"));
+        
+        digester.addCallMethod(prefix + "web-app/service-ref/handler/handler-name",
+                               "setName", 0);
+        digester.addCallMethod(prefix + "web-app/service-ref/handler/handler-class",
+                               "setHandlerclass", 0);
+
+        digester.addCallMethod(prefix + "web-app/service-ref/handler/init-param",
+                               "setProperty", 2);
+        digester.addCallParam(prefix + "web-app/service-ref/handler/init-param/param-name",
+                              0);
+        digester.addCallParam(prefix + "web-app/service-ref/handler/init-param/param-value",
+                              1);
+
+        digester.addCallMethod(prefix + "web-app/service-ref/handler/soap-header",
+                               "addSoapHeaders", 2);
+        digester.addCallParam(prefix + "web-app/service-ref/handler/soap-header/localpart",
+                              0);
+        digester.addCallParam(prefix + "web-app/service-ref/handler/soap-header/namespaceURI",
+                              1);
+
+        digester.addCallMethod(prefix + "web-app/service-ref/handler/soap-role",
+                               "addSoapRole", 0);
+        digester.addCallMethod(prefix + "web-app/service-ref/handler/port-name",
+                               "addPortName", 0);
         
         digester.addRule(prefix + "web-app/servlet",
                          new WrapperCreateRule());
@@ -746,6 +773,13 @@ final class CallMethodMultiRule extends CallMethodRule {
             sb.append(digester.getCount());
             sb.append(")");
             throw new org.xml.sax.SAXException(sb.toString());
+        }
+        
+        if (multiParams == null) {
+            paramValues[multiParamIndex] = null;
+            Object result = IntrospectionUtils.callMethodN(target, methodName,
+                    paramValues, paramTypes);   
+            return;
         }
         
         for (int j = 0; j < multiParams.size(); j++) {

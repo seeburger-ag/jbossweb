@@ -24,7 +24,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.util.StringManager;
 import org.apache.commons.logging.Log;
@@ -43,7 +42,7 @@ import org.apache.tomcat.util.digester.Digester;
  * synchronization is performed around accesses to the principals collection.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 514183 $ $Date: 2007-03-03 17:24:08 +0100 (sam., 03 mars 2007) $
  */
 
 public class MemoryRealm  extends RealmBase {
@@ -51,12 +50,6 @@ public class MemoryRealm  extends RealmBase {
     private static Log log = LogFactory.getLog(MemoryRealm.class);
 
     // ----------------------------------------------------- Instance Variables
-
-
-    /**
-     * The Container with which this Realm is associated.
-     */
-    private Container container = null;
 
 
     /**
@@ -97,12 +90,6 @@ public class MemoryRealm  extends RealmBase {
      */
     private static StringManager sm =
         StringManager.getManager(Constants.Package);
-
-
-    /**
-     * Has this component been started?
-     */
-    private boolean started = false;
 
 
     // ------------------------------------------------------------- Properties
@@ -314,7 +301,8 @@ public class MemoryRealm  extends RealmBase {
                 digester.parse(file);
             }
         } catch (Exception e) {
-            throw new LifecycleException("memoryRealm.readXml", e);
+            throw new LifecycleException
+                (sm.getString("memoryRealm.readXml"), e);
         } finally {
             digester.reset();
         }

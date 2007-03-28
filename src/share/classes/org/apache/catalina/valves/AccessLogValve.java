@@ -111,7 +111,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Jason Brittain
  * @author Remy Maucherat
  * @author Takayuki Kaneko
- * @version $Revision: 509179 $ $Date: 2007-01-04 12:17:11 +0900
+ * @version $Revision: 522270 $ $Date: 2007-01-04 12:17:11 +0900
  */
 
 public class AccessLogValve
@@ -140,7 +140,7 @@ public class AccessLogValve
      * The descriptive information about this implementation.
      */
     protected static final String info =
-        "org.apache.catalina.valves.FastAccessLogValve/1.0";
+        "org.apache.catalina.valves.AccessLogValve/2.0";
 
 
     /**

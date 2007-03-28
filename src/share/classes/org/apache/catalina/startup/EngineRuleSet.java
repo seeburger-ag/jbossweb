@@ -31,7 +31,7 @@ import org.apache.tomcat.util.digester.RuleSetBase;
  * <code>ContextRuleSet</code>, respectively.</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 468957 $ $Date: 2006-10-29 20:28:37 +0100 (dim., 29 oct. 2006) $
+ * @version $Revision: 520968 $ $Date: 2007-03-21 19:00:39 +0100 (mer., 21 mars 2007) $
  */
 
 public class EngineRuleSet extends RuleSetBase {
@@ -89,7 +89,7 @@ public class EngineRuleSet extends RuleSetBase {
      *  should be added.
      */
     public void addRuleInstances(Digester digester) {
-
+        
         digester.addObjectCreate(prefix + "Engine",
                                  "org.apache.catalina.core.StandardEngine",
                                  "className");

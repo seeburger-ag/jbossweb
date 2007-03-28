@@ -25,6 +25,8 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.util.StringManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tomcat.jni.Library;
+
 import java.lang.reflect.InvocationTargetException;
 
 
@@ -35,7 +37,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Remy Maucherat
  * @author Filip Hanik
- * @version $Revision: 487695 $ $Date: 2006-12-15 23:32:11 +0100 (ven., 15 déc. 2006) $
+ * @version $Revision: 518378 $ $Date: 2007-03-15 00:12:56 +0100 (jeu., 15 mars 2007) $
  * @since 4.1
  */
 
@@ -184,6 +186,9 @@ public class AprLifecycleListener
            log.debug(sm.getString("aprListener.tcnValid", major + "."
                      + minor + "." + patch));
         }
+        // Log APR flags
+        log.info(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
+                Library.APR_HAS_SO_ACCEPTFILTER, Library.APR_HAS_RANDOM));
         return true;
     }
 

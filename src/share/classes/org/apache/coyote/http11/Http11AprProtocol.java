@@ -264,15 +264,6 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration
         setAttribute("port", "" + port);
     }
 
-    public int getFirstReadTimeout() {
-        return ep.getFirstReadTimeout();
-    }
-
-    public void setFirstReadTimeout( int i ) {
-        ep.setFirstReadTimeout(i);
-        setAttribute("firstReadTimeout", "" + i);
-    }
-
     public int getPollTime() {
         return ep.getPollTime();
     }
@@ -463,9 +454,19 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration
         setAttribute("maxKeepAliveRequests", "" + mkar);
     }
 
+                                                                                
     /**
-     * Return the Keep-Alive policy for the connection.
+     * The number of seconds Tomcat will wait for a subsequent request
+     * before closing the connection.
      */
+    public int getKeepAliveTimeout() {
+        return ep.getKeepAliveTimeout(); 
+    }
+
+    public void setKeepAliveTimeout(int timeout) {
+        ep.setKeepAliveTimeout(timeout);
+    }
+
     public boolean getKeepAlive() {
         return ((maxKeepAliveRequests != 0) && (maxKeepAliveRequests != 1));
     }

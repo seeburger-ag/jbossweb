@@ -31,7 +31,7 @@ import java.io.Serializable;
  * Naming Context and their associated JNDI context.
  *
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 513349 $ $Date: 2007-03-01 15:33:06 +0100 (jeu., 01 mars 2007) $
  */
 
 public class NamingResources implements Serializable {
@@ -345,7 +345,11 @@ public class NamingResources implements Serializable {
         if (entries.containsKey(service.getName())) {
             return;
         } else {
-            entries.put(service.getName(), service.getServiceinterface());
+            Object value = service.getType();
+            if (value == null) {
+                value = "";
+            }
+            entries.put(service.getName(), value);
         }
         
         synchronized (services) {

@@ -122,7 +122,7 @@ import org.apache.commons.logging.LogFactory;
  *
  *
  * @author Tim Funk
- * @version $Revision: 509179 $ $Date: 2007-02-19 13:19:08 +0100 (lun., 19 févr. 2007) $
+ * @version $Revision: 522854 $ $Date: 2007-03-27 12:10:45 +0200 (mar., 27 mars 2007) $
  */
 
 public class ExtendedAccessLogValve
@@ -403,6 +403,9 @@ public class ExtendedAccessLogValve
         }
         
         public String getToken() throws IOException {
+            if(ended)
+                return null ;
+            
             String result = null;
             subToken = false;
             parameter = false;
@@ -462,6 +465,8 @@ public class ExtendedAccessLogValve
         }
         
         public String getWhiteSpaces() throws IOException {
+            if(isEnded())
+                return "" ;
             StringBuffer whiteSpaces = new StringBuffer();
             if (buf.length() > 0) {
                 whiteSpaces.append(buf);

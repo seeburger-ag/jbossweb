@@ -32,7 +32,7 @@ import org.apache.naming.EjbRef;
  * Object factory for EJBs.
  * 
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 522136 $ $Date: 2007-03-25 03:08:07 +0200 (dim., 25 mars 2007) $
  */
 
 public class EjbFactory
@@ -134,6 +134,10 @@ public class EjbFactory
                     try {
                         factory = (ObjectFactory) factoryClass.newInstance();
                     } catch(Throwable t) {
+                        NamingException ex = new NamingException
+                            ("Could not load resource factory class");
+                        ex.initCause(t);
+                        throw ex;
                     }
                 }
             } else {

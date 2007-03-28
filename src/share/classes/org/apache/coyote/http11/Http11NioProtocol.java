@@ -34,13 +34,13 @@ import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
 import org.apache.coyote.RequestInfo;
 import org.apache.tomcat.util.modeler.Registry;
+import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
 import org.apache.tomcat.util.net.NioEndpoint.Handler;
-import org.apache.tomcat.util.res.StringManager;
-import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SecureNioChannel;
 import org.apache.tomcat.util.net.SocketStatus;
+import org.apache.tomcat.util.res.StringManager;
 
 
 /**
@@ -256,6 +256,10 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
     public void setExecutor(Executor executor) {
         ep.setExecutor(executor);
     }
+    
+    public void setUseExecutor(boolean useexec) {
+        ep.setUseExecutor(useexec);
+    }
 
     public int getMaxThreads() {
         return ep.getMaxThreads();
@@ -270,11 +274,39 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
       ep.setThreadPriority(threadPriority);
       setAttribute("threadPriority", "" + threadPriority);
     }
+    
+    public void setAcceptorThreadPriority(int threadPriority) {
+      ep.setAcceptorThreadPriority(threadPriority);
+      setAttribute("acceptorThreadPriority", "" + threadPriority);
+    }
+
+    public void setPollerThreadPriority(int threadPriority) {
+      ep.setPollerThreadPriority(threadPriority);
+      setAttribute("pollerThreadPriority", "" + threadPriority);
+    }
 
     public int getThreadPriority() {
       return ep.getThreadPriority();
     }
 
+    public int getAcceptorThreadPriority() {
+      return ep.getAcceptorThreadPriority();
+    }
+    
+    public int getPollerThreadPriority() {
+      return ep.getThreadPriority();
+    }
+    
+    
+    public boolean getUseSendfile() {
+        return ep.getUseSendfile();
+    }
+
+    public void setUseSendfile(boolean useSendfile) {
+        ep.setUseSendfile(useSendfile);
+    }
+
+    
     // -------------------- Tcp setup --------------------
 
     public int getBacklog() {
@@ -502,6 +534,11 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
         setAttribute("timeout", "" + timeouts);
     }
 
+    public void setOomParachute(int oomParachute) {
+        ep.setOomParachute(oomParachute);
+        setAttribute("oomParachute",oomParachute);
+    }
+
     // --------------------  SSL related properties --------------------
 
     public String getKeystoreFile() { return ep.getKeystoreFile();}
@@ -552,6 +589,10 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
 
         Http11ConnectionHandler(Http11NioProtocol proto) {
             this.proto = proto;
+        }
+        
+        public void releaseCaches() {
+            recycledProcessors.clear();
         }
 
         public SocketState event(NioChannel socket, SocketStatus status) {
@@ -695,8 +736,8 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
         }
     }
 
-    protected static org.apache.juli.logging.Log log
-        = org.apache.juli.logging.LogFactory.getLog(Http11NioProtocol.class);
+    protected static org.apache.commons.logging.Log log
+        = org.apache.commons.logging.LogFactory.getLog(Http11NioProtocol.class);
 
     // -------------------- Various implementation classes --------------------
 
@@ -710,6 +751,10 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
 
     public String getDomain() {
         return domain;
+    }
+
+    public int getOomParachute() {
+        return ep.getOomParachute();
     }
 
     public ObjectName preRegister(MBeanServer server,

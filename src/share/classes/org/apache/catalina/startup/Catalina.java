@@ -52,7 +52,7 @@ import org.xml.sax.InputSource;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 523327 $ $Date: 2007-03-28 15:52:08 +0200 (mer., 28 mars 2007) $
  */
 
 public class Catalina extends Embedded {
@@ -302,13 +302,27 @@ public class Catalina extends Embedded {
                             "addLifecycleListener",
                             "org.apache.catalina.LifecycleListener");
 
+        //Executor
+        digester.addObjectCreate("Server/Service/Executor",
+                         "org.apache.catalina.core.StandardThreadExecutor",
+                         "className");
+        digester.addSetProperties("Server/Service/Executor");
+
+        digester.addSetNext("Server/Service/Executor",
+                            "addExecutor",
+                            "org.apache.catalina.Executor");
+
+        
         digester.addRule("Server/Service/Connector",
                          new ConnectorCreateRule());
         digester.addRule("Server/Service/Connector", 
-                         new SetAllPropertiesRule());
+                         new SetAllPropertiesRule(new String[]{"executor"}));
         digester.addSetNext("Server/Service/Connector",
                             "addConnector",
                             "org.apache.catalina.connector.Connector");
+        
+        
+
 
         digester.addObjectCreate("Server/Service/Connector/Listener",
                                  null, // MUST be specified in the element
@@ -431,6 +445,8 @@ public class Catalina extends Embedded {
      */
     public void load() {
 
+        long t1 = System.nanoTime();
+
         initDirs();
 
         // Before digester - it may be needed
@@ -439,9 +455,7 @@ public class Catalina extends Embedded {
 
         // Create and execute our Digester
         Digester digester = createStartDigester();
-        long t1 = System.currentTimeMillis();
 
-        Exception ex = null;
         InputSource inputSource = null;
         InputStream inputStream = null;
         File file = null;
@@ -507,9 +521,9 @@ public class Catalina extends Embedded {
             }
         }
 
-        long t2 = System.currentTimeMillis();
+        long t2 = System.nanoTime();
         if(log.isInfoEnabled())
-            log.info("Initialization processed in " + (t2 - t1) + " ms");
+            log.info("Initialization processed in " + ((t2 - t1) / 1000000) + " ms");
 
     }
 
@@ -544,8 +558,8 @@ public class Catalina extends Embedded {
             load();
         }
 
-        long t1 = System.currentTimeMillis();
-
+        long t1 = System.nanoTime();
+        
         // Start the new server
         if (server instanceof Lifecycle) {
             try {
@@ -555,9 +569,9 @@ public class Catalina extends Embedded {
             }
         }
 
-        long t2 = System.currentTimeMillis();
+        long t2 = System.nanoTime();
         if(log.isInfoEnabled())
-            log.info("Server startup in " + (t2 - t1) + " ms");
+            log.info("Server startup in " + ((t2 - t1) / 1000000) + " ms");
 
         try {
             // Register shutdown hook

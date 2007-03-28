@@ -29,7 +29,7 @@ import org.apache.tomcat.util.digester.RuleSetBase;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 513349 $ $Date: 2007-03-01 15:33:06 +0100 (jeu., 01 mars 2007) $
  */
 
 public class NamingRuleSet extends RuleSetBase {
@@ -122,6 +122,13 @@ public class NamingRuleSet extends RuleSetBase {
         digester.addRule(prefix + "ResourceEnvRef",
                 new SetNextNamingRule("addResourceEnvRef",
                             "org.apache.catalina.deploy.ContextResourceEnvRef"));
+
+        digester.addObjectCreate(prefix + "ServiceRef",
+            "org.apache.catalina.deploy.Contextservice");
+        digester.addRule(prefix + "ServiceRef", new SetAllPropertiesRule());
+        digester.addRule(prefix + "ServiceRef",
+                new SetNextNamingRule("addService",
+                            "org.apache.catalina.deploy.ContextService"));
 
         digester.addObjectCreate(prefix + "Transaction",
             "org.apache.catalina.deploy.ContextTransaction");

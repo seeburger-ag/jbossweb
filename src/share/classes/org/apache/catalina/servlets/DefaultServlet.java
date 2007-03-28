@@ -72,7 +72,7 @@ import org.apache.naming.resources.ResourceAttributes;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 476992 $ $Date: 2006-11-20 01:17:55 +0100 (lun., 20 nov. 2006) $
+ * @version $Revision: 514179 $ $Date: 2007-03-03 17:03:11 +0100 (sam., 03 mars 2007) $
  */
 
 public class DefaultServlet
@@ -1567,7 +1567,7 @@ public class DefaultServlet
                 // If an If-None-Match header has been specified, if modified since
                 // is ignored.
                 if ((request.getHeader("If-None-Match") == null)
-                    && (lastModified <= headerValue + 1000)) {
+                    && (lastModified < headerValue + 1000)) {
                     // The entity has not been modified since the date
                     // specified by the client. This is not an error case.
                     response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -1658,7 +1658,7 @@ public class DefaultServlet
             long lastModified = resourceAttributes.getLastModified();
             long headerValue = request.getDateHeader("If-Unmodified-Since");
             if (headerValue != -1) {
-                if ( lastModified > (headerValue + 1000)) {
+                if ( lastModified >= (headerValue + 1000)) {
                     // The entity has not been modified since the date
                     // specified by the client. This is not an error case.
                     response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);

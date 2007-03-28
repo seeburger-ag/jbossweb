@@ -109,7 +109,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 522580 $ $Date: 2007-03-26 19:52:23 +0200 (lun., 26 mars 2007) $
  */
 
 public class StandardContext
@@ -4048,8 +4048,6 @@ public class StandardContext
             int loadOnStartup = wrapper.getLoadOnStartup();
             if (loadOnStartup < 0)
                 continue;
-            if (loadOnStartup == 0)     // Arbitrarily put them last
-                loadOnStartup = Integer.MAX_VALUE;
             Integer key = new Integer(loadOnStartup);
             ArrayList list = (ArrayList) map.get(key);
             if (list == null) {
@@ -4090,6 +4088,8 @@ public class StandardContext
     public synchronized void start() throws LifecycleException {
         //if (lazy ) return;
         if (started) {
+            if(log.isInfoEnabled())
+                log.info(sm.getString("containerBase.alreadyStarted", logName()));
             return;
         }
         if( !initialized ) { 
@@ -5084,7 +5084,7 @@ public class StandardContext
         if (urlPattern == null)
             return (false);
         if (urlPattern.indexOf('\n') >= 0 || urlPattern.indexOf('\r') >= 0) {
-            getLogger().warn(sm.getString("standardContext.crlfinurl",urlPattern));
+            return (false);
         }
         if (urlPattern.startsWith("*.")) {
             if (urlPattern.indexOf('/') < 0)

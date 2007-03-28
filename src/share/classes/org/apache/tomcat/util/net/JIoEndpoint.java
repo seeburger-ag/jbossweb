@@ -261,7 +261,7 @@ public class JIoEndpoint {
     }
     
     public int getCurrentThreadsBusy() {
-        return curThreads - workers.size();
+        return workers!=null?curThreads - workers.size():0;
     }
     
 
@@ -318,6 +318,8 @@ public class JIoEndpoint {
                             // Ignore
                         }
                     }
+                }catch ( IOException x ) {
+                    if ( running ) log.error(sm.getString("endpoint.accept.fail"), x);
                 } catch (Throwable t) {
                     log.error(sm.getString("endpoint.accept.fail"), t);
                 }

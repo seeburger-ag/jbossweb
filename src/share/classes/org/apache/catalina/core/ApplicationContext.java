@@ -61,7 +61,7 @@ import org.apache.tomcat.util.http.mapper.MappingData;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 522745 $ $Date: 2007-03-27 06:44:06 +0200 (mar., 27 mars 2007) $
  */
 
 public class ApplicationContext
@@ -804,12 +804,17 @@ public class ApplicationContext
 
 
     // -------------------------------------------------------- Package Methods
-
-
+    protected StandardContext getContext() {
+        return this.context;
+    }
+    
+    protected Map getReadonlyAttributes() {
+        return this.readOnlyAttributes;
+    }
     /**
      * Clear all application-created attributes.
      */
-    void clearAttributes() {
+    protected void clearAttributes() {
 
         // Create list of attributes to be removed
         ArrayList list = new ArrayList();

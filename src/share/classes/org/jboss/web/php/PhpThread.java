@@ -22,7 +22,7 @@
  * @author Jean-Frederic Clere
  * @version $Revision: 420067 $, $Date: 2006-07-08 09:16:58 +0200 (sub, 08 srp 2006) $
  */
-package org.apache.catalina.servlets.php;
+package org.jboss.web.php;
 
 import java.lang.Thread;
 import java.lang.InterruptedException;
