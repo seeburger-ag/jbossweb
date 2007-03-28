@@ -524,14 +524,6 @@ public class StandardService
             }
         }
 
-        // Start our defined Connectors second
-        synchronized (connectors) {
-            for (int i = 0; i < connectors.length; i++) {
-                if (connectors[i] instanceof Lifecycle)
-                    ((Lifecycle) connectors[i]).start();
-            }
-        }
-        
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_START_EVENT, null);
 
