@@ -44,7 +44,7 @@ import org.apache.tomcat.util.net.SocketStatus;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 506200 $ $Date: 2007-02-12 02:02:03 +0100 (lun., 12 févr. 2007) $
+ * @version $Revision: 524836 $ $Date: 2007-04-02 18:51:29 +0200 (lun., 02 avr. 2007) $
  */
 
 public class CoyoteAdapter
@@ -141,6 +141,14 @@ public class CoyoteAdapter
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
 
+                if (!error && !response.isClosed() && (request.getAttribute(Globals.EXCEPTION_ATTR) != null)) {
+                    // An unexpected exception occurred while processing the event, so
+                    // error should be called
+                    request.getEvent().setEventType(CometEvent.EventType.ERROR);
+                    request.getEvent().setEventSubType(null);
+                    error = true;
+                    connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
+                }
                 if (response.isClosed() || !request.isComet()) {
                     res.action(ActionCode.ACTION_COMET_END, null);
                 }
@@ -216,7 +224,7 @@ public class CoyoteAdapter
                 connector.getContainer().getPipeline().getFirst().invoke(request, response);
 
                 if (request.isComet()) {
-                    if (!response.isClosed()) {
+                    if (!response.isClosed() && !response.isError()) {
                         comet = true;
                         res.action(ActionCode.ACTION_COMET_BEGIN, null);
                     } else {

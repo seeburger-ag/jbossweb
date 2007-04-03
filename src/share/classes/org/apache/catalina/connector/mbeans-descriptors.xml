@@ -69,6 +69,10 @@
           description="The 'enable DNS lookups' flag for this Connector"
                  type="boolean"/>
 
+    <attribute   name="keepAliveTimeout"
+          description="The number of seconds Tomcat will wait for a subsequent request before closing the connection"
+                 type="int"/>
+
     <attribute   name="keystoreFile"
           description="Pathname to the key store file to be used"
                  type="java.lang.String"/>
@@ -170,6 +174,18 @@
     <attribute    name="threadPriority"
            description="The thread priority for processors"
                   type="int"/>
+
+    <attribute   name="trustStoreFile"
+          description="Pathname to the trust store file to be used"
+                 type="java.lang.String"/>
+
+    <attribute   name="trustStorePass"
+          description="Password for accessing the trust store file"
+                 type="java.lang.String"/>
+
+    <attribute   name="trustStoreType"
+          description="Type of trust store file to be used for trusted certificates"
+                 type="java.lang.String"/>
 
     <attribute   name="URIEncoding"
           description="Character encoding used to decode the URI"

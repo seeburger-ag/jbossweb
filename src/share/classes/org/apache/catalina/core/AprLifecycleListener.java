@@ -37,7 +37,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Remy Maucherat
  * @author Filip Hanik
- * @version $Revision: 518378 $ $Date: 2007-03-15 00:12:56 +0100 (jeu., 15 mars 2007) $
+ * @version $Revision: 524730 $ $Date: 2007-04-02 08:24:33 +0200 (lun., 02 avr. 2007) $
  * @since 4.1
  */
 
@@ -59,7 +59,7 @@ public class AprLifecycleListener
     protected static final int TCN_REQUIRED_MAJOR = 1;
     protected static final int TCN_REQUIRED_MINOR = 1;
     protected static final int TCN_REQUIRED_PATCH = 8;
-    protected static final int TCN_RECOMMENDED_PV = 8;
+    protected static final int TCN_RECOMMENDED_PV = 10;
 
 
     // ---------------------------------------------- Properties
