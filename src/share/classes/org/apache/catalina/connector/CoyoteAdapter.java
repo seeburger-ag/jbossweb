@@ -44,7 +44,7 @@ import org.apache.tomcat.util.net.SocketStatus;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 524836 $ $Date: 2007-04-02 18:51:29 +0200 (lun., 02 avr. 2007) $
+ * @version $Revision: 525160 $ $Date: 2007-04-03 16:13:33 +0200 (mar., 03 avr. 2007) $
  */
 
 public class CoyoteAdapter
@@ -120,8 +120,15 @@ public class CoyoteAdapter
             boolean error = false;
             try {
                 if (status == SocketStatus.OPEN) {
-                    request.getEvent().setEventType(CometEvent.EventType.READ);
-                    request.getEvent().setEventSubType(null);
+                    if (response.isClosed()) {
+                        // The event has been closed asynchronously, so call end instead of
+                        // read to cleanup the pipeline
+                        request.getEvent().setEventType(CometEvent.EventType.END);
+                        request.getEvent().setEventSubType(null);
+                    } else {
+                        request.getEvent().setEventType(CometEvent.EventType.READ);
+                        request.getEvent().setEventSubType(null);
+                    }
                 } else if (status == SocketStatus.DISCONNECT) {
                     request.getEvent().setEventType(CometEvent.EventType.ERROR);
                     request.getEvent().setEventSubType(CometEvent.EventSubType.CLIENT_DISCONNECT);
@@ -134,8 +141,15 @@ public class CoyoteAdapter
                     request.getEvent().setEventType(CometEvent.EventType.END);
                     request.getEvent().setEventSubType(CometEvent.EventSubType.SERVER_SHUTDOWN);
                 } else if (status == SocketStatus.TIMEOUT) {
-                    request.getEvent().setEventType(CometEvent.EventType.ERROR);
-                    request.getEvent().setEventSubType(CometEvent.EventSubType.TIMEOUT);
+                    if (response.isClosed()) {
+                        // The event has been closed asynchronously, so call end instead of
+                        // read to cleanup the pipeline
+                        request.getEvent().setEventType(CometEvent.EventType.END);
+                        request.getEvent().setEventSubType(null);
+                    } else {
+                        request.getEvent().setEventType(CometEvent.EventType.ERROR);
+                        request.getEvent().setEventSubType(CometEvent.EventSubType.TIMEOUT);
+                    }
                 }
                 
                 // Calling the container
