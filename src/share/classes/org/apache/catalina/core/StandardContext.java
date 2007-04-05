@@ -4088,8 +4088,6 @@ public class StandardContext
     public synchronized void start() throws LifecycleException {
         //if (lazy ) return;
         if (started) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("containerBase.alreadyStarted", logName()));
             return;
         }
         if( !initialized ) { 
