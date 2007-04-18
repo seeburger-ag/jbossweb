@@ -37,8 +37,6 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.log.SystemLogHandler;
 
@@ -47,13 +45,11 @@ import org.apache.tomcat.util.log.SystemLogHandler;
  * <code>StandardWrapper</code> container implementation.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 524103 $ $Date: 2007-03-30 16:38:02 +0200 (ven., 30 mars 2007) $
+ * @version $Revision: 529036 $ $Date: 2007-04-15 19:45:34 +0200 (dim., 15 avr. 2007) $
  */
 
 final class StandardWrapperValve
     extends ValveBase {
-
-    private static Log log = LogFactory.getLog(StandardWrapperValve.class);
 
     // ----------------------------------------------------- Instance Variables
 
@@ -133,6 +129,9 @@ final class StandardWrapperValve
                 servlet = wrapper.allocate();
             }
         } catch (UnavailableException e) {
+            container.getLogger().error(
+                    sm.getString("standardWrapper.allocateException",
+                            wrapper.getName()), e);
             long available = wrapper.getAvailable();
             if ((available > 0L) && (available < Long.MAX_VALUE)) {
             	response.setDateHeader("Retry-After", available);

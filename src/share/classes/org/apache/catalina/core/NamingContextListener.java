@@ -77,7 +77,7 @@ import org.apache.tomcat.util.modeler.Registry;
  * with each context and server.
  *
  * @author Remy Maucherat
- * @version $Revision: 513349 $ $Date: 2007-03-01 15:33:06 +0100 (jeu., 01 mars 2007) $
+ * @version $Revision: 527693 $ $Date: 2007-04-11 23:51:57 +0200 (mer., 11 avr. 2007) $
  */
 
 public class NamingContextListener
@@ -897,6 +897,40 @@ public class NamingContextListener
                 service.setWsdlfile(null);
             else
                 service.setWsdlfile(wsdlURL.toString());
+        }
+
+        if (service.getJaxrpcmappingfile() != null) {
+            URL jaxrpcURL = null;
+
+            try {
+                jaxrpcURL = new URL(service.getJaxrpcmappingfile());
+            } catch (MalformedURLException e) {
+                jaxrpcURL = null;
+            }
+            if (jaxrpcURL == null) {
+                try {
+                    jaxrpcURL = ((Context) container).
+                                                    getServletContext().
+                                                    getResource(service.getJaxrpcmappingfile());
+                } catch (MalformedURLException e) {
+                    jaxrpcURL = null;
+                }
+            }
+            if (jaxrpcURL == null) {
+                try {
+                    jaxrpcURL = ((Context) container).
+                                                    getServletContext().
+                                                    getResource("/" + service.getJaxrpcmappingfile());
+                    logger.debug("  Changing service ref jaxrpc file for /" 
+                                + service.getJaxrpcmappingfile());
+                } catch (MalformedURLException e) {
+                    logger.error(sm.getString("naming.wsdlFailed", e));
+                }
+            }
+            if (jaxrpcURL == null)
+                service.setJaxrpcmappingfile(null);
+            else
+                service.setJaxrpcmappingfile(jaxrpcURL.toString());
         }
 
         // Create a reference to the resource.

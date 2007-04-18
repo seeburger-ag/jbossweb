@@ -1177,7 +1177,7 @@ class Validator {
                                             .getLocalName(i),
                                     attrs.getValue(i), false, null, false);
                         }
-                        if (jspAttrs[i].isExpression()) {
+                        if (expression) {
                             tagDataAttrs.put(attrs.getQName(i),
                                     TagData.REQUEST_TIME_VALUE);
                         } else {

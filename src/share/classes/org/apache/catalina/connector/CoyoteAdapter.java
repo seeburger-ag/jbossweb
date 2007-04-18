@@ -44,7 +44,7 @@ import org.apache.tomcat.util.net.SocketStatus;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 525160 $ $Date: 2007-04-03 16:13:33 +0200 (mar., 03 avr. 2007) $
+ * @version $Revision: 526576 $ $Date: 2007-04-08 19:02:12 +0200 (dim., 08 avr. 2007) $
  */
 
 public class CoyoteAdapter
@@ -151,6 +151,8 @@ public class CoyoteAdapter
                         request.getEvent().setEventSubType(CometEvent.EventSubType.TIMEOUT);
                     }
                 }
+
+                req.getRequestProcessor().setWorkerThreadName(Thread.currentThread().getName());
                 
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
@@ -176,6 +178,7 @@ public class CoyoteAdapter
                 // a cleanup event of some sort could be needed ?
                 return false;
             } finally {
+                req.getRequestProcessor().setWorkerThreadName(null);
                 // Recycle the wrapper request and response
                 if (error || response.isClosed() || !request.isComet()) {
                     request.recycle();
@@ -232,8 +235,8 @@ public class CoyoteAdapter
 
             // Parse and set Catalina and configuration specific 
             // request parameters
+            req.getRequestProcessor().setWorkerThreadName(Thread.currentThread().getName());
             if (postParseRequest(req, request, res, response)) {
-
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().invoke(request, response);
 
@@ -260,6 +263,7 @@ public class CoyoteAdapter
         } catch (Throwable t) {
             log.error(sm.getString("coyoteAdapter.service"), t);
         } finally {
+            req.getRequestProcessor().setWorkerThreadName(null);
             // Recycle the wrapper request and response
             if (!comet) {
                 request.recycle();

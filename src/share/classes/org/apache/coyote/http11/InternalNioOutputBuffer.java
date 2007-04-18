@@ -603,12 +603,14 @@ public class InternalNioOutputBuffer
     }
 
     int total = 0;
-    private void addToBB(byte[] buf, int offset, int length) throws IOException {
-        if (socket.getBufHandler().getWriteBuffer().remaining() < length) {
+    private synchronized void addToBB(byte[] buf, int offset, int length) throws IOException {
+        while (socket.getBufHandler().getWriteBuffer().remaining() < length) {
             flushBuffer();
         }
         socket.getBufHandler().getWriteBuffer().put(buf, offset, length);
         total += length;
+        NioEndpoint.KeyAttachment ka = (NioEndpoint.KeyAttachment)socket.getAttachment(false);
+        if ( ka!= null ) ka.access();//prevent timeouts for just doing client writes
     }
 
 
@@ -786,8 +788,8 @@ public class InternalNioOutputBuffer
                 if (socket.getBufHandler().getWriteBuffer().position() == socket.getBufHandler().getWriteBuffer().capacity()) {
                     flushBuffer();
                 }
-                if (thisTime > socket.getBufHandler().getWriteBuffer().capacity() - socket.getBufHandler().getWriteBuffer().position()) {
-                    thisTime = socket.getBufHandler().getWriteBuffer().capacity() - socket.getBufHandler().getWriteBuffer().position();
+                if (thisTime > socket.getBufHandler().getWriteBuffer().remaining()) {
+                    thisTime = socket.getBufHandler().getWriteBuffer().remaining();
                 }
                 addToBB(b,start,thisTime);
                 len = len - thisTime;
