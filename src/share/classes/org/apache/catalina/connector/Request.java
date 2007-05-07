@@ -77,7 +77,7 @@ import org.apache.catalina.util.StringParser;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision: 505593 $ $Date: 2007-02-10 01:54:56 +0100 (sam., 10 févr. 2007) $
+ * @version $Revision: 535030 $ $Date: 2007-05-04 01:54:31 +0200 (ven., 04 mai 2007) $
  */
 
 public class Request
@@ -455,6 +455,15 @@ public class Request
      */
     public void clearEncoders() {
         inputBuffer.clearEncoders();
+    }
+    
+
+    /**
+     * Clear cached encoders (to save memory for Comet requests).
+     */
+    public boolean read()
+        throws IOException {
+        return (inputBuffer.realReadBytes(null, 0, 0) > 0);
     }
     
 
@@ -2237,6 +2246,14 @@ public class Request
      */
     public void setComet(boolean comet) {
         this.comet = comet;
+    }
+
+    
+    /**
+     * Return true if bytes are available.
+     */
+    public boolean getAvailable() {
+        return (inputBuffer.available() > 0);
     }
 
     

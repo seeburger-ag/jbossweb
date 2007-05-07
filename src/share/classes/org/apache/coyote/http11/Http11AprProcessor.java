@@ -753,11 +753,9 @@ public class Http11AprProcessor implements ActionHook {
             recycle();
             return SocketState.CLOSED;
         } else if (!comet) {
-            endpoint.getPoller().add(socket);
             recycle();
             return SocketState.OPEN;
         } else {
-            endpoint.getCometPoller().add(socket);
             return SocketState.LONG;
         }
     }
@@ -788,6 +786,7 @@ public class Http11AprProcessor implements ActionHook {
 
         // Error flag
         error = false;
+        comet = false;
         keepAlive = true;
 
         int keepAliveLeft = maxKeepAliveRequests;
@@ -882,6 +881,12 @@ public class Http11AprProcessor implements ActionHook {
             }
             request.updateCounters();
 
+            if (!comet) {
+                // Next request
+                inputBuffer.nextRequest();
+                outputBuffer.nextRequest();
+            }
+            
             // Do sendfile as needed: add socket to sendfile and end
             if (sendfileData != null && !error) {
                 sendfileData.socket = socket;
@@ -935,10 +940,6 @@ public class Http11AprProcessor implements ActionHook {
             error = true;
         }
 
-        // Next request
-        inputBuffer.nextRequest();
-        outputBuffer.nextRequest();
-        
     }
     
     
@@ -1192,6 +1193,8 @@ public class Http11AprProcessor implements ActionHook {
                 request.getInputBuffer();
             internalBuffer.addActiveFilter(savedBody);
             
+        } else if (actionCode == ActionCode.ACTION_AVAILABLE) {
+            request.setAvailable(inputBuffer.available());
         } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
             comet = true;
         } else if (actionCode == ActionCode.ACTION_COMET_END) {

@@ -782,11 +782,9 @@ public class Http11NioProcessor implements ActionHook {
             recycle();
             return SocketState.CLOSED;
         } else if (!comet) {
-            socket.getPoller().add(socket);
             recycle();
             return SocketState.OPEN;
         } else {
-            socket.getPoller().add(socket);
             return SocketState.LONG;
         }
     }
@@ -820,6 +818,8 @@ public class Http11NioProcessor implements ActionHook {
         // Error flag
         error = false;
         keepAlive = true;
+        comet = false;
+        
 
         int keepAliveLeft = maxKeepAliveRequests;
         long soTimeout = endpoint.getSoTimeout();
@@ -936,6 +936,12 @@ public class Http11NioProcessor implements ActionHook {
                 response.setStatus(500);
             }
             request.updateCounters();
+
+            if (!comet) {
+                // Next request
+                inputBuffer.nextRequest();
+                outputBuffer.nextRequest();
+            }
             
             // Do sendfile as needed: add socket to sendfile and end
             if (sendfileData != null && !error) {
@@ -991,10 +997,6 @@ public class Http11NioProcessor implements ActionHook {
             log.error(sm.getString("http11processor.response.finish"), t);
             error = true;
         }
-
-        // Next request
-        inputBuffer.nextRequest();
-        outputBuffer.nextRequest();
 
     }
 
@@ -1221,6 +1223,8 @@ public class Http11NioProcessor implements ActionHook {
                 request.getInputBuffer();
             internalBuffer.addActiveFilter(savedBody);
 
+        } else if (actionCode == ActionCode.ACTION_AVAILABLE) {
+            request.setAvailable(inputBuffer.available());
         } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
             comet = true;
         } else if (actionCode == ActionCode.ACTION_COMET_END) {

@@ -61,7 +61,7 @@ import org.apache.tomcat.util.modeler.Registry;
  * be subclassed to create more sophisticated Manager implementations.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 505593 $ $Date: 2007-02-10 01:54:56 +0100 (sam., 10 févr. 2007) $
+ * @version $Revision: 531901 $ $Date: 2007-04-24 14:24:34 +0200 (mar., 24 avr. 2007) $
  */
 
 public abstract class ManagerBase implements Manager, MBeanRegistration {
@@ -700,6 +700,8 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public void init() {
         if( initialized ) return;
         initialized=true;        
+        
+        log = LogFactory.getLog(ManagerBase.class);
         
         if( oname==null ) {
             try {

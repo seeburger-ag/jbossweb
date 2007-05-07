@@ -1,17 +1,18 @@
 /*
- *  Copyright 2005-2006 The Apache Software Foundation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.tomcat.util.net;
 
@@ -65,9 +66,10 @@ public class NioBlockingSelector {
                 if ( key == null ) throw new IOException("Key no longer registered");
                 KeyAttachment att = (KeyAttachment) key.attachment();
                 try {
-                    if ( att.getLatch()==null || att.getLatch().getCount()==0) att.startLatch(1);
-                    if ( att.interestOps() == 0) socket.getPoller().add(socket,SelectionKey.OP_WRITE);
-                    att.getLatch().await(writeTimeout,TimeUnit.MILLISECONDS);
+                    if ( att.getLatch()==null || att.getLatch().getCount()==0) att.startLatch(1,SelectionKey.OP_WRITE);
+                    //only register for write if a write has not yet been issued
+                    if ( (att.interestOps() & SelectionKey.OP_WRITE) == 0) socket.getPoller().add(socket,SelectionKey.OP_WRITE);
+                    att.awaitLatch(writeTimeout,TimeUnit.MILLISECONDS,SelectionKey.OP_WRITE);
                 }catch (InterruptedException ignore) {
                     Thread.interrupted();
                 }
@@ -133,9 +135,9 @@ public class NioBlockingSelector {
                 }
                 KeyAttachment att = (KeyAttachment) key.attachment();
                 try {
-                    if ( att.getLatch()==null || att.getLatch().getCount()==0) att.startLatch(1);
+                    if ( att.getLatch()==null || att.getLatch().getCount()==0) att.startLatch(1,SelectionKey.OP_READ);
                     if ( att.interestOps() == 0) socket.getPoller().add(socket,SelectionKey.OP_READ);
-                    att.getLatch().await(readTimeout,TimeUnit.MILLISECONDS);
+                    att.awaitLatch(readTimeout,TimeUnit.MILLISECONDS, SelectionKey.OP_READ);
                 }catch (InterruptedException ignore) {
                     Thread.interrupted();
                 }

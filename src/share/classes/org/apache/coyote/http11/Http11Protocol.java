@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
@@ -262,7 +263,10 @@ public class Http11Protocol
     public int getProcessorCache() { return this.processorCache; }
     public void setProcessorCache(int processorCache) { this.processorCache = processorCache; }
 
-    // *
+    protected int socketBuffer = 9000;
+    public int getSocketBuffer() { return socketBuffer; }
+    public void setSocketBuffer(int socketBuffer) { this.socketBuffer = socketBuffer; }
+
     /**
      * This field indicates if the protocol is secure from the perspective of
      * the client (= https is used).
@@ -515,7 +519,7 @@ public class Http11Protocol
     protected static class Http11ConnectionHandler implements Handler {
 
         protected Http11Protocol proto;
-        protected AtomicInteger registerCount = new AtomicInteger(0);
+        protected AtomicLong registerCount = new AtomicLong(0);
         protected RequestGroupInfo global = new RequestGroupInfo();
 
         protected ConcurrentLinkedQueue<Http11Processor> recycledProcessors = 
@@ -625,6 +629,7 @@ public class Http11Protocol
             processor.setNoCompressionUserAgents(proto.noCompressionUserAgents);
             processor.setCompressableMimeTypes(proto.compressableMimeTypes);
             processor.setRestrictedUserAgents(proto.restrictedUserAgents);
+            processor.setSocketBuffer(proto.socketBuffer);
             processor.setMaxSavePostSize(proto.maxSavePostSize);
             processor.setServer(proto.server);
             register(processor);
@@ -635,15 +640,15 @@ public class Http11Protocol
             if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
-                        int count = registerCount.incrementAndGet();
-                        if (log.isDebugEnabled()) {
-                            log.debug("Register ["+processor+"] count=" + count);
-                        }
+                        long count = registerCount.incrementAndGet();
                         RequestInfo rp = processor.getRequest().getRequestProcessor();
                         rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getName() + ",name=HttpRequest" + count);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Register " + rpName);
+                        }
                         Registry.getRegistry(null, null).registerComponent(rp, rpName, null);
                         rp.setRpName(rpName);
                     } catch (Exception e) {
@@ -657,13 +662,12 @@ public class Http11Protocol
             if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
-                        int count = registerCount.decrementAndGet();
-                        if (log.isDebugEnabled()) {
-                            log.debug("Unregister [" + processor + "] count=" + count);
-                        }
                         RequestInfo rp = processor.getRequest().getRequestProcessor();
                         rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
+                        if (log.isDebugEnabled()) {
+                            log.debug("Unregister " + rpName);
+                        }
                         Registry.getRegistry(null, null).unregisterComponent(rpName);
                         rp.setRpName(null);
                     } catch (Exception e) {

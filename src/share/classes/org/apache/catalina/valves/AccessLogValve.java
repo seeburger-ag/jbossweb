@@ -111,7 +111,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Jason Brittain
  * @author Remy Maucherat
  * @author Takayuki Kaneko
- * @version $Revision: 522270 $ $Date: 2007-01-04 12:17:11 +0900
+ * @version $Revision: 531475 $ $Date: 2007-01-04 12:17:11 +0900
  */
 
 public class AccessLogValve
@@ -156,6 +156,11 @@ public class AccessLogValve
     { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
+
+    /**
+     * enabled this component
+     */
+    protected boolean enabled = true;
 
     /**
      * The pattern used to format our access log lines.
@@ -312,6 +317,20 @@ public class AccessLogValve
 
     // ------------------------------------------------------------- Properties
 
+    /**
+     * @return Returns the enabled.
+     */
+    public boolean getEnabled() {
+        return enabled;
+    }
+
+    /**
+     * @param enabled
+     *            The enabled to set.
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     /**
      * Return the directory in which we create log files.
@@ -519,7 +538,7 @@ public class AccessLogValve
      * throwables will be caught and logged.
      */
     public void backgroundProcess() {
-        if (writer != null && buffered) {
+        if (started && getEnabled() && writer != null && buffered) {
             writer.flush();
         }
     }    
@@ -537,27 +556,30 @@ public class AccessLogValve
     public void invoke(Request request, Response response) throws IOException,
             ServletException {
 
-        // Pass this request on to the next valve in our pipeline
-        long t1 = System.currentTimeMillis();
-
-        getNext().invoke(request, response);
-
-        long t2 = System.currentTimeMillis();
-        long time = t2 - t1;
-
-        if (logElements == null || condition != null
-                && null != request.getRequest().getAttribute(condition)) {
-            return;
-        }
-
-        Date date = getDate();
-        StringBuffer result = new StringBuffer();
-
-        for (int i = 0; i < logElements.length; i++) {
-            logElements[i].addElement(result, date, request, response, time);
-        }
-
-        log(result.toString());
+        if (started && getEnabled()) {                
+            // Pass this request on to the next valve in our pipeline
+            long t1 = System.currentTimeMillis();
+    
+            getNext().invoke(request, response);
+    
+            long t2 = System.currentTimeMillis();
+            long time = t2 - t1;
+    
+            if (logElements == null || condition != null
+                    && null != request.getRequest().getAttribute(condition)) {
+                return;
+            }
+    
+            Date date = getDate();
+            StringBuffer result = new StringBuffer();
+    
+            for (int i = 0; i < logElements.length; i++) {
+                logElements[i].addElement(result, date, request, response, time);
+            }
+    
+            log(result.toString());
+        } else
+            getNext().invoke(request, response);       
     }
 
     

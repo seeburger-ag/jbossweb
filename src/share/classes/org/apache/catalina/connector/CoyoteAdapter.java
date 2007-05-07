@@ -44,7 +44,7 @@ import org.apache.tomcat.util.net.SocketStatus;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 526576 $ $Date: 2007-04-08 19:02:12 +0200 (dim., 08 avr. 2007) $
+ * @version $Revision: 535035 $ $Date: 2007-05-04 02:04:39 +0200 (ven., 04 mai 2007) $
  */
 
 public class CoyoteAdapter
@@ -118,6 +118,7 @@ public class CoyoteAdapter
         if (request.getWrapper() != null) {
             
             boolean error = false;
+            boolean read = false;
             try {
                 if (status == SocketStatus.OPEN) {
                     if (response.isClosed()) {
@@ -126,8 +127,24 @@ public class CoyoteAdapter
                         request.getEvent().setEventType(CometEvent.EventType.END);
                         request.getEvent().setEventSubType(null);
                     } else {
-                        request.getEvent().setEventType(CometEvent.EventType.READ);
-                        request.getEvent().setEventSubType(null);
+                        try {
+                            // Fill the read buffer of the servlet layer
+                            if (request.read()) {
+                                read = true;
+                            }
+                        } catch (IOException e) {
+                            error = true;
+                        }
+                        if (read) {
+                            request.getEvent().setEventType(CometEvent.EventType.READ);
+                            request.getEvent().setEventSubType(null);
+                        } else if (error) {
+                            request.getEvent().setEventType(CometEvent.EventType.ERROR);
+                            request.getEvent().setEventSubType(CometEvent.EventSubType.CLIENT_DISCONNECT);
+                        } else {
+                            request.getEvent().setEventType(CometEvent.EventType.END);
+                            request.getEvent().setEventSubType(null);
+                        }
                     }
                 } else if (status == SocketStatus.DISCONNECT) {
                     request.getEvent().setEventType(CometEvent.EventType.ERROR);
@@ -167,6 +184,11 @@ public class CoyoteAdapter
                 }
                 if (response.isClosed() || !request.isComet()) {
                     res.action(ActionCode.ACTION_COMET_END, null);
+                } else if (!error && read && request.getAvailable()) {
+                    // If this was a read and not all bytes have been read, or if no data
+                    // was read from the connector, then it is an error
+                    error = true;
+                    log.error(sm.getString("coyoteAdapter.read"));
                 }
                 return (!error);
             } catch (Throwable t) {
@@ -174,8 +196,6 @@ public class CoyoteAdapter
                     log.error(sm.getString("coyoteAdapter.service"), t);
                 }
                 error = true;
-                // FIXME: Since there's likely some structures kept in the servlet or elsewhere,
-                // a cleanup event of some sort could be needed ?
                 return false;
             } finally {
                 req.getRequestProcessor().setWorkerThreadName(null);
@@ -242,8 +262,16 @@ public class CoyoteAdapter
 
                 if (request.isComet()) {
                     if (!response.isClosed() && !response.isError()) {
-                        comet = true;
-                        res.action(ActionCode.ACTION_COMET_BEGIN, null);
+                        if (request.getAvailable()) {
+                            // Invoke a read event right away if there are available bytes
+                            if (event(req, res, SocketStatus.OPEN)) {
+                                comet = true;
+                                res.action(ActionCode.ACTION_COMET_BEGIN, null);
+                            }
+                        } else {
+                            comet = true;
+                            res.action(ActionCode.ACTION_COMET_BEGIN, null);
+                        }
                     } else {
                         // Clear the filter chain, as otherwise it will not be reset elsewhere
                         // since this is a Comet request

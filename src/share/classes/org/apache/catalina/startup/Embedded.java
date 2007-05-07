@@ -98,7 +98,7 @@ import org.apache.tomcat.util.log.SystemLogHandler;
  * of how Tomcat is set up and launched as an Embedded application.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 534913 $ $Date: 2007-05-03 17:49:09 +0200 (jeu., 03 mai 2007) $
  */
 
 public class Embedded  extends StandardService implements Lifecycle {
@@ -427,7 +427,10 @@ public class Embedded  extends StandardService implements Lifecycle {
                 connector = new Connector();
                 connector.setScheme("https");
                 connector.setSecure(true);
+                connector.setProperty("SSLEnabled","true");
                 // FIXME !!!! SET SSL PROPERTIES
+            } else {
+                connector = new Connector(protocol);
             }
 
             if (address != null) {
@@ -883,7 +886,7 @@ public class Embedded  extends StandardService implements Lifecycle {
     protected void initNaming() {
         // Setting additional variables
         if (!useNaming) {
-            log.debug( "Catalina naming disabled");
+            log.info( "Catalina naming disabled");
             System.setProperty("catalina.useNaming", "false");
         } else {
             System.setProperty("catalina.useNaming", "true");

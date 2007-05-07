@@ -322,7 +322,6 @@ public class InternalNioInputBuffer implements InputBuffer {
         // Recycle Request object
         request.recycle();
 
-        //System.out.println("LV-pos: " + (lastValid - pos));
         // Copy leftover bytes to the beginning of the buffer
         if (lastValid - pos > 0) {
             int npos = 0;
@@ -795,6 +794,20 @@ public class InternalNioInputBuffer implements InputBuffer {
             lastSignificantChar = 0;
             headerValue = null;
         }
+    }
+
+
+    /**
+     * Available bytes (note that due to encoding, this may not correspond )
+     */
+    public int available() {
+        int result = (lastValid - pos);
+        if ((result == 0) && (lastActiveFilter >= 0)) {
+            for (int i = 0; (result == 0) && (i <= lastActiveFilter); i++) {
+                result = activeFilters[i].available();
+            }
+        }
+        return result;
     }
 
 
