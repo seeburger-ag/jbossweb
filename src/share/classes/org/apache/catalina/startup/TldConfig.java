@@ -431,7 +431,7 @@ public final class TldConfig  {
         File file = null;
         try {
             file = new File(url.toURI());
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             // Ignore, probably an unencoded char
             file = new File(url.getFile());
         }
@@ -693,7 +693,7 @@ public final class TldConfig  {
                     File file = null;
                     try {
                         file = new File(urls[i].toURI());
-                    } catch (URISyntaxException e) {
+                    } catch (Exception e) {
                         // Ignore, probably an unencoded char
                         file = new File(urls[i].getFile());
                     }
