@@ -30,7 +30,7 @@ import org.apache.catalina.Realm;
  * is available for use by <code>Realm</code> implementations.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 543691 $ $Date: 2007-06-02 03:37:08 +0200 (sam., 02 juin 2007) $
  */
 
 public class GenericPrincipal implements Principal {
@@ -65,7 +65,7 @@ public class GenericPrincipal implements Principal {
      * @param roles List of roles (must be Strings) possessed by this user
      */
     public GenericPrincipal(Realm realm, String name, String password,
-                            List roles) {
+                            List<String> roles) {
         this(realm, name, password, roles, null);
     }
 
@@ -82,7 +82,7 @@ public class GenericPrincipal implements Principal {
      *        getUserPrincipal call if not null; if null, this will be returned
      */
     public GenericPrincipal(Realm realm, String name, String password,
-                            List roles, Principal userPrincipal) {
+                            List<String> roles, Principal userPrincipal) {
 
         super();
         this.realm = realm;

@@ -44,7 +44,7 @@ import org.apache.catalina.util.StringManager;
  * of <code>UserDatabase</code> that we should consult.</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 500684 $ $Date: 2007-01-28 00:27:18 +0100 (dim., 28 janv. 2007) $
+ * @version $Revision: 543691 $ $Date: 2007-06-02 03:37:08 +0200 (sam., 02 juin 2007) $
  * @since 4.1
  */
 
@@ -214,7 +214,7 @@ public class UserDatabaseRealm
             return null;
         }
 
-        List roles = new ArrayList();
+        List<String> roles = new ArrayList<String>();
         Iterator uroles = user.getRoles();
         while(uroles.hasNext()) {
             Role role = (Role)uroles.next();

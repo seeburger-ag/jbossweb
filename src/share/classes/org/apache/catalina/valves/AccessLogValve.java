@@ -111,7 +111,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Jason Brittain
  * @author Remy Maucherat
  * @author Takayuki Kaneko
- * @version $Revision: 531475 $ $Date: 2007-01-04 12:17:11 +0900
+ * @version $Revision: 539787 $ $Date: 2007-01-04 12:17:11 +0900
  */
 
 public class AccessLogValve
@@ -1035,7 +1035,6 @@ public class AccessLogValve
                 buf.append(request.getProtocol());
             } else {
                 buf.append("- - ");
-                buf.append(request.getProtocol());
             }
         }
     }

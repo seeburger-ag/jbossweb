@@ -120,7 +120,7 @@ org.foobar.auth.DatabaseLoginModule REQUIRED
 *
 * @author Craig R. McClanahan
 * @author Yoav Shapira
- * @version $Revision: 522356 $ $Date: 2007-03-25 23:42:05 +0200 (dim., 25 mars 2007) $
+ * @version $Revision: 543691 $ $Date: 2007-06-02 03:37:08 +0200 (sam., 02 juin 2007) $
  */
 
 public class JAASRealm
@@ -457,7 +457,6 @@ public class JAASRealm
      */
     protected Principal createPrincipal(String username, Subject subject) {
         // Prepare to scan the Principals for this Subject
-        String password = null; // Will not be carried forward
 
         List<String> roles = new ArrayList<String>();
         Principal userPrincipal = null;

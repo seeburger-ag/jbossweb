@@ -61,7 +61,7 @@ import org.apache.tomcat.util.modeler.Registry;
  * location) are identical to those currently supported by Tomcat 3.X.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 540813 $ $Date: 2007-05-23 04:44:56 +0200 (mer., 23 mai 2007) $
  */
 
 public abstract class RealmBase
@@ -458,7 +458,7 @@ public abstract class RealmBase
     public SecurityConstraint [] findSecurityConstraints(Request request,
                                                          Context context) {
 
-        ArrayList results = null;
+        ArrayList<SecurityConstraint> results = null;
         // Are there any defined security constraints?
         SecurityConstraint constraints[] = context.findConstraints();
         if ((constraints == null) || (constraints.length == 0)) {
@@ -502,7 +502,7 @@ public abstract class RealmBase
                         found = true;
                         if(collection[j].findMethod(method)) {
                             if(results == null) {
-                                results = new ArrayList();
+                                results = new ArrayList<SecurityConstraint>();
                             }
                             results.add(constraints[i]);
                         }
@@ -571,7 +571,7 @@ public abstract class RealmBase
                     }
                     if(collection[j].findMethod(method)) {
                         if(results == null) {
-                            results = new ArrayList();
+                            results = new ArrayList<SecurityConstraint>();
                         }
                         results.add(constraints[i]);
                     }
@@ -629,7 +629,7 @@ public abstract class RealmBase
                 found = true;
                 if(collection[pos].findMethod(method)) {
                     if(results == null) {
-                        results = new ArrayList();
+                        results = new ArrayList<SecurityConstraint>();
                     }
                     results.add(constraints[i]);
                 }
@@ -673,7 +673,7 @@ public abstract class RealmBase
                 }
                 if(matched) {
                     if(results == null) {
-                        results = new ArrayList();
+                        results = new ArrayList<SecurityConstraint>();
                     }                    
                     results.add(constraints[i]);
                 }
@@ -691,7 +691,8 @@ public abstract class RealmBase
     /**
      * Convert an ArrayList to a SecurityContraint [].
      */
-    private SecurityConstraint [] resultsToArray(ArrayList results) {
+    private SecurityConstraint [] resultsToArray(
+            ArrayList<SecurityConstraint> results) {
         if(results == null) {
             return null;
         }
@@ -1327,8 +1328,12 @@ public abstract class RealmBase
     protected boolean initialized=false;
     
     public void init() {
-        this.containerLog = container.getLogger();
         if( initialized && container != null ) return;
+
+        // We want logger as soon as possible
+        if (container != null) {
+            this.containerLog = container.getLogger();
+        }
         
         initialized=true;
         if( container== null ) {

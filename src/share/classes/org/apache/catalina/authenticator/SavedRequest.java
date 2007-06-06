@@ -39,7 +39,7 @@ import org.apache.tomcat.util.buf.ByteChunk;
  * internal collection classes is performed.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 536381 $ $Date: 2007-05-09 01:58:24 +0200 (mer., 09 mai 2007) $
  */
 
 public final class SavedRequest {
@@ -48,7 +48,7 @@ public final class SavedRequest {
     /**
      * The set of Cookies associated with this Request.
      */
-    private ArrayList cookies = new ArrayList();
+    private ArrayList<Cookie> cookies = new ArrayList<Cookie>();
 
     public void addCookie(Cookie cookie) {
         cookies.add(cookie);
@@ -65,12 +65,13 @@ public final class SavedRequest {
      * values for this header.  The values are returned as an Iterator when
      * you ask for them.
      */
-    private HashMap headers = new HashMap();
+    private HashMap<String,ArrayList<String>> headers =
+        new HashMap<String,ArrayList<String>>();
 
     public void addHeader(String name, String value) {
-        ArrayList values = (ArrayList) headers.get(name);
+        ArrayList<String> values = (ArrayList<String>) headers.get(name);
         if (values == null) {
-            values = new ArrayList();
+            values = new ArrayList<String>();
             headers.put(name, values);
         }
         values.add(value);
@@ -92,7 +93,7 @@ public final class SavedRequest {
     /**
      * The set of Locales associated with this Request.
      */
-    private ArrayList locales = new ArrayList();
+    private ArrayList<Locale> locales = new ArrayList<Locale>();
 
     public void addLocale(Locale locale) {
         locales.add(locale);
@@ -123,7 +124,8 @@ public final class SavedRequest {
      * entry is keyed by the parameter name, pointing at a String array of
      * the corresponding values.
      */
-    private HashMap parameters = new HashMap();
+    private HashMap<String,String[]> parameters =
+        new HashMap<String,String[]>();
 
     public void addParameter(String name, String values[]) {
         parameters.put(name, values);
@@ -177,5 +179,18 @@ public final class SavedRequest {
 
     public void setBody(ByteChunk body) {
         this.body = body;
+    }
+    
+    /**
+     * The content type of the request, used if this is a POST.
+     */
+    private String contentType = null;
+    
+    public String getContentType() {
+        return (this.contentType);
+    }
+    
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

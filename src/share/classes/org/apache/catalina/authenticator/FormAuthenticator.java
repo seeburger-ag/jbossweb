@@ -50,7 +50,7 @@ import org.apache.tomcat.util.http.MimeHeaders;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 536381 $ $Date: 2007-05-09 01:58:24 +0200 (mer., 09 mai 2007) $
  */
 
 public class FormAuthenticator
@@ -428,7 +428,14 @@ public class FormAuthenticator
     
                 // Set content type
                 MessageBytes contentType = MessageBytes.newInstance();
-                contentType.setString("application/x-www-form-urlencoded");
+                
+                //If no content type specified, use default for POST
+                String savedContentType = saved.getContentType();
+                if (savedContentType == null) {
+                    savedContentType = "application/x-www-form-urlencoded";
+                }
+
+                contentType.setString(savedContentType);
                 request.getCoyoteRequest().setContentType(contentType);
             }
         }
@@ -487,6 +494,7 @@ public class FormAuthenticator
             while ( (bytesRead = is.read(buffer) ) >= 0) {
                 body.append(buffer, 0, bytesRead);
             }
+            saved.setContentType(request.getContentType());
             saved.setBody(body);
         }
 

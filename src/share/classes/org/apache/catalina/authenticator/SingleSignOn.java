@@ -59,7 +59,7 @@ import org.apache.catalina.valves.ValveBase;
  * </ul>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 500629 $ $Date: 2007-01-27 22:32:52 +0100 (sam., 27 janv. 2007) $
+ * @version $Revision: 536380 $ $Date: 2007-05-09 01:49:56 +0200 (mer., 09 mai 2007) $
  */
 
 public class SingleSignOn
@@ -74,7 +74,8 @@ public class SingleSignOn
      * The cache of SingleSignOnEntry instances for authenticated Principals,
      * keyed by the cookie value that is used to select them.
      */
-    protected Map cache = new HashMap();
+    protected Map<String,SingleSignOnEntry> cache =
+        new HashMap<String,SingleSignOnEntry>();
 
 
     /**
@@ -100,7 +101,7 @@ public class SingleSignOn
      * The cache of single sign on identifiers, keyed by the Session that is
      * associated with them.
      */
-    protected Map reverse = new HashMap();
+    protected Map<Session,String> reverse = new HashMap<Session,String>();
 
 
     /**

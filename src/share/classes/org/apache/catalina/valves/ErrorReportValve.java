@@ -45,7 +45,7 @@ import org.apache.catalina.util.StringManager;
  * @author <a href="mailto:nicolaken@supereva.it">Nicola Ken Barozzi</a> Aisa
  * @author <a href="mailto:stefano@apache.org">Stefano Mazzocchi</a>
  * @author Yoav Shapira
- * @version $Revision: 535915 $ $Date: 2007-05-07 18:06:56 +0200 (lun., 07 mai 2007) $
+ * @version $Revision: 543307 $ $Date: 2007-06-01 01:08:24 +0200 (ven., 01 juin 2007) $
  */
 
 public class ErrorReportValve
@@ -104,7 +104,7 @@ public class ErrorReportValve
         Throwable throwable =
             (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
 
-        if (response.isAppCommitted()) {
+        if (response.isCommitted()) {
             return;
         }
 

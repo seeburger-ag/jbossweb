@@ -73,7 +73,7 @@ import org.apache.tomcat.util.digester.Digester;
  * the functionality required of a <code>Realm</code> implementation.</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 543691 $ $Date: 2007-06-02 03:37:08 +0200 (sam., 02 juin 2007) $
  */
 
 public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, Realm {
@@ -212,7 +212,7 @@ public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, R
      */
     public SecurityConstraint [] findSecurityConstraints(Request request,
                                                      Context context) {
-        ArrayList results = null;
+        ArrayList<SecurityConstraint> results = null;
         // Are there any defined security constraints?
         SecurityConstraint constraints[] = context.findConstraints();
         if ((constraints == null) || (constraints.length == 0)) {
@@ -235,7 +235,7 @@ public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, R
                     constraints[i].included(uri, method));
             if (constraints[i].included(uri, method)) {
                 if(results == null) {
-                    results = new ArrayList();
+                    results = new ArrayList<SecurityConstraint>();
                 }
                 results.add(constraints[i]);
             }

@@ -35,6 +35,7 @@ import javax.naming.NamingException;
 import javax.naming.NameParser;
 import javax.naming.Name;
 import javax.naming.AuthenticationException;
+import javax.naming.ServiceUnavailableException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
@@ -150,7 +151,7 @@ import org.apache.tomcat.util.buf.CharChunk;
  *
  * @author John Holman
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 543693 $ $Date: 2007-06-02 03:42:17 +0200 (sam., 02 juin 2007) $
  */
 
 public class JNDIRealm extends RealmBase {
@@ -808,7 +809,39 @@ public class JNDIRealm extends RealmBase {
                 // Authenticate the specified username if possible
                 principal = authenticate(context, username, credentials);
 
+            } catch (NullPointerException e) {
+                /* BZ 42449 - Kludge Sun's LDAP provider
+                   with broken SSL
+                */
+                // log the exception so we know it's there.
+                containerLog.warn(sm.getString("jndiRealm.exception"), e);
+
+                // close the connection so we know it will be reopened.
+                if (context != null)
+                    close(context);
+
+                // open a new directory context.
+                context = open();
+
+                // Try the authentication again.
+                principal = authenticate(context, username, credentials);
+
             } catch (CommunicationException e) {
+
+                // log the exception so we know it's there.
+                containerLog.warn(sm.getString("jndiRealm.exception"), e);
+
+                // close the connection so we know it will be reopened.
+                if (context != null)
+                    close(context);
+
+                // open a new directory context.
+                context = open();
+
+                // Try the authentication again.
+                principal = authenticate(context, username, credentials);
+
+            } catch (ServiceUnavailableException e) {
 
                 // log the exception so we know it's there.
                 containerLog.warn(sm.getString("jndiRealm.exception"), e);
@@ -886,7 +919,7 @@ public class JNDIRealm extends RealmBase {
                         // Check the user's credentials
                         if (checkCredentials(context, user, credentials)) {
                             // Search for additional roles
-                            List roles = getRoles(context, user);
+                            List<String> roles = getRoles(context, user);
                             return (new GenericPrincipal(this,
                                                          username,
                                                          credentials,
@@ -914,7 +947,7 @@ public class JNDIRealm extends RealmBase {
                 return (null);
 
             // Search for additional roles
-            List roles = getRoles(context, user);
+            List<String> roles = getRoles(context, user);
 
             // Create and return a suitable Principal for this user
             return (new GenericPrincipal(this, username, credentials, roles));
@@ -944,7 +977,7 @@ public class JNDIRealm extends RealmBase {
         User user = null;
 
         // Get attributes to retrieve from user entry
-        ArrayList list = new ArrayList();
+        ArrayList<String> list = new ArrayList<String>();
         if (userPassword != null)
             list.add(userPassword);
         if (userRoleName != null)
@@ -1003,7 +1036,7 @@ public class JNDIRealm extends RealmBase {
             password = getAttributeValue(userPassword, attrs);
 
         // Retrieve values of userRoleName attribute
-        ArrayList roles = null;
+        ArrayList<String> roles = null;
         if (userRoleName != null)
             roles = addAttributeValues(userRoleName, attrs, roles);
 
@@ -1093,7 +1126,7 @@ public class JNDIRealm extends RealmBase {
             password = getAttributeValue(userPassword, attrs);
 
         // Retrieve values of userRoleName attribute
-        ArrayList roles = null;
+        ArrayList<String> roles = null;
         if (userRoleName != null)
             roles = addAttributeValues(userRoleName, attrs, roles);
 
@@ -1247,7 +1280,6 @@ public class JNDIRealm extends RealmBase {
                                   User user,
                                   String credentials)
          throws NamingException {
-         Attributes attr;
 
          if (credentials == null || user == null)
              return (false);
@@ -1271,7 +1303,7 @@ public class JNDIRealm extends RealmBase {
             if (containerLog.isTraceEnabled()) {
                 containerLog.trace("  binding as "  + dn);
             }
-            attr = context.getAttributes("", null);
+            context.getAttributes("", null);
             validated = true;
         }
         catch (AuthenticationException e) {
@@ -1311,7 +1343,7 @@ public class JNDIRealm extends RealmBase {
      *
      * @exception NamingException if a directory server error occurs
      */
-    protected List getRoles(DirContext context, User user)
+    protected List<String> getRoles(DirContext context, User user)
         throws NamingException {
 
         if (user == null)
@@ -1327,9 +1359,9 @@ public class JNDIRealm extends RealmBase {
             containerLog.trace("  getRoles(" + dn + ")");
 
         // Start with roles retrieved from the user entry
-        ArrayList list = user.roles;
+        ArrayList<String> list = user.roles;
         if (list == null) {
-            list = new ArrayList();
+            list = new ArrayList<String>();
         }
 
         // Are we configured to do role searches?
@@ -1416,9 +1448,9 @@ public class JNDIRealm extends RealmBase {
      *
      * @exception NamingException if a directory server error occurs
      */
-    private ArrayList addAttributeValues(String attrId,
+    private ArrayList<String> addAttributeValues(String attrId,
                                          Attributes attrs,
-                                         ArrayList values)
+                                         ArrayList<String> values)
         throws NamingException{
 
         if (containerLog.isTraceEnabled())
@@ -1426,7 +1458,7 @@ public class JNDIRealm extends RealmBase {
         if (attrId == null || attrs == null)
             return values;
         if (values == null)
-            values = new ArrayList();
+            values = new ArrayList<String>();
         Attribute attr = attrs.get(attrId);
         if (attr == null)
             return (values);
@@ -1603,7 +1635,7 @@ public class JNDIRealm extends RealmBase {
      */
     protected Hashtable getDirectoryContextEnvironment() {
 
-        Hashtable env = new Hashtable();
+        Hashtable<String,String> env = new Hashtable<String,String>();
 
         // Configure our directory context environment.
         if (containerLog.isDebugEnabled() && connectionAttempt == 0)
@@ -1697,7 +1729,7 @@ public class JNDIRealm extends RealmBase {
     protected String[] parseUserPatternString(String userPatternString) {
 
         if (userPatternString != null) {
-            ArrayList pathList = new ArrayList();
+            ArrayList<String> pathList = new ArrayList<String>();
             int startParenLoc = userPatternString.indexOf('(');
             if (startParenLoc == -1) {
                 // no parens here; return whole thing
@@ -1785,10 +1817,11 @@ class User {
     String username = null;
     String dn = null;
     String password = null;
-    ArrayList roles = null;
+    ArrayList<String> roles = null;
 
 
-    User(String username, String dn, String password, ArrayList roles) {
+    User(String username, String dn, String password,
+            ArrayList<String> roles) {
         this.username = username;
         this.dn = dn;
         this.password = password;

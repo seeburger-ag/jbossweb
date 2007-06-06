@@ -25,7 +25,7 @@ package org.apache.catalina.security;
  *
  * @author Glenn L. Nielsen
  * @author Jean-Francois Arcand
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 541991 $ $Date: 2007-05-27 16:02:36 +0200 (dim., 27 mai 2007) $
  */
 
 public final class SecurityClassLoad {
@@ -65,6 +65,9 @@ public final class SecurityClassLoad {
         loader.loadClass
             (basePackage +
              "core.StandardWrapper$1");
+        loader.loadClass
+            (basePackage +
+              "core.ApplicationHttpRequest$AttributeNamesEnumerator");
     }
     
     

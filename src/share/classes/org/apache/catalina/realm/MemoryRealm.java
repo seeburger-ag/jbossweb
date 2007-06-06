@@ -42,7 +42,7 @@ import org.apache.tomcat.util.digester.Digester;
  * synchronization is performed around accesses to the principals collection.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 514183 $ $Date: 2007-03-03 17:24:08 +0100 (sam., 03 mars 2007) $
+ * @version $Revision: 543691 $ $Date: 2007-06-02 03:37:08 +0200 (sam., 02 juin 2007) $
  */
 
 public class MemoryRealm  extends RealmBase {
@@ -82,7 +82,8 @@ public class MemoryRealm  extends RealmBase {
     /**
      * The set of valid Principals for this Realm, keyed by user name.
      */
-    private Map principals = new HashMap();
+    private Map<String,GenericPrincipal> principals =
+        new HashMap<String,GenericPrincipal>();
 
 
     /**
@@ -184,7 +185,7 @@ public class MemoryRealm  extends RealmBase {
     void addUser(String username, String password, String roles) {
 
         // Accumulate the list of roles for this user
-        ArrayList list = new ArrayList();
+        ArrayList<String> list = new ArrayList<String>();
         roles += ",";
         while (true) {
             int comma = roles.indexOf(',');
