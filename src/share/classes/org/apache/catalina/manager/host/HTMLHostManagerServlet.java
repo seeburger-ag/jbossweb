@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Host;
+import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 
 /**
@@ -53,7 +54,7 @@ import org.apache.catalina.util.ServerInfo;
 * @author Malcolm Edgar
 * @author Glenn L. Nielsen
 * @author Peter Rossbach
-* @version $Revision: 467222 $, $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+* @version $Revision: 547077 $, $Date: 2007-06-14 03:55:09 +0200 (jeu., 14 juin 2007) $
 * @see ManagerServlet
 */
 
@@ -195,7 +196,11 @@ public final class HTMLHostManagerServlet extends HostManagerServlet {
         // Message Section
         args = new Object[3];
         args[0] = sm.getString("htmlHostManagerServlet.messageLabel");
-        args[1] = (message == null || message.length() == 0) ? "OK" : message;
+        if (message == null || message.length() == 0) {
+            args[1] = "OK";
+        } else {
+            args[1] = RequestUtil.filter(message);
+        }
         writer.print(MessageFormat.format(Constants.MESSAGE_SECTION, args));
 
         // Manager Section

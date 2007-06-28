@@ -25,13 +25,15 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.io.Serializable;
 
+import org.apache.catalina.ServerFactory;
+
 
 /**
  * Holds and manages the naming resources defined in the J2EE Enterprise 
  * Naming Context and their associated JNDI context.
  *
  * @author Remy Maucherat
- * @version $Revision: 513349 $ $Date: 2007-03-01 15:33:06 +0100 (jeu., 01 mars 2007) $
+ * @version $Revision: 550048 $ $Date: 2007-06-23 17:00:51 +0200 (sam., 23 juin 2007) $
  */
 
 public class NamingResources implements Serializable {
@@ -191,9 +193,27 @@ public class NamingResources implements Serializable {
     public void addEnvironment(ContextEnvironment environment) {
 
         if (entries.containsKey(environment.getName())) {
-            if (findEnvironment(environment.getName()).getOverride()) {
-                removeEnvironment(environment.getName());
+            ContextEnvironment ce = findEnvironment(environment.getName());
+            ContextResourceLink rl = findResourceLink(environment.getName());
+            if (ce != null) {
+                if (ce.getOverride()) {
+                    removeEnvironment(environment.getName());
+                } else {
+                    return;
+                }
+            } else if (rl != null) {
+                // Link. Need to look at the global resources
+                NamingResources global =
+                    ServerFactory.getServer().getGlobalNamingResources();
+                if (global.findEnvironment(rl.getGlobal()) != null) {
+                    if (global.findEnvironment(rl.getGlobal()).getOverride()) {
+                        removeResourceLink(environment.getName());
+                    } else {
+                        return;
+                    }
+                }
             } else {
+                // It exists but it isn't an env or a res link...
                 return;
             }
         }

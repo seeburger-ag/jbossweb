@@ -15,19 +15,30 @@
  * limitations under the License.
  */
 
+package org.apache.catalina.manager.util;
 
-package javax.persistence;
+import java.util.Comparator;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+/**
+ * Comparator which reverse the sort order
+ * @author C&eacute;drik LIME
+ */
+public class ReverseComparator implements Comparator {
+    protected Comparator comparator;
 
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
+    /**
+     * 
+     */
+    public ReverseComparator(Comparator comparator) {
+        super();
+        this.comparator = comparator;
+    }
 
-public @interface PersistenceContext {
-   String name() default "";
-   String unitName() default "";
-   PersistenceContextType type() default PersistenceContextType.TRANSACTION;
+    /* (non-Javadoc)
+     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+     */
+    public int compare(Object o1, Object o2) {
+        int returnValue = comparator.compare(o1, o2);
+        return (- returnValue);
+    }
 }

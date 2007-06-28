@@ -15,19 +15,33 @@
  * limitations under the License.
  */
 
+package org.apache.catalina.manager.util;
 
-package javax.persistence;
+import java.util.Comparator;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.catalina.Session;
 
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
+/**
+ * Comparator which permits to compare on a session's content
+ * @author C&eacute;drik LIME
+ */
+public abstract class BaseSessionComparator implements Comparator {
 
-public @interface PersistenceContext {
-   String name() default "";
-   String unitName() default "";
-   PersistenceContextType type() default PersistenceContextType.TRANSACTION;
+    /**
+     * 
+     */
+    public BaseSessionComparator() {
+        super();
+    }
+
+    public abstract Comparable getComparableObject(Session session);
+
+    /* (non-Javadoc)
+     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+     */
+    public final int compare(Object o1, Object o2) {
+        Comparable c1 = getComparableObject((Session)o1);
+        Comparable c2 = getComparableObject((Session)o2);
+        return c1==null ? (c2==null ? 0 : -1) : (c2==null ? 1 : c1.compareTo(c2));
+    }
 }
