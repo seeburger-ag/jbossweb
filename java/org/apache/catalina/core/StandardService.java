@@ -56,6 +56,13 @@ public class StandardService
     private static Log log = LogFactory.getLog(StandardService.class);
    
 
+    /**
+     * Alternate flag to enable delaying startup of connectors in embedded mode.
+     */
+    public static final boolean DELAY_CONNECTOR_STARTUP =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false")).booleanValue();
+
+
     // ----------------------------------------------------- Instance Variables
 
 
@@ -525,11 +532,13 @@ public class StandardService
         }
 
         // Start our defined Connectors second
-        synchronized (connectors) {
-            for (int i = 0; i < connectors.length; i++) {
-                if (connectors[i] instanceof Lifecycle)
-                    ((Lifecycle) connectors[i]).start();
-            }
+        if (!DELAY_CONNECTOR_STARTUP) {
+        	synchronized (connectors) {
+        		for (int i = 0; i < connectors.length; i++) {
+        			if (connectors[i] instanceof Lifecycle)
+        				((Lifecycle) connectors[i]).start();
+        		}
+        	}
         }
         
         // Notify our interested LifecycleListeners

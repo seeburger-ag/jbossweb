@@ -282,6 +282,12 @@ public class StandardContext
 
 
     /**
+    * The class name of the context configurator.
+    */
+    private String configClass = null;
+
+
+    /**
      * Should we attempt to use cookies for session id communication?
      */
     private boolean cookies = true;
@@ -1025,6 +1031,27 @@ public class StandardContext
     }
 
 
+    /**
+     * Return the class name of the context configurator.
+     */
+    public String getConfigClass() {
+
+        return (this.configClass);
+
+    }
+
+
+    /**
+     * Set the class name of the context configurator.
+     *
+     * @param configClass The class name of the listener.
+     */
+    public void setConfigClass(String configClass) {
+
+        this.configClass = configClass;
+    }
+    
+    
     /**
      * Return the "correctly configured" flag for this Context.
      */
@@ -1878,6 +1905,9 @@ public class StandardContext
      * @return The work path
      */ 
     public String getWorkPath() {
+        if (getWorkDir() == null) {
+            return null;
+        }
         File workDir = new File(getWorkDir());
         if (!workDir.isAbsolute()) {
             File catalinaHome = engineBase();
@@ -5290,11 +5320,13 @@ public class StandardContext
             // Add the main configuration listener
             LifecycleListener config = null;
             try {
-                String configClassName = null;
-                try {
-                    configClassName = String.valueOf(mserver.getAttribute(parentName, "configClass"));
-                } catch (AttributeNotFoundException e) {
-                    // Ignore, it's normal a host may not have this optional attribute
+                String configClassName = getConfigClass();
+                if (configClassName == null) {
+                    try {
+                        configClassName = String.valueOf(mserver.getAttribute(parentName, "configClass"));
+                    } catch (AttributeNotFoundException e) {
+                        // Ignore, it's normal a host may not have this optional attribute
+                    }
                 }
                 if (configClassName != null) {
                     Class clazz = Class.forName(configClassName);
