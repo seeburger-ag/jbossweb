@@ -45,7 +45,7 @@ import java.util.Properties;
  * saved are still subject to being expired based on inactivity.
  *
  * @author Bip Thelin
- * @version $Revision: 467222 $, $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision: 554109 $, $Date: 2007-07-07 03:40:19 +0200 (sam., 07 juil. 2007) $
  */
 
 public class JDBCStore
@@ -970,7 +970,7 @@ public class JDBCStore
 
     /**
      * Gracefully terminate everything associated with our db.
-     * Called once when this Store is stoping.
+     * Called once when this Store is stopping.
      *
      */
     public void stop() throws LifecycleException {
