@@ -14,6 +14,44 @@
   </properties>
 
 <body>
+
+<section name="JBoss Web 2.1.0 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <update>
+        Remove Tomcat standalone session clustering. (remm)
+      </update>
+      <update>
+        Add a system property to delay startup of connectors for JBoss, which also could be useful
+        in similar embedding scenarios. (remm)
+      </update>
+      <update>
+        Add context listener configuration. (remm)
+      </update>
+      <update>
+        Expanded Comet API as org.apache.comet API. (remm)
+      </update>
+      <update>
+        Remove user database functionality, which didn't see any development besides the original
+        memory based backend introduced in Tomcat 4.1. (remm)
+      </update>
+      <update>
+        Add rewrite valve and PHP servlet from JBoss Web 2.0. (remm)
+      </update>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <update>
+        Remove HTTP NIO connector. (remm)
+      </update>
+      <update>
+        Remove legacy org.apache.jk AJP connector and utility components. (remm)
+      </update>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="Tomcat 6.0.14 (remm)">
   <subsection name="Catalina">
     <changelog>

@@ -203,7 +203,9 @@
       <fileset dir="${tomcat.classes}">
         <include name="org/apache/*" />
         <include name="org/apache/catalina/**" />
+        <include name="org/apache/comet/**" />
         <include name="org/apache/naming/**" />
+        <include name="org/jboss/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
         <exclude name="**/LocalStrings_*" />
@@ -254,7 +256,6 @@
       <fileset dir="${tomcat.classes}">
         <include name="org/apache/coyote/**" />
         <include name="org/apache/tomcat/jni/**" />
-        <include name="org/apache/jk/**" />
         <include name="org/apache/tomcat/util/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />

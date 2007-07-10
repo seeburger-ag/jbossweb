@@ -14,8 +14,8 @@
 
 
   <!-- Defined parameters (overrideable) -->
-  <xsl:param    name="home-name"        select="'The Tomcat Project'"/>
-  <xsl:param    name="home-href"        select="'http://tomcat.apache.org/'"/>
+  <xsl:param    name="home-name"        select="'The JBoss Web Project'"/>
+  <xsl:param    name="home-href"        select="'http://labs.jboss.com/jbossweb/'"/>
   <xsl:param    name="home-logo"        select="'/images/tomcat.gif'"/>
   <xsl:param    name="printer-logo"     select="'/images/printer.gif'"/>
   <xsl:param    name="apache-logo"      select="'/images/asf-logo.gif'"/>
