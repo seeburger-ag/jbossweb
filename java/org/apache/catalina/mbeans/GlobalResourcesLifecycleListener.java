@@ -18,20 +18,16 @@
 package org.apache.catalina.mbeans;
 
 
-import java.util.Iterator;
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
-import org.apache.catalina.Group;
+
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Role;
-import org.apache.catalina.User;
-import org.apache.catalina.UserDatabase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.modeler.Registry;
@@ -142,82 +138,12 @@ public class GlobalResourcesLifecycleListener
                 }
                 if (value instanceof Context) {
                     createMBeans(name + "/", (Context) value);
-                } else if (value instanceof UserDatabase) {
-                    try {
-                        createMBeans(name, (UserDatabase) value);
-                    } catch (Exception e) {
-                        log.error("Exception creating UserDatabase MBeans for " + name,
-                                e);
-                    }
                 }
             }
         } catch( RuntimeException ex) {
             log.error("RuntimeException " + ex);
         } catch( OperationNotSupportedException ex) {
             log.error("Operation not supported " + ex);
-        }
-
-    }
-
-
-    /**
-     * Create the MBeans for the specified UserDatabase and its contents.
-     *
-     * @param name Complete resource name of this UserDatabase
-     * @param database The UserDatabase to be processed
-     *
-     * @exception Exception if an exception occurs while creating MBeans
-     */
-    protected void createMBeans(String name, UserDatabase database)
-        throws Exception {
-
-        // Create the MBean for the UserDatabase itself
-        if (log.isDebugEnabled()) {
-            log.debug("Creating UserDatabase MBeans for resource " + name);
-            log.debug("Database=" + database);
-        }
-        if (MBeanUtils.createMBean(database) == null) {
-            throw new IllegalArgumentException
-                ("Cannot create UserDatabase MBean for resource " + name);
-        }
-
-        // Create the MBeans for each defined Role
-        Iterator roles = database.getRoles();
-        while (roles.hasNext()) {
-            Role role = (Role) roles.next();
-            if (log.isDebugEnabled()) {
-                log.debug("  Creating Role MBean for role " + role);
-            }
-            if (MBeanUtils.createMBean(role) == null) {
-                throw new IllegalArgumentException
-                    ("Cannot create Role MBean for role " + role);
-            }
-        }
-
-        // Create the MBeans for each defined Group
-        Iterator groups = database.getGroups();
-        while (groups.hasNext()) {
-            Group group = (Group) groups.next();
-            if (log.isDebugEnabled()) {
-                log.debug("  Creating Group MBean for group " + group);
-            }
-            if (MBeanUtils.createMBean(group) == null) {
-                throw new IllegalArgumentException
-                    ("Cannot create Group MBean for group " + group);
-            }
-        }
-
-        // Create the MBeans for each defined User
-        Iterator users = database.getUsers();
-        while (users.hasNext()) {
-            User user = (User) users.next();
-            if (log.isDebugEnabled()) {
-                log.debug("  Creating User MBean for user " + user);
-            }
-            if (MBeanUtils.createMBean(user) == null) {
-                throw new IllegalArgumentException
-                    ("Cannot create User MBean for user " + user);
-            }
         }
 
     }

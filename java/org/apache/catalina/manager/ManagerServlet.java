@@ -25,14 +25,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.naming.Binding;
-import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.UnavailableException;
@@ -47,11 +44,9 @@ import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
-import org.apache.catalina.Role;
 import org.apache.catalina.Server;
 import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Session;
-import org.apache.catalina.UserDatabase;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.RequestUtil;
@@ -361,8 +356,6 @@ public class ManagerServlet
             undeploy(writer, path);
         } else if (command.equals("/resources")) {
             resources(writer, type);
-        } else if (command.equals("/roles")) {
-            roles(writer);
         } else if (command.equals("/save")) {
             save(writer, path);
         } else if (command.equals("/serverinfo")) {
@@ -1000,55 +993,6 @@ public class ManagerServlet
             writer.println(sm.getString("managerServlet.exception",
                                         t.toString()));
         }
-
-    }
-
-
-    /**
-     * Render a list of security role names (and corresponding descriptions)
-     * from the <code>org.apache.catalina.UserDatabase</code> resource that is
-     * connected to the <code>users</code> resource reference.  Typically, this
-     * will be the global user database, but can be adjusted if you have
-     * different user databases for different virtual hosts.
-     *
-     * @param writer Writer to render to
-     */
-    protected void roles(PrintWriter writer) {
-
-        if (debug >= 1) {
-            log("roles:  List security roles from user database");
-        }
-
-        // Look up the UserDatabase instance we should use
-        UserDatabase database = null;
-        try {
-            InitialContext ic = new InitialContext();
-            database = (UserDatabase) ic.lookup("java:comp/env/users");
-        } catch (NamingException e) {
-            writer.println(sm.getString("managerServlet.userDatabaseError"));
-            log("java:comp/env/users", e);
-            return;
-        }
-        if (database == null) {
-            writer.println(sm.getString("managerServlet.userDatabaseMissing"));
-            return;
-        }
-
-        // Enumerate the available roles
-        writer.println(sm.getString("managerServlet.rolesList"));
-        Iterator roles = database.getRoles();
-        if (roles != null) {
-            while (roles.hasNext()) {
-                Role role = (Role) roles.next();
-                writer.print(role.getRolename());
-                writer.print(':');
-                if (role.getDescription() != null) {
-                    writer.print(role.getDescription());
-                }
-                writer.println();
-            }
-        }
-
 
     }
 
