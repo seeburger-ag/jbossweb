@@ -44,8 +44,6 @@
   <property name="jsp-api.jar" value="${tomcat.build}/lib/jsp-api.jar"/>
   <property name="el-api.jar" value="${tomcat.build}/lib/el-api.jar"/>
   <property name="catalina.jar" value="${tomcat.build}/lib/catalina.jar"/>
-  <property name="catalina-tribes.jar" value="${tomcat.build}/lib/catalina-tribes.jar"/>
-  <property name="catalina-ha.jar" value="${tomcat.build}/lib/catalina-ha.jar"/>
   <property name="catalina-ant.jar" value="${tomcat.build}/lib/catalina-ant.jar"/>
   <property name="catalina-ant-jmx.jar" value="${tomcat.build}/lib/catalina-ant-jmx.jar"/>
   <property name="tomcat-coyote.jar" value="${tomcat.build}/lib/tomcat-coyote.jar"/>
@@ -220,25 +218,6 @@
       </fileset>
     </jar>
     
-    <!-- Catalina GroupCom/Tribes JAR File -->
-    <jar jarfile="${catalina-tribes.jar}">
-      <fileset dir="${tomcat.classes}">
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-        <!-- Modules -->
-        <include name="org/apache/catalina/tribes/**" />
-      </fileset>
-    </jar>
-    <!-- Catalina Cluster/HA JAR File -->
-    <jar jarfile="${catalina-ha.jar}">
-      <fileset dir="${tomcat.classes}">
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-        <!-- Modules -->
-        <include name="org/apache/catalina/ha/**" />
-      </fileset>
-    </jar>
-
     <!-- Catalina Ant Tasks JAR File -->
     <jar jarfile="${catalina-ant.jar}">
       <fileset dir="${tomcat.classes}">
@@ -480,7 +459,6 @@
     <copy todir="${tomcat.build}/webapps">
       <fileset dir="webapps">
         <include name="ROOT/**"/>
-        <include name="examples/**"/>
         <include name="manager/**"/>
         <include name="host-manager/**"/>
       </fileset>
@@ -489,23 +467,6 @@
     <filter token="VERSION" value="${version}"/>
     <copy tofile="${tomcat.build}/webapps/ROOT/RELEASE-NOTES.txt" file="RELEASE-NOTES" 
           filtering="true" />
-
-    <!-- Build classes for examples webapp -->
-    <javac   srcdir="webapps/examples/WEB-INF/classes" 
-             destdir="${tomcat.build}/webapps/examples/WEB-INF/classes"
-             debug="${compile.debug}" deprecation="${compile.deprecation}"
-             optimize="${compile.optimize}"
-    	     classpath="${tomcat.classes}"
-             excludes="**/CVS/**,**/.svn/**">
-    </javac>
-  	
-    <javac   srcdir="webapps/examples/jsp/plugin/applet" 
-             destdir="${tomcat.build}/webapps/examples/jsp/plugin/applet"
-             debug="${compile.debug}" deprecation="${compile.deprecation}"
-             optimize="${compile.optimize}"
-    	     classpath="$tomcat.lcasses}"
-             excludes="**/CVS/**,**/.svn/**">
-    </javac>
 
   	<copy file="${tomcat-dbcp.jar}" todir="${tomcat.build}/lib" />
     <copy file="${jasper-jdt.jar}" todir="${tomcat.build}/lib" />

@@ -33,7 +33,8 @@
       </update>
       <update>
         Remove user database functionality, which didn't see any development besides the original
-        memory based backend introduced in Tomcat 4.1. (remm)
+        memory based backend introduced in Tomcat 4.1. Also remove associated roles management
+        features. (remm)
       </update>
       <update>
         Add rewrite valve and PHP servlet from JBoss Web 2.0. (remm)

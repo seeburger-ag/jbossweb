@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="Tomcat 6.0" default="release" basedir=".">
+<project name="JBoss Web" default="release" basedir=".">
 
 
   <!-- ===================== Initialize Property Values =================== -->
@@ -12,16 +12,16 @@
   <property file="build.properties.default"/>
 
   <!-- Project Properties -->
-  <property name="name"                  value="Apache Tomcat" />
+  <property name="name"                  value="JBoss Web" />
   <property name="year"                  value="2007" />
-  <property name="version.major"         value="6" />
-  <property name="version.minor"         value="0" />
+  <property name="version.major"         value="2" />
+  <property name="version.minor"         value="1" />
   <property name="version.build"         value="0" />
   <property name="version.patch"         value="0" />
-  <property name="version"               value="6.0.0-dev" />
+  <property name="version"               value="2.1.0-dev" />
   <property name="version.number"        value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
 
-  <property name="project"               value="apache-tomcat" />
+  <property name="project"               value="jboss-web" />
   <property name="final.name"            value="${project}-${version}" />
   <property name="final-src.name"        value="${project}-${version}-src" />
 
@@ -32,6 +32,7 @@
   <property name="tomcat.deployer"   value="${basedir}/output/deployer"/>
   <property name="tomcat.extras"     value="${basedir}/output/extras"/>
   <property name="tomcat.release"    value="${basedir}/output/release"/>
+  <property name="tomcat.jars"       value="${basedir}/output/jars"/>
   <property name="test.failonerror"  value="true"/>
   <property name="test.runner"       value="junit.textui.TestRunner"/>
 
@@ -57,204 +58,6 @@
   <property name="jasper-jdt.home" value="${base.path}/tomcat6-deps/jdt" />
   <property name="tomcat-dbcp.jar" value="${tomcat-dbcp.home}/tomcat-dbcp.jar"/>
   <property name="jasper-jdt.jar" value="${jasper-jdt.home}/jasper-jdt.jar"/>
-
-  <target name="build-webapps-precompile" description="Precompile webapps" >
-
-    <!-- JSPC -->
-    <property name="admin.base" location="${tomcat.build}/server/webapps/admin" />
-    <property name="ROOT.base" location="${tomcat.build}/webapps/ROOT" />
-    <property name="jsp-examples.base" location="${tomcat.build}/webapps/jsp-examples" />
-
-    <mkdir dir="${admin.base}/WEB-INF/src/admin" />
-    <mkdir dir="${ROOT.base}/WEB-INF/src" />
-    <mkdir dir="${ROOT.base}/WEB-INF/classes" />
-    <mkdir dir="${jsp-examples.base}/WEB-INF/src" />
-
-    <path id="jspc.classpath">
-      <pathelement location="${java.home}/../lib/tools.jar"/>
-      <pathelement location="${commons-logging-api.jar}"/>
-      <fileset dir="${tomcat.build}/lib">
-        <include name="*.jar"/>
-      </fileset>
-      <pathelement location="${tomcat.build}/classes"/>
-    </path>
-
-    <taskdef classname="org.apache.jasper.JspC" name="jasper2" >
-      <classpath refid="jspc.classpath"/>
-    </taskdef>
-
-    <jasper2
-             compile="false"
-             validateXml="false"
-             uriroot="${ROOT.base}"
-             webXmlFragment="${ROOT.base}/WEB-INF/generated_web.xml"
-             addWebXmlMappings="true"
-             outputDir="${ROOT.base}/WEB-INF/src" />
-
-    <jasper2
-             compile="false"
-             validateXml="false"
-             uriroot="${jsp-examples.base}"
-         webXmlFragment="${jsp-examples.base}/WEB-INF/generated_web.xml"
-             addWebXmlMappings="true"
-             outputDir="${jsp-examples.base}/WEB-INF/src" />
-
-    <jasper2
-             package="admin"
-             compile="false"
-             validateXml="false"
-             uriroot="${admin.base}"
-             webXmlFragment="${admin.base}/WEB-INF/generated_web.xml"
-             addWebXmlMappings="true"
-             outputDir="${admin.base}/WEB-INF/src/admin" />
-
-    <javac destdir="${ROOT.base}/WEB-INF/classes"
-           optimize="off"
-           debug="${compile.debug}"
-           deprecation="${compile.deprecation}"
-           source="${compile.source}"
-           failonerror="false"
-           srcdir="${ROOT.base}/WEB-INF/src"
-       excludes="**/*.smap">
-      <classpath>
-        <pathelement location="${java.home}/../lib/tools.jar"/>
-        <fileset dir="${tomcat.build}/server/lib">
-          <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${tomcat.build}/common/lib">
-          <include name="*.jar"/>
-        </fileset>
-        <pathelement location="${tomcat.build}/classes"/>
-      </classpath>
-      <include name="**" />
-    </javac>
-
-    <mkdir dir="${jsp-examples.base}/WEB-INF/src/tags"/>
-    <copy todir="${jsp-examples.base}/WEB-INF/classes">
-      <fileset dir="${jsp-examples.base}/WEB-INF/src">
-        <include name="**/*.class" />
-      </fileset>
-    </copy>
-
-    <javac destdir="${jsp-examples.base}/WEB-INF/classes"
-           optimize="off"
-           debug="${compile.debug}"
-           deprecation="${compile.deprecation}"
-           source="${compile.source}"
-           failonerror="false"
-           srcdir="${jsp-examples.base}/WEB-INF/src"
-       excludes="**/*.smap">
-      <classpath>
-        <pathelement location="${java.home}/../lib/tools.jar"/>
-        <fileset dir="${tomcat.build}/server/lib">
-          <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${jsp-examples.base}/WEB-INF/lib">
-          <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${tomcat.build}/common/lib">
-          <include name="*.jar"/>
-        </fileset>
-        <pathelement location="${tomcat.build}/classes"/>
-        <pathelement location="${jsp-examples.base}/WEB-INF/classes"/>
-      </classpath>
-      <include name="**" />
-      <exclude name="tags/**" />
-    </javac>
-
-    <javac destdir="${admin.base}/WEB-INF/classes"
-           optimize="off"
-           debug="${compile.debug}"
-           deprecation="${compile.deprecation}"
-           source="${compile.source}"
-           failonerror="false"
-           srcdir="${admin.base}/WEB-INF/src"
-       excludes="**/*.smap">
-      <classpath>
-        <pathelement location="${java.home}/../lib/tools.jar"/>
-        <fileset dir="${tomcat.build}/server/lib">
-          <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${admin.base}/WEB-INF/lib">
-          <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${tomcat.build}/common/lib">
-          <include name="*.jar"/>
-        </fileset>
-        <pathelement location="${tomcat.build}/classes"/>
-      </classpath>
-      <include name="admin/**" />
-    </javac>
-  </target>
-
-  <target name="fix-webapps">
-    <!-- Extra build steps for webapps -->
-
-    <filter token="VERSION" value="${version}"/>
-
-    <!-- Add release notes to the root webapp -->
-    <copy file="${basedir}/RELEASE-NOTES"
-        tofile="${tomcat.build}/webapps/ROOT/RELEASE-NOTES.txt"
-        filtering="true" />
-
-    <!-- Add documents to the tomcat-docs webapp -->
-    <copy file="${basedir}/resources/build.xml"
-        todir="${tomcat.build}/webapps/tomcat-docs" />
-    <copy file="./RELEASE-NOTES"
-        tofile="${tomcat.build}/webapps/tomcat-docs/RELEASE-NOTES.txt"
-        filtering="true" />
-
-    <!-- Build JARs for webapps classes -->
-    <mkdir dir="${tomcat.build}/server/webapps/admin/WEB-INF/lib" />
-    <jar jarfile="${tomcat.build}/server/webapps/admin/WEB-INF/lib/catalina-admin.jar"
-         index="true">
-       <fileset dir="${tomcat.build}/server/webapps/admin/WEB-INF/classes">
-          <include name="**/*.class" />
-          <include name="**/*.properties" />
-       </fileset>
-    </jar>
-    <mkdir dir="${tomcat.build}/server/webapps/manager/WEB-INF/lib" />
-    <jar jarfile="${tomcat.build}/server/webapps/manager/WEB-INF/lib/catalina-manager.jar"
-         index="true">
-       <fileset dir="${tomcat.build}/server/webapps/manager/WEB-INF/classes">
-          <include name="**/*.class" />
-          <include name="**/*.properties" />
-       </fileset>
-    </jar>
-    <mkdir dir="${tomcat.build}/server/webapps/host-manager/WEB-INF/lib" />
-    <jar jarfile="${tomcat.build}/server/webapps/host-manager/WEB-INF/lib/catalina-host-manager.jar"
-         index="true">
-       <fileset dir="${tomcat.build}/server/webapps/host-manager/WEB-INF/classes">
-          <include name="**/*.class" />
-          <include name="**/*.properties" />
-       </fileset>
-    </jar>
-    <mkdir dir="${tomcat.build}/webapps/balancer/WEB-INF/lib" />
-    <jar jarfile="${tomcat.build}/webapps/balancer/WEB-INF/lib/catalina-balancer.jar"
-         index="true">
-       <fileset dir="${tomcat.build}/webapps/balancer/WEB-INF/classes">
-          <include name="**/*.class" />
-          <include name="**/*.properties" />
-       </fileset>
-    </jar>
-    <mkdir dir="${tomcat.build}/webapps/ROOT/WEB-INF/lib" />
-    <jar jarfile="${tomcat.build}/webapps/ROOT/WEB-INF/lib/catalina-root.jar"
-         index="true">
-       <fileset dir="${tomcat.build}/webapps/ROOT/WEB-INF/classes">
-          <include name="**/*.class" />
-          <include name="**/*.properties" />
-       </fileset>
-    </jar>
-
-    <!-- Add XML declarations for admin, manager and balancer -->
-    <copy file="${tomcat.build}/server/webapps/manager/manager.xml"
-         todir="${tomcat.build}/conf/Catalina/localhost" />
-    <copy file="${tomcat.build}/server/webapps/host-manager/host-manager.xml"
-         todir="${tomcat.build}/conf/Catalina/localhost" />
-    <copy file="${tomcat.build}/server/webapps/admin/admin.xml"
-         todir="${tomcat.build}/conf/Catalina/localhost" />
-
-  </target>
 
   <!-- ====================== COMBO: Clean All Directories ================ -->
   <target name="clean"
@@ -290,6 +93,7 @@
     <mkdir dir="${tomcat.dist}/work"/>
   	<mkdir dir="${tomcat.release}/v${version}/bin" />
   	<mkdir dir="${tomcat.release}/v${version}/src" />
+  	<mkdir dir="${tomcat.jars}" />
   </target>
 
 
@@ -335,6 +139,10 @@
     <fixcrlf srcdir="${tomcat.dist}/bin"   includes="*.sh"  eol="lf"/>
     <fixcrlf srcdir="${tomcat.dist}/bin"   includes="*.bat" eol="crlf"/>
     <chmod      dir="${tomcat.dist}/bin"   includes="*.sh"  perm="+x"/>
+
+    <copy todir="${tomcat.jars}">
+      <fileset dir="${tomcat.build}/lib" />
+    </copy>
 
   </target>
 

@@ -16,9 +16,9 @@
   <!-- Defined parameters (overrideable) -->
   <xsl:param    name="home-name"        select="'The JBoss Web Project'"/>
   <xsl:param    name="home-href"        select="'http://labs.jboss.com/jbossweb/'"/>
-  <xsl:param    name="home-logo"        select="'/images/tomcat.gif'"/>
+  <xsl:param    name="home-logo"        select="'/images/jboss_logo.gif'"/>
   <xsl:param    name="printer-logo"     select="'/images/printer.gif'"/>
-  <xsl:param    name="apache-logo"      select="'/images/asf-logo.gif'"/>
+  <xsl:param    name="jbossorg-logo"      select="'/images/jbossorg_logo.gif'"/>
   <xsl:param    name="relative-path"    select="'.'"/>
   <xsl:param    name="void-image"       select="'/images/void.gif'"/>
   <xsl:param    name="project-menu"     select="'menu'"/>
@@ -90,10 +90,10 @@
         <td>
           <xsl:comment>APACHE LOGO</xsl:comment>
           <xsl:variable name="src">
-            <xsl:value-of select="$relative-path"/><xsl:value-of select="$apache-logo"/>
+            <xsl:value-of select="$relative-path"/><xsl:value-of select="$jbossorg-logo"/>
           </xsl:variable>
-          <a href="http://www.apache.org/">
-            <img src="{$src}" align="right" alt="Apache Logo" border="0"/>
+          <a href="http://www.jboss.org/">
+            <img src="{$src}" align="right" alt="JBoss Logo" border="0"/>
           </a>
         </td>
       </tr>
