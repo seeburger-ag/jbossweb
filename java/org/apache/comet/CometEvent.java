@@ -40,7 +40,7 @@ public interface CometEvent {
      *  fields using the request and response objects. Between the end of the processing 
      *  of this event, and the beginning of the processing of the end or error events,
      *  it is possible to use the response object to write data on the open connection.
-     *  Note that the response object and depedent OutputStream and Writer are  
+     *  Note that the response object and dependent OutputStream and Writer are  
      *  not synchronized, so when they are accessed by multiple threads adequate
      *  synchronization is needed. After processing the initial event, the request 
      *  is considered to be committed.</li>
@@ -70,7 +70,7 @@ public interface CometEvent {
      *  using the close() method.</li>
      * <li>WRITE - Write is sent if the servlet is using the ready method. This means that 
      *  the connection is ready to receive data to be written out. This event will never
-     *  be recieved if the Servlet is not using the ready() method, or if the ready() 
+     *  be received if the servlet is not using the ready() method, or if the ready() 
      *  method always returns true.</li>
      * </ul>
      */
@@ -82,7 +82,7 @@ public interface CometEvent {
      * <br>
      * END events sub types:
      * <ul>
-     * <li>WEBAPP_RELOAD - the webapplication is being reloaded</li>
+     * <li>WEBAPP_RELOAD - the web application is being reloaded</li>
      * <li>SERVER_SHUTDOWN - the server is shutting down</li>
      * <li>SESSION_END - the servlet ended the session</li>
      * </ul>
@@ -158,7 +158,7 @@ public interface CometEvent {
      * to the client and data still cannot be written immediately, an IOException will be 
      * thrown. If calling this method returns false, it will also 
      * request notification when the connection becomes available for writing again, and the  
-     * servlet will recieve a write event.
+     * servlet will receive a write event.
      * <br>
      * Note: If the servlet is not using ready, and is writing its output inside the
      * container threads, using this method is not mandatory, but any incomplete writes will be
@@ -170,8 +170,8 @@ public interface CometEvent {
 
     /**
      * Suspend processing of the connection until the configured timeout occurs, 
-     * or resume() is called. In parctice, this means the servlet will no longer 
-     * recieve read events. Reading should always be performed synchronously in 
+     * or resume() is called. In practice, this means the servlet will no longer 
+     * receive read events. Reading should always be performed synchronously in 
      * the Tomcat threads unless the connection has been suspended.
      */
     public void suspend();

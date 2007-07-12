@@ -33,6 +33,8 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;
 import javax.servlet.jsp.PageContext;
 
+import org.apache.jasper.Constants;
+
 /**
  * Util contains some often used consts, static methods and embedded class
  * to support the JSTL tag plugin.
@@ -150,7 +152,7 @@ public class Util {
     public static String stripSession(String url) {
         StringBuffer u = new StringBuffer(url);
         int sessionStart;
-        while ((sessionStart = u.toString().indexOf(";jsessionid=")) != -1) {
+        while ((sessionStart = u.toString().indexOf(";" + Constants.SESSION_PARAMETER_NAME + "=")) != -1) {
             int sessionEnd = u.toString().indexOf(";", sessionStart + 1);
             if (sessionEnd == -1)
                 sessionEnd = u.toString().indexOf("?", sessionStart + 1);
