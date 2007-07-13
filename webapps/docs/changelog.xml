@@ -118,6 +118,9 @@
       <fix>
         Fix Comet when running Tomcat with the security manager (remm)
       </fix>
+      <fix>
+        Fix filter chain creation when Comet is used (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
