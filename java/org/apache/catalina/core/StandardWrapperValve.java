@@ -162,6 +162,7 @@ final class StandardWrapperValve
         if (servlet instanceof CometProcessor 
                 && request.getAttribute("org.apache.tomcat.comet.support") == Boolean.TRUE) {
             comet = true;
+            request.setComet(true);
         }
         
         // Acknowlege the request
@@ -195,6 +196,8 @@ final class StandardWrapperValve
             ApplicationFilterFactory.getInstance();
         ApplicationFilterChain filterChain =
             factory.createFilterChain(request, wrapper, servlet);
+        // Reset comet flag value after creating the filter chain
+        request.setComet(false);
 
         // Call the filter chain for this request
         // NOTE: This also calls the servlet's service() method
