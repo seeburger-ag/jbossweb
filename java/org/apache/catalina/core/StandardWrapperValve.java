@@ -55,7 +55,7 @@ final class StandardWrapperValve
 
 
     // Some JMX statistics. This vavle is associated with a StandardWrapper.
-    // We exponse the StandardWrapper as JMX ( j2eeType=Servlet ). The fields
+    // We expose the StandardWrapper as JMX ( j2eeType=Servlet ). The fields
     // are here for performance.
     private volatile long processingTime;
     private volatile long maxTime;
@@ -165,7 +165,7 @@ final class StandardWrapperValve
             request.setComet(true);
         }
         
-        // Acknowlege the request
+        // Acknowledge the request
         try {
             response.sendAcknowledgement();
         } catch (IOException e) {
