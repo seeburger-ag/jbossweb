@@ -39,6 +39,9 @@
       <update>
         Add rewrite valve and PHP servlet from JBoss Web 2.0. (remm)
       </update>
+      <fix>
+        Use the system property for the session cookie name. (jfclere)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

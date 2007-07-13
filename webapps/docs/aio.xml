@@ -16,14 +16,14 @@
   <section name="Introduction">
 
   <p>
-    With usage of APR or NIO APIs as the basis of its connectors, Tomcat is 
+    With usage of the APR API as the basis of its connectors, Tomcat is 
     able to provide a number of extensions over the regular blocking IO 
     as provided with support for the Servlet API.
   </p>
 
   <p>
-    <b>IMPORTANT NOTE: Usage of these features requires using the APR or NIO
-    HTTP connectors. The classic java.io HTTP connector and the AJP connectors
+    <b>IMPORTANT NOTE: Usage of these features requires using the APR connector. 
+    The classic java.io HTTP connector and the AJP connectors
     do not support them.</b>
   </p>
 

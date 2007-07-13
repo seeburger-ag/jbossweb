@@ -63,6 +63,7 @@
         <item name="Changelog"             href="changelog.html"/>
         <item name="Architecture"          href="architecture/index.html" />
         <item name="Functional Specs."     href="funcspecs/index.html"/>
+        <item name="^Legal"                href="legal.html"/>
     </menu>
 
     </body>
