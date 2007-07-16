@@ -121,6 +121,14 @@
       <fix>
         Fix filter chain creation when Comet is used (remm)
       </fix>
+      <docs>
+        Correct j.u.l log levels in JULI docs. (rjung)
+      </docs>
+      <fix>
+        Handle special case of ROOT when re-loading webapp after ROOT.xml has
+        been modified. In some circumstances the reloaded ROOT webapp had no
+        associated resources. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
