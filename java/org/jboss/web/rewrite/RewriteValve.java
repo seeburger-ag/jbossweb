@@ -511,7 +511,7 @@ public class RewriteValve extends ValveBase
                 // RewriteCond TestString CondPattern [Flags]
                 RewriteCond condition = new RewriteCond();
                 if (tokenizer.countTokens() < 2) {
-                    throw new IllegalArgumentException("Ivalid line: " + line);
+                    throw new IllegalArgumentException("Invalid line: " + line);
                 }
                 condition.setTestString(tokenizer.nextToken());
                 condition.setCondPattern(tokenizer.nextToken());
@@ -530,7 +530,7 @@ public class RewriteValve extends ValveBase
                 // RewriteRule Pattern Substitution [Flags]
                 RewriteRule rule = new RewriteRule();
                 if (tokenizer.countTokens() < 2) {
-                    throw new IllegalArgumentException("Ivalid line: " + line);
+                    throw new IllegalArgumentException("Invalid line: " + line);
                 }
                 rule.setPatternString(tokenizer.nextToken());
                 rule.setSubstitutionString(tokenizer.nextToken());
@@ -548,7 +548,7 @@ public class RewriteValve extends ValveBase
             } else if (token.equals("RewriteMap")) {
                 // RewriteMap name rewriteMapClassName whateverOptionalParameterInWhateverFormat
                 if (tokenizer.countTokens() < 2) {
-                    throw new IllegalArgumentException("Ivalid line: " + line);
+                    throw new IllegalArgumentException("Invalid line: " + line);
                 }
                 String name = tokenizer.nextToken();
                 String rewriteMapClassName = tokenizer.nextToken();
@@ -556,7 +556,7 @@ public class RewriteValve extends ValveBase
                 try {
                     map = (RewriteMap) (Class.forName(rewriteMapClassName).newInstance());
                 } catch (Exception e) {
-                    throw new IllegalArgumentException("Ivalid map className: " + line);
+                    throw new IllegalArgumentException("Invalid map className: " + line);
                 }
                 if (tokenizer.hasMoreTokens()) {
                     map.setParameters(tokenizer.nextToken());
@@ -587,7 +587,7 @@ public class RewriteValve extends ValveBase
         } else if (flag.equals("OR") || flag.equals("ornext")) {
             condition.setOrnext(true);
         } else {
-            throw new IllegalArgumentException("Ivalid flag in: " + line + " flags: " + flag);
+            throw new IllegalArgumentException("Invalid flag in: " + line + " flags: " + flag);
         }
     }
     
@@ -610,7 +610,7 @@ public class RewriteValve extends ValveBase
             }
             int pos = flag.indexOf(':');
             if (pos == -1 || (pos + 1) == flag.length()) {
-                throw new IllegalArgumentException("Ivalid flag in: " + line);
+                throw new IllegalArgumentException("Invalid flag in: " + line);
             }
             rule.setCookieName(flag.substring(0, pos));
             rule.setCookieValue(flag.substring(pos + 1));
@@ -623,7 +623,7 @@ public class RewriteValve extends ValveBase
             }
             int pos = flag.indexOf(':');
             if (pos == -1 || (pos + 1) == flag.length()) {
-                throw new IllegalArgumentException("Ivalid flag in: " + line);
+                throw new IllegalArgumentException("Invalid flag in: " + line);
             }
             rule.setEnvName(flag.substring(0, pos));
             rule.setEnvValue(flag.substring(pos + 1));
