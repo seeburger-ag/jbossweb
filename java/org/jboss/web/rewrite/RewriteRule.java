@@ -99,6 +99,9 @@ public class RewriteRule {
                     if (lastMatcher2 != null) {
                         lastMatcher = lastMatcher2;
                     }
+                    while (pos < conditions.length && conditions[pos].isOrnext()) {
+                        pos++;
+                    }
                 } else if (!conditions[pos].isOrnext()) {
                     done = true;
                 }
