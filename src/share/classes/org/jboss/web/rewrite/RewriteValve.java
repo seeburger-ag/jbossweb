@@ -125,9 +125,6 @@ public class RewriteValve extends ValveBase
             File file = new File(getConfigBase(), resourceName);
             try {
                 if (!file.exists()) {
-                    file = new File(getConfigBase(), resourcePath);
-                }
-                if (!file.exists()) {
                     if (resourceName != null) {
                         // Use getResource and getResourceAsStream
                         is = getClass().getClassLoader()
