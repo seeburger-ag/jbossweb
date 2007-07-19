@@ -193,8 +193,8 @@ public class RewriteValve extends ValveBase
     }
     
     protected void parse(BufferedReader reader) throws LifecycleException {
-        ArrayList rules = new ArrayList();
-        ArrayList conditions = new ArrayList();
+        ArrayList<RewriteRule> rules = new ArrayList<RewriteRule>();
+        ArrayList<RewriteCond> conditions = new ArrayList<RewriteCond>();
         while (true) {
             try {
                 String line = reader.readLine();
@@ -210,18 +210,18 @@ public class RewriteValve extends ValveBase
                     }
                     for (int i = 0; i < conditions.size(); i++) {
                         if (container.getLogger().isDebugEnabled()) {
-                            RewriteCond cond = (RewriteCond) conditions.get(i);
+                            RewriteCond cond = conditions.get(i);
                             container.getLogger().debug("Add condition " + cond.getCondPattern() 
                                     + " test " + cond.getTestString() + " to rule with pattern " 
                                     + rule.getPatternString() + " and substitution " 
                                     + rule.getSubstitutionString());
                         }
-                        rule.addCondition((RewriteCond) conditions.get(i));
+                        rule.addCondition(conditions.get(i));
                     }
                     conditions.clear();
                     rules.add(rule);
                 } else if (result instanceof RewriteCond) {
-                    conditions.add(result);
+                    conditions.add((RewriteCond) result);
                 } else if (result instanceof Object[]) {
                     String mapName = (String) ((Object[]) result)[0];
                     RewriteMap map = (RewriteMap) ((Object[]) result)[1];
