@@ -125,6 +125,9 @@ public class RewriteValve extends ValveBase
             File file = new File(getConfigBase(), resourceName);
             try {
                 if (!file.exists()) {
+                    file = new File(getConfigBase(), resourcePath);
+                }
+                if (!file.exists()) {
                     if (resourceName != null) {
                         // Use getResource and getResourceAsStream
                         is = getClass().getClassLoader()
@@ -208,13 +211,19 @@ public class RewriteValve extends ValveBase
                         container.getLogger().debug("Add rule with pattern " + rule.getPatternString()
                                 + " and substitution " + rule.getSubstitutionString());
                     }
+                    for (int i = (conditions.size() - 1); i > 0; i--) {
+                        if (conditions.get(i - 1).isOrnext()) {
+                            conditions.get(i).setOrnext(true);
+                        }
+                    }
                     for (int i = 0; i < conditions.size(); i++) {
                         if (container.getLogger().isDebugEnabled()) {
                             RewriteCond cond = conditions.get(i);
                             container.getLogger().debug("Add condition " + cond.getCondPattern() 
                                     + " test " + cond.getTestString() + " to rule with pattern " 
                                     + rule.getPatternString() + " and substitution " 
-                                    + rule.getSubstitutionString());
+                                    + rule.getSubstitutionString() + (cond.isOrnext() ? " [OR]" : "")
+                                    + (cond.isNocase() ? " [NC]" : ""));
                         }
                         rule.addCondition(conditions.get(i));
                     }
