@@ -125,6 +125,9 @@ public class RewriteValve extends ValveBase
             File file = new File(getConfigBase(), resourceName);
             try {
                 if (!file.exists()) {
+                    file = new File(getConfigBase(), resourcePath);
+                }
+                if (!file.exists()) {
                     if (resourceName != null) {
                         // Use getResource and getResourceAsStream
                         is = getClass().getClassLoader()
@@ -193,8 +196,8 @@ public class RewriteValve extends ValveBase
     }
     
     protected void parse(BufferedReader reader) throws LifecycleException {
-        ArrayList rules = new ArrayList();
-        ArrayList conditions = new ArrayList();
+        ArrayList<RewriteRule> rules = new ArrayList<RewriteRule>();
+        ArrayList<RewriteCond> conditions = new ArrayList<RewriteCond>();
         while (true) {
             try {
                 String line = reader.readLine();
@@ -208,20 +211,26 @@ public class RewriteValve extends ValveBase
                         container.getLogger().debug("Add rule with pattern " + rule.getPatternString()
                                 + " and substitution " + rule.getSubstitutionString());
                     }
+                    for (int i = (conditions.size() - 1); i > 0; i--) {
+                        if (conditions.get(i - 1).isOrnext()) {
+                            conditions.get(i).setOrnext(true);
+                        }
+                    }
                     for (int i = 0; i < conditions.size(); i++) {
                         if (container.getLogger().isDebugEnabled()) {
-                            RewriteCond cond = (RewriteCond) conditions.get(i);
+                            RewriteCond cond = conditions.get(i);
                             container.getLogger().debug("Add condition " + cond.getCondPattern() 
                                     + " test " + cond.getTestString() + " to rule with pattern " 
                                     + rule.getPatternString() + " and substitution " 
-                                    + rule.getSubstitutionString());
+                                    + rule.getSubstitutionString() + (cond.isOrnext() ? " [OR]" : "")
+                                    + (cond.isNocase() ? " [NC]" : ""));
                         }
-                        rule.addCondition((RewriteCond) conditions.get(i));
+                        rule.addCondition(conditions.get(i));
                     }
                     conditions.clear();
                     rules.add(rule);
                 } else if (result instanceof RewriteCond) {
-                    conditions.add(result);
+                    conditions.add((RewriteCond) result);
                 } else if (result instanceof Object[]) {
                     String mapName = (String) ((Object[]) result)[0];
                     RewriteMap map = (RewriteMap) ((Object[]) result)[1];
@@ -511,7 +520,7 @@ public class RewriteValve extends ValveBase
                 // RewriteCond TestString CondPattern [Flags]
                 RewriteCond condition = new RewriteCond();
                 if (tokenizer.countTokens() < 2) {
-                    throw new IllegalArgumentException("Ivalid line: " + line);
+                    throw new IllegalArgumentException("Invalid line: " + line);
                 }
                 condition.setTestString(tokenizer.nextToken());
                 condition.setCondPattern(tokenizer.nextToken());
@@ -530,7 +539,7 @@ public class RewriteValve extends ValveBase
                 // RewriteRule Pattern Substitution [Flags]
                 RewriteRule rule = new RewriteRule();
                 if (tokenizer.countTokens() < 2) {
-                    throw new IllegalArgumentException("Ivalid line: " + line);
+                    throw new IllegalArgumentException("Invalid line: " + line);
                 }
                 rule.setPatternString(tokenizer.nextToken());
                 rule.setSubstitutionString(tokenizer.nextToken());
@@ -548,7 +557,7 @@ public class RewriteValve extends ValveBase
             } else if (token.equals("RewriteMap")) {
                 // RewriteMap name rewriteMapClassName whateverOptionalParameterInWhateverFormat
                 if (tokenizer.countTokens() < 2) {
-                    throw new IllegalArgumentException("Ivalid line: " + line);
+                    throw new IllegalArgumentException("Invalid line: " + line);
                 }
                 String name = tokenizer.nextToken();
                 String rewriteMapClassName = tokenizer.nextToken();
@@ -556,7 +565,7 @@ public class RewriteValve extends ValveBase
                 try {
                     map = (RewriteMap) (Class.forName(rewriteMapClassName).newInstance());
                 } catch (Exception e) {
-                    throw new IllegalArgumentException("Ivalid map className: " + line);
+                    throw new IllegalArgumentException("Invalid map className: " + line);
                 }
                 if (tokenizer.hasMoreTokens()) {
                     map.setParameters(tokenizer.nextToken());
@@ -587,7 +596,7 @@ public class RewriteValve extends ValveBase
         } else if (flag.equals("OR") || flag.equals("ornext")) {
             condition.setOrnext(true);
         } else {
-            throw new IllegalArgumentException("Ivalid flag in: " + line + " flags: " + flag);
+            throw new IllegalArgumentException("Invalid flag in: " + line + " flags: " + flag);
         }
     }
     
@@ -610,7 +619,7 @@ public class RewriteValve extends ValveBase
             }
             int pos = flag.indexOf(':');
             if (pos == -1 || (pos + 1) == flag.length()) {
-                throw new IllegalArgumentException("Ivalid flag in: " + line);
+                throw new IllegalArgumentException("Invalid flag in: " + line);
             }
             rule.setCookieName(flag.substring(0, pos));
             rule.setCookieValue(flag.substring(pos + 1));
@@ -623,7 +632,7 @@ public class RewriteValve extends ValveBase
             }
             int pos = flag.indexOf(':');
             if (pos == -1 || (pos + 1) == flag.length()) {
-                throw new IllegalArgumentException("Ivalid flag in: " + line);
+                throw new IllegalArgumentException("Invalid flag in: " + line);
             }
             rule.setEnvName(flag.substring(0, pos));
             rule.setEnvValue(flag.substring(pos + 1));
