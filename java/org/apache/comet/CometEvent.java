@@ -142,8 +142,7 @@ public interface CometEvent {
 
     /**
      * This method sets the timeout in milliseconds of idle time on the connection.
-     * The timeout is reset every time data is received from the connection or data is flushed
-     * using <code>response.flushBuffer()</code>. If a timeout occurs, the 
+     * The timeout is reset every time data is received from the connection. If a timeout occurs, the 
      * servlet will receive an ERROR/TIMEOUT event which will not result in automatically closing
      * the event (the event may be closed using the close() method).
      * 
