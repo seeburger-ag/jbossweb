@@ -280,6 +280,16 @@
       </fileset>
     </jar>
 
+    <!-- JBoss Web - PHP Servlet -->
+    <jar jarfile="${tomcat.build}/lib/servlets-php.jar" index="true">
+      <fileset dir="${tomcat.classes}">
+        <include name="org/jboss/web/php/**" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
   </target>
 
   <target name="build-docs">

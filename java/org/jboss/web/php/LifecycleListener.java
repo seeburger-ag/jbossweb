@@ -53,8 +53,8 @@ public class LifecycleListener
 
 
     protected static final int REQUIRED_MAJOR = 5;
-    protected static final int REQUIRED_MINOR = 1;
-    protected static final int REQUIRED_PATCH = 0;
+    protected static final int REQUIRED_MINOR = 2;
+    protected static final int REQUIRED_PATCH = 3;
 
 
     // ---------------------------------------------- LifecycleListener Methods
@@ -77,7 +77,7 @@ public class LifecycleListener
                 paramTypes[0] = String.class;
                 Object paramValues[] = new Object[1];
                 paramValues[0] = null;
-                Class clazz = Class.forName("org.apache.catalina.servlets.php.Library");
+                Class clazz = Class.forName("org.jboss.web.php.Library");
                 Method method = clazz.getMethod(methodName, paramTypes);
                 // TODO: Use sm to obtain optional library name.
                 method.invoke(null, paramValues);
@@ -108,7 +108,7 @@ public class LifecycleListener
         else if (Lifecycle.AFTER_STOP_EVENT.equals(event.getType())) {
             try {
                 String methodName = "terminate";
-                Method method = Class.forName("org.apache.catalina.servlets.php.Library")
+                Method method = Class.forName("org.jboss.php.servlets.php.Library")
                     .getMethod(methodName, (Class [])null);
                 method.invoke(null, (Object []) null);
             }
