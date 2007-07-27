@@ -284,6 +284,7 @@
     <jar jarfile="${tomcat.build}/lib/servlets-php.jar" index="true">
       <fileset dir="${tomcat.classes}">
         <include name="org/jboss/web/php/**" />
+        <include name="org/apache/juli/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
         <exclude name="**/LocalStrings_*" />
