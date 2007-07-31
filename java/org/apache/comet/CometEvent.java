@@ -182,6 +182,7 @@ public interface CometEvent {
      * some asynchronous processing is done). This also resumes read events 
      * if they have been disabled using suspend. It is then possible to call suspend 
      * again later. It is also possible to call resume without calling suspend before.
+     * This method must be called asynchronously.
      */
     public void resume();
 
