@@ -1147,7 +1147,7 @@ public class AprEndpoint {
         public int timeout;
         public boolean read;
         public boolean write;
-        
+        public boolean resume;
     }
     
     
@@ -1177,15 +1177,16 @@ public class AprEndpoint {
             size++;
         }
         
-        public void remove(long socket) {
+        public boolean remove(long socket) {
             for (int i = 0; i < size; i++) {
                 if (sockets[i] == socket) {
                     sockets[i] = sockets[size - 1];
                     timeouts[i] = timeouts[size - 1];
                     size--;
-                    break;
+                    return true;
                 }
             }
+            return false;
         }
         
         public long check(long date) {
@@ -1219,8 +1220,10 @@ public class AprEndpoint {
 
         protected long[] sockets;
         protected int[] timeouts;
+        // FIXME: replace with an int[] and flags
         protected boolean[] reads;
         protected boolean[] writes;
+        protected boolean[] resumes;
         
         protected SocketInfo info = new SocketInfo();
         
@@ -1231,6 +1234,7 @@ public class AprEndpoint {
             timeouts = new int[size];
             reads = new boolean[size];
             writes = new boolean[size];
+            resumes = new boolean[size];
         }
         
         public int size() {
@@ -1245,6 +1249,7 @@ public class AprEndpoint {
                 info.timeout = timeouts[pos];
                 info.read = reads[pos];
                 info.write = writes[pos];
+                info.resume = resumes[pos];
                 pos++;
                 return info;
             }
@@ -1255,7 +1260,7 @@ public class AprEndpoint {
             pos = 0;
         }
         
-        public boolean add(long socket, int timeout, boolean read, boolean write) {
+        public boolean add(long socket, int timeout, boolean read, boolean write, boolean resume) {
             if (size == sockets.length) {
                 return false;
             } else {
@@ -1263,6 +1268,7 @@ public class AprEndpoint {
                 timeouts[size] = timeout;
                 reads[size] = read;
                 writes[size] = write;
+                resumes[size] = resume;
                 size++;
                 return true;
             }
@@ -1275,6 +1281,7 @@ public class AprEndpoint {
             System.arraycopy(timeouts, 0, copy.timeouts, 0, size);
             System.arraycopy(reads, 0, copy.reads, 0, size);
             System.arraycopy(writes, 0, copy.writes, 0, size);
+            System.arraycopy(resumes, 0, copy.resumes, 0, size);
         }
         
     }
@@ -1463,7 +1470,7 @@ public class AprEndpoint {
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
                 // at most for pollTime before being polled
-                if (!addList.add(socket, timeout, true, false)) {
+                if (!addList.add(socket, timeout, true, false, false)) {
                     // Can't do anything: close the socket right away
                     if (comet) {
                         processSocket(socket, SocketStatus.ERROR);
@@ -1489,12 +1496,13 @@ public class AprEndpoint {
          * @param timeout to use for this connection
          * @param read to do read polling
          * @param write to do write polling
+         * @param resume to send a callback event
          */
-        public void add(long socket, int timeout, boolean read, boolean write) {
+        public void add(long socket, int timeout, boolean read, boolean write, boolean resume) {
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
                 // at most for pollTime before being polled
-                if (!addList.add(socket, timeout, read, write)) {
+                if (!addList.add(socket, timeout, read, write, resume)) {
                     // Can't do anything: close the socket right away
                     if (comet) {
                         processSocket(socket, SocketStatus.ERROR);
@@ -1604,11 +1612,16 @@ public class AprEndpoint {
                                     }
                                 }
                             } else {
-                                // Resume event
-                                timeouts.remove(info.socket);
                                 if (comet) {
-                                    removeFromPoller(info.socket);
-                                    processSocket(info.socket, SocketStatus.OPEN_CALLBACK);
+                                    if (info.resume) {
+                                        // Resume event
+                                        timeouts.remove(info.socket);
+                                        removeFromPoller(info.socket);
+                                        processSocket(info.socket, SocketStatus.OPEN_CALLBACK);
+                                    } else {
+                                        // Suspend
+                                        timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
+                                    }
                                 } else {
                                     // Should never happen
                                     // FIXME: ISE ?

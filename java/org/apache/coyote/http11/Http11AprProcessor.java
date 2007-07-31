@@ -1223,9 +1223,9 @@ public class Http11AprProcessor implements ActionHook {
             readNotifications = false;
         } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
             readNotifications = true;
-            endpoint.getCometPoller().add(socket, timeout, false, false);
+            endpoint.getCometPoller().add(socket, timeout, false, false, true);
         } else if (actionCode == ActionCode.ACTION_COMET_WRITE) {
-            endpoint.getCometPoller().add(socket, timeout, false, true);
+            endpoint.getCometPoller().add(socket, timeout, false, true, false);
         } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
             cometTimeout = ((Integer) param).intValue();
         }
