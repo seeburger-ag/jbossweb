@@ -111,6 +111,12 @@ public class Http11AprProcessor implements ActionHook {
 
     // ----------------------------------------------------- Instance Variables
 
+    
+    /**
+     * Thread local marker.
+     */
+    public static ThreadLocal<Boolean> containerThread = new ThreadLocal<Boolean>();
+    
 
     /**
      * Associated adapter.
@@ -693,7 +699,6 @@ public class Http11AprProcessor implements ActionHook {
      */
     public void setSocketBuffer(int socketBuffer) {
         this.socketBuffer = socketBuffer;
-        outputBuffer.setSocketBuffer(socketBuffer);
     }
 
     /**
@@ -754,8 +759,14 @@ public class Http11AprProcessor implements ActionHook {
         throws IOException {
         
         RequestInfo rp = request.getRequestProcessor();
-        
         try {
+            // If processing a write event, must flush any leftover bytes first
+            if (status == SocketStatus.OPEN_WRITE) {
+                // FIXME: If the flush does not manage to flush all leftover bytes, it is possible
+                // that the servlet is not going to be able to write bytes. This will be handled properly,
+                // but is wasteful.
+                outputBuffer.flushLeftover();
+            }
             rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
             error = !adapter.event(request, response, status);
         } catch (InterruptedIOException e) {
@@ -1217,14 +1228,24 @@ public class Http11AprProcessor implements ActionHook {
             request.setAvailable(inputBuffer.available());
         } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
             comet = true;
+            // Set socket to non blocking mode
+            Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
+            containerThread.set(Boolean.TRUE);
+            outputBuffer.setNonBlocking(true);
         } else if (actionCode == ActionCode.ACTION_COMET_END) {
             comet = false;
+            // End non blocking mode
+            Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
+            containerThread.set(null);
+            outputBuffer.setNonBlocking(false);
         } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
             readNotifications = false;
         } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
             readNotifications = true;
             endpoint.getCometPoller().add(socket, timeout, false, false, true);
         } else if (actionCode == ActionCode.ACTION_COMET_WRITE) {
+            // FIXME: Maybe, should check (?)
+            // FIXME: If called synchronously, setting a flag instead of a direct call is needed.
             endpoint.getCometPoller().add(socket, timeout, false, true, false);
         } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
             cometTimeout = ((Integer) param).intValue();

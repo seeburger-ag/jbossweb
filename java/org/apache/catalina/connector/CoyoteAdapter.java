@@ -202,9 +202,10 @@ public class CoyoteAdapter
                     error = true;
                     connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
                 }
-                if (response.isClosed() || !request.isComet()) {
+                /*if (response.isClosed() || !request.isComet()) {
                     res.action(ActionCode.ACTION_COMET_END, null);
-                } else if (!error && read && request.isReadable()) {
+                } else*/
+                if (!error && read && request.isReadable()) {
                     // If this was a read and not all bytes have been read, or if no data
                     // was read from the connector, then it is an error
                     log.error(sm.getString("coyoteAdapter.read"));
@@ -224,6 +225,7 @@ public class CoyoteAdapter
                 req.getRequestProcessor().setWorkerThreadName(null);
                 // Recycle the wrapper request and response
                 if (error || response.isClosed() || !request.isComet()) {
+                    res.action(ActionCode.ACTION_COMET_END, null);
                     request.recycle();
                     request.setFilterChain(null);
                     response.recycle();
@@ -285,15 +287,14 @@ public class CoyoteAdapter
 
                 if (request.isComet()) {
                     if (!response.isClosed() && !response.isError()) {
+                        res.action(ActionCode.ACTION_COMET_BEGIN, null);
                         if (request.isReadable()) {
                             // Invoke a read event right away if there are available bytes
                             if (event(req, res, SocketStatus.OPEN_READ)) {
                                 comet = true;
-                                res.action(ActionCode.ACTION_COMET_BEGIN, null);
                             }
                         } else {
                             comet = true;
-                            res.action(ActionCode.ACTION_COMET_BEGIN, null);
                         }
                     } else {
                         // Clear the filter chain, as otherwise it will not be reset elsewhere

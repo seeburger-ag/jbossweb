@@ -79,6 +79,9 @@ public class InternalAprOutputBuffer
         committed = false;
         finished = false;
 
+        leftover = new ByteChunk();
+        nonBlocking = false;
+        
         // Cause loading of HttpMessages
         HttpMessages.getMessage(200);
 
@@ -176,6 +179,12 @@ public class InternalAprOutputBuffer
      */
     protected ByteChunk leftover = null;
 
+    
+    /**
+     * Non blocking mode.
+     */
+    protected boolean nonBlocking = false;
+    
 
     // ------------------------------------------------------------- Properties
 
@@ -198,10 +207,18 @@ public class InternalAprOutputBuffer
 
 
     /**
-     * Set the socket buffer size.
+     * Set the non blocking flag.
      */
-    public void setSocketBuffer(int socketBufferSize) {
-        // FIXME: Remove
+    public void setNonBlocking(boolean nonBlocking) {
+        this.nonBlocking = nonBlocking;
+    }
+
+
+    /**
+     * Get the non blocking flag value.
+     */
+    public boolean getNonBlocking() {
+        return nonBlocking;
     }
 
 
@@ -344,10 +361,12 @@ public class InternalAprOutputBuffer
         }
 
         // Reset pointers
+        leftover.recycle();
         pos = 0;
         lastActiveFilter = -1;
         committed = false;
         finished = false;
+        nonBlocking = false;
 
     }
 
@@ -687,6 +706,47 @@ public class InternalAprOutputBuffer
 
     }
 
+    
+    /**
+     * Flush leftover bytes.
+     * 
+     * @return true if all leftover bytes have been flushed
+     */
+    public boolean flushLeftover()
+        throws IOException {
+        if (leftover.getLength() > 0) {
+            int len = leftover.getLength();
+            int start = leftover.getStart();
+            byte[] b = leftover.getBuffer();
+            while (len > 0) {
+                int thisTime = len;
+                if (bbuf.position() == bbuf.capacity()) {
+                    int pos = 0;
+                    int end = bbuf.position();
+                    int res = Socket.sendibb(socket, 0, bbuf.position());
+                    while (res > 0 && pos < end) {
+                        pos += res;
+                        res = Socket.sendibb(socket, pos, bbuf.position());
+                    }
+                    if (res < 0) {
+                        throw new IOException("Error");
+                    }
+                    if (pos < end) {
+                        // Could not write all leftover data: put back to write poller
+                        return false;
+                    }
+                }
+                if (thisTime > bbuf.capacity() - bbuf.position()) {
+                    thisTime = bbuf.capacity() - bbuf.position();
+                }
+                bbuf.put(b, start, thisTime);
+                len = len - thisTime;
+                start = start + thisTime;
+            }
+        }
+        return true;
+    }
+    
 
     /**
      * Callback to write data from the buffer.
@@ -694,15 +754,49 @@ public class InternalAprOutputBuffer
     protected void flushBuffer()
         throws IOException {
         if (bbuf.position() > 0) {
-            int res = Socket.sendbb(socket, 0, bbuf.position());
-            response.setLastWrite(res);
-            // FIXME: If in Comet mode and non blocking, and if it did not write the whole thing,
-            // then retry until it writes 0 bytes (?), and put the leftover bytes in the leftover
-            // byte chunk
-            if (res < 0) {
-                throw new IOException();
+            int res = 0;
+            if (nonBlocking) {
+                // If there are still leftover bytes here, there's a problem:
+                // - If the call is asynchronous, throw an exception
+                // - If the call is synchronous, make a regular blocking write to flush the data
+                if (leftover.getLength() > 0) {
+                    if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
+                        Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
+                        // Send leftover bytes
+                        res = Socket.send(socket, leftover.getBuffer(), leftover.getOffset(), leftover.getEnd());
+                        // Send current buffer
+                        if (res > 0) {
+                            res = Socket.sendbb(socket, 0, bbuf.position());
+                        }
+                        Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
+                    } else {
+                        throw new IOException("Backlog");
+                    }
+                } else {
+                    // Perform non blocking writes until all data is written, or the result
+                    // of the write is 0
+                    int pos = 0;
+                    int end = bbuf.position();
+                    res = Socket.sendibb(socket, 0, bbuf.position());
+                    while (res > 0 && pos < end) {
+                        pos += res;
+                        res = Socket.sendibb(socket, pos, bbuf.position());
+                    }
+                    // Put any leftover bytes in the leftover byte chunk
+                    if (pos < end) {
+                        leftover.allocate(end - pos, -1);
+                        bbuf.get(leftover.getBuffer(), 0, end - pos);
+                        leftover.setEnd(end-pos);
+                    }
+                }
+            } else {
+                res = Socket.sendbb(socket, 0, bbuf.position());
             }
+            response.setLastWrite(res);
             bbuf.clear();
+            if (res < 0) {
+                throw new IOException("Error");
+            }
         }
     }
 
@@ -731,6 +825,9 @@ public class InternalAprOutputBuffer
                 int thisTime = len;
                 if (bbuf.position() == bbuf.capacity()) {
                     flushBuffer();
+                    // FIXME: If non blocking (comet) and there are leftover bytes, 
+                    // put all remaining bytes in the leftover buffer
+                    
                 }
                 if (thisTime > bbuf.capacity() - bbuf.position()) {
                     thisTime = bbuf.capacity() - bbuf.position();
