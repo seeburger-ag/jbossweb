@@ -547,6 +547,12 @@ public class InternalAprOutputBuffer
 
         }
 
+        // FIXME: If non blocking (comet) and there are leftover bytes, 
+        // and lastWrite was 0 -> error
+        if (leftover.getLength() > 0 && !(Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
+            throw new IOException("Backlog");
+        }
+
         if (lastActiveFilter == -1)
             return outputStreamOutputBuffer.doWrite(chunk, res);
         else
@@ -760,6 +766,7 @@ public class InternalAprOutputBuffer
                 // - If the call is asynchronous, throw an exception
                 // - If the call is synchronous, make a regular blocking write to flush the data
                 if (leftover.getLength() > 0) {
+                    // FIXME: the fact that it's a container thread was already tested in doWrite
                     if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
                         Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
                         // Send leftover bytes
@@ -792,6 +799,8 @@ public class InternalAprOutputBuffer
             } else {
                 res = Socket.sendbb(socket, 0, bbuf.position());
             }
+            // FIXME: Delaying setting setLastWrite could be a good idea (chunking means separate writes, 
+            // and could trigger an exception)
             response.setLastWrite(res);
             bbuf.clear();
             if (res < 0) {
@@ -818,6 +827,14 @@ public class InternalAprOutputBuffer
         public int doWrite(ByteChunk chunk, Response res) 
             throws IOException {
 
+            // If non blocking (comet) and there are leftover bytes, 
+            // put all remaining bytes in the leftover buffer (they are
+            // part of the same write operation)
+            if (leftover.getLength() > 0) {
+                leftover.append(chunk);
+                return chunk.getLength();
+            }
+            
             int len = chunk.getLength();
             int start = chunk.getStart();
             byte[] b = chunk.getBuffer();
@@ -825,9 +842,17 @@ public class InternalAprOutputBuffer
                 int thisTime = len;
                 if (bbuf.position() == bbuf.capacity()) {
                     flushBuffer();
-                    // FIXME: If non blocking (comet) and there are leftover bytes, 
-                    // put all remaining bytes in the leftover buffer
-                    
+                    if (leftover.getLength() > 0) {
+                        // If non blocking (comet) and there are leftover bytes, 
+                        // put all remaining bytes in the leftover buffer (they are
+                        // part of the same write operation)
+                        int oldStart = chunk.getOffset();
+                        chunk.setOffset(start);
+                        leftover.append(chunk);
+                        chunk.setOffset(oldStart);
+                        // After that, all content has been "written"
+                        return chunk.getLength();
+                    }
                 }
                 if (thisTime > bbuf.capacity() - bbuf.position()) {
                     thisTime = bbuf.capacity() - bbuf.position();
