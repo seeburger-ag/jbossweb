@@ -1590,6 +1590,9 @@ public class AprEndpoint {
                         SocketInfo info = localAddList.get();
                         while (info != null) {
                             if (info.read || info.write) {
+                                // FIXME: Check concurrency to see if the socket isn't being processed for an
+                                // event (such as a read if a write is added): need to add a "processing event"
+                                // concurrent map ...
                                 // Store timeout
                                 timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
                                 if (comet) {
