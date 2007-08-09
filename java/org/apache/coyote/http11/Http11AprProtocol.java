@@ -90,20 +90,6 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     }
 
     /**
-     * Set a property.
-     */
-    public void setProperty(String name, String value) {
-        setAttribute(name, value);
-    }
-
-    /**
-     * Get a property
-     */
-    public String getProperty(String name) {
-        return (String)getAttribute(name);
-    }
-
-    /**
      * The adapter, used to call the connector.
      */
     protected Adapter adapter;
@@ -325,14 +311,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public void setRestrictedUserAgents(String valueS) { restrictedUserAgents = valueS; }
     
     
-    public String getProtocol() {
-        return getProperty("protocol");
-    }
-
-    public void setProtocol( String k ) {
-        setSecure(true);
-        setAttribute("protocol", k);
-    }
+    // HTTP
+    protected String protocol = null;
+    public String getProtocol() { return protocol; }
+    public void setProtocol(String protocol) { setSecure(true); this.protocol = protocol; }
 
     /**
      * Maximum number of requests which can be performed over a keepalive 

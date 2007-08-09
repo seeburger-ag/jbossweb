@@ -25,6 +25,10 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
@@ -260,6 +264,12 @@ public class Catalina extends Embedded {
         // Initialize the digester
         Digester digester = new Digester();
         digester.setValidating(false);
+        digester.setRulesValidation(true);
+        HashMap<Class, List<String>> fakeAttributes = new HashMap<Class, List<String>>();
+        ArrayList<String> attrs = new ArrayList<String>();
+        attrs.add("className");
+        fakeAttributes.put(Object.class, attrs);
+        digester.setFakeAttributes(fakeAttributes);
         digester.setClassLoader(StandardServer.class.getClassLoader());
 
         // Configure the actions we will be using
@@ -321,8 +331,6 @@ public class Catalina extends Embedded {
                             "addConnector",
                             "org.apache.catalina.connector.Connector");
         
-        
-
 
         digester.addObjectCreate("Server/Service/Connector/Listener",
                                  null, // MUST be specified in the element
@@ -337,13 +345,11 @@ public class Catalina extends Embedded {
         digester.addRuleSet(new EngineRuleSet("Server/Service/"));
         digester.addRuleSet(new HostRuleSet("Server/Service/Engine/"));
         digester.addRuleSet(new ContextRuleSet("Server/Service/Engine/Host/"));
-        digester.addRuleSet(ClusterRuleSetFactory.getClusterRuleSet("Server/Service/Engine/Host/Cluster/"));
         digester.addRuleSet(new NamingRuleSet("Server/Service/Engine/Host/Context/"));
 
         // When the 'engine' is found, set the parentClassLoader.
         digester.addRule("Server/Service/Engine",
                          new SetParentClassLoaderRule(parentClassLoader));
-        digester.addRuleSet(ClusterRuleSetFactory.getClusterRuleSet("Server/Service/Engine/Cluster/"));
 
         long t2=System.currentTimeMillis();
         if (log.isDebugEnabled())
