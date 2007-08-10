@@ -33,8 +33,8 @@ import java.util.jar.JarFile;
 
 import org.apache.catalina.Host;
 import org.apache.catalina.util.StringManager;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * Expand out a WAR in a Host's appBase.
@@ -47,7 +47,7 @@ import org.apache.juli.logging.LogFactory;
 
 public class ExpandWar {
 
-    private static Log log = LogFactory.getLog(ExpandWar.class);
+    private static Logger log = Logger.getLogger(ExpandWar.class);
 
     /**
      * The string resources for this package.

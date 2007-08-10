@@ -55,8 +55,8 @@ public class AjpAprProtocol
     implements ProtocolHandler, MBeanRegistration {
     
     
-    protected static org.apache.juli.logging.Log log =
-        org.apache.juli.logging.LogFactory.getLog(AjpAprProtocol.class);
+    protected static org.jboss.logging.Logger log =
+        org.jboss.logging.Logger.getLogger(AjpAprProtocol.class);
 
     /**
      * The string manager for this package.

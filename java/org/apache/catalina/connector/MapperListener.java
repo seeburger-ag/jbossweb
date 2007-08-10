@@ -26,14 +26,14 @@ import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 
 
 import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
 
 import org.apache.tomcat.util.res.StringManager;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -45,7 +45,7 @@ import org.apache.tomcat.util.res.StringManager;
 public class MapperListener
     implements NotificationListener 
  {
-    private static Log log = LogFactory.getLog(MapperListener.class);
+    private static Logger log = Logger.getLogger(MapperListener.class);
 
 
     // ----------------------------------------------------- Instance Variables
@@ -290,7 +290,7 @@ public class MapperListener
                 }
             }
             
-            if (!isRegisteredWithAlias && log.isWarnEnabled())
+            if (!isRegisteredWithAlias)
                 log.warn(sm.getString("mapperListener.unknownDefaultHost", defaultHost));
         }
         // This should probablt be called later 

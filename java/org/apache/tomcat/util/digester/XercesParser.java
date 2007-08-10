@@ -26,8 +26,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -46,8 +46,8 @@ public class XercesParser{
     /**
      * The Log to which all SAX event related logging calls will be made.
      */
-    protected static Log log =
-        LogFactory.getLog("org.apache.commons.digester.Digester.sax");
+    protected static Logger log =
+        Logger.getLogger("org.apache.commons.digester.Digester.sax");
 
 
     /**

@@ -50,8 +50,8 @@ import org.apache.naming.NamingEntry;
 
 public class FileDirContext extends BaseDirContext {
 
-    private static org.apache.juli.logging.Log log=
-        org.apache.juli.logging.LogFactory.getLog( FileDirContext.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( FileDirContext.class );
 
     // -------------------------------------------------------------- Constants
 

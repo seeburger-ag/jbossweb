@@ -54,8 +54,8 @@ import org.apache.tomcat.util.res.StringManager;
  */
 public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
 
-    protected static org.apache.juli.logging.Log log = 
-        org.apache.juli.logging.LogFactory.getLog(Http11AprProtocol.class);
+    protected static org.jboss.logging.Logger log = 
+        org.jboss.logging.Logger.getLogger(Http11AprProtocol.class);
 
     /**
      * The string manager for this package.

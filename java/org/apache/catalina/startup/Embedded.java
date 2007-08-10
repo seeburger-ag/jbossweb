@@ -44,10 +44,10 @@ import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.security.SecurityConfig;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.log.SystemLogHandler;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -102,7 +102,7 @@ import org.apache.tomcat.util.log.SystemLogHandler;
  */
 
 public class Embedded  extends StandardService implements Lifecycle {
-    private static Log log = LogFactory.getLog(Embedded.class);
+    private static Logger log = Logger.getLogger(Embedded.class);
 
     // ----------------------------------------------------------- Constructors
 

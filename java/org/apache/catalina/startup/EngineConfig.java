@@ -38,8 +38,8 @@ public class EngineConfig
     implements LifecycleListener {
 
 
-    protected static org.apache.juli.logging.Log log=
-        org.apache.juli.logging.LogFactory.getLog( EngineConfig.class );
+    protected static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( EngineConfig.class );
 
     // ----------------------------------------------------- Instance Variables
 

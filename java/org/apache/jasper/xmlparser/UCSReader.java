@@ -31,8 +31,8 @@ import java.io.Reader;
  */
 public class UCSReader extends Reader {
 
-    private org.apache.juli.logging.Log log=
-        org.apache.juli.logging.LogFactory.getLog( UCSReader.class );
+    private org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( UCSReader.class );
     
     //
     // Constants

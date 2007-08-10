@@ -106,8 +106,8 @@ public class WebappClassLoader
     implements Reloader, Lifecycle
  {
 
-    protected static org.apache.juli.logging.Log log=
-        org.apache.juli.logging.LogFactory.getLog( WebappClassLoader.class );
+    protected static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( WebappClassLoader.class );
 
     public static final boolean ENABLE_CLEAR_REFERENCES = 
         Boolean.valueOf(System.getProperty("org.apache.catalina.loader.WebappClassLoader.ENABLE_CLEAR_REFERENCES", "true")).booleanValue();
@@ -1637,9 +1637,6 @@ public class WebappClassLoader
         
          // Clear the IntrospectionUtils cache.
         IntrospectionUtils.clear();
-        
-        // Clear the classloader reference in common-logging
-        org.apache.juli.logging.LogFactory.release(this);
         
         // Clear the classloader reference in the VM's bean introspector
         java.beans.Introspector.flushCaches();

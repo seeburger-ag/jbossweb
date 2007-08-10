@@ -55,8 +55,8 @@ public class NamingContext implements Context {
     protected static final NameParser nameParser = new NameParserImpl();
 
 
-    private static org.apache.juli.logging.Log log =
-        org.apache.juli.logging.LogFactory.getLog(NamingContext.class);
+    private static org.jboss.logging.Logger log =
+        org.jboss.logging.Logger.getLogger(NamingContext.class);
 
 
     // ----------------------------------------------------------- Constructors

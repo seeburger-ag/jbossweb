@@ -43,11 +43,11 @@ import org.apache.catalina.deploy.ContextResource;
 import org.apache.catalina.deploy.ContextResourceLink;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.modeler.ManagedBean;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -59,7 +59,7 @@ import org.apache.tomcat.util.modeler.Registry;
  */
 
 public class MBeanUtils {
-    private static Log log = LogFactory.getLog(MBeanUtils.class);
+    private static Logger log = Logger.getLogger(MBeanUtils.class);
 
     // ------------------------------------------------------- Static Variables
 

@@ -43,8 +43,8 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -118,7 +118,7 @@ public class AccessLogValve
     extends ValveBase
     implements Lifecycle {
 
-    private static Log log = LogFactory.getLog(AccessLogValve.class);
+    private static Logger log = Logger.getLogger(AccessLogValve.class);
 
     // ----------------------------------------------------- Instance Variables
 

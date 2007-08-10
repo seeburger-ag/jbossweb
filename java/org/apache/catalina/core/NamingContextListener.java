@@ -57,8 +57,6 @@ import org.apache.catalina.deploy.ContextService;
 import org.apache.catalina.deploy.ContextTransaction;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.util.StringManager;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.naming.ContextAccessController;
 import org.apache.naming.ContextBindings;
 import org.apache.naming.EjbRef;
@@ -70,6 +68,8 @@ import org.apache.naming.ResourceRef;
 import org.apache.naming.ServiceRef;
 import org.apache.naming.TransactionRef;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -83,13 +83,13 @@ import org.apache.tomcat.util.modeler.Registry;
 public class NamingContextListener
     implements LifecycleListener, ContainerListener, PropertyChangeListener {
 
-    private static Log log = LogFactory.getLog(NamingContextListener.class);
+    private static Logger log = Logger.getLogger(NamingContextListener.class);
 
 
     // ----------------------------------------------------- Instance Variables
 
 
-    protected Log logger = log;
+    protected Logger logger = log;
     
     
     /**

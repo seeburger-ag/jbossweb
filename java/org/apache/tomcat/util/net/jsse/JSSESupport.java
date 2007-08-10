@@ -50,8 +50,8 @@ import org.apache.tomcat.util.net.SSLSupport;
 
 class JSSESupport implements SSLSupport {
     
-    private static org.apache.juli.logging.Log log =
-        org.apache.juli.logging.LogFactory.getLog(JSSESupport.class);
+    private static org.jboss.logging.Logger log =
+        org.jboss.logging.Logger.getLogger(JSSESupport.class);
 
     protected SSLSocket ssl;
     protected SSLSession session;

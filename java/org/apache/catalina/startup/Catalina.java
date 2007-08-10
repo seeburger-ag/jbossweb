@@ -670,8 +670,8 @@ public class Catalina extends Embedded {
     }
     
     
-    private static org.apache.juli.logging.Log log=
-        org.apache.juli.logging.LogFactory.getLog( Catalina.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( Catalina.class );
 
 }
 

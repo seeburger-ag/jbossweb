@@ -21,8 +21,8 @@ package org.apache.catalina.deploy;
 
 import org.apache.catalina.util.RequestUtil;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 import java.io.Serializable;
 
@@ -44,7 +44,7 @@ import java.io.Serializable;
 
 public class SecurityCollection implements Serializable {
 
-    private static Log log = LogFactory.getLog(SecurityCollection.class);
+    private static Logger log = Logger.getLogger(SecurityCollection.class);
 
 
     // ----------------------------------------------------------- Constructors

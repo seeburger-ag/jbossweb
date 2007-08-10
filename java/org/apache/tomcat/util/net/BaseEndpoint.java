@@ -20,9 +20,9 @@ package org.apache.tomcat.util.net;
 import java.net.InetAddress;
 import java.util.concurrent.Executor;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.res.StringManager;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * APR tailored thread pool, providing the following services:
@@ -45,7 +45,7 @@ public abstract class BaseEndpoint {
     // -------------------------------------------------------------- Constants
 
 
-    protected static Log log = LogFactory.getLog(BaseEndpoint.class);
+    protected static Logger log = Logger.getLogger(BaseEndpoint.class);
 
     protected static StringManager sm =
         StringManager.getManager("org.apache.tomcat.util.net.res");

@@ -56,8 +56,8 @@ public class StringManager {
 
     private ResourceBundle bundle;
     
-    private static org.apache.juli.logging.Log log=
-        org.apache.juli.logging.LogFactory.getLog( StringManager.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( StringManager.class );
     
     /**
      * Creates a new StringManager for a given package. This is a

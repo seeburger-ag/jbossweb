@@ -50,9 +50,9 @@ import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.util.StringManager;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -65,7 +65,7 @@ import org.apache.tomcat.util.modeler.Registry;
  */
 
 public abstract class ManagerBase implements Manager, MBeanRegistration {
-    protected Log log = LogFactory.getLog(ManagerBase.class);
+    protected Logger log = Logger.getLogger(ManagerBase.class);
 
     // ----------------------------------------------------- Instance Variables
 
@@ -701,7 +701,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         if( initialized ) return;
         initialized=true;        
         
-        log = LogFactory.getLog(ManagerBase.class);
+        log = Logger.getLogger(ManagerBase.class);
         
         if( oname==null ) {
             try {

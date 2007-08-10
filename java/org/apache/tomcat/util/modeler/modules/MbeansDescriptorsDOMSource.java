@@ -22,8 +22,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.DomUtil;
 import org.apache.tomcat.util.modeler.AttributeInfo;
 import org.apache.tomcat.util.modeler.ManagedBean;
@@ -31,13 +29,15 @@ import org.apache.tomcat.util.modeler.NotificationInfo;
 import org.apache.tomcat.util.modeler.OperationInfo;
 import org.apache.tomcat.util.modeler.ParameterInfo;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 
 public class MbeansDescriptorsDOMSource extends ModelerSource
 {
-    private static Log log = LogFactory.getLog(MbeansDescriptorsDOMSource.class);
+    private static Logger log = Logger.getLogger(MbeansDescriptorsDOMSource.class);
 
     Registry registry;
     String location;

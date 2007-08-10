@@ -29,8 +29,8 @@ import javax.servlet.jsp.JspFactory;
 import javax.servlet.jsp.PageContext;
 
 import org.apache.jasper.Constants;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of JspFactory.
@@ -40,7 +40,7 @@ import org.apache.juli.logging.LogFactory;
 public class JspFactoryImpl extends JspFactory {
 
     // Logger
-    private Log log = LogFactory.getLog(JspFactoryImpl.class);
+    private Logger log = Logger.getLogger(JspFactoryImpl.class);
 
     private static final String SPEC_VERSION = "2.1";
     private static final boolean USE_POOL = 

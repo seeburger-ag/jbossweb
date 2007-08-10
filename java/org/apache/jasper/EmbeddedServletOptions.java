@@ -18,18 +18,19 @@
 package org.apache.jasper;
 
 import java.io.File;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import org.apache.jasper.compiler.TldLocationsCache;
 import org.apache.jasper.compiler.JspConfig;
-import org.apache.jasper.compiler.TagPluginManager;
 import org.apache.jasper.compiler.Localizer;
+import org.apache.jasper.compiler.TagPluginManager;
+import org.apache.jasper.compiler.TldLocationsCache;
 import org.apache.jasper.xmlparser.ParserUtils;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 /**
  * A class to hold all init parameters specific to the JSP engine. 
@@ -41,7 +42,7 @@ import org.apache.juli.logging.LogFactory;
 public final class EmbeddedServletOptions implements Options {
     
     // Logger
-    private Log log = LogFactory.getLog(EmbeddedServletOptions.class);
+    private Logger log = Logger.getLogger(EmbeddedServletOptions.class);
     
     private Properties settings = new Properties();
     
@@ -419,9 +420,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (keepgen.equalsIgnoreCase("false")) {
                 this.keepGenerated = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.keepgen"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.keepgen"));
             }
         }
         
@@ -433,9 +432,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (trimsp.equalsIgnoreCase("false")) {
                 trimSpaces = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.trimspaces"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.trimspaces"));
             }
         }
         
@@ -447,9 +444,7 @@ public final class EmbeddedServletOptions implements Options {
             if (poolingEnabledParam.equalsIgnoreCase("false")) {
                 this.isPoolingEnabled = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.enablePooling"));
-                }		       	   
+                log.warn(Localizer.getMessage("jsp.warning.enablePooling"));
             }
         }
         
@@ -460,9 +455,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (mapFile.equalsIgnoreCase("false")) {
                 this.mappedFile = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.mappedFile"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.mappedFile"));
             }
         }
         
@@ -473,9 +466,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (senderr.equalsIgnoreCase("false")) {
                 this.sendErrorToClient = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.sendErrToClient"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.sendErrToClient"));
             }
         }
         
@@ -486,9 +477,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (debugInfo.equalsIgnoreCase("false")) {
                 this.classDebugInfo  = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.classDebugInfo"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.classDebugInfo"));
             }
         }
         
@@ -497,9 +486,7 @@ public final class EmbeddedServletOptions implements Options {
             try {
                 this.checkInterval = Integer.parseInt(checkInterval);
             } catch(NumberFormatException ex) {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.checkInterval"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.checkInterval"));
             }
         }
         
@@ -508,9 +495,7 @@ public final class EmbeddedServletOptions implements Options {
             try {
                 this.modificationTestInterval = Integer.parseInt(modificationTestInterval);
             } catch(NumberFormatException ex) {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.modificationTestInterval"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.modificationTestInterval"));
             }
         }
         
@@ -521,9 +506,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (development.equalsIgnoreCase("false")) {
                 this.development = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.development"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.development"));
             }
         }
         
@@ -534,9 +517,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (suppressSmap.equalsIgnoreCase("false")) {
                 isSmapSuppressed = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.suppressSmap"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.suppressSmap"));
             }
         }
         
@@ -547,9 +528,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (dumpSmap.equalsIgnoreCase("false")) {
                 isSmapDumped = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.dumpSmap"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.dumpSmap"));
             }
         }
         
@@ -560,9 +539,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (genCharArray.equalsIgnoreCase("false")) {
                 genStringAsCharArray = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.genchararray"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.genchararray"));
             }
         }
         
@@ -574,9 +551,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (errBeanClass.equalsIgnoreCase("false")) {
                 errorOnUseBeanInvalidClassAttribute = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.errBean"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.errBean"));
             }
         }
         
@@ -644,9 +619,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (fork.equalsIgnoreCase("false")) {
                 this.fork = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.fork"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.fork"));
             }
         }
         
@@ -657,9 +630,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (xpoweredBy.equalsIgnoreCase("false")) {
                 this.xpoweredBy = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.xpoweredBy"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.xpoweredBy"));
             }
         }
         
@@ -670,9 +641,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (displaySourceFragment.equalsIgnoreCase("false")) {
                 this.displaySourceFragment = false;
             } else {
-                if (log.isWarnEnabled()) {
-                    log.warn(Localizer.getMessage("jsp.warning.displaySourceFragment"));
-                }
+                log.warn(Localizer.getMessage("jsp.warning.displaySourceFragment"));
             }
         }
         

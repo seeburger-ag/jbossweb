@@ -64,8 +64,8 @@ public class Http11Processor implements ActionHook {
     /**
      * Logger.
      */
-    protected static org.apache.juli.logging.Log log
-        = org.apache.juli.logging.LogFactory.getLog(Http11Processor.class);
+    protected static org.jboss.logging.Logger log
+        = org.jboss.logging.Logger.getLogger(Http11Processor.class);
 
     /**
      * The string manager for this package.

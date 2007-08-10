@@ -34,8 +34,8 @@ package org.apache.tomcat.util.buf;
 public final class Base64 {
 
 
-    private static org.apache.juli.logging.Log log=
-        org.apache.juli.logging.LogFactory.getLog( Base64.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( Base64.class );
     
     static private final int  BASELENGTH         = 255;
     static private final int  LOOKUPLENGTH       = 63;

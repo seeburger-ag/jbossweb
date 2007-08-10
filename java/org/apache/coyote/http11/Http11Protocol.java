@@ -57,8 +57,8 @@ public class Http11Protocol
     implements ProtocolHandler, MBeanRegistration {
 
 
-    protected static org.apache.juli.logging.Log log
-        = org.apache.juli.logging.LogFactory.getLog(Http11Protocol.class);
+    protected static org.jboss.logging.Logger log
+        = org.jboss.logging.Logger.getLogger(Http11Protocol.class);
 
     /**
      * The string manager for this package.

@@ -34,8 +34,8 @@ import java.io.IOException;
 public final class UTF8Decoder extends B2CConverter {
     
     
-    private static org.apache.juli.logging.Log log=
-        org.apache.juli.logging.LogFactory.getLog(UTF8Decoder.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger(UTF8Decoder.class );
     
     // may have state !!
     

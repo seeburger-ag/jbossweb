@@ -88,8 +88,8 @@ public class JSSESocketFactory
     private static final String defaultKeystoreFile
         = System.getProperty("user.home") + "/.keystore";
     private static final String defaultKeyPass = "changeit";
-    static org.apache.juli.logging.Log log =
-        org.apache.juli.logging.LogFactory.getLog(JSSESocketFactory.class);
+    static org.jboss.logging.Logger log =
+        org.jboss.logging.Logger.getLogger(JSSESocketFactory.class);
 
     protected boolean initialized;
     protected String clientAuth = "false";

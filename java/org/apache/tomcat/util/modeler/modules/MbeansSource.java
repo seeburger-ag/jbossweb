@@ -30,13 +30,13 @@ import javax.management.ObjectName;
 import javax.management.loading.MLet;
 import javax.xml.transform.TransformerException;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.DomUtil;
 import org.apache.tomcat.util.modeler.AttributeInfo;
 import org.apache.tomcat.util.modeler.BaseModelMBean;
 import org.apache.tomcat.util.modeler.ManagedBean;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -53,7 +53,7 @@ import org.w3c.dom.Node;
  */
 public class MbeansSource extends ModelerSource implements MbeansSourceMBean
 {
-    private static Log log = LogFactory.getLog(MbeansSource.class);
+    private static Logger log = Logger.getLogger(MbeansSource.class);
     Registry registry;
     String type;
 

@@ -61,8 +61,8 @@ public class AjpProcessor implements ActionHook {
     /**
      * Logger.
      */
-    protected static org.apache.juli.logging.Log log
-        = org.apache.juli.logging.LogFactory.getLog(AjpProcessor.class);
+    protected static org.jboss.logging.Logger log
+        = org.jboss.logging.Logger.getLogger(AjpProcessor.class);
 
     /**
      * The string manager for this package.

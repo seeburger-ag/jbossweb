@@ -23,8 +23,8 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -73,7 +73,7 @@ import org.apache.juli.logging.LogFactory;
 public final class Tool {
 
 
-    private static Log log = LogFactory.getLog(Tool.class);
+    private static Logger log = Logger.getLogger(Tool.class);
     
     // ------------------------------------------------------- Static Variables
 

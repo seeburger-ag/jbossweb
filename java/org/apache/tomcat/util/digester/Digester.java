@@ -36,9 +36,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.IntrospectionUtils;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -327,15 +327,15 @@ public class Digester extends DefaultHandler {
     /**
      * The Log to which most logging calls will be made.
      */
-    protected Log log =
-        LogFactory.getLog("org.apache.commons.digester.Digester");
+    protected Logger log =
+        Logger.getLogger("org.apache.commons.digester.Digester");
 
 
     /**
      * The Log to which all SAX event related logging calls will be made.
      */
-    protected Log saxLog =
-        LogFactory.getLog("org.apache.commons.digester.Digester.sax");
+    protected Logger saxLog =
+        Logger.getLogger("org.apache.commons.digester.Digester.sax");
     
         
     /**
@@ -562,7 +562,7 @@ public class Digester extends DefaultHandler {
     /**
      * Return the current Logger associated with this instance of the Digester
      */
-    public Log getLogger() {
+    public Logger getLogger() {
 
         return log;
 
@@ -572,7 +572,7 @@ public class Digester extends DefaultHandler {
     /**
      * Set the current logger for this Digester.
      */
-    public void setLogger(Log log) {
+    public void setLogger(Logger log) {
 
         this.log = log;
 
@@ -584,7 +584,7 @@ public class Digester extends DefaultHandler {
      *
      * @since 1.6
      */
-    public Log getSAXLogger() {
+    public Logger getSAXLogger() {
         
         return saxLog;
     }
@@ -597,7 +597,7 @@ public class Digester extends DefaultHandler {
      *
      * @since 1.6
      */    
-    public void setSAXLogger(Log saxLog) {
+    public void setSAXLogger(Logger saxLog) {
     
         this.saxLog = saxLog;
     }
@@ -2636,8 +2636,8 @@ public class Digester extends DefaultHandler {
             return;
         }
 
-        log = LogFactory.getLog("org.apache.commons.digester.Digester");
-        saxLog = LogFactory.getLog("org.apache.commons.digester.Digester.sax");
+        log = Logger.getLogger("org.apache.commons.digester.Digester");
+        saxLog = Logger.getLogger("org.apache.commons.digester.Digester.sax");
 
         // Perform lazy configuration as needed
         initialize(); // call hook method for subclasses that want to be initialized once only

@@ -37,11 +37,11 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -56,7 +56,7 @@ import org.apache.tomcat.util.modeler.Registry;
 public class Connector
     implements Lifecycle, MBeanRegistration
 {
-    private static Log log = LogFactory.getLog(Connector.class);
+    private static Logger log = Logger.getLogger(Connector.class);
 
 
     /**

@@ -28,11 +28,11 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.util.Base64;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 
@@ -47,7 +47,7 @@ import org.apache.tomcat.util.buf.MessageBytes;
 
 public class BasicAuthenticator
     extends AuthenticatorBase {
-    private static Log log = LogFactory.getLog(BasicAuthenticator.class);
+    private static Logger log = Logger.getLogger(BasicAuthenticator.class);
 
 
 

@@ -31,8 +31,8 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
 import org.apache.catalina.security.SecurityClassLoad;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -51,7 +51,7 @@ import org.apache.juli.logging.LogFactory;
 
 public final class Bootstrap {
 
-    private static Log log = LogFactory.getLog(Bootstrap.class);
+    private static Logger log = Logger.getLogger(Bootstrap.class);
     
     // -------------------------------------------------------------- Constants
 

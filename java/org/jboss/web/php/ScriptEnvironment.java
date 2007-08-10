@@ -38,8 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.util.IOTools;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -52,7 +52,7 @@ import org.apache.juli.logging.LogFactory;
  */
 public class ScriptEnvironment {
 
-    private static Log log = LogFactory.getLog(ScriptEnvironment.class);
+    private static Logger log = Logger.getLogger(ScriptEnvironment.class);
 
     /**
      * The Request attribute key for the client certificate chain.

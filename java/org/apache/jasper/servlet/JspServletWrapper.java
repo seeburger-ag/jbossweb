@@ -41,8 +41,8 @@ import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.runtime.InstanceManagerFactory;
 import org.apache.jasper.runtime.JspSourceDependent;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * The JSP engine (a.k.a Jasper).
@@ -65,7 +65,7 @@ import org.apache.juli.logging.LogFactory;
 public class JspServletWrapper {
 
     // Logger
-    private Log log = LogFactory.getLog(JspServletWrapper.class);
+    private Logger log = Logger.getLogger(JspServletWrapper.class);
 
     private Servlet theServlet;
     private String jspUri;

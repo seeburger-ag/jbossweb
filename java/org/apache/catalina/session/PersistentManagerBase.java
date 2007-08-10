@@ -34,8 +34,8 @@ import org.apache.catalina.Store;
 import org.apache.catalina.util.LifecycleSupport;
 
 import org.apache.catalina.security.SecurityUtil;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 /**
  * Extends the <b>ManagerBase</b> class to implement most of the
  * functionality required by a Manager which supports any kind of
@@ -54,7 +54,7 @@ public abstract class PersistentManagerBase
     extends ManagerBase
     implements Lifecycle, PropertyChangeListener {
 
-    private static Log log = LogFactory.getLog(PersistentManagerBase.class);
+    private static Logger log = Logger.getLogger(PersistentManagerBase.class);
 
     // ---------------------------------------------------- Security Classes
 

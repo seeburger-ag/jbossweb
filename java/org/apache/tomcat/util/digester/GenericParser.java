@@ -25,8 +25,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 
@@ -41,8 +41,8 @@ public class GenericParser{
     /**
      * The Log to which all SAX event related logging calls will be made.
      */
-    protected static Log log =
-        LogFactory.getLog("org.apache.commons.digester.Digester.sax");
+    protected static Logger log =
+        Logger.getLogger("org.apache.commons.digester.Digester.sax");
 
     /**
      * The JAXP 1.2 property required to set up the schema location.

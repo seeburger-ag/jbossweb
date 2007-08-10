@@ -37,8 +37,8 @@ import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -57,7 +57,7 @@ final class StandardHostValve
     extends ValveBase {
 
 
-    private static Log log = LogFactory.getLog(StandardHostValve.class);
+    private static Logger log = Logger.getLogger(StandardHostValve.class);
 
     // ----------------------------------------------------- Instance Variables
 

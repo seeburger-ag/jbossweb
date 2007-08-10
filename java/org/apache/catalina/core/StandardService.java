@@ -35,11 +35,11 @@ import org.apache.catalina.ServerFactory;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.modeler.Registry;
 import java.util.ArrayList;
 import org.apache.catalina.Executor;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -53,7 +53,7 @@ import org.apache.catalina.Executor;
 public class StandardService
         implements Lifecycle, Service, MBeanRegistration 
  {
-    private static Log log = LogFactory.getLog(StandardService.class);
+    private static Logger log = Logger.getLogger(StandardService.class);
    
 
     /**

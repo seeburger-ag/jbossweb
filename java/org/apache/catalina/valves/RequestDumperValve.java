@@ -28,7 +28,7 @@ import javax.servlet.http.Cookie;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
-import org.apache.juli.logging.Log;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -94,7 +94,7 @@ public class RequestDumperValve
     public void invoke(Request request, Response response)
         throws IOException, ServletException {
 
-        Log log = container.getLogger();
+        Logger log = container.getLogger();
         
         // Log pre-service information
         log.info("REQUEST URI       =" + request.getRequestURI());

@@ -25,13 +25,13 @@ import java.util.List;
 
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.modeler.Registry;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 public class MbeansDescriptorsDigesterSource extends ModelerSource
 {
-    private static Log log =
-            LogFactory.getLog(MbeansDescriptorsDigesterSource.class);
+    private static Logger log =
+            Logger.getLogger(MbeansDescriptorsDigesterSource.class);
 
     Registry registry;
     String location;

@@ -27,8 +27,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.compiler.Localizer;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -192,7 +192,7 @@ public class ParserUtils {
 class MyEntityResolver implements EntityResolver {
 
     // Logger
-    private Log log = LogFactory.getLog(MyEntityResolver.class);
+    private Logger log = Logger.getLogger(MyEntityResolver.class);
 
     public InputSource resolveEntity(String publicId, String systemId)
             throws SAXException {
@@ -221,7 +221,7 @@ class MyEntityResolver implements EntityResolver {
 class MyErrorHandler implements ErrorHandler {
 
     // Logger
-    private Log log = LogFactory.getLog(MyErrorHandler.class);
+    private Logger log = Logger.getLogger(MyErrorHandler.class);
 
     public void warning(SAXParseException ex) throws SAXException {
         if (log.isDebugEnabled())

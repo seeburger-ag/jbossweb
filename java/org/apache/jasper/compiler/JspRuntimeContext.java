@@ -39,8 +39,8 @@ import org.apache.jasper.Options;
 import org.apache.jasper.runtime.JspFactoryImpl;
 import org.apache.jasper.security.SecurityClassLoad;
 import org.apache.jasper.servlet.JspServletWrapper;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * Class for tracking JSP compile time file dependencies when the
@@ -58,7 +58,7 @@ import org.apache.juli.logging.LogFactory;
 public final class JspRuntimeContext {
 
     // Logger
-    private Log log = LogFactory.getLog(JspRuntimeContext.class);
+    private Logger log = Logger.getLogger(JspRuntimeContext.class);
 
     /*
      * Counts how many times the webapp's JSPs have been reloaded.

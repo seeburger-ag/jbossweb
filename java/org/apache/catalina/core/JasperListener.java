@@ -22,8 +22,8 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.util.StringManager;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -38,7 +38,7 @@ import org.apache.juli.logging.LogFactory;
 public class JasperListener
     implements LifecycleListener {
 
-    private static Log log = LogFactory.getLog(JasperListener.class);
+    private static Logger log = Logger.getLogger(JasperListener.class);
 
     /**
      * The string manager for this package.
