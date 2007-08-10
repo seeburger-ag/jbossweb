@@ -190,6 +190,7 @@
     <jar jarfile="${tomcat-juli.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="org/apache/juli/**" />
+        <include name="org/jboss/logging/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
         <exclude name="**/LocalStrings_*" />
@@ -203,7 +204,7 @@
         <include name="org/apache/catalina/**" />
         <include name="org/apache/comet/**" />
         <include name="org/apache/naming/**" />
-        <include name="org/jboss/**" />
+        <include name="org/jboss/web/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
         <exclude name="**/LocalStrings_*" />
@@ -284,7 +285,6 @@
     <jar jarfile="${tomcat.build}/lib/servlets-php.jar" index="true">
       <fileset dir="${tomcat.classes}">
         <include name="org/jboss/web/php/**" />
-        <include name="org/apache/juli/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
         <exclude name="**/LocalStrings_*" />
