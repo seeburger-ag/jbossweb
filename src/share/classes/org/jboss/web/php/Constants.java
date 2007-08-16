@@ -32,6 +32,6 @@ package org.jboss.web.php;
  */
  public class Constants {
 
-    public static final String Package = "org.apache.catalina.servlets.php";
+    public static final String Package = "org.jboss.web.php";
 
 }
