@@ -38,8 +38,8 @@ public class CatalinaProperties {
 
     // ------------------------------------------------------- Static Variables
 
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( CatalinaProperties.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( CatalinaProperties.class );
 
     private static Properties properties = null;
 

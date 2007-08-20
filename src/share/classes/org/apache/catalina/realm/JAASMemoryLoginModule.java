@@ -42,9 +42,8 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.digester.Digester;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -79,7 +78,7 @@ import org.apache.tomcat.util.digester.Digester;
 public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, Realm {
     // We need to extend MemoryRealm to avoid class cast
 
-    private static Log log = LogFactory.getLog(JAASMemoryLoginModule.class);
+    private static Logger log = Logger.getLogger(JAASMemoryLoginModule.class);
 
     // ----------------------------------------------------- Instance Variables
 

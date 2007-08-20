@@ -34,8 +34,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -126,7 +125,7 @@ org.foobar.auth.DatabaseLoginModule REQUIRED
 public class JAASRealm
     extends RealmBase
  {
-    private static Log log = LogFactory.getLog(JAASRealm.class);
+    private static Logger log = Logger.getLogger(JAASRealm.class);
 
     // ----------------------------------------------------- Instance Variables
 

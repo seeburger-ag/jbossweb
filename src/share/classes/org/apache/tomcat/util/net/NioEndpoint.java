@@ -49,11 +49,10 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.net.SecureNioChannel.ApplicationBufferHandler;
 import org.apache.tomcat.util.res.StringManager;
+import org.jboss.logging.Logger;
 
 /**
  * NIO tailored thread pool, providing the following services:
@@ -76,7 +75,7 @@ public class NioEndpoint {
     // -------------------------------------------------------------- Constants
 
 
-    protected static Log log = LogFactory.getLog(NioEndpoint.class);
+    protected static Logger log = Logger.getLogger(NioEndpoint.class);
 
     protected static StringManager sm =
         StringManager.getManager("org.apache.tomcat.util.net.res");

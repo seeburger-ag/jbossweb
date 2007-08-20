@@ -45,8 +45,8 @@ public final class UserConfig
     implements LifecycleListener {
 
 
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( UserConfig.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( UserConfig.class );
 
     
     // ----------------------------------------------------- Instance Variables

@@ -33,9 +33,8 @@ import org.apache.catalina.Valve;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -55,7 +54,7 @@ public class StandardPipeline
     implements Pipeline, Contained, Lifecycle 
  {
 
-    private static Log log = LogFactory.getLog(StandardPipeline.class);
+    private static Logger log = Logger.getLogger(StandardPipeline.class);
 
     // ----------------------------------------------------------- Constructors
 

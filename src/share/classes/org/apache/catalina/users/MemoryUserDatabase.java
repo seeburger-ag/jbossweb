@@ -32,10 +32,9 @@ import org.apache.catalina.Role;
 import org.apache.catalina.User;
 import org.apache.catalina.UserDatabase;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.ObjectCreationFactory;
+import org.jboss.logging.Logger;
 import org.xml.sax.Attributes;
 
 
@@ -52,7 +51,7 @@ import org.xml.sax.Attributes;
 public class MemoryUserDatabase implements UserDatabase {
 
 
-    private static Log log = LogFactory.getLog(MemoryUserDatabase.class);
+    private static Logger log = Logger.getLogger(MemoryUserDatabase.class);
 
     // ----------------------------------------------------------- Constructors
 

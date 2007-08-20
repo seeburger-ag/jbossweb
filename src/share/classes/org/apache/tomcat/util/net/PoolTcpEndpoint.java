@@ -28,11 +28,10 @@ import java.security.AccessControlException;
 import java.util.Stack;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.res.StringManager;
 import org.apache.tomcat.util.threads.ThreadPool;
 import org.apache.tomcat.util.threads.ThreadPoolRunnable;
+import org.jboss.logging.Logger;
 
 /* Similar with MPM module in Apache2.0. Handles all the details related with
    "tcp server" functionality - thread management, accept policy, etc.
@@ -59,7 +58,7 @@ import org.apache.tomcat.util.threads.ThreadPoolRunnable;
  */
 public class PoolTcpEndpoint implements Runnable { // implements Endpoint {
 
-    static Log log=LogFactory.getLog(PoolTcpEndpoint.class );
+    static Logger log=Logger.getLogger(PoolTcpEndpoint.class );
 
     private StringManager sm = 
         StringManager.getManager("org.apache.tomcat.util.net.res");

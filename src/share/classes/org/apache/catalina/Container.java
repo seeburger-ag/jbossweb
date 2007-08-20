@@ -26,7 +26,7 @@ import javax.naming.directory.DirContext;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.commons.logging.Log;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -161,7 +161,7 @@ public interface Container {
      * no associated Logger, return the Logger associated with our parent
      * Container (if any); otherwise return <code>null</code>.
      */
-    public Log getLogger();
+    public Logger getLogger();
 
 
     /**

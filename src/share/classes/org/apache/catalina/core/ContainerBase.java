@@ -54,10 +54,9 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -123,8 +122,8 @@ import org.apache.tomcat.util.modeler.Registry;
 public abstract class ContainerBase
     implements Container, Lifecycle, Pipeline, MBeanRegistration, Serializable {
 
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( ContainerBase.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( ContainerBase.class );
 
     /**
      * Perform addChild with the permissions of this class.
@@ -185,7 +184,7 @@ public abstract class ContainerBase
     /**
      * The Logger implementation with which this Container is associated.
      */
-    protected Log logger = null;
+    protected Logger logger = null;
 
 
     /**
@@ -380,11 +379,11 @@ public abstract class ContainerBase
      * no associated Logger, return the Logger associated with our parent
      * Container (if any); otherwise return <code>null</code>.
      */
-    public Log getLogger() {
+    public Logger getLogger() {
 
         if (logger != null)
             return (logger);
-        logger = LogFactory.getLog(logName());
+        logger = Logger.getLogger(logName());
         return (logger);
 
     }

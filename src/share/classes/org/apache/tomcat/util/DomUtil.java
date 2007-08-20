@@ -45,8 +45,8 @@ import org.xml.sax.SAXException;
  * @author Costin Manolache
  */
 public class DomUtil {
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( DomUtil.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( DomUtil.class );
 
     // -------------------- DOM utils --------------------
 

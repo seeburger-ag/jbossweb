@@ -26,9 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.digester.Digester;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -47,7 +46,7 @@ import org.apache.tomcat.util.digester.Digester;
 
 public class MemoryRealm  extends RealmBase {
 
-    private static Log log = LogFactory.getLog(MemoryRealm.class);
+    private static Logger log = Logger.getLogger(MemoryRealm.class);
 
     // ----------------------------------------------------- Instance Variables
 

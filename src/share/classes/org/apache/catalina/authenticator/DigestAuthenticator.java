@@ -33,8 +33,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.util.MD5Encoder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 
 
@@ -49,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
 
 public class DigestAuthenticator
     extends AuthenticatorBase {
-    private static Log log = LogFactory.getLog(DigestAuthenticator.class);
+    private static Logger log = Logger.getLogger(DigestAuthenticator.class);
 
 
     // -------------------------------------------------------------- Constants

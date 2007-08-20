@@ -19,9 +19,8 @@ package org.apache.tomcat.util.threads;
 
 import java.util.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.res.StringManager;
+import org.jboss.logging.Logger;
 
 /**
  * A thread pool that is trying to copy the apache process management.
@@ -33,7 +32,7 @@ import org.apache.tomcat.util.res.StringManager;
  */
 public class ThreadPool  {
 
-    private static Log log = LogFactory.getLog(ThreadPool.class);
+    private static Logger log = Logger.getLogger(ThreadPool.class);
 
     private static StringManager sm =
         StringManager.getManager("org.apache.tomcat.util.threads.res");
@@ -367,7 +366,7 @@ public class ThreadPool  {
         return c;
     }
 
-    private static void logFull(Log loghelper, int currentThreadCount,
+    private static void logFull(Logger loghelper, int currentThreadCount,
                                 int maxThreads) {
 	if( logfull ) {
             log.error(sm.getString("threadpool.busy",

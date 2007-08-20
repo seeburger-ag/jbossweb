@@ -28,17 +28,16 @@ import java.util.List;
 
 import javax.management.ObjectName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.modeler.AttributeInfo;
 import org.apache.tomcat.util.modeler.ManagedBean;
 import org.apache.tomcat.util.modeler.OperationInfo;
 import org.apache.tomcat.util.modeler.ParameterInfo;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 
 public class MbeansDescriptorsIntrospectionSource extends ModelerSource
 {
-    private static Log log = LogFactory.getLog(MbeansDescriptorsIntrospectionSource.class);
+    private static Logger log = Logger.getLogger(MbeansDescriptorsIntrospectionSource.class);
 
     Registry registry;
     String location;

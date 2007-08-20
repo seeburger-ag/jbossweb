@@ -27,10 +27,9 @@ import java.util.jar.JarFile;
 import java.net.URL;
 import java.net.MalformedURLException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
+import org.jboss.logging.Logger;
 
 /**
  * JspReader is an input buffer for the JSP parser. It should allow
@@ -53,7 +52,7 @@ class JspReader {
     /**
      * Logger.
      */
-    private Log log = LogFactory.getLog(JspReader.class);
+    private Logger log = Logger.getLogger(JspReader.class);
 
     /**
      * The current spot in the file.

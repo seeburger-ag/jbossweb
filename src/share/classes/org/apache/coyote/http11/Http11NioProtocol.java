@@ -794,8 +794,8 @@ public class Http11NioProtocol implements ProtocolHandler, MBeanRegistration
     }
     
 
-    protected static org.apache.commons.logging.Log log
-        = org.apache.commons.logging.LogFactory.getLog(Http11NioProtocol.class);
+    protected static org.jboss.logging.Logger log
+        = org.jboss.logging.Logger.getLogger(Http11NioProtocol.class);
 
     // -------------------- Various implementation classes --------------------
 

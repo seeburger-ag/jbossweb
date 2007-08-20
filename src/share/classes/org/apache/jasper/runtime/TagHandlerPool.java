@@ -22,9 +22,8 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.Tag;
 
 import org.apache.AnnotationProcessor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.jasper.Constants;
+import org.jboss.logging.Logger;
 
 /**
  * Pool of tag handlers that can be reused.
@@ -38,7 +37,7 @@ public class TagHandlerPool {
     public static String OPTION_TAGPOOL="tagpoolClassName";
     public static String OPTION_MAXSIZE="tagpoolMaxSize";
 
-    private Log log = LogFactory.getLog(TagHandlerPool.class);
+    private Logger log = Logger.getLogger(TagHandlerPool.class);
     
     // index of next available tag handler
     private int current;

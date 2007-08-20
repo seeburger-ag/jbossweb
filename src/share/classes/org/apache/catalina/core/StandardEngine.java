@@ -34,10 +34,9 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.Service;
 import org.apache.catalina.realm.JAASRealm;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.modeler.modules.MbeansSource;
+import org.jboss.logging.Logger;
 
 /**
  * Standard implementation of the <b>Engine</b> interface.  Each
@@ -53,7 +52,7 @@ public class StandardEngine
     extends ContainerBase
     implements Engine {
 
-    private static Log log = LogFactory.getLog(StandardEngine.class);
+    private static Logger log = Logger.getLogger(StandardEngine.class);
 
     // ----------------------------------------------------------- Constructors
 

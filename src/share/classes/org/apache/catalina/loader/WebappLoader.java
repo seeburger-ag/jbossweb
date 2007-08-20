@@ -1191,8 +1191,8 @@ public class WebappLoader
     }
 
 
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( WebappLoader.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( WebappLoader.class );
 
     private ObjectName oname;
     private MBeanServer mserver;

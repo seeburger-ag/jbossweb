@@ -44,8 +44,8 @@ import org.apache.jasper.JspCompilationContext;
  */
 public class SmapUtil {
 
-    private org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( SmapUtil.class );
+    private org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( SmapUtil.class );
 
     //*********************************************************************
     // Constants
@@ -189,8 +189,8 @@ public class SmapUtil {
     // Installation logic (from Robert Field, JSR-045 spec lead)
     private static class SDEInstaller {
 
-        private org.apache.commons.logging.Log log=
-            org.apache.commons.logging.LogFactory.getLog( SDEInstaller.class );
+        private org.jboss.logging.Logger log=
+            org.jboss.logging.Logger.getLogger( SDEInstaller.class );
 
         static final String nameSDE = "SourceDebugExtension";
 

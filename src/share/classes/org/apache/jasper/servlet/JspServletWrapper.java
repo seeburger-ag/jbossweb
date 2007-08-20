@@ -32,8 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.tagext.TagInfo;
 
 import org.apache.AnnotationProcessor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.Options;
@@ -42,6 +40,7 @@ import org.apache.jasper.compiler.JavacErrorDetail;
 import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.runtime.JspSourceDependent;
+import org.jboss.logging.Logger;
 
 /**
  * The JSP engine (a.k.a Jasper).
@@ -64,7 +63,7 @@ import org.apache.jasper.runtime.JspSourceDependent;
 public class JspServletWrapper {
 
     // Logger
-    private Log log = LogFactory.getLog(JspServletWrapper.class);
+    private Logger log = Logger.getLogger(JspServletWrapper.class);
 
     private Servlet theServlet;
     private String jspUri;

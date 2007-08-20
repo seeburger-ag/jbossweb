@@ -25,9 +25,8 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.jni.Library;
+import org.jboss.logging.Logger;
 
 
 
@@ -44,7 +43,7 @@ import org.apache.tomcat.jni.Library;
 public class AprLifecycleListener
     implements LifecycleListener {
 
-    private static Log log = LogFactory.getLog(AprLifecycleListener.class);
+    private static Logger log = Logger.getLogger(AprLifecycleListener.class);
 
     /**
      * The string manager for this package.

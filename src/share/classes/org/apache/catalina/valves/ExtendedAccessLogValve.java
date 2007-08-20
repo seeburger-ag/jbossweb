@@ -36,8 +36,7 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 
 
@@ -129,7 +128,7 @@ public class ExtendedAccessLogValve
     extends AccessLogValve
     implements Lifecycle {
 
-    private static Log log = LogFactory.getLog(ExtendedAccessLogValve.class);
+    private static Logger log = Logger.getLogger(ExtendedAccessLogValve.class);
 
     // ----------------------------------------------------- Instance Variables
 

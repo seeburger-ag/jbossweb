@@ -34,8 +34,8 @@ import java.util.BitSet;
  */
 public final class UEncoder {
 
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog(UEncoder.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger(UEncoder.class );
     
     // Not static - the set may differ ( it's better than adding
     // an extra check for "/", "+", etc

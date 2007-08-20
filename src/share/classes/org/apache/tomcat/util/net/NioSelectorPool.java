@@ -25,8 +25,8 @@ import java.nio.channels.SelectionKey;
 import java.io.EOFException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import org.jboss.logging.Logger;
 
 /**
  *
@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
  */
 
 public class NioSelectorPool {
-    protected static Log log = LogFactory.getLog(NioSelectorPool.class);
+    protected static Logger log = Logger.getLogger(NioSelectorPool.class);
 
     protected final static boolean SHARED =
         Boolean.valueOf(System.getProperty("org.apache.tomcat.util.net.NioSelectorShared", "true")).booleanValue();

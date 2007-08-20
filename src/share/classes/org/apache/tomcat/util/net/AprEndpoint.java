@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Executor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.jni.Address;
 import org.apache.tomcat.jni.Error;
 import org.apache.tomcat.jni.File;
@@ -37,6 +35,7 @@ import org.apache.tomcat.jni.SSLSocket;
 import org.apache.tomcat.jni.Socket;
 import org.apache.tomcat.jni.Status;
 import org.apache.tomcat.util.res.StringManager;
+import org.jboss.logging.Logger;
 
 /**
  * APR tailored thread pool, providing the following services:
@@ -59,7 +58,7 @@ public class AprEndpoint {
     // -------------------------------------------------------------- Constants
 
 
-    protected static Log log = LogFactory.getLog(AprEndpoint.class);
+    protected static Logger log = Logger.getLogger(AprEndpoint.class);
 
     protected static StringManager sm =
         StringManager.getManager("org.apache.tomcat.util.net.res");

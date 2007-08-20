@@ -24,8 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import org.apache.catalina.loader.StandardClassLoader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -50,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
 public final class ClassLoaderFactory {
 
 
-    private static Log log = LogFactory.getLog(ClassLoaderFactory.class);
+    private static Logger log = Logger.getLogger(ClassLoaderFactory.class);
 
     protected static final Integer IS_DIR = new Integer(0);
     protected static final Integer IS_JAR = new Integer(1);

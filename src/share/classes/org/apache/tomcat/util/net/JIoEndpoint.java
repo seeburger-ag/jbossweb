@@ -24,9 +24,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.res.StringManager;
+import org.jboss.logging.Logger;
 
 /**
  * Handle incoming TCP connections.
@@ -50,7 +49,7 @@ public class JIoEndpoint {
     // -------------------------------------------------------------- Constants
 
 
-    protected static Log log = LogFactory.getLog(JIoEndpoint.class);
+    protected static Logger log = Logger.getLogger(JIoEndpoint.class);
 
     protected StringManager sm = 
         StringManager.getManager("org.apache.tomcat.util.net.res");

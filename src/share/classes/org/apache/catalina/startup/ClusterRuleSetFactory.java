@@ -23,14 +23,13 @@ import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSetBase;
 import java.lang.reflect.Constructor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 
 public class ClusterRuleSetFactory {
     
-    public static Log log = LogFactory.getLog(ClusterRuleSetFactory.class);
+    public static Logger log = Logger.getLogger(ClusterRuleSetFactory.class);
     
     public static RuleSetBase getClusterRuleSet(String prefix) {
         

@@ -25,8 +25,6 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
 import org.apache.tomcat.util.buf.B2CConverter;
@@ -36,6 +34,7 @@ import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.ServerCookie;
 import org.apache.tomcat.util.net.SocketStatus;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -50,7 +49,7 @@ import org.apache.tomcat.util.net.SocketStatus;
 public class CoyoteAdapter
     implements Adapter 
  {
-    private static Log log = LogFactory.getLog(CoyoteAdapter.class);
+    private static Logger log = Logger.getLogger(CoyoteAdapter.class);
 
     // -------------------------------------------------------------- Constants
 

@@ -26,8 +26,7 @@ import java.lang.reflect.Method;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of <code>LifecycleListener</code> that will init and
@@ -41,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
 public class LifecycleListener
     implements org.apache.catalina.LifecycleListener {
 
-    private static Log log = LogFactory.getLog(LifecycleListener.class);
+    private static Logger log = Logger.getLogger(LifecycleListener.class);
 
     /**
      * The string manager for this package.

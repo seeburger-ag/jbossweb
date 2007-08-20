@@ -28,8 +28,8 @@ package org.apache.jasper.security;
 
 public final class SecurityClassLoad {
 
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( SecurityClassLoad.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( SecurityClassLoad.class );
 
     public static void securityClassLoad(ClassLoader loader){
 

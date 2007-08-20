@@ -77,8 +77,8 @@ public class StandardWrapper
     extends ContainerBase
     implements ServletConfig, Wrapper, NotificationEmitter {
 
-    protected static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( StandardWrapper.class );
+    protected static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( StandardWrapper.class );
 
     protected static final String[] DEFAULT_SERVLET_METHODS = new String[] {
                                                     "GET", "HEAD", "POST" };

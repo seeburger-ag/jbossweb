@@ -6,15 +6,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.modeler.ManagedBean;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 
 
 public class MbeansDescriptorsSerSource extends ModelerSource
 {
-    private static Log log = LogFactory.getLog(MbeansDescriptorsSerSource.class);
+    private static Logger log = Logger.getLogger(MbeansDescriptorsSerSource.class);
     Registry registry;
     String location;
     String type;

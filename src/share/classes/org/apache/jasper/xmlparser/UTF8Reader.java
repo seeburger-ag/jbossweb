@@ -31,8 +31,8 @@ import org.apache.jasper.compiler.Localizer;
 public class UTF8Reader
     extends Reader {
 
-    private org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( UTF8Reader.class );
+    private org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( UTF8Reader.class );
     
     //
     // Constants

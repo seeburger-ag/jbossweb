@@ -40,8 +40,6 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.jasper.compiler.Compiler;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.JspRuntimeContext;
@@ -53,6 +51,7 @@ import org.apache.jasper.servlet.JspCServletContext;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.util.FileUtils;
+import org.jboss.logging.Logger;
 
 /**
  * Shell for the jspc compiler.  Handles all options associated with the
@@ -95,7 +94,7 @@ public class JspC implements Options {
             "clsid:8AD9C840-044E-11D1-B3E9-00805F499D93";
 
     // Logger
-    protected static Log log = LogFactory.getLog(JspC.class);
+    protected static Logger log = Logger.getLogger(JspC.class);
 
     protected static final String SWITCH_VERBOSE = "-v";
     protected static final String SWITCH_HELP = "-help";
@@ -1033,7 +1032,7 @@ public class JspC implements Options {
             }
 
         } catch (Exception e) {
-            if ((e instanceof FileNotFoundException) && log.isWarnEnabled()) {
+            if (e instanceof FileNotFoundException) {
                 log.warn(Localizer.getMessage("jspc.error.fileDoesNotExist",
                                               e.getMessage()));
             }
@@ -1139,11 +1138,9 @@ public class JspC implements Options {
                     fjsp = new File(uriRootF, nextjsp);
                 }
                 if (!fjsp.exists()) {
-                    if (log.isWarnEnabled()) {
-                        log.warn
+                    log.warn
                             (Localizer.getMessage
                              ("jspc.error.fileDoesNotExist", fjsp.toString()));
-                    }
                     continue;
                 }
                 String s = fjsp.getAbsolutePath();
@@ -1176,9 +1173,9 @@ public class JspC implements Options {
             }
             throw je;
         } finally {
-            if (loader != null) {
-                LogFactory.release(loader);
-            }
+        	/*if (loader != null) {
+                Logger.release(loader);
+            }*/
         }
     }
 

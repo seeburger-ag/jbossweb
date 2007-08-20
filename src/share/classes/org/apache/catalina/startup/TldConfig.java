@@ -66,8 +66,8 @@ public final class TldConfig  {
     // Names of JARs that are known not to contain any TLDs
     private static HashSet<String> noTldJars;
 
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( TldConfig.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( TldConfig.class );
 
     /*
      * Initializes the set of JARs that are known not to contain any TLDs

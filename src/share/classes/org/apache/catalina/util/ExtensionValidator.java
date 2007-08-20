@@ -52,8 +52,8 @@ import org.apache.naming.resources.Resource;
  */
 public final class ExtensionValidator {
 
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog(ExtensionValidator.class);
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger(ExtensionValidator.class);
 
     /**
      * The string resources for this package.

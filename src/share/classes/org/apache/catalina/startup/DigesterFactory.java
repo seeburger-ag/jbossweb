@@ -33,8 +33,8 @@ public class DigesterFactory {
     /**
      * The log.
      */
-   protected static org.apache.commons.logging.Log log = 
-       org.apache.commons.logging.LogFactory.getLog(DigesterFactory.class);
+   protected static org.jboss.logging.Logger log = 
+       org.jboss.logging.Logger.getLogger(DigesterFactory.class);
 
     /**
      * The XML entiry resolver used by the Digester.

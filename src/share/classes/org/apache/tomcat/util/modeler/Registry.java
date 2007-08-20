@@ -39,9 +39,8 @@ import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.modeler.modules.ModelerSource;
+import org.jboss.logging.Logger;
 
 /*
    Issues:
@@ -75,7 +74,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
     /**
      * The Log instance to which we will write our log messages.
      */
-    private static Log log = LogFactory.getLog(Registry.class);
+    private static Logger log = Logger.getLogger(Registry.class);
 
     // Support for the factory methods
     

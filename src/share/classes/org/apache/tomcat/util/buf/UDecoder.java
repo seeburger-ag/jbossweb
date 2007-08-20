@@ -30,8 +30,8 @@ import java.io.IOException;
  */
 public final class UDecoder {
     
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog(UDecoder.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger(UDecoder.class );
     
     protected static final boolean ALLOW_ENCODED_SLASH = 
         Boolean.valueOf(System.getProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "false")).booleanValue();

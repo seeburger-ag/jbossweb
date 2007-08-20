@@ -30,13 +30,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.PeriodicEventListener;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.jasper.Constants;
 import org.apache.jasper.EmbeddedServletOptions;
 import org.apache.jasper.Options;
 import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.Localizer;
+import org.jboss.logging.Logger;
 
 /**
  * The JSP engine (a.k.a Jasper).
@@ -57,7 +56,7 @@ import org.apache.jasper.compiler.Localizer;
 public class JspServlet extends HttpServlet implements PeriodicEventListener {
 
     // Logger
-    private Log log = LogFactory.getLog(JspServlet.class);
+    private Logger log = Logger.getLogger(JspServlet.class);
 
     private ServletContext context;
     private ServletConfig config;

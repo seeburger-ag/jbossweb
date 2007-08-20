@@ -92,8 +92,6 @@ import org.apache.catalina.util.DefaultAnnotationProcessor;
 import org.apache.catalina.util.ExtensionValidator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.URLEncoder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.naming.ContextBindings;
 import org.apache.naming.resources.BaseDirContext;
 import org.apache.naming.resources.DirContextURLStreamHandler;
@@ -101,6 +99,7 @@ import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.WARDirContext;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 
 /**
  * Standard implementation of the <b>Context</b> interface.  Each
@@ -116,7 +115,7 @@ public class StandardContext
     extends ContainerBase
     implements Context, Serializable, NotificationEmitter
 {
-    private static transient Log log = LogFactory.getLog(StandardContext.class);
+    private static transient Logger log = Logger.getLogger(StandardContext.class);
 
 
     // ----------------------------------------------------------- Constructors

@@ -35,12 +35,11 @@ import org.xml.sax.InputSource;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.xmlparser.ParserUtils;
 import org.apache.jasper.xmlparser.TreeNode;
+import org.jboss.logging.Logger;
 
 /**
  * A container for all tag libraries that are defined "globally"
@@ -78,7 +77,7 @@ import org.apache.jasper.xmlparser.TreeNode;
 public class TldLocationsCache {
 
     // Logger
-    private Log log = LogFactory.getLog(TldLocationsCache.class);
+    private Logger log = Logger.getLogger(TldLocationsCache.class);
 
     /**
      * The types of URI one may specify for a tag library
@@ -266,15 +265,13 @@ public class TldLocationsCache {
                 try {
                     uri = new URL(FILE_PROTOCOL+altDDName.replace('\\', '/'));
                 } catch (MalformedURLException e) {
-                    if (log.isWarnEnabled()) {
-                        log.warn(Localizer.getMessage(
+                    log.warn(Localizer.getMessage(
                                             "jsp.error.internal.filenotfound",
                                             altDDName));
-                    }
                 }
             } else {
                 uri = ctxt.getResource(WEB_XML);
-                if (uri == null && log.isWarnEnabled()) {
+                if (uri == null) {
                     log.warn(Localizer.getMessage(
                                             "jsp.error.internal.filenotfound",
                                             WEB_XML));

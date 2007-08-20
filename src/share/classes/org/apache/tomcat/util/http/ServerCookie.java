@@ -37,8 +37,8 @@ import org.apache.tomcat.util.buf.MessageBytes;
 public class ServerCookie implements Serializable {
     
     
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog(ServerCookie.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger(ServerCookie.class );
     
     private MessageBytes name=MessageBytes.newInstance();
     private MessageBytes value=MessageBytes.newInstance();

@@ -49,8 +49,7 @@ import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -77,7 +76,7 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AuthenticatorBase
     extends ValveBase
     implements Authenticator, Lifecycle {
-    private static Log log = LogFactory.getLog(AuthenticatorBase.class);
+    private static Logger log = Logger.getLogger(AuthenticatorBase.class);
 
 
     // ----------------------------------------------------- Instance Variables

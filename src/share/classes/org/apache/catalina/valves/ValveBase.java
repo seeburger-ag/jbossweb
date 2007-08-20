@@ -40,8 +40,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -57,7 +56,7 @@ import org.apache.commons.logging.LogFactory;
 
 public abstract class ValveBase
     implements Contained, Valve, MBeanRegistration {
-    private static Log log = LogFactory.getLog(ValveBase.class);
+    private static Logger log = Logger.getLogger(ValveBase.class);
 
     //------------------------------------------------------ Instance Variables
 
@@ -71,7 +70,7 @@ public abstract class ValveBase
     /**
      * Container log
      */
-    protected Log containerLog = null;
+    protected Logger containerLog = null;
 
 
     /**

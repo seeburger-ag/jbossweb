@@ -46,8 +46,7 @@ import javax.management.RuntimeOperationsException;
 import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import javax.management.modelmbean.ModelMBeanNotificationBroadcaster;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 /*
  * Changes from commons.modeler:
@@ -101,7 +100,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Costin Manolache
  */
 public class BaseModelMBean implements DynamicMBean, MBeanRegistration, ModelMBeanNotificationBroadcaster {
-    private static Log log = LogFactory.getLog(BaseModelMBean.class);
+    private static Logger log = Logger.getLogger(BaseModelMBean.class);
 
     // ----------------------------------------------------------- Constructors
 

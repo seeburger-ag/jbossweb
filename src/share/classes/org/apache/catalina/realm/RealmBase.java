@@ -51,9 +51,8 @@ import org.apache.catalina.util.HexUtils;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.MD5Encoder;
 import org.apache.catalina.util.StringManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 
 /**
  * Simple implementation of <b>Realm</b> that reads an XML file to configure
@@ -67,7 +66,7 @@ import org.apache.tomcat.util.modeler.Registry;
 public abstract class RealmBase
     implements Lifecycle, Realm, MBeanRegistration {
 
-    private static Log log = LogFactory.getLog(RealmBase.class);
+    private static Logger log = Logger.getLogger(RealmBase.class);
 
     // ----------------------------------------------------- Instance Variables
 
@@ -81,7 +80,7 @@ public abstract class RealmBase
     /**
      * Container log
      */
-    protected Log containerLog = null;
+    protected Logger containerLog = null;
 
 
     /**

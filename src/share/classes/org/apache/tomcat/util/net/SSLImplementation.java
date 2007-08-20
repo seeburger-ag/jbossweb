@@ -27,8 +27,8 @@ import javax.net.ssl.SSLSession;
    @author EKR
 */
 abstract public class SSLImplementation {
-    private static org.apache.commons.logging.Log logger =
-        org.apache.commons.logging.LogFactory.getLog(SSLImplementation.class);
+    private static org.jboss.logging.Logger logger =
+        org.jboss.logging.Logger.getLogger(SSLImplementation.class);
 
     // The default implementations in our search path
     private static final String PureTLSImplementationClass=
