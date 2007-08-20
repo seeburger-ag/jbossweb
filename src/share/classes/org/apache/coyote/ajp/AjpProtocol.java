@@ -55,8 +55,8 @@ public class AjpProtocol
     implements ProtocolHandler, MBeanRegistration {
     
     
-    protected static org.apache.commons.logging.Log log =
-        org.apache.commons.logging.LogFactory.getLog(AjpProtocol.class);
+    protected static org.jboss.logging.Logger log =
+        org.jboss.logging.Logger.getLogger(AjpProtocol.class);
 
     /**
      * The string manager for this package.
@@ -133,22 +133,6 @@ public class AjpProtocol
 
     public Iterator getAttributeNames() {
         return attributes.keySet().iterator();
-    }
-
-
-    /**
-     * Set a property.
-     */
-    public void setProperty(String name, String value) {
-        setAttribute(name, value);
-    }
-
-
-    /**
-     * Get a property
-     */
-    public String getProperty(String name) {
-        return (String) getAttribute(name);
     }
 
 

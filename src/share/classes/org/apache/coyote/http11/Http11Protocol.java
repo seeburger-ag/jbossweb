@@ -57,8 +57,8 @@ public class Http11Protocol
     implements ProtocolHandler, MBeanRegistration {
 
 
-    protected static org.apache.commons.logging.Log log
-        = org.apache.commons.logging.LogFactory.getLog(Http11Protocol.class);
+    protected static org.jboss.logging.Logger log
+        = org.jboss.logging.Logger.getLogger(Http11Protocol.class);
 
     /**
      * The string manager for this package.
@@ -102,20 +102,6 @@ public class Http11Protocol
     protected HashMap<String, Object> attributes = new HashMap<String, Object>();
 
     
-    /**
-     * Set a property.
-     */
-    public void setProperty(String name, String value) {
-        setAttribute(name, value);
-    }
-
-    /**
-     * Get a property
-     */
-    public String getProperty(String name) {
-        return (String)getAttribute(name);
-    }
-
     /**
      * Pass config info
      */

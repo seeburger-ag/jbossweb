@@ -25,6 +25,10 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
@@ -260,6 +264,12 @@ public class Catalina extends Embedded {
         // Initialize the digester
         Digester digester = new Digester();
         digester.setValidating(false);
+        digester.setRulesValidation(true);
+        HashMap<Class, List<String>> fakeAttributes = new HashMap<Class, List<String>>();
+        ArrayList<String> attrs = new ArrayList<String>();
+        attrs.add("className");
+        fakeAttributes.put(Object.class, attrs);
+        digester.setFakeAttributes(fakeAttributes);
         digester.setClassLoader(StandardServer.class.getClassLoader());
 
         // Configure the actions we will be using
@@ -664,8 +674,8 @@ public class Catalina extends Embedded {
     }
     
     
-    private static org.apache.commons.logging.Log log=
-        org.apache.commons.logging.LogFactory.getLog( Catalina.class );
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( Catalina.class );
 
 }
 

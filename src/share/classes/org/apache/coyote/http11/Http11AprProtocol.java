@@ -54,8 +54,8 @@ import org.apache.tomcat.util.res.StringManager;
  */
 public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
 
-    protected static org.apache.commons.logging.Log log = 
-        org.apache.commons.logging.LogFactory.getLog(Http11AprProtocol.class);
+    protected static org.jboss.logging.Logger log = 
+        org.jboss.logging.Logger.getLogger(Http11AprProtocol.class);
 
     /**
      * The string manager for this package.
@@ -87,20 +87,6 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
 
     public Iterator getAttributeNames() {
         return attributes.keySet().iterator();
-    }
-
-    /**
-     * Set a property.
-     */
-    public void setProperty(String name, String value) {
-        setAttribute(name, value);
-    }
-
-    /**
-     * Get a property
-     */
-    public String getProperty(String name) {
-        return (String)getAttribute(name);
     }
 
     /**
@@ -325,14 +311,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public void setRestrictedUserAgents(String valueS) { restrictedUserAgents = valueS; }
     
     
-    public String getProtocol() {
-        return getProperty("protocol");
-    }
-
-    public void setProtocol( String k ) {
-        setSecure(true);
-        setAttribute("protocol", k);
-    }
+    // HTTP
+    protected String protocol = null;
+    public String getProtocol() { return protocol; }
+    public void setProtocol(String protocol) { setSecure(true); this.protocol = protocol; }
 
     /**
      * Maximum number of requests which can be performed over a keepalive 
