@@ -9,7 +9,7 @@
 # $Id: build.properties.default 526202 2007-04-06 15:44:38Z remm $
 # -----------------------------------------------------------------------------
 
-# ----- Vesion Control Flags -----
+# ----- Version Control Flags -----
 version.major=2
 version.minor=1
 version.build=0
