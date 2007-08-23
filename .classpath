@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="**/.svn/**|org/apache/tomcat/util/net/puretls/" kind="src" path="java"/>
+	<classpathentry excluding="**/.svn/**|org/apache/naming/factory/webservices/|org/apache/tomcat/util/net/puretls/" kind="src" path="java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/jasper-jdt.jar"/>
