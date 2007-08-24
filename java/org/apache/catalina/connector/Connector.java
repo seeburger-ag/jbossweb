@@ -610,7 +610,7 @@ public class Connector
             || "org.apache.coyote.http11.Http11AprProtocol".equals
             (getProtocolHandlerClassName())) {
             return "HTTP/1.1";
-        } else if ("org.apache.jk.server.JkCoyoteHandler".equals
+        } else if ("org.apache.coyote.ajp.AjpProtocol".equals
                    (getProtocolHandlerClassName())
                    || "org.apache.coyote.ajp.AjpAprProtocol".equals
                    (getProtocolHandlerClassName())) {
