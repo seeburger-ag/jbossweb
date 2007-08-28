@@ -1,1 +1,0 @@
-These JARs are present to facilitate workspace setup in IDEs.
