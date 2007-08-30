@@ -1,6 +1,6 @@
 
 
-                     Apache Tomcat Version @VERSION@
+                         JBoss Web @VERSION@
                             Release Notes
 
 
@@ -63,14 +63,12 @@ during the lifetime of a particular JVM.
 =============
 Bundled APIs:
 =============
-A standard installation of Tomcat 6.0 makes all of the following APIs available
+A standard installation of JBoss Web makes all of the following APIs available
 for use by web applications (by placing them in "lib"):
 * annotations-api.jar (Annotations package)
 * catalina.jar (Tomcat Catalina implementation)
 * catalina-ant.jar (Tomcat Catalina Ant tasks)
-* catalina-ha.jar (High availability package)
-* catalina-tribes.jar (Group communication)
-* commons-logging-api.jar (Commons Logging API 1.0.x)
+* tomcat-juli.jar (dedicated java.util.logging LogManager and specialized JBoss Logging)
 * el-api.jar (EL 2.1 API)
 * jasper.jar (Jasper 2 Compiler and Runtime)
 * jasper-el.jar (Jasper 2 EL implementation)
@@ -103,34 +101,12 @@ and putting them in the shared classloader instead (JARs should be put in the
 "lib" folder, and classes should be put in the "classes" folder).
 
 
-================
-Tomcat on Linux:
-================
-GLIBC 2.2 / Linux 2.4 users should define an environment variable:
-export LD_ASSUME_KERNEL=2.2.5
-
-Redhat Linux 9.0 users should use the following setting to avoid
-stability problems:
-export LD_ASSUME_KERNEL=2.4.1
-
-There are some Linux bugs reported against the NIO sendfile behavior, make sure you
-have a JDK that is up to date, or disable sendfile behavior in the Connector.<br/>
-6427312: (fc) FileChannel.transferTo() throws IOException "system call interrupted"<br/>
-5103988: (fc) FileChannel.transferTo should return -1 for EAGAIN instead throws IOException<br/>
-6253145: (fc) FileChannel.transferTo on Linux fails when going beyond 2GB boundary<br/>
-6470086: (fc) FileChannel.transferTo(2147483647, 1, channel) cause "Value too large" exception<br/>
-
-
 =============================
 Enabling SSI and CGI Support:
 =============================
-Because of the security risks associated with CGI and SSI available
-to web applications, these features are disabled by default.  
-
-To enable and configure CGI support, please see the cgi-howto.html page.
-
-To enable and configue SSI support, please see the ssi-howto.html page.
-
+SSI, CGI will only will run in privileged web applications. See the Context
+attributes documentation for more details.
+ 
 
 ======================
 Security manager URLs:
@@ -165,14 +141,16 @@ is unsupported.  More details are available on the Tomcat FAQ at
 http://tomcat.apache.org/faq/misc.html#invoker.
 
 
-==============================
-Viewing the Tomcat Change Log:
-==============================
+================================
+Viewing the JBoss Web Change Log:
+================================
 See changelog.html in this directory.
 
 
 ====================
 When all else fails:
 ====================
-See the FAQ
+See the Wiki:
+http://labs.jboss.com/wiki/Jbossweb
+Tomcat FAQ for related common questions:
 http://tomcat.apache.org/faq/
