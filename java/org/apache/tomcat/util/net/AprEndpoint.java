@@ -36,7 +36,6 @@ import org.apache.tomcat.jni.Socket;
 import org.apache.tomcat.jni.Status;
 import org.apache.tomcat.util.res.StringManager;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
 
 /**
  * APR tailored thread pool, providing the following services:
@@ -1593,6 +1592,9 @@ public class AprEndpoint {
                                 // FIXME: Check concurrency to see if the socket isn't being processed for an
                                 // event (such as a read if a write is added): need to add a "processing event"
                                 // concurrent map ...
+                                if (comet) {
+                                    
+                                }
                                 // Store timeout
                                 timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
                                 if (comet) {
@@ -1613,6 +1615,8 @@ public class AprEndpoint {
                                     } else {
                                         Socket.destroy(info.socket);
                                     }
+                                } else {
+                                    keepAliveCount++;
                                 }
                             } else {
                                 if (comet) {
@@ -1655,7 +1659,7 @@ public class AprEndpoint {
                                         || (comet && 
                                                 (((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) && !processSocket(desc[n*2+1], SocketStatus.OPEN_READ))
                                                 || (((desc[n*2] & Poll.APR_POLLOUT) == Poll.APR_POLLOUT) && !processSocket(desc[n*2+1], SocketStatus.OPEN_WRITE))) 
-                                        || (!comet && (!processSocket(desc[n*2+1])))) {
+                                        || (!comet && !processSocket(desc[n*2+1]))) {
                                     // Close socket and clear pool
                                     if (comet) {
                                         processSocket(desc[n*2+1], SocketStatus.DISCONNECT);
