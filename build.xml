@@ -18,7 +18,7 @@
   <property name="version.minor"         value="1" />
   <property name="version.build"         value="0" />
   <property name="version.patch"         value="0" />
-  <property name="version"               value="2.1.0-dev" />
+  <property name="version"               value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
   <property name="version.number"        value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
 
   <property name="project"               value="jboss-web" />
@@ -29,6 +29,7 @@
   <property name="tomcat.build"      value="${basedir}/output/build"/>
   <property name="tomcat.classes"    value="${basedir}/output/classes"/>
   <property name="tomcat.dist"       value="${basedir}/output/dist"/>
+  <property name="tomcat.jars"       value="${basedir}/output/jars"/>
   <property name="test.failonerror"  value="true"/>
   <property name="test.runner"       value="junit.textui.TestRunner"/>
 
@@ -78,6 +79,8 @@
     <mkdir dir="${tomcat.build}/lib"/>
     <mkdir dir="${tomcat.build}/temp"/>
     <mkdir dir="${tomcat.build}/webapps"/>
+
+  	<mkdir dir="${tomcat.jars}"/>
 
   </target>
 
@@ -482,6 +485,32 @@
   	<copy file="${tomcat-dbcp.jar}" todir="${tomcat.build}/lib" />
     <copy file="${jasper-jdt.jar}" todir="${tomcat.build}/lib" />
 
+    <!-- JBoss Web Main JAR File -->
+    <jar jarfile="${tomcat.jars}/jbossweb.jar" index="true">
+      <fileset dir="${tomcat.classes}">
+        <include name="org/apache/*" />
+        <include name="org/apache/catalina/**" />
+        <include name="org/apache/naming/**" />
+        <include name="org/apache/coyote/**" />
+        <include name="org/apache/tomcat/jni/**" />
+        <include name="org/apache/tomcat/util/**" />
+        <include name="org/apache/jasper/**" />
+        <include name="org/apache/el/**" />
+        <include name="org/jboss/web/**" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+      </fileset>
+    </jar>
+
+    <copy file="${jasper-jdt.jar}" todir="${tomcat.jars}" />
+    <copy todir="${tomcat.jars}">
+      <fileset dir="${tomcat.build}/lib">
+        <include name="el-api.jar"/>
+        <include name="jsp-api.jar"/>
+        <include name="servlet-api.jar"/>
+      </fileset>
+    </copy>
+
   </target>
 	
   <target name="clean-depend"
@@ -493,6 +522,7 @@
   <target name="clean">
     <delete dir="${tomcat.classes}" />
     <delete dir="${tomcat.build}" />
+    <delete dir="${tomcat.jars}" />
   </target>
 
   <!-- Download and dependency building -->
