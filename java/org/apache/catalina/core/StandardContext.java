@@ -4334,6 +4334,8 @@ public class StandardContext
                 instanceManager = new DefaultInstanceManager
                 	(context, injectionMap, this, this.getClass().getClassLoader());
                 getServletContext().setAttribute(InstanceManager.class.getName(), instanceManager);
+            } else {
+                getServletContext().setAttribute(InstanceManager.class.getName(), instanceManager);
             }
         }
 

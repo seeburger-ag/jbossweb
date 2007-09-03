@@ -594,6 +594,12 @@
                  type="org.apache.catalina.connector.Connector"/>
     </operation>
     
+    <operation name="findConnectors"
+               description="Return the connectors associated with this wrapper"
+               impact="INFO"
+               returnType="[Lorg.apache.catalina.connector.Connector;">
+    </operation>
+               
     <operation name="start" description="Start" impact="ACTION" returnType="void" />
     <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
   </mbean>
