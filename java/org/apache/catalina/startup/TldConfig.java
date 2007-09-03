@@ -693,12 +693,9 @@ public final class TldConfig  {
                     File file = null;
                     try {
                         file = new File(urls[i].toURI());
-                    } catch (IllegalArgumentException e) {
-                        // Ignore, not a file URL
-                        log.debug("Not a file URL: " + urls[i]);
-                        continue;
-                    } catch (URISyntaxException e) {
-                        // Ignore, probably an unencoded char
+                    } catch (Exception e) {
+                        // Ignore, probably an unencoded char or non file URL,
+                        // attempt direct access
                         file = new File(urls[i].getFile());
                     }
                     try {
