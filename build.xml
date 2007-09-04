@@ -59,8 +59,9 @@
 
   <!-- Classpath -->
   <path id="tomcat.classpath">
-    <pathelement location="${ant.jar}"/>
-    <pathelement location="${jdt.jar}"/>
+    <fileset dir="lib">
+      <include name="${basedir}/*.jar"/>
+    </fileset>
   </path>
 
   <!-- Just build Tomcat -->
@@ -95,8 +96,6 @@
            excludes="**/CVS/**,**/.svn/**">
 <!-- Comment this in to show unchecked warnings:     <compilerarg value="-Xlint:unchecked"/> -->
       <classpath refid="tomcat.classpath" />
-      <exclude name="org/apache/tomcat/util/net/puretls/**" />
-      <exclude name="org/apache/naming/factory/webservices/**" />
     </javac>
     <tstamp>
       <format property="TODAY" pattern="MMM d yyyy" locale="en"/>
