@@ -627,9 +627,7 @@ public class WebappLoader
                 // Log and continue anyway, this is not critical
                 log.error("Error registering jndi stream handler", e);
             } catch (Throwable t) {
-                // This is likely a dual registration
-                log.info("Dual registration of jndi stream handler: " 
-                         + t.getMessage());
+                // This is likely a dual registration, ignore
             }
         }
 
