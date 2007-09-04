@@ -76,7 +76,7 @@ The DefaultServlet allows the following initParamters:
   <tr>
     <th valign='top'>debug</th>
     <td valign='top'>
-        Debugging level. It is not very useful unless you are a tomcat
+        Debugging level. It is not very useful unless you are a JBoss Web
         developer. As
         of this writing, useful values are 0, 1, 11, 1000.
     </td>
@@ -206,7 +206,7 @@ Format:
   <li>Readme is a CDATA entry</li>
 </ul>
 </p>
-The following is a sample xsl file which mimics the default tomcat behavior:
+The following is a sample xsl file which mimics the default JBoss Web behavior:
 <source>
 &lt;?xml version="1.0"?&gt;
 
@@ -249,7 +249,7 @@ The following is a sample xsl file which mimics the default tomcat behavior:
         &lt;/table&gt;
       &lt;xsl:apply-templates select="readme"/&gt;
       &lt;hr size="1" /&gt;
-      &lt;h3&gt;Apache Tomcat/6.0&lt;/h3&gt;
+      &lt;h3&gt;JBoss Web/2.1&lt;/h3&gt;
     &lt;/body&gt;
    &lt;/html&gt;
   &lt;/xsl:template&gt;

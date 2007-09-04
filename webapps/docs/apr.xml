@@ -7,7 +7,7 @@
     &project;
 
   <properties>
-    <title>Apache Portable Runtime and Tomcat</title>
+    <title>Apache Portable Runtime and JBoss Web</title>
     <author>Remy Maucherat</author>
   </properties>
 
@@ -26,7 +26,7 @@
   </p>
   
   <p>
-      These features allows making Tomcat a general purpose webserver, will enable much better 
+      These features allows making JBoss Web a general purpose webserver, will enable much better 
       integration with other native web technologies, and overall make Java much more viable as
       a full fledged webserver platform rather than simply a backend focused technology.
   </p>
@@ -39,7 +39,7 @@
       APR support requires three main native components to be installed:
       <ul>
         <li>APR library</li>
-        <li>JNI wrappers for APR used by Tomcat (libtcnative)</li>
+        <li>JNI wrappers for APR used by JBoss Web (libtcnative)</li>
         <li>OpenSSL libraries</li>
       </ul>
     </p>
@@ -76,7 +76,7 @@
     </p>
     
     <p>
-      The wrapper library sources are located in the Tomcat binary bundle, in the 
+      The wrapper library sources are located in the JBoss Web binary bundle, in the 
       <code>bin/tomcat-native.tar.gz</code> archive.
       Once the build environment is installed and the source archive is extracted, the wrapper library 
       can be compiled using (from the folder containing the configure script):
@@ -91,18 +91,18 @@
 
   <p>
     Once the libraries are properly installed and available to Java (if loading fails, the library path
-    will be displayed), the Tomcat connectors will automatically use APR. Configuration of the connectors
+    will be displayed), the JBoss Web connectors will automatically use APR. Configuration of the connectors
     is similar to the regular connectors, but have a few extra attributes which are used to configure
     APR components. Note that the defaults should be well tuned for most use cases, and additional
     tweaking shouldn't be required.
   </p>
 
   <p>
-    When APR is enabled, the following features are also enabled in Tomcat:
+    When APR is enabled, the following features are also enabled in JBoss Web:
     <ul>
       <li>Secure session ID generation by default on all platforms (platforms other than Linux required
           random number generation using a configured entropy)</li>
-      <li>OS level statistics on memory usage and CPU usage by the Tomcat process are displayed by
+      <li>OS level statistics on memory usage and CPU usage by the JBoss Web process are displayed by
           the status servlet</li>
     </ul>
   </p>
@@ -297,7 +297,7 @@
       When APR is enabled, the AJP connector will use a socket poller for keepalive, increasing 
       scalability of the server. As AJP is designed around a pool of persistent (or almost
       persistent) connections, this will reduce significantly the amount of processing threads 
-      needed by Tomcat. Unlike the HTTP connector, the AJP connector cannot use sendfile to optimize
+      needed by JBoss Web. Unlike the HTTP connector, the AJP connector cannot use sendfile to optimize
       static file processing.
     </p>
 

@@ -19,7 +19,7 @@
 <p>For administrators and web developers alike, there are some important bits
 of information you should familiarize yourself with before starting out. This
 document serves as a brief introduction to some of the concepts and
-terminology behind the Tomcat container. As well, where to go when you need
+terminology behind the JBoss Web container. As well, where to go when you need
 help.</p>
 
 </section>
@@ -28,7 +28,7 @@ help.</p>
 <section name="Terminology">
 
 <p>In the course of reading these documents, you'll run across a number of
-terms; some specific to Tomcat, and others defined by the
+terms; some specific to JBoss Web, and others defined by the
 <a href="http://java.sun.com/products/servlet/">Servlet</a> or
 <a href="http://java.sun.com/products/jsp/">JSP</a> specifications.</p>
 
@@ -45,12 +45,12 @@ terms; some specific to Tomcat, and others defined by the
 <section name="Directories and Files">
 
 <p>Throughout the docs, you'll notice there are numerous references to
-<strong>$CATALINA_HOME</strong>. This represents the root of your Tomcat
+<strong>$CATALINA_HOME</strong>. This represents the root of your JBoss Web
 installation. When we say, "This information can be found in your
 $CATALINA_HOME/README.txt file" we mean to look at the README.txt file at the
-root of your Tomcat install.</p>
+root of your JBoss Web install.</p>
 
-<p>These are some of the key tomcat directories, all relative
+<p>These are some of the key JBoss Web directories, all relative
 to <strong>$CATALINA_HOME</strong>:</p>
 
 <ul>
@@ -69,7 +69,7 @@ to <strong>$CATALINA_HOME</strong>:</p>
 </section>
 
 
-<section name="Configuring Tomcat">
+<section name="Configuring JBoss Web">
 
 <p>This section will acquaint you with the basic information used during
 the configuration of the container.</p>
@@ -87,12 +87,8 @@ meaning that any change to the files necessitates a restart of the container.
 written and easy to understand, we may have missed something.  Provided
 below are various web sites and mailing lists in case you get stuck.</p>
 
-<p>As Tomcat 6 is a new release of Tomcat, keep in mind that some of the
-issues and solutions vary between the major versions of Tomcat (4.x versus
-5).  As you search around the web, there will be some documentation that
-is not relevant to Tomcat 6, but 3.x, 4.x and 5.x.  Doing 3.x or 4.x things to 6
-will probably not work in most cases as the server.xml files are very
-different.</p>
+<p>As JBoss Web 2.1 changes things over past Tomcat releases, keep in mind that some of the
+issues and solutions vary between the major versions of Tomcat (4.x, 5.x and 6.x).</p>
 
 <ul>
 <li>Current document - most documents will list potential hangups. Be sure

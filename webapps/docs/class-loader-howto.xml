@@ -17,7 +17,7 @@
 
 <section name="Overview">
 
-<p>Like many server applications, Tomcat 6 installs a variety of class loaders
+<p>Like many server applications, JBoss Web installs a variety of class loaders
 (that is, classes that implement <code>java.lang.ClassLoader</code>) to allow
 different portions of the container, and the web applications running on the
 container, to have access to different repositories of available classes and
@@ -32,7 +32,7 @@ class loader(s) cannot find the requested class or resource.  The model for
 web application class loaders differs slightly from this, as discussed below,
 but the main principles are the same.</p>
 
-<p>When Tomcat 6 is started, it creates a set of class loaders that are
+<p>When JBoss Web is started, it creates a set of class loaders that are
 organized into the following parent-child relationships, where the parent
 class loader is above the child class loader:</p>
 
@@ -54,7 +54,7 @@ the following section.</p>
 
 <section name="Class Loader Definitions">
 
-<p>As indicated in the diagram above, Tomcat 6 creates the following class
+<p>As indicated in the diagram above, JBoss Web creates the following class
 loaders as it is initialized:</p>
 <ul>
 <li><strong>Bootstrap</strong> - This class loader contains the basic runtime
@@ -66,20 +66,20 @@ loaders as it is initialized:</p>
 <li><strong>System</strong> - This class loader is normally initialized from
     the contents of the <code>CLASSPATH</code> environment variable.  All such
     classes are visible to both Tomcat internal classes, and to web
-    applications.  However, the standard Tomcat 5 startup scripts
+    applications.  However, the standard JBoss Web startup scripts
     (<code>$CATALINA_HOME/bin/catalina.sh</code> or
     <code>%CATALINA_HOME%\bin\catalina.bat</code>) totally ignore the contents
     of the <code>CLASSPATH</code> environment variable itself, and instead
     build the System class loader from the following repositories:
     <ul>
     <li><em>$CATALINA_HOME/bin/bootstrap.jar</em> - Contains the main() method
-        that is used to initialize the Tomcat 6 server, and the class loader
+        that is used to initialize the JBoss Web server, and the class loader
         implementation classes it depends on.</li>
-    <li><em>$CATALINA_HOME/bin/tomcat-juli.jar</em> - Package renamed Jakarta commons 
-        logging API, and java.util.logging LogManager.</li>
+    <li><em>$CATALINA_HOME/bin/tomcat-juli.jar</em> - JBoss Logging API, 
+        and java.util.logging LogManager.</li>
     </ul></li>
 <li><strong>Common</strong> - This class loader contains additional classes
-    that are made visible to both Tomcat internal classes and to all web
+    that are made visible to both JBoss Web internal classes and to all web
     applications.  Normally, application classes should <strong>NOT</strong>
     be placed here.  All unpacked classes and resources in
     <code>$CATALINA_HOME/lib</code>, as well as classes and
@@ -88,17 +88,15 @@ loaders as it is initialized:</p>
     <ul>
     <li><em>annotations-api.jar</em> - JEE annotations classes.</li>
     <li><em>catalina.jar</em> - Implementation of the Catalina servlet
-        container portion of Tomcat 6.</li>
-    <li><em>catalina-ant.jar</em> - Tomcat Catalina Ant tasks.</li>
-    <li><em>catalina-ha.jar</em> - High availability package.</li>
-    <li><em>catalina-tribes.jar</em> - Group communication package.</li>
+        container portion of JBoss Web.</li>
+    <li><em>catalina-ant.jar</em> - JBoss Web Catalina Ant tasks.</li>
     <li><em>el-api.jar</em> - EL 2.1 API.</li>
     <li><em>jasper.jar</em> - Jasper 2 Compiler and Runtime.</li>
     <li><em>jasper-el.jar</em> - Jasper 2 EL implementation.</li>
     <li><em>jasper-jdt.jar</em> - Eclipse JDT 3.2 Java compiler.</li>
     <li><em>jsp-api.jar</em> - JSP 2.1 API.</li>
     <li><em>servlet-api.jar</em> - Servlet 2.5 API.</li>
-    <li><em>tomcat-coyote.jar</em> - Tomcat connectors and utility classes.</li>
+    <li><em>tomcat-coyote.jar</em> - JBoss Web connectors and utility classes.</li>
     <li><em>tomcat-dbcp.jar</em> - package renamed database connection 
         pool based on Commons DBCP.</li>
     <li><em>tomcat-i18n-**.jar</em> - Optional JARs containing resource bundles
@@ -107,7 +105,7 @@ loaders as it is initialized:</p>
         of messages is needed.</li>
     </ul></li>
 <li><strong>WebappX</strong> - A class loader is created for each web
-    application that is deployed in a single Tomcat 6 instance.  All unpacked
+    application that is deployed in a single JBoss Web instance.  All unpacked
     classes and resources in the <code>/WEB-INF/classes</code> directory of
     your web application archive, plus classes and resources in JAR files
     under the <code>/WEB-INF/lib</code> directory of your web application
@@ -127,7 +125,7 @@ the XML parser components in J2SE 1.4+), the J2SE 1.4 endorsed feature can be
 used.
 Last, any JAR containing servlet API classes will be ignored by the 
 classloader.
-All other class loaders in Tomcat 6 follow the usual delegation pattern.</p>
+All other class loaders in JBoss Web follow the usual delegation pattern.</p>
 
 <p>Therefore, from the perspective of a web application, class or resource
 loading looks in the following repositories, in this order:</p>
@@ -163,7 +161,7 @@ implementation.  For more information, see:
 <a href="http://java.sun.com/j2se/1.5/docs/guide/standards/index.html">
 http://java.sun.com/j2se/1.5/docs/guide/standards/index.html</a>.</p>
 
-<p>Tomcat utilizes this mechanism by including the system property setting
+<p>JBoss Web utilizes this mechanism by including the system property setting
 <code>-Djava.endorsed.dirs=$CATALINA_HOME/endorsed</code> in the
 command line that starts the container.</p>
 

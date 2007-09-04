@@ -8,7 +8,7 @@
 
     <properties>
         <author email="glenn@apache.org">Glenn L. Nielsen</author>
-        <title>Tomcat Web Application Manager How To</title>
+        <title>JBoss Web Application Manager How To</title>
     </properties>
 
 <body>
@@ -17,7 +17,7 @@
 
 <p>In many production environments it is very useful to have the capability
 to manage your web applications without having to shut down and restart
-Tomcat.  This document is for the HTML web interface to the web application
+JBoss Web.  This document is for the HTML web interface to the web application
 <a href="manager-howto.html">manager</a>.</p>
 
 <p>The interface is divided into five sections:
@@ -28,7 +28,7 @@ Tomcat.  This document is for the HTML web interface to the web application
   <li><strong>Applications</strong> - List of web applications and
       commands.</li>
   <li><strong>Deploy</strong> - Deploying web applications.</li>
-  <li><strong>Server Information</strong> - Information about the Tomcat
+  <li><strong>Server Information</strong> - Information about the JBoss Web
       server.</li>
 </ul>
 </p>
@@ -117,7 +117,7 @@ error message.  Possible causes for problems include:
 <li><em>Encountered exception</em>
     <blockquote>             
     <p>An exception was encountered trying to start the web application.
-    Check the Tomcat 5 logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>       
 <li><em>Invalid context path was specified</em>
     <blockquote>             
@@ -157,7 +157,7 @@ error message.  Possible causes for problems include:
 <li><em>Encountered exception</em>
     <blockquote>             
     <p>An exception was encountered trying to stop the web application.
-    Check the Tomcat 5 logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>       
 <li><em>Invalid context path was specified</em>
     <blockquote>             
@@ -205,7 +205,7 @@ error message.  Possible causes for problems include:
 <li><em>Encountered exception</em>
     <blockquote>             
     <p>An exception was encountered trying to restart the web application.
-    Check the Tomcat 5 logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>       
 <li><em>Invalid context path was specified</em>
     <blockquote>             
@@ -247,7 +247,7 @@ you simply want to take an application out of service, you should use the
 <code>/stop</code> command instead.</p>
                              
 <p>Signal an existing application to gracefully shut itself down, and then
-remove it from Tomcat (which also makes this context path available for
+remove it from JBoss Web (which also makes this context path available for
 reuse later).  This command is the logical opposite of the
 <code>/deploy</code> Ant command, and the related deploy features available 
 in the HTML manager.</p>
@@ -263,7 +263,7 @@ error message.  Possible causes for problems include:
 <li><em>Encountered exception</em>
     <blockquote>             
     <p>An exception was encountered trying to undeploy the web application.
-    Check the Tomcat logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>       
 <li><em>Invalid context path was specified</em>
     <blockquote>             
@@ -290,7 +290,7 @@ error message.  Possible causes for problems include:
 <section name="Deploy">
 
 <p>Web applications can be deployed using files or directories located
-on the Tomcat server or you can upload a web application archive (WAR)
+on the JBoss Web server or you can upload a web application archive (WAR)
 file to the server.</p>
 
 <p>To install an application, fill in the appropriate fields for the type
@@ -307,7 +307,7 @@ This command is the logical opposite of the <em>Undeploy</em> command.</p>
 
 <h3>Deploy a Directory or WAR by URL</h3>
 
-<p>Install a web application directory or ".war" file located on the Tomcat
+<p>Install a web application directory or ".war" file located on the JBoss Web
 server. If no <i>Context Path</i> is specified, the directory name or the
 war file name without the ".war" extension is used as the path. The
 <i>WAR or Directory URL</i> specifies a URL (including the <code>file:</code>
@@ -317,7 +317,7 @@ page for the <code>java.net.JarURLConnection</code> class.  Use only URLs that
 refer to the entire WAR file.</p>
 
 <p>In this example the web application located in the directory
-<code>C:\path\to\foo</code> on the Tomcat server (running on Windows)
+<code>C:\path\to\foo</code> on the JBoss Web server (running on Windows)
 is deployed as the web application context named <code>/footoo</code>.
 <source>
 Context Path: /footoo
@@ -326,7 +326,7 @@ WAR or Directory URL: file:C:/path/to/foo
 </p>
 
 <p>In this example the ".war" file <code>/path/to/bar.war</code> on the
-Tomcat server (running on Unix) is deployed as the web application
+JBoss Web server (running on Unix) is deployed as the web application
 context named <code>/bar</code>. Notice that there is no <code>path</code>
 parameter so the context path defaults to the name of the web application
 archive file without the ".war" extension.
@@ -342,7 +342,7 @@ appBase directory. If no <i>Context Path</i> is specified the directory name
 or the war file name without the ".war" extension is used as the path.</p>
 
 <p>In this example the web application located in a subdirectory named
-<code>foo</code> in the Host appBase directory of the Tomcat server is
+<code>foo</code> in the Host appBase directory of the JBoss Web server is
 deployed as the web application context named <code>/foo</code>. Notice
 that there is no <code>path</code> parameter so the context path defaults
 to the name of the web application directory.
@@ -352,7 +352,7 @@ WAR or Directory URL: foo
 </p>
 
 <p>In this example the ".war" file <code>bar.war</code> located in your
-Host appBase directory on the Tomcat server is deployed as the web
+Host appBase directory on the JBoss Web server is deployed as the web
 application context named <code>/bartoo</code>.
 <source>
 Context Path: /bartoo
@@ -370,8 +370,8 @@ configuration file.</p>
 
 <p>A Context configuration ".xml" file can contain valid XML for a
 web application Context just as if it were configured in your
-Tomcat <code>server.xml</code> configuration file. Here is an
-example for Tomcat running on Windows:
+JBoss Web <code>server.xml</code> configuration file. Here is an
+example for JBoss Web running on Windows:
 <source>
 &lt;Context path="/foobar" docBase="C:\path\to\application\foobar"
          debug="0"&gt;
@@ -389,7 +389,7 @@ to select a web application ".war" file or directory it overrides any
 docBase configured in the context configuration ".xml" file.</p>
 
 <p>Here is an example of installing an application using a Context
-configuration ".xml" file for Tomcat running on Windows.
+configuration ".xml" file for JBoss Web running on Windows.
 <source>
 XML Configuration file URL: file:C:/path/to/context.xml
 </source>
@@ -397,7 +397,7 @@ XML Configuration file URL: file:C:/path/to/context.xml
 
 <p>Here is an example of installing an application using a Context
 configuration ".xml" file and a web application ".war" file located
-on the server (Tomcat running on Unix).
+on the server (JBoss Web running on Unix).
 <source>
 XML Configuration file URL: file:/path/to/context.xml
 WAR or Directory URL: jar:file:/path/to/bar.war!/
@@ -415,7 +415,7 @@ extension is used as the context path name.</p>
 <p>Use the <i>Browse</i> button to select a WAR file to upload to the
 server from your local desktop system.</p>
 
-<p>The .WAR file may include Tomcat specific deployment configuration, by 
+<p>The .WAR file may include JBoss Web specific deployment configuration, by 
 including a Context configuration XML file in 
 <code>/META-INF/context.xml</code>.</p>
 
@@ -494,7 +494,7 @@ error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to start the new web application.
-    Check the Tomcat 5 logs for the details, but likely explanations include
+    Check the JBoss Web logs for the details, but likely explanations include
     problems parsing your <code>/WEB-INF/web.xml</code> file, or missing
     classes encountered when initializing application event listeners and
     filters.</p>
@@ -532,8 +532,8 @@ error message.  Possible causes for problems include:</p>
 
 <section name="Server Information">
 
-<p>This section displays information about Tomcat, the operating system of
-the server Tomcat is hosted on, and the Java Virtual Machine Tomcat is
+<p>This section displays information about JBoss Web, the operating system of
+the server JBoss Web is hosted on, and the Java Virtual Machine JBoss Web is
 running in.</p>
 
 </section>

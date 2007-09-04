@@ -20,11 +20,11 @@ interact with external content-generating programs, which are often
 referred to as CGI programs or CGI scripts.
 </p>
 
-<p>Within Tomcat, CGI support can be added when you are using Tomcat as your
+<p>Within JBoss Web, CGI support can be added when you are using JBoss Web as your
 HTTP server and require CGI support.  Typically this is done
 during development when you don't want to run a web server like 
 Apache httpd.
-Tomcat's CGI support is largely compatible with Apache httpd's, 
+JBoss Web's CGI support is largely compatible with Apache httpd's, 
 but there are some limitations (e.g., only one cgi-bin directory).
 </p>
 
@@ -32,13 +32,13 @@ but there are some limitations (e.g., only one cgi-bin directory).
 <code>org.apache.catalina.servlets.CGIServlet</code>.  Traditionally,
 this servlet is mapped to the URL pattern "/cgi-bin/*".</p>
 
-<p>By default CGI support is disabled in Tomcat.</p>
+<p>By default CGI support is disabled in JBoss Web.</p>
 </section>
 
 <section name="Installation">
 
 <p><strong>CAUTION</strong> - CGI scripts are used to execute programs
-external to the Tomcat JVM. If you are using the Java SecurityManager this
+external to the JBoss Web JVM. If you are using the Java SecurityManager this
 will bypass your security policy configuration in <code>catalina.policy.</code></p>
 
 <p>Remove the XML comments from around the CGI servlet and servlet-mapping

@@ -8,7 +8,7 @@
 
     <properties>
         <author>Allistair Crossley</author>
-        <title>Tomcat Web Application Deployment</title>
+        <title>JBoss Web Web Application Deployment</title>
     </properties>
 
 <body>
@@ -18,11 +18,11 @@
         <li><a href="#Introduction">Introduction</a></li>
         <li><a href="#Installation">Installation</a></li>
         <li><a href="#A word on Contexts">A word on Contexts</a></li>
-        <li><a href="#Deployment on Tomcat startup">Deployment on Tomcat startup</a></li>
-        <li><a href="#Deploying on a running Tomcat server">Deploying on a running Tomcat server</a></li>
-        <li><a href="#Deploying using the Tomcat Manager">Deploying using the Tomcat Manager</a></li>
+        <li><a href="#Deployment on JBoss Web startup">Deployment on JBoss Web startup</a></li>
+        <li><a href="#Deploying on a running JBoss Web server">Deploying on a running JBoss Web server</a></li>
+        <li><a href="#Deploying using the JBoss Web Manager">Deploying using the JBoss Web Manager</a></li>
         <li><a href="#Deploying using the Client Deployer Package">Deploying using
-            the Tomcat Client Deployer</a></li>
+            the JBoss Web Client Deployer</a></li>
     </ul>
     
     </section>
@@ -31,23 +31,23 @@
         <p>
             Deployment is the term used for the process of installing a web
             application (either a 3rd party WAR or your own custom web application) 
-            into the Tomcat server. 
+            into the JBoss Web server. 
         </p>
         <p>
             Web application deployment may be accomplished in a number of ways
-            within the Tomcat server.
+            within the JBoss Web server.
             <ul>
-                <li>Statically; the web application is setup before Tomcat is started</li>
+                <li>Statically; the web application is setup before JBoss Web is started</li>
                 <li>
-                    Dynamically; in conjunction with the Tomcat Manager web application or 
+                    Dynamically; in conjunction with the JBoss Web Manager web application or 
                     manipulating already deployed web applications
                 </li>
             </ul>
         </p>
         <p>
-            The Tomcat Manager is a tool that allows URL-based web application
+            The JBoss Web Manager is a tool that allows URL-based web application
             deployment features. There is also a tool called the Client Deployer,
-            which is a command shell based script that interacts with the Tomcat
+            which is a command shell based script that interacts with the JBoss Web
             Manager but provides additional functionality such as compiling and
             validating web applications as well as packaging web application into
             web application resource (WAR) files.
@@ -57,17 +57,17 @@
     <section name="Installation">
         <p>
             There is no installation required for static deployment of web
-            applications as this is provided out of the box by Tomcat. Nor is any
-            installation required for deployment functions with the Tomcat Manager, 
+            applications as this is provided out of the box by JBoss Web. Nor is any
+            installation required for deployment functions with the JBoss Web Manager, 
             although some configuration is required as detailed in the 
-            Tomcat Manager manual. An installation is however required if you wish
-            to use the Tomcat Client Deployer (TCD). 
+            JBoss Web Manager manual. An installation is however required if you wish
+            to use the JBoss Web Client Deployer (TCD). 
         </p>   
         <p>
-            The TCD is not packaged with the Tomcat core 
+            The TCD is not packaged with the JBoss Web core 
             distribution, and must therefore be downloaded separately from 
             the Downloads area. The download is usually labelled 
-            <i>apache-tomcat-6.0.x-deployer</i>.
+            <i>jbossweb-2.1.x-deployer</i>.
         </p>
         <p>
             TCD has prerequisites of Apache Ant 1.6.2+ and a Java installation.
@@ -80,32 +80,32 @@
         <ol>
             <li>Download the TCD distribution</li>
             <li>
-                The TCD package need not be extracted into any existing Tomcat
+                The TCD package need not be extracted into any existing JBoss Web
                 installation, it can be extracted to any location.
             </li>
             <li>Read Using the <a href="#Deploying using the Client Deployer Package">
-            Tomcat Client Deployer</a></li>
+            JBoss Web Client Deployer</a></li>
         </ol>
     </section>
         
     <section name="A word on Contexts">
         <p>
             In talking about deployment of web applications, the concept of a
-            <i>Context</i> is required to be understood. A Context is what Tomcat 
+            <i>Context</i> is required to be understood. A Context is what JBoss Web 
             calls a web application.
         </p>
         <p>
-            In order to configure a Context within Tomcat a <i>Context Descriptor</i>
+            In order to configure a Context within JBoss Web a <i>Context Descriptor</i>
             is required. A Context Descriptor is simply an XML file that contains
-            Tomcat related configuration for a Context, e.g naming resources or 
+            JBoss Web related configuration for a Context, e.g naming resources or 
             session manager configuration. In earlier versions of
-            Tomcat the content of a Context Descriptor configuration was often stored within
-            Tomcat's primary configuration file <i>server.xml</i> but this is now
+            JBoss Web the content of a Context Descriptor configuration was often stored within
+            JBoss Web's primary configuration file <i>server.xml</i> but this is now
             discouraged (although it currently still works).
         </p>
         <p>        
-            Context Descriptors not only help Tomcat to know how to configure 
-            Contexts but other tools such as the Tomcat Manager and TDC often use 
+            Context Descriptors not only help JBoss Web to know how to configure 
+            Contexts but other tools such as the JBoss Web Manager and TDC often use 
             these Context Descriptors to perform their roles properly.
         </p>
         <p>
@@ -116,15 +116,15 @@
             </ol>
             Files in (1) are named [webappname].xml but files in (2) are named
             context.xml. If a Context Descriptor is not provided for a Context,
-            Tomcat configures the Context using default values. 
+            JBoss Web configures the Context using default values. 
         </p>
     </section>
     
-    <section name="Deployment on Tomcat startup">
+    <section name="Deployment on JBoss Web startup">
         <p>
-            If you are not interested in using the Tomcat Manager, or TCD, 
+            If you are not interested in using the JBoss Web Manager, or TCD, 
             then you'll need to deploy your web applications 
-            statically to Tomcat, followed by a Tomcat startup. The location you
+            statically to JBoss Web, followed by a JBoss Web startup. The location you
             deploy web applications to for this type of deployment is called the 
             <code>appBase</code> which is specified per Host. You either copy a
             so-called <i>exploded web application</i>, i.e non-compressed, to this
@@ -133,11 +133,11 @@
         <p>
             The web applications present in the location specified by the Host's
             (default Host is "localhost") <code>appBase</code> attribute (default
-            appBase is "$CATALINA_HOME/webapps") will be deployed on Tomcat startup 
+            appBase is "$CATALINA_HOME/webapps") will be deployed on JBoss Web startup 
             only if the Host's <code>deployOnStartup</code> attribute is "true".
         </p>
         <p>
-            The following deployment sequence will occur on Tomcat startup in that
+            The following deployment sequence will occur on JBoss Web startup in that
             case:
         </p>
         <ol>
@@ -157,9 +157,9 @@
         </p>
     </section>
     
-    <section name="Deploying on a running Tomcat server">
+    <section name="Deploying on a running JBoss Web server">
         <p>
-            It is possible to deploy web applications to a running Tomcat server.
+            It is possible to deploy web applications to a running JBoss Web server.
         </p>
         <p>
             If the Host <code>autoDeploy</code> attribute is "true", the Host will 
@@ -170,7 +170,7 @@
         </p>
         
         <p>
-            <code>autoDeploy</code> set to "true" and a running Tomcat allows for:
+            <code>autoDeploy</code> set to "true" and a running JBoss Web allows for:
         </p>
         <ul>
             <li>Deployment of .WAR files copied into the Host <code>appBase</code>.</li>
@@ -215,19 +215,19 @@
         </p>
     </section>
     
-    <section name="Deploying using the Tomcat Manager">
+    <section name="Deploying using the JBoss Web Manager">
         <p>
-            The Tomcat Manager is covered in its <a href="manager-howto.html">own manual page</a>. 
+            The JBoss Web Manager is covered in its <a href="manager-howto.html">own manual page</a>. 
         </p>
     </section>
         
     <section name="Deploying using the Client Deployer Package">
         <p>
             Finally, deployment of web application may be achieved using the 
-            Tomcat Client Deployer. This is a package which can be used to 
+            JBoss Web Client Deployer. This is a package which can be used to 
             validate, compile, compress to .WAR, and deploy web applications to 
-            production or development Tomcat servers. It should be noted that this feature 
-            uses the Tomcat Manager and as such the target Tomcat server should be
+            production or development JBoss Web servers. It should be noted that this feature 
+            uses the JBoss Web Manager and as such the target JBoss Web server should be
             running.
         </p>
     
@@ -262,15 +262,15 @@
             <li>
                 <code>compile</code> (default): Compile and validate the web 
                 application. This can be used standalone, and does not need a running
-                Tomcat server. The compiled application will only run on the associated
-                Tomcat 5.5.x server release, and is not guaranteed to work on another
-                Tomcat release, as the code generated by Jasper depends on its runtime
+                JBoss Web server. The compiled application will only run on the associated
+                JBoss Web server release, and is not guaranteed to work on another
+                JBoss Web release, as the code generated by Jasper depends on its runtime
                 component. It should also be noted that this target will also compile
                 automatically any Java source file located in the 
                 <code>/WEB-INF/classes</code> folder of the web application.</li>
             <li>
                 <code>deploy</code>: Deploy a web application (compiled or not) to 
-                a Tomcat server.
+                a JBoss Web server.
             </li>
             <li><code>undeploy</code>: Undeploy a web application</li>
             <li><code>start</code>: Start web application</li>
@@ -287,9 +287,9 @@
         
         <p>
             Additionally, you will need to ensure that a user has been 
-            setup for the target Tomcat Manager (which TCD uses) otherwise the TCD
-            will not authenticate with the Tomcat Manager and the deployment will
-            fail. To do this, see the Tomcat Manager page.        
+            setup for the target JBoss Web Manager (which TCD uses) otherwise the TCD
+            will not authenticate with the JBoss Web Manager and the deployment will
+            fail. To do this, see the JBoss Web Manager page.        
         </p>
         
         <ul>
@@ -309,17 +309,17 @@
                 by default <code>/myapp</code>.
             </li>
             <li>
-                <code>url</code>: Absolute URL to the Tomcat Manager web application of a 
-                running Tomcat server, which will be used to deploy and undeploy the
+                <code>url</code>: Absolute URL to the JBoss Web Manager web application of a 
+                running JBoss Web server, which will be used to deploy and undeploy the
                 web application. By default, the deployer will attempt to access 
-                a Tomcat instance running on localhost, at 
+                a JBoss Web instance running on localhost, at 
                 <code>http://localhost:8080/manager</code>.
             </li>
             <li>
-                <code>username</code>: Tomcat Manager username (user should have a role of
+                <code>username</code>: JBoss Web Manager username (user should have a role of
                 manager)
             </li>
-            <li><code>password</code>: Tomcat Manager password.</li>
+            <li><code>password</code>: JBoss Web Manager password.</li>
         </ul>
     </section>
 

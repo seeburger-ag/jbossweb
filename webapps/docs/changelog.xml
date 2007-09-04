@@ -19,7 +19,8 @@
   <subsection name="General">
     <changelog>
       <update>
-        Swicth to JBoss logging. (remm)
+        Swicth to JBoss logging from Apache Commons Logging. Standalone JBoss Web uses
+        a special purpose version defaulting to use java.util.logging. (remm)
       </update>
     </changelog>
   </subsection>
@@ -49,9 +50,6 @@
       <fix>
         Use the system property for the session cookie name. (jfclere)
       </fix>
-      <update>
-        Validation for elements and attributes of server.xml. (remm)
-      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -99,6 +97,9 @@
       <fix>
         In the APR connector, start accepting connections after fully starting
         the connector, to prevent possible exceptions due to non initialized fields. (remm)
+      </fix>
+      <fix>
+        Fixes to B2C conversion. (billbarker)
       </fix>
     </changelog>
   </subsection>

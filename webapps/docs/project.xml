@@ -39,7 +39,6 @@
         <item name="MBean Descriptor"
               href="mbeans-descriptor-howto.html"/>
         <item name="Default Servlet"    href="default-servlet.html"/>
-        <item name="Load Balancer"      href="balancer-howto.html"/>
         <item name="Connectors"         href="connectors.html"/>
         <item name="Monitoring and Management"         
               href="monitoring.html"/>
@@ -47,7 +46,6 @@
         <item name="APR"                href="apr.html"/>
         <item name="Virtual Hosting"    href="virtual-hosting-howto.html"/>
         <item name="Advanced IO"        href="aio.html"/>
-        <item name="Additional Components" href="extras.html"/>
     </menu>
 
     <menu name="Reference">

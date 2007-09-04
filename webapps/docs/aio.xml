@@ -7,7 +7,7 @@
     &project;
 
   <properties>
-    <title>Advanced IO and Tomcat</title>
+    <title>Advanced IO and JBoss Web</title>
     <author>Remy Maucherat</author>
   </properties>
 
@@ -16,7 +16,7 @@
   <section name="Introduction">
 
   <p>
-    With usage of the APR API as the basis of its connectors, Tomcat is 
+    With usage of the APR API as the basis of its connectors, JBoss Web is 
     able to provide a number of extensions over the regular blocking IO 
     as provided with support for the Servlet API.
   </p>
@@ -126,7 +126,7 @@
   <p>
     The close() method ends the request, which marks the end of the comet session. This will send 
       back to the client a notice that the server has no more data to send 
-      as part of this request. If this method is called from a Tomcat provided thread
+      as part of this request. If this method is called from a conatiner provided thread
       (during the processing of an event), the container will not call an END event.
       If this method is called asynchronously, an END event will be sent to the 
       servlet (note that this event will be sent whenever another event would have
@@ -157,7 +157,7 @@
     The suspend() method suspends processing of the connection until the configured timeout occurs, 
       or resume() is called. In practice, this means the servlet will no longer 
       receive read events. Reading should always be performed synchronously in 
-      the Tomcat threads unless the connection has been suspended.
+      the contaner threads unless the connection has been suspended.
   </p>
   
   <p>
@@ -335,7 +335,7 @@ public class ChatServlet
   <section name="Asynchronous writes">
 
   <p>
-    When APR is enabled, Tomcat supports using sendfile to send large static files.
+    When APR is enabled, JBoss Web supports using sendfile to send large static files.
     These writes, as soon as the system load increases, will be performed 
     asynchronously in the most efficient way. Instead of sending a large response using
     blocking writes, it is possible to write content to a static file, and write it
@@ -346,7 +346,7 @@ public class ChatServlet
   </p>
   
   <p>
-    Any servlet can instruct Tomcat to perform a sendfile call by setting the appropriate
+    Any servlet can instruct JBoss Web to perform a sendfile call by setting the appropriate
     response attributes. When using sendfile, it is best to ensure that neither the
     request or response have been wrapped, since as the response body will be sent later
     by the connector itself, it cannot be filtered. Other than setting the 3 needed 
