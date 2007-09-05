@@ -55,10 +55,10 @@ Using the JMX Proxy Servlet</a><br />
 to deploy a new web application, or undeploy an existing one, without having
 to shut down and restart the entire container.  In addition, you can request
 an existing application to reload itself, even if you have not declared it
-to be <code>reloadable</code> in the Tomcat 6 server
+to be <code>reloadable</code> in the JBoss Web server
 configuration file.</p>
 
-<p>To support these capabilities, Tomcat 6 includes a web application
+<p>To support these capabilities, JBoss Web includes a web application
 (installed by default on context path <code>/manager</code>) that supports
 the following functions:</p>
 <ul>
@@ -89,18 +89,18 @@ the following functions:</p>
     in the <code>$CATALINA_HOME/conf/[enginename]/[hostname]</code> folder.
 </li>
 <li>Configure the Manager <code>Context</code> within the
-    <code>Host</code> configuration in your Tomcat <code>server.xml</code>
+    <code>Host</code> configuration in your JBoss Web <code>server.xml</code>
     configuration. Here is an example:
 <pre>
 &lt;Context path="/manager" privileged="true"
-         docBase="/usr/local/kinetic/tomcat6/server/webapps/manager"&gt;
+         docBase="/usr/local/jbossweb/server/webapps/manager"&gt;
 &lt;/Context&gt;
 </pre>
 </li>
 </ul>
 </p>
 
-<p>If you have Tomcat configured to support multiple virtual hosts
+<p>If you have JBoss Web configured to support multiple virtual hosts
 (websites) you would need to configure a Manager for each.</p>
 
 <p>There are three ways to use the <code>Manager</code> web application.
@@ -126,15 +126,15 @@ With Ant</a> for more information.</li>
 
     <blockquote><em>
     <p>The description below uses the variable name $CATALINA_HOME
-    to refer to the directory into which you have installed Tomcat 6,
+    to refer to the directory into which you have installed JBoss Web,
     and is the base directory against which most relative paths are
-    resolved.  However, if you have configured Tomcat 6 for multiple
+    resolved.  However, if you have configured JBoss Web for multiple
     instances by setting a CATALINA_BASE directory, you should use
     $CATALINA_BASE instead of $CATALINA_HOME for each of these
     references.</p>
     </em></blockquote>
 
-<p>It would be quite unsafe to ship Tomcat with default settings that allowed
+<p>It would be quite unsafe to ship JBoss Web with default settings that allowed
 anyone on the Internet to execute the Manager application on your server.
 Therefore, the Manager application is shipped with the requirement that anyone
 who attempts to use it must authenticate themselves, using a username and
@@ -152,7 +152,7 @@ depends on which <code>Realm</code> implementation you are using:</p>
 <ul>
 <li><em>MemoryRealm</em> - If you have not customized your
     <code>$CATALINA_HOME/conf/server.xml</code> to select a different one,
-    Tomcat 6 defaults to an XML-format file stored at
+    JBoss Web defaults to an XML-format file stored at
     <code>$CATALINA_HOME/conf/tomcat-users.xml</code>, which can be
     edited with any text editor.  This file contains an XML
     <code>&lt;user&gt;</code> for each individual user, which might
@@ -189,7 +189,7 @@ could be restricted by the remote IP address or host by adding a
 an example of restricting access to the localhost by IP address:
 <pre>
 &lt;Context path="/manager" privileged="true"
-         docBase="/usr/local/kinetic/tomcat6/server/webapps/manager"&gt;
+         docBase="/usr/local/jbossweb/server/webapps/manager"&gt;
          &lt;Valve className="org.apache.catalina.valves.RemoteAddrValve"
                 allow="127\.0\.0\.1"/&gt;
 &lt;/Context&gt;
@@ -206,7 +206,7 @@ specified in a single request URI like this:</p>
 http://{host}:{port}/manager/{command}?{parameters}
 </source>
 <p>where <code>{host}</code> and <code>{port}</code> represent the hostname
-and port number on which Tomcat is running, <code>{command}</code>
+and port number on which JBoss Web is running, <code>{command}</code>
 represents the Manager command you wish to execute, and
 <code>{parameters}</code> represents the query parameters
 that are specific to that command.  In the illustrations below, customize
@@ -279,7 +279,7 @@ name or the war file name without the .war extension as the path.  The
 application can later be undeployed (and the corresponding application directory
 removed) by use of the <code>/undeploy</code> command.</p>
 
-<p>The .WAR file may include Tomcat specific deployment configuration, by 
+<p>The .WAR file may include JBoss Web specific deployment configuration, by 
 including a Context configuration XML file in 
 <code>/META-INF/context.xml</code>.</p>
 
@@ -318,7 +318,7 @@ error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to start the new web application.
-    Check the Tomcat 6 logs for the details, but likely explanations include
+    Check the JBoss Web logs for the details, but likely explanations include
     problems parsing your <code>/WEB-INF/web.xml</code> file, or missing
     classes encountered when initializing application event listeners and
     filters.</p>
@@ -348,7 +348,7 @@ http://localhost:8080/manager/deploy?path=/footoo&amp;tag=footag
 
 <h3>Deploy a Directory or WAR by URL</h3>
 
-<p>Deploy a web application directory or ".war" file located on the Tomcat
+<p>Deploy a web application directory or ".war" file located on the JBoss Web
 server. If no <code>path</code> is specified, the directory name or the war file
 name without the ".war" extension is used as the path. The <code>war</code>
 parameter specifies a URL (including the <code>file:</code> scheme) for either
@@ -358,7 +358,7 @@ a URL referring to a WAR file is described on the Javadocs page for the
 the entire WAR file.</p>
 
 <p>In this example the web application located in the directory
-<code>/path/to/foo</code> on the Tomcat server is deployed as the
+<code>/path/to/foo</code> on the JBoss Web server is deployed as the
 web application context named <code>/footoo</code>.
 <source>
 http://localhost:8080/manager/deploy?path=/footoo&amp;war=file:/path/to/foo
@@ -366,7 +366,7 @@ http://localhost:8080/manager/deploy?path=/footoo&amp;war=file:/path/to/foo
 </p>
 
 <p>In this example the ".war" file <code>/path/to/bar.war</code> on the
-Tomcat server is deployed as the web application context named
+JBoss Web server is deployed as the web application context named
 <code>/bar</code>. Notice that there is no <code>path</code> parameter
 so the context path defaults to the name of the web application archive
 file without the ".war" extension.
@@ -382,7 +382,7 @@ appBase directory. The directory name or the war file name without the ".war"
 extension is used as the path.</p>
 
 <p>In this example the web application located in a sub directory named
-<code>foo</code> in the Host appBase directory of the Tomcat server is
+<code>foo</code> in the Host appBase directory of the JBoss Web server is
 deployed as the web application context named <code>/foo</code>. Notice
 that the context path used is the name of the web application directory.
 <source>
@@ -391,7 +391,7 @@ http://localhost:8080/manager/deploy?war=foo
 </p>
 
 <p>In this example the ".war" file <code>bar.war</code> located in your
-Host appBase directory on the Tomcat server is deployed as the web
+Host appBase directory on the JBoss Web server is deployed as the web
 application context named <code>/bar</code>.
 <source>
 http://localhost:8080/manager/deploy?war=bar.war
@@ -408,7 +408,7 @@ configuration file.</p>
 
 <p>A Context configuration ".xml" file can contain valid XML for a
 web application Context just as if it were configured in your
-Tomcat <code>server.xml</code> configuration file. Here is an
+JBoss Web <code>server.xml</code> configuration file. Here is an
 example:
 <source>
 &lt;Context path="/foobar" docBase="/path/to/application/foobar"
@@ -491,7 +491,7 @@ error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to start the new web application.
-    Check the Tomcat 6 logs for the details, but likely explanations include
+    Check the JBoss Web logs for the details, but likely explanations include
     problems parsing your <code>/WEB-INF/web.xml</code> file, or missing
     classes encountered when initializing application event listeners and
     filters.</p>
@@ -534,7 +534,7 @@ http://localhost:8080/manager/list
 <p>List the context paths, current status (<code>running</code> or
 <code>stopped</code>), and number of active sessions for all currently
 deployed web applications.  A typical response immediately
-after starting Tomcat might look like this:</p>
+after starting JBoss Web might look like this:</p>
 <source>
 OK - Listed applications for virtual host localhost
 /webdav:running:0
@@ -574,7 +574,7 @@ error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to restart the web application.
-    Check the Tomcat 6 logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>
 <li><em>Invalid context path was specified</em>
     <blockquote>
@@ -610,7 +610,7 @@ error message.  Possible causes for problems include:</p>
 http://localhost:8080/manager/serverinfo
 </source>
 
-<p>Lists information about the Tomcat version, OS, and JVM properties.</p>
+<p>Lists information about the JBoss Web version, OS, and JVM properties.</p>
 
 <p>If an error occurs, the response will start with <code>FAIL</code> and
 include an error message.  Possible causes for problems include:</p>
@@ -618,7 +618,7 @@ include an error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to enumerate the system properties.
-    Check the Tomcat 6 logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>
 </ul>
 
@@ -663,11 +663,11 @@ include an error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to enumerate the global JNDI
-    resources.  Check the Tomcat 6 logs for the details.</p>
+    resources.  Check the JBoss Web logs for the details.</p>
     </blockquote></li>
 <li><em>No global JNDI resources are available</em>
     <blockquote>
-    <p>The Tomcat server you are running has been configured without
+    <p>The JBoss Web server you are running has been configured without
     global JNDI resources.</p>
     </blockquote></li>
 </ul>
@@ -705,7 +705,7 @@ user database resource for this virtual host.</p>
 <p>followed by one line for each security role.  Each line is composed of
 fields delimited by colon characters (":") as follows:</p>
 <ul>
-<li><em>Security Role Name</em> - A security role name that is known to Tomcat
+<li><em>Security Role Name</em> - A security role name that is known to JBoss Web
     in the user database.</li>
 <li><em>Description</em> - Description of this security role (useful in
     creating user interfaces for selecting roles.</li>
@@ -716,7 +716,7 @@ include an error message.  Possible causes for problems include:</p>
 <ul>
 <li><em>Cannot resolve user database reference</em> - A JNDI error prevented
     the successful lookup of the <code>org.apache.catalina.UserDatabase</code>
-    resource.  Check the Tomcat log files for a stack trace associated with
+    resource.  Check the JBoss Web log files for a stack trace associated with
     this error.</li>
 <li><em>No user database is available</em> - You have not configured a resource
     reference for the <code>users</code> resource that points at an
@@ -737,7 +737,7 @@ http://localhost:8080/manager/sessions?path=/examples
 
 <p>Display the default session timeout for a web application, and the
 number of currently active sessions that fall within ten-minute ranges of
-their actual timeout times.  For example, after restarting Tomcat and then
+their actual timeout times.  For example, after restarting JBoss Web and then
 executing one of the JSP samples in the <code>/examples</code> web app,
 you might get something like this:</p>
 <source>
@@ -772,7 +772,7 @@ error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to start the web application.
-    Check the Tomcat 6 logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>
 <li><em>Invalid context path was specified</em>
     <blockquote>
@@ -814,7 +814,7 @@ error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to stop the web application.
-    Check the Tomcat 6 logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>
 <li><em>Invalid context path was specified</em>
     <blockquote>
@@ -852,7 +852,7 @@ If you simply want to take an application
 out of service, you should use the <code>/stop</code> command instead.</p>
 
 <p>Signal an existing application to gracefully shut itself down, and
-remove it from Tomcat (which also makes this context path available for
+remove it from JBoss Web (which also makes this context path available for
 reuse later).  In addition, the document root directory is removed, if it
 exists in the <code>appBase</code> directory (typically "webapps") for
 this virtual host.  This command is the logical opposite of the
@@ -869,7 +869,7 @@ error message.  Possible causes for problems include:</p>
 <li><em>Encountered exception</em>
     <blockquote>
     <p>An exception was encountered trying to undeploy the web application.
-    Check the Tomcat 6 logs for the details.</p>
+    Check the JBoss Web logs for the details.</p>
     </blockquote></li>
 <li><em>Invalid context path was specified</em>
     <blockquote>
@@ -894,7 +894,7 @@ error message.  Possible causes for problems include:</p>
 <section name="Executing Manager Commands With Ant">
 
 <p>In addition to the ability to execute Manager commands via HTTP requests,
-as documented above, Tomcat 6 includes a convenient set of Task definitions
+as documented above, JBoss Web includes a convenient set of Task definitions
 for the <em>Ant</em> (version 1.4 or later) build tool.  In order to use these
 commands, you must perform the following setup operations:</p>
 <ul>
@@ -903,12 +903,12 @@ commands, you must perform the following setup operations:</p>
     You must use version <strong>1.4</strong> or later.</li>
 <li>Install the Ant distribution in a convenient directory (called
     ANT_HOME in the remainder of these instructions).</li>
-<li>Copy the file <code>server/lib/catalina-ant.jar</code> from your Tomcat 6
+<li>Copy the file <code>server/lib/catalina-ant.jar</code> from your JBoss Web 6
     installation into Ant's library directory (<code>$ANT_HOME/lib</code>).
     </li>
 <li>Add the <code>$ANT_HOME/bin</code> directory to your <code>PATH</code>
     environment variable.</li>
-<li>Configure at least one username/password combination in your Tomcat
+<li>Configure at least one username/password combination in your JBoss Web
     user database that includes the <code>manager</code> role.</li>
 </ul>
 
@@ -969,8 +969,8 @@ file might look something like this:</p>
 </table>
 
 <p>Now, you can execute commands like <code>ant deploy</code> to deploy the
-application to a running instance of Tomcat, or <code>ant reload</code> to
-tell Tomcat to reload it.  Note also that most of the interesting values in
+application to a running instance of JBoss Web, or <code>ant reload</code> to
+tell JBoss Web to reload it.  Note also that most of the interesting values in
 this <code>build.xml</code> file are defined as replaceable properties, so
 you can override their values from the command line.  For example, you might
 consider it a security risk to include the real manager password in your
@@ -1185,10 +1185,10 @@ see the output of each task call appended to the file.
 
   <subsection name="What is JMX Proxy Servlet">
     The JMX Proxy Servlet is a lightweight proxy to get and set the
-    tomcat internals. (Or any class that has been exposed via an MBean)
+    JBoss Web internals. (Or any class that has been exposed via an MBean)
     Its usage is not very user friendly but the UI is
     extremely help for integrating command line scripts for monitoring
-    and changing the internals of tomcat. You can do two things with the proxy:
+    and changing the internals of JBoss Web. You can do two things with the proxy:
     get information and set information. For you to really understand the
     JMX Proxy Servlet, you should have a general understanding of JMX.
     If you don't know what JMX is, then prepare to be confused.
@@ -1220,13 +1220,13 @@ http://webserver/manager/jmxproxy/?qry=STUFF
     </ul>
     You'll need to experiment with this to really understand its capabilites.
     If you provide no <code>qry</code> parameter, then all of the MBeans will
-    be displayed. We really recommend looking at the tomcat source code and
+    be displayed. We really recommend looking at the JBoss Web source code and
     understand the JMX spec to get a better understanding of all the queries
     you may run.
   </subsection>
 
   <subsection name="JMX Set command">
-    Now that you can query an MBean, its time to muck with Tomcat's internals!
+    Now that you can query an MBean, its time to muck with JBoss Web's internals!
     The general form of the set command is :
 <source>
 http://webserver/manager/jmxproxy/?set=BEANNAME&amp;att=MYATTRIBUTE&amp;val=NEWVALUE

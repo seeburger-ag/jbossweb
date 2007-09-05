@@ -21,11 +21,11 @@ add dynamically generated content to an existing HTML page, without having
 to serve the entire page via a CGI program, or other dynamic technology.
 </p>
 
-<p>Within Tomcat SSI support can be added when using Tomcat as your
+<p>Within JBoss Web SSI support can be added when using JBoss Web as your
 HTTP server and you require SSI support.  Typically this is done
 during development when you don't want to run a web server like Apache.</p>
 
-<p>Tomcat SSI support implements the same SSI directives as Apache.  See the
+<p>JBoss Web SSI support implements the same SSI directives as Apache.  See the
 <a href="http://httpd.apache.org/docs/howto/ssi.html#basicssidirectives">
 Apache Introduction to SSI</a> for information on using SSI directives.</p>
 
@@ -42,13 +42,13 @@ is mapped to the URL pattern "*.shtml", though it can be mapped to "*" as
 it will selectively enable/disable SSI processing based on mime types.  The
 contentType init param allows you to apply SSI processing to JSP pages,
 javascript, or any other content you wish.</p>
-<p>By default SSI support is disabled in Tomcat.</p>
+<p>By default SSI support is disabled in JBoss Web.</p>
 </section>
 
 <section name="Installation">
 
 <p><strong>CAUTION</strong> - SSI directives can be used to execute programs
-external to the Tomcat JVM. If you are using the Java SecurityManager this
+external to the JBoss Web JVM. If you are using the Java SecurityManager this
 will bypass your security policy configuration in <code>catalina.policy.</code>
 </p>
 

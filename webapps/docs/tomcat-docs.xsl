@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- Content Stylesheet for "tomcat-docs" Documentation -->
+<!-- Content Stylesheet for "docs" Documentation -->
 
 <!-- $Id: tomcat-docs.xsl 467215 2006-10-24 03:12:55Z markt $ -->
 

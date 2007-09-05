@@ -9,7 +9,7 @@
   <properties>
     <author email="pero@apache.org">Peter Rossbach</author>
     <author email="remm@apache.org">Remy Maucherat</author>
-    <title>Monitoring and Managing Tomcat</title>
+    <title>Monitoring and Managing JBoss Web</title>
   </properties>
 
 <body>
@@ -29,7 +29,7 @@
         http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html</a>.
     </p>
     <p>For quick installation you find here a short installation guide:</p>
-    <p>Add the following parameters to your tomcat startup script:
+    <p>Add the following parameters to your JBoss Web startup script:
     <source>
     set CATALINA_OPTS="-Dcom.sun.management.jmxremote \
     -Dcom.sun.management.jmxremote.port=%my.jmx.port% \
@@ -64,39 +64,11 @@ controlRole tomcat
     <b>Note:</b>The JSR 160 JMX-Adaptor opens a second data protocol port. That is a problem
     when you have installed a local firewall.<br/>
     </p>
-    <p>Activate JMX MX4J Http Adaptor with Java 1.4:
-    <ol>
-      <li>Install the tomcat compat package</li>
-      <li>Install the mx4j-tools.jar at common/lib. Please, use the same MX4j 
-          version as your tomcat release</li>
-      <li>Configure a MX4J JMX HTTP Adaptor at your AJP Connector
-      <p>
-      <source>
-      &lt;Connector port="${AJP.PORT}" 
-            handler.list="mx" 
-            mx.enabled="true" 
-            mx.httpHost="${JMX.HOST}"
-            mx.httpPort="${JMX.PORT}"
-            protocol="AJP/1.3" /&gt;
-      </source>
-      </p>
-      <p><b>Tipp</b>: With <em>${AJP.PORT}=0</em> no ajp connection where started. 
-      </p>
-      <p><b>Note</b>: MX4J JSR 160 RMI Adaptor to support JDK 1.4 currently not integrated.
-      </p>
-      </li>
-      <li>Start your tomcat and look with a browser at http://${JMX.HOST}:${JMX.PORT}</li>
-      <li>With the mx connector parameter <code>mx.authMode="basic" mx.authUser="tomcat" mx.authPassword="strange"</code> 
-          you can control the access!</li>
-      <li>A complete list of all tomcat core MBeans can you find at <a href="funcspecs/mbean-names.html">
-        funcspecs/mbean-names.html</a>.</li>
-    </ol>
-    </p>
 
   </section>
 
-  <section name="Manage Tomcat with JMX remote Ant Tasks">
-   <p>For simple tomcat ant task usage with ant 1.6.x we have integrate import and antlib support.</p>   
+  <section name="Manage JBoss Web with JMX remote Ant Tasks">
+   <p>For simple JBoss Web ant task usage with ant 1.6.x we have integrate import and antlib support.</p>   
    <p><b>antlib</b>Copy your catalina-ant.jar from $CATALINA_HOME/server/lib to $ANT_HOME/lib.</p>
    <p>Following example show the JMX Accessor usage:</p>
    <table border="1">
@@ -197,8 +169,8 @@ controlRole tomcat
    </pre></p>
    </td></tr>
 </table>
-   <p><b>import:</b> Import the JMX Accessor Projekt with 
-   <em>&lt;import file="${CATALINA.HOME}/bin/jmxaccessor-tasks.xml" /&gt;</em> and
+   <p><b>import:</b> Import the Catalina Ant tasks with 
+   <em>&lt;import file="${CATALINA.HOME}/bin/catalina-tasks.xml" /&gt;</em> and
    reference the tasks with <em>jmxOpen</em>, <em>jmxSet</em>, <em>jmxGet</em>,
     <em>jmxQuery</em>, <em>jmxInvoke</em>,<em>jmxEquals</em> and <em>jmxCondition</em>. </p>
 
@@ -350,7 +322,7 @@ List of Attributes<br/>
 
   <tr>
     <td>attribute</td>
-    <td>Existing Mbean attribute (see Tomcat mbean description above)
+    <td>Existing Mbean attribute (see JBoss Web mbean description above)
     </td>
     <td></td>
   </tr>
@@ -461,7 +433,7 @@ List of Attributes<br/>
 
   <tr>
     <td>attribute</td>
-    <td>Existing Mbean attribute (see Tomcat mbean description above)
+    <td>Existing Mbean attribute (see JBoss Web mbean description above)
     </td>
     <td></td>
   </tr>
@@ -533,7 +505,7 @@ List of Attributes<br/>
 
   <tr>
     <td>operation</td>
-    <td>Existing Mbean operation (see Tomcat 
+    <td>Existing Mbean operation (see JBoss Web 
         <a href="funcspecs/fs-admin-opers.html">funcspecs/fs-admin-opers.html</a>.
     </td>
     <td></td>
@@ -784,7 +756,7 @@ List of Attributes<br/>
 
   <tr>
     <td>className</td>
-    <td>Existing MBean full qualified classname (see Tomcat mbean description above)
+    <td>Existing MBean full qualified classname (see JBoss Web mbean description above)
     </td>
     <td></td>
   </tr>
@@ -827,7 +799,7 @@ Example to create remote mbean<br/>
 </source>
 </p>  
 <p>
-    <b>Warning</b>: A lot of tomcat mbeans can't be really create and connect with <br/>
+    <b>Warning</b>: A lot of JBoss Web mbeans can't be really create and connect with <br/>
     the parent. The valve, cluster or realm Mbeans are not autconnect with there parent.<br/> 
     Use <em>MBeanFacrory</em> create operation instead.
 </p>
@@ -880,7 +852,7 @@ Example to unregister remote mbean<br/>
 </source>
 </p>  
 <p>
-    <b>Warning</b>: A lot of tomcat mbeans can't be really unregister. <br/>
+    <b>Warning</b>: A lot of JBoss Web mbeans can't be really unregister. <br/>
     The Mbeans are not deregister from parent. Use <em>MBeanFacrory</em> <br/>
     remove operation instead.
 </p>

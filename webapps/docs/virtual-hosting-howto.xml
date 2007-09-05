@@ -7,7 +7,7 @@
     &project;
 
   <properties>
-    <title>Virtual Hosting and Tomcat</title>
+    <title>Virtual Hosting and JBoss Web</title>
   </properties>
 
 <body>
@@ -16,7 +16,7 @@
     <p>
       For the sake of this how-to, assume you have a development host with two
       host names, <code>ren</code> and <code>stimpy</code>. Let's also assume
-      one instance of Tomcat running, so <code>$CATALINA_HOME</code> refers to
+      one instance of JBoss Web running, so <code>$CATALINA_HOME</code> refers to
       wherever it's installed, perhaps <code>/usr/local/tomcat</code>.
     </p>
     <p>
@@ -86,7 +86,7 @@ $CATALINA_HOME/conf/Catalina/ren/ROOT.xml
 $CATALINA_HOME/conf/Catalina/stimpy/ROOT.xml
       </source>
       <p>
-        If you want to use the Tomcat manager webapp for each host, you'll also
+        If you want to use the JBoss Web manager webapp for each host, you'll also
         need to add it here:
       </p>
       <source>

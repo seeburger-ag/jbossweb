@@ -7,7 +7,7 @@
     &project;
 
   <properties>
-    <title>Logging in Tomcat</title>
+    <title>Logging in JBoss Web</title>
     <author>Allistair Crossley</author>
     <author email="yoavs@apache.org">Yoav Shapira</author>
   </properties>
@@ -16,7 +16,7 @@
 
   <section name="Important note">
   <p>
-    By default, only java.util.logging is available for the core Tomcat, as Tomcat uses
+    By default, only java.util.logging is available for the core JBoss Web, as JBoss Web uses
     a package renamed logging implementation which is hardcoded for that logger. Usage of
     alternate loggers is available after building the extra components (see
     the <a href="extras.html">extras components</a> documentation), which includes
@@ -26,37 +26,32 @@
   
   <section name="Introduction">
   <p>
-    Tomcat 6.0 uses 
-    <a href="http://jakarta.apache.org/commons/logging">Commons Logging</a>
-    throughout its internal code allowing the 
-    developer to choose a logging configuration that suits their needs, e.g
-    java.util.logging or 
-    <a href="http://logging.apache.org/log4j">Log4J</a>. 
-    Commons Logging provides Tomcat the ability to log
+    JBoss Web uses JBoss Logging throughout its internal code. 
+    JBoss Logging provides JBoss Web the ability to log
     hierarchially across various log levels without needing to rely on a particular
     logging implementation.
   </p>
   <p>
-    An important consequence for Tomcat 6.0 is that the &lt;Logger&gt; element found in 
-    previous versions to create a <code>localhost_log</code> is no longer a valid nested element 
-    of &lt;Context&gt;. Instead, the default Tomcat configuration will use java.util.logging. 
-    If the developer wishes to collect detailed internal Tomcat logging (i.e what is happening 
-    within the Tomcat engine), then they should configure a logging system such as java.util.logging 
+    An important consequence for JBoss Web is that the &lt;Logger&gt; element found in 
+    versions of Tomcat prior to 6.0 to create a <code>localhost_log</code> is no longer a valid nested element 
+    of &lt;Context&gt;. Instead, the default JBoss Web configuration will use java.util.logging. 
+    If the developer wishes to collect detailed internal JBoss Web logging (i.e what is happening 
+    within the JBoss Web engine), then they should configure a logging system such as java.util.logging 
     or log4j as detailed next.
   </p>
 
   </section>
-
+<!--
   <section name="log4j">
     <p>
-      Tomcat 6.0 has done away with <code>localhost_log</code> which you may be familiar with
+      JBoss Web has done away with <code>localhost_log</code> which you may be familiar with
       as the runtime exception/stack trace log. These types of error are usually thrown
       by uncaught exceptions, but are still valuable to the developer. They can now be
       found in the <code>stdout</code> log.
     </p>
 
     <p>
-      If you need to setup cross-context detailed logging from within Tomcat's code, 
+      If you need to setup cross-context detailed logging from within JBoss Web's code, 
       then you can use a simple log4j configuration. Note that this logging van be very 
       verbose depending on the log level you chose to use.  Note also that a log4j logging 
       configuration is not going to produce stack trace type logging: those stack traces
@@ -65,7 +60,7 @@
 
     <p>
       Follow the following steps to setup a file named tomcat.log that has internal 
-      Tomcat logging output to it:
+      JBoss Web logging output to it:
     </p>
 
     <p>
@@ -88,7 +83,7 @@
             (v1.2 or later) and place the log4j jar in $CATALINA_HOME/lib.</li>
 
         <li>Build the commons-logging additional component using the extras.xml
-        Ant build script which is part of teh Tomcat source bundle.</li>
+        Ant build script which is part of teh JBoss Web source bundle.</li>
         
         <li>Replace <code>$CATALINA_HOME/bin/tomcat-juli.jar</code> with
         <code>output/extras/tomcat-juli.jar</code>.</li>
@@ -96,20 +91,20 @@
         <li>Place <code>output/extras/tomcat-juli-adapters.jar</code> in 
         $CATALINA_HOME/lib.</li>
 
-	<li>Start Tomcat</li>
+	<li>Start JBoss Web</li>
       </ol>
     </p>
 
     <p>
       This log4j configuration sets up a file called tomcat.log in your 
-      Tomcat logs folder with a maximum file size of 10MB and
+      JBoss Web logs folder with a maximum file size of 10MB and
       up to 10 backups.  DEBUG level is specified which will result in the 
-      most verbose output from Tomcat.
+      most verbose output from JBoss Web.
     </p>
 	
     <p>
       You can (and should) be more picky about which packages to include 
-      in the logging. Tomcat 6 uses defines loggers by Engine and Host names.
+      in the logging. JBoss Web uses defines loggers by Engine and Host names.
       For example, for a default Catalina localhost log, add this to the
       end of the log4j.properties above. Note that there are known issues with 
       using this naming convention (with square brackets) in log4j XML based
@@ -123,7 +118,7 @@
       </ul>
 
       Be warned a level of DEBUG will produce megabytes of logging and slow startup
-      of Tomcat. This level should be used sparingly when debugging of internal Tomcat
+      of JBoss Web. This level should be used sparingly when debugging of internal JBoss Web
       operations is required.
     </p>
 	
@@ -139,13 +134,14 @@
     </p>
 	
   </section>
+-->
 
   <section name="java.util.logging">
 
   <p>
     The default implemenatation of java.util.logging provided in the JDK is too limited to be 
     useful. A limitation of JDK Logging appears to be the inability to have per-web application logging, 
-    as the configuration is per-VM. As a result, Tomcat will, in the default configuration,
+    as the configuration is per-VM. As a result, JBoss Web will, in the default configuration,
     replace the default LogManager implementation with a container friendly implementation
     called JULI, which addresses these shortcomings. It supports the same configuration mechanisms 
     as the standard JDK java.util.logging, using either a programmatic approach, or properties
@@ -154,18 +150,18 @@
     constructs which allows more freedom for defining handlers and assigning them to loggers.
   </p>
   <p>
-    JULI is enabled by default in Tomcat 6.0, and supports per classloader configuration, in addition to 
+    JULI is enabled by default in JBoss Web, and supports per classloader configuration, in addition to 
     the regular global java.util.logging configuration. This means that logging can be configured at 
     the following layers:
     <ul>
       <li>In the JDK's logging.properties file. Check
-      your JAVA_HOME environment setting to see which JDK Tomcat is using. The file will be in 
+      your JAVA_HOME environment setting to see which JDK JBoss Web is using. The file will be in 
       <code>$JAVA_HOME/jre/lib</code>.
       Alternately, it can also use a global configuration file located elsewhere by using the 
       system property <code>java.util.logging.config.file</code>, or programmatic configuration using
       <code>java.util.logging.config.class</code>.</li>
       <li>In each classloader using a logging.properties file. This means that it is possible to have a
-      configuration for the Tomcat core, as well as separate configurations for each webapps which will 
+      configuration for the JBoss Web core, as well as separate configurations for each webapps which will 
       have the same lifecycle as the webapps.</li>
     </ul>
   </p>
@@ -174,7 +170,7 @@
     also a FileHandler. A handler's log level threshold can be set using SEVERE, WARNING, INFO,
     CONFIG, FINE, FINER, FINEST or ALL. The logging.properties shipped with JDK is set to INFO. You
     can also target specific packages to collect logging from and specify a level. Here is how
-    you would set debugging from Tomcat. You would need to ensure the ConsoleHandler's level is also
+    you would set debugging from JBoss Web. You would need to ensure the ConsoleHandler's level is also
     set to collect this threshold, so FINEST or ALL should be set. Please refer to Sun's java.util.logging
     documentation for the complete details.
   </p>

@@ -45,7 +45,7 @@ to the wider audience, or if you feel we can improve this section in anyway.</p>
 <b>Please note that JNDI resource configuration changed somewhat between
 Tomcat 5.0.x and Tomcat 5.5.x.</b>  You will most likely need to modify older
 JNDI resource configurations to match the syntax in the example below in order
-to make them work in Tomcat 6.x.x.
+to make them work in Tomcat 6.x.x and JBoss Web.
 </p>
 
 <p>
@@ -193,7 +193,7 @@ mysql&gt;
 </p>
 
 <h3>2. Context configuration</h3>
-<p>Configure the JNDI DataSource in Tomcat by adding a declaration for your
+<p>Configure the JNDI DataSource in JBoss Web by adding a declaration for your
 resource to your <a href="config/context.html">Context</a>.</p>
 <p>For example:
 
@@ -305,7 +305,7 @@ your hard work.</p>
 <p>Oracle requires minimal changes from the MySQL configuration except for the
 usual gotchas :-)</p>
 <p>Drivers for older Oracle versions may be distributed as *.zip files rather
-than *.jar files. Tomcat will only use <code>*.jar</code> files installed in
+than *.jar files. JBoss Web will only use <code>*.jar</code> files installed in
 <code>$CATALINA_HOME/lib</code>. Therefore <code>classes111.zip</code>
 or <code>classes12.zip</code> will need to be renamed with a <code>.jar</code>
 extension. Since jarfiles are zipfiles, there is no need to unzip and jar these
@@ -373,14 +373,14 @@ them. This has to be done regardless of which configuration step you take next.
 <h3>2. Resource configuration</h3>
 
 <p>
-You have two choices here: define a datasource that is shared across all Tomcat
+You have two choices here: define a datasource that is shared across all JBoss Web
 applications, or define a datasource specifically for one application.
 </p>
 
 <h4>2a. Shared resource configuration</h4>
 <p>
 Use this option if you wish to define a datasource that is shared across
-multiple Tomcat applications, or if you just prefer defining your datasource
+multiple JBoss Web applications, or if you just prefer defining your datasource
 in this file.
 </p>
 <p><i>This author has not had success here, although others have reported so.
@@ -396,8 +396,8 @@ Clarification would be appreciated here.</i></p>
 
 <p>
 Use this option if you wish to define a datasource specific to your application,
-not visible to other Tomcat applications. This method is less invasive to your
-Tomcat installation.
+not visible to other JBoss Web applications. This method is less invasive to your
+JBoss Web installation.
 </p>
 
 <p>
@@ -469,9 +469,9 @@ driver(Oracle8i 8.1.7.1 JDBC/OCI Driver) from <a href="http://otn.oracle.com/">o
 </p>
 <p>
 After renaming <code>classes12.zip</code> file to <code>classes12.jar</code>
-for Tomcat, copy it into <code>$CATALINA_HOME/lib</code>. 
+for JBoss Web, copy it into <code>$CATALINA_HOME/lib</code>. 
 You may also have to remove the <code>javax.sql.*</code> classes
-from this file depending upon the version of Tomcat and JDK you are using.
+from this file depending upon the version of JBoss Web and JDK you are using.
 </p>
 </subsection>
 
@@ -532,16 +532,16 @@ uses a database and tips for how to solve them.</p>
 
 <subsection name="Intermittent dB Connection Failures">
 <p>
-Tomcat runs within a JVM.  The JVM periodically performs garbage collection
+JBoss Web runs within a JVM.  The JVM periodically performs garbage collection
 (GC) to remove java objects which are no longer being used.  When the JVM
-performs GC execution of code within Tomcat freezes. If the maximum time
+performs GC execution of code within JBoss Web freezes. If the maximum time
 configured for establishment of a dB connection is less than the amount
 of time garbage collection took you can get a db conneciton failure.
 </p>
 
 <p>To collect data on how long garbage collection is taking add the
 <code>-verbose:gc</code> argument to your <code>CATALINA_OPTS</code>
-environment variable when starting Tomcat.  When verbose gc is enabled
+environment variable when starting JBoss Web.  When verbose gc is enabled
 your <code>$CATALINA_BASE/logs/catalina.out</code> log file will include
 data for every garbage collection including how long it took.</p>
 
@@ -559,9 +559,9 @@ For the DBCP you set this using the parameter <code>maxWait</code>.</p>
 These can occur when one request gets a db connection from the connection
 pool and closes it twice.  When using a connection pool, closing the
 connection just returns it to the pool for reuse by another request,
-it doesn't close the connection.  And Tomcat uses multiple threads to
+it doesn't close the connection.  And JBoss Web uses multiple threads to
 handle concurrent requests. Here is an example of the sequence
-of events which could cause this error in Tomcat:
+of events which could cause this error in JBoss Web:
 <pre>
   Request 1 running in Thread 1 gets a db connection.
 

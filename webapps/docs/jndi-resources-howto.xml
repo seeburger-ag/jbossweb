@@ -17,7 +17,7 @@
 
 <section name="Introduction">
 
-<p>Tomcat 6 provides a JNDI <strong>InitialContext</strong> implementation
+<p>JBoss Web provides a JNDI <strong>InitialContext</strong> implementation
 instance for each web application running under it, in a manner that is 
 compatible with those provided by a 
 <a href="http://java.sun.com/j2ee">Java2 Enterprise Edition</a> application 
@@ -28,14 +28,14 @@ the <code>/WEB-INF/web.xml</code> file to reference resources; resources
 referenced in these elements must be defined in an application-server-specific configuration. 
 </p>
 
-<p>For Tomcat 6, these entries in per-web-application 
+<p>For JBoss Web, these entries in per-web-application 
 <code>InitialContext</code> are configured in the 
 <code><strong>&lt;Context&gt;</strong></code> elements that can be specified 
 in either <code>$CATALINA_HOME/conf/server.xml</code> or, preferably, 
 the per-web-application context XML file (either <code>META-INF/context.xml</code>).
 </p>
 
-<p>Tomcat 6 maintains a separate namespace of global resources for the 
+<p>JBoss Web maintains a separate namespace of global resources for the 
 entire server.  These are configured in the 
 <a href="config/globalresources.html">
 <code><strong>&lt;GlobalNameingResources&gt;</strong></code></a> element of 
@@ -54,7 +54,7 @@ descriptor (<code>/WEB-INF/web.xml</code>) of your web application:</p>
 <li><code><strong>&lt;resource-ref&gt;</strong></code> - Resource reference,
     which is typically to an object factory for resources such as a JDBC
     <code>DataSource</code>, a JavaMail <code>Session</code>, or custom
-    object factories configured into Tomcat 6.</li>
+    object factories configured into JBoss Web.</li>
 <li><code><strong>&lt;resource-env-ref&gt;</strong></code> - Resource
     environment reference, a new variation of <code>resource-ref</code>
     added in Servlet 2.4 that is simpler to configure for resources
@@ -85,7 +85,7 @@ conn.close();
 
 <p>See the following Specifications for more information about programming APIs
 for JNDI, and for the features supported by Java2 Enterprise Edition (J2EE)
-servers, which Tomcat emulates for the services that it provides:</p>
+servers, which JBoss Web emulates for the services that it provides:</p>
 <ul>
 <li><a href="http://java.sun.com/products/jndi/#download">Java Naming and
     Directory Interface</a> (included in JDK 1.4, available separately for
@@ -150,9 +150,9 @@ include it in the per-web-application context.</p>
 </section>
 
 
-<section name="Tomcat Standard Resource Factories">
+<section name="JBoss Web Standard Resource Factories">
 
-  <p>Tomcat 6 includes a series of standard resource factories that can
+  <p>JBoss Web includes a series of standard resource factories that can
   provide services to your web applications, but give you configuration
   flexibility (in <code>$CATALINA_HOME/conf/server.xml</code>) without
   modifying the web application or the deployment descriptor.  Each
@@ -162,14 +162,14 @@ include it in the per-web-application context.</p>
   <p>See <a href="#Adding Custom Resource Factories">Adding Custom
   Resource Factories</a> for information about how to create, install,
   configure, and use your own custom resource factory classes with
-  Tomcat 6.</p>
+  JBoss Web.</p>
 
   <p><em>NOTE</em> - Of the standard resource factories, only the
   "JDBC Data Source" and "User Transaction" factories are mandated to
   be available on other platforms, and then they are required only if
   the platform implements the Java2 Enterprise Edition (J2EE) specs.
   All other standard resource factories, plus custom resource factories
-  that you write yourself, are specific to Tomcat and cannot be assumed
+  that you write yourself, are specific to JBoss Web and cannot be assumed
   to be available on other containers.</p>
 
   <subsection name="Generic JavaBean Resources">
@@ -262,9 +262,9 @@ writer.println("foo = " + bean.getFoo() + ", bar = " +
                bean.getBar());
 </source>
 
-    <h3>4.  Configure Tomcat's Resource Factory</h3>
+    <h3>4.  Configure JBoss Web's Resource Factory</h3>
 
-    <p>To configure Tomcat's resource factory, add an elements like this to the
+    <p>To configure JBoss Web's resource factory, add an elements like this to the
     <code>$CATALINA_HOME/conf/server.xml</code> file, nested inside the
     <code>Context</code> element for this web application.</p>
 <source>
@@ -300,7 +300,7 @@ writer.println("foo = " + bean.getFoo() + ", bar = " +
     configuration details that the client application must be aware of
     (including the name of the SMTP host to be used for message sending).</p>
 
-    <p>Tomcat 6 includes a standard resource factory that will create
+    <p>JBoss Web includes a standard resource factory that will create
     <code>javax.mail.Session</code> session instances for you, already
     connected to the SMTP server that is configured in <code>server.xml</code>.
     In this way, the application is totally insulated from changes in the
@@ -367,9 +367,9 @@ Transport.send(message);
     is matched up against the resource factory that is configured in
     <code>$CATALINA_HOME/conf/server.xml</code>, as described below.</p>
 
-    <h3>3.  Configure Tomcat's Resource Factory</h3>
+    <h3>3.  Configure JBoss Web's Resource Factory</h3>
 
-    <p>To configure Tomcat's resource factory, add an elements like this to the
+    <p>To configure JBoss Web's resource factory, add an elements like this to the
     <code>$CATALINA_HOME/conf/server.xml</code> file, nested inside the
     <code>Context</code> element for this web application.</p>
 <source>
@@ -398,7 +398,7 @@ Transport.send(message);
     <p>This download includes 2 vital libraries for the configuration; 
     activation.jar and mail.jar. Unpackage both distributions and place 
     them into $CATALINA_HOME/lib so that they are available to
-    Tomcat during the initialization of the mail Session Resource.
+    JBoss Web during the initialization of the mail Session Resource.
     <strong>Note:</strong> placing these jars in both common/lib and a 
     web application's lib folder will cause an error, so ensure you have
     them in the $CATALINA_HOME/lib location only.
@@ -406,7 +406,7 @@ Transport.send(message);
 
     <h3>Example Application</h3>
 
-    <p>The <code>/examples</code> application included with Tomcat contains
+    <p>The <code>/examples</code> application included with JBoss Web contains
     an example of utilizing this resource factory.  It is accessed via the
     "JSP Examples" link.  The source code for the servlet that actually
     sends the mail message is in
@@ -429,9 +429,9 @@ Transport.send(message);
     to support the functionality required by that application.  The J2EE
     Platform Specification requires J2EE Application Servers to make
     available a <em>DataSource</em> implementation (that is, a connection
-    pool for JDBC connections) for this purpose.  Tomcat 6 offers exactly
+    pool for JDBC connections) for this purpose.  JBoss Web offers exactly
     the same support, so that database-based applications you develop on
-    Tomcat using this service will run unchanged on any J2EE server.</p>
+    JBoss Web using this service will run unchanged on any J2EE server.</p>
 
     <p>For information about JDBC, you should consult the following:</p>
     <ul>
@@ -448,7 +448,7 @@ Transport.send(message);
         all J2EE platforms must provide to applications).</li>
     </ul>
 
-    <p><strong>NOTE</strong> - The default data source support in Tomcat
+    <p><strong>NOTE</strong> - The default data source support in JBoss Web
     is based on the <strong>DBCP</strong> connection pool from the
     <a href="http://jakarta.apache.org/commons">Jakarta Commons</a>
     subproject.  However, it is possible to use any other connection pool
@@ -459,7 +459,7 @@ Transport.send(message);
     <h3>1.  Install Your JDBC Driver</h3>
 
     <p>Use of the <em>JDBC Data Sources</em> JNDI Resource Factory requires
-    that you make an appropriate JDBC driver available to both Tomcat internal
+    that you make an appropriate JDBC driver available to both JBoss Web internal
     classes and to your web application.  This is most easily accomplished by
     installing the driver's JAR file(s) into the
     <code>$CATALINA_HOME/lib</code> directory, which makes the driver
@@ -518,9 +518,9 @@ conn.close();
     is matched up against the resource factory that is configured in
     <code>$CATALINA_HOME/conf/server.xml</code>, as described below.</p>
 
-    <h3>4.  Configure Tomcat's Resource Factory</h3>
+    <h3>4.  Configure JBoss Web's Resource Factory</h3>
 
-    <p>To configure Tomcat's resource factory, add an element like this to the
+    <p>To configure JBoss Web's resource factory, add an element like this to the
     <code>/META-INF/context.xml</code> file in the web application.</p>
 <source>
 &lt;Context ...&gt;
@@ -541,7 +541,7 @@ conn.close();
     <code>driverName</code> parameters to match your actual database's
     JDBC driver and connection URL.</p>
 
-    <p>The configuration properties for Tomcat's standard data source
+    <p>The configuration properties for JBoss Web's standard data source
     resource factory
     (<code>org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory</code>) are
     as follows:</p>
@@ -577,7 +577,7 @@ conn.close();
 <section name="Adding Custom Resource Factories">
 
   <p>If none of the standard resource factories meet your needs, you can
-  write your own factory and integrate it into Tomcat 6, and then configure
+  write your own factory and integrate it into JBoss Web, and then configure
   the use of this factory in the <code>conf/server.xml</code> configuration
   file.  In the example below, we will create a factory that only knows how
   to create <code>com.mycompany.MyBean</code> beans, from the
@@ -594,7 +594,7 @@ conn.close();
   <ul>
   <li><strong>Object obj</strong> - The (possibly null) object containing
       location or reference information that can be used in creating an
-      object.  For Tomcat, this will always be an object of type
+      object.  For JBoss Web, this will always be an object of type
       <code>javax.naming.Reference</code>, which contains the class name
       of this factory class, as well as the configuration properties
       (from <code>conf/server.xml</code>) to use in creating objects
@@ -607,7 +607,7 @@ conn.close();
       <code>name</code> is relative to the default initial context.</li>
   <li><strong>Hashtable environment</strong> - The (possibly null)
       environment that is used in creating this object.  This is generally
-      ignored in Tomcat object factories.</li>
+      ignored in JBoss Web object factories.</li>
   </ul>
 
   <p>To create a resource factory that knows how to produce <code>MyBean</code>
@@ -722,9 +722,9 @@ writer.println("foo = " + bean.getFoo() + ", bar = " +
                bean.getBar());
 </source>
 
-    <h3>4.  Configure Tomcat's Resource Factory</h3>
+    <h3>4.  Configure JBoss Web's Resource Factory</h3>
 
-    <p>To configure Tomcat's resource factory, add an elements like this to the
+    <p>To configure JBoss Web's resource factory, add an elements like this to the
     <code>$CATALINA_HOME/conf/server.xml</code> file, nested inside the
     <code>Context</code> element for this web application.</p>
 <source>

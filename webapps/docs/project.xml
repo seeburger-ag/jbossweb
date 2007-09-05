@@ -23,29 +23,25 @@
         <item name="Deployer"            href="deployer-howto.html"/>
         <item name="Manager"             href="manager-howto.html"/>
         <item name="Realms and AAA"      href="realm-howto.html"/>
-        <item name="Security Manager"
-              href="security-manager-howto.html"/>
+        <item name="Security Manager"    href="security-manager-howto.html"/>
         <item name="JNDI Resources"      href="jndi-resources-howto.html"/>
-        <item name="JDBC DataSources"
-              href="jndi-datasource-examples-howto.html"/>
-        <item name="Classloading"       href="class-loader-howto.html"/>
-        <item name="JSPs"               href="jasper-howto.html"/>
-        <item name="SSL"                href="ssl-howto.html"/>
-        <item name="PHP"                href="php.html"/>
-        <item name="SSI"                href="ssi-howto.html"/>
-        <item name="CGI"                href="cgi-howto.html"/>
-        <item name="Rewrite Support"    href="rewrite.html"/>
-        <item name="Proxy Support"      href="proxy-howto.html"/>
-        <item name="MBean Descriptor"
-              href="mbeans-descriptor-howto.html"/>
-        <item name="Default Servlet"    href="default-servlet.html"/>
-        <item name="Connectors"         href="connectors.html"/>
-        <item name="Monitoring and Management"         
-              href="monitoring.html"/>
-        <item name="Logging"            href="logging.html"/>
-        <item name="APR"                href="apr.html"/>
-        <item name="Virtual Hosting"    href="virtual-hosting-howto.html"/>
-        <item name="Advanced IO"        href="aio.html"/>
+        <item name="JDBC DataSources"    href="jndi-datasource-examples-howto.html"/>
+        <item name="Classloading"        href="class-loader-howto.html"/>
+        <item name="JSPs"                href="jasper-howto.html"/>
+        <item name="SSL"                 href="ssl-howto.html"/>
+        <item name="PHP"                 href="php.html"/>
+        <item name="SSI"                 href="ssi-howto.html"/>
+        <item name="CGI"                          href="cgi-howto.html"/>
+        <item name="Rewrite Support"              href="rewrite.html"/>
+        <item name="Proxy Support"                href="proxy-howto.html"/>
+        <item name="MBean Descriptor"             href="mbeans-descriptor-howto.html"/>
+        <item name="Default Servlet"              href="default-servlet.html"/>
+        <item name="Connectors"                   href="connectors.html"/>
+        <item name="Monitoring and Management"    href="monitoring.html"/>
+        <item name="Logging"                      href="logging.html"/>
+        <item name="APR"                          href="apr.html"/>
+        <item name="Virtual Hosting"              href="virtual-hosting-howto.html"/>
+        <item name="Advanced IO"                  href="aio.html"/>
     </menu>
 
     <menu name="Reference">

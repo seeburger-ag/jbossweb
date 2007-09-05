@@ -22,7 +22,7 @@
   accessing files on the local file system, connecting to a host other
   than the one the applet was loaded from, and so on.  In the same way
   the SecurityManager protects you from an untrusted applet running in
-  your browser, use of a SecurityManager while running Tomcat can protect
+  your browser, use of a SecurityManager while running JBoss Web can protect
   your server from trojan servlets, JSPs, JSP beans, and tag libraries.
   Or even inadvertent mistakes.</p>
 
@@ -32,7 +32,7 @@
 &lt;% System.exit(1); %&gt;
 </source>
 
-  <p>Every time this JSP was executed by Tomcat, Tomcat would exit.
+  <p>Every time this JSP was executed by JBoss Web, JBoss Web would exit.
   Using the Java SecurityManager is just one more line of defense a
   system administrator can use to keep the server secure and reliable.</p>
 
@@ -50,16 +50,16 @@
 <section name="Permissions">
 
   <p>Permission classes are used to define what Permissions a class loaded
-  by Tomcat will have.  There are a number of Permission classes that are
+  by JBoss Web will have.  There are a number of Permission classes that are
   a standard part of the JDK, and you can create your own Permission class
   for use in your own web applications.  Both techniques are used in
-  Tomcat 6.</p>
+  JBoss Web.</p>
 
 
   <subsection name="Standard Permissions">
 
     <p>This is just a short summary of the standard system SecurityManager
-    Permission classes applicable to Tomcat.  See
+    Permission classes applicable to JBoss Web.  See
     <a href="http://java.sun.com/security/">http://java.sun.com/security/</a>
     for more information.</p>
 
@@ -80,16 +80,16 @@
     <li><strong>java.security.SecurityPermission</strong> - Controls access
         to Security methods.</li>
     <li><strong>java.security.AllPermission</strong> - Allows access to all
-        permissions, just as if you were running Tomcat without a
+        permissions, just as if you were running JBoss Web without a
         SecurityManager.</li>
     </ul>
 
   </subsection>
 
 
-  <subsection name="Tomcat Custom Permissions">
+  <subsection name="JBoss Web Custom Permissions">
 
-    <p>Tomcat utilizes a custom permission class called
+    <p>JBoss Web utilizes a custom permission class called
     <strong>org.apache.naming.JndiPermission</strong>.  This permission
     controls read access to JNDI named file based resources.  The permission
     name is the JNDI name and there are no actions.  A trailing "*" can be
@@ -105,7 +105,7 @@ permission  org.apache.naming.JndiPermission  "jndi://localhost/examples/*";
     but disallow it from using file access to read any other files (unless
     permissions for those files are explicitly granted).</p>
 
-    <p>Also, Tomcat always dynamically creates the following file permission:</p>
+    <p>Also, JBoss Web always dynamically creates the following file permission:</p>
 <source>  
 permission java.io.FilePermission "** your application context**", "read";
 </source>  
@@ -118,7 +118,7 @@ permission java.io.FilePermission "** your application context**", "read";
 </section>
 
 
-<section name="Configuring Tomcat With A SecurityManager">
+<section name="Configuring JBoss Web With A SecurityManager">
 
   <h3>Policy File Format</h3>
 
@@ -154,7 +154,7 @@ grant [signedBy &lt;signer&gt;,] [codeBase &lt;code source&gt;] {
   looks like this:</p>
 <source>
 // ============================================================================
-// catalina.corepolicy - Security Policy Permissions for Tomcat 6
+// catalina.corepolicy - Security Policy Permissions for JBoss Web
 //
 // This file contains a default set of security policies to be enforced (by the
 // JVM) when Catalina is executed with the "-security" option.  In addition
@@ -301,10 +301,10 @@ grant {
 // };
 </source>
 
-  <h3>Starting Tomcat With A SecurityManager</h3>
+  <h3>Starting JBoss Web With A SecurityManager</h3>
 
   <p>Once you have configured the <code>catalina.policy</code> file for use
-  with a SecurityManager, Tomcat can be started with a SecurityManager in
+  with a SecurityManager, JBoss Web can be started with a SecurityManager in
   place by using the "-security" option:</p>
 <source>
 $CATALINA_HOME/bin/catalina.sh start -security    (Unix)
@@ -312,8 +312,8 @@ $CATALINA_HOME/bin/catalina.sh start -security    (Unix)
 </source>
 
 </section>
-<section name="Configuring Package Protection in Tomcat">
-  <p>Starting with Tomcat 5, it is now possible to configure which Tomcat
+<section name="Configuring Package Protection in JBoss Web">
+  <p>Starting with Tomcat 5, it is now possible to configure which JBoss Web
   internal package are protected againts package definition and access. See
   <a href="http://java.sun.com/security/seccodeguide.html">
     http://java.sun.com/security/seccodeguide.html</a>
@@ -350,7 +350,7 @@ package.definition=sun.,java.,org.apache.catalina.,org.apache.coyote.,
 org.apache.tomcat.,org.apache.jasper.
 </source>
   <p>Once you have configured the <code>catalina.properties</code> file for use
-  with a SecurityManager, remember to re-start Tomcat.</p>
+  with a SecurityManager, remember to re-start JBoss Web.</p>
 </section>
 
 <section name="Troubleshooting">
@@ -361,7 +361,7 @@ org.apache.tomcat.,org.apache.jasper.
   when the SecurityManager detects the violation.  Debugging the permission
   that is missing can be challenging, and one option is to turn on debug
   output of all security decisions that are made during execution.  This
-  is done by setting a system property before starting Tomcat.  The easiest
+  is done by setting a system property before starting JBoss Web.  The easiest
   way to do this is via the <code>CATALINA_OPTS</code> environment variable.
   Execute this command:</p>
 <source>
@@ -369,7 +369,7 @@ export CATALINA_OPTS=-Djava.security.debug=all    (Unix)
 set CATALINA_OPTS=-Djava.security.debug=all       (Windows)
 </source>
 
-  <p>before starting Tomcat.</p>
+  <p>before starting JBoss Web.</p>
 
   <p><strong>WARNING</strong> - This will generate <em>many megabytes</em>
   of output!  However, it can help you track down problems by searching

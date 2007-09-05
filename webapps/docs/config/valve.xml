@@ -25,9 +25,9 @@
 
     <blockquote><em>
     <p>The description below uses the variable name $CATALINA_HOME
-    to refer to the directory into which you have installed Tomcat 6,
+    to refer to the directory into which you have installed JBoss Web,
     and is the base directory against which most relative paths are
-    resolved.  However, if you have configured Tomcat 6 for multiple
+    resolved.  However, if you have configured JBoss Web for multiple
     instances by setting a CATALINA_BASE directory, you should use
     $CATALINA_BASE instead of $CATALINA_HOME for each of these
     references.</p>
@@ -205,7 +205,7 @@
     presented to this container for processing before it will be passed on.</p>
 
     <p>The syntax for <em>regular expressions</em> is different than that for
-    'standard' wildcard matching. Tomcat uses the <code>java.util.regex</code>
+    'standard' wildcard matching. JBoss Web uses the <code>java.util.regex</code>
     package. Please consult the Java documentation for details of the
     expressions supported.</p>
 
@@ -261,7 +261,7 @@
     presented to this container for processing before it will be passed on.</p>
 
     <p>The syntax for <em>regular expressions</em> is different than that for
-    'standard' wildcard matching. Tomcat uses the <code>java.util.regex</code>
+    'standard' wildcard matching. JBoss Web uses the <code>java.util.regex</code>
     package. Please consult the Java documentation for details of the
     expressions supported.</p>
 
@@ -310,7 +310,7 @@
 
     <p>The <em>Request Dumper Valve</em> is a useful tool in debugging
     interactions with a client application (or browser) that is sending
-    HTTP requests to your Tomcat-based server.  When configured, it causes
+    HTTP requests to your JBoss Web-based server.  When configured, it causes
     details about each request processed by its associated <code>Engine</code>, 
     <code>Host</code>, or <code>Context</code> to be logged according to 
     the logging configuration for that container.</p>

@@ -65,10 +65,10 @@
 
   <subsection name="Standard Implementation">
 
-    <p>Tomcat provides two standard implementations of <strong>Manager</strong>
+    <p>JBoss Web provides two standard implementations of <strong>Manager</strong>
     for use - the default one stores active sessions, while the optional one
     stores active sessions that have been swapped out (in addition to saving
-    sessions across a restart of Tomcat) in a storage location that is selected
+    sessions across a restart of JBoss Web) in a storage location that is selected
     via the use of an appropriate <strong>Store</strong> nested element.</p>
 
     <h3>Standard Manager Implementation</h3>
@@ -154,7 +154,7 @@
     addition to the usual operations of creating and deleting sessions, a
     <code>PersistentManager</code> has the capability to swap active (but
     idle) sessions out to a persistent storage mechanism, as well as to save
-    all sessions across a normal restart of Tomcat.  The actual persistent
+    all sessions across a normal restart of JBoss Web.  The actual persistent
     storage mechanism used is selected by your choice of a
     <strong>Store</strong> element nested inside the <strong>Manager</strong>
     element - this is required for use of <code>PersistentManager</code>.</p>
@@ -237,7 +237,7 @@
       </attribute>
 
       <attribute name="saveOnRestart" required="false">
-        <p>Should all sessions be persisted and reloaded when Tomcat is shut
+        <p>Should all sessions be persisted and reloaded when JBoss Web is shut
         down and restarted (or when this application is reloaded)?  By default,
         this attribute is set to <code>true</code>.</p>
       </attribute>
@@ -370,7 +370,7 @@
       session table, that contains the session identifier of the
       swapped out session.  The column type must accept character
       string data of at least as many characters as are contained
-      in session identifiers created by Tomcat (typically 32).</p>
+      in session identifiers created by JBoss Web (typically 32).</p>
     </attribute>
 
     <attribute name="sessionLastAccessedCol" required="true">
@@ -420,7 +420,7 @@ create table tomcat_sessions (
 </source>
 
   <p>In order for the JDBC Based Store to successfully connect to your
-  database, the JDBC driver you configure must be visible to Tomcat's
+  database, the JDBC driver you configure must be visible to JBoss Web's
   internal class loader.  Generally, that means you must place the JAR
   file containing this driver into the <code>$CATALINA_HOME/server/lib</code>
   directory (if your applications do not also need it) or into the

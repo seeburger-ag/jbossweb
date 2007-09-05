@@ -9,6 +9,11 @@
   <body>
 
     <section name="License">
+      
+      <p>This software is based on Apache Tomcat 6.0 (http://tomcat.apache.org/), developed 
+      by the Apache Software Foundation.</p>
+      
+    
       <p>JBossWeb is released under the LGPL License.</p>
       <br/>
 

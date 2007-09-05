@@ -46,7 +46,7 @@ Standard Realm Implementations</a><br />
 
 <section name="Quick Start">
 
-<p>This document describes how to configure Tomcat to support <em>container
+<p>This document describes how to configure JBoss Web to support <em>container
 managed security</em>, by connecting to an existing "database" of usernames,
 passwords, and user roles.  You only need to care about this if you are using
 a web application that includes one or more
@@ -60,7 +60,7 @@ see the <a href="http://java.sun.com/products/servlet/download.html">Servlet
 Specification (Version 2.4)</a>, Section 12.</p>
 
 <p>For information about utilizing the <em>Single Sign On</em> feature of
-Tomcat 6 (allowing a user to authenticate themselves once across the entire
+JBoss Web (allowing a user to authenticate themselves once across the entire
 set of web applications associated with a virtual host), see
 <a href="config/host.html#Single Sign On">here</a>.</p>
 
@@ -87,7 +87,7 @@ applications to <em>declare</em> their security requirements (in the
 defining the interface between a servlet container and the associated user
 and role information.  In many cases, however, it is desireable to "connect"
 a servlet container to some existing authentication database or mechanism
-that already exists in the production environment.  Therefore, Tomcat 6
+that already exists in the production environment.  Therefore, JBoss Web
 defines a Java interface (<code>org.apache.catalina.Realm</code>) that
 can be implemented by "plug in" components to establish this connection.
 Five standard plug-ins are provided, supporting connections to various
@@ -110,7 +110,7 @@ sources of authentication information:</p>
 </ul>
 
 <p>It is also possible to write your own <code>Realm</code> implementation,
-and integrate it with Tomcat 6.  To do so, you need to:
+and integrate it with JBoss Web.  To do so, you need to:
 <ul>
   <li>Implement <code>org.apache.catalina.Realm</code>,</li>
   <li>Place your compiled realm in $CATALINA_HOME/server/lib,</li>
@@ -238,7 +238,7 @@ corrupted in the return, the digest will be invalid.</p>
 
 <subsection name="Example Application">
 
-<p>The example application shipped with Tomcat 6 includes an area that is
+<p>The example application shipped with JBoss Web includes an area that is
 protected by a security constraint, utilizing form-based login.  To access it,
 point your browser at
 <a href="http://localhost:8080/examples/jsp/security/protected/">http://localhost:8080/examples/jsp/security/protected/</a>
@@ -251,7 +251,7 @@ and log on with one of the usernames and passwords described for the default
 <subsection name="Manager Application">
 
 <p>If you wish to use the <a href="manager-howto.html">Manager Application</a>
-to deploy and undeploy applications in a running Tomcat 6 installation, you
+to deploy and undeploy applications in a running JBoss Web installation, you
 MUST add the "manager" role to at least one username in your selected Realm
 implementation.  This is because the manager web application itself uses a
 security constraint that requires role "manager" to access ANY request URI
@@ -260,7 +260,7 @@ within that application.</p>
 <p>For security reasons, no username in the default Realm (i.e. using
 <code>conf/tomcat-users.xml</code> is assigned the "manager" role.  Therfore,
 no one will be able to utilize the features of this application until the
-Tomcat administrator specifically assigns this role to one or more users.</p>
+JBoss Web administrator specifically assigns this role to one or more users.</p>
 
 </subsection>
 
@@ -283,7 +283,7 @@ Tomcat administrator specifically assigns this role to one or more users.</p>
 
 <h3>Introduction</h3>
 
-<p><strong>JDBCRealm</strong> is an implementation of the Tomcat 6
+<p><strong>JDBCRealm</strong> is an implementation of the JBoss Web
 <code>Realm</code> interface that looks up users in a relational database
 accessed via a JDBC driver.  There is substantial configuration flexibility
 that lets you adapt to existing table and column names, as long as your
@@ -295,8 +295,8 @@ database structure conforms to the following requirements:</p>
 <li>The <em>users</em> table must contain at least two columns (it may
     contain more if your existing applications required it):
     <ul>
-    <li>Username to be recognized by Tomcat when the user logs in.</li>
-    <li>Password to be recognized by Tomcat when the user logs in.
+    <li>Username to be recognized by JBoss Web when the user logs in.</li>
+    <li>Password to be recognized by JBoss Web when the user logs in.
         This value may in cleartext or digested - see below for more
         information.</li>
     </ul></li>
@@ -307,7 +307,7 @@ database structure conforms to the following requirements:</p>
 <li>The <em>user roles</em> table must contain at least two columns (it may
     contain more if your existing applications required it):
     <ul>
-    <li>Username to be recognized by Tomcat (same value as is specified
+    <li>Username to be recognized by JBoss Web (same value as is specified
         in the <em>users</em> table).</li>
     <li>Role name of a valid role associated with this user.</li>
     </ul></li>
@@ -315,19 +315,19 @@ database structure conforms to the following requirements:</p>
 
 <h3>Quick Start</h3>
 
-<p>To set up Tomcat to use JDBCRealm, you will need to follow these steps:</p>
+<p>To set up JBoss Web to use JDBCRealm, you will need to follow these steps:</p>
 <ol>
 <li>If you have not yet done so, create tables and columns in your database
     that conform to the requirements described above.</li>
-<li>Configure a database username and password for use by Tomcat, that has
-    at least read only access to the tables described above.  (Tomcat will
+<li>Configure a database username and password for use by JBoss Web, that has
+    at least read only access to the tables described above.  (JBoss Web will
     never attempt to write to these tables.)</li>
 <li>Place a copy of the JDBC driver you will be using inside the
     <code>$CATALINA_HOME/lib</code> directory.
     Note that <strong>only</strong> JAR files are recognized!</li>
 <li>Set up a <code>&lt;Realm&gt;</code> element, as described below, in your
     <code>$CATALINA_HOME/conf/server.xml</code> file.</li>
-<li>Restart Tomcat 6 if it is already running.</li>
+<li>Restart JBoss Web if it is already running.</li>
 </ol>
 
 <h3>Realm Element Attributes</h3>
@@ -396,7 +396,7 @@ attributes are supported by this implementation:</p>
 
   <attribute name="userTable" required="true">
     <p>The name of the table that contains one row for each <em>username</em>
-    to be recognized by Tomcat.  This table must include at least the columns
+    to be recognized by JBoss Web.  This table must include at least the columns
     named by the <code>userNameCol</code> and <code>userCredCol</code>
     attributes.</p>
   </attribute>
@@ -437,12 +437,12 @@ described above, and accessed with username "dbuser" and password "dbpass":</p>
 <p>JDBCRealm operates according to the following rules:</p>
 <ul>
 <li>When a user attempts to access a protected resource for the first time,
-    Tomcat 6 will call the <code>authenticate()</code> method of this
+    JBoss Web will call the <code>authenticate()</code> method of this
     <code>Realm</code>.  Thus, any changes you have made to the database
     directly (new users, changed passwords or roles, etc.) will be immediately
     reflected.</li>
 <li>Once a user has been authenticated, the user (and his or her associated
-    roles) are cached within Tomcat for the duration of the user's login.
+    roles) are cached within JBoss Web for the duration of the user's login.
     (For FORM-based authentication, that means until the session times out or
     is invalidated; for BASIC authentication, that means until the user
     closes their browser).  The cached user is <strong>not</strong> saved and
@@ -450,7 +450,7 @@ described above, and accessed with username "dbuser" and password "dbpass":</p>
     information for an already authenticated user will <strong>not</strong> be
     reflected until the next time that user logs on again.</li>
 <li>Administering the information in the <em>users</em> and <em>user roles</em>
-    table is the responsibility of your own applications.  Tomcat does not
+    table is the responsibility of your own applications.  JBoss Web does not
     provide any built-in capabilities to maintain users and roles.</li>
 </ul>
 
@@ -461,7 +461,7 @@ described above, and accessed with username "dbuser" and password "dbpass":</p>
 
 <h3>Introduction</h3>
 
-<p><strong>DataSourceRealm</strong> is an implementation of the Tomcat 6
+<p><strong>DataSourceRealm</strong> is an implementation of the JBoss Web
 <code>Realm</code> interface that looks up users in a relational database
 accessed via a JNDI named JDBC DataSource.  There is substantial configuration
 flexibility that lets you adapt to existing table and column names, as long
@@ -473,8 +473,8 @@ as your database structure conforms to the following requirements:</p>
 <li>The <em>users</em> table must contain at least two columns (it may
     contain more if your existing applications required it):
     <ul>
-    <li>Username to be recognized by Tomcat when the user logs in.</li>
-    <li>Password to be recognized by Tomcat when the user logs in.
+    <li>Username to be recognized by JBoss Web when the user logs in.</li>
+    <li>Password to be recognized by JBoss Web when the user logs in.
         This value may in cleartext or digested - see below for more
         information.</li>
     </ul></li>    
@@ -485,7 +485,7 @@ as your database structure conforms to the following requirements:</p>
 <li>The <em>user roles</em> table must contain at least two columns (it may
     contain more if your existing applications required it):
     <ul>
-    <li>Username to be recognized by Tomcat (same value as is specified
+    <li>Username to be recognized by JBoss Web (same value as is specified
         in the <em>users</em> table).</li>
     <li>Role name of a valid role associated with this user.</li>
     </ul></li>
@@ -493,19 +493,19 @@ as your database structure conforms to the following requirements:</p>
 
 <h3>Quick Start</h3>
                   
-<p>To set up Tomcat to use DataSourceRealm, you will need to follow these steps:</p>
+<p>To set up JBoss Web to use DataSourceRealm, you will need to follow these steps:</p>
 <ol>              
 <li>If you have not yet done so, create tables and columns in your database
     that conform to the requirements described above.</li>
-<li>Configure a database username and password for use by Tomcat, that has
-    at least read only access to the tables described above.  (Tomcat will
+<li>Configure a database username and password for use by JBoss Web, that has
+    at least read only access to the tables described above.  (JBoss Web will
     never attempt to write to these tables.)</li>
 <li>Configure a JNDI named JDBC DataSource for your database.  Refer to the
     <a href="jndi-datasource-examples-howto.html">JNDI DataSource Example HOW-TO</a>
     for information on how to configure a JNDI named JDBC DataSource.</li>
 <li>Set up a <code>&lt;Realm&gt;</code> element, as described below, in your
     <code>$CATALINA_HOME/conf/server.xml</code> file.</li>
-<li>Restart Tomcat 6 if it is already running.</li>
+<li>Restart JBoss Web if it is already running.</li>
 </ol>
 
 <h3>Realm Element Attributes</h3>
@@ -570,7 +570,7 @@ attributes are supported by this implementation:</p>
 
   <attribute name="userTable" required="true">
     <p>The name of the table that contains one row for each <em>username</em>
-    to be recognized by Tomcat.  This table must include at least the columns
+    to be recognized by JBoss Web.  This table must include at least the columns
     named by the <code>userNameCol</code> and <code>userCredCol</code>
     attributes.</p>
   </attribute>
@@ -609,12 +609,12 @@ name "java:/comp/env/jdbc/authority".</p>
 <p>DataSourceRealm operates according to the following rules:</p>
 <ul>
 <li>When a user attempts to access a protected resource for the first time,
-    Tomcat 6 will call the <code>authenticate()</code> method of this
+    JBoss Web will call the <code>authenticate()</code> method of this
     <code>Realm</code>.  Thus, any changes you have made to the database
     directly (new users, changed passwords or roles, etc.) will be immediately
     reflected.</li>
 <li>Once a user has been authenticated, the user (and his or her associated
-    roles) are cached within Tomcat for the duration of the user's login.
+    roles) are cached within JBoss Web for the duration of the user's login.
     (For FORM-based authentication, that means until the session times out or
     is invalidated; for BASIC authentication, that means until the user
     closes their browser).  The cached user is <strong>not</strong> saved and
@@ -622,7 +622,7 @@ name "java:/comp/env/jdbc/authority".</p>
     information for an already authenticated user will <strong>not</strong> be
     reflected until the next time that user logs on again.</li>
 <li>Administering the information in the <em>users</em> and <em>user roles</em>
-    table is the responsibility of your own applications.  Tomcat does not
+    table is the responsibility of your own applications.  JBoss Web does not
     provide any built-in capabilities to maintain users and roles.</li>
 </ul>
 
@@ -633,7 +633,7 @@ name "java:/comp/env/jdbc/authority".</p>
 
 <h3>Introduction</h3>
 
-<p><strong>JNDIRealm</strong> is an implementation of the Tomcat 6
+<p><strong>JNDIRealm</strong> is an implementation of the JBoss Web
 <code>Realm</code> interface that looks up users in an LDAP directory
 server accessed by a JNDI provider (typically, the standard LDAP
 provider that is available with the JNDI API classes). The realm
@@ -802,19 +802,19 @@ the name of this attribute.</p>
 
 <h3>Quick Start</h3>
 
-<p>To set up Tomcat to use JNDIRealm, you will need to follow these steps:</p>
+<p>To set up JBoss Web to use JNDIRealm, you will need to follow these steps:</p>
 <ol>
 <li>Make sure your directory server is configured with a schema that matches
     the requirements listed above.</li>
-<li>If required, configure a username and password for use by Tomcat, that has
-    read only access to the information described above.  (Tomcat will
+<li>If required, configure a username and password for use by JBoss Web, that has
+    read only access to the information described above.  (JBoss Web will
     never attempt to modify this information.)</li>
 <li>Place a copy of the JNDI driver you will be using (typically
     <code>ldap.jar</code> available with JNDI) inside the
     <code>$CATALINA_HOME/lib</code> directory.</li>
 <li>Set up a <code>&lt;Realm&gt;</code> element, as described below, in your
     <code>$CATALINA_HOME/conf/server.xml</code> file.</li>
-<li>Restart Tomcat 6 if it is already running.</li>
+<li>Restart JBoss Web if it is already running.</li>
 </ol>
 
 <h3>Realm Element Attributes</h3>
@@ -992,7 +992,7 @@ rootpw secret
 </source>
 
 <p>We will assume for <code>connectionURL</code> that the directory
-server runs on the same machine as Tomcat.  See <a
+server runs on the same machine as JBoss Web.  See <a
 href="http://java.sun.com/products/jndi/docs.html">http://java.sun.com/products/jndi/docs.html</a>
 for more information about configuring and using the JNDI LDAP
 provider.</p>
@@ -1143,12 +1143,12 @@ authentication is usually to be preferred.</p>
 <p>JNDIRealm operates according to the following rules:</p>
 <ul>
 <li>When a user attempts to access a protected resource for the first time,
-    Tomcat 6 will call the <code>authenticate()</code> method of this
+    JBoss Web will call the <code>authenticate()</code> method of this
     <code>Realm</code>.  Thus, any changes you have made to the directory
     (new users, changed passwords or roles, etc.) will be immediately
     reflected.</li>
 <li>Once a user has been authenticated, the user (and his or her associated
-    roles) are cached within Tomcat for the duration of the user's login.
+    roles) are cached within JBoss Web for the duration of the user's login.
     (For FORM-based authentication, that means until the session times out or
     is invalidated; for BASIC authentication, that means until the user
     closes their browser).  The cached user is <strong>not</strong> saved and
@@ -1156,7 +1156,7 @@ authentication is usually to be preferred.</p>
     information for an already authenticated user will <strong>not</strong> be
     reflected until the next time that user logs on again.</li>
 <li>Administering the information in the directory server
-    is the responsibility of your own applications.  Tomcat does not
+    is the responsibility of your own applications.  JBoss Web does not
     provide any built-in capabilities to maintain users and roles.</li>
 </ul>
 
@@ -1168,10 +1168,10 @@ authentication is usually to be preferred.</p>
 <h3>Introduction</h3>
 
 <p><strong>MemoryRealm</strong> is a simple demonstration implementation of the
-Tomcat 6 <code>Realm</code> interface.  It is not designed for production use.
+JBoss Web <code>Realm</code> interface.  It is not designed for production use.
 At startup time, MemoryRealm loads information about all users, and their
 corresponding roles, from an XML document (by default, this document is loaded from <code>$CATALINA_HOME/conf/tomcat-users.xml</code>).  Changes to the data
-in this file are not recognized until Tomcat is restarted.</p>
+in this file are not recognized until JBoss Web is restarted.</p>
 
 <h3>Realm Element Attributes</h3>
 
@@ -1223,7 +1223,7 @@ valid user, consisting of the following attributes:</p>
 
 <h3>Example</h3>
 
-<p>The default installation of Tomcat 6 is configured with a MemoryRealm
+<p>The default installation of JBoss Web is configured with a MemoryRealm
 nested inside the <code>&lt;Engine&gt;</code> element, so that it applies
 to all virtual hosts and web applications.  The default contents of the
 <code>conf/tomcat-users.xml</code> file is:</p>
@@ -1239,21 +1239,21 @@ to all virtual hosts and web applications.  The default contents of the
 
 <p>MemoryRealm operates according to the following rules:</p>
 <ul>
-<li>When Tomcat first starts up, it loads all defined users and their
+<li>When JBoss Web first starts up, it loads all defined users and their
     associated information from the users file.  Changes to the data in
-    this file will <strong>not</strong> be recognized until Tomcat is
+    this file will <strong>not</strong> be recognized until JBoss Web is
     restarted.</li>
 <li>When a user attempts to access a protected resource for the first time,
-    Tomcat 6 will call the <code>authenticate()</code> method of this
+    JBoss Web will call the <code>authenticate()</code> method of this
     <code>Realm</code>.</li>
 <li>Once a user has been authenticated, the user (and his or her associated
-    roles) are cached within Tomcat for the duration of the user's login.
+    roles) are cached within JBoss Web for the duration of the user's login.
     (For FORM-based authentication, that means until the session times out or
     is invalidated; for BASIC authentication, that means until the user
     closes their browser).  The cached user is <strong>not</strong> saved and
     restored across sessions serialisations.</li>
 <li>Administering the information in the users file is the responsibility
-    of your application.  Tomcat does not
+    of your application.  JBoss Web does not
     provide any built-in capabilities to maintain users and roles.</li>
 </ul>
 
@@ -1265,14 +1265,14 @@ to all virtual hosts and web applications.  The default contents of the
 
 <h3>Introduction</h3>
 
-        <p><strong>JAASRealm</strong> is an implementation of the Tomcat
+        <p><strong>JAASRealm</strong> is an implementation of the JBoss Web
 4 <code>Realm</code> interface that authenticates users through the Java
 Authentication &amp; Authorization Service (JAAS) framework, a Java
 package that is available as an optional package in Java 2 SDK 1.3 and
 is fully integrated as of SDK 1.4 .</p>
         <p>Using JAASRealm gives the developer the ability to combine
-practically any conceivable security realm with Tomcat's CMA. </p>
-        <p>JAASRealm is prototype for Tomcat of the proposed JAAS-based
+practically any conceivable security realm with JBoss Web's CMA. </p>
+        <p>JAASRealm is prototype for JBoss Web of the proposed JAAS-based
 J2EE authentication framework for J2EE v1.4, based on the <a
  href="http://www.jcp.org/en/jsr/detail?id=196">JCP Specification
 Request 196</a> to enhance container-managed security and promote
@@ -1282,11 +1282,11 @@ container-independent.
         <p>Based on the JAAS login module and principal (see <code>javax.security.auth.spi.LoginModule</code>
 and <code>javax.security.Principal</code>), you can develop your own
 security mechanism or wrap another third-party mechanism for
-integration with the CMA as implemented by Tomcat.
+integration with the CMA as implemented by JBoss Web.
         </p>
 
         <h3>Quick Start</h3>
-        <p>To set up Tomcat to use JAASRealm with your own JAAS login module,
+        <p>To set up JBoss Web to use JAASRealm with your own JAAS login module,
  you will need to follow these steps:</p>
         <ol>
           <li>Write your own LoginModule, User and Role classes based
@@ -1301,22 +1301,22 @@ When developing your LoginModule, note that JAASRealm's built-in <code>CallbackH
           </li>
           <li>Although not specified in JAAS, you should create
 seperate classes to distinguish between users and roles, extending <code>javax.security.Principal</code>,
-so that Tomcat can tell which Principals returned from your login
+so that JBoss Web can tell which Principals returned from your login
 module are users and which are roles (see <code>org.apache.catalina.realm.JAASRealm</code>).
 Regardless, the first Principal returned is <em>always</em> treated as the user Principal.
           </li>
-          <li>Place the compiled classes on Tomcat's classpath
+          <li>Place the compiled classes on JBoss Web's classpath
           </li>
           <li>Set up a login.config file for Java (see <a
  href="http://java.sun.com/j2se/1.4.1/docs/guide/security/jaas/tutorials/LoginConfigFile.html">JAAS
-LoginConfig file</a>) and tell Tomcat where to find it by specifying
+LoginConfig file</a>) and tell JBoss Web where to find it by specifying
 its location to the JVM, for instance by setting the environment
 variable: <code>JAVA_OPTS=-DJAVA_OPTS=-Djava.security.auth.login.config==$CATALINA_HOME/conf/jaas.config</code></li>
 
           <li>Configure your security-constraints in your web.xml for
 the resources you want to protect</li>
           <li>Configure the JAASRealm module in your server.xml </li>
-          <li>Restart Tomcat 6 if it is already running.</li>
+          <li>Restart JBoss Web if it is already running.</li>
         </ol>
         <h3>Realm Element Attributes</h3>
         <p>To configure JAASRealm as for step 6 above, you create
@@ -1374,7 +1374,7 @@ are supported by this implementation:</p>
 Role objects representing Principals for the user 
 (<code>javax.security.auth.Subject</code>). If your login module doesn't 
 create a user object but also doesn't throw a login exception, then the 
-Tomcat CMA will break and you will be left at the 
+JBoss Web CMA will break and you will be left at the 
 http://localhost:8080/myapp/j_security_check URI or at some other 
 unspecified location.</p>
 
@@ -1389,12 +1389,12 @@ and restarting the server, without any code changes to your application.</li>
         <h3>Additional Notes</h3>
         <ul>
           <li>When a user attempts to access a protected resource for
-              the first time, Tomcat 6 will call the <code>authenticate()</code>
+              the first time, JBoss Web will call the <code>authenticate()</code>
               method of this <code>Realm</code>.  Thus, any changes you have made in
               the security mechanism directly (new users, changed passwords or
               roles, etc.) will be immediately reflected.</li>
           <li>Once a user has been authenticated, the user (and his or
-              her associated roles) are cached within Tomcat for the duration of
+              her associated roles) are cached within JBoss Web for the duration of
               the user's login.  For FORM-based authentication, that means until
               the session times out or is invalidated; for BASIC authentication,
               that means until the user closes their browser.  Any changes to the

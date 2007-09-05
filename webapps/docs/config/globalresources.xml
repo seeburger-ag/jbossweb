@@ -128,7 +128,7 @@
 
     You <strong>MUST</strong> also define any other needed parameters using
     attributes on the Resource element, to configure
-    the object factory to be used (if not known to Tomcat already), and
+    the object factory to be used (if not known to JBoss Web already), and
     the properties used to configure that object factory.</p>
 
     <p>For example, you can create a resource definition like this:</p>

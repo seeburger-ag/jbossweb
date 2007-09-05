@@ -43,12 +43,12 @@
     <attribute name="port" required="true">
       <p>The TCP/IP port number on which this server waits for a shutdown
       command.  This connection must be initiated from the same server
-      computer that is running this instance of Tomcat.</p>
+      computer that is running this instance of JBoss Web.</p>
     </attribute>
 
     <attribute name="shutdown" required="true">
       <p>The command string that must be received via a TCP/IP connection
-      to the specified port number, in order to shut down Tomcat.</p>
+      to the specified port number, in order to shut down JBoss Web.</p>
     </attribute>
 
   </attributes>

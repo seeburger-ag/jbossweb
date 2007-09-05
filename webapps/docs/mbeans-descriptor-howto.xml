@@ -15,8 +15,8 @@
 
 <section name="Introduction">
 
-<p>Tomcat 6 uses JMX MBeans as the technology for implementing 
-manageability of Tomcat.</p>
+<p>JBoss Web uses JMX MBeans as the technology for implementing 
+manageability of JBoss Web.</p>
 
 <p>The descriptions of JMX MBeans for Catalina are in the mbeans-descriptor.xml 
 file in each package.</p>

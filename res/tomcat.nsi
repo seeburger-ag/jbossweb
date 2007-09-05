@@ -6,17 +6,17 @@
   CRCCheck on
   SetCompressor /SOLID lzma
 
-  Name "Apache Tomcat"
+  Name "JBoss Web"
 
   ;Product information
-  VIAddVersionKey ProductName "Apache Tomcat"
-  VIAddVersionKey CompanyName "Apache Software Foundation"
-  VIAddVersionKey LegalCopyright "Copyright (c) 1999-2006 The Apache Software Foundation"
-  VIAddVersionKey FileDescription "Apache Tomcat Installer"
-  VIAddVersionKey FileVersion "2.0"
+  VIAddVersionKey ProductName "JBoss Web"
+  VIAddVersionKey CompanyName "RedHat"
+  VIAddVersionKey LegalCopyright "Copyright (c) 2006-2007 RedHat"
+  VIAddVersionKey FileDescription "JBoss Web Installer"
+  VIAddVersionKey FileVersion "2.1"
   VIAddVersionKey ProductVersion "@VERSION@"
-  VIAddVersionKey Comments "tomcat.apache.org"
-  VIAddVersionKey InternalName "apache-tomcat-@VERSION@.exe"
+  VIAddVersionKey Comments "jbossweb"
+  VIAddVersionKey InternalName "jbossweb-@VERSION@.exe"
   VIProductVersion @VERSION_NUMBER@
 
 !include "MUI.nsh"
