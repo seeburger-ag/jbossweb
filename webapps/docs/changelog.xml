@@ -90,6 +90,11 @@
          <bug>43216</bug>: Set correct StandardSession#accessCount as StandardSession.ACTIVITY_CHECK is true.
           Patch provided by Takayuki Kaneko (pero)
       </fix>
+      <fix>
+        <bug>30949</bug>: Improve previous fix. Ensure requests are re-cycled
+        on cross-context includes and forwards when an exception occurs in the
+        target page. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
