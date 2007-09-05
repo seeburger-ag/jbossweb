@@ -1,10 +1,10 @@
 $Id: RUNNING.txt 354430 2005-12-06 13:44:26Z yoavs $
 
-            ===================================================
-            Running The Apache Tomcat 6.0 Servlet/JSP Container
-            ===================================================
+            ===========================================
+            Running The JBoss Web Servlet/JSP Container
+            ===========================================
 
-Apache Tomcat 6.0 requires the Java 2 Standard Edition Runtime
+JBoss Web requires the Java 2 Standard Edition Runtime
 Environment (JRE) version 5.0 or later.
 
 =============================
@@ -28,64 +28,64 @@ NOTE: You may also use the full JDK rather than just the JRE. In this
       or /usr/local/java/j2sdk5.0.
 
 
-(2) Download and Install the Tomcat Binary Distribution
+(2) Download and Install the JBoss Web Binary Distribution
 
 NOTE:  As an alternative to downloading a binary distribution, you can create
-your own from the Tomcat source repository, as described in "BUILDING.txt".
+your own from the JBoss Web source repository, as described in "BUILDING.txt".
 If you do this, the value to use for "${catalina.home}" will be the "dist"
 subdirectory of your source distribution.
 
-(2.1) Download a binary distribution of Tomcat from:
+(2.1) Download a binary distribution of JBoss Web from:
 
-      http://tomcat.apache.org
+      http://labs.jboss.com/jbossweb/
 
 (2.2) Unpack the binary distribution into a convenient location so that the
       distribution resides in its own directory (conventionally named
-      "apache-tomcat-[version]").  For the purposes of the remainder of this document,
+      "jboss-web-[version]").  For the purposes of the remainder of this document,
       the symbolic name "$CATALINA_HOME" is used to refer to the full
       pathname of the release directory.
 
 
-(3) Start Up Tomcat
+(3) Start Up JBoss Web
 
-(3.1) Tomcat can be started by executing the following commands:
+(3.1) JBoss Web can be started by executing the following commands:
 
       $CATALINA_HOME\bin\startup.bat          (Windows)
 
       $CATALINA_HOME/bin/startup.sh           (Unix)
 
-(3.2) After startup, the default web applications included with Tomcat will be
+(3.2) After startup, the default web applications included with JBoss Web will be
       available by visiting:
 
       http://localhost:8080/
 
-(3.3) Further information about configuring and running Tomcat can be found in
-      the documentation included here, as well as on the Tomcat web site:
+(3.3) Further information about configuring and running JBoss Web can be found in
+      the documentation included here, as well as on the JBoss Web web site:
 
-      http://tomcat.apache.org
+      http://labs.jboss.com/jbossweb/
 
 
-(4) Shut Down Tomcat
+(4) Shut Down JBoss Web
 
-(4.1) Tomcat can be shut down by executing the following command:
+(4.1) JBoss Web can be shut down by executing the following command:
 
       $CATALINA_HOME\bin\shutdown            (Windows)
 
       $CATALINA_HOME/bin/shutdown.sh         (Unix)
 
 
-==================================================
-Advanced Configuration - Multiple Tomcat Instances
-==================================================
+=====================================================
+Advanced Configuration - Multiple JBoss Web Instances
+=====================================================
 
-In many circumstances, it is desirable to have a single copy of a Tomcat
+In many circumstances, it is desirable to have a single copy of a JBoss Web
 binary distribution shared among multiple users on the same server.  To make
 this possible, you can pass a "-Dcatalina.base=$CATALINA_BASE" argument when
 executing the startup command (see (2)). In this
 "-Dcatalina.base=$CATALINA_BASE" argument, replace $CATALINA_BASE with the
-directory that contains the files for your 'personal' Tomcat instance.
+directory that contains the files for your 'personal' JBoss Web instance.
 
-When you use this "-Dcatalina.base=$CATALINA_BASE" argument, Tomcat will
+When you use this "-Dcatalina.base=$CATALINA_BASE" argument, JBoss Web will
 calculate all relative references for files in the following directories based
 on the value of $CATALINA_BASE instead of $CATALINA_HOME:
 
@@ -112,11 +112,11 @@ Troubleshooting
 ================
 
 There are only really 3 things likely to go wrong during the stand-alone
-Tomcat install:
+JBoss Web install:
 
 (1) The most common hiccup is when another web server (or any process for that
     matter) has laid claim to port 8080.  This is the default HTTP port that
-    Tomcat attempts to bind to at startup.  To change this, open the file:
+    JBoss Web attempts to bind to at startup.  To change this, open the file:
 
        $CATALINA_HOME/conf/server.xml
 
@@ -124,8 +124,8 @@ Tomcat install:
     greater than 1024, as ports less than or equal to 1024 require superuser
     access to bind under UNIX.
 
-   Restart Tomcat and you're in business.  Be sure that you replace the "8080"
-   in the URL you're using to access Tomcat.  For example, if you change the
+   Restart JBoss Web and you're in business.  Be sure that you replace the "8080"
+   in the URL you're using to access JBoss Web.  For example, if you change the
    port to 1977, you would request the URL http://localhost:1977/ in your browser.
 
 (2) An "out of environment space" error when running the batch files in

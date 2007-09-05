@@ -1,10 +1,10 @@
 $Id: BUILDING.txt 467221 2006-10-24 03:16:33Z markt $
 
-            ====================================================
-            Building The Apache Tomcat 6.0 Servlet/JSP Container
-            ====================================================
+            ============================================
+            Building The JBoss Web Servlet/JSP Container
+            ============================================
 
-This subproject contains the source code for Tomcat 6.0, a container that
+This subproject contains the source code for JBoss Web, a container that
 implements the Servlet 2.5 and JSP 2.1 specifications from the Java
 Community Process <http://www.jcp.org/>.  In order to build a binary
 distribution version of the container from a source distribution, 
@@ -47,19 +47,19 @@ do the following:
   available, which will be used to actually perform the build.
 
 
-(2) Building Tomcat 6.0
+(2) Building JBoss Web
 
-(2.1) Checkout or obtain the source code for Tomcat 6.0
+(2.1) Checkout or obtain the source code for JBoss Web
 
-* Tomcat SVN repository URL:
-  http://svn.apache.org/repos/asf/tomcat/tc6.0.x/
+* JBoss Web SVN repository URL:
+  http://svn.apache.org/repos/jbossweb/trunk
 
 * Download a source package from:
-  http://tomcat.apache.org/download-60.cgi
+  http://labs.jboss.com/jbossweb
 
 * Checkout the source using SVN, selecting the desired version or
   branch (current development source is at 
-  http://svn.apache.org/repos/asf/tomcat/tc6.0.x/trunk/), or 
+  http://svn.apache.org/repos/jbossweb/trunk), or 
   unpack the source package. The location where the source has been
   placed will be referred as ${tomcat.source}.
 
@@ -96,7 +96,7 @@ do the following:
 
 (3) Updating sources
 
-It is recommended that you regularly update the downloaded Tomcat 6 sources
+It is recommended that you regularly update the downloaded JBoss Web sources
 using your SVN client.
 
 (4) Rebuilds
@@ -106,9 +106,9 @@ For a quick rebuild of only modified code you can use:
     cd ${tomcat.source}
     ant
 
-(5) Building the servlet and jsp API documentation
+(5) Building the Servlet and JSP API documentation
 
-The documentation can be easly built:
+The documentation can be easily built:
 
     cd ${tomcat.source}
     ant -f dist.xml dist-javadoc
