@@ -886,7 +886,7 @@ public class Embedded  extends StandardService implements Lifecycle {
     protected void initNaming() {
         // Setting additional variables
         if (!useNaming) {
-            log.info( "Catalina naming disabled");
+            log.debug( "Catalina naming disabled");
             System.setProperty("catalina.useNaming", "false");
         } else {
             System.setProperty("catalina.useNaming", "true");
