@@ -217,7 +217,6 @@
         <exclude name="org/apache/catalina/tribes/**" />
         <exclude name="org/apache/catalina/launcher/**" />
         <exclude name="org/apache/catalina/storeconfig/**" />
-        <exclude name="org/apache/naming/factory/webservices/**" />
       </fileset>
     </jar>
     
