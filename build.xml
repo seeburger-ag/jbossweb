@@ -489,6 +489,7 @@
       <fileset dir="${tomcat.classes}">
         <include name="org/apache/*" />
         <include name="org/apache/catalina/**" />
+        <exclude name="org/apache/catalina/startup/catalina.properties" />
         <include name="org/apache/naming/**" />
         <include name="org/apache/coyote/**" />
         <include name="org/apache/tomcat/jni/**" />
@@ -498,6 +499,9 @@
         <include name="org/jboss/web/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
+      </fileset>
+      <fileset dir="${basedir}/jboss">
+        <include name="org/apache/catalina/startup/catalina.properties" />
       </fileset>
     </jar>
 
