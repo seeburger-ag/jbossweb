@@ -651,13 +651,10 @@ public class StandardManager
      */
     public void stop() throws LifecycleException {
 
-        if (log.isDebugEnabled())
-            log.debug("Stopping");
-
         // Validate and update our current component state
-        if (!started)
-            throw new LifecycleException
-                (sm.getString("standardManager.notStarted"));
+        if (!started) {
+            return;
+        }
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
