@@ -513,6 +513,16 @@
       </fileset>
     </copy>
 
+    <!-- Create a source jar of the jbossweb/servlet classes -->
+    <zip destfile="${tomcat.jars}/jbossweb-src.zip">
+      <fileset dir="${basedir}/java">
+        <include name="org/**" />
+        <exclude name="org/jboss/logging/**" />
+        <include name="javax/servlet/**" />
+        <include name="javax/el/**" />
+      </fileset>
+    </zip>
+  	
   </target>
 	
   <target name="clean-depend"
