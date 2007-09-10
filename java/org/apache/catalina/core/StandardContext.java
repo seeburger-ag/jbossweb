@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -61,6 +62,7 @@ import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
+import org.apache.AnnotationProcessor;
 import org.apache.InstanceManager;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerListener;
@@ -187,6 +189,12 @@ public class StandardContext
      */
     private String hostName;
 
+    
+    /**
+     * Dummy annotation processor.
+     */
+    private AnnotationProcessor annotationProcessor = new DummyAnnotationProcessor();
+    
 
     /**
      * The antiJARLocking flag for this Context.
@@ -4321,6 +4329,7 @@ public class StandardContext
         // Binding thread
         oldCCL = bindThread();
 
+        // Annotation processor setup
         if (ok ) {
             if (instanceManager == null) {
                 javax.naming.Context context = null;
@@ -4335,6 +4344,7 @@ public class StandardContext
             } else {
                 getServletContext().setAttribute(InstanceManager.class.getName(), instanceManager);
             }
+            getServletContext().setAttribute(AnnotationProcessor.class.getName(), annotationProcessor);
         }
 
         try {
@@ -5684,5 +5694,33 @@ public class StandardContext
     public boolean isStatisticsProvider() {
         return false;
     }
+
+    
+    // ----------------------------------------------- DummyAnnotationProcessor Inner Class
+    
+    
+    protected class DummyAnnotationProcessor implements AnnotationProcessor {
+
+        @Override
+        public void postConstruct(Object instance)
+                throws IllegalAccessException, InvocationTargetException {
+            // Do nothing
+        }
+
+        @Override
+        public void preDestroy(Object instance) throws IllegalAccessException,
+                InvocationTargetException {
+            getInstanceManager().destroyInstance(instance);
+        }
+
+        @Override
+        public void processAnnotations(Object instance)
+                throws IllegalAccessException, InvocationTargetException,
+                NamingException {
+            getInstanceManager().newInstance(instance);
+        }
+        
+    }
+    
     
 }
