@@ -61,7 +61,7 @@ import org.jboss.logging.Logger;
  * be subclassed to create more sophisticated Manager implementations.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 542185 $ $Date: 2007-05-28 12:06:31 +0200 (lun., 28 mai 2007) $
+ * @version $Revision: 573964 $ $Date: 2007-09-09 11:04:27 +0200 (Sun, 09 Sep 2007) $
  */
 
 public abstract class ManagerBase implements Manager, MBeanRegistration {
@@ -1207,12 +1207,22 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public String getLastAccessedTime( String sessionId ) {
         Session s=(Session)sessions.get(sessionId);
         if( s==null ) {
-            log.info("Session not found " + sessionId);
+            if(log.isInfoEnabled())
+                log.info("Session not found " + sessionId);
             return "";
         }
         return new Date(s.getLastAccessedTime()).toString();
     }
 
+    public String getCreationTime( String sessionId ) {
+        Session s=(Session)sessions.get(sessionId);
+        if( s==null ) {
+            if(log.isInfoEnabled())
+                log.info("Session not found " + sessionId);
+            return "";
+        }
+        return new Date(s.getCreationTime()).toString();
+    }
 
     // -------------------- JMX and Registration  --------------------
     protected String domain;

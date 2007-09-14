@@ -163,6 +163,7 @@
     <li><b>%v</b> - Local server name</li>
     <li><b>%D</b> - Time taken to process the request, in millis</li>
     <li><b>%T</b> - Time taken to process the request, in seconds</li>
+    <li><b>%I</b> - current request thread name (can compare later with stacktraces)</li>
     </ul>
 
     <p>
@@ -171,6 +172,7 @@
     It is modeled after the apache syntax:
     <ul>
     <li><b><code>%{xxx}i</code></b> for incoming headers</li>
+    <li><b><code>%{xxx}o</code></b> for outgoing response headers</li>
     <li><b><code>%{xxx}c</code></b> for a specific cookie</li>
     <li><b><code>%{xxx}r</code></b> xxx is an attribute in the ServletRequest</li>
     <li><b><code>%{xxx}s</code></b> xxx is an attribute in the HttpSession</li>
@@ -381,7 +383,10 @@
         rechecking with the <strong>Realm</strong>.</p>
       </attribute>
  
-
+      <attribute name="cookieDomain" required="false">
+        <p>Sets the host domain to be used for sso cookies.</p>
+      </attribute>
+      
     </attributes>
 
   </subsection>

@@ -58,7 +58,7 @@ import org.apache.tomcat.util.net.URL;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision: 542491 $ $Date: 2007-05-29 13:24:13 +0200 (mar., 29 mai 2007) $
+ * @version $Revision: 575478 $ $Date: 2007-09-13 23:56:30 +0200 (Thu, 13 Sep 2007) $
  */
 
 public class Response
@@ -305,7 +305,13 @@ public class Response
     public int getContentCount() {
         return outputBuffer.getContentWritten();
     }
-
+    
+    /**
+     * Return the number of bytes actually written to the output stream.
+     */
+    public long getContentCountLong() {
+        return outputBuffer.getContentWrittenLong();
+    }
 
     /**
      * Set the application commit flag.

@@ -68,6 +68,11 @@
   <subsection name="Catalina">
     <changelog>
       <fix>
+        <bug>30949</bug>: Improve previous fix. Ensure requests are re-cycled
+        on cross-context includes and forwards when an exception occurs in the
+        target page. (markt)
+      </fix>
+      <fix>
         <bug>42944</bug>: Correctly handle servlet mappings that use a '+'
         character as part of the url pattern. (markt)
       </fix>
@@ -87,14 +92,31 @@
         Takayuki Kaneko. (markt)
       </fix>
       <fix>
-         <bug>43216</bug>: Set correct StandardSession#accessCount as StandardSession.ACTIVITY_CHECK is true.
-          Patch provided by Takayuki Kaneko (pero)
+        <bug>43216</bug>: Set correct StandardSession#accessCount as StandardSession.ACTIVITY_CHECK is true.
+        Patch provided by Takayuki Kaneko (pero)
       </fix>
+      <add>
+        Made session createTime accessible for all SessionManager via JMX (pero)
+      </add>
+      <update>
+        <bug>43129</bug>: Support logging of all response header values at AccessLogValve (ex. add %{Set-Cookie}o to your pattern). (pero)
+      </update>
+      <add>
+        Support logging of all response header values at ExtendedAccessLogValve (ex. add x-O(Set-Cookie) to your pattern). (pero)
+      </add>     
+      <add>
+        Support logging of current thread name at AccessLogValve (ex. add %I to your pattern).
+        Usefull to compare access logging entry later with a stacktraces. (pero)
+      </add>
       <fix>
-        <bug>30949</bug>: Improve previous fix. Ensure requests are re-cycled
-        on cross-context includes and forwards when an exception occurs in the
-        target page. (markt)
-      </fix>
+        Improve large-file support (more then 4 Gb) at all AccessLogValves, backport from 5.5.25. (pero)
+      </fix>     
+      <update>
+        Optimized JDBCAccessLogValve combined pattern request attribute access. (pero)
+      </update>
+      <fix>
+        o.a.juli.ClassLoaderLogManager handle more then one system property replacement at file logging.properties. (pero)
+      </fix>     
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -127,7 +149,9 @@
       </fix>
     </changelog>
   </subsection>
+  
 </section>
+
 <section name="Tomcat 6.0.14 (remm)">
   <subsection name="General">
     <changelog>
