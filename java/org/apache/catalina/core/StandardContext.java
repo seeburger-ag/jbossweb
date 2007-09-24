@@ -2963,19 +2963,6 @@ public class StandardContext
 
 
     /**
-     * Return the context-relative URI of the error page for the specified
-     * HTTP status code, if any; otherwise return <code>null</code>.
-     *
-     * @param status HTTP status code to look up
-     */
-    public String findStatusPage(int status) {
-
-        return ((String) statusPages.get(new Integer(status)));
-
-    }
-
-
-    /**
      * Return the set of HTTP status codes for which error pages have
      * been specified.  If none are specified, a zero-length array
      * is returned.
