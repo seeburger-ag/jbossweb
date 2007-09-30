@@ -5688,19 +5688,16 @@ public class StandardContext
     
     protected class DummyAnnotationProcessor implements AnnotationProcessor {
 
-        @Override
         public void postConstruct(Object instance)
                 throws IllegalAccessException, InvocationTargetException {
             // Do nothing
         }
 
-        @Override
         public void preDestroy(Object instance) throws IllegalAccessException,
                 InvocationTargetException {
             getInstanceManager().destroyInstance(instance);
         }
 
-        @Override
         public void processAnnotations(Object instance)
                 throws IllegalAccessException, InvocationTargetException,
                 NamingException {
