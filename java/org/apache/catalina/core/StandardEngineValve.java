@@ -24,12 +24,12 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.CometEvent;
 import org.apache.catalina.Host;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
+import org.apache.comet.CometEvent;
 
 
 /**

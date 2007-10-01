@@ -27,7 +27,6 @@ import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.CometEvent;
 import org.apache.catalina.Container;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
@@ -35,6 +34,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
+import org.apache.comet.CometEvent;
 import org.apache.tomcat.util.buf.MessageBytes;
 
 /**

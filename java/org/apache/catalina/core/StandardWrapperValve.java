@@ -28,8 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.CometEvent;
-import org.apache.catalina.CometProcessor;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.connector.ClientAbortException;
@@ -37,6 +35,8 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
+import org.apache.comet.CometEvent;
+import org.apache.comet.CometProcessor;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.log.SystemLogHandler;
 

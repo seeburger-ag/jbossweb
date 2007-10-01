@@ -20,11 +20,11 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 
-import org.apache.catalina.CometEvent;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.util.StringManager;
+import org.apache.comet.CometEvent;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
 import org.apache.tomcat.util.buf.B2CConverter;
@@ -34,7 +34,6 @@ import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.ServerCookie;
 import org.apache.tomcat.util.net.SocketStatus;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 

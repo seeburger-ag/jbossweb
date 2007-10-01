@@ -26,7 +26,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.CometEvent;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
@@ -37,7 +36,7 @@ import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.jboss.logging.Logger;
+import org.apache.comet.CometEvent;
 import org.jboss.logging.Logger;
 
 
