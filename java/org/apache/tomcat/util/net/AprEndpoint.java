@@ -298,7 +298,7 @@ public class AprEndpoint {
 
 
     /**
-     * Use endfile for sending static files.
+     * Use sendfile for sending static files.
      */
     protected boolean useSendfile = Library.APR_HAS_SENDFILE;
     public void setUseSendfile(boolean useSendfile) { this.useSendfile = useSendfile; }
@@ -314,61 +314,29 @@ public class AprEndpoint {
 
 
     /**
-     * Acceptor thread count.
-     */
-    protected int acceptorThreadCount = 0;
-    public void setAcceptorThreadCount(int acceptorThreadCount) { this.acceptorThreadCount = acceptorThreadCount; }
-    public int getAcceptorThreadCount() { return acceptorThreadCount; }
-
-
-    /**
-     * Sendfile thread count.
-     */
-    protected int sendfileThreadCount = 0;
-    public void setSendfileThreadCount(int sendfileThreadCount) { this.sendfileThreadCount = sendfileThreadCount; }
-    public int getSendfileThreadCount() { return sendfileThreadCount; }
-
-
-    /**
-     * Poller thread count.
-     */
-    protected int pollerThreadCount = 0;
-    public void setPollerThreadCount(int pollerThreadCount) { this.pollerThreadCount = pollerThreadCount; }
-    public int getPollerThreadCount() { return pollerThreadCount; }
-
-
-    /**
      * The socket poller.
      */
-    protected Poller[] pollers = null;
-    protected int pollerRoundRobin = 0;
+    protected Poller poller = null;
     public Poller getPoller() {
-        pollerRoundRobin = (pollerRoundRobin + 1) % pollers.length;
-        return pollers[pollerRoundRobin];
+        return poller;
     }
 
 
     /**
      * The socket poller used for Comet support.
      */
-    protected Poller[] cometPollers = null;
-    protected int cometPollerRoundRobin = 0;
-    // FIXME: due to Comet and the socket state, getPoller should accept the socket as an argument,
-    // or (better) a getPoller(long socket) should be added for cases that need it
+    protected Poller cometPoller = null;
     public Poller getCometPoller() {
-        cometPollerRoundRobin = (cometPollerRoundRobin + 1) % cometPollers.length;
-        return cometPollers[cometPollerRoundRobin];
+        return cometPoller;
     }
 
 
     /**
      * The static file sender.
      */
-    protected Sendfile[] sendfiles = null;
-    protected int sendfileRoundRobin = 0;
+    protected Sendfile sendfile = null;
     public Sendfile getSendfile() {
-        sendfileRoundRobin = (sendfileRoundRobin + 1) % sendfiles.length;
-        return sendfiles[sendfileRoundRobin];
+        return sendfile;
     }
 
 
@@ -496,14 +464,10 @@ public class AprEndpoint {
      * Number of keepalive sockets.
      */
     public int getKeepAliveCount() {
-        if (pollers == null) {
+        if (poller == null) {
             return 0;
         } else {
-            int keepAliveCount = 0;
-            for (int i = 0; i < pollers.length; i++) {
-                keepAliveCount += pollers[i].getKeepAliveCount();
-            }
-            return keepAliveCount;
+            return poller.getKeepAliveCount();
         }
     }
 
@@ -512,14 +476,10 @@ public class AprEndpoint {
      * Number of sendfile sockets.
      */
     public int getSendfileCount() {
-        if (sendfiles == null) {
+        if (sendfile == null) {
             return 0;
         } else {
-            int sendfileCount = 0;
-            for (int i = 0; i < sendfiles.length; i++) {
-                sendfileCount += sendfiles[i].getSendfileCount();
-            }
-            return sendfileCount;
+            return sendfile.getSendfileCount();
         }
     }
 
@@ -627,42 +587,6 @@ public class AprEndpoint {
             useSendfile = false;
         }
 
-        // Initialize thread count defaults for acceptor, poller and sendfile
-        if (acceptorThreadCount == 0) {
-            // FIXME: Doesn't seem to work that well with multiple accept threads
-            acceptorThreadCount = 1;
-        }
-        if (pollerThreadCount == 0) {
-            // FIXME: Default to one per CPU ?
-            pollerThreadCount = 1;
-            /*
-            if ((OS.IS_WIN32 || OS.IS_WIN64) && (pollerSize > 1024)) {
-                // The maximum per poller to get reasonable performance is 1024
-                pollerThreadCount = pollerSize / 1024;
-                // Adjust poller size so that it won't reach the limit
-                pollerSize = pollerSize - (pollerSize % 1024);
-            } else {
-                // No explicit poller size limitation
-                // FIXME: Default to one per CPU ?
-                pollerThreadCount = 1;
-            }*/
-        }
-        if (sendfileThreadCount == 0) {
-            // FIXME: Default to one per CPU ?
-            sendfileThreadCount = 1;
-            /*
-            if ((OS.IS_WIN32 || OS.IS_WIN64) && (sendfileSize > 1024)) {
-                // The maximum per poller to get reasonable performance is 1024
-                sendfileThreadCount = sendfileSize / 1024;
-                // Adjust poller size so that it won't reach the limit
-                sendfileSize = sendfileSize - (sendfileSize % 1024);
-            } else {
-                // No explicit poller size limitation
-                // FIXME: Default to one per CPU ?
-                sendfileThreadCount = 1;
-            }*/
-        }
-        
         // Delay accepting of new connections until data is available
         // Only Linux kernels 2.4 + have that implemented
         // on other platforms this call is noop and will return APR_ENOTIMPL.
@@ -733,48 +657,37 @@ public class AprEndpoint {
                 workers = new WorkerStack(maxThreads);
             }
 
-            // Start poller threads
-            pollers = new Poller[pollerThreadCount];
-            for (int i = 0; i < pollerThreadCount; i++) {
-                pollers[i] = new Poller(false);
-                pollers[i].init();
-                Thread pollerThread = new Thread(pollers[i], getName() + "-Poller-" + i);
-                pollerThread.setPriority(threadPriority);
-                pollerThread.setDaemon(true);
-                pollerThread.start();
-            }
+            // Start poller thread
+            poller = new Poller(false);
+            poller.init();
+            Thread pollerThread = new Thread(poller, getName() + "-Poller");
+            pollerThread.setPriority(threadPriority);
+            pollerThread.setDaemon(true);
+            pollerThread.start();
 
-            // Start comet poller threads
-            cometPollers = new Poller[pollerThreadCount];
-            for (int i = 0; i < pollerThreadCount; i++) {
-                cometPollers[i] = new Poller(true);
-                cometPollers[i].init();
-                Thread pollerThread = new Thread(cometPollers[i], getName() + "-CometPoller-" + i);
-                pollerThread.setPriority(threadPriority);
-                pollerThread.setDaemon(true);
-                pollerThread.start();
-            }
+            // Start comet poller thread
+            cometPoller = new Poller(true);
+            cometPoller.init();
+            Thread cometPollerThread = new Thread(cometPoller, getName() + "-CometPoller");
+            cometPollerThread.setPriority(threadPriority);
+            cometPollerThread.setDaemon(true);
+            cometPollerThread.start();
 
-            // Start sendfile threads
+            // Start sendfile thread
             if (useSendfile) {
-                sendfiles = new Sendfile[sendfileThreadCount];
-                for (int i = 0; i < sendfileThreadCount; i++) {
-                    sendfiles[i] = new Sendfile();
-                    sendfiles[i].init();
-                    Thread sendfileThread = new Thread(sendfiles[i], getName() + "-Sendfile-" + i);
-                    sendfileThread.setPriority(threadPriority);
-                    sendfileThread.setDaemon(true);
-                    sendfileThread.start();
-                }
+                sendfile = new Sendfile();
+                sendfile.init();
+                Thread sendfileThread = new Thread(sendfile, getName() + "-Sendfile");
+                sendfileThread.setPriority(threadPriority);
+                sendfileThread.setDaemon(true);
+                sendfileThread.start();
             }
             
-            // Start acceptor threads
-            for (int i = 0; i < acceptorThreadCount; i++) {
-                Thread acceptorThread = new Thread(new Acceptor(), getName() + "-Acceptor-" + i);
-                acceptorThread.setPriority(threadPriority);
-                acceptorThread.setDaemon(daemon);
-                acceptorThread.start();
-            }
+            // Start acceptor thread
+            Thread acceptorThread = new Thread(new Acceptor(), getName() + "-Acceptor");
+            acceptorThread.setPriority(threadPriority);
+            acceptorThread.setDaemon(daemon);
+            acceptorThread.start();
 
         }
     }
@@ -809,19 +722,13 @@ public class AprEndpoint {
         if (running) {
             running = false;
             unlockAccept();
-            for (int i = 0; i < pollers.length; i++) {
-                pollers[i].destroy();
-            }
-            pollers = null;
-            for (int i = 0; i < cometPollers.length; i++) {
-                cometPollers[i].destroy();
-            }
-            cometPollers = null;
+            poller.destroy();
+            poller = null;
+            cometPoller.destroy();
+            cometPoller = null;
             if (useSendfile) {
-                for (int i = 0; i < sendfiles.length; i++) {
-                    sendfiles[i].destroy();
-                }
-                sendfiles = null;
+                sendfile.destroy();
+                sendfile = null;
             }
         }
     }
@@ -859,7 +766,7 @@ public class AprEndpoint {
 
 
     /**
-     * Unlock the server socket accept using a bugus connection.
+     * Unlock the server socket accept using a bogus connection.
      */
     protected void unlockAccept() {
         java.net.Socket s = null;
@@ -1368,7 +1275,7 @@ public class AprEndpoint {
             timeouts = new SocketTimeouts(pollerSize);
             
             pool = Pool.create(serverSockPool);
-            actualPollerSize = pollerSize / pollerThreadCount;
+            actualPollerSize = pollerSize;
             if ((OS.IS_WIN32 || OS.IS_WIN64) && (actualPollerSize > 1024)) {
                 // The maximum per poller to get reasonable performance is 1024
                 // Adjust poller size so that it won't reach the limit
@@ -1390,7 +1297,7 @@ public class AprEndpoint {
                 pollset = allocatePoller(actualPollerSize, pool, timeout);
             }
             
-            pollerCount = (pollerSize / pollerThreadCount) / actualPollerSize;
+            pollerCount = pollerSize / actualPollerSize;
             pollerTime = pollTime / pollerCount;
             
             pollers = new long[pollerCount];
@@ -1406,8 +1313,8 @@ public class AprEndpoint {
 
             desc = new long[actualPollerSize * 2];
             keepAliveCount = 0;
-            addList = new SocketList(pollerSize / pollerThreadCount);
-            localAddList = new SocketList(pollerSize / pollerThreadCount);
+            addList = new SocketList(pollerSize);
+            localAddList = new SocketList(pollerSize);
 
         }
 
@@ -1933,11 +1840,11 @@ public class AprEndpoint {
 
         /**
          * Create the sendfile poller. With some versions of APR, the maximum poller size will
-         * be 62 (reocmpiling APR is necessary to remove this limitation).
+         * be 62 (recompiling APR is necessary to remove this limitation).
          */
         protected void init() {
             pool = Pool.create(serverSockPool);
-            int size = sendfileSize / sendfileThreadCount;
+            int size = sendfileSize;
             sendfilePollset = allocatePoller(size, pool, soTimeout);
             if (sendfilePollset == 0 && size > 1024) {
                 size = 1024;
@@ -1957,7 +1864,7 @@ public class AprEndpoint {
          */
         protected void destroy() {
             // Wait for polltime before doing anything, so that the poller threads
-            // exit, otherwise parallel descturction of sockets which are still
+            // exit, otherwise parallel destruction of sockets which are still
             // in the poller can cause problems
             try {
                 synchronized (this) {
@@ -2112,7 +2019,7 @@ public class AprEndpoint {
                                 // Close socket and clear pool
                                 remove(state);
                                 // Destroy file descriptor pool, which should close the file
-                                // Close the socket, as the reponse would be incomplete
+                                // Close the socket, as the response would be incomplete
                                 Socket.destroy(state.socket);
                                 continue;
                             }
@@ -2123,7 +2030,7 @@ public class AprEndpoint {
                             if (nw < 0) {
                                 // Close socket and clear pool
                                 remove(state);
-                                // Close the socket, as the reponse would be incomplete
+                                // Close the socket, as the response would be incomplete
                                 // This will close the file too.
                                 Socket.destroy(state.socket);
                                 continue;
