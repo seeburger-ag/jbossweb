@@ -514,6 +514,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             
             SocketState state = SocketState.CLOSED; 
             if (result != null) {
+                result.startProcessing();
                 // Call the appropriate event
                 try {
                     state = result.event(status);
@@ -546,8 +547,9 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         }
                     } else {
                         proto.endpoint.getCometPoller().add(socket, result.getCometTimeout(), 
-                                result.getReadNotifications(), false, false);
+                                result.getReadNotifications(), result.getWriteNotification(), false);
                     }
+                    result.endProcessing();
                 }
             }
             return state;

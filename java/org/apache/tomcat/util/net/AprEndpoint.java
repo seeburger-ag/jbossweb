@@ -342,8 +342,6 @@ public class AprEndpoint {
      */
     protected Poller[] pollers = null;
     protected int pollerRoundRobin = 0;
-    // FIXME: due to Comet and the socket state, getPoller should accept the socket as an argument,
-    // or (better) a getPoller(long socket) should be added for cases that need it
     public Poller getPoller() {
         pollerRoundRobin = (pollerRoundRobin + 1) % pollers.length;
         return pollers[pollerRoundRobin];
@@ -355,6 +353,8 @@ public class AprEndpoint {
      */
     protected Poller[] cometPollers = null;
     protected int cometPollerRoundRobin = 0;
+    // FIXME: due to Comet and the socket state, getPoller should accept the socket as an argument,
+    // or (better) a getPoller(long socket) should be added for cases that need it
     public Poller getCometPoller() {
         cometPollerRoundRobin = (cometPollerRoundRobin + 1) % cometPollers.length;
         return cometPollers[cometPollerRoundRobin];
@@ -1589,12 +1589,6 @@ public class AprEndpoint {
                         SocketInfo info = localAddList.get();
                         while (info != null) {
                             if (info.read || info.write) {
-                                // FIXME: Check concurrency to see if the socket isn't being processed for an
-                                // event (such as a read if a write is added): need to add a "processing event"
-                                // concurrent map ...
-                                if (comet) {
-                                    
-                                }
                                 // Store timeout
                                 timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
                                 if (comet) {
@@ -1653,7 +1647,6 @@ public class AprEndpoint {
                             for (int n = 0; n < rv; n++) {
                                 timeouts.remove(desc[n*2+1]);
                                 // Check for failed sockets and hand this socket off to a worker
-                                // FIXME: Need to check for a write
                                 if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
                                         || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)
                                         || (comet && 
@@ -1671,7 +1664,7 @@ public class AprEndpoint {
                             }
                         } else if (rv < 0) {
                             int errn = -rv;
-                            /* Any non timeup or interrupted error is critical */
+                            // Any non timeup or interrupted error is critical
                             if ((errn != Status.TIMEUP) && (errn != Status.EINTR)) {
                                 if (errn >  Status.APR_OS_START_USERERR) {
                                     errn -=  Status.APR_OS_START_USERERR;
@@ -1689,6 +1682,8 @@ public class AprEndpoint {
                     
                     // Process socket timeouts
                     if (soTimeout > 0 && maintainTime > 1000000L && running) {
+                        // This works and uses only one timeout mechanism for everything, but the
+                        // non Comet poller might be a bit faster by using the old maintain.
                         maintainTime = 0;
                         long date = System.currentTimeMillis();
                         long socket = timeouts.check(date);

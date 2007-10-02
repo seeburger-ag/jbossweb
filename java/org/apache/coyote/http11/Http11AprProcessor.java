@@ -326,12 +326,29 @@ public class Http11AprProcessor implements ActionHook {
     
     protected int cometTimeout = -1;
     protected boolean readNotifications = true;
+    protected boolean writeNotification = false;
     protected boolean nonBlocking = true;
+    protected boolean cometProcessing = false;
     
 
     // ------------------------------------------------------------- Properties
 
     
+    public void startProcessing() {
+        cometProcessing = true;
+    }
+    
+
+    public void endProcessing() {
+        cometProcessing = false;
+    }
+    
+
+    public boolean getWriteNotification() {
+        return writeNotification;
+    }
+    
+
     public boolean getReadNotifications() {
         return readNotifications;
     }
@@ -762,6 +779,8 @@ public class Http11AprProcessor implements ActionHook {
         try {
             // If processing a write event, must flush any leftover bytes first
             if (status == SocketStatus.OPEN_WRITE) {
+                // The write notification is now done
+                writeNotification = false;
                 // FIXME: If the flush does not manage to flush all leftover bytes, it is possible
                 // that the servlet is not going to be able to write bytes. This will be handled properly,
                 // but is wasteful.
@@ -1250,9 +1269,13 @@ public class Http11AprProcessor implements ActionHook {
             readNotifications = true;
             endpoint.getCometPoller().add(socket, timeout, false, false, true);
         } else if (actionCode == ActionCode.ACTION_COMET_WRITE) {
-            // FIXME: Maybe, should check (?)
-            // FIXME: If called synchronously, setting a flag instead of a direct call is needed.
-            endpoint.getCometPoller().add(socket, timeout, false, true, false);
+            // An event is being processed already:adding for write will be done
+            // when the socket gets back to the poller
+            if (cometProcessing) {
+                writeNotification = true;
+            } else {
+                endpoint.getCometPoller().add(socket, timeout, false, true, false);
+            }
         } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
             cometTimeout = ((Integer) param).intValue();
         }
