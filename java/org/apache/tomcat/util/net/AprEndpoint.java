@@ -780,10 +780,8 @@ public class AprEndpoint {
                 // connection quicker
                 s.setSoLinger(true, 0);
             }
-        } catch(Exception e) {
-            if (log.isDebugEnabled()) {
-                log.debug(sm.getString("endpoint.debug.unlock", "" + port), e);
-            }
+        } catch (Exception e) {
+            // Ignore
         } finally {
             if (s != null) {
                 try {
@@ -1286,7 +1284,9 @@ public class AprEndpoint {
                 timeout = soTimeout;
             }
             
-            // FIXME: timeout is useless, look into removing it
+            // At the moment, setting the timeout is useless, but it could get used
+            // again as the normal poller could be faster using maintain. It might not
+            // be worth bothering though.
             long pollset = allocatePoller(actualPollerSize, pool, timeout);
             if (pollset == 0 && actualPollerSize > 1024) {
                 actualPollerSize = 1024;
@@ -1520,6 +1520,7 @@ public class AprEndpoint {
                                     keepAliveCount++;
                                 }
                             } else {
+                                // This is either a resume or a suspend.
                                 if (comet) {
                                     if (info.resume) {
                                         // Resume event
@@ -1531,8 +1532,8 @@ public class AprEndpoint {
                                         timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
                                     }
                                 } else {
-                                    // Should never happen
-                                    // FIXME: ISE ?
+                                    // Should never happen, if not Comet, the socket is always put in
+                                    // the list with the read flag. 
                                     Socket.destroy(info.socket);
                                 }
                             }
@@ -1556,6 +1557,7 @@ public class AprEndpoint {
                                 // Check for failed sockets and hand this socket off to a worker
                                 if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
                                         || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)
+                                        // Comet processes either a read or a write depending on what the poller returns
                                         || (comet && 
                                                 (((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) && !processSocket(desc[n*2+1], SocketStatus.OPEN_READ))
                                                 || (((desc[n*2] & Poll.APR_POLLOUT) == Poll.APR_POLLOUT) && !processSocket(desc[n*2+1], SocketStatus.OPEN_WRITE))) 
@@ -2071,7 +2073,7 @@ public class AprEndpoint {
                             continue;
                         }
                     }
-                    /* TODO: See if we need to call the maintain for sendfile poller */
+                    // FIXME: See if we need to call the maintain for the sendfile poller
                 } catch (Throwable t) {
                     log.error(sm.getString("endpoint.poll.error"), t);
                 }
