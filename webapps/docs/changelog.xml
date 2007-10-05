@@ -117,6 +117,9 @@
       <fix>
         o.a.juli.ClassLoaderLogManager handle more then one system property replacement at file logging.properties. (pero)
       </fix>     
+      <fix>
+        <bug>43487</bug>: Fix request processing stats. (fhanik)
+      </fix>  
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -135,6 +138,9 @@
       <fix>
         <bug>37326</bug>: No error reported when an included page does not
         exist. (markt)
+      </fix>
+      <fix>
+        <bug>41797</bug>: CNFE/NPE thrown from function mapper when externalizing, submitted by Tuomas Kiviaho. (funkman)
       </fix>
     </changelog>
   </subsection>
