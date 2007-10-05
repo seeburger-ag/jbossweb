@@ -918,7 +918,7 @@ public class AprEndpoint {
      */
     protected long allocatePoller(int size, long pool, int timeout) {
         try {
-            return Poll.create(size, pool, 0, timeout * 1000);
+            return Poll.create(size, pool, 0, (timeout > 0) ? (timeout * 1000) : -1);
         } catch (Error e) {
             if (Status.APR_STATUS_IS_EINVAL(e.getError())) {
                 log.info(sm.getString("endpoint.poll.limitedpollsize", "" + size));
@@ -1287,14 +1287,14 @@ public class AprEndpoint {
             // At the moment, setting the timeout is useless, but it could get used
             // again as the normal poller could be faster using maintain. It might not
             // be worth bothering though.
-            long pollset = allocatePoller(actualPollerSize, pool, timeout);
+            long pollset = allocatePoller(actualPollerSize, pool, -1);
             if (pollset == 0 && actualPollerSize > 1024) {
                 actualPollerSize = 1024;
-                pollset = allocatePoller(actualPollerSize, pool, timeout);
+                pollset = allocatePoller(actualPollerSize, pool, -1);
             }
             if (pollset == 0) {
                 actualPollerSize = 62;
-                pollset = allocatePoller(actualPollerSize, pool, timeout);
+                pollset = allocatePoller(actualPollerSize, pool, -1);
             }
             
             pollerCount = pollerSize / actualPollerSize;
@@ -1303,7 +1303,7 @@ public class AprEndpoint {
             pollers = new long[pollerCount];
             pollers[0] = pollset;
             for (int i = 1; i < pollerCount; i++) {
-                pollers[i] = allocatePoller(actualPollerSize, pool, timeout);
+                pollers[i] = allocatePoller(actualPollerSize, pool, -1);
             }
             
             pollerSpace = new int[pollerCount];
@@ -1958,7 +1958,7 @@ public class AprEndpoint {
             if (rv == Status.APR_SUCCESS) {
                 sendfileCount--;
             }
-            sendfileData.remove(data);
+            sendfileData.remove(new Long(data.socket));
         }
 
         /**
@@ -1967,6 +1967,7 @@ public class AprEndpoint {
          */
         public void run() {
 
+            long maintainTime = 0;
             // Loop until we receive a shutdown command
             while (running) {
 
@@ -1980,6 +1981,8 @@ public class AprEndpoint {
                 }
 
                 while (sendfileCount < 1 && addS.size() < 1) {
+                    // Reset maintain time.
+                    maintainTime = 0;
                     try {
                         synchronized (this) {
                             this.wait();
@@ -2008,6 +2011,8 @@ public class AprEndpoint {
                             addS.clear();
                         }
                     }
+
+                    maintainTime += pollTime;
                     // Pool for the specified interval
                     int rv = Poll.poll(sendfilePollset, pollTime, desc, false);
                     if (rv > 0) {
@@ -2073,7 +2078,22 @@ public class AprEndpoint {
                             continue;
                         }
                     }
-                    // FIXME: See if we need to call the maintain for the sendfile poller
+                    // Call maintain for the sendfile poller
+                    if (soTimeout > 0 && maintainTime > 1000000L && running) {
+                        rv = Poll.maintain(sendfilePollset, desc, true);
+                        maintainTime = 0;
+                        if (rv > 0) {
+                            for (int n = 0; n < rv; n++) {
+                                // Get the sendfile state
+                                SendfileData state = sendfileData.get(new Long(desc[n]));
+                                // Close socket and clear pool
+                                remove(state);
+                                // Destroy file descriptor pool, which should close the file
+                                // Close the socket, as the response would be incomplete
+                                Socket.destroy(state.socket);
+                            }
+                        }
+                    }
                 } catch (Throwable t) {
                     log.error(sm.getString("endpoint.poll.error"), t);
                 }
