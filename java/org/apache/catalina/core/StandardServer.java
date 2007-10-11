@@ -42,11 +42,10 @@ import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.ServerInfo;
+import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.buf.StringCache;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -360,7 +359,7 @@ public final class StandardServer
         if( port==-1 ) {
             while( true ) {
                 try {
-                    Thread.sleep( 100000 );
+                    Thread.sleep(10000);
                 } catch( InterruptedException ex ) {
                 }
                 if( stopAwait ) return;
@@ -746,6 +745,9 @@ public final class StandardServer
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
+
+        if (port == -1)
+            stopAwait();
 
     }
 
