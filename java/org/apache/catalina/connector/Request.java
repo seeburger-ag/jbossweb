@@ -56,6 +56,7 @@ import org.apache.tomcat.util.http.mapper.MappingData;
 
 import org.apache.coyote.ActionCode;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
@@ -82,6 +83,10 @@ import org.apache.catalina.util.StringParser;
 
 public class Request
     implements HttpServletRequest {
+
+
+    protected static final boolean SESSION_ID_CHECK = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SESSION_ID_CHECK", "false")).booleanValue();
 
 
     // ----------------------------------------------------------- Constructors
@@ -2320,21 +2325,40 @@ public class Request
               (sm.getString("coyoteRequest.sessionCreateCommitted"));
         }
 
-        // Attempt to reuse session id if one was submitted in a cookie
-        // Do not reuse the session id if it is from a URL, to prevent possible
-        // phishing attacks
-        if (connector.getEmptySessionPath() 
-                && isRequestedSessionIdFromCookie()) {
-            session = manager.createSession(getRequestedSessionId());
-        } else {
-            session = manager.createSession(null);
+        // Verify that the submitted session id exists in one of the host's web applications
+        String sessionId = requestedSessionId;
+        if (sessionId != null) {
+            if (SESSION_ID_CHECK) {
+                boolean found = false;
+                try {
+                    if (!found) {
+                        Container children[] = getHost().findChildren();
+                        for (int i = 0; (i < children.length) && !found; i++) {
+                            if ((children[i].getManager() != null) 
+                                    && (children[i].getManager().findSession(sessionId) != null)) {
+                                found = true;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    // Ignore: one manager is broken, and it will show up elsewhere again
+                }
+                if (!found) {
+                    sessionId = null;
+                }
+            } else if (!isRequestedSessionIdFromCookie()) {
+                sessionId = null;
+            }
         }
+        session = manager.createSession(sessionId);
 
         // Creating a new session cookie based on that session
-        if ((session != null) && (getContext() != null)
-               && getContext().getCookies()) {
+        // If there was no cookie with the current session id, add a cookie to the response
+        if ( (session != null) && (getContext() != null)
+               && getContext().getCookies()
+               && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(getRequestedSessionId()))) ) {
             Cookie cookie = new Cookie(Globals.SESSION_COOKIE_NAME,
-                                       session.getIdInternal());
+                    session.getIdInternal());
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
         }
@@ -2355,15 +2379,7 @@ public class Request
      */
     protected void configureSessionCookie(Cookie cookie) {
         cookie.setMaxAge(-1);
-        String contextPath = null;
-        if (!connector.getEmptySessionPath() && (getContext() != null)) {
-            contextPath = getContext().getEncodedPath();
-        }
-        if ((contextPath != null) && (contextPath.length() > 0)) {
-            cookie.setPath(contextPath);
-        } else {
-            cookie.setPath("/");
-        }
+        cookie.setPath("/");
         if (isSecure()) {
             cookie.setSecure(true);
         }
