@@ -2080,7 +2080,7 @@ public class AprEndpoint {
                     }
                     // Call maintain for the sendfile poller
                     if (soTimeout > 0 && maintainTime > 1000000L && running) {
-                        rv = Poll.maintain(sendfilePollset, desc, true);
+                        rv = Poll.maintain(sendfilePollset, desc, false);
                         maintainTime = 0;
                         if (rv > 0) {
                             for (int n = 0; n < rv; n++) {
