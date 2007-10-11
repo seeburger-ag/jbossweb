@@ -266,7 +266,8 @@ public final class IntrospectionUtils {
 
         try {
             Method methods[] = findMethods(o.getClass());
-            Method setPropertyMethod = null;
+            Method setPropertyMethodVoid = null;
+            Method setPropertyMethodBool = null;
 
             // First, the ideal case - a setFoo( String ) method
             for (int i = 0; i < methods.length; i++) {
@@ -333,18 +334,26 @@ public final class IntrospectionUtils {
                 }
 
                 // save "setProperty" for later
-                if ("setProperty".equals(methods[i].getName())) {
-                    setPropertyMethod = methods[i];
+                if ("setProperty".equals(methods[i].getName())) { 
+                    if (methods[i].getReturnType() == Boolean.TYPE){
+                        setPropertyMethodBool = methods[i];
+                    } else {
+                        setPropertyMethodVoid = methods[i];    
+                    }
                 }
             }
 
             // Ok, no setXXX found, try a setProperty("name", "value")
-            if (setPropertyMethod != null) {
+            if (setPropertyMethodBool != null || setPropertyMethodVoid != null) {
                 Object params[] = new Object[2];
                 params[0] = name;
                 params[1] = value;
-                setPropertyMethod.invoke(o, params);
-                return true;
+                if (setPropertyMethodBool != null) {
+                    return (Boolean) setPropertyMethodBool.invoke(o, params);
+                } else {
+                    setPropertyMethodVoid.invoke(o, params);
+                    return true;
+                }
             }
 
         } catch (IllegalArgumentException ex2) {

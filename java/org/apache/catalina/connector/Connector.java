@@ -41,7 +41,6 @@ import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
 
 
 /**
@@ -307,26 +306,12 @@ public class Connector
     /**
      * Set a configured property.
      */
-    public void setProperty(String name, String value) {
+    public boolean setProperty(String name, String value) {
         String repl = name;
         if (replacements.get(name) != null) {
             repl = (String) replacements.get(name);
         }
-        if (!IntrospectionUtils.setProperty(protocolHandler, repl, value)) {
-            log.warn("Property " + name + " not found on the protocol handler.");
-        }
-    }
-
-
-    /**
-     * Set a configured property.
-     */
-    public void setPropertyInternal(String name, String value) {
-        String repl = name;
-        if (replacements.get(name) != null) {
-            repl = (String) replacements.get(name);
-        }
-        IntrospectionUtils.setProperty(protocolHandler, repl, value);
+        return IntrospectionUtils.setProperty(protocolHandler, repl, value);
     }
 
 
@@ -396,7 +381,7 @@ public class Connector
     public void setAllowTrace(boolean allowTrace) {
 
         this.allowTrace = allowTrace;
-        setPropertyInternal("allowTrace", String.valueOf(allowTrace));
+        setProperty("allowTrace", String.valueOf(allowTrace));
 
     }
 
@@ -474,7 +459,7 @@ public class Connector
     public void setEnableLookups(boolean enableLookups) {
 
         this.enableLookups = enableLookups;
-        setPropertyInternal("enableLookups", String.valueOf(enableLookups));
+        setProperty("enableLookups", String.valueOf(enableLookups));
 
     }
 
@@ -544,7 +529,7 @@ public class Connector
     public void setMaxSavePostSize(int maxSavePostSize) {
 
         this.maxSavePostSize = maxSavePostSize;
-        setPropertyInternal("maxSavePostSize", String.valueOf(maxSavePostSize));
+        setProperty("maxSavePostSize", String.valueOf(maxSavePostSize));
     }
 
 
@@ -566,7 +551,7 @@ public class Connector
     public void setPort(int port) {
 
         this.port = port;
-        setPropertyInternal("port", String.valueOf(port));
+        setProperty("port", String.valueOf(port));
 
     }
 
@@ -730,7 +715,7 @@ public class Connector
 
         if(proxyName != null && proxyName.length() > 0) {
             this.proxyName = proxyName;
-            setPropertyInternal("proxyName", proxyName);
+            setProperty("proxyName", proxyName);
         } else {
             this.proxyName = null;
             removeProperty("proxyName");
@@ -757,7 +742,7 @@ public class Connector
     public void setProxyPort(int proxyPort) {
 
         this.proxyPort = proxyPort;
-        setPropertyInternal("proxyPort", String.valueOf(proxyPort));
+        setProperty("proxyPort", String.valueOf(proxyPort));
 
     }
 
@@ -782,7 +767,7 @@ public class Connector
     public void setRedirectPort(int redirectPort) {
 
         this.redirectPort = redirectPort;
-        setPropertyInternal("redirectPort", String.valueOf(redirectPort));
+        setProperty("redirectPort", String.valueOf(redirectPort));
 
     }
 
@@ -831,7 +816,7 @@ public class Connector
     public void setSecure(boolean secure) {
 
         this.secure = secure;
-        setPropertyInternal("secure", Boolean.toString(secure));
+        setProperty("secure", Boolean.toString(secure));
     }
 
      /**
@@ -852,7 +837,7 @@ public class Connector
      public void setURIEncoding(String URIEncoding) {
 
          this.URIEncoding = URIEncoding;
-         setPropertyInternal("uRIEncoding", URIEncoding);
+         setProperty("uRIEncoding", URIEncoding);
 
      }
 
@@ -875,7 +860,7 @@ public class Connector
      public void setUseBodyEncodingForURI(boolean useBodyEncodingForURI) {
 
          this.useBodyEncodingForURI = useBodyEncodingForURI;
-         setPropertyInternal
+         setProperty
              ("useBodyEncodingForURI", String.valueOf(useBodyEncodingForURI));
 
      }
@@ -903,7 +888,7 @@ public class Connector
      */
     public void setXpoweredBy(boolean xpoweredBy) {
         this.xpoweredBy = xpoweredBy;
-        setPropertyInternal("xpoweredBy", String.valueOf(xpoweredBy));
+        setProperty("xpoweredBy", String.valueOf(xpoweredBy));
     }
 
     /**
@@ -914,7 +899,7 @@ public class Connector
      */
     public void setUseIPVHosts(boolean useIPVHosts) {
         this.useIPVHosts = useIPVHosts;
-        setPropertyInternal("useIPVHosts", String.valueOf(useIPVHosts));
+        setProperty("useIPVHosts", String.valueOf(useIPVHosts));
     }
 
     /**

@@ -47,7 +47,6 @@ import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.log.SystemLogHandler;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
 
 
 /**
@@ -427,7 +426,7 @@ public class Embedded  extends StandardService implements Lifecycle {
                 connector = new Connector();
                 connector.setScheme("https");
                 connector.setSecure(true);
-                connector.setPropertyInternal("SSLEnabled","true");
+                connector.setProperty("SSLEnabled","true");
                 // FIXME !!!! SET SSL PROPERTIES
             } else {
                 connector = new Connector(protocol);
