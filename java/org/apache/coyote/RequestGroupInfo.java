@@ -50,6 +50,10 @@ public class RequestGroupInfo {
         }
     }
 
+    public synchronized  RequestInfo[] getRequestProcessors() {
+        return (RequestInfo[]) processors.toArray(new RequestInfo[0]);
+    }
+    
     public synchronized long getMaxTime() {
         long maxTime=deadMaxTime;
         for( int i=0; i<processors.size(); i++ ) {

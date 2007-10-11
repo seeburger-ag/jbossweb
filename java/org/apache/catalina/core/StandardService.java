@@ -573,13 +573,6 @@ public class StandardService
             }
         }
 
-        // Heuristic: Sleep for a while to ensure pause of the connector
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            // Ignore
-        }
-
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         if(log.isInfoEnabled())
             log.info
@@ -594,7 +587,7 @@ public class StandardService
                 }
             }
         }
-        // FIXME pero -- Why container stop first? KeepAlive connetions can send request! 
+
         // Stop our defined Connectors first
         synchronized (connectors) {
             for (int i = 0; i < connectors.length; i++) {

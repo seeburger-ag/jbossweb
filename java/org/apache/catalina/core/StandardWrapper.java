@@ -111,8 +111,7 @@ public class StandardWrapper
     protected NotificationBroadcasterSupport broadcaster = null;
     
     /**
-     * The count of allocations that are currently active (even if they
-     * are for the same instance, as will be true on a non-STM servlet).
+     * The count of allocations that are currently active for STM servlets.
      */
     protected int countAllocated = 0;
 
@@ -308,9 +307,7 @@ public class StandardWrapper
 
 
     /**
-     * Return the number of active allocations of this servlet, even if they
-     * are all for the same instance (as will be true for servlets that do
-     * not implement <code>SingleThreadModel</code>.
+     * Return the number of active allocations of this servlet.
      */
     public int getCountAllocated() {
 
@@ -791,7 +788,6 @@ public class StandardWrapper
             if (!singleThreadModel) {
                 if (log.isTraceEnabled())
                     log.trace("  Returning non-STM instance");
-                countAllocated++;
                 return (instance);
             }
 
@@ -842,7 +838,6 @@ public class StandardWrapper
 
         // If not SingleThreadModel, no action is required
         if (!singleThreadModel) {
-            countAllocated--;
             return;
         }
 
@@ -1236,25 +1231,6 @@ public class StandardWrapper
         if (!singleThreadModel && (instance == null))
             return;
         unloading = true;
-
-        // Loaf a while if the current instance is allocated
-        // (possibly more than once if non-STM)
-        if (countAllocated > 0) {
-            int nRetries = 0;
-            long delay = unloadDelay / 20;
-            while ((nRetries < 21) && (countAllocated > 0)) {
-                if ((nRetries % 10) == 0) {
-                    log.info(sm.getString("standardWrapper.waiting",
-                                          new Integer(countAllocated)));
-                }
-                try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException e) {
-                    ;
-                }
-                nRetries++;
-            }
-        }
 
         PrintStream out = System.out;
         if (swallowOutput) {
