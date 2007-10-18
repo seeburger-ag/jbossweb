@@ -56,6 +56,9 @@
       <fix>
         Update session cookie handling (path always set to /) and id generation (check host's webapps for a matching id). (remm)
       </fix>
+      <fix>
+        More extensible SSO. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -72,6 +75,13 @@
 </section>
 
 <section name="Tomcat 6.0.15 (remm)">
+  <subsection name="General">
+    <changelog>
+      <fix>
+        Use Eclipse JDT 3.3.1. (pero)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Catalina">
     <changelog>
       <fix>
@@ -129,6 +139,13 @@
         Patch provided by Keiichi Fujino. (pero)
       </fix>
       <fix>
+        <bug>41797</bug>: CNFE/NPE thrown from function mapper when externalizing
+        Patch by Tuomas Kiviaho- tuomas.kiviahos at ikis fi (funkman)
+      </fix>
+      <fix>
+        Call stopAwait in StandardServer.stop if port == -1. (pero)
+      </fix>
+      <fix>
         <bug>43487</bug>: Fix request processing stats. (fhanik)
       </fix>  
     </changelog>
@@ -159,9 +176,6 @@
         <bug>37326</bug>: No error reported when an included page does not
         exist. (markt)
       </fix>
-      <fix>
-        <bug>41797</bug>: CNFE/NPE thrown from function mapper when externalizing, submitted by Tuomas Kiviaho. (funkman)
-      </fix>
     </changelog>
   </subsection>
   <subsection name="Webapps">
@@ -170,8 +184,15 @@
         Fix WebDAV Servlet so it works correctly with MS clients. (markt)
       </fix>
       <fix>
+        Fix CVE-2007-5461, an important information disclosure vulnerability in
+        the WebDAV Servlet. (markt)
+      </fix>
+      <fix>
         <bug>42979</bug>: Update sample.war to include recent security fixes
         in the source code. (markt)
+      </fix>
+      <fix>
+        Minor connector doc fix. (jfclere)
       </fix>
     </changelog>
   </subsection>
