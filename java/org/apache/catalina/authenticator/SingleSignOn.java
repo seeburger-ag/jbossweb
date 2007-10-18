@@ -95,7 +95,7 @@ public class SingleSignOn
      * reauthenticate each request, or if it itself can bind a UserPrincipal
      * and AuthType object to the request.
      */
-    private boolean requireReauthentication = false;
+    protected boolean requireReauthentication = false;
 
     /**
      * The cache of single sign on identifiers, keyed by the Session that is
@@ -119,7 +119,7 @@ public class SingleSignOn
     /**
      * Optional SSO cookie domain.
      */
-    private String cookieDomain;
+    protected String cookieDomain;
 
     // ------------------------------------------------------------- Properties
 
@@ -308,8 +308,6 @@ public class SingleSignOn
 
         // Look up the single session id associated with this session (if any)
         Session session = event.getSession();
-        if (containerLog.isDebugEnabled())
-            containerLog.debug("Process session destroyed on " + session);
 
         String ssoId = null;
         synchronized (reverse) {
@@ -365,19 +363,12 @@ public class SingleSignOn
         request.removeNote(Constants.REQ_SSOID_NOTE);
 
         // Has a valid user already been authenticated?
-        if (containerLog.isDebugEnabled())
-            containerLog.debug("Process request for '" + request.getRequestURI() + "'");
         if (request.getUserPrincipal() != null) {
-            if (containerLog.isDebugEnabled())
-                containerLog.debug(" Principal '" + request.getUserPrincipal().getName() +
-                    "' has already been authenticated");
             getNext().invoke(request, response);
             return;
         }
 
         // Check for the single sign on cookie
-        if (containerLog.isDebugEnabled())
-            containerLog.debug(" Checking for SSO cookie");
         Cookie cookie = null;
         Cookie cookies[] = request.getCookies();
         if (cookies == null)
@@ -389,21 +380,13 @@ public class SingleSignOn
             }
         }
         if (cookie == null) {
-            if (containerLog.isDebugEnabled())
-                containerLog.debug(" SSO cookie is not present");
             getNext().invoke(request, response);
             return;
         }
 
         // Look up the cached Principal associated with this cookie value
-        if (containerLog.isDebugEnabled())
-            containerLog.debug(" Checking for cached principal for " + cookie.getValue());
         SingleSignOnEntry entry = lookup(cookie.getValue());
         if (entry != null) {
-            if (containerLog.isDebugEnabled())
-                containerLog.debug(" Found cached principal '" +
-                    (entry.getPrincipal() != null ? entry.getPrincipal().getName() : "") + "' with auth type '" +
-                    entry.getAuthType() + "'");
             request.setNote(Constants.REQ_SSOID_NOTE, cookie.getValue());
             // Only set security elements if reauthentication is not required
             if (!getRequireReauthentication()) {
@@ -411,8 +394,6 @@ public class SingleSignOn
                 request.setUserPrincipal(entry.getPrincipal());
             }
         } else {
-            if (containerLog.isDebugEnabled())
-                containerLog.debug(" No cached principal found, erasing SSO cookie");
             cookie.setMaxAge(0);
             response.addCookie(cookie);
         }
@@ -452,10 +433,7 @@ public class SingleSignOn
      * @param ssoId Single sign on identifier
      * @param session Session to be associated
      */
-    protected void associate(String ssoId, Session session) {
-
-        if (containerLog.isDebugEnabled())
-            containerLog.debug("Associate sso id " + ssoId + " with session " + session);
+    public void associate(String ssoId, Session session) {
 
         SingleSignOnEntry sso = lookup(ssoId);
         if (sso != null)
@@ -502,10 +480,7 @@ public class SingleSignOn
      *
      * @param ssoId Single sign on identifier to deregister
      */
-    protected void deregister(String ssoId) {
-
-        if (containerLog.isDebugEnabled())
-            containerLog.debug("Deregistering sso id '" + ssoId + "'");
+    public void deregister(String ssoId) {
 
         // Look up and remove the corresponding SingleSignOnEntry
         SingleSignOnEntry sso = null;
@@ -519,8 +494,6 @@ public class SingleSignOn
         // Expire any associated sessions
         Session sessions[] = sso.findSessions();
         for (int i = 0; i < sessions.length; i++) {
-            if (containerLog.isTraceEnabled())
-                containerLog.trace(" Invalidating session " + sessions[i]);
             // Remove from reverse cache first to avoid recursion
             synchronized (reverse) {
                 reverse.remove(sessions[i]);
@@ -557,7 +530,7 @@ public class SingleSignOn
      * @return  <code>true</code> if reauthentication was successful,
      *          <code>false</code> otherwise.
      */
-    protected boolean reauthenticate(String ssoId, Realm realm,
+    public boolean reauthenticate(String ssoId, Realm realm,
                                      Request request) {
 
         if (ssoId == null || realm == null)
@@ -596,12 +569,8 @@ public class SingleSignOn
      * @param username Username used to authenticate this user
      * @param password Password used to authenticate this user
      */
-    protected void register(String ssoId, Principal principal, String authType,
+    public void register(String ssoId, Principal principal, String authType,
                   String username, String password) {
-
-        if (containerLog.isDebugEnabled())
-            containerLog.debug("Registering sso id '" + ssoId + "' for user '" +
-                (principal != null ? principal.getName() : "") + "' with auth type '" + authType + "'");
 
         synchronized (cache) {
             cache.put(ssoId, new SingleSignOnEntry(principal, authType,
@@ -641,14 +610,11 @@ public class SingleSignOn
 
         SingleSignOnEntry sso = lookup(ssoId);
         if (sso != null && !sso.getCanReauthenticate()) {
-            if (containerLog.isDebugEnabled())
-                containerLog.debug("Update sso id " + ssoId + " to auth type " + authType);
-
             synchronized(sso) {
                 sso.updateCredentials(principal, authType, username, password);
             }
-
         }
+
     }
 
 
@@ -675,10 +641,6 @@ public class SingleSignOn
      * @param session the session to be removed.
      */
     protected void removeSession(String ssoId, Session session) {
-
-        if (containerLog.isDebugEnabled())
-            containerLog.debug("Removing session " + session.toString() + " from sso id " + 
-                ssoId );
 
         // Get a reference to the SingleSignOn
         SingleSignOnEntry entry = lookup(ssoId);
