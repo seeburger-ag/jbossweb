@@ -57,6 +57,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -245,6 +246,13 @@ public class WebdavServlet
             documentBuilderFactory.setNamespaceAware(true);
             documentBuilderFactory.setExpandEntityReferences(false);
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            documentBuilder.setEntityResolver
+                (new EntityResolver() {
+                    public InputSource resolveEntity(String publicId, String systemId) 
+                        throws SAXException, IOException {
+                        throw new IllegalStateException(sm.getString("webdavservlet.noentities"));
+                    }
+                });
         } catch(ParserConfigurationException e) {
             throw new ServletException
                 (sm.getString("webdavservlet.jaxpfailed"));

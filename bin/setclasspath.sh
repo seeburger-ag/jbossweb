@@ -14,12 +14,12 @@ if [ -z "$JAVA_HOME" -a -z "$JRE_HOME" ]; then
   if $darwin && [ -d "/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home" ]; then
     export JAVA_HOME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home"
   else
-    if [ ! -x /usr/bin/java ]; then
+    if [ -x /usr/bin/java ]; then
+      JRE_HOME=/usr
+    else
       echo "Neither the JAVA_HOME nor the JRE_HOME environment variable is defined"
       echo "At least one of these environment variable is needed to run this program"
       exit 1
-    else
-      JRE_HOME=/usr
     fi
   fi
 fi
