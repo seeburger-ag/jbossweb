@@ -163,6 +163,9 @@
         Cookie parser refactoring, submitted by John Kew. (remm)
       </update>
       <fix>
+        Make cookie escaping / unescaping consistent. (markt)
+      </fix>
+      <fix>
         <bug>43479</bug>: Memory leak cleaning up sendfile connections, submitted by Chris Elving. (remm)
       </fix>
       <fix>

@@ -35,6 +35,9 @@ import org.apache.tomcat.util.buf.MessageBytes;
  */
 public final class Cookies { // extends MultiMap {
 
+    private static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger(Cookies.class );
+
     // expected average number of cookies per request
     public static final int INITIAL_SIZE=4; 
     ServerCookie scookies[]=new ServerCookie[INITIAL_SIZE];
@@ -187,11 +190,13 @@ public final class Cookies { // extends MultiMap {
 
             // Uncomment to test the new parsing code
             if( cookieValue.getType() == MessageBytes.T_BYTES ) {
+                if( dbg>0 ) log( "Parsing b[]: " + cookieValue.toString());
                 ByteChunk bc=cookieValue.getByteChunk();
                 processCookieHeader( bc.getBytes(),
                                      bc.getOffset(),
                                      bc.getLength());
             } else {
+                if( dbg>0 ) log( "Parsing S: " + cookieValue.toString());
                 processCookieHeader( cookieValue.toString() );
             }
             pos++;// search from the next position
@@ -219,7 +224,7 @@ public final class Cookies { // extends MultiMap {
     
     private void processCookieHeader(  String cookieString )
     {
-
+        if( dbg>0 ) log( "Parsing cookie header " + cookieString );
         // normal cookie, with a string value.
         // This is the original code, un-optimized - it shouldn't
         // happen in normal case
@@ -243,7 +248,7 @@ public final class Cookies { // extends MultiMap {
                 
                 cookie.getName().setString(name);
                 cookie.getValue().setString(value);
-
+                if( dbg > 0 ) log( "Add cookie " + name + "=" + value);
             } else {
                 // we have a bad cookie.... just let it go
             }
@@ -272,6 +277,14 @@ public final class Cookies { // extends MultiMap {
         }
         return value;
     }  
+
+
+    // log
+    static final int dbg=0;
+    public void log(String s ) {
+        if (log.isDebugEnabled())
+            log.debug("Cookies: " + s);
+    }
 
 
    /**
@@ -332,9 +345,11 @@ public final class Cookies { // extends MultiMap {
         int version = 0;
         ServerCookie sc=null;
         boolean isSpecial;
+        boolean isQuoted;
 
         while (pos < end) {
             isSpecial = false;
+            isQuoted = false;
 
             // Skip whitespace and non-token characters (separators)
             while (pos < end && 
@@ -376,6 +391,7 @@ public final class Cookies { // extends MultiMap {
                 // token, name-only with an '=', or other (bad)
                 switch (bytes[pos]) {
                 case '"':; // Quoted Value
+                    isQuoted = true;
                     valueStart=pos + 1; // strip "
                     // getQuotedValue returns the position before 
                     // at the last qoute. This must be dealt with
@@ -410,6 +426,7 @@ public final class Cookies { // extends MultiMap {
                         // INVALID COOKIE, advance to next delimiter
                         // The starting character of the cookie value was
                         // not valid.
+                        log("Invalid cookie. Value not a token or quoted value");
                         while (pos < end && bytes[pos] != ';' && 
                                bytes[pos] != ',') 
                             {pos++; };
@@ -507,7 +524,8 @@ public final class Cookies { // extends MultiMap {
                     continue;
                 } 
 
-                // Unknown cookie
+                // Unknown cookie, complain
+                log("Unknown Special Cookie");
 
             } else { // Normal Cookie
                 sc = addCookie();
@@ -517,7 +535,12 @@ public final class Cookies { // extends MultiMap {
                 
                 if (valueStart != -1) { // Normal AVPair
                     sc.getValue().setBytes( bytes, valueStart,
-                                            valueEnd-valueStart);
+                            valueEnd-valueStart);
+                    if (isQuoted) {
+                        // We know this is a byte value so this is safe
+                        ServerCookie.unescapeDoubleQuotes(
+                                sc.getValue().getByteChunk());
+                    }
                 } else {
                     // Name Only
                     sc.getValue().setString(""); 
