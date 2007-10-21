@@ -20,6 +20,7 @@ package org.apache.catalina.servlets;
 
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.security.MessageDigest;
@@ -250,7 +251,7 @@ public class WebdavServlet
                 (new EntityResolver() {
                     public InputSource resolveEntity(String publicId, String systemId) 
                         throws SAXException, IOException {
-                        throw new IllegalStateException(sm.getString("webdavservlet.noentities"));
+                        return new InputSource(new StringReader(""));
                     }
                 });
         } catch(ParserConfigurationException e) {
