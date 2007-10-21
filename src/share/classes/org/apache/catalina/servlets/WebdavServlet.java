@@ -20,6 +20,7 @@ package org.apache.catalina.servlets;
 
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.security.MessageDigest;
@@ -56,6 +57,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -244,6 +246,13 @@ public class WebdavServlet
             documentBuilderFactory.setNamespaceAware(true);
             documentBuilderFactory.setExpandEntityReferences(false);
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            documentBuilder.setEntityResolver
+                (new EntityResolver() {
+                    public InputSource resolveEntity(String publicId, String systemId) 
+                        throws SAXException, IOException {
+                    	return new InputSource(new StringReader(""));
+                    }
+                });
         } catch(ParserConfigurationException e) {
             throw new ServletException
                 (sm.getString("webdavservlet.jaxpfailed"));
