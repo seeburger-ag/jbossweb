@@ -41,7 +41,7 @@ public class Constants {
 
     // Cookie name for single sign on support
     public static final String SINGLE_SIGN_ON_COOKIE =
-        System.getProperty("org.apache.catalina.JSESSIONIDSSO", "JSESSIONIDSSO");
+        System.getProperty("org.apache.catalina.authenticator.Constants.JSESSIONIDSSO", "JSESSIONIDSSO");
 
 
     // --------------------------------------------------------- Request Notes
