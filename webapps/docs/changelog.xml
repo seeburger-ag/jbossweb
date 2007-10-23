@@ -80,6 +80,9 @@
       <fix>
         Use Eclipse JDT 3.3.1. (pero)
       </fix>
+      <update>
+        Try to guess java path in Unix scripts. (jfclere)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
@@ -148,6 +151,16 @@
       <fix>
         <bug>43487</bug>: Fix request processing stats. (fhanik)
       </fix>  
+      <fix>
+        Fix CVE-2007-5461, an important information disclosure vulnerability in
+        the WebDAV Servlet. Based on a patch by Marc Schoenefeld. (markt)
+      </fix>
+      <fix>
+        Call stopAwait in StandardServer.stop if port == -1. (pero)
+      </fix>
+      <fix>
+        <bug>43668</bug>: Fix problem on a Forward when the outer most wrapper isn't a HttpServletRequest/ResponseWrapper. (billbarker)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -170,6 +183,9 @@
       </fix>
       <fix>
         <bug>42925</bug>: Add maintain for sendfile. (remm)
+      </fix>
+      <fix>
+        Properly close sockets for java.io AJP connector. (jfclere)
       </fix>
     </changelog>
   </subsection>
