@@ -448,6 +448,7 @@
          <exclude name="**/*.launch"/>
       </fileset>
     </copy>
+    <chmod perm="ug+x" dir="${tomcat.build}/bin" includes="*.sh"/>
 
   	<!-- Copy static resource files -->
     <copy todir="${tomcat.build}/conf">
