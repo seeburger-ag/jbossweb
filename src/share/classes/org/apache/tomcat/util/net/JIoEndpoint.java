@@ -440,8 +440,12 @@ public class JIoEndpoint {
 
                 // Wait for the next socket to be assigned
                 Socket socket = await();
+                // JFC
+                log.error("JIoEndpoint.run: " + socket);
                 if (socket == null)
                     continue;
+                log.error("JIoEndpoint.run: " + socket.isClosed() + " " + socket.isInputShutdown()
+                          + " " +  socket.isOutputShutdown());
 
                 // Process the request from this socket
                 if (!setSocketOptions(socket) || !handler.process(socket)) {
