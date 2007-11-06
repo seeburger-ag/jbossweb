@@ -192,7 +192,7 @@ public class ParserUtils {
 class MyEntityResolver implements EntityResolver {
 
     // Logger
-    private Log log = LogFactory.getLog(MyEntityResolver.class);
+    private static Log log = LogFactory.getLog(MyEntityResolver.class);
 
     public InputSource resolveEntity(String publicId, String systemId)
             throws SAXException {
@@ -221,7 +221,7 @@ class MyEntityResolver implements EntityResolver {
 class MyErrorHandler implements ErrorHandler {
 
     // Logger
-    private Log log = LogFactory.getLog(MyErrorHandler.class);
+    private static Log log = LogFactory.getLog(MyErrorHandler.class);
 
     public void warning(SAXParseException ex) throws SAXException {
         if (log.isDebugEnabled())

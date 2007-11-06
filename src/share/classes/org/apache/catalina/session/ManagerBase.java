@@ -65,7 +65,7 @@ import org.apache.tomcat.util.modeler.Registry;
  */
 
 public abstract class ManagerBase implements Manager, MBeanRegistration {
-    protected Log log = LogFactory.getLog(ManagerBase.class);
+    protected static Log log = LogFactory.getLog(ManagerBase.class);
 
     // ----------------------------------------------------- Instance Variables
 

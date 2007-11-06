@@ -58,7 +58,7 @@ import org.apache.jasper.servlet.JspServletWrapper;
 public final class JspRuntimeContext {
 
     // Logger
-    private Log log = LogFactory.getLog(JspRuntimeContext.class);
+    private static Log log = LogFactory.getLog(JspRuntimeContext.class);
 
     /*
      * Counts how many times the webapp's JSPs have been reloaded.

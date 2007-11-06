@@ -41,7 +41,7 @@ import org.apache.jasper.xmlparser.ParserUtils;
 public final class EmbeddedServletOptions implements Options {
     
     // Logger
-    private Log log = LogFactory.getLog(EmbeddedServletOptions.class);
+    private static Log log = LogFactory.getLog(EmbeddedServletOptions.class);
     
     private Properties settings = new Properties();
     

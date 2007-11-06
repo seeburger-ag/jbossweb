@@ -45,7 +45,7 @@ import org.apache.jasper.servlet.JspServletWrapper;
  */
 public abstract class Compiler {
     
-    protected org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
+    protected static org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
             .getLog(Compiler.class);
 
     // ----------------------------------------------------- Instance Variables

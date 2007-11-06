@@ -315,14 +315,14 @@ public class Digester extends DefaultHandler {
     /**
      * The Log to which most logging calls will be made.
      */
-    protected Log log =
+    protected static Log log =
         LogFactory.getLog("org.apache.commons.digester.Digester");
 
 
     /**
      * The Log to which all SAX event related logging calls will be made.
      */
-    protected Log saxLog =
+    protected static Log saxLog =
         LogFactory.getLog("org.apache.commons.digester.Digester.sax");
     
         
@@ -2339,8 +2339,6 @@ public class Digester extends DefaultHandler {
         params.clear();
         publicId = null;
         stack.clear();
-        log = null;
-        saxLog = null;
         configured = false;
         
     }
@@ -2554,9 +2552,6 @@ public class Digester extends DefaultHandler {
         if (configured) {
             return;
         }
-
-        log = LogFactory.getLog("org.apache.commons.digester.Digester");
-        saxLog = LogFactory.getLog("org.apache.commons.digester.Digester.sax");
 
         // Perform lazy configuration as needed
         initialize(); // call hook method for subclasses that want to be initialized once only

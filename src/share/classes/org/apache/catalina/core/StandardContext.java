@@ -4225,13 +4225,6 @@ public class StandardContext
 
                 // Binding thread
                 oldCCL = bindThread();
-
-                // Initialize logger again. Other components might have used it too early, 
-                // so it should be reset.
-                logger = null;
-                getLogger();
-                if ((logger != null) && (logger instanceof Lifecycle))
-                    ((Lifecycle) logger).start();
                 
                 if ((cluster != null) && (cluster instanceof Lifecycle))
                     ((Lifecycle) cluster).start();
@@ -4551,9 +4544,6 @@ public class StandardContext
             }
             if ((cluster != null) && (cluster instanceof Lifecycle)) {
                 ((Lifecycle) cluster).stop();
-            }
-            if ((logger != null) && (logger instanceof Lifecycle)) {
-                ((Lifecycle) logger).stop();
             }
             if ((loader != null) && (loader instanceof Lifecycle)) {
                 ((Lifecycle) loader).stop();
