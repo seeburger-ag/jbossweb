@@ -26,6 +26,12 @@
   </subsection>
   <subsection name="Catalina">
     <changelog>
+      <fix>
+        Prevent cookie logic to escape quotes where the value is already a quoted-string. (jfclere)
+      </fix>
+      <fix>
+        Fix version handling in cookies. (jfclere)
+      </fix>
       <update>
         Remove Tomcat standalone session clustering. (remm)
       </update>
