@@ -305,10 +305,27 @@ public class ServerCookie implements Serializable {
         if (isToken(value)) {
             buf.append(value);
         } else {
-            buf.append('"');
-            buf.append(escapeDoubleQuotes(value));
-            buf.append('"');
+            if (alreadyQuoted(value))
+                buf.append(value);
+            else {
+                buf.append('"');
+                buf.append(escapeDoubleQuotes(value));
+                buf.append('"');
+            }
         }
+    }
+    public static boolean alreadyQuoted (String value) {
+        if (value.startsWith("\"") && value.endsWith("\"")) {
+            int len = value.length();
+            for (int i = 1; i < len-1; i++) {
+                char c = value.charAt(i);
+                // Make sure there aren't unescaped controls in value.
+                if (c < 0x20 || c >= 0x7f)
+                    return false; // We will escape the " and controls.
+            } 
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -323,9 +340,13 @@ public class ServerCookie implements Serializable {
         if (version == 0 && isToken(value) || version == 1 && isToken2(value)) {
             buf.append(value);
         } else {
-            buf.append('"');
-            buf.append(escapeDoubleQuotes(value));
-            buf.append('"');
+            if (alreadyQuoted(value))
+                buf.append(value);
+            else {
+                buf.append('"');
+                buf.append(escapeDoubleQuotes(value));
+                buf.append('"');
+            }
         }
     }
 
