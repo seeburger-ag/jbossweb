@@ -22,6 +22,9 @@
         Swicth to JBoss logging from Apache Commons Logging. Standalone JBoss Web uses
         a special purpose version defaulting to use java.util.logging. (remm)
       </update>
+      <fix>
+        Fix licensing problems with two xsd files. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Catalina">
@@ -76,6 +79,13 @@
         Remove legacy org.apache.jk AJP connector and utility components, replaced
         by the org.apache.coyote.ajp connector. (remm)
       </update>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        Remove log field for XML handlers. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
