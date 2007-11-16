@@ -68,6 +68,9 @@
       <fix>
         More extensible SSO. (remm)
       </fix>
+      <fix>
+        Fix a bug that causes CGI Servlet to fail when it is included. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -88,6 +91,9 @@
     <changelog>
       <fix>
         Remove log field for XML handlers. (remm)
+      </fix>
+      <fix>
+        <bug>43702</bug>: Inner class files have unnecessarily long names. (markt)
       </fix>
     </changelog>
   </subsection>

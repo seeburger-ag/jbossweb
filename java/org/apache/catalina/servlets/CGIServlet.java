@@ -235,7 +235,7 @@ import org.apache.catalina.util.IOTools;
  *
  * @author Martin T Dengler [root@martindengler.com]
  * @author Amy Roh
- * @version $Revision: 505743 $, $Date: 2007-02-10 19:55:08 +0100 (sam., 10 févr. 2007) $
+ * @version $Revision: 595801 $, $Date: 2007-11-16 21:07:07 +0100 (Fri, 16 Nov 2007) $
  * @since Tomcat 4.0
  *
  */
@@ -267,7 +267,7 @@ public final class CGIServlet extends HttpServlet {
     static Object expandFileLock = new Object();
 
     /** the shell environment variables to be passed to the CGI script */
-    static Hashtable shellEnv = new Hashtable();
+    static Hashtable<String,String> shellEnv = new Hashtable<String,String>();
 
     /**
      * Sets instance variables.
@@ -644,8 +644,8 @@ public final class CGIServlet extends HttpServlet {
      * See <a href="http://www.rgagnon.com/javadetails/java-0150.html">Read environment
      * variables from an application</a> for original source and article.
      */
-    private Hashtable getShellEnvironment() throws IOException {
-        Hashtable envVars = new Hashtable();
+    private Hashtable<String,String> getShellEnvironment() throws IOException {
+        Hashtable<String,String> envVars = new Hashtable<String,String>();
         Process p = null;
         Runtime r = Runtime.getRuntime();
         String OS = System.getProperty("os.name").toLowerCase();
@@ -694,7 +694,7 @@ public final class CGIServlet extends HttpServlet {
      * <p>
      * </p>
      *
-     * @version  $Revision: 505743 $, $Date: 2007-02-10 19:55:08 +0100 (sam., 10 févr. 2007) $
+     * @version  $Revision: 595801 $, $Date: 2007-11-16 21:07:07 +0100 (Fri, 16 Nov 2007) $
      * @since    Tomcat 4.0
      *
      */
@@ -729,7 +729,7 @@ public final class CGIServlet extends HttpServlet {
         private File workingDirectory = null;
 
         /** cgi command's command line parameters */
-        private ArrayList cmdLineParameters = new ArrayList();
+        private ArrayList<String> cmdLineParameters = new ArrayList<String>();
 
         /** whether or not this object is valid or not */
         private boolean valid = false;
@@ -784,16 +784,31 @@ public final class CGIServlet extends HttpServlet {
          */
         protected void setupFromRequest(HttpServletRequest req)
                 throws UnsupportedEncodingException {
-            
-            this.contextPath = req.getContextPath();
-            this.servletPath = req.getServletPath();
-            this.pathInfo = req.getPathInfo();
+
+            boolean isIncluded = false;
+
+            // Look to see if this request is an include
+            if (req.getAttribute(Globals.INCLUDE_REQUEST_URI_ATTR) != null) {
+                isIncluded = true;
+            }
+            if (isIncluded) {
+                this.contextPath = (String) req.getAttribute(
+                        Globals.INCLUDE_CONTEXT_PATH_ATTR);
+                this.servletPath = (String) req.getAttribute(
+                        Globals.INCLUDE_SERVLET_PATH_ATTR);
+                this.pathInfo = (String) req.getAttribute(
+                        Globals.INCLUDE_PATH_INFO_ATTR);
+            } else {
+                this.contextPath = req.getContextPath();
+                this.servletPath = req.getServletPath();
+                this.pathInfo = req.getPathInfo();
+            }
             // If getPathInfo() returns null, must be using extension mapping
             // In this case, pathInfo should be same as servletPath
             if (this.pathInfo == null) {
                 this.pathInfo = this.servletPath;
             }
-            
+
             // If the request method is GET, POST or HEAD and the query string
             // does not contain an unencoded "=" this is an indexed query.
             // The parsed query string becomes the command line parameters
@@ -801,7 +816,13 @@ public final class CGIServlet extends HttpServlet {
             if (req.getMethod().equals("GET")
                 || req.getMethod().equals("POST")
                 || req.getMethod().equals("HEAD")) {
-                String qs = req.getQueryString();
+                String qs;
+                if (isIncluded) {
+                    qs = (String) req.getAttribute(
+                            Globals.INCLUDE_QUERY_STRING_ATTR);
+                } else {
+                    qs = req.getQueryString();
+                }
                 if (qs != null && qs.indexOf("=") == -1) {
                     StringTokenizer qsTokens = new StringTokenizer(qs, "+");
                     while ( qsTokens.hasMoreTokens() ) {
@@ -961,7 +982,7 @@ public final class CGIServlet extends HttpServlet {
              * (apologies to Marv Albert regarding MJ)
              */
 
-            Hashtable envp = new Hashtable();
+            Hashtable<String,String> envp = new Hashtable<String,String>();
 
             // Add the shell environment variables (if any)
             envp.putAll(shellEnv);
@@ -1415,7 +1436,7 @@ public final class CGIServlet extends HttpServlet {
      * and <code>setResponse</code> methods, respectively.
      * </p>
      *
-     * @version   $Revision: 505743 $, $Date: 2007-02-10 19:55:08 +0100 (sam., 10 févr. 2007) $
+     * @version   $Revision: 595801 $, $Date: 2007-11-16 21:07:07 +0100 (Fri, 16 Nov 2007) $
      */
 
     protected class CGIRunner {
@@ -1539,7 +1560,7 @@ public final class CGIServlet extends HttpServlet {
          */
         protected String[] hashToStringArray(Hashtable h)
             throws NullPointerException {
-            Vector v = new Vector();
+            Vector<String> v = new Vector<String>();
             Enumeration e = h.keys();
             while (e.hasMoreElements()) {
                 String k = e.nextElement().toString();
