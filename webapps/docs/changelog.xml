@@ -79,6 +79,9 @@
         Remove legacy org.apache.jk AJP connector and utility components, replaced
         by the org.apache.coyote.ajp connector. (remm)
       </update>
+      <fix>
+        Additional cookie fixes. (jfclere)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
