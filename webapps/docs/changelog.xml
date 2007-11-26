@@ -30,6 +30,9 @@
   <subsection name="Catalina">
     <changelog>
       <fix>
+        Fix BZ 43588 - hard coded 127.0.0.1 for localhost. It requires localhost to be defined correctly in the machine. (jfclere)
+      </fix>
+      <fix>
         Prevent cookie logic to escape quotes where the value is already a quoted-string. (jfclere)
       </fix>
       <fix>

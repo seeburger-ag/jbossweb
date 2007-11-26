@@ -412,7 +412,7 @@ public class Catalina extends Embedded {
 
         // Stop the existing server
         try {
-            Socket socket = new Socket("127.0.0.1", server.getPort());
+            Socket socket = new Socket("localhost", server.getPort());
             OutputStream stream = socket.getOutputStream();
             String shutdown = server.getShutdown();
             for (int i = 0; i < shutdown.length(); i++)

@@ -371,7 +371,7 @@ public final class StandardServer
         try {
             serverSocket =
                 new ServerSocket(port, 1,
-                                 InetAddress.getByName("127.0.0.1"));
+                                 InetAddress.getByName("localhost"));
         } catch (IOException e) {
             log.error("StandardServer.await: create[" + port
                                + "]: ", e);
