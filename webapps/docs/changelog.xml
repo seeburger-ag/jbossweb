@@ -77,6 +77,9 @@
       <fix>
         Fix invoking CometEvent.close during begin. (remm)
       </fix>
+      <fix>
+        Improve error codes returned when no host or no context is matched. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

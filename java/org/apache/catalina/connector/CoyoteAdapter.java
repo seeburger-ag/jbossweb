@@ -444,6 +444,17 @@ public class CoyoteAdapter
         request.setContext((Context) request.getMappingData().context);
         request.setWrapper((Wrapper) request.getMappingData().wrapper);
 
+        if (request.getMappingData().host == null) {
+            res.setStatus(400);
+            res.setMessage("Host not mapped");
+            return false;
+        }
+        if (request.getMappingData().context == null) {
+            res.setStatus(404);
+            res.setMessage("Context not mapped");
+            return false;
+        }
+        
         // Filter trace method
         if (!connector.getAllowTrace() 
                 && req.method().equalsIgnoreCase("TRACE")) {
