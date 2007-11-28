@@ -605,7 +605,7 @@ public class SingleSignOn
      * @param username  the username (if any) used for the authentication
      * @param password  the password (if any) used for the authentication
      */
-    protected void update(String ssoId, Principal principal, String authType,
+    public void update(String ssoId, Principal principal, String authType,
                           String username, String password) {
 
         SingleSignOnEntry sso = lookup(ssoId);
