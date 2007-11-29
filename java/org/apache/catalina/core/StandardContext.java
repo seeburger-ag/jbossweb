@@ -854,6 +854,16 @@ public class StandardContext
 
 
     /**
+     * Force setting if filesystem based.
+     */
+    public void setFilesystemBased(boolean filesystemBased) {
+
+        this.filesystemBased = filesystemBased;
+
+    }
+
+
+    /**
      * Return the set of initialized application event listener objects,
      * in the order they were specified in the web application deployment
      * descriptor, for this application.
