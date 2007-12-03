@@ -2449,6 +2449,7 @@ public class Request
                     context.getLogger().debug(
                             sm.getString("coyoteRequest.parseParameters"), e);
                 }
+                return;
             }
             parameters.processParameters(formData, 0, len);
         }
