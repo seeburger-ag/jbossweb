@@ -12,7 +12,7 @@
 # ----- Vesion Control Flags -----
 version.major=2
 version.minor=0
-version.build=0
+version.build=2
 version.patch=dev
 
 # ----- Vesion Control Flags -----
