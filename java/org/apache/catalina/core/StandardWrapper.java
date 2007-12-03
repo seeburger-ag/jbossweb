@@ -1628,7 +1628,7 @@ public class StandardWrapper
                 broadcaster.sendNotification(notification);
             }
         } catch( Exception ex ) {
-            log.info("Error registering servlet with jmx " + this);
+            log.info("Error registering servlet with jmx " + this, ex);
         }
 
         if (isJspServlet) {
@@ -1643,7 +1643,7 @@ public class StandardWrapper
                     .registerComponent(instance, jspMonitorON, null);
             } catch( Exception ex ) {
                 log.info("Error registering JSP monitoring with jmx " +
-                         instance);
+                         instance, ex);
             }
         }
     }
