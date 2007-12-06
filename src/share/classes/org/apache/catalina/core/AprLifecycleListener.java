@@ -215,4 +215,11 @@ public class AprLifecycleListener
         sslInitialized = true;
     }
 
+    public String getSSLEngine() {
+        return SSLEngine;
+    }
+
+    public void setSSLEngine(String SSLEngine) {
+        this.SSLEngine = SSLEngine;
+    }
 }
