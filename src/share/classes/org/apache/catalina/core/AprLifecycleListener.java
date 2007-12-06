@@ -63,6 +63,7 @@ public class AprLifecycleListener
 
     // ---------------------------------------------- Properties
     protected static String SSLEngine = "on"; //default on
+    protected static String SSLRandomSeed = "builtin";
     protected static boolean sslInitialized = false;
     protected static boolean aprInitialized = false;
 
@@ -211,6 +212,12 @@ public class AprLifecycleListener
         Class clazz = Class.forName("org.apache.tomcat.jni.SSL");
         Method method = clazz.getMethod(methodName, paramTypes);
         method.invoke(null, paramValues);
+        
+        methodName = "randLoad";
+        paramValues[0] = SSLRandomSeed;
+        method = clazz.getMethod(methodName, paramTypes);
+        method.invoke(null, paramValues);
+
         sslInitialized = true;
     }
 
@@ -220,6 +227,14 @@ public class AprLifecycleListener
 
     public void setSSLEngine(String SSLEngine) {
         this.SSLEngine = SSLEngine;
+    }
+
+    public String getSSLRandomSeed() {
+    	return SSLRandomSeed;
+    }
+
+    public void setSSLRandomSeed(String SSLRandomSeed) {
+    	this.SSLRandomSeed = SSLRandomSeed;
     }
 
 }
