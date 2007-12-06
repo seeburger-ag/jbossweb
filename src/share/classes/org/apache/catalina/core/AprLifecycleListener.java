@@ -18,7 +18,9 @@
 package org.apache.catalina.core;
 
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
@@ -26,8 +28,6 @@ import org.apache.catalina.util.StringManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.jni.Library;
-
-import java.lang.reflect.InvocationTargetException;
 
 
 
@@ -37,7 +37,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Remy Maucherat
  * @author Filip Hanik
- * @version $Revision: 524730 $ $Date: 2007-04-02 08:24:33 +0200 (lun., 02 avr. 2007) $
+ * @version $Revision: 534930 $ $Date: 2007-05-03 18:43:35 +0200 (jeu., 03 mai 2007) $
  * @since 4.1
  */
 
@@ -64,6 +64,7 @@ public class AprLifecycleListener
 
     // ---------------------------------------------- Properties
     protected static String SSLEngine = "on"; //default on
+    protected static String SSLRandomSeed = "builtin";
     protected static boolean sslInitialized = false;
     protected static boolean aprInitialized = false;
 
@@ -212,6 +213,12 @@ public class AprLifecycleListener
         Class clazz = Class.forName("org.apache.tomcat.jni.SSL");
         Method method = clazz.getMethod(methodName, paramTypes);
         method.invoke(null, paramValues);
+        
+        methodName = "randLoad";
+        paramValues[0] = SSLRandomSeed;
+        method = clazz.getMethod(methodName, paramTypes);
+        method.invoke(null, paramValues);
+
         sslInitialized = true;
     }
 
@@ -222,4 +229,13 @@ public class AprLifecycleListener
     public void setSSLEngine(String SSLEngine) {
         this.SSLEngine = SSLEngine;
     }
+
+    public String getSSLRandomSeed() {
+    	return SSLRandomSeed;
+    }
+
+    public void setSSLRandomSeed(String SSLRandomSeed) {
+    	this.SSLRandomSeed = SSLRandomSeed;
+    }
+
 }
