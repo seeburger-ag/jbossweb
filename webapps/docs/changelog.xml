@@ -107,6 +107,10 @@
       <fix>
         Fix IOException handling when parsing post parameters. (remm)
       </fix>
+      <fix>
+        Fix possible race condtion when a webapp classloader has external class 
+        repositories defined. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
