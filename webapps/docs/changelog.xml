@@ -111,6 +111,15 @@
         Fix possible race condtion when a webapp classloader has external class 
         repositories defined. (remm)
       </fix>
+      <fix>
+        <bug>43236</bug>: When resetting the response, also reset the flags
+        associated with using a writer or an output stream to allow the user to
+        change character set after the reset. (markt)
+      </fix>
+      <fix>
+        <bug>43241</bug>: Make ServletContext.getResourceAsStream() conform to
+        the specification. Patch provided by John Kew. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
