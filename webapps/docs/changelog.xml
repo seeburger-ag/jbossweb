@@ -120,6 +120,10 @@
         <bug>43241</bug>: Make ServletContext.getResourceAsStream() conform to
         the specification. Patch provided by John Kew. (markt)
       </fix>
+      <fix>
+        <bug>44084</bug>: JASSRealm was broken for application provided
+        Principals. Patch provided by Noah Levitt. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -153,6 +157,20 @@
         in the JSP with the error, use the SMAP info and the knowledge that for
         a scriptlet there is a one to one line mapping. (markt)
       </fix>
+      <fix>
+        <bug>43285</bug>: Missing EL Coercion causes argument type mismatch.
+        Patch provided by Bernhard Huemer. (funkman/jim)
+      </fix>
+      <fix>
+        <bug>43909</bug>: Make sure locale maps to wrapped ELContext. Patch
+        provided by Tuomas Kiviaho. (markt)
+      </fix>
+      <fix>
+        <bug>43944</bug>: Fix a missing resource exception. (markt)
+      </fix>
+      <fix>
+        <bug>43758</bug>: Fix NPE with empty scripting elements. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Webapps">
@@ -161,6 +179,9 @@
         <bug>43611</bug>: Provide an error message if user tries to upload a war
         for a context defined in server.xml rather than failing silently.
         (markt)
+      </fix>
+      <fix>
+        <bug>44088</bug>: Fix expire session button in manager. (markt)
       </fix>
     </changelog>
   </subsection>
