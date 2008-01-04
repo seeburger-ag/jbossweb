@@ -924,6 +924,10 @@ public class Http11AprProcessor implements ActionHook {
             }
 
             // Finish the handling of the request
+            if (error) {
+                // If there is an unspecified error, the connection will be closed
+                inputBuffer.setSwallowInput(false);
+            }
             if (!comet) {
                 endRequest();
             }

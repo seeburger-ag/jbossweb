@@ -124,6 +124,10 @@
         <bug>44084</bug>: JASSRealm was broken for application provided
         Principals. Patch provided by Noah Levitt. (markt)
       </fix>
+      <fix>
+        <bug>43914</bug>: URLs in location headers should be encoded. Patch
+        provided by Ivan Todoroski. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -141,6 +145,9 @@
       <fix>
         <bug>43622</bug>: Don't overwrite the min compression size set by the
         compression attribute with the default. (markt)
+      </fix>
+      <fix>
+        No need to swallow input if there is an error. (remm)
       </fix>
     </changelog>
   </subsection>
