@@ -164,8 +164,9 @@ public class CoyoteAdapter
                             request.getEvent().setEventType(CometEvent.EventType.ERROR);
                             request.getEvent().setEventSubType(CometEvent.EventSubType.CLIENT_DISCONNECT);
                         } else {
-                            request.getEvent().setEventType(CometEvent.EventType.END);
-                            request.getEvent().setEventSubType(null);
+                            // Data was present on the socket, but it did not translate into actual
+                            // entity body bytes
+                            return true;
                         }
                     }
                 } else if (status == SocketStatus.OPEN_WRITE) {

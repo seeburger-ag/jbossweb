@@ -123,14 +123,14 @@ public class ChunkedInputFilter implements InputFilter {
         if (endChunk)
             return -1;
 
-        if(needCRLFParse) {
+        if (needCRLFParse) {
             needCRLFParse = false;
             parseCRLF();
         }
 
         if (remaining <= 0) {
             if (!parseChunkHeader()) {
-                throw new IOException("Invalid chunk header");
+                return 0;
             }
             if (endChunk) {
                 parseEndChunk();
@@ -263,6 +263,7 @@ public class ChunkedInputFilter implements InputFilter {
         while (!eol) {
 
             if (pos >= lastValid) {
+                // In non blocking mode, no new chunk follows, even if data was present
                 if (readBytes() <= 0)
                     return false;
             }
@@ -281,7 +282,7 @@ public class ChunkedInputFilter implements InputFilter {
                 } else {
                     //we shouldn't allow invalid, non hex characters
                     //in the chunked header
-                    return false;
+                    throw new IOException("Invalid chunk header");
                 }
             }
 
@@ -289,15 +290,13 @@ public class ChunkedInputFilter implements InputFilter {
 
         }
 
-        if (!readDigit)
-            return false;
+        if (!readDigit || (result < 0))
+            throw new IOException("Invalid chunk header");
 
         if (result == 0)
             endChunk = true;
 
         remaining = result;
-        if (remaining < 0)
-            return false;
 
         return true;
 

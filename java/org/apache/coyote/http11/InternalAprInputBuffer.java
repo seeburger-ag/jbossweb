@@ -756,7 +756,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                 bbuf.limit(nRead);
                 bbuf.get(buf, pos, nRead);
                 lastValid = pos + nRead;
-            } else {
+            } else if (nRead < 0) {
                 if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
                     throw new SocketTimeoutException(sm.getString("iib.failedread"));
                 } else {
