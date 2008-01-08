@@ -149,6 +149,9 @@
       <fix>
         No need to swallow input if there is an error. (remm)
       </fix>
+      <fix>
+        <bug>43868</bug>: MBean methods getInvoke() and getSetter() were broken. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
@@ -177,6 +180,9 @@
       </fix>
       <fix>
         <bug>43758</bug>: Fix NPE with empty scripting elements. (markt)
+      </fix>
+      <fix>
+        <bug>43743</bug>: Correctly handle nest tag files packaged in a jar. (markt)
       </fix>
     </changelog>
   </subsection>
