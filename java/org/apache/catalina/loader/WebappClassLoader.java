@@ -112,6 +112,9 @@ public class WebappClassLoader
     public static final boolean ENABLE_CLEAR_REFERENCES = 
         Boolean.valueOf(System.getProperty("org.apache.catalina.loader.WebappClassLoader.ENABLE_CLEAR_REFERENCES", "true")).booleanValue();
     
+    public static final boolean SYSTEM_CL_DELEGATION = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.loader.WebappClassLoader.SYSTEM_CL_DELEGATION", "true")).booleanValue();
+    
     protected class PrivilegedFindResource
         implements PrivilegedAction {
 
@@ -1271,15 +1274,17 @@ public class WebappClassLoader
 
         // (0.2) Try loading the class with the system class loader, to prevent
         //       the webapp from overriding J2SE classes
-        try {
-            clazz = system.loadClass(name);
-            if (clazz != null) {
-                if (resolve)
-                    resolveClass(clazz);
-                return (clazz);
+        if (SYSTEM_CL_DELEGATION) {
+            try {
+                clazz = system.loadClass(name);
+                if (clazz != null) {
+                    if (resolve)
+                        resolveClass(clazz);
+                    return (clazz);
+                }
+            } catch (ClassNotFoundException e) {
+                // Ignore
             }
-        } catch (ClassNotFoundException e) {
-            // Ignore
         }
 
         // (0.5) Permission to access this class when using a SecurityManager
