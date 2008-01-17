@@ -125,6 +125,7 @@ public class ChunkedInputFilter implements InputFilter {
 
         if (needCRLFParse) {
             needCRLFParse = false;
+            // FIXME: parse CRLF could return 0 in NB
             parseCRLF();
         }
 
@@ -141,6 +142,7 @@ public class ChunkedInputFilter implements InputFilter {
         int result = 0;
 
         if (pos >= lastValid) {
+            // FIXME: parse CRLF could return 0 in NB
             readBytes();
         }
 
@@ -154,7 +156,14 @@ public class ChunkedInputFilter implements InputFilter {
             chunk.setBytes(buf, pos, remaining);
             pos = pos + remaining;
             remaining = 0;
-            needCRLFParse = true;
+            //we need a CRLF
+            if ((pos+1) >= lastValid) {   
+                //if we call parseCRLF we overrun the buffer here
+                //so we defer it to the next call BZ 11117
+                needCRLFParse = true;
+            } else {
+                parseCRLF(); //parse the CRLF immediately
+            }
         }
 
         return result;
@@ -310,6 +319,7 @@ public class ChunkedInputFilter implements InputFilter {
         throws IOException {
 
         boolean eol = false;
+        boolean crfound = false;
 
         while (!eol) {
 
@@ -319,7 +329,10 @@ public class ChunkedInputFilter implements InputFilter {
             }
 
             if (buf[pos] == Constants.CR) {
+                if (crfound) throw new IOException("Invalid CRLF, two CR characters encountered.");
+                crfound = true;
             } else if (buf[pos] == Constants.LF) {
+                if (!crfound) throw new IOException("Invalid CRLF, no CR character encountered.");
                 eol = true;
             } else {
                 throw new IOException("Invalid CRLF");

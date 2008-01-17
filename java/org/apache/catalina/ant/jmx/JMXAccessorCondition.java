@@ -32,9 +32,8 @@ import org.apache.tools.ant.taskdefs.condition.Condition;
  * <b>Definition</b>:
  * <pre> 
  *   &lt;path id="catalina_ant">
- *       &lt;fileset dir="${catalina.home}/server/lib">
+ *       &lt;fileset dir="${catalina.home}/lib">
  *           &lt;include name="catalina-ant.jar"/>
- *           &lt;include name="catalina-ant-jmx.jar"/>
  *       &lt;/fileset>
  *   &lt;/path>
  *

@@ -382,7 +382,7 @@ public final class HTMLManagerServlet extends ManagerServlet {
 
             Map.Entry entry = (Map.Entry) iterator.next();
             String displayPath = (String) entry.getKey();
-            String contextPath = (String) entry.getKey();
+            String contextPath = (String) entry.getValue();
             Context context = (Context) host.findChild(contextPath);
             if (displayPath.equals("")) {
                 displayPath = "/";
@@ -441,7 +441,12 @@ public final class HTMLManagerServlet extends ManagerServlet {
                      "/html/expire?path=" + displayPath);
                 args[9] = appsExpire;
                 args[10] = sm.getString("htmlManagerServlet.expire.explain");
-                args[11] = new Integer(context.getManager().getMaxInactiveInterval()/60);
+                if (context.getManager() == null) {
+                    args[11] = sm.getString("htmlManagerServlet.noManager");
+                } else {
+                    args[11] = new Integer(
+                            context.getManager().getMaxInactiveInterval()/60);
+                }
                 args[12] = sm.getString("htmlManagerServlet.expire.unit");
                 
                 args[13] = highlightColor;

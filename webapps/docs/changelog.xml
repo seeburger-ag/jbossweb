@@ -25,6 +25,10 @@
       <fix>
         Fix licensing problems with two xsd files. (remm)
       </fix>
+      <update>
+        Update commons-logging to version 1.1.1 and the NSIS installer to 2.34.
+        (markt)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
@@ -132,6 +136,9 @@
         Add org.apache.catalina.loader.WebappClassLoader.SYSTEM_CL_DELEGATION boolean system
         property to avoid systematic system CL delegation if needed. (remm)
       </fix>
+       <fix>
+         Set correct StandardManager.sessionCounter after reload/restart. (pero)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -200,6 +207,14 @@
       <fix>
         <bug>44088</bug>: Fix expire session button in manager. (markt)
       </fix>
+      <fix>
+        <bug>43468</bug>: Fix possible NPE when listing contexts in the Manager
+        application. (markt)
+      </fix>
+      <fix>
+        <bug>43515</bug>: Fix bug in Manager application that may have caused
+        problems when listing contexts. Patch provided by Lucas Galfaso. (markt)
+      </fix> 
     </changelog>
   </subsection>
 </section>
