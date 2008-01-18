@@ -29,6 +29,10 @@
         Update commons-logging to version 1.1.1 and the NSIS installer to 2.34.
         (markt)
       </update>
+      <update>
+        Update to commons-pool version 1.4, native version 1.1.12 and update
+        the download location for the commons libraries. (markt)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
