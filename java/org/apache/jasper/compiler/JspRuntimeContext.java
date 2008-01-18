@@ -154,7 +154,7 @@ public final class JspRuntimeContext {
      */
     private ServletContext context;
     private Options options;
-    private URLClassLoader parentClassLoader;
+    private ClassLoader parentClassLoader;
     private PermissionCollection permissionCollection;
     private CodeSource codeSource;                    
     private String classpath;
@@ -222,7 +222,7 @@ public final class JspRuntimeContext {
      *
      * @return URLClassLoader parent
      */
-    public URLClassLoader getParentClassLoader() {
+    public ClassLoader getParentClassLoader() {
         return parentClassLoader;
     }
 
@@ -325,7 +325,11 @@ public final class JspRuntimeContext {
      */
     private void initClassPath() {
 
-        URL [] urls = parentClassLoader.getURLs();
+        if (!(parentClassLoader instanceof URLClassLoader)) {
+            return;
+        }
+        
+        URL [] urls = ((URLClassLoader) parentClassLoader).getURLs();
         StringBuffer cpath = new StringBuffer();
         String sep = System.getProperty("path.separator");
 
@@ -409,7 +413,7 @@ public final class JspRuntimeContext {
                     "accessClassInPackage.org.apache.jasper.runtime") );
 
                 if (parentClassLoader instanceof URLClassLoader) {
-                    URL [] urls = parentClassLoader.getURLs();
+                    URL [] urls = ((URLClassLoader) parentClassLoader).getURLs();
                     String jarUrl = null;
                     String jndiUrl = null;
                     for (int i=0; i<urls.length; i++) {

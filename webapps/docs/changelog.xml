@@ -195,6 +195,10 @@
       <fix>
         <bug>43743</bug>: Correctly handle nest tag files packaged in a jar. (markt)
       </fix>
+      <fix>
+        Finish removing of some URL CL hardcoding. If parent CL is not a URL CL, the Ant classpath cannot
+        be generated, and security setup might be incomplete. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Webapps">
