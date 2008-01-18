@@ -565,17 +565,19 @@ public class ScriptEnvironment {
         this.webAppRootDir = context.getRealPath("/");
         this.tempDir = (File)context.getAttribute(Globals.WORK_DIR_ATTR);
 
-        this.contextPath = req.getParameter("context");
-        if (this.contextPath == null) {
-            this.contextPath = req.getContextPath();
-        }
 
-        this.servletPath = req.getParameter("servlet");
-        if (this.servletPath == null) {
-            this.servletPath = req.getServletPath();
+        if (req.getAttribute(Globals.INCLUDE_CONTEXT_PATH_ATTR) != null) {
+           // Include
+           this.contextPath = (String) req.getAttribute(Globals.INCLUDE_CONTEXT_PATH_ATTR);
+           this.servletPath = (String) req.getAttribute(Globals.INCLUDE_SERVLET_PATH_ATTR);
+           this.pathInfo = (String) req.getAttribute(Globals.INCLUDE_PATH_INFO_ATTR);
         }
-
-        this.pathInfo = req.getPathInfo();
+        else {
+           // Direct call
+           this.contextPath = req.getContextPath();
+           this.servletPath = req.getServletPath();
+           this.pathInfo = req.getPathInfo();
+        }
 
         // If getPathInfo() returns null, must be using extension mapping
         // In this case, pathInfo should be same as servletPath
