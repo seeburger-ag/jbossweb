@@ -213,13 +213,9 @@ public class ScriptEnvironment {
                 + File.separator + name;
             // NOTE: Original CGI messes the Win path.
             fullName = fullName.replace(File.separatorChar, '/');
-            if (!fullName.equals(servletPath)) {
-                if (".".equals(contextPath)) {
-                    scriptName = servletPath + fullName;
-                }
-                else {
-                    scriptName = contextPath + servletPath + fullName;
-                }
+
+            if (contextPath != null && ! "".equals(contextPath) && ! "/".equals(contextPath)) {
+                scriptName = contextPath + fullName;
             }
             else {
                 // NOTE: set scriptName to fullName
@@ -493,7 +489,18 @@ public class ScriptEnvironment {
                                 scriptFullPath.lastIndexOf(File.separator)));
 
         envp.put("SCRIPT_FILENAME", scriptFullPath);
-        envp.put("PHP_SELF", nullsToBlanks(sFullName));
+
+        envp.put("CONTEXT_PATH", nullsToBlanks(contextPath));
+
+        String self = "";
+        if (contextPath != null && ! "".equals(contextPath) && ! "/".equals(contextPath)) {
+            self = contextPath;
+        }
+        if (servletPath != null && ! "".equals(servletPath) && ! "/".equals(servletPath)) {
+            self = self.concat(servletPath);
+        }
+        
+        envp.put("PHP_SELF", nullsToBlanks(self));
 
         if (req.isSecure()) {
             envp.put("HTTPS", "ON");
