@@ -224,6 +224,10 @@
         problems when listing contexts. Patch provided by Lucas Galfaso. (markt)
       </fix> 
     </changelog>
+      <fix>
+        Fix ManagerServlet.exipreSession throws Exceptions as iterate longer 
+        session lists at production servers. (pero)
+      </fix>
   </subsection>
 </section>
 
