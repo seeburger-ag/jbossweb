@@ -143,6 +143,9 @@
        <fix>
          Set correct StandardManager.sessionCounter after reload/restart. (pero)
       </fix>
+      <fix>
+         <bug>44268</bug>: Log a warning when a duplicate listener is ignored. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -166,6 +169,9 @@
       </fix>
       <fix>
         <bug>43868</bug>: MBean methods getInvoke() and getSetter() were broken. (markt)
+      </fix>
+      <fix>
+        <bug>44223</bug>: Add support for remaining truststore system property. (markt)
       </fix>
     </changelog>
   </subsection>
