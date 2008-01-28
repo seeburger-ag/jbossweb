@@ -78,6 +78,10 @@
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>Manager</servlet-name>
+      <url-pattern>/expire</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Manager</servlet-name>
       <url-pattern>/stop</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
@@ -163,6 +167,7 @@
       <url-pattern>/status/*</url-pattern>
       <url-pattern>/roles</url-pattern>
       <url-pattern>/resources</url-pattern>
+      <url-pattern>/expire</url-pattern>
     </web-resource-collection>
     <auth-constraint>
        <!-- NOTE:  This role is not present in the default users file -->
