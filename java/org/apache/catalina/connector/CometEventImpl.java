@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.util.StringManager;
-import org.apache.comet.CometEvent;
+import org.jboss.web.comet.CometEvent;
 
 public class CometEventImpl implements CometEvent {
 

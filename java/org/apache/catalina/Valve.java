@@ -24,7 +24,7 @@ import javax.servlet.ServletException;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.comet.CometEvent;
+import org.jboss.web.comet.CometEvent;
 
 
 /**

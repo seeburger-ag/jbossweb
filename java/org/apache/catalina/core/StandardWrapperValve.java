@@ -35,10 +35,10 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.comet.CometEvent;
-import org.apache.comet.CometProcessor;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.log.SystemLogHandler;
+import org.jboss.web.comet.CometEvent;
+import org.jboss.web.comet.CometProcessor;
 
 /**
  * Valve that implements the default basic behavior for the

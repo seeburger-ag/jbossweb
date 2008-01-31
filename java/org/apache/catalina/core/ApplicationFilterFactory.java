@@ -27,7 +27,7 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.FilterMap;
-import org.apache.comet.CometFilter;
+import org.jboss.web.comet.CometFilter;
 
 /**
  * Factory for the creation and caching of Filters and creationg 

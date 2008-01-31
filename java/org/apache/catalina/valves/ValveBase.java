@@ -39,8 +39,8 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.StringManager;
-import org.apache.comet.CometEvent;
 import org.jboss.logging.Logger;
+import org.jboss.web.comet.CometEvent;
 
 
 /**

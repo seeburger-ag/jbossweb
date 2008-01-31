@@ -16,31 +16,31 @@
  */
 
 
-package org.apache.comet;
+package org.jboss.web.comet;
 
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.Servlet;
 
 /**
- * This interface should be implemented by servlets which would like to handle
- * asynchronous IO, recieving events when data is available for reading, and
- * being able to output data without the need for being invoked by the container.
- * Note: When this interface is implemented, the service method of the servlet will
- * never be called, and will be replaced with a begin event.
+ * A CometFilterChain is an object provided by the servlet container to the developer
+ * giving a view into the invocation chain of a filtered event for a resource. Filters
+ * use the CometFilterChain to invoke the next filter in the chain, or if the calling filter
+ * is the last filter in the chain, to invoke the resource at the end of the chain.
+ * 
+ * @author Remy Maucherat
+ * @author Filip Hanik
  */
-public interface CometProcessor extends Servlet 
-{
+public interface CometFilterChain {
 
+    
     /**
-     * Process the given Comet event.
-     * 
-     * @param event The Comet event that will be processed
-     * @throws IOException
-     * @throws ServletException
+     * Causes the next filter in the chain to be invoked, or if the calling filter is the last filter
+     * in the chain, causes the resource at the end of the chain to be invoked.
+     *
+     * @param event the event to pass along the chain.
      */
-    public void event(CometEvent event)
-        throws IOException, ServletException;
+    public void doFilterEvent(CometEvent event) throws IOException, ServletException;
+    
 
 }

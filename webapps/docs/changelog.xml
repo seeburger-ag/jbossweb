@@ -56,9 +56,9 @@
       <update>
         Add context listener configuration. (remm)
       </update>
-      <update>
-        Expanded Comet API as org.apache.comet API. (remm)
-      </update>
+      <add>
+        Expanded and revised Tomcat 6.0 Comet API as org.jboss.web.comet API. (remm)
+      </add>
       <update>
         Remove user database functionality, which didn't see any development besides the original
         memory based backend introduced in Tomcat 4.1. Also remove associated roles management

@@ -16,7 +16,7 @@
  */
 
 
-package org.apache.comet;
+package org.jboss.web.comet;
 
 import java.io.IOException;
 
