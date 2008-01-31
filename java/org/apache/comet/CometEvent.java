@@ -65,6 +65,8 @@ public interface CometEvent {
      *  been initialized in the begin method should be reset. After this event has
      *  been processed, the request and response objects, as well as all their dependent
      *  objects will be recycled and used to process other requests.</li>
+     * <li>TIMEOUT - the connection timed out, but the connection will not be closed unless 
+     *  the servlet uses the close method of the event</li>
      * <li>EVENT - Event will be called by the container after the resume() method is called,
      *  during which any operations can be performed, including closing the Comet connection
      *  using the close() method.</li>
@@ -74,27 +76,7 @@ public interface CometEvent {
      *  method always returns true.</li>
      * </ul>
      */
-    public enum EventType {BEGIN, READ, END, ERROR, WRITE, EVENT}
-    
-    
-    /**
-     * Enumeration containing event sub categories.
-     * <br>
-     * END events sub types:
-     * <ul>
-     * <li>WEBAPP_RELOAD - the web application is being reloaded</li>
-     * <li>SERVER_SHUTDOWN - the server is shutting down</li>
-     * <li>SESSION_END - the servlet ended the session</li>
-     * </ul>
-     * ERROR events sub types:
-     * <ul>
-     * <li>TIMEOUT - the connection timed out; note that this ERROR type is not fatal, and
-     *   the connection will not be closed unless the servlet uses the close method of the event</li>
-     * <li>CLIENT_DISCONNECT - the client connection was closed</li>
-     * <li>IOEXCEPTION - an IO exception occurred, such as invalid content, for example, an invalid chunk block</li>
-     * </ul>
-     */
-    public enum EventSubType { TIMEOUT, CLIENT_DISCONNECT, IOEXCEPTION, WEBAPP_RELOAD, SERVER_SHUTDOWN, SESSION_END }
+    public enum EventType { BEGIN, READ, END, TIMEOUT, ERROR, WRITE, EVENT }
     
     
     /**
@@ -117,16 +99,8 @@ public interface CometEvent {
      * @return EventType
      * @see #EventType
      */
-    public EventType getEventType();
+    public EventType getType();
     
-    /**
-     * Returns the sub type of this event.
-     * 
-     * @return EventSubType
-     * @see #EventSubType
-     */
-    public EventSubType getEventSubType();
-
     /**
      * Ends the request, which marks the end of the comet session. This will send 
      * back to the client a notice that the server has no more data to send 
@@ -134,7 +108,7 @@ public interface CometEvent {
      * (during the processing of an event), the container will not call an END event.
      * If this method is called asynchronously, an END event will be sent to the 
      * servlet (note that this event will be sent whenever another event would have
-     * been sent, such as a READ or ERROR/TIMEOUT event).
+     * been sent, such as a READ or TIMEOUT event).
      * 
      * @throws IOException if an IO exception occurs
      */
@@ -143,7 +117,7 @@ public interface CometEvent {
     /**
      * This method sets the timeout in milliseconds of idle time on the connection.
      * The timeout is reset every time data is received from the connection. If a timeout occurs, the 
-     * servlet will receive an ERROR/TIMEOUT event which will not result in automatically closing
+     * servlet will receive an TIMEOUT event which will not result in automatically closing
      * the event (the event may be closed using the close() method).
      * 
      * @param timeout The timeout in milliseconds for this connection, must be a positive value, larger than 0

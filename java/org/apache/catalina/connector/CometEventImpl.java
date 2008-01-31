@@ -62,11 +62,6 @@ public class CometEventImpl implements CometEvent {
     protected EventType eventType = EventType.BEGIN;
     
 
-    /**
-     * Event sub type.
-     */
-    protected EventSubType eventSubType = null;
-    
     // --------------------------------------------------------- Public Methods
 
     /**
@@ -77,12 +72,8 @@ public class CometEventImpl implements CometEvent {
         response = null;
     }
 
-    public void setEventType(EventType eventType) {
+    public void setType(EventType eventType) {
         this.eventType = eventType;
-    }
-    
-    public void setEventSubType(EventSubType eventSubType) {
-        this.eventSubType = eventSubType;
     }
     
     public void close() throws IOException {
@@ -93,11 +84,7 @@ public class CometEventImpl implements CometEvent {
         response.finishResponse();
     }
 
-    public EventSubType getEventSubType() {
-        return eventSubType;
-    }
-
-    public EventType getEventType() {
+    public EventType getType() {
         return eventType;
     }
 
@@ -129,9 +116,7 @@ public class CometEventImpl implements CometEvent {
         StringBuffer buf = new StringBuffer("CometEventImpl[");
         buf.append(super.toString());
         buf.append("] Event:");
-        buf.append(getEventType());
-        buf.append(" SubType:");
-        buf.append(getEventSubType());
+        buf.append(getType());
         return buf.toString();
     }
 

@@ -215,8 +215,7 @@ public class CometConnectionManagerValve
                     for (int i = 0; i < connectionInfos.length; i++) {
                         ConnectionInfo connectionInfo = connectionInfos[i];
                         try {
-                            ((CometEventImpl) connectionInfo.event).setEventType(CometEvent.EventType.END);
-                            ((CometEventImpl) connectionInfo.event).setEventSubType(CometEvent.EventSubType.WEBAPP_RELOAD);
+                            ((CometEventImpl) connectionInfo.event).setType(CometEvent.EventType.END);
                             getNext().event(connectionInfo.request, connectionInfo.response, connectionInfo.event);
                             connectionInfo.event.close();
                         } catch (Exception e) {
@@ -304,9 +303,8 @@ public class CometConnectionManagerValve
             ok = true;
         } finally {
             if (!ok || response.isClosed() 
-                    || (event.getEventType() == CometEvent.EventType.END)
-                    || (event.getEventType() == CometEvent.EventType.ERROR
-                            && !(event.getEventSubType() == CometEvent.EventSubType.TIMEOUT))) {
+                    || (event.getType() == CometEvent.EventType.END)
+                    || (event.getType() == CometEvent.EventType.ERROR)) {
                 // Remove from tracked list, the connection is done
                 HttpSession session = request.getSession(true);
                 synchronized (session) {
@@ -346,8 +344,7 @@ public class CometConnectionManagerValve
             for (int i = 0; i < connectionInfos.length; i++) {
                 ConnectionInfo connectionInfo = connectionInfos[i];
                 try {
-                    ((CometEventImpl) connectionInfo.event).setEventType(CometEvent.EventType.END);
-                    ((CometEventImpl) connectionInfo.event).setEventSubType(CometEvent.EventSubType.SESSION_END);
+                    ((CometEventImpl) connectionInfo.event).setType(CometEvent.EventType.END);
                     getNext().event(connectionInfo.request, connectionInfo.response, connectionInfo.event);
                     connectionInfo.event.close();
                 } catch (Exception e) {
