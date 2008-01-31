@@ -59,7 +59,10 @@ public interface CometEvent {
      * <li>END - End may be called to end the processing of the request. Fields that have
      *  been initialized in the begin method should be reset. After this event has
      *  been processed, the request and response objects, as well as all their dependent
-     *  objects will be recycled and used to process other requests.</li>
+     *  objects will be recycled and used to process other requests. In particular,
+     *  this event will be called if the HTTP session associated with the connection
+     *  times out, if the web application is reloaded, if the server is shutdown, or
+     *  if the Comet connection was closed asynchronously.</li>
      * <li>ERROR - Error will be called by the container in the case where an IO exception
      *  or a similar unrecoverable error occurs on the connection. Fields that have
      *  been initialized in the begin method should be reset. After this event has
@@ -108,7 +111,8 @@ public interface CometEvent {
      * (during the processing of an event), the container will not call an END event.
      * If this method is called asynchronously, an END event will be sent to the 
      * servlet (note that this event will be sent whenever another event would have
-     * been sent, such as a READ or TIMEOUT event).
+     * been sent, such as a READ or TIMEOUT event, so the servlet may not recieve the 
+     * END event immediately after the asynchronous close).
      * 
      * @throws IOException if an IO exception occurs
      */
