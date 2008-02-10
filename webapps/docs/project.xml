@@ -19,6 +19,7 @@
     <menu name="User Guide">
         <item name="Introduction"        href="introduction.html"/>
         <item name="Setup"               href="setup.html"/>
+        <item name="System Properties"   href="sysprops.html"/>
         <item name="First webapp"        href="appdev/index.html"/>
         <item name="Deployer"            href="deployer-howto.html"/>
         <item name="Manager"             href="manager-howto.html"/>

@@ -146,6 +146,9 @@
       <fix>
          <bug>44268</bug>: Log a warning when a duplicate listener is ignored. (markt)
       </fix>
+      <fix>
+         Ignore not found readme and xslt in DefaultServlet. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

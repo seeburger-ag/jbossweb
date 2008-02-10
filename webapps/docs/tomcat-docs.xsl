@@ -309,6 +309,30 @@
     </table>
   </xsl:template>
 
+  <!-- Process a properties list with nested property elements -->
+  <xsl:template match="properties">
+    <table border="1" cellpadding="5">
+      <tr>
+        <th width="15%" bgcolor="{$attributes-color}">
+          <font color="#ffffff">Property</font>
+        </th>
+        <th width="85%" bgcolor="{$attributes-color}">
+          <font color="#ffffff">Description</font>
+        </th>
+      </tr>
+      <xsl:for-each select="property">
+        <tr>
+          <td align="left" valign="center">
+            <code><xsl:value-of select="@name"/></code>
+          </td>
+          <td align="left" valign="center">
+            <xsl:apply-templates/>
+          </td>
+        </tr>
+      </xsl:for-each>
+    </table>
+  </xsl:template>
+
   <!-- Fix relative links in printer friendly versions of the docs -->
   <xsl:template match="a">
     <xsl:variable name="href" select="@href"/>
