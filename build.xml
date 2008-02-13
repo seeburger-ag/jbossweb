@@ -618,6 +618,12 @@
       <param name="basedir" value="${jasper-jdt.home}" />
     </antcall>
 
+    <antcall target="downloadzip">
+      <param name="sourcefile" value="${jbossnative.loc}"/>
+      <param name="destfile" value="${jbossnative.test}"/>
+      <param name="destdir" value="${jbossnative.home}"/>
+    </antcall>
+
   </target>
 
   <target name="build-tomcat-dbcp">

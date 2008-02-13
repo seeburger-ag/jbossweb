@@ -1,6 +1,6 @@
 
-; Tomcat script for Nullsoft Installer
-; $Id: tomcat.nsi 524730 2007-04-02 06:24:33Z mturk $
+; JBoss Web script for Nullsoft Installer
+; $Id: jboss-web.nsi 524730 2007-04-02 06:24:33Z mturk $
 
   ;Compression options
   CRCCheck on
@@ -11,12 +11,12 @@
   ;Product information
   VIAddVersionKey ProductName "JBoss Web"
   VIAddVersionKey CompanyName "RedHat"
-  VIAddVersionKey LegalCopyright "Copyright (c) 2006-2007 RedHat"
+  VIAddVersionKey LegalCopyright "Copyright (c) 2006-2008 RedHat"
   VIAddVersionKey FileDescription "JBoss Web Installer"
   VIAddVersionKey FileVersion "2.1"
   VIAddVersionKey ProductVersion "@VERSION@"
-  VIAddVersionKey Comments "jbossweb"
-  VIAddVersionKey InternalName "jbossweb-@VERSION@.exe"
+  VIAddVersionKey Comments "jboss-web"
+  VIAddVersionKey InternalName "jboss-web-@VERSION@.exe"
   VIProductVersion @VERSION_NUMBER@
 
 !include "MUI.nsh"
@@ -34,8 +34,8 @@ ${StrRep}
   !define MUI_HEADERIMAGE_BITMAP header.bmp
   !define MUI_WELCOMEFINISHPAGE_BITMAP side_left.bmp 
   !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\webapps\ROOT\RELEASE-NOTES.txt"
-  !define MUI_FINISHPAGE_RUN $INSTDIR\bin\tomcat6w.exe
-  !define MUI_FINISHPAGE_RUN_PARAMETERS //MR//Tomcat6
+  !define MUI_FINISHPAGE_RUN $INSTDIR\bin\jboss-webw.exe
+  !define MUI_FINISHPAGE_RUN_PARAMETERS //MR//JBossWeb
   !define MUI_FINISHPAGE_NOREBOOTSUPPORT
 
   !define MUI_ABORTWARNING
@@ -43,11 +43,11 @@ ${StrRep}
   !define TEMP1 $R0
   !define TEMP2 $R1
 
-  !define MUI_ICON tomcat.ico
-  !define MUI_UNICON tomcat.ico
+  !define MUI_ICON jboss-web.ico
+  !define MUI_UNICON jboss-web.ico
 
   ;General
-  OutFile tomcat-installer.exe
+  OutFile jboss-web-installer.exe
 
   ;Install Options pages
   LangString TEXT_JVM_TITLE ${LANG_ENGLISH} "Java Virtual Machine"
@@ -55,7 +55,7 @@ ${StrRep}
   LangString TEXT_JVM_PAGETITLE ${LANG_ENGLISH} ": Java Virtual Machine path selection"
 
   LangString TEXT_CONF_TITLE ${LANG_ENGLISH} "Configuration"
-  LangString TEXT_CONF_SUBTITLE ${LANG_ENGLISH} "Tomcat basic configuration."
+  LangString TEXT_CONF_SUBTITLE ${LANG_ENGLISH} "JBoss Web basic configuration."
   LangString TEXT_CONF_PAGETITLE ${LANG_ENGLISH} ": Configuration Options"
 
   ;Install Page order
@@ -78,22 +78,18 @@ ${StrRep}
 
   ;Component-selection page
     ;Descriptions
-    LangString DESC_SecTomcat ${LANG_ENGLISH} "Install the Tomcat Servlet container."
-    LangString DESC_SecTomcatCore ${LANG_ENGLISH} "Install the Tomcat Servlet container core."
-    LangString DESC_SecTomcatService ${LANG_ENGLISH} "Automatically start Tomcat when the computer is started. This requires Windows NT 4.0, Windows 2000 or Windows XP."
-    LangString DESC_SecTomcatNative ${LANG_ENGLISH} "Downloads and installs Tomcat native .dll for better performance and scalability in production environments."
-;    LangString DESC_SecTomcatSource ${LANG_ENGLISH} "Install the Tomcat source code."
-    LangString DESC_SecMenu ${LANG_ENGLISH} "Create a Start Menu program group for Tomcat."
-    LangString DESC_SecDocs ${LANG_ENGLISH} "Install the Tomcat documentation bundle. This include documentation on the servlet container and its configuration options, on the Jasper JSP page compiler, as well as on the native webserver connectors."
-    LangString DESC_SecExamples ${LANG_ENGLISH} "Installs some examples web applications."
-    LangString DESC_SecAdmin ${LANG_ENGLISH} "Installs the administration web application.";
-;    LangString DESC_SecWebapps ${LANG_ENGLISH} "Installs other utility web applications (WebDAV, balancer, etc)."
+    LangString DESC_SecJBossWeb ${LANG_ENGLISH} "Install the JBoss Web Servlet container."
+    LangString DESC_SecJBossWebCore ${LANG_ENGLISH} "Install the JBoss Web Servlet container core."
+    LangString DESC_SecJBossWebService ${LANG_ENGLISH} "Automatically start JBoss Web when the computer is started. This requires Windows NT 4.0, Windows 2000 or Windows XP."
+;    LangString DESC_SecJBossWebNative ${LANG_ENGLISH} "Downloads and installs JBoss Web native .dll for better performance and scalability in production environments."
+    LangString DESC_SecMenu ${LANG_ENGLISH} "Create a Start Menu program group for JBoss Web."
+    LangString DESC_SecDocs ${LANG_ENGLISH} "Install the JBoss Web documentation bundle. This include documentation on the servlet container and its configuration options, on the JSP page compiler, as well as on the native webserver connectors."
 
   ;Language
   !insertmacro MUI_LANGUAGE English
 
   ;Folder-select dialog
-  InstallDir "$PROGRAMFILES\Apache Software Foundation\Tomcat 6.0"
+  InstallDir "$PROGRAMFILES\JBoss.org\JBoss Web 2.1"
 
   ;Install types
   InstType Normal
@@ -101,7 +97,7 @@ ${StrRep}
   InstType Full
 
   ; Main registry key
-  InstallDirRegKey HKLM "SOFTWARE\Apache Software Foundation\Tomcat\6.0" ""
+  InstallDirRegKey HKLM "SOFTWARE\JBoss.org\JBoss Web\2.1" ""
 
   !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
   ReserveFile "jvm.ini"
@@ -110,9 +106,9 @@ ${StrRep}
 ;--------------------------------
 ;Installer Sections
 
-SubSection "Tomcat" SecTomcat
+SubSection "JBoss Web" SecJBossWeb
 
-Section "Core" SecTomcatCore
+Section "Core" SecJBossWebCore
 
   SectionIn 1 2 3 RO
 
@@ -120,7 +116,7 @@ Section "Core" SecTomcatCore
   Call checkJvm
 
   SetOutPath $INSTDIR
-  File tomcat.ico
+  File jboss-web.ico
   File LICENSE
   SetOutPath $INSTDIR\lib
   File /r lib\*.*
@@ -134,6 +130,7 @@ Section "Core" SecTomcatCore
   File bin\bootstrap.jar
   File bin\tomcat-juli.jar
   File bin\*.exe
+  File bin\*.dll
   SetOutPath $INSTDIR\conf
   File conf\*.*
   SetOutPath $INSTDIR\webapps\ROOT
@@ -158,11 +155,11 @@ Section "Core" SecTomcatCore
 
   InstallRetry:
   ClearErrors
-  nsExec::ExecToLog '"$INSTDIR\bin\tomcat6.exe" //IS//Tomcat6 --DisplayName "Apache Tomcat" --Description "Apache Tomcat @VERSION@ Server - http://tomcat.apache.org/" --LogPath "$INSTDIR\logs" --Install "$INSTDIR\bin\tomcat6.exe" --Jvm "$2" --StartPath "$INSTDIR" --StopPath "$INSTDIR"'
+  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //IS//JBossWeb --DisplayName "JBoss Web" --Description "JBoss Web @VERSION@ Server - http://labs.jboss.com/jbossweb/" --LogPath "$INSTDIR\logs" --Install "$INSTDIR\bin\jboss-web.exe" --Jvm "$2" --StartPath "$INSTDIR" --StopPath "$INSTDIR"'
   Pop $0
   StrCmp $0 "0" InstallOk
     MessageBox MB_ABORTRETRYIGNORE|MB_ICONSTOP \
-      "Failed to install Tomcat6 service.$\r$\nCheck your settings and permissions$\r$\nIgnore and continue anyway (not recommended)?" \
+      "Failed to install JBossWeb service.$\r$\nCheck your settings and permissions$\r$\nIgnore and continue anyway (not recommended)?" \
        /SD IDIGNORE IDIGNORE InstallOk IDRETRY InstallRetry
   Quit
   InstallOk:
@@ -170,7 +167,7 @@ Section "Core" SecTomcatCore
 
 SectionEnd
 
-Section "Service" SecTomcatService
+Section "Service" SecJBossWebService
 
   SectionIn 3
 
@@ -185,38 +182,30 @@ Section "Service" SecTomcatService
   Call findJVMPath
   Pop $2
 
-  nsExec::ExecToLog '"$INSTDIR\bin\tomcat6.exe" //US//Tomcat6 --Startup auto'
+  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //US//JBossWeb --Startup auto'
   ; Bahave like Apache Httpd (put the icon in try on login)
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "ApacheTomcatMonitor" '"$INSTDIR\bin\tomcat6w.exe" //MS//Tomcat6'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JBossWebMonitor" '"$INSTDIR\bin\jboss-webw.exe" //MS//JBossWeb'
 
   ClearErrors
 
 SectionEnd
 
-Section "Native" SecTomcatNative
-
-  SectionIn 3
-
-  ; tcnative-1.dll is a symlink to the tcnative-1-ipv4.dll
-  ; If IPV6 support is required, download the tcnative-1-ipv6.dll insted
-  ; The tcnative-1.dll from heanet.ie comes with APR 1.2.8 and OpenSSL 0.9.8e compiled in.
-  ; TODO: Depending on the JVM download the 32 or 64 bit version.
-  NSISdl::download /TIMEOUT=30000 http://tomcat.heanet.ie/native/1.1.10/binaries/win32/tcnative-1.dll $INSTDIR\bin\tcnative-1.dll
-  Pop $0
-  StrCmp $0 success success
-    SetDetailsView show
-    DetailPrint "download failed from http://tomcat.heanet.ie/native/1.1.10/binaries/win32/tcnative-1.dll: $0"
-  success:
-
-  ClearErrors
-
-SectionEnd
-
-;Section "Source Code" SecTomcatSource
+;Section "Native" SecJBossWebNative
 ;
 ;  SectionIn 3
-;  SetOutPath $INSTDIR
-;  File /r src
+;
+;  ; tcnative-1.dll is a symlink to the tcnative-1-ipv4.dll
+;  ; If IPV6 support is required, download the tcnative-1-ipv6.dll insted
+;  ; The tcnative-1.dll from heanet.ie comes with APR 1.2.8 and OpenSSL 0.9.8e compiled in.
+;  ; TODO: Depending on the JVM download the 32 or 64 bit version.
+;  NSISdl::download /TIMEOUT=30000 http://tomcat.heanet.ie/native/1.1.12/binaries/win32/tcnative-1.dll $INSTDIR\bin\tcnative-1.dll
+;  Pop $0
+;  StrCmp $0 success success
+;    SetDetailsView show
+;    DetailPrint "download failed from http://tomcat.heanet.ie/native/1.1.12/binaries/win32/tcnative-1.dll: $0"
+;  success:
+;
+;  ClearErrors
 ;
 ;SectionEnd
 
@@ -228,49 +217,43 @@ Section "Start Menu Items" SecMenu
 
   !insertmacro MUI_INSTALLOPTIONS_READ $2 "jvm.ini" "Field 2" "State"
 
-  SetOutPath "$SMPROGRAMS\Apache Tomcat 6.0"
+  SetOutPath "$SMPROGRAMS\JBoss Web 2.1"
 
-  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Tomcat Home Page.lnk" \
-                 "http://tomcat.apache.org/"
+  CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\JBoss Web Home Page.lnk" \
+                 "http://labs.jboss.com/jbossweb/"
 
-  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Welcome.lnk" \
+  CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\Welcome.lnk" \
                  "http://localhost:$R0/"
-
-;  IfFileExists "$INSTDIR\webapps\admin" 0 NoAdminApp
-;
-;  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Tomcat Administration.lnk" \
-;                 "http://localhost:$R0/admin/"
-;NoAdminApp:
 
   IfFileExists "$INSTDIR\webapps\manager" 0 NoManagerApp
 
-  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Tomcat Manager.lnk" \
+  CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\JBoss Web Manager.lnk" \
                  "http://localhost:$R0/manager/html"
 
 NoManagerApp:
 
-  IfFileExists "$INSTDIR\webapps\webapps\tomcat-docs" 0 NoDocumentaion
+  IfFileExists "$INSTDIR\webapps\webapps\docs" 0 NoDocumentaion
 
-  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Tomcat Documentation.lnk" \
-                 "$INSTDIR\webapps\tomcat-docs\index.html"
+  CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\JBoss Web Documentation.lnk" \
+                 "$INSTDIR\webapps\docs\index.html"
 
 NoDocumentaion:
 
-  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Uninstall Tomcat 6.0.lnk" \
+  CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\Uninstall.lnk" \
                  "$INSTDIR\Uninstall.exe"
 
-  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Tomcat 6.0 Program Directory.lnk" \
+  CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\Program Directory.lnk" \
                  "$INSTDIR"
 
-  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Monitor Tomcat.lnk" \
-                 "$INSTDIR\bin\tomcat6w.exe" \
-                 '//MS//Tomcat6' \
-                 "$INSTDIR\tomcat.ico" 0 SW_SHOWNORMAL
+  CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\Monitor JBoss Web.lnk" \
+                 "$INSTDIR\bin\jboss-webw.exe" \
+                 '//MS//JBossWeb' \
+                 "$INSTDIR\jboss-web.ico" 0 SW_SHOWNORMAL
 
-  CreateShortCut "$SMPROGRAMS\Apache Tomcat 6.0\Configure Tomcat.lnk" \
-                 "$INSTDIR\bin\tomcat6w.exe" \
-                 '//ES//Tomcat6' \
-                 "$INSTDIR\tomcat.ico" 0 SW_SHOWNORMAL
+  CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\Configure JBoss Web.lnk" \
+                 "$INSTDIR\bin\jboss-webw.exe" \
+                 '//ES//JBossWeb' \
+                 "$INSTDIR\jboss-web.ico" 0 SW_SHOWNORMAL
 
 SectionEnd
 
@@ -282,57 +265,17 @@ Section "Documentation" SecDocs
 
 SectionEnd
 
-Section "Examples" SecExamples
-
-  SectionIn 3
-
-  SetOverwrite on
-  SetOutPath $INSTDIR\webapps\examples
-  File /r webapps\examples\*.*
-
-SectionEnd
-
-;Section "Administration" SecAdmin
-;
-;  SectionIn 3
-;
-;  SetOutPath $INSTDIR\webapps
-;  File /r webapps\admin
-;  SetOutPath $INSTDIR\conf\Catalina\localhost
-;  File conf\Catalina\localhost\admin.xml
-;
-;SectionEnd
-
-;Section "Webapps" SecWebapps
-;
-;  SectionIn 3
-;
-;  SetOutPath $INSTDIR\webapps
-;  File /nonfatal /r webapps\balancer
-;  File /nonfatal /r webapps\webdav
-;
-;SectionEnd
-
-;Section "Compatibility" SecCompat
-;
-;  SetOutPath $INSTDIR
-;  File /oname=bin\jmx.jar ..\compat\bin\jmx.jar
-;  File /oname=common\endorsed\xercesImpl.jar ..\compat\common\endorsed\xercesImpl.jar
-;  File /oname=common\endorsed\xml-apis.jar  ..\compat\common\endorsed\xml-apis.jar
-;
-;SectionEnd
-
 Section -post
-  nsExec::ExecToLog '"$INSTDIR\bin\tomcat6.exe" //US//Tomcat6 --Classpath "$INSTDIR\bin\bootstrap.jar" --StartClass org.apache.catalina.startup.Bootstrap --StopClass org.apache.catalina.startup.Bootstrap --StartParams start --StopParams stop  --StartMode jvm --StopMode jvm'
-  nsExec::ExecToLog '"$INSTDIR\bin\tomcat6.exe" //US//Tomcat6 --JvmOptions "-Dcatalina.home=$INSTDIR#-Dcatalina.base=$INSTDIR#-Djava.endorsed.dirs=$INSTDIR\common\endorsed#-Djava.io.tmpdir=$INSTDIR\temp#-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager#-Djava.util.logging.config.file=$INSTDIR\conf\logging.properties" --StdOutput auto --StdError auto'
+  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //US//JBossWeb --Classpath "$INSTDIR\bin\bootstrap.jar" --StartClass org.apache.catalina.startup.Bootstrap --StopClass org.apache.catalina.startup.Bootstrap --StartParams start --StopParams stop  --StartMode jvm --StopMode jvm'
+  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //US//JBossWeb --JvmOptions "-Dcatalina.home=$INSTDIR#-Dcatalina.base=$INSTDIR#-Djava.endorsed.dirs=$INSTDIR\common\endorsed#-Djava.io.tmpdir=$INSTDIR\temp#-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager#-Djava.util.logging.config.file=$INSTDIR\conf\logging.properties" --StdOutput auto --StdError auto'
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
-  WriteRegStr HKLM "SOFTWARE\Apache Software Foundation\Tomcat\6.0" "InstallPath" $INSTDIR
-  WriteRegStr HKLM "SOFTWARE\Apache Software Foundation\Tomcat\6.0" "Version" @VERSION@
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Apache Tomcat 6.0" \
-                   "DisplayName" "Apache Tomcat 6.0 (remove only)"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Apache Tomcat 6.0" \
+  WriteRegStr HKLM "SOFTWARE\JBoss.org\JBoss Web\2.1" "InstallPath" $INSTDIR
+  WriteRegStr HKLM "SOFTWARE\JBoss.org\JBoss Web\2.1" "Version" @VERSION@
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JBoss Web 2.1" \
+                   "DisplayName" "JBoss Web 2.1 (remove only)"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JBoss Web 2.1" \
                    "UninstallString" '"$INSTDIR\Uninstall.exe"'
 
 SectionEnd
@@ -365,17 +308,12 @@ FunctionEnd
 ;Descriptions
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecTomcat} $(DESC_SecTomcat)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecTomcatCore} $(DESC_SecTomcatCore)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecTomcatService} $(DESC_SecTomcatService)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecTomcatNative} $(DESC_SecTomcatNative)
-;  !insertmacro MUI_DESCRIPTION_TEXT ${SecTomcatSource} $(DESC_SecTomcatSource)
-;  !insertmacro MUI_DESCRIPTION_TEXT ${SecCompat} $(DESC_SecCompat)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecJBossWeb} $(DESC_SecJBossWeb)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecJBossWebCore} $(DESC_SecJBossWebCore)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecJBossWebService} $(DESC_SecJBossWebService)
+;  !insertmacro MUI_DESCRIPTION_TEXT ${SecJBossWebNative} $(DESC_SecJBossWebNative)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecMenu} $(DESC_SecMenu)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecDocs} $(DESC_SecDocs)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecExamples} $(DESC_SecExamples)
-;  !insertmacro MUI_DESCRIPTION_TEXT ${SecAdmin} $(DESC_SecAdmin)
-;  !insertmacro MUI_DESCRIPTION_TEXT ${SecWebapps} $(DESC_SecWebapps)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
@@ -397,8 +335,8 @@ Function CheckUserType
     Goto done
 
     MessageBox MB_OK|MB_ICONEXCLAMATION 'Note: the current user is not an administrator. \
-               To run Tomcat as a Windows service, you must be an administrator. \
-               You can still run Tomcat from the command-line as this type of user.'
+               To run JBoss Web as a Windows service, you must be an administrator. \
+               You can still run JBoss Web from the command-line as this type of user.'
     Goto done
 
   Win9x:
@@ -646,27 +584,24 @@ Section Uninstall
   Delete "$INSTDIR\modern.exe"
   Delete "$INSTDIR\Uninstall.exe"
 
-  ; Stop Tomcat service monitor if running
-  nsExec::ExecToLog '"$INSTDIR\bin\tomcat6w.exe" //MQ//Tomcat6'
-  ; Delete Tomcat service
-  nsExec::ExecToLog '"$INSTDIR\bin\tomcat6.exe" //DS//Tomcat6'
+  ; Stop JBoss Web service monitor if running
+  nsExec::ExecToLog '"$INSTDIR\bin\jboss-webw.exe" //MQ//JBossWeb'
+  ; Delete JBoss Web service
+  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //DS//JBossWeb'
   ClearErrors
 
   DeleteRegKey HKCR "JSPFile"
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Apache Tomcat 6.0"
-  DeleteRegKey HKLM "SOFTWARE\Apache Software Foundation\Tomcat\6.0"
-  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "ApacheTomcatMonitor"
-  RMDir /r "$SMPROGRAMS\Apache Tomcat 6.0"
-  Delete "$INSTDIR\tomcat.ico"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JBoss Web 2.1"
+  DeleteRegKey HKLM "SOFTWARE\JBoss.org\JBoss Web\2.1"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "ApacheJBossWebMonitor"
+  RMDir /r "$SMPROGRAMS\JBoss Web 2.1"
+  Delete "$INSTDIR\jboss-web.ico"
   Delete "$INSTDIR\LICENSE"
   RMDir /r "$INSTDIR\bin"
   RMDir /r "$INSTDIR\lib"
   Delete "$INSTDIR\conf\*.dtd"
   RMDir "$INSTDIR\logs"
-;  RMDir /r "$INSTDIR\webapps\balancer"
   RMDir /r "$INSTDIR\webapps\docs"
-  RMDir /r "$INSTDIR\webapps\examples"
-;  RMDir /r "$INSTDIR\webapps\webdav"
   RMDir /r "$INSTDIR\work"
   RMDir /r "$INSTDIR\temp"
   RMDir "$INSTDIR"
@@ -676,7 +611,7 @@ Section Uninstall
   ; if $INSTDIR was removed, skip these next ones
   IfFileExists "$INSTDIR" 0 Removed 
     MessageBox MB_YESNO|MB_ICONQUESTION \
-      "Remove all files in your Tomcat 6.0 directory? (If you have anything  \
+      "Remove all files in your JBoss Web 2.1 directory? (If you have anything  \
  you created that you want to keep, click No)" IDNO Removed
     RMDir /r "$INSTDIR\webapps\ROOT" ; this would be skipped if the user hits no
     RMDir "$INSTDIR\webapps"

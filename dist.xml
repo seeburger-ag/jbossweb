@@ -19,7 +19,7 @@
   <property name="version.build"         value="0" />
   <property name="version.patch"         value="0" />
   <property name="version"               value="2.1.0-dev" />
-  <property name="version.number"        value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
+  <property name="version.number"        value="${version.major}.${version.minor}.${version.build}.0" />
 
   <property name="project"               value="jboss-web" />
   <property name="final.name"            value="${project}-${version}" />
@@ -151,8 +151,8 @@
       sourcepath="${tomcat.dist}/src/java"
       destdir="${tomcat.dist}/webapps/docs/api"
       author="true" version="true"
-      windowtitle="Tomcat API Documentation"
-      doctitle="Tomcat API"
+      windowtitle="JBoss Web API Documentation"
+      doctitle="JBoss Web API"
       bottom="Copyright &#169; 2000-2008 Apache Software Foundation.  All Rights Reserved."
       additionalparam="-breakiterator"
       maxmemory="256m" >
@@ -197,8 +197,8 @@
     <!-- Copy deployer documentation -->
     <copy todir="${tomcat.deployer}">
       <fileset dir="${tomcat.build}/webapps/docs">
-        <include name="images/jakarta-logo.gif" />
-        <include name="images/tomcat.gif" />
+        <include name="images/jbossorg_logo.gif" />
+        <include name="images/jboss_logo.gif" />
       </fileset>
     </copy>
     <copy tofile="${tomcat.deployer}/docs/manual.html"
@@ -235,19 +235,22 @@
     <copy file="${nsis.nsexec.dll}" todir="${tomcat.dist}" />
     <copy file="${nsis.nsisdl.dll}" todir="${tomcat.dist}" />
     <copy todir="${tomcat.dist}/bin">
-       <fileset dir="res/procrun/" includes="tomcat*.exe"/>
+       <fileset dir="res/procrun/" includes="jboss*.exe"/>
+    </copy>
+    <copy todir="${tomcat.dist}/bin">
+       <fileset dir="${jbossnative.dlls}" includes="*.dll"/>
     </copy>
 
     <filter token="VERSION" value="${version}"/>
     <filter token="VERSION_NUMBER" value="${version.number}"/>
 
-    <copy file="res/tomcat.nsi" tofile="${tomcat.dist}/tomcat.nsi" filtering="true" overwrite="true"/>
+    <copy file="res/jboss-web.nsi" tofile="${tomcat.dist}/jboss-web.nsi" filtering="true" overwrite="true"/>
     <exec dir="${tomcat.dist}" executable="${nsis.exe}">
       <arg value="/DNSISDIR=${nsis.home}" />
-      <arg value="tomcat.nsi" />
+      <arg value="jboss-web.nsi" />
     </exec>
 
-    <move file="${tomcat.dist}/tomcat-installer.exe" tofile="${tomcat.release}/v${version}/bin/${final.name}.exe" />
+    <move file="${tomcat.dist}/jboss-web-installer.exe" tofile="${tomcat.release}/v${version}/bin/${final.name}.exe" />
 
     <checksum file="${tomcat.release}/v${version}/bin/${final.name}.exe"
               forceOverwrite="yes" fileext=".md5" />
@@ -258,7 +261,7 @@
 
   <!-- ==================== RELEASE: Create Release ======================= -->
   <target name="release" depends="clean,dist-static,dist-deployer,installer,package-zip,package-tgz,package-deployer-zip,package-deployer-tgz,dist-source,dist-javadoc,package-docs-tgz,package-src-zip,package-src-tgz"
-   description="Create a Tomcat 6 packaged distribution">
+   description="Create a JBoss Web packaged distribution">
 
     <filter token="VERSION" value="${version}"/>
     <copy file="KEYS"
@@ -273,25 +276,27 @@
         tofile="${tomcat.release}/v${version}/bin/README.html"
      filtering="true"/>
 
+  	<!--
     <mkdir dir="${tomcat.release}/v${version}/bin/extras" />
     <copy todir="${tomcat.release}/v${version}/bin/extras">
       <fileset dir="${tomcat.extras}">
         <include name="*.*"/>
       </fileset>
     </copy>
+    -->
   	
   </target>
 
   <!-- Packages the core zip distro -->
   <target name="package-zip">
     <copy todir="${tomcat.dist}/bin">
-       <fileset dir="res/procrun/" includes="tomcat*.exe"/>
+       <fileset dir="res/procrun/" includes="jboss*.exe"/>
     </copy>
     <copy todir="${tomcat.dist}/bin/amd64">
-       <fileset dir="res/procrun/amd64" includes="tomcat*.exe"/>
+       <fileset dir="res/procrun/amd64" includes="jboss*.exe"/>
     </copy>
     <copy todir="${tomcat.dist}/bin/ia64">
-       <fileset dir="res/procrun/ia64" includes="tomcat*.exe"/>
+       <fileset dir="res/procrun/ia64" includes="jboss*.exe"/>
     </copy>  
     <zip zipfile="${tomcat.release}/v${version}/bin/${final.name}.zip">
       <zipfileset dir="${tomcat.dist}" prefix="${final.name}">
@@ -308,8 +313,6 @@
         <include name="RELEASE-NOTES"/>
         <include name="RUNNING.txt"/>
         <include name="BENCHMARKS.txt"/>
-        <exclude name="webapps/admin/**"/>
-        <exclude name="conf/Catalina/localhost/admin.xml"/>        
         <!-- If we choose not to have service binaries by default
              the exclude.service.binaries must be defined
              in build.properties or in this file
@@ -343,26 +346,6 @@
                       message="${md5sum.binary-prefix}${final.name}-deployer.zip${line.separator}" append="true" />
   </target>
 
-  <!-- Packages the admin webapp distro in zip format -->
-  <target name="package-admin-zip">
-    <zip zipfile="${tomcat.release}/v${version}/bin/${final.name}-admin.zip">
-      <zipfileset dir="${tomcat.dist}" prefix="${final.name}">
-        <include name="webapps/admin/**"/>
-        <include name="conf/Catalina/localhost/admin.xml"/>
-        <exclude name="*.jsp" />
-      </zipfileset>
-      <zipfileset dir="${tomcat.dist}" prefix="${final.name}" includes="LICENSE" />
-      <zipfileset dir="${tomcat.dist}" prefix="${final.name}" includes="NOTICE" />
-      <zipfileset dir="${tomcat.dist}" prefix="${final.name}" includes="README.txt" />
-      <zipfileset dir="${tomcat.dist}" prefix="${final.name}" includes="RELEASE-NOTES" />
-    </zip>
-   
-    <checksum file="${tomcat.release}/v${version}/bin/${final.name}-admin.zip"
-              forceOverwrite="yes" fileext=".md5" />
-    <echo     file="${tomcat.release}/v${version}/bin/${final.name}-admin.zip.md5"
-                      message="${md5sum.binary-prefix}${final.name}-admin.zip${line.separator}" append="true" />
-  </target>
-
   <!-- Packages the core tar.gz distro -->
   <target name="package-tgz">
     <fixcrlf srcdir="${tomcat.dist}" includes="*.txt,LICENSE,NOTICE" eol="lf"/>
@@ -384,7 +367,6 @@
       </tarfileset>
       <tarfileset dir="${tomcat.dist}" mode="600" prefix="${final.name}">
         <include name="conf/**" />
-        <exclude name="conf/Catalina/localhost/admin.xml" />
       </tarfileset>
       <tarfileset dir="${tomcat.dist}" prefix="${final.name}">
         <include name="bin/**" />
@@ -412,7 +394,7 @@
         <exclude name="bin/startup-using-launcher.sh" />
         <exclude name="conf/**" />
         <exclude name="src/**" />
-        <exclude name="webapps/admin/**" />
+        <exclude name="bin/*.dll"/>
         <exclude name="bin/*.exe"/>
         <exclude name="bin/amd64/"/>
         <exclude name="bin/ia64/"/>
@@ -455,33 +437,6 @@
                       message="${md5sum.binary-prefix}${final.name}-deployer.tar.gz${line.separator}" append="true" />
   </target>
 
-  <!-- Packages the admin webapp distro in tar.gz format -->
-  <target name="package-admin-tgz">
-    <fixcrlf srcdir="${tomcat.dist}" includes="*.txt,LICENSE,NOTICE" eol="lf"/>
-
-    <tar longfile="gnu" compression="gzip"
-         tarfile="${tomcat.release}/v${version}/bin/${final.name}-admin.tar.gz">
-      <tarfileset dir="${tomcat.dist}" prefix="${final.name}">
-        <include name="LICENSE" />
-        <include name="NOTICE" />
-        <include name="README.txt" />
-        <include name="RELEASE-NOTES" />
-      </tarfileset>
-      <tarfileset dir="${tomcat.dist}" prefix="${final.name}">
-        <include name="server/webapps/admin/**" />
-        <exclude name="*.jsp" />
-      </tarfileset>
-      <tarfileset dir="${tomcat.dist}" mode="600" prefix="${final.name}">
-        <include name="conf/Catalina/localhost/admin.xml" />
-      </tarfileset>
-    </tar>
-
-    <checksum file="${tomcat.release}/v${version}/bin/${final.name}-admin.tar.gz"
-              forceOverwrite="yes" fileext=".md5" />
-    <echo     file="${tomcat.release}/v${version}/bin/${final.name}-admin.tar.gz.md5"
-                      message="${md5sum.binary-prefix}${final.name}-admin.tar.gz${line.separator}" append="true" />
-  </target>
-
   <!-- Packages the documentation distro in tar.gz format -->
   <target name="package-docs-tgz">
 
@@ -490,13 +445,13 @@
 
     <tar longfile="gnu" compression="gzip"
          tarfile="${tomcat.release}/v${version}/bin/${final.name}-fulldocs.tar.gz">
-      <tarfileset dir="${tomcat.dist}" prefix="tomcat-6.0-doc">
+      <tarfileset dir="${tomcat.dist}" prefix="jboss-web-doc">
         <include name="LICENSE" />
         <include name="NOTICE" />
         <include name="README.txt" />
         <include name="RUNNING.txt" />
       </tarfileset>
-      <tarfileset dir="${tomcat.dist}/webapps/docs" prefix="tomcat-6.0-doc">
+      <tarfileset dir="${tomcat.dist}/webapps/docs" prefix="jboss-web-doc">
         <include name="**" />
       </tarfileset>
     </tar>

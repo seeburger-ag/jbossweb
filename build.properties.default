@@ -69,6 +69,12 @@ nsis.nsexec.dll=${nsis.home}/Plugins/nsExec.dll
 nsis.nsisdl.dll=${nsis.home}/Plugins/NSISdl.dll
 nsis.loc=${base-sf.loc}/nsis/nsis-2.34-setup.exe
 
+# ----- JBoss Native, version 2.0 or later -----
+jbossnative.home=${base.path}/jboss-native-2.0.3
+jbossnative.test=${base.path}/jboss-native-2.0.3/JBossORG-EULA.txt
+jbossnative.dlls=${jbossnative.home}/bin/native
+jbossnative.loc=http://labs.jboss.com/downloading/?projectId=jbossweb&url=http://labs.jboss.com/file-access/default/members/jbossweb/freezone/dist/2.0.3.GA/jboss-native-2.0.3-windows-i686-ssl.zip
+
 # ----- Commons Daemon, version 1.0-Alpha or later -----
 commons-daemon.home=${base.path}/commons-daemon-1.0.1
 commons-daemon.lib=${commons-daemon.home}
