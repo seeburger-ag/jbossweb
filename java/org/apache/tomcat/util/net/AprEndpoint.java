@@ -780,6 +780,10 @@ public class AprEndpoint {
                 // connection quicker
                 s.setSoLinger(true, 0);
             }
+            // If deferAccept is enabled, send at least one byte
+            if (deferAccept) {
+                s.getOutputStream().write(" ".getBytes());
+            }
         } catch (Exception e) {
             // Ignore
         } finally {
