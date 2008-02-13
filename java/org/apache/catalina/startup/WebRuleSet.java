@@ -195,9 +195,6 @@ public class WebRuleSet extends RuleSetBase {
         digester.addCallMethod(prefix + "web-app/filter-mapping/dispatcher",
                                "setDispatcher", 0);
 
-         digester.addCallMethod(prefix + "web-app/listener/listener-class",
-                                "addApplicationListener", 0);
-         
         digester.addRule(prefix + "web-app/jsp-config",
                          jspConfig);
         
