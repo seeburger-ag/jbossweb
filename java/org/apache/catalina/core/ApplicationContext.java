@@ -40,6 +40,7 @@ import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
 
 import org.apache.catalina.Context;
+import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ApplicationParameter;
@@ -507,7 +508,7 @@ public class ApplicationContext
     public InputStream getResourceAsStream(String path) {
 
         path = normalize(path);
-        if (path == null || !path.startsWith("/"))
+        if (path == null || (Globals.STRICT_SERVLET_COMPLIANCE && !path.startsWith("/")))
             return (null);
 
         DirContext resources = context.getResources();
