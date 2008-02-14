@@ -149,6 +149,9 @@
       <fix>
          Ignore not found readme and xslt in DefaultServlet. (remm)
       </fix>
+      <fix>
+        Fix possible NPE processing session expires. (fhanik)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -211,6 +214,9 @@
       <fix>
         Finish removing of some URL CL hardcoding. If parent CL is not a URL CL, the Ant classpath cannot
         be generated, and security setup might be incomplete. (remm)
+      </fix>
+      <fix>
+        <bug>44408</bug>: Remove useless synchronization. (remm)
       </fix>
     </changelog>
   </subsection>

@@ -29,7 +29,7 @@
         <item name="PHP"                 href="php.html"/>
         <item name="SSI"                 href="ssi-howto.html"/>
         <item name="CGI"                          href="cgi-howto.html"/>
-        <item name="Rewrite Support"              href="rewrite.html"/>
+        <item name="URL Rewriting"                href="rewrite.html"/>
         <item name="Proxy Support"                href="proxy-howto.html"/>
         <item name="MBean Descriptor"             href="mbeans-descriptor-howto.html"/>
         <item name="Default Servlet"              href="default-servlet.html"/>
