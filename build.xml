@@ -30,6 +30,7 @@
   <property name="tomcat.classes"    value="${basedir}/output/classes"/>
   <property name="tomcat.dist"       value="${basedir}/output/dist"/>
   <property name="tomcat.jars"       value="${basedir}/output/jars"/>
+  <property name="jbossweb.site"     value="${basedir}/output/site"/>
   <property name="test.failonerror"  value="true"/>
   <property name="test.runner"       value="junit.textui.TestRunner"/>
 
@@ -433,6 +434,88 @@
       <param name="project-menu" expression="nomenu"/>
     </xslt>
 
+  	<!-- Website version -->
+  	<mkdir dir="${jbossweb.site}" />
+    <copy todir="${jbossweb.site}">
+      <fileset dir="webapps/docs">
+        <include name="images/**"/>
+        <include name="**/*.html"/>
+        <include name="appdev/*.txt"/>
+        <include name="appdev/sample/**"/>
+      </fileset>
+        <fileset dir="webapps/docs">
+          <include name="architecture/**"/>
+          <exclude name="architecture/*.xml"/>
+        </fileset>
+    </copy>
+    <copy todir="${jbossweb.site}">
+      <fileset dir=".">
+        <include name="BUILDING.txt"/>
+        <include name="NOTICE"/>
+        <include name="RUNNING.txt"/>
+      </fileset>
+    </copy>
+  	<mkdir dir="${jbossweb.site}/appdev" />
+    <copy todir="${jbossweb.site}/appdev">
+        <fileset dir="webapps">
+          <include name="docs/appdev/*.txt"/>
+        </fileset>
+    </copy>
+  	<mkdir dir="${jbossweb.site}/funcspecs" />
+    <mkdir dir="${jbossweb.site}/architecture"/>
+    <mkdir dir="${jbossweb.site}/config"/>
+
+  	<xslt basedir="webapps/docs"
+           destdir="${jbossweb.site}"
+         extension=".html"
+             style="webapps/docs/tomcat-docs.xsl"
+          excludes="build.xml project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression="."/>
+      <param name="project-menu" expression="nomenu"/>
+        <param name="bodyonly" expression="true"/>
+    </xslt>
+    <xslt basedir="webapps/docs/appdev"
+           destdir="${jbossweb.site}/appdev"
+         extension=".html"
+             style="webapps/docs/tomcat-docs.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression=".."/>
+      <param name="project-menu" expression="nomenu"/>
+        <param name="bodyonly" expression="true"/>
+    </xslt>
+    <xslt basedir="webapps/docs/funcspecs"
+           destdir="${jbossweb.site}/funcspecs"
+         extension=".html"
+             style="webapps/docs/tomcat-docs.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression="../.."/>
+      <param name="project-menu" expression="nomenu"/>
+        <param name="bodyonly" expression="true"/>
+    </xslt>
+    <xslt basedir="webapps/docs/config"
+           destdir="${jbossweb.site}/config"
+         extension=".html"
+             style="webapps/docs/tomcat-docs.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression=".."/>
+      <param name="project-menu" expression="nomenu"/>
+        <param name="bodyonly" expression="true"/>
+    </xslt>
+    <xslt basedir="webapps/docs/architecture"
+           destdir="${jbossweb.site}/architecture"
+         extension=".html"
+             style="webapps/docs/tomcat-docs.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression=".."/>
+      <param name="project-menu" expression="nomenu"/>
+        <param name="bodyonly" expression="true"/>
+    </xslt>
+
   </target>
 
   <target name="deploy" depends="build-only,build-docs">
@@ -529,6 +612,7 @@
     <delete dir="${tomcat.classes}" />
     <delete dir="${tomcat.build}" />
     <delete dir="${tomcat.jars}" />
+    <delete dir="${jbossweb.site}" />
   </target>
 
   <!-- Download and dependency building -->
