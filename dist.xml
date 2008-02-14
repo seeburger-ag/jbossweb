@@ -240,6 +240,7 @@
     <copy todir="${tomcat.dist}/bin">
        <fileset dir="${jbossnative.dlls}" includes="*.dll"/>
     </copy>
+    <copy todir="${tomcat.dist}/bin" file="${jbossnative.openssl}" />
 
     <filter token="VERSION" value="${version}"/>
     <filter token="VERSION_NUMBER" value="${version.number}"/>

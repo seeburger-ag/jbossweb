@@ -71,7 +71,7 @@ nsis.loc=${base-sf.loc}/nsis/nsis-2.34-setup.exe
 
 # ----- JBoss Native, version 2.0 or later -----
 jbossnative.home=${base.path}/jboss-native-2.0.3
-jbossnative.test=${base.path}/jboss-native-2.0.3/JBossORG-EULA.txt
+jbossnative.openssl=${base.path}/jboss-native-2.0.3/bin/openssl.exe
 jbossnative.dlls=${jbossnative.home}/bin/native
 jbossnative.loc=http://labs.jboss.com/downloading/?projectId=jbossweb&url=http://labs.jboss.com/file-access/default/members/jbossweb/freezone/dist/2.0.3.GA/jboss-native-2.0.3-windows-i686-ssl.zip
 
