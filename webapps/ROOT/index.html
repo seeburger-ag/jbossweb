@@ -132,6 +132,20 @@
                 <tr>
                   <td class="menu">
                     <a href="http://labs.jboss.com/jbossweb/">Home&nbsp;Page</a><br/>
+                    <a href="http://jira.jboss.com/jira/browse/JBWEB">Bug&nbsp;Database</a><br/>
+		    &nbsp;
+                  </td>
+                </tr>
+            </table>
+	    
+            <br/>
+            <table width="100%" border="1" cellspacing="0" cellpadding="3">
+                <tr>
+                  <th>Apache Tomcat Online</th>
+                </tr>
+                <tr>
+                  <td class="menu">
+                    <a href="http://tomcat.apache.org/">Home&nbsp;Page</a><br/>
 		            <a href="http://tomcat.apache.org/faq/">FAQ</a><br/>
                     <a href="http://tomcat.apache.org/bugreport.html">Bug&nbsp;Database</a><br/>
                     <a href="http://issues.apache.org/bugzilla/buglist.cgi?bug_status=UNCONFIRMED&amp;bug_status=NEW&amp;bug_status=ASSIGNED&amp;bug_status=REOPENED&amp;bug_status=RESOLVED&amp;resolution=LATER&amp;resolution=REMIND&amp;resolution=---&amp;bugidtype=include&amp;product=Tomcat+6&amp;cmdtype=doit&amp;order=Importance">Open Bugs</a><br/>
@@ -150,8 +164,8 @@
                 </tr>
                 <tr>
                   <td class="menu">
-                    <a href="http://java.sun.com/products/jsp">Sun's&nbsp;Java&nbsp;Server&nbsp;Pages&nbsp;Site</a><br/>
                     <a href="http://java.sun.com/products/servlet">Sun's&nbsp;Servlet&nbsp;Site</a><br/>
+                    <a href="http://java.sun.com/products/jsp">Sun's&nbsp;Java&nbsp;Server&nbsp;Pages&nbsp;Site</a><br/>
     		    &nbsp;
                   </td>
                 </tr>
@@ -162,39 +176,45 @@
 	
         <!-- Body -->
         <td align="left" valign="top">
-          <p id="congrats">If you're seeing this page via a web browser, it means you've setup Tomcat successfully. Congratulations!</p>
+          <p id="congrats">If you're seeing this page via a web browser, it means you've setup JBoss Web successfully. Congratulations!</p>
  
-          <p>As you may have guessed by now, this is the default Tomcat home page. It can be found on the local filesystem at:</p>
+          <p>As you may have guessed by now, this is the default JBoss Web home page. It can be found on the local filesystem at:</p>
           <p class="code">$CATALINA_HOME/webapps/ROOT/index.html</p>
 	  
-          <p>where "$CATALINA_HOME" is the root of the Tomcat installation directory. If you're seeing this page, and you don't think you should be, then either you're either a user who has arrived at new installation of Tomcat, or you're an administrator who hasn't got his/her setup quite right. Providing the latter is the case, please refer to the <a href="docs">Tomcat Documentation</a> for more detailed setup and administration information than is found in the INSTALL file.</p>
+          <p>where "$CATALINA_HOME" is the root of the JBoss Web installation directory. If you're seeing this page, and 
+             you don't think you should be, then either you're either a user who has arrived at new installation of JBoss Web, 
+             or you're an administrator who hasn't got his/her setup quite right. Providing the latter is the case, 
+             please refer to the <a href="docs">JBoss Web Documentation</a> for more detailed setup and administration 
+             information than is found in the INSTALL file.</p>
 
             <p><b>NOTE: For security reasons, using the administration webapp
             is restricted to users with role "admin". The manager webapp
             is restricted to users with role "manager".</b>
             Users are defined in <code>$CATALINA_HOME/conf/tomcat-users.xml</code>.</p>
 
-            <p>Included with this release are a host of sample Servlets and JSPs (with associated source code), extensive documentation, and an introductory guide to developing web applications.</p>
+            <p>Included with this release are extensive documentation and an introductory guide to developing web applications.</p>
 
+<!--
             <p>Tomcat mailing lists are available at the Tomcat project web site:</p>
 
            <ul>
                <li><b><a href="mailto:users@tomcat.apache.org">users@tomcat.apache.org</a></b> for general questions related to configuring and using Tomcat</li>
                <li><b><a href="mailto:dev@tomcat.apache.org">dev@tomcat.apache.org</a></b> for developers working on Tomcat</li>
            </ul>
+-->
 
-            <p>Thanks for using Tomcat!</p>
+            <p>Thanks for using JBoss Web!</p>
 
             <p id="footer">
-            <img border="0" src="jboss_ics.gif"/>
-            <img border="0" src="tomcat_pb.gif"/>
-            <img border="0" src="openssl_ics.gif"/>
             <img border="0" src="jbweb_pb.gif"/>
+            <img border="0" src="tomcat_pb.gif"/>
+            <img border="0" src="apr_pb.gif"/>
+            <img border="0" src="openssl_ics.gif"/>
+            <img border="0" src="jboss_ics.gif"/>
             <br/>
 	    &nbsp;
 
-	    Copyright &copy; 1999-2007 RedHat<br/>
-            All Rights Reserved
+	   &copy; 2008 Red Hat Middleware, LLC. All Rights Reserved.
             </p>
         </td>
 

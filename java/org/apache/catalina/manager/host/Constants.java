@@ -107,13 +107,13 @@ public class Constants {
         "<table cellspacing=\"4\" width=\"100%\" border=\"0\">\n" +
         " <tr>\n" +
         "  <td colspan=\"2\">\n" +
-        "   <a href=\"http://www.apache.org/\">\n" +
-        "    <img border=\"0\" alt=\"The Apache Software Foundation\" align=\"left\"\n" +
-        "         src=\"{0}/images/asf-logo.gif\">\n" +
+        "   <a href=\"http://www.jboss.org/\">\n" +
+        "    <img border=\"0\" alt=\"JBoss.org\" align=\"left\"\n" +
+        "         src=\"{0}/images/jboss_logo.gif\">\n" +
         "   </a>\n" +
-        "   <a href=\"http://tomcat.apache.org/\">\n" +
-        "    <img border=\"0\" alt=\"The Tomcat Servlet/JSP Container\"\n" +
-        "         align=\"right\" src=\"{0}/images/tomcat.gif\">\n" +
+        "   <a href=\"http://labs.jboss.com/jbossweb/\">\n" +
+        "    <img border=\"0\" alt=\"JBoss Web Servlet/JSP Container\"\n" +
+        "         align=\"right\" src=\"{0}/images/jbossweblogo.gif\">\n" +
         "   </a>\n" +
         "  </td>\n" +
         " </tr>\n" +
@@ -186,7 +186,7 @@ public class Constants {
     public static final String HTML_TAIL_SECTION =
         "<hr size=\"1\" noshade=\"noshade\">\n" +
         "<center><font size=\"-1\" color=\"#525D76\">\n" +
-        " <em>Copyright &copy; 1999-2005, Apache Software Foundation</em>" +
+        " <em>Copyright &copy; 2008, Red Hat Middleware, LLC.</em>" +
         "</font></center>\n" +
         "\n" +
         "</body>\n" +
