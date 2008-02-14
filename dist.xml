@@ -270,6 +270,8 @@
     <copy file="RELEASE-NOTES"
          todir="${tomcat.release}/v${version}"
      filtering="true"/>
+
+  	<!--
     <copy file="res/welcome.main.html"
         tofile="${tomcat.release}/v${version}/README.html"
      filtering="true"/>
@@ -277,7 +279,6 @@
         tofile="${tomcat.release}/v${version}/bin/README.html"
      filtering="true"/>
 
-  	<!--
     <mkdir dir="${tomcat.release}/v${version}/bin/extras" />
     <copy todir="${tomcat.release}/v${version}/bin/extras">
       <fileset dir="${tomcat.extras}">
