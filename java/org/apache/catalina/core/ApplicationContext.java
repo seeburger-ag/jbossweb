@@ -454,7 +454,7 @@ public class ApplicationContext
     public URL getResource(String path)
         throws MalformedURLException {
 
-        if (path == null || !path.startsWith("/")) {
+        if (path == null || (Globals.STRICT_SERVLET_COMPLIANCE && !path.startsWith("/"))) {
             throw new MalformedURLException(sm.getString("applicationContext.requestDispatcher.iae", path));
         }
         
