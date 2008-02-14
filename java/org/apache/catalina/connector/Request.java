@@ -223,7 +223,7 @@ public class Request
     /**
      * The associated input buffer.
      */
-    protected InputBuffer inputBuffer = new InputBuffer();
+    protected InputBuffer inputBuffer = new InputBuffer(this);
 
 
     /**
@@ -464,7 +464,7 @@ public class Request
     
 
     /**
-     * Clear cached encoders (to save memory for Comet requests).
+     * Read bytes into the low level buffer.
      */
     public boolean read()
         throws IOException {

@@ -135,6 +135,12 @@ public class InputBuffer extends Reader
 
 
     /**
+     * Associated request.
+     */
+    private org.apache.catalina.connector.Request request;
+
+
+    /**
      * Buffer position.
      */
     private int markPos = -1;
@@ -152,9 +158,9 @@ public class InputBuffer extends Reader
     /**
      * Default constructor. Allocate the buffer with the default buffer size.
      */
-    public InputBuffer() {
+    public InputBuffer(org.apache.catalina.connector.Request request) {
 
-        this(DEFAULT_BUFFER_SIZE);
+        this(request, DEFAULT_BUFFER_SIZE);
 
     }
 
@@ -164,8 +170,9 @@ public class InputBuffer extends Reader
      * 
      * @param size Buffer size to use
      */
-    public InputBuffer(int size) {
+    public InputBuffer(org.apache.catalina.connector.Request request, int size) {
 
+        this.request = request;
         this.size = size;
         bb = new ByteChunk(size);
         bb.setLimit(size);
@@ -261,13 +268,29 @@ public class InputBuffer extends Reader
         int available = 0;
         if (state == BYTE_STATE) {
             available = bb.getLength();
+            if (request.isComet() && available == 0) {
+                try {
+                    available = realReadBytes(null, 0, 0);
+                } catch (IOException e) {
+                    // Ignore, will return 0, and another error
+                    // will occur elsewhere
+                }
+            }
         } else if (state == CHAR_STATE) {
             available = cb.getLength();
+            if (request.isComet() && available == 0) {
+                try {
+                    available = realReadChars(null, 0, cb.getBuffer().length);
+                } catch (IOException e) {
+                    // Ignore, will return 0, and another error
+                    // will occur elsewhere
+                }
+            }
         }
-        if (available == 0) {
+        /*if (available == 0) {
             coyoteRequest.action(ActionCode.ACTION_AVAILABLE, null);
             available = (coyoteRequest.getAvailable() > 0) ? 1 : 0;
-        }
+        }*/
         return available;
     }
 
