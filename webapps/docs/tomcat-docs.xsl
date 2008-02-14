@@ -18,12 +18,15 @@
   <xsl:param    name="home-href"        select="'http://labs.jboss.com/jbossweb/'"/>
   <xsl:param    name="home-logo"        select="'/images/jboss_logo.gif'"/>
   <xsl:param    name="printer-logo"     select="'/images/printer.gif'"/>
-  <xsl:param    name="jbossorg-logo"      select="'/images/jbossorg_logo.gif'"/>
+  <xsl:param    name="jbossorg-logo"    select="'/images/jbossorg_logo.gif'"/>
+  <xsl:param    name="jbossweb-logo"    select="'/images/jbossweblogo.gif'"/>
   <xsl:param    name="relative-path"    select="'.'"/>
   <xsl:param    name="void-image"       select="'/images/void.gif'"/>
   <xsl:param    name="project-menu"     select="'menu'"/>
+  <xsl:param    name="bodyonly"         select="'false'"/>
   <xsl:param    name="standalone"       select="''"/>
   <xsl:param    name="buglink"          select="'http://issues.apache.org/bugzilla/show_bug.cgi?id='"/>
+  <xsl:param    name="jiralink"         select="'http://jira.jboss.com/jira/browse/JBWEB-'"/>
 
   <!-- Defined variables (non-overrideable) -->
   <xsl:variable name="body-bg"          select="'#ffffff'"/>
@@ -42,6 +45,13 @@
   <xsl:template match="document">
   <xsl:variable name="project"
               select="document('project.xml')/project"/>
+
+    <xsl:if test="$bodyonly = 'true'">
+      <xsl:apply-templates select="body/section"/>
+    </xsl:if>
+    
+    <xsl:if test="$bodyonly != 'true'">
+
     <html>
     <head>
     <title><xsl:value-of select="project/title"/> - <xsl:value-of select="properties/title"/></title>
@@ -166,13 +176,16 @@
       <xsl:comment>PAGE FOOTER</xsl:comment>
       <tr><td colspan="2">
         <div align="center"><font color="{$body-link}" size="-1"><em>
-        Copyright &#169; 1999-2006, Apache Software Foundation
+        &#169; 1999-2007, Apache Software Foundation
+        &#169; 2007-2008, Red Hat Middleware, LLC. All rights reserved.
         </em></font></div>
       </td></tr>
 
     </table>
     </body>
     </html>
+
+    </xsl:if>
 
   </xsl:template>
 
@@ -447,6 +460,12 @@
   <!-- Link to a bug report -->
   <xsl:template match="bug">
       <xsl:variable name="link"><xsl:value-of select="$buglink"/><xsl:value-of select="text()"/></xsl:variable>
+      <a href="{$link}"><xsl:apply-templates/></a>
+  </xsl:template>
+
+  <!-- Link to a JIRA report -->
+  <xsl:template match="jira">
+      <xsl:variable name="link"><xsl:value-of select="$jiralink"/><xsl:value-of select="text()"/></xsl:variable>
       <a href="{$link}"><xsl:apply-templates/></a>
   </xsl:template>
 
