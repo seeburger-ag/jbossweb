@@ -474,6 +474,7 @@
       <param name="relative-path" expression="."/>
       <param name="project-menu" expression="nomenu"/>
         <param name="bodyonly" expression="true"/>
+        <param name="usehead" expression="true"/>
     </xslt>
     <xslt basedir="webapps/docs/appdev"
            destdir="${jbossweb.site}/appdev"
@@ -484,6 +485,7 @@
       <param name="relative-path" expression=".."/>
       <param name="project-menu" expression="nomenu"/>
         <param name="bodyonly" expression="true"/>
+        <param name="usehead" expression="true"/>
     </xslt>
     <xslt basedir="webapps/docs/funcspecs"
            destdir="${jbossweb.site}/funcspecs"
@@ -494,6 +496,7 @@
       <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
         <param name="bodyonly" expression="true"/>
+        <param name="usehead" expression="true"/>
     </xslt>
     <xslt basedir="webapps/docs/config"
            destdir="${jbossweb.site}/config"
@@ -504,6 +507,7 @@
       <param name="relative-path" expression=".."/>
       <param name="project-menu" expression="nomenu"/>
         <param name="bodyonly" expression="true"/>
+        <param name="usehead" expression="true"/>
     </xslt>
     <xslt basedir="webapps/docs/architecture"
            destdir="${jbossweb.site}/architecture"
@@ -514,6 +518,7 @@
       <param name="relative-path" expression=".."/>
       <param name="project-menu" expression="nomenu"/>
         <param name="bodyonly" expression="true"/>
+        <param name="usehead" expression="true"/>
     </xslt>
 
   </target>

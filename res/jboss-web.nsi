@@ -11,7 +11,7 @@
   ;Product information
   VIAddVersionKey ProductName "JBoss Web"
   VIAddVersionKey CompanyName "RedHat"
-  VIAddVersionKey LegalCopyright "Copyright (c) 2006-2008 RedHat"
+  VIAddVersionKey LegalCopyright "Copyright (c) 2006-2008 Red Hat Middleware, LLC. All rights reserved."
   VIAddVersionKey FileDescription "JBoss Web Installer"
   VIAddVersionKey FileVersion "2.1"
   VIAddVersionKey ProductVersion "@VERSION@"

@@ -24,6 +24,7 @@
   <xsl:param    name="void-image"       select="'/images/void.gif'"/>
   <xsl:param    name="project-menu"     select="'menu'"/>
   <xsl:param    name="bodyonly"         select="'false'"/>
+  <xsl:param    name="usehead"          select="'false'"/>
   <xsl:param    name="standalone"       select="''"/>
   <xsl:param    name="buglink"          select="'http://issues.apache.org/bugzilla/show_bug.cgi?id='"/>
   <xsl:param    name="jiralink"         select="'http://jira.jboss.com/jira/browse/JBWEB-'"/>
@@ -210,6 +211,19 @@
 
   <!-- Process a documentation section -->
   <xsl:template match="section">
+
+    <xsl:if test="$usehead = 'true'">
+
+    <xsl:variable name="name">
+      <xsl:value-of select="@name"/>
+    </xsl:variable>
+    <h2 class="head2"><xsl:value-of select="@name"/></h2>
+    <xsl:apply-templates/>
+
+    </xsl:if>
+    
+    <xsl:if test="$usehead != 'true'">
+
     <xsl:variable name="name">
       <xsl:value-of select="@name"/>
     </xsl:variable>
@@ -225,11 +239,27 @@
         <xsl:apply-templates/>
       </blockquote></td></tr>
     </table>
+
+    </xsl:if>
+    
   </xsl:template>
 
 
   <!-- Process a documentation subsection -->
   <xsl:template match="subsection">
+
+    <xsl:if test="$usehead = 'true'">
+
+    <xsl:variable name="name">
+      <xsl:value-of select="@name"/>
+    </xsl:variable>
+    <h3 class="head3"><xsl:value-of select="@name"/></h3>
+    <xsl:apply-templates/>
+
+    </xsl:if>
+    
+    <xsl:if test="$usehead != 'true'">
+
     <xsl:variable name="name">
       <xsl:value-of select="@name"/>
     </xsl:variable>
@@ -245,6 +275,9 @@
         <xsl:apply-templates/>
       </blockquote></td></tr>
     </table>
+
+    </xsl:if>
+    
   </xsl:template>
 
 
