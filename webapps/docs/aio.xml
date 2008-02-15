@@ -42,7 +42,7 @@
   <subsection name="CometEvent">
   
   <p>
-    Servlets which implement the <code>org.apache.catalina.CometProcessor</code>
+    Servlets which implement the <code>org.jboss.web.comet.CometProcessor</code>
     interface will have their event method invoked rather than the usual service
     method, according to the event which occurred. The event object gives
     access to the usual request and response objects, which may be used in the
@@ -68,7 +68,7 @@
        must continue reading while data is reported available. When encountering a read error, 
        the servlet should report it by propagating the exception properly. Throwing 
        an exception will cause the error event to be invoked, and the connection 
-       will be closed. 
+       will be closed.
        Alternately, it is also possible to catch any exception, perform clean up
        on any data structure the servlet may be using, and using the close method
        of the event. It is not allowed to attempt reading data from the request 
@@ -78,12 +78,17 @@
   <li>EventType.END - End may be called to end the processing of the request. Fields that have
        been initialized in the begin method should be reset. After this event has
        been processed, the request and response objects, as well as all their dependent
-       objects will be recycled and used to process other requests.</li>
+       objects will be recycled and used to process other requests. In particular,
+       this event will be called if the HTTP session associated with the connection
+       times out, if the web application is reloaded, if the server is shutdown, or
+       if the Comet connection was closed asynchronously.</li>
   <li>EventType.ERROR - Error will be called by the container in the case where an IO exception
        or a similar unrecoverable error occurs on the connection. Fields that have
        been initialized in the begin method should be reset. After this event has
        been processed, the request and response objects, as well as all their dependent
        objects will be recycled and used to process other requests.</li>
+  <li>TIMEOUT - the connection timed out, but the connection will not be closed unless 
+       the servlet uses the close method of the event</li>
   <li>EventType.EVENT - Event will be called by the container after the resume() method is called,
        during which any operations can be performed, including closing the Comet connection
        using the close() method.</li>
@@ -94,32 +99,8 @@
   </ul>
 
   <p>
-    There are some event subtypes which allow finer processing of events (note: some of these
-    events require usage of the org.apache.catalina.valves.CometConnectionManagerValve valve):
-  </p>
-     
-     <p>
-     EventType.END event sub types:
-      <ul>
-      <li>EventSubType.WEBAPP_RELOAD - the web application is being reloaded</li>
-      <li>EventSubType.SERVER_SHUTDOWN - the server is shutting down</li>
-      <li>EventSubType.SESSION_END - the servlet ended the session</li>
-      </ul>
-     </p>
-     <p>
-      EventType.ERROR event sub types:
-      <ul>
-      <li>EventSubType.TIMEOUT - the connection timed out; note that this ERROR type is not fatal, and
-        the connection will not be closed unless the servlet uses the close method of the event</li>
-      <li>EventSubType.CLIENT_DISCONNECT - the client connection was closed</li>
-      <li>EventSubType.IOEXCEPTION - an IO exception occurred, such as invalid content, for example, 
-        an invalid chunk block</li>
-      </ul>
-     </p>
-     
-  <p>
     As described above, the typical lifecycle of a Comet request will consist in a series of
-    events such as: BEGIN -> READ -> READ -> READ -> ERROR/TIMEOUT. At any time, the servlet 
+    events such as: BEGIN -> READ -> READ -> READ -> TIMEOUT. At any time, the servlet 
     may end processing of the request by using the close method of the event object.
   </p>
   
@@ -130,13 +111,13 @@
       (during the processing of an event), the container will not call an END event.
       If this method is called asynchronously, an END event will be sent to the 
       servlet (note that this event will be sent whenever another event would have
-      been sent, such as a READ or ERROR/TIMEOUT event).
+      been sent, such as a READ or TIMEOUT event).
   </p>
   
   <p>
     The setTimeout() method sets the timeout in milliseconds of idle time on the connection.
       The timeout is reset every time data is received from the connection. If a timeout occurs, the 
-      servlet will receive an ERROR/TIMEOUT event which will not result in automatically closing
+      servlet will receive an TIMEOUT event which will not result in automatically closing
       the event (the event may be closed using the close() method).
   </p>
   
@@ -224,7 +205,7 @@ public class ChatServlet
         throws IOException, ServletException {
         HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();
-        if (event.getEventType() == CometEvent.EventType.BEGIN) {
+        if (event.getType() == CometEvent.EventType.BEGIN) {
             log("Begin for session: " + request.getSession(true).getId());
             PrintWriter writer = response.getWriter();
             writer.println("&lt;!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">");
