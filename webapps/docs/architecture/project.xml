@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="Apache Tomcat Architecture"
-        href="http://tomcat.apache.org/">
+<project name="JBoss Web Documentation"
+        href="http://labs.jboss.com/jbossweb/">
 
-    <title>Apache Tomcat Architecture</title>
+    <title>JBoss Web Architecture</title>
 
-    <logo href="/images/tomcat.gif">
-      The Apache Tomcat Servlet/JSP Container
+    <logo href="/images/jbossweblogo.gif">
+      The JBoss Web Servlet/JSP Container
     </logo>
 
     

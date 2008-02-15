@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="Catalina Functional Specifications"
-        href="http://tomcat.apache.org/">
+<project name="JBoss Web Documentation"
+        href="http://labs.jboss.com/jbossweb/">
 
     <title>Catalina Functional Specifications</title>
 
-    <logo href="/images/tomcat.gif">
-      Catalina Functional Specifications
+    <logo href="/images/jbossweblogo.gif">
+      The JBoss Web Servlet/JSP Container
     </logo>
 
     <body>
 
     <menu name="Links">
-        <item name="Docs Home"             href="../../index.html"/>
+        <item name="Docs Home"             href="../index.html" />
         <item name="Functional Specs"      href="index.html"/>
     </menu>
 

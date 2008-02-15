@@ -137,24 +137,22 @@
     </style>
 
     <!-- Catalina Functional Specifications -->
-    <mkdir     dir="${webapps.build}/${webapp.name}/catalina"/>
-    <mkdir     dir="${webapps.build}/${webapp.name}/catalina/funcspecs"/>
     <style basedir="funcspecs"
-           destdir="${webapps.build}/${webapp.name}/catalina/funcspecs"
+           destdir="${webapps.build}/${webapp.name}/funcspecs"
+         extension=".html"
+             style="tomcat-docs.xsl"
+          excludes="project.xml"
+          includes="*.xml">
+      <param name="relative-path" expression=".."/>
+    </style>
+    <mkdir     dir="${webapps.build}/${webapp.name}/funcspecs/printer"/>
+    <style basedir="funcspecs"
+           destdir="${webapps.build}/${webapp.name}/funcspecs/printer"
          extension=".html"
              style="tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
       <param name="relative-path" expression="../.."/>
-    </style>
-    <mkdir     dir="${webapps.build}/${webapp.name}/catalina/funcspecs/printer"/>
-    <style basedir="funcspecs"
-           destdir="${webapps.build}/${webapp.name}/catalina/funcspecs/printer"
-         extension=".html"
-             style="tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-      <param name="relative-path" expression="../../.."/>
       <param name="project-menu" expression="nomenu"/>
     </style>
 
