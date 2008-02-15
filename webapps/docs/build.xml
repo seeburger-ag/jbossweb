@@ -57,9 +57,6 @@
     <copy   tofile="${webapps.build}/${webapp.name}/appdev/sample/build.xml"
               file="appdev/build.xml.txt"/>
 
-    <!-- Catalina Functional Specifications -->
-    <mkdir     dir="${webapps.build}/${webapp.name}/catalina/funcspecs"/>
-
     <!-- Architecture -->
     <copy    todir="${webapps.build}/${webapp.name}/architecture">
       <fileset dir="architecture" excludes="*.xml"/>
