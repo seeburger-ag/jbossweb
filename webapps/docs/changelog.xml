@@ -152,6 +152,9 @@
       <fix>
         Fix possible NPE processing session expires. (fhanik)
       </fix>
+      <fix>
+        Avoid verbose exception with empty URLs. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
