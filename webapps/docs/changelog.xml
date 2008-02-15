@@ -218,6 +218,10 @@
       <fix>
         <bug>44408</bug>: Remove useless synchronization. (remm)
       </fix>
+      <fix>
+        <bug>43925</bug>: Optimize allocation style for bodies (this removes the no-GC mode, however),
+        submitted by Brian Remmington. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Webapps">

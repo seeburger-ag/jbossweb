@@ -38,6 +38,9 @@ import org.apache.tomcat.util.buf.MessageBytes;
 public class ServerCookie implements Serializable {
     
     
+    protected static final boolean USE_V1_COOKIES = 
+        !Boolean.valueOf(System.getProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "false")).booleanValue();
+    
     // Version 0 (Netscape) attributes
     private MessageBytes name=MessageBytes.newInstance();
     private MessageBytes value=MessageBytes.newInstance();
@@ -248,7 +251,7 @@ public class ServerCookie implements Serializable {
         buf.append("=");
         // Servlet implementation does not check anything else
         
-        maybeQuote2(version, buf, value);
+        version = maybeQuote2(version, buf, value);
 
         // Add version 1 specific information
         if (version == 1) {
@@ -329,7 +332,7 @@ public class ServerCookie implements Serializable {
      * @param buf
      * @param value
      */
-    public static void maybeQuote2 (int version, StringBuffer buf, String value) {
+    public static int maybeQuote2 (int version, StringBuffer buf, String value) {
         if (value==null || value.length()==0) {
             buf.append("\"\"");
         }else if (containsCTL(value,version)) 
@@ -338,6 +341,11 @@ public class ServerCookie implements Serializable {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,1,value.length()-1));
             buf.append('"');
+        } else if (USE_V1_COOKIES && version==0 && !isToken2(value)) {
+            buf.append('"');
+            buf.append(escapeDoubleQuotes(value,0,value.length()));
+            buf.append('"');
+            version = 1;
         } else if (version==0 && !isToken(value)) {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,0,value.length()));
@@ -346,9 +354,10 @@ public class ServerCookie implements Serializable {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,0,value.length()));
             buf.append('"');
-        }else {
+        } else {
             buf.append(value);
         }
+        return version;
     }
 
 
