@@ -350,7 +350,7 @@
              style="webapps/docs/tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
-      <param name="relative-path" expression="../.."/>
+      <param name="relative-path" expression=".."/>
     </xslt>
     <xslt basedir="webapps/docs/config"
            destdir="${tomcat.build}/webapps/docs/config"
@@ -412,7 +412,7 @@
              style="webapps/docs/tomcat-docs.xsl"
           excludes="project.xml"
           includes="*.xml">
-      <param name="relative-path" expression="../../.."/>
+      <param name="relative-path" expression="../.."/>
       <param name="project-menu" expression="nomenu"/>
     </xslt>
     <xslt basedir="webapps/docs/config"
