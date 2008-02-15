@@ -709,8 +709,14 @@
 
     <antcall target="downloadzip">
       <param name="sourcefile" value="${jbossnative.loc}"/>
-      <param name="destfile" value="${jbossnative.test}"/>
+      <param name="destfile" value="${jbossnative.openssl}"/>
       <param name="destdir" value="${jbossnative.home}"/>
+    </antcall>
+
+    <antcall target="downloadzip">
+      <param name="sourcefile" value="${nsis.loc}"/>
+      <param name="destfile" value="${nsis.exe}"/>
+      <param name="destdir" value="${nsis.home}/.."/>
     </antcall>
 
   </target>
