@@ -66,18 +66,6 @@
     <delete dir="${tomcat.deployer}"/>
     <delete dir="${tomcat.dist}" failonerror="false"/>
 
-    <!-- This is why releasing must be done on a Windows box: 
-         otherwise this check fails and the .exe distro is not generated -->
-    <condition property="execute.installer">
-      <and>
-        <os family="windows" />
-        <available file="${nsis.exe}" />
-        <available file="${nsis.installoptions.dll}" />
-        <available file="${nsis.nsexec.dll}" />
-        <available file="${nsis.nsisdl.dll}" />
-      </and>
-    </condition>
-
   </target>
 
 
@@ -226,8 +214,9 @@
 
   <!-- ================= DIST: Create Windows Installer =================== -->
   <target name="installer"
-   description="Create Windows 32-bit installer" if="execute.installer">
-    <echo message="Builds a Windows installer based on Nullsoft Installer"/>
+   description="Create Windows 32-bit installer" unless="skip.installer">
+
+  	<echo message="Builds a Windows installer based on Nullsoft Installer"/>
     <copy todir="${tomcat.dist}">
       <fileset dir="res" />
     </copy>
@@ -246,7 +235,12 @@
     <filter token="VERSION_NUMBER" value="${version.number}"/>
 
     <copy file="res/jboss-web.nsi" tofile="${tomcat.dist}/jboss-web.nsi" filtering="true" overwrite="true"/>
-    <exec dir="${tomcat.dist}" executable="${nsis.exe}">
+    <exec dir="${tomcat.dist}" executable="${nsis.exe}" os="windows">
+      <arg value="/DNSISDIR=${nsis.home}" />
+      <arg value="jboss-web.nsi" />
+    </exec>
+    <exec dir="${tomcat.dist}" executable="wine" osfamily="unix">
+      <arg value="${nsis.exe}" />
       <arg value="/DNSISDIR=${nsis.home}" />
       <arg value="jboss-web.nsi" />
     </exec>
