@@ -31,13 +31,13 @@ public class RewriteRule {
     
     protected RewriteCond[] conditions = new RewriteCond[0];
     
-    protected ThreadLocal pattern = new ThreadLocal();
+    protected ThreadLocal<Pattern> pattern = new ThreadLocal<Pattern>();
     protected Substitution substitution = null;
     
     protected String patternString = null;
     protected String substitutionString = null;
     
-    public void parse(Map maps) {
+    public void parse(Map<String, RewriteMap> maps) {
         // Parse the substitution
         if (!"-".equals(substitutionString)) {
             substitution = new Substitution();
@@ -71,7 +71,7 @@ public class RewriteRule {
      * @return null if no rewrite took place
      */
     public CharSequence evaluate(CharSequence url, Resolver resolver) {
-        Pattern pattern = (Pattern) this.pattern.get();
+        Pattern pattern = this.pattern.get();
         if (pattern == null) {
             // Parse the pattern
             int flags = 0;

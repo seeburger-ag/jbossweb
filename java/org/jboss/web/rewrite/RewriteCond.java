@@ -112,7 +112,7 @@ public class RewriteCond {
         this.testString = testString;
     }
 
-    public void parse(Map maps) {
+    public void parse(Map<String, RewriteMap> maps) {
         test = new Substitution();
         test.setSub(testString);
         test.parse(maps);
@@ -172,7 +172,7 @@ public class RewriteCond {
     
     protected Substitution test = null;
 
-    protected ThreadLocal condition = new ThreadLocal();
+    protected ThreadLocal<Condition> condition = new ThreadLocal<Condition>();
     
     /**
      * This makes the test case-insensitive, i.e., there is no difference between 
@@ -199,7 +199,7 @@ public class RewriteCond {
         if (nocase) {
             value = value.toLowerCase();
         }
-        Condition condition = (Condition) this.condition.get();
+        Condition condition = this.condition.get();
         if (condition == null) {
             if (condPattern.startsWith("<")) {
                 LexicalCondition ncondition = new LexicalCondition();

@@ -73,7 +73,7 @@ public class RewriteValve extends ValveBase
     /**
      * If rewriting occurs, the whole request will be processed again.
      */
-    protected ThreadLocal invoked = new ThreadLocal();
+    protected ThreadLocal<Boolean> invoked = new ThreadLocal<Boolean>();
     
     
     /**
@@ -93,7 +93,7 @@ public class RewriteValve extends ValveBase
     /**
      * Maps to be used by the rules.
      */
-    protected Map maps = new Hashtable();
+    protected Map<String, RewriteMap> maps = new Hashtable<String, RewriteMap>();
     
     
     public void addLifecycleListener(LifecycleListener listener) {
@@ -249,9 +249,9 @@ public class RewriteValve extends ValveBase
     }
 
     public void stop() throws LifecycleException {
-        Iterator values = maps.values().iterator();
+        Iterator<RewriteMap> values = maps.values().iterator();
         while (values.hasNext()) {
-            RewriteMap map = (RewriteMap) values.next();
+            RewriteMap map = values.next();
             if (map instanceof Lifecycle) {
                 ((Lifecycle) map).stop();
             }

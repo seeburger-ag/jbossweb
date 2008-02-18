@@ -104,9 +104,9 @@ public class Substitution {
     public String getSub() { return sub; }
     public void setSub(String sub) { this.sub = sub; }
 
-    public void parse(Map maps) {
+    public void parse(Map<String, RewriteMap> maps) {
 
-        ArrayList elements = new ArrayList();
+        ArrayList<SubstitutionElement> elements = new ArrayList<SubstitutionElement>();
         int pos = 0;
         int percentPos = 0;
         int dollarPos = 0;
@@ -149,7 +149,7 @@ public class Substitution {
                     if (!(-1 < open && open < colon && colon < close)) {
                         throw new IllegalArgumentException(sub);
                     }
-                    newElement.map = (RewriteMap) maps.get(sub.substring(open + 1, colon));
+                    newElement.map = maps.get(sub.substring(open + 1, colon));
                     if (newElement.map == null) {
                         throw new IllegalArgumentException(sub + ": No map: " + sub.substring(open + 1, colon));
                     }
