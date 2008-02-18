@@ -189,7 +189,7 @@ public class AprLifecycleListener
         }
         // Log APR flags
         log.info(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
-                Library.APR_HAS_SO_ACCEPTFILTER, Library.APR_HAS_RANDOM));
+                Library.APR_HAS_RANDOM));
         return true;
     }
 
