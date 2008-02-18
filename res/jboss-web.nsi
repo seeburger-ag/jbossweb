@@ -34,7 +34,7 @@ ${StrRep}
   !define MUI_HEADERIMAGE_BITMAP header.bmp
   !define MUI_WELCOMEFINISHPAGE_BITMAP side_left.bmp 
   !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\webapps\ROOT\RELEASE-NOTES.txt"
-  !define MUI_FINISHPAGE_RUN $INSTDIR\bin\jboss-webw.exe
+  !define MUI_FINISHPAGE_RUN $INSTDIR\bin\jbosswebw.exe
   !define MUI_FINISHPAGE_RUN_PARAMETERS //MR//JBossWeb
   !define MUI_FINISHPAGE_NOREBOOTSUPPORT
 
@@ -155,7 +155,7 @@ Section "Core" SecJBossWebCore
 
   InstallRetry:
   ClearErrors
-  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //IS//JBossWeb --DisplayName "JBoss Web" --Description "JBoss Web @VERSION@ Server - http://labs.jboss.com/jbossweb/" --LogPath "$INSTDIR\logs" --Install "$INSTDIR\bin\jboss-web.exe" --Jvm "$2" --StartPath "$INSTDIR" --StopPath "$INSTDIR"'
+  nsExec::ExecToLog '"$INSTDIR\bin\jbossweb.exe" //IS//JBossWeb --DisplayName "JBoss Web" --Description "JBoss Web @VERSION@ Server - http://labs.jboss.com/jbossweb/" --LogPath "$INSTDIR\logs" --Install "$INSTDIR\bin\jbossweb.exe" --Jvm "$2" --StartPath "$INSTDIR" --StopPath "$INSTDIR"'
   Pop $0
   StrCmp $0 "0" InstallOk
     MessageBox MB_ABORTRETRYIGNORE|MB_ICONSTOP \
@@ -182,9 +182,9 @@ Section "Service" SecJBossWebService
   Call findJVMPath
   Pop $2
 
-  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //US//JBossWeb --Startup auto'
+  nsExec::ExecToLog '"$INSTDIR\bin\jbossweb.exe" //US//JBossWeb --Startup auto'
   ; Bahave like Apache Httpd (put the icon in try on login)
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JBossWebMonitor" '"$INSTDIR\bin\jboss-webw.exe" //MS//JBossWeb'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JBossWebMonitor" '"$INSTDIR\bin\jbosswebw.exe" //MS//JBossWeb'
 
   ClearErrors
 
@@ -246,12 +246,12 @@ NoDocumentaion:
                  "$INSTDIR"
 
   CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\Monitor JBoss Web.lnk" \
-                 "$INSTDIR\bin\jboss-webw.exe" \
+                 "$INSTDIR\bin\jbosswebw.exe" \
                  '//MS//JBossWeb' \
                  "$INSTDIR\jboss-web.ico" 0 SW_SHOWNORMAL
 
   CreateShortCut "$SMPROGRAMS\JBoss Web 2.1\Configure JBoss Web.lnk" \
-                 "$INSTDIR\bin\jboss-webw.exe" \
+                 "$INSTDIR\bin\jbosswebw.exe" \
                  '//ES//JBossWeb' \
                  "$INSTDIR\jboss-web.ico" 0 SW_SHOWNORMAL
 
@@ -266,8 +266,8 @@ Section "Documentation" SecDocs
 SectionEnd
 
 Section -post
-  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //US//JBossWeb --Classpath "$INSTDIR\bin\bootstrap.jar" --StartClass org.apache.catalina.startup.Bootstrap --StopClass org.apache.catalina.startup.Bootstrap --StartParams start --StopParams stop  --StartMode jvm --StopMode jvm'
-  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //US//JBossWeb --JvmOptions "-Dcatalina.home=$INSTDIR#-Dcatalina.base=$INSTDIR#-Djava.endorsed.dirs=$INSTDIR\common\endorsed#-Djava.io.tmpdir=$INSTDIR\temp#-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager#-Djava.util.logging.config.file=$INSTDIR\conf\logging.properties" --StdOutput auto --StdError auto'
+  nsExec::ExecToLog '"$INSTDIR\bin\jbossweb.exe" //US//JBossWeb --Classpath "$INSTDIR\bin\bootstrap.jar" --StartClass org.apache.catalina.startup.Bootstrap --StopClass org.apache.catalina.startup.Bootstrap --StartParams start --StopParams stop  --StartMode jvm --StopMode jvm'
+  nsExec::ExecToLog '"$INSTDIR\bin\jbossweb.exe" //US//JBossWeb --JvmOptions "-Dcatalina.home=$INSTDIR#-Dcatalina.base=$INSTDIR#-Djava.endorsed.dirs=$INSTDIR\common\endorsed#-Djava.io.tmpdir=$INSTDIR\temp#-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager#-Djava.util.logging.config.file=$INSTDIR\conf\logging.properties" --StdOutput auto --StdError auto'
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
@@ -585,15 +585,15 @@ Section Uninstall
   Delete "$INSTDIR\Uninstall.exe"
 
   ; Stop JBoss Web service monitor if running
-  nsExec::ExecToLog '"$INSTDIR\bin\jboss-webw.exe" //MQ//JBossWeb'
+  nsExec::ExecToLog '"$INSTDIR\bin\jbosswebw.exe" //MQ//JBossWeb'
   ; Delete JBoss Web service
-  nsExec::ExecToLog '"$INSTDIR\bin\jboss-web.exe" //DS//JBossWeb'
+  nsExec::ExecToLog '"$INSTDIR\bin\jbossweb.exe" //DS//JBossWeb'
   ClearErrors
 
   DeleteRegKey HKCR "JSPFile"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\JBoss Web 2.1"
   DeleteRegKey HKLM "SOFTWARE\JBoss.org\JBoss Web\2.1"
-  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "ApacheJBossWebMonitor"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JBossWebMonitor"
   RMDir /r "$SMPROGRAMS\JBoss Web 2.1"
   Delete "$INSTDIR\jboss-web.ico"
   Delete "$INSTDIR\LICENSE"
