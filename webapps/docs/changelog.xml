@@ -225,6 +225,9 @@
         <bug>43925</bug>: Optimize allocation style for bodies (this removes the no-GC mode, however),
         submitted by Brian Remmington. (remm)
       </fix>
+      <fix>
+        <bug>43741</bug>: Improve handling of tags inside JARs. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Webapps">
