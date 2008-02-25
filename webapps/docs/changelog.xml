@@ -26,7 +26,7 @@
         Fix licensing problems with two xsd files. (remm)
       </fix>
       <update>
-        Update commons-logging to version 1.1.1 and the NSIS installer to 2.34.
+        Update to NSIS 2.35, and allow building it using Wine. (remm)
         (markt)
       </update>
       <update>
@@ -38,7 +38,7 @@
   <subsection name="Catalina">
     <changelog>
       <fix>
-        Fix BZ 43588 - hard coded 127.0.0.1 for localhost. It requires localhost to be defined correctly in the machine. (jfclere)
+        <bug>43588</bug>: hard coded 127.0.0.1 for localhost. It requires localhost to be defined correctly in the machine. (jfclere)
       </fix>
       <fix>
         Prevent cookie logic to escape quotes where the value is already a quoted-string. (jfclere)
@@ -248,11 +248,11 @@
         <bug>43515</bug>: Fix bug in Manager application that may have caused
         problems when listing contexts. Patch provided by Lucas Galfaso. (markt)
       </fix> 
-    </changelog>
       <fix>
         Fix ManagerServlet.exipreSession throws Exceptions as iterate longer 
         session lists at production servers. (pero)
       </fix>
+    </changelog>
   </subsection>
 </section>
 
