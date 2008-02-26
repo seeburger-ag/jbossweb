@@ -786,6 +786,7 @@ public class Http11AprProcessor implements ActionHook {
                 // but is wasteful.
                 outputBuffer.flushLeftover();
             }
+            containerThread.set(Boolean.TRUE);
             rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
             error = !adapter.event(request, response, status);
         } catch (InterruptedIOException e) {
@@ -1259,13 +1260,13 @@ public class Http11AprProcessor implements ActionHook {
             comet = true;
             // Set socket to non blocking mode
             Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
-            containerThread.set(Boolean.TRUE);
+            Socket.timeoutSet(socket, 0);
             outputBuffer.setNonBlocking(true);
         } else if (actionCode == ActionCode.ACTION_COMET_END) {
             comet = false;
             // End non blocking mode
             Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
-            containerThread.set(null);
+            Socket.timeoutSet(socket, endpoint.getSoTimeout());
             outputBuffer.setNonBlocking(false);
         } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
             readNotifications = false;
