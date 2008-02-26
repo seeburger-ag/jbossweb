@@ -1463,6 +1463,25 @@ public class AprEndpoint {
         }
         
         /**
+         * Timeout checks.
+         */
+        protected void maintain() {
+
+            long date = System.currentTimeMillis();
+            long socket = timeouts.check(date);
+            while (socket != 0) {
+                removeFromPoller(socket);
+                if (comet) {
+                    processSocket(socket, SocketStatus.TIMEOUT);
+                } else {
+                    Socket.destroy(socket);
+                }
+                socket = timeouts.check(date);
+            }
+
+        }
+        
+        /**
          * The background thread that listens for incoming TCP/IP connections and
          * hands them off to an appropriate processor.
          */
@@ -1485,10 +1504,15 @@ public class AprEndpoint {
                     maintainTime = 0;
                     try {
                         synchronized (this) {
-                            this.wait();
+                            this.wait(10000);
+                        }
+                        if (soTimeout > 0 && keepAliveCount < 1 && addList.size() < 1 && running) {
+                            maintain();
                         }
                     } catch (InterruptedException e) {
                         // Ignore
+                    } catch (Throwable t) {
+                        log.error(sm.getString("endpoint.poll.error"), t);
                     }
                 }
 
@@ -1601,17 +1625,7 @@ public class AprEndpoint {
                         // This works and uses only one timeout mechanism for everything, but the
                         // non Comet poller might be a bit faster by using the old maintain.
                         maintainTime = 0;
-                        long date = System.currentTimeMillis();
-                        long socket = timeouts.check(date);
-                        while (socket != 0) {
-                            removeFromPoller(socket);
-                            if (comet) {
-                                processSocket(socket, SocketStatus.TIMEOUT);
-                            } else {
-                                Socket.destroy(socket);
-                            }
-                            socket = timeouts.check(date);
-                        }
+                        maintain();
                     }
 
                 } catch (Throwable t) {
