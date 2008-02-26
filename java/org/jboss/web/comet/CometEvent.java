@@ -44,18 +44,6 @@ public interface CometEvent {
      *  not synchronized, so when they are accessed by multiple threads adequate
      *  synchronization is needed. After processing the initial event, the request 
      *  is considered to be committed.</li>
-     * <li>READ - This indicates that input data is available, and that at least one 
-     *  read can be made without blocking. The available and ready methods of the InputStream or
-     *  Reader may be used to determine if there is a risk of blocking: the servlet
-     *  must continue reading while data is reported available. When encountering a read error, 
-     *  the servlet should report it by propagating the exception properly. Throwing 
-     *  an exception will cause the error event to be invoked, and the connection 
-     *  will be closed. 
-     *  Alternately, it is also possible to catch any exception, perform clean up
-     *  on any data structure the servlet may be using, and using the close method
-     *  of the event. It is not allowed to attempt reading data from the request 
-     *  object outside of the processing of this event, unless the suspend() method
-     *  has been used.</li>
      * <li>END - End may be called to end the processing of the request. Fields that have
      *  been initialized in the begin method should be reset. After this event has
      *  been processed, the request and response objects, as well as all their dependent
@@ -68,18 +56,30 @@ public interface CometEvent {
      *  been initialized in the begin method should be reset. After this event has
      *  been processed, the request and response objects, as well as all their dependent
      *  objects will be recycled and used to process other requests.</li>
-     * <li>TIMEOUT - the connection timed out, but the connection will not be closed unless 
-     *  the servlet uses the close method of the event</li>
      * <li>EVENT - Event will be called by the container after the resume() method is called,
      *  during which any operations can be performed, including closing the Comet connection
      *  using the close() method.</li>
+     * <li>READ - This indicates that input data is available, and that at least one 
+     *  read can be made without blocking. The available and ready methods of the InputStream or
+     *  Reader may be used to determine if there is a risk of blocking: the servlet
+     *  must continue reading while data is reported available. When encountering a read error, 
+     *  the servlet should report it by propagating the exception properly. Throwing 
+     *  an exception will cause the error event to be invoked, and the connection 
+     *  will be closed. 
+     *  Alternately, it is also possible to catch any exception, perform clean up
+     *  on any data structure the servlet may be using, and using the close method
+     *  of the event. It is not allowed to attempt reading data from the request 
+     *  object outside of the processing of this event, unless the suspend() method
+     *  has been used.</li>
+     * <li>TIMEOUT - the connection timed out, but the connection will not be closed unless 
+     *  the servlet uses the close method of the event</li>
      * <li>WRITE - Write is sent if the servlet is using the ready method. This means that 
      *  the connection is ready to receive data to be written out. This event will never
      *  be received if the servlet is not using the ready() method, or if the ready() 
      *  method always returns true.</li>
      * </ul>
      */
-    public enum EventType { BEGIN, READ, END, TIMEOUT, ERROR, WRITE, EVENT }
+    public enum EventType { BEGIN, END, ERROR, EVENT, READ, TIMEOUT, WRITE }
     
     
     /**
