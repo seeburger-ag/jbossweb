@@ -1409,6 +1409,9 @@ public class AprEndpoint {
          * @param resume to send a callback event
          */
         public void add(long socket, int timeout, boolean read, boolean write, boolean resume) {
+            if (timeout < 0) {
+                timeout = soTimeout;
+            }
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
                 // at most for pollTime before being polled
