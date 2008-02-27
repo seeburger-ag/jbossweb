@@ -787,10 +787,13 @@ public class InternalAprOutputBuffer
                     // of the write is 0
                     int pos = 0;
                     int end = bbuf.position();
-                    res = Socket.sendibb(socket, 0, bbuf.position());
-                    while (res > 0 && pos < end) {
-                        pos += res;
+                    while (pos < end) {
                         res = Socket.sendibb(socket, pos, bbuf.position());
+                        if (res > 0) {
+                            pos += res;
+                        } else {
+                            break;
+                        }
                     }
                     // Put any leftover bytes in the leftover byte chunk
                     if (pos < end) {
