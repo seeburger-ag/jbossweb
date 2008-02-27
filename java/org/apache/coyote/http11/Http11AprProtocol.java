@@ -566,7 +566,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     } else {
                         if (proto.endpoint.isRunning()) {
                             proto.endpoint.getCometPoller().add(socket, result.getCometTimeout(), 
-                                    result.getReadNotifications(), result.getWriteNotification(), false);
+                                    result.getReadNotifications(), result.getWriteNotification(), result.getResumeNotification());
                         }
                     }
                     result.endProcessing();

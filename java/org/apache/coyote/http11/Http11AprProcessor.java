@@ -327,6 +327,7 @@ public class Http11AprProcessor implements ActionHook {
     protected int cometTimeout = -1;
     protected boolean readNotifications = true;
     protected boolean writeNotification = false;
+    protected boolean resumeNotification = false;
     protected boolean nonBlocking = true;
     protected boolean cometProcessing = false;
     
@@ -346,6 +347,11 @@ public class Http11AprProcessor implements ActionHook {
 
     public boolean getWriteNotification() {
         return writeNotification;
+    }
+    
+
+    public boolean getResumeNotification() {
+        return resumeNotification;
     }
     
 
@@ -785,6 +791,9 @@ public class Http11AprProcessor implements ActionHook {
                 // that the servlet is not going to be able to write bytes. This will be handled properly,
                 // but is wasteful.
                 outputBuffer.flushLeftover();
+            } else if (status == SocketStatus.OPEN_CALLBACK) {
+                // The resume notification is now done
+                resumeNotification = false;
             }
             containerThread.set(Boolean.TRUE);
             rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
@@ -1272,11 +1281,15 @@ public class Http11AprProcessor implements ActionHook {
             readNotifications = false;
         } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
             readNotifications = true;
-            if (!cometProcessing) {
+            // An event is being processed already: adding for resume will be done
+            // when the socket gets back to the poller
+            if (cometProcessing) {
+                resumeNotification = true;
+            } else {
                 endpoint.getCometPoller().add(socket, timeout, false, false, true);
             }
         } else if (actionCode == ActionCode.ACTION_COMET_WRITE) {
-            // An event is being processed already:adding for write will be done
+            // An event is being processed already: adding for write will be done
             // when the socket gets back to the poller
             if (cometProcessing) {
                 writeNotification = true;

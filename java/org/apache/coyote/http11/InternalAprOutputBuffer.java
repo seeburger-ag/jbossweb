@@ -769,6 +769,8 @@ public class InternalAprOutputBuffer
                     // FIXME: the fact that it's a container thread was already tested in doWrite
                     if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
                         Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
+                        // Also use the usual timeout
+                        Socket.timeoutSet(socket, 20000*1000);
                         // Send leftover bytes
                         res = Socket.send(socket, leftover.getBuffer(), leftover.getOffset(), leftover.getEnd());
                         // Send current buffer
@@ -776,6 +778,7 @@ public class InternalAprOutputBuffer
                             res = Socket.sendbb(socket, 0, bbuf.position());
                         }
                         Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
+                        Socket.timeoutSet(socket, 0);
                     } else {
                         throw new IOException("Backlog");
                     }

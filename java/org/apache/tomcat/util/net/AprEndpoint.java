@@ -1527,28 +1527,35 @@ public class AprEndpoint {
                         SocketInfo info = localAddList.get();
                         while (info != null) {
                             if (info.read || info.write) {
-                                // Store timeout
-                                timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
-                                if (comet) {
+                                if (info.resume) {
+                                    // Resume event
+                                    timeouts.remove(info.socket);
                                     removeFromPoller(info.socket);
-                                }
-                                // Windows only: check status code and loop over the other pollers
-                                int events = 0;
-                                if (info.read) {
-                                    events = Poll.APR_POLLIN;
-                                }
-                                if (info.write) {
-                                    events = events | Poll.APR_POLLOUT;
-                                }
-                                if (!addToPoller(info.socket, events)) {
-                                    // Can't do anything: close the socket right away
-                                    if (comet) {
-                                        processSocket(info.socket, SocketStatus.ERROR);
-                                    } else {
-                                        Socket.destroy(info.socket);
-                                    }
+                                    processSocket(info.socket, SocketStatus.OPEN_CALLBACK);
                                 } else {
-                                    keepAliveCount++;
+                                    // Store timeout
+                                    timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
+                                    if (comet) {
+                                        removeFromPoller(info.socket);
+                                    }
+                                    // Windows only: check status code and loop over the other pollers
+                                    int events = 0;
+                                    if (info.read) {
+                                        events = Poll.APR_POLLIN;
+                                    }
+                                    if (info.write) {
+                                        events = events | Poll.APR_POLLOUT;
+                                    }
+                                    if (!addToPoller(info.socket, events)) {
+                                        // Can't do anything: close the socket right away
+                                        if (comet) {
+                                            processSocket(info.socket, SocketStatus.ERROR);
+                                        } else {
+                                            Socket.destroy(info.socket);
+                                        }
+                                    } else {
+                                        keepAliveCount++;
+                                    }
                                 }
                             } else {
                                 // This is either a resume or a suspend.
