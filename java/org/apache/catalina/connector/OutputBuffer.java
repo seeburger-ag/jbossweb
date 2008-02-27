@@ -330,7 +330,6 @@ public class OutputBuffer extends Writer
     protected int lastWrite() {
         int res = coyoteResponse.getLastWrite();
         if (res == 0) {
-            // FIXME: For efficiency, it would be nice to check if not calling it twice, and reset than when that is done
             coyoteResponse.action(ActionCode.ACTION_COMET_WRITE, null);
         }
         return res;

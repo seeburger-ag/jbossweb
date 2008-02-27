@@ -766,7 +766,6 @@ public class InternalAprOutputBuffer
                 // - If the call is asynchronous, throw an exception
                 // - If the call is synchronous, make a regular blocking write to flush the data
                 if (leftover.getLength() > 0) {
-                    // FIXME: the fact that it's a container thread was already tested in doWrite
                     if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
                         Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
                         // Also use the usual timeout
@@ -799,7 +798,7 @@ public class InternalAprOutputBuffer
                     if (pos < end) {
                         leftover.allocate(end - pos, -1);
                         bbuf.get(leftover.getBuffer(), 0, end - pos);
-                        leftover.setEnd(end-pos);
+                        leftover.setEnd(end - pos);
                     }
                 }
             } else {
