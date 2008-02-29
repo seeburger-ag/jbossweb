@@ -125,6 +125,7 @@ public final class Response {
     protected Request req;
 
     protected int lastWrite = 1;
+    protected boolean flushLeftovers = true;
     
     // ------------------------------------------------------------- Properties
 
@@ -189,8 +190,19 @@ public final class Response {
 
     // -------------------- State --------------------
 
+    
+    public boolean getFlushLeftovers() {
+        return flushLeftovers;
+    }
+    
+
+    public void setFlushLeftovers(boolean flushLeftovers) {
+        this.flushLeftovers = flushLeftovers;
+    }
+    
 
     public int getLastWrite() {
+        flushLeftovers = false;
         return lastWrite;
     }
 

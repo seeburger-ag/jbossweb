@@ -720,36 +720,72 @@ public class InternalAprOutputBuffer
      */
     public boolean flushLeftover()
         throws IOException {
-        if (leftover.getLength() > 0) {
-            int len = leftover.getLength();
-            int start = leftover.getStart();
-            byte[] b = leftover.getBuffer();
-            while (len > 0) {
-                int thisTime = len;
-                if (bbuf.position() == bbuf.capacity()) {
-                    int pos = 0;
-                    int end = bbuf.position();
-                    int res = Socket.sendibb(socket, 0, bbuf.position());
-                    while (res > 0 && pos < end) {
+        int len = leftover.getLength();
+        int start = leftover.getStart();
+        byte[] b = leftover.getBuffer();
+        
+        while (len > 0) {
+            int thisTime = len;
+            if (bbuf.position() == bbuf.capacity()) {
+                int pos = 0;
+                int end = bbuf.position();
+                int res = 0;
+                while (pos < end) {
+                    res = Socket.sendibb(socket, pos, bbuf.position());
+                    if (res > 0) {
                         pos += res;
-                        res = Socket.sendibb(socket, pos, bbuf.position());
-                    }
-                    if (res < 0) {
-                        throw new IOException("Error");
-                    }
-                    if (pos < end) {
-                        // Could not write all leftover data: put back to write poller
-                        return false;
+                    } else {
+                        break;
                     }
                 }
-                if (thisTime > bbuf.capacity() - bbuf.position()) {
-                    thisTime = bbuf.capacity() - bbuf.position();
+                if (res < 0) {
+                    throw new IOException("Error");
                 }
-                bbuf.put(b, start, thisTime);
-                len = len - thisTime;
-                start = start + thisTime;
+                System.out.println("Flushed leftover " + res);
+                response.setLastWrite(res);
+                if (pos < end) {
+                    // Could not write all leftover data: put back to write poller
+                    leftover.setOffset(start + pos);
+                    bbuf.clear();
+                    return false;
+                }
+            }
+            if (thisTime > bbuf.capacity() - bbuf.position()) {
+                thisTime = bbuf.capacity() - bbuf.position();
+            }
+            bbuf.put(b, start, thisTime);
+            len = len - thisTime;
+            start = start + thisTime;
+        }
+        
+        int pos = 0;
+        int end = bbuf.position();
+        int res = 0;
+        while (pos < end) {
+            res = Socket.sendibb(socket, pos, bbuf.position());
+            System.out.println("Write from main buffer " + res);
+            if (res > 0) {
+                pos += res;
+            } else {
+                break;
             }
         }
+        if (res < 0) {
+            throw new IOException("Error");
+        }
+        response.setLastWrite(res);
+        if (pos < end) {
+            leftover.allocate(end - pos, -1);
+            bbuf.position(0);
+            bbuf.limit(end - pos);
+            bbuf.get(leftover.getBuffer(), 0, end - pos);
+            leftover.setEnd(end - pos);
+            bbuf.clear();
+            return false;
+        }
+        bbuf.clear();
+        leftover.recycle();
+
         return true;
     }
     
@@ -759,59 +795,84 @@ public class InternalAprOutputBuffer
      */
     protected void flushBuffer()
         throws IOException {
+
+        int res = 0;
+        
+        // If there are still leftover bytes here, there's a problem:
+        // - If the call is asynchronous, throw an exception
+        // - If the call is synchronous, make a regular blocking write to flush the data
+        if (leftover.getLength() > 0) {
+            System.out.println("Leftovers present");
+            if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
+                System.out.println("Send leftovers using blocking");
+                Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
+                // Also use the usual timeout
+                Socket.timeoutSet(socket, 20000*1000);
+                // Send leftover bytes
+                res = Socket.send(socket, leftover.getBuffer(), leftover.getOffset(), leftover.getEnd());
+                leftover.recycle();
+                // Send current buffer
+                if (res > 0) {
+                    res = Socket.sendbb(socket, 0, bbuf.position());
+                }
+                Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
+                Socket.timeoutSet(socket, 0);
+            } else {
+                throw new IOException("Backlog");
+            }
+        }
+        
         if (bbuf.position() > 0) {
-            int res = 0;
             if (nonBlocking) {
-                // If there are still leftover bytes here, there's a problem:
-                // - If the call is asynchronous, throw an exception
-                // - If the call is synchronous, make a regular blocking write to flush the data
-                if (leftover.getLength() > 0) {
-                    if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
+                System.out.println("No leftovers present");
+                // Perform non blocking writes until all data is written, or the result
+                // of the write is 0
+                int pos = 0;
+                int end = bbuf.position();
+                while (pos < end) {
+                    // FIXME: temp testing
+                    //res = 0;
+                    res = Socket.sendibb(socket, pos, bbuf.position());
+                    if (res > 0) {
+                        pos += res;
+                    } else {
+                        break;
+                    }
+                }
+                if (pos < end) {
+                    if (response.getFlushLeftovers() && (Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
+                        System.out.println("Blocking write of all data");
+                        // Switch to blocking mode and write the data
                         Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
-                        // Also use the usual timeout
                         Socket.timeoutSet(socket, 20000*1000);
-                        // Send leftover bytes
-                        res = Socket.send(socket, leftover.getBuffer(), leftover.getOffset(), leftover.getEnd());
-                        // Send current buffer
-                        if (res > 0) {
-                            res = Socket.sendbb(socket, 0, bbuf.position());
-                        }
+                        res = Socket.sendbb(socket, 0, bbuf.position());
                         Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
                         Socket.timeoutSet(socket, 0);
                     } else {
-                        throw new IOException("Backlog");
-                    }
-                } else {
-                    // Perform non blocking writes until all data is written, or the result
-                    // of the write is 0
-                    int pos = 0;
-                    int end = bbuf.position();
-                    while (pos < end) {
-                        res = Socket.sendibb(socket, pos, bbuf.position());
-                        if (res > 0) {
-                            pos += res;
-                        } else {
-                            break;
-                        }
-                    }
-                    // Put any leftover bytes in the leftover byte chunk
-                    if (pos < end) {
+                        // Put any leftover bytes in the leftover byte chunk
                         leftover.allocate(end - pos, -1);
+                        bbuf.position(0);
+                        bbuf.limit(end - pos);
                         bbuf.get(leftover.getBuffer(), 0, end - pos);
                         leftover.setEnd(end - pos);
+                        System.out.println("Put " + (end-pos) + " bytes in leftover: " + new String(leftover.getBuffer(), 0, end - pos) + " l:" + leftover.getBuffer().length);
+                        // Call for a write event because it is possible that no further write
+                        // operations are made
+                        if (!response.getFlushLeftovers()) {
+                            response.action(ActionCode.ACTION_COMET_WRITE, null);
+                        }
                     }
                 }
             } else {
                 res = Socket.sendbb(socket, 0, bbuf.position());
             }
-            // FIXME: Delaying setting setLastWrite could be a good idea (chunking means separate writes, 
-            // and could trigger an exception)
             response.setLastWrite(res);
             bbuf.clear();
             if (res < 0) {
                 throw new IOException("Error");
             }
         }
+        
     }
 
 
@@ -837,6 +898,7 @@ public class InternalAprOutputBuffer
             // part of the same write operation)
             if (leftover.getLength() > 0) {
                 leftover.append(chunk);
+                System.out.println("Add chunk to leftover");
                 return chunk.getLength();
             }
             

@@ -785,12 +785,15 @@ public class Http11AprProcessor implements ActionHook {
         try {
             // If processing a write event, must flush any leftover bytes first
             if (status == SocketStatus.OPEN_WRITE) {
+                // If the flush does not manage to flush all leftover bytes, the socket should
+                // go back to the poller.
+                if (!outputBuffer.flushLeftover()) {
+                    return SocketState.LONG;
+                }
                 // The write notification is now done
                 writeNotification = false;
-                // FIXME: If the flush does not manage to flush all leftover bytes, it is possible
-                // that the servlet is not going to be able to write bytes. This will be handled properly,
-                // but is wasteful.
-                outputBuffer.flushLeftover();
+                // Allow convenient synchronous blocking writes
+                response.setFlushLeftovers(true);
             } else if (status == SocketStatus.OPEN_CALLBACK) {
                 // The resume notification is now done
                 resumeNotification = false;
