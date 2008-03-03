@@ -27,7 +27,6 @@
       </fix>
       <update>
         Update to NSIS 2.35, and allow building it using Wine. (remm)
-        (markt)
       </update>
       <update>
         Update to commons-pool version 1.4, native version 1.1.12 and update

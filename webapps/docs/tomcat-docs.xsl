@@ -20,6 +20,9 @@
   <xsl:param    name="printer-logo"     select="'/images/printer.gif'"/>
   <xsl:param    name="jbossorg-logo"    select="'/images/jbossorg_logo.gif'"/>
   <xsl:param    name="jbossweb-logo"    select="'/images/jbossweblogo.gif'"/>
+  <xsl:param    name="hdr_hdrtitle"     select="'/images/hdr_hdrtitle.gif'"/>
+  <xsl:param    name="hdr_jbosslogo"    select="'/images/hdr_jbosslogo.gif'"/>
+  <xsl:param    name="hdr_jbossorglogo" select="'/images/hdr_jbossorglogo.gif'"/>
   <xsl:param    name="relative-path"    select="'.'"/>
   <xsl:param    name="void-image"       select="'/images/void.gif'"/>
   <xsl:param    name="project-menu"     select="'menu'"/>
@@ -33,9 +36,9 @@
   <xsl:variable name="body-bg"          select="'#ffffff'"/>
   <xsl:variable name="body-fg"          select="'#000000'"/>
   <xsl:variable name="body-link"        select="'#525D76'"/>
-  <xsl:variable name="banner-bg"        select="'#525D76'"/>
+  <xsl:variable name="banner-bg"        select="'#eaeff2'"/>
   <xsl:variable name="banner-fg"        select="'#ffffff'"/>
-  <xsl:variable name="sub-banner-bg"    select="'#828DA6'"/>
+  <xsl:variable name="sub-banner-bg"    select="'#eaeff2'"/>
   <xsl:variable name="sub-banner-fg"    select="'#ffffff'"/>
   <xsl:variable name="source-color"     select="'#023264'"/>
   <xsl:variable name="attributes-color" select="'#023264'"/>
@@ -53,9 +56,11 @@
     
     <xsl:if test="$bodyonly != 'true'">
 
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
     <title><xsl:value-of select="project/title"/> - <xsl:value-of select="properties/title"/></title>
+    <xsl:variable name="csshref"><xsl:value-of select="$relative-path"/>/jbossweb.css</xsl:variable>
+    <link href="{$csshref}" rel="stylesheet" type="text/css" />
     <xsl:for-each select="properties/author">
       <xsl:variable name="name">
         <xsl:value-of select="."/>
@@ -68,74 +73,38 @@
     </xsl:for-each>
     </head>
 
-    <body bgcolor="{$body-bg}" text="{$body-fg}" link="{$body-link}"
-          alink="{$body-link}" vlink="{$body-link}">
+    <body>
 
-    <table border="0" width="100%" cellspacing="0">
+    <div class="wrapper">
 
-      <xsl:comment>PAGE HEADER</xsl:comment>
-      <tr>
-        <td>
-        <xsl:if test="project/logo">
-          <xsl:variable name="alt">
-            <xsl:value-of select="project/logo"/>
-          </xsl:variable>
-          <xsl:variable name="home">
-            <xsl:value-of select="project/@href"/>
-          </xsl:variable>
-          <xsl:variable name="src">
-            <xsl:value-of select="$relative-path"/><xsl:value-of select="project/logo/@href"/>
-          </xsl:variable>
+       <xsl:comment>HEADER</xsl:comment>
+       <div class="header">
+         <div class="floatleft"><a href="index.html">
+           <xsl:variable name="src"><xsl:value-of select="$relative-path"/><xsl:value-of select="$hdr_hdrtitle"/></xsl:variable>
+           <img src="{$src}" border="0"/></a></div>
+         <div class="floatright"><a href="http://www.jboss.com/">
+           <xsl:variable name="src"><xsl:value-of select="$relative-path"/><xsl:value-of select="$hdr_jbosslogo"/></xsl:variable>
+           <img src="{$src}" alt="JBoss, a division of Red Hat" border="0"/></a><a href="http://www.jboss.org">
+           <xsl:variable name="src"><xsl:value-of select="$relative-path"/><xsl:value-of select="$hdr_jbossorglogo"/></xsl:variable>
+           <img src="{$src}" alt="JBoss.org - Community driven." border="0" /></a></div>
+       </div>
+       <div class="container">
 
-          <xsl:comment>PROJECT LOGO</xsl:comment>
-          <a href="{$home}">
-            <img src="{$src}" align="right" alt="{$alt}" border="0"/>
-          </a>
-        </xsl:if>
-        </td>
-        <td>
-          <font face="arial,helvetica,sanserif">
-            <h1><xsl:value-of select="$project/title"/></h1>
-          </font>
-        </td>
-        <td>
-          <xsl:comment>APACHE LOGO</xsl:comment>
-          <xsl:variable name="src">
-            <xsl:value-of select="$relative-path"/><xsl:value-of select="$jbossorg-logo"/>
-          </xsl:variable>
-          <a href="http://www.jboss.org/">
-            <img src="{$src}" align="right" alt="JBoss Logo" border="0"/>
-          </a>
-        </td>
-      </tr>
-    </table>
-
-    <table border="0" width="100%" cellspacing="4">
-
-      <xsl:comment>HEADER SEPARATOR</xsl:comment>
-      <tr>
-        <td colspan="2">
-          <hr noshade="noshade" size="1"/>
-        </td>
-      </tr>
-
-      <tr>
-
-        <!-- Don't generate a menu if styling printer friendly docs -->
-        <xsl:if test="$project-menu = 'menu'">
-          <xsl:comment>LEFT SIDE NAVIGATION</xsl:comment>
-          <td width="20%" valign="top" nowrap="true">
-            <xsl:apply-templates select="project/body/menu"/>
-          </td>
-        </xsl:if>
-
-        <xsl:comment>RIGHT SIDE MAIN BODY</xsl:comment>
-        <td width="80%" valign="top" align="left">
+       <xsl:comment>OPTIONAL MENU</xsl:comment>
+       <xsl:if test="$project-menu = 'menu'">
+         <div class="leftcol">
+           <dl>
+             <xsl:apply-templates select="project/body/menu"/>
+           </dl>
+         </div>
+       
+       <xsl:comment>MAIN</xsl:comment>
+       <div class="maincol">
+          
           <table border="0" width="100%" cellspacing="4">
             <tr>
               <td align="left" valign="top">
-                <h1><xsl:value-of select="project/title"/></h1>
-                <h2><xsl:value-of select="properties/title"/></h2>
+                <h1><xsl:value-of select="properties/title"/></h1>
               </td>
               <td align="right" valign="top" nowrap="true">
                 <!-- Add the printer friendly link for docs with a menu -->
@@ -149,7 +118,6 @@
                   <small>
                     <a href="printer/{$url}">
                       <img src="{$src}" border="0" alt="Printer Friendly Version"/>
-                      <br />print-friendly<br />version
                     </a>
                   </small>
                 </xsl:if>
@@ -163,29 +131,54 @@
             </tr>
           </table>
           <xsl:apply-templates select="body/section"/>
-        </td>
+       
+       </div>
+       </xsl:if>
+       
+       <xsl:if test="$project-menu != 'menu'">
+          
+          <table border="0" width="100%" cellspacing="4">
+            <tr>
+              <td align="left" valign="top">
+                <h1><xsl:value-of select="properties/title"/></h1>
+              </td>
+              <td align="right" valign="top" nowrap="true">
+                <!-- Add the printer friendly link for docs with a menu -->
+                <xsl:if test="$project-menu = 'menu'">
+                  <xsl:variable name="src">
+                    <xsl:value-of select="$relative-path"/><xsl:value-of select="$printer-logo"/>
+                  </xsl:variable>
+                  <xsl:variable name="url">
+                    <xsl:value-of select="/document/@url"/>
+                  </xsl:variable>
+                  <small>
+                    <a href="printer/{$url}">
+                      <img src="{$src}" border="0" alt="Printer Friendly Version"/>
+                    </a>
+                  </small>
+                </xsl:if>
+                <xsl:if test="$project-menu != 'menu'">
+                  <xsl:variable name="void">
+                    <xsl:value-of select="$relative-path"/><xsl:value-of select="$void-image"/>
+                    </xsl:variable>
+                  <img src="{$void}" width="1" height="1" vspace="0" hspace="0" border="0"/>
+                </xsl:if>
+              </td>
+            </tr>
+          </table>
+          <xsl:apply-templates select="body/section"/>
+       
+        </xsl:if>
+       
+       </div>
+       
+       <xsl:comment>FOOTER</xsl:comment>
+       <div class="footer">&#169; 1999-2007, Apache Software Foundation. &#169; 2007-2008 Red Hat Middleware, LLC. All Rights Reserved. </div>
+       
+    </div>
 
-      </tr>
-
-      <xsl:comment>FOOTER SEPARATOR</xsl:comment>
-      <tr>
-        <td colspan="2">
-          <hr noshade="noshade" size="1"/>
-        </td>
-      </tr>
-
-      <xsl:comment>PAGE FOOTER</xsl:comment>
-      <tr><td colspan="2">
-        <div align="center"><font color="{$body-link}" size="-1"><em>
-        &#169; 1999-2007, Apache Software Foundation
-        &#169; 2007-2008, Red Hat Middleware, LLC. All rights reserved.
-        </em></font></div>
-      </td></tr>
-
-    </table>
     </body>
     </html>
-
     </xsl:if>
 
   </xsl:template>
@@ -193,10 +186,8 @@
 
   <!-- Process a menu for the navigation bar -->
   <xsl:template match="menu">
-    <p><strong><xsl:value-of select="@name"/></strong></p>
-    <ul>
-      <xsl:apply-templates select="item"/>
-    </ul>
+    <dt><xsl:value-of select="@name"/></dt>
+    <xsl:apply-templates select="item"/>
   </xsl:template>
 
 
@@ -205,7 +196,7 @@
     <xsl:variable name="href">
       <xsl:value-of select="@href"/>
     </xsl:variable>
-    <li><a href="{$href}"><xsl:value-of select="@name"/></a></li>
+    <dd><a href="{$href}"><xsl:value-of select="@name"/></a></dd>
   </xsl:template>
 
 
@@ -217,7 +208,7 @@
     <xsl:variable name="name">
       <xsl:value-of select="@name"/>
     </xsl:variable>
-    <h2 class="head2"><xsl:value-of select="@name"/></h2>
+    <h2><xsl:value-of select="@name"/></h2>
     <xsl:apply-templates/>
 
     </xsl:if>
@@ -253,7 +244,7 @@
     <xsl:variable name="name">
       <xsl:value-of select="@name"/>
     </xsl:variable>
-    <h3 class="head3"><xsl:value-of select="@name"/></h3>
+    <h3><xsl:value-of select="@name"/></h3>
     <xsl:apply-templates/>
 
     </xsl:if>
