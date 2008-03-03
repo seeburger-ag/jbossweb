@@ -70,14 +70,11 @@ public class StatusTransformer {
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
-    public static void writeHeader(PrintWriter writer, int mode, boolean pathInfo) {
+    public static void writeHeader(PrintWriter writer, Object[] args, int mode) {
         if (mode == 0){
             // HTML Header Section
-            if (pathInfo) {
-                writer.print(Constants.HTML_HEADER_SECTION.replace("images/", "../images/"));
-            } else {
-                writer.print(Constants.HTML_HEADER_SECTION);
-            }
+            writer.print(MessageFormat.format
+                    (Constants.HTML_HEADER_SECTION, args));
         } else if (mode == 1){
             writer.write(Constants.XML_DECLARATION);
             writer.write
@@ -95,15 +92,10 @@ public class StatusTransformer {
      * @param args What to write
      * @param mode 0 means write 
      */
-    public static void writeBody(PrintWriter writer, Object[] args, int mode, boolean pathInfo) {
+    public static void writeBody(PrintWriter writer, Object[] args, int mode) {
         if (mode == 0){
-            if (pathInfo) {
-                writer.print(MessageFormat.format
-                         (Constants.BODY_HEADER_SECTION.replace("images/", "../images/"), args));
-            } else {
-                writer.print(MessageFormat.format
-                        (Constants.BODY_HEADER_SECTION, args));
-            }
+            writer.print(MessageFormat.format
+                    (Constants.BODY_HEADER_SECTION, args));
         }
     }
 

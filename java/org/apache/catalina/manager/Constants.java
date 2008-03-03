@@ -26,84 +26,18 @@ public class Constants {
     public static final String HTML_HEADER_SECTION =
         "<html>\n" +
         "<head>\n" +
-        "<style>\n" +
-        org.apache.catalina.util.TomcatCSS.JBOSSWEB_CSS +
-        "  table {\n" +
-        "    width: 100%;\n" +
-        "  }\n" +
-        "  td.page-title {\n" +
-        "    text-align: center;\n" +
-        "    vertical-align: top;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    font-weight: bold;\n" +
-        "    background: white;\n" +
-        "    color: black;\n" +
-        "  }\n" +
-        "  td.title {\n" +
-        "    text-align: left;\n" +
-        "    vertical-align: top;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    font-style:italic;\n" +
-        "    font-weight: bold;\n" +
-        "    background: #4a5d75;\n" +
-        "  }\n" +
-        "  td.header-left {\n" +
-        "    text-align: left;\n" +
-        "    vertical-align: top;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    font-weight: bold;\n" +
-        "    background: #656565;\n" +
-        "  }\n" +
-        "  td.header-center {\n" +
-        "    text-align: center;\n" +
-        "    vertical-align: top;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    font-weight: bold;\n" +
-        "    background: #656565;\n" +
-        "  }\n" +
-        "  td.row-left {\n" +
-        "    text-align: left;\n" +
-        "    vertical-align: middle;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    color: black;\n" +
-        "  }\n" +
-        "  td.row-center {\n" +
-        "    text-align: center;\n" +
-        "    vertical-align: middle;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    color: black;\n" +
-        "  }\n" +
-        "  td.row-right {\n" +
-        "    text-align: right;\n" +
-        "    vertical-align: middle;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    color: black;\n" +
-        "  }\n" +
-        "  TH {\n" +
-        "    text-align: center;\n" +
-        "    vertical-align: top;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    font-weight: bold;\n" +
-        "    background: #656565;\n" +
-        "  }\n" +
-        "  TD {\n" +
-        "    text-align: center;\n" +
-        "    vertical-align: middle;\n" +
-        "    font-family:sans-serif,Tahoma,Arial;\n" +
-        "    color: black;\n" +
-        "  }\n" +
-        "</style>\n";
+        "<link href=\"{0}/jbossweb.css\" rel=\"stylesheet\" type=\"text/css\" />\n";
 
     public static final String BODY_HEADER_SECTION =
-        "<title>{0}</title>\n" +
+        "<title>{1}</title>\n" +
         "</head>\n" +
         "\n" +
         "<body>\n" +
         "\n" +
         "<div class=\"wrapper\">\n" +
         "  <div class=\"header\">\n" +
-        "    <div class=\"floatleft\"><a href=\"list\"><img src=\"images/hdr_hdrtitle.gif\" border=\"0\"></a></div>\n" +
-        "    <div class=\"floatright\"><a href=\"http://www.jboss.com/\"><img src=\"images/hdr_jbosslogo.gif\" alt=\"JBoss, a division of Red Hat\" border=\"0\"></a><a href=\"http://www.jboss.org\"><img src=\"images/hdr_jbossorglogo.gif\" alt=\"JBoss.org - Community driven.\" border=\"0\" /></a></div>\n" +
+        "    <div class=\"floatleft\"><a href=\"list\"><img src=\"{0}/images/hdr_hdrtitle.gif\" border=\"0\"></a></div>\n" +
+        "    <div class=\"floatright\"><a href=\"http://www.jboss.com/\"><img src=\"{0}/images/hdr_jbosslogo.gif\" alt=\"JBoss, a division of Red Hat\" border=\"0\"></a><a href=\"http://www.jboss.org\"><img src=\"{0}/images/hdr_jbossorglogo.gif\" alt=\"JBoss.org - Community driven.\" border=\"0\" /></a></div>\n" +
         "  </div>\n" +
         "    <div class=\"container\">\n" +
         "\n";

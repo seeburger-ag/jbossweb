@@ -185,23 +185,15 @@ public final class HTMLHostManagerServlet extends HostManagerServlet {
         PrintWriter writer = response.getWriter();
 
         // HTML Header Section
-        if (request.getPathInfo() == null) {
-            writer.print(Constants.HTML_HEADER_SECTION);
-        } else {
-            writer.print(Constants.HTML_HEADER_SECTION.replace("images/", "../images/"));
-        }
+        Object[] args = new Object[1];
+        args[0] = request.getContextPath();
+        writer.print(MessageFormat.format(Constants.HTML_HEADER_SECTION, args));
 
         // Body Header Section
-        Object[] args = new Object[2];
+        args = new Object[2];
         args[0] = request.getContextPath();
         args[1] = sm.getString("htmlHostManagerServlet.title");
-        if (request.getPathInfo() == null) {
-            writer.print(MessageFormat.format
-                    (Constants.BODY_HEADER_SECTION, args));
-        } else {
-            writer.print(MessageFormat.format
-                    (Constants.BODY_HEADER_SECTION.replace("images/", "../images/"), args));
-        }
+        writer.print(MessageFormat.format(Constants.BODY_HEADER_SECTION, args));
 
         // Manager Section
         args = new Object[9];

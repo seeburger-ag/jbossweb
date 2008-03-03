@@ -212,10 +212,12 @@ public class StatusManagerServlet
             completeStatus = true;
         }
         // use StatusTransformer to output status
-        StatusTransformer.writeHeader(writer, mode, (request.getPathInfo() != null));
+        Object[] args = new Object[1];
+        args[0] = request.getContextPath();
+        StatusTransformer.writeHeader(writer, args, mode);
 
         // Body Header Section
-        Object[] args = new Object[2];
+        args = new Object[2];
         args[0] = request.getContextPath();
         if (completeStatus) {
             args[1] = sm.getString("statusServlet.complete");
@@ -223,7 +225,7 @@ public class StatusManagerServlet
             args[1] = sm.getString("statusServlet.title");
         }
         // use StatusTransformer to output status
-        StatusTransformer.writeBody(writer,args,mode, (request.getPathInfo() != null));
+        StatusTransformer.writeBody(writer,args,mode);
 
         // Manager Section
         args = new Object[9];
