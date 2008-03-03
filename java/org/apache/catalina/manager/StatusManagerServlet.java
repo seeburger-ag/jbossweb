@@ -212,7 +212,7 @@ public class StatusManagerServlet
             completeStatus = true;
         }
         // use StatusTransformer to output status
-        StatusTransformer.writeHeader(writer,mode);
+        StatusTransformer.writeHeader(writer, mode, (request.getPathInfo() != null));
 
         // Body Header Section
         Object[] args = new Object[2];
@@ -223,7 +223,7 @@ public class StatusManagerServlet
             args[1] = sm.getString("statusServlet.title");
         }
         // use StatusTransformer to output status
-        StatusTransformer.writeBody(writer,args,mode);
+        StatusTransformer.writeBody(writer,args,mode, (request.getPathInfo() != null));
 
         // Manager Section
         args = new Object[9];
@@ -248,7 +248,21 @@ public class StatusManagerServlet
             args[8] = sm.getString("statusServlet.complete");
         }
         // use StatusTransformer to output status
-        StatusTransformer.writeManager(writer,args,mode);
+        StatusTransformer.writeManager1(writer,args,mode);
+        try {
+
+            if ((request.getPathInfo() != null) 
+                && (request.getPathInfo().equals("/all"))) {
+                // Note: Retrieving the full status is much slower
+                // use StatusTransformer to output status
+                StatusTransformer.writeAppList
+                    (writer, mBeanServer, mode);
+            }
+        
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+        StatusTransformer.writeManager2(writer,args,mode);
 
         // Server Header Section
         args = new Object[7];

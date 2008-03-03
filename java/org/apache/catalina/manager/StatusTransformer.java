@@ -70,10 +70,14 @@ public class StatusTransformer {
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
-    public static void writeHeader(PrintWriter writer, int mode) {
+    public static void writeHeader(PrintWriter writer, int mode, boolean pathInfo) {
         if (mode == 0){
             // HTML Header Section
-            writer.print(Constants.HTML_HEADER_SECTION);
+            if (pathInfo) {
+                writer.print(Constants.HTML_HEADER_SECTION.replace("images/", "../images/"));
+            } else {
+                writer.print(Constants.HTML_HEADER_SECTION);
+            }
         } else if (mode == 1){
             writer.write(Constants.XML_DECLARATION);
             writer.write
@@ -91,10 +95,15 @@ public class StatusTransformer {
      * @param args What to write
      * @param mode 0 means write 
      */
-    public static void writeBody(PrintWriter writer, Object[] args, int mode) {
+    public static void writeBody(PrintWriter writer, Object[] args, int mode, boolean pathInfo) {
         if (mode == 0){
-            writer.print(MessageFormat.format
-                         (Constants.BODY_HEADER_SECTION, args));
+            if (pathInfo) {
+                writer.print(MessageFormat.format
+                         (Constants.BODY_HEADER_SECTION.replace("images/", "../images/"), args));
+            } else {
+                writer.print(MessageFormat.format
+                        (Constants.BODY_HEADER_SECTION, args));
+            }
         }
     }
 
@@ -106,10 +115,25 @@ public class StatusTransformer {
      * @param args What to write
      * @param mode 0 means write
      */
-    public static void writeManager(PrintWriter writer, Object[] args, 
+    public static void writeManager1(PrintWriter writer, Object[] args, 
                                     int mode) {
         if (mode == 0){
-            writer.print(MessageFormat.format(Constants.MANAGER_SECTION, args));
+            writer.print(MessageFormat.format(Constants.MANAGER_STATUS_SECTION1, args));
+        }
+    }
+
+
+    /**
+     * Write the manager webapp information.
+     * 
+     * @param writer The output writer
+     * @param args What to write
+     * @param mode 0 means write
+     */
+    public static void writeManager2(PrintWriter writer, Object[] args, 
+                                    int mode) {
+        if (mode == 0){
+            writer.print(MessageFormat.format(Constants.MANAGER_STATUS_SECTION2, args));
         }
     }
 
@@ -554,15 +578,41 @@ public class StatusTransformer {
             ObjectName queryHosts = new ObjectName("*:j2eeType=WebModule,*");
             Set hostsON = mBeanServer.queryNames(queryHosts, null);
 
-            // Navigation menu
-            writer.print("<h1>");
-            writer.print("Application list");
-            writer.print("</h1>");
-
-            writer.print("<p>");
+            // Webapp list
             int count = 0;
             Iterator iterator = hostsON.iterator();
             while (iterator.hasNext()) {
+                ObjectName contextON = (ObjectName) iterator.next();
+                writer.print("<a class=\"A.name\" name=\"" 
+                             + (count++) + ".0\">");
+                writeContext(writer, contextON, mBeanServer, mode);
+            }
+
+        } else if (mode == 1){
+            // for now we don't write out the Detailed state in XML
+        }
+
+    }
+
+
+    /**
+     * Write applications state.
+     */
+    public static void writeAppList(PrintWriter writer,
+                                          MBeanServer mBeanServer, int mode)
+        throws Exception {
+
+        if (mode == 0){
+            ObjectName queryHosts = new ObjectName("*:j2eeType=WebModule,*");
+            Set hostsON = mBeanServer.queryNames(queryHosts, null);
+
+            // Navigation menu
+            writer.print("<dt>Application list</dt>");
+
+            int count = 0;
+            Iterator iterator = hostsON.iterator();
+            while (iterator.hasNext()) {
+                writer.print("<dd>");
                 ObjectName contextON = (ObjectName) iterator.next();
                 String webModuleName = contextON.getKeyProperty("name");
                 if (webModuleName.startsWith("//")) {
@@ -577,21 +627,7 @@ public class StatusTransformer {
                 writer.print("<a href=\"#" + (count++) + ".0\">");
                 writer.print(webModuleName);
                 writer.print("</a>");
-                if (iterator.hasNext()) {
-                    writer.print("<br>");
-                }
-
-            }
-            writer.print("</p>");
-
-            // Webapp list
-            count = 0;
-            iterator = hostsON.iterator();
-            while (iterator.hasNext()) {
-                ObjectName contextON = (ObjectName) iterator.next();
-                writer.print("<a class=\"A.name\" name=\"" 
-                             + (count++) + ".0\">");
-                writeContext(writer, contextON, mBeanServer, mode);
+                writer.print("</dd>");
             }
 
         } else if (mode == 1){

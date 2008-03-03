@@ -27,7 +27,7 @@ public class Constants {
         "<html>\n" +
         "<head>\n" +
         "<style>\n" +
-        org.apache.catalina.util.TomcatCSS.TOMCAT_CSS +
+        org.apache.catalina.util.TomcatCSS.JBOSSWEB_CSS +
         "  table {\n" +
         "    width: 100%;\n" +
         "  }\n" +
@@ -45,21 +45,21 @@ public class Constants {
         "    font-family:sans-serif,Tahoma,Arial;\n" +
         "    font-style:italic;\n" +
         "    font-weight: bold;\n" +
-        "    background: #D2A41C;\n" +
+        "    background: #4a5d75;\n" +
         "  }\n" +
         "  td.header-left {\n" +
         "    text-align: left;\n" +
         "    vertical-align: top;\n" +
         "    font-family:sans-serif,Tahoma,Arial;\n" +
         "    font-weight: bold;\n" +
-        "    background: #FFDC75;\n" +
+        "    background: #656565;\n" +
         "  }\n" +
         "  td.header-center {\n" +
         "    text-align: center;\n" +
         "    vertical-align: top;\n" +
         "    font-family:sans-serif,Tahoma,Arial;\n" +
         "    font-weight: bold;\n" +
-        "    background: #FFDC75;\n" +
+        "    background: #656565;\n" +
         "  }\n" +
         "  td.row-left {\n" +
         "    text-align: left;\n" +
@@ -84,7 +84,7 @@ public class Constants {
         "    vertical-align: top;\n" +
         "    font-family:sans-serif,Tahoma,Arial;\n" +
         "    font-weight: bold;\n" +
-        "    background: #FFDC75;\n" +
+        "    background: #656565;\n" +
         "  }\n" +
         "  TD {\n" +
         "    text-align: center;\n" +
@@ -98,32 +98,14 @@ public class Constants {
         "<title>{0}</title>\n" +
         "</head>\n" +
         "\n" +
-        "<body bgcolor=\"#FFFFFF\">\n" +
+        "<body>\n" +
         "\n" +
-        "<table cellspacing=\"4\" width=\"100%\" border=\"0\">\n" +
-        " <tr>\n" +
-        "  <td colspan=\"2\">\n" +
-        "   <a href=\"http://www.jboss.org/\">\n" +
-        "    <img border=\"0\" alt=\"JBoss.org\" align=\"left\"\n" +
-        "         src=\"{0}/images/jboss_logo.gif\">\n" +
-        "   </a>\n" +
-        "   <a href=\"http://labs.jboss.com/jbossweb/\">\n" +
-        "    <img border=\"0\" alt=\"JBoss Web Servlet/JSP Container\"\n" +
-        "         align=\"right\" src=\"{0}/images/jbossweblogo.gif\">\n" +
-        "   </a>\n" +
-        "  </td>\n" +
-        " </tr>\n" +
-        "</table>\n" +
-        "<hr size=\"1\" noshade=\"noshade\">\n" +
-        "<table cellspacing=\"4\" width=\"100%\" border=\"0\">\n" +
-        " <tr>\n" +
-        "  <td class=\"page-title\" bordercolor=\"#000000\" " +
-        "align=\"left\" nowrap>\n" +
-        "   <font size=\"+2\">{1}</font>\n" +
-        "  </td>\n" +
-        " </tr>\n" +
-        "</table>\n" +
-        "<br>\n" +
+        "<div class=\"wrapper\">\n" +
+        "  <div class=\"header\">\n" +
+        "    <div class=\"floatleft\"><a href=\"list\"><img src=\"images/hdr_hdrtitle.gif\" border=\"0\"></a></div>\n" +
+        "    <div class=\"floatright\"><a href=\"http://www.jboss.com/\"><img src=\"images/hdr_jbosslogo.gif\" alt=\"JBoss, a division of Red Hat\" border=\"0\"></a><a href=\"http://www.jboss.org\"><img src=\"images/hdr_jbossorglogo.gif\" alt=\"JBoss.org - Community driven.\" border=\"0\" /></a></div>\n" +
+        "  </div>\n" +
+        "    <div class=\"container\">\n" +
         "\n";
 
     public static final String MESSAGE_SECTION =
@@ -138,19 +120,26 @@ public class Constants {
         "\n";
 
     public static final String MANAGER_SECTION =
-        "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n" +
-        "<tr>\n" +
-        " <td colspan=\"4\" class=\"title\">{0}</td>\n" +
-        "</tr>\n" +
-        " <tr>\n" +
-        "  <td class=\"row-left\"><a href=\"{1}\">{2}</a></td>\n" +
-        "  <td class=\"row-center\"><a href=\"{3}\">{4}</a></td>\n" +
-        "  <td class=\"row-center\"><a href=\"{5}\">{6}</a></td>\n" +
-        "  <td class=\"row-right\"><a href=\"{7}\">{8}</a></td>\n" +
-        " </tr>\n" +
-        "</table>\n" +
-        "<br>\n" +
-        "\n";
+        "<div class=\"leftcol\"><dl>\n" +
+        "  <dt>Manager</dt>" +
+        "    <dd><a href=\"{1}\">{2}</a></dd>" +
+        "    <dd><a href=\"{3}\">{4}</a></dd>" +
+        "    <dd><a href=\"{5}\">{6}</a></dd>" +
+        "    <dd><a href=\"{7}\">{8}</a></dd>" +
+        "</dl></div>\n" +
+        "<div class=\"maincol\">\n";
+
+    public static final String MANAGER_STATUS_SECTION1 =
+        "<div class=\"leftcol\"><dl>\n" +
+        "  <dt>Manager</dt>" +
+        "    <dd><a href=\"{1}\">{2}</a></dd>" +
+        "    <dd><a href=\"{3}\">{4}</a></dd>" +
+        "    <dd><a href=\"{5}\">{6}</a></dd>" +
+        "    <dd><a href=\"{7}\">{8}</a></dd>";
+
+    public static final String MANAGER_STATUS_SECTION2 =
+        "</dl></div>\n" +
+        "<div class=\"maincol\">\n";
 
     public static final String SERVER_HEADER_SECTION =
         "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n" +
@@ -180,13 +169,11 @@ public class Constants {
         "\n";
 
     public static final String HTML_TAIL_SECTION =
-        "<hr size=\"1\" noshade=\"noshade\">\n" +
-        "<center><font size=\"-1\" color=\"#525D76\">\n" +
-        " <em>Copyright &copy; 2008, Red Hat Middleware, LLC.</em>" +
-        "</font></center>\n" +
-        "\n" +
-        "</body>\n" +
-        "</html>";
+        "  </div>\n" +
+        "  </div>\n" +
+        "  <div class=\"footer\">&copy; 2008 Red Hat Middleware, LLC. All Rights Reserved. </div>\n" +
+        "</div></body></html>";
+
     public static final String CHARSET="utf-8";
 
     public static final String XML_DECLARATION =

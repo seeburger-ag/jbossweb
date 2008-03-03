@@ -299,24 +299,23 @@ public final class HTMLManagerServlet extends ManagerServlet {
         PrintWriter writer = response.getWriter();
 
         // HTML Header Section
-        writer.print(Constants.HTML_HEADER_SECTION);
+        if (request.getPathInfo() == null) {
+            writer.print(Constants.HTML_HEADER_SECTION);
+        } else {
+            writer.print(Constants.HTML_HEADER_SECTION.replace("images/", "../images/"));
+        }
 
         // Body Header Section
         Object[] args = new Object[2];
         args[0] = request.getContextPath();
         args[1] = sm.getString("htmlManagerServlet.title");
-        writer.print(MessageFormat.format
-                     (Constants.BODY_HEADER_SECTION, args));
-
-        // Message Section
-        args = new Object[3];
-        args[0] = sm.getString("htmlManagerServlet.messageLabel");
-        if (message == null || message.length() == 0) {
-            args[1] = "OK";
+        if (request.getPathInfo() == null) {
+            writer.print(MessageFormat.format
+                    (Constants.BODY_HEADER_SECTION, args));
         } else {
-            args[1] = RequestUtil.filter(message);
+            writer.print(MessageFormat.format
+                    (Constants.BODY_HEADER_SECTION.replace("images/", "../images/"), args));
         }
-        writer.print(MessageFormat.format(Constants.MESSAGE_SECTION, args));
 
         // Manager Section
         args = new Object[9];
@@ -335,6 +334,16 @@ public final class HTMLManagerServlet extends ManagerServlet {
             (request.getContextPath() + "/status");
         args[8] = sm.getString("statusServlet.title");
         writer.print(MessageFormat.format(Constants.MANAGER_SECTION, args));
+
+        // Message Section
+        args = new Object[3];
+        args[0] = sm.getString("htmlManagerServlet.messageLabel");
+        if (message == null || message.length() == 0) {
+            args[1] = "OK";
+        } else {
+            args[1] = RequestUtil.filter(message);
+        }
+        writer.print(MessageFormat.format(Constants.MESSAGE_SECTION, args));
 
         // Apps Header Section
         args = new Object[6];
