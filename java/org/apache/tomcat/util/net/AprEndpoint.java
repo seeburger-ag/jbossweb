@@ -1501,7 +1501,7 @@ public class AprEndpoint {
 
                 while (keepAliveCount < 1 && addList.size() < 1) {
                     // Reset maintain time.
-                    maintainTime = 0;
+                    maintainTime = 1;
                     try {
                         synchronized (this) {
                             this.wait(10000);
@@ -1512,7 +1512,7 @@ public class AprEndpoint {
                     } catch (InterruptedException e) {
                         // Ignore
                     } catch (Throwable t) {
-                        log.error(sm.getString("endpoint.poll.error"), t);
+                        log.error(sm.getString("endpoint.maintain.error"), t);
                     }
                 }
 
@@ -1633,10 +1633,15 @@ public class AprEndpoint {
                         // non Comet poller might be a bit faster by using the old maintain.
                         maintainTime = 0;
                         maintain();
+                        maintainTime = 1;
                     }
 
                 } catch (Throwable t) {
-                    log.error(sm.getString("endpoint.poll.error"), t);
+                    if (maintainTime == 0) {
+                        log.error(sm.getString("endpoint.maintain.error"), t);
+                    } else {
+                        log.error(sm.getString("endpoint.poll.error"), t);
+                    }
                 }
 
             }
