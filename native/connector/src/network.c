@@ -17,7 +17,7 @@
 /*
  *
  * @author Mladen Turk
- * @version $Revision: 562478 $, $Date: 2007-08-03 16:33:51 +0200 (ven., 03 août 2007) $
+ * @version $Revision: 631212 $, $Date: 2008-02-26 14:46:57 +0100 (Tue, 26 Feb 2008) $
  */
 
 #include "tcn.h"
@@ -1106,7 +1106,6 @@ TCN_IMPLEMENT_CALL(jint, Socket, optSet)(TCN_STDARGS, jlong sock,
 
     UNREFERENCED(o);
     if (!s->sock) {
-        tcn_ThrowAPRException(e, APR_ENOTSOCK);
         return APR_ENOTSOCK;
     }
     else
@@ -1120,7 +1119,7 @@ TCN_IMPLEMENT_CALL(jint, Socket, optGet)(TCN_STDARGS, jlong sock,
     apr_int32_t on = 0;
 
     UNREFERENCED(o);
-    if (s->sock)
+    if (!s->sock)
         tcn_ThrowAPRException(e, APR_ENOTSOCK);
     else {
         TCN_THROW_IF_ERR((*s->net->opt_get)(s->opaque, (apr_int32_t)opt,
