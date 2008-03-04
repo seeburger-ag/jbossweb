@@ -28,6 +28,7 @@ import org.apache.tomcat.jni.Status;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.MimeHeaders;
+import org.apache.tomcat.util.net.AprEndpoint;
 import org.apache.tomcat.util.res.StringManager;
 
 import org.apache.coyote.InputBuffer;
@@ -42,18 +43,16 @@ import org.apache.coyote.Request;
 public class InternalAprInputBuffer implements InputBuffer {
 
 
-    // -------------------------------------------------------------- Constants
-
-
     // ----------------------------------------------------------- Constructors
 
 
     /**
      * Alternate constructor.
      */
-    public InternalAprInputBuffer(Request request, int headerBufferSize) {
+    public InternalAprInputBuffer(Request request, int headerBufferSize, AprEndpoint endpoint) {
 
         this.request = request;
+        this.endpoint = endpoint;
         headers = request.getMimeHeaders();
 
         buf = new byte[headerBufferSize];
@@ -184,6 +183,12 @@ public class InternalAprInputBuffer implements InputBuffer {
      * Non blocking mode.
      */
     protected boolean available = false;
+    
+
+    /**
+     * Apr endpoint.
+     */
+    protected AprEndpoint endpoint = null;
     
 
     // ------------------------------------------------------------- Properties
@@ -799,11 +804,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                     } else {
                         // In this specific situation, perform the read again in blocking mode (the user is not
                         // using available and simply wants to read all data)
-                        Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
-                        Socket.timeoutSet(socket, 20000*1000);
-                        nRead = Socket.recvbb(socket, 0, buf.length - lastValid);
-                        Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
-                        Socket.timeoutSet(socket, 0);
+                        nRead = Socket.recvbbt(socket, 0, buf.length - lastValid, endpoint.getSoTimeout() * 1000);
                         if (nRead > 0) {
                             bbuf.limit(nRead);
                             bbuf.get(buf, pos, nRead);

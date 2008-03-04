@@ -26,6 +26,7 @@ import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.HttpMessages;
 import org.apache.tomcat.util.http.MimeHeaders;
+import org.apache.tomcat.util.net.AprEndpoint;
 import org.apache.tomcat.util.res.StringManager;
 
 import org.apache.coyote.ActionCode;
@@ -48,19 +49,12 @@ public class InternalAprOutputBuffer
 
 
     /**
-     * Default constructor.
-     */
-    public InternalAprOutputBuffer(Response response) {
-        this(response, Constants.DEFAULT_HTTP_HEADER_BUFFER_SIZE);
-    }
-
-
-    /**
      * Alternate constructor.
      */
-    public InternalAprOutputBuffer(Response response, int headerBufferSize) {
+    public InternalAprOutputBuffer(Response response, int headerBufferSize, AprEndpoint endpoint) {
 
         this.response = response;
+        this.endpoint = endpoint;
         headers = response.getMimeHeaders();
 
         buf = new byte[headerBufferSize];
@@ -184,6 +178,12 @@ public class InternalAprOutputBuffer
      * Non blocking mode.
      */
     protected boolean nonBlocking = false;
+    
+
+    /**
+     * Apr endpoint.
+     */
+    protected AprEndpoint endpoint = null;
     
 
     // ------------------------------------------------------------- Properties
@@ -805,9 +805,7 @@ public class InternalAprOutputBuffer
             System.out.println("Leftovers present");
             if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
                 System.out.println("Send leftovers using blocking");
-                Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
-                // Also use the usual timeout
-                Socket.timeoutSet(socket, 20000*1000);
+                Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
                 // Send leftover bytes
                 res = Socket.send(socket, leftover.getBuffer(), leftover.getOffset(), leftover.getEnd());
                 leftover.recycle();
@@ -815,7 +813,6 @@ public class InternalAprOutputBuffer
                 if (res > 0) {
                     res = Socket.sendbb(socket, 0, bbuf.position());
                 }
-                Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
                 Socket.timeoutSet(socket, 0);
             } else {
                 throw new IOException("Backlog");
@@ -843,10 +840,8 @@ public class InternalAprOutputBuffer
                     if (response.getFlushLeftovers() && (Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
                         System.out.println("Blocking write of all data");
                         // Switch to blocking mode and write the data
-                        Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
-                        Socket.timeoutSet(socket, 20000*1000);
+                        Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
                         res = Socket.sendbb(socket, 0, bbuf.position());
-                        Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
                         Socket.timeoutSet(socket, 0);
                     } else {
                         // Put any leftover bytes in the leftover byte chunk

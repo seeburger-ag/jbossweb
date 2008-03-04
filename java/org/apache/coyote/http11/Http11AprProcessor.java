@@ -87,12 +87,12 @@ public class Http11AprProcessor implements ActionHook {
         this.endpoint = endpoint;
         
         request = new Request();
-        inputBuffer = new InternalAprInputBuffer(request, headerBufferSize);
+        inputBuffer = new InternalAprInputBuffer(request, headerBufferSize, endpoint);
         request.setInputBuffer(inputBuffer);
 
         response = new Response();
         response.setHook(this);
-        outputBuffer = new InternalAprOutputBuffer(response, headerBufferSize);
+        outputBuffer = new InternalAprOutputBuffer(response, headerBufferSize, endpoint);
         response.setOutputBuffer(outputBuffer);
         request.setResponse(response);
         
@@ -1272,15 +1272,13 @@ public class Http11AprProcessor implements ActionHook {
         } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
             comet = true;
             // Set socket to non blocking mode
-            Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
             Socket.timeoutSet(socket, 0);
             outputBuffer.setNonBlocking(true);
             inputBuffer.setNonBlocking(true);
         } else if (actionCode == ActionCode.ACTION_COMET_END) {
             comet = false;
             // End non blocking mode
-            Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
-            Socket.timeoutSet(socket, endpoint.getSoTimeout());
+            Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
             outputBuffer.setNonBlocking(false);
             inputBuffer.setNonBlocking(false);
         } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
