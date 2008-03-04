@@ -32,6 +32,7 @@ public class TomcatCSS {
         "A.name {color : black;}" +
         "HR {color : #525D76;}";
 
+    /*
     public static final String JBOSSWEB_CSS =
         "html {margin:0;padding:0;}" +
         "body {margin:20px;padding: 0px;font-family:Verdana, Arial, Helvetica, sans-serif;background-color:#a3a9ad;color:#424242;font-size: 12px;}" +
@@ -63,7 +64,6 @@ public class TomcatCSS {
         "#bread ul li {margin-left: 0;padding-left: 2px;font-size:10px;border: none;list-style: none;display: inline;}" +
         "#bread a {color:#656565;text-decoration: underline;}";
 
-    /*
     public static final String SHADOW_IMG=
         "<img src=\"data:image/gif;base64,\n" +
         "iVBORw0KGgoAAAANSUhEUgAAAAcAAAABCAYAAAASC7TOAAAABGdBTUEAANbY1E9YMgAAABl0RVh0\n" +
