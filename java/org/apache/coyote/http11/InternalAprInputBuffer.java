@@ -788,20 +788,18 @@ public class InternalAprInputBuffer implements InputBuffer {
                 bbuf.limit(nRead);
                 bbuf.get(buf, pos, nRead);
                 lastValid = pos + nRead;
-            } else if (nRead < 0) {
+            } else if (nRead <= 0) {
                 if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
                     throw new SocketTimeoutException(sm.getString("iib.failedread"));
                 } else if ((-nRead) == Status.EAGAIN && nonBlocking) {
-                    // FIXME: I don't understand why the result is not nRead = 0
-                        /* As asynchronous reads are forbidden, this test is not useful */
-                        /*&& (Http11AprProcessor.containerThread.get() == Boolean.TRUE)*/
+                    // As asynchronous reads are forbidden, this test is not useful
+                    // && (Http11AprProcessor.containerThread.get() == Boolean.TRUE)
                     if (available) {
                         nRead = 0;
                     } else {
                         // In this specific situation, perform the read again in blocking mode (the user is not
                         // using available and simply wants to read all data)
                         Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
-                        // Also use the usual timeout
                         Socket.timeoutSet(socket, 20000*1000);
                         nRead = Socket.recvbb(socket, 0, buf.length - lastValid);
                         Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
@@ -810,7 +808,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                             bbuf.limit(nRead);
                             bbuf.get(buf, pos, nRead);
                             lastValid = pos + nRead;
-                        } else if (nRead < 0) {
+                        } else if (nRead <= 0) {
                             if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
                                 throw new SocketTimeoutException(sm.getString("iib.failedread"));
                             } else {
