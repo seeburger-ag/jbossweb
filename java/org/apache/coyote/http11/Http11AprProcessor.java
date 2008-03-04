@@ -1267,19 +1267,22 @@ public class Http11AprProcessor implements ActionHook {
             internalBuffer.addActiveFilter(savedBody);
             
         } else if (actionCode == ActionCode.ACTION_AVAILABLE) {
-            request.setAvailable(inputBuffer.available());
+            //request.setAvailable(inputBuffer.available());
+            inputBuffer.useAvailable();
         } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
             comet = true;
             // Set socket to non blocking mode
             Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
             Socket.timeoutSet(socket, 0);
             outputBuffer.setNonBlocking(true);
+            inputBuffer.setNonBlocking(true);
         } else if (actionCode == ActionCode.ACTION_COMET_END) {
             comet = false;
             // End non blocking mode
             Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
             Socket.timeoutSet(socket, endpoint.getSoTimeout());
             outputBuffer.setNonBlocking(false);
+            inputBuffer.setNonBlocking(false);
         } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
             readNotifications = false;
         } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {

@@ -174,6 +174,18 @@ public class InternalAprInputBuffer implements InputBuffer {
     protected int lastActiveFilter;
 
 
+    /**
+     * Non blocking mode.
+     */
+    protected boolean nonBlocking = false;
+    
+
+    /**
+     * Non blocking mode.
+     */
+    protected boolean available = false;
+    
+
     // ------------------------------------------------------------- Properties
 
 
@@ -191,6 +203,22 @@ public class InternalAprInputBuffer implements InputBuffer {
      */
     public long getSocket() {
         return socket;
+    }
+
+
+    /**
+     * Set the non blocking flag.
+     */
+    public void setNonBlocking(boolean nonBlocking) {
+        this.nonBlocking = nonBlocking;
+    }
+
+
+    /**
+     * Get the non blocking flag value.
+     */
+    public boolean getNonBlocking() {
+        return nonBlocking;
     }
 
 
@@ -319,6 +347,7 @@ public class InternalAprInputBuffer implements InputBuffer {
         lastActiveFilter = -1;
         parsingHeader = true;
         swallowInput = true;
+        nonBlocking = false;
 
     }
 
@@ -677,7 +706,8 @@ public class InternalAprInputBuffer implements InputBuffer {
     /**
      * Available bytes (note that due to encoding, this may not correspond )
      */
-    public int available() {
+    public void useAvailable() {
+        /*
         int result = (lastValid - pos);
         if ((result == 0) && (lastActiveFilter >= 0)) {
             for (int i = 0; (result == 0) && (i <= lastActiveFilter); i++) {
@@ -685,6 +715,8 @@ public class InternalAprInputBuffer implements InputBuffer {
             }
         }
         return result;
+        */
+        available = true;
     }
 
 
@@ -759,6 +791,33 @@ public class InternalAprInputBuffer implements InputBuffer {
             } else if (nRead < 0) {
                 if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
                     throw new SocketTimeoutException(sm.getString("iib.failedread"));
+                } else if ((-nRead) == Status.EAGAIN && nonBlocking) {
+                    // FIXME: I don't understand why the result is not nRead = 0
+                        /* As asynchronous reads are forbidden, this test is not useful */
+                        /*&& (Http11AprProcessor.containerThread.get() == Boolean.TRUE)*/
+                    if (available) {
+                        nRead = 0;
+                    } else {
+                        // In this specific situation, perform the read again in blocking mode (the user is not
+                        // using available and simply wants to read all data)
+                        Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 0);
+                        // Also use the usual timeout
+                        Socket.timeoutSet(socket, 20000*1000);
+                        nRead = Socket.recvbb(socket, 0, buf.length - lastValid);
+                        Socket.optSet(socket, Socket.APR_SO_NONBLOCK, 1);
+                        Socket.timeoutSet(socket, 0);
+                        if (nRead > 0) {
+                            bbuf.limit(nRead);
+                            bbuf.get(buf, pos, nRead);
+                            lastValid = pos + nRead;
+                        } else if (nRead < 0) {
+                            if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
+                                throw new SocketTimeoutException(sm.getString("iib.failedread"));
+                            } else {
+                                throw new IOException(sm.getString("iib.failedread"));
+                            }
+                        }
+                    }
                 } else {
                     throw new IOException(sm.getString("iib.failedread"));
                 }
@@ -766,7 +825,7 @@ public class InternalAprInputBuffer implements InputBuffer {
 
         }
 
-        return (nRead > 0);
+        return (nRead >= 0);
 
     }
 

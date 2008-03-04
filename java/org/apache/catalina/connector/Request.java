@@ -2257,7 +2257,7 @@ public class Request
     /**
      * Return true if bytes are available.
      */
-    public boolean isReadable() {
+    public boolean ready() {
         return (inputBuffer.available() > 0);
     }
 

@@ -215,7 +215,7 @@ public class CoyoteAdapter
                 /*if (response.isClosed() || !request.isComet()) {
                     res.action(ActionCode.ACTION_COMET_END, null);
                 } else*/
-                if (!error && read && request.isReadable()) {
+                if (!error && read && request.ready()) {
                     // If this was a read and not all bytes have been read, or if no data
                     // was read from the connector, then it is an error
                     log.error(sm.getString("coyoteAdapter.read"));
@@ -297,7 +297,7 @@ public class CoyoteAdapter
                 if (request.isComet()) {
                     if (!response.isClosed() && !response.isError()) {
                         res.action(ActionCode.ACTION_COMET_BEGIN, null);
-                        if (request.isReadable()) {
+                        if (request.ready()) {
                             // Invoke a read event right away if there are available bytes
                             if (event(req, res, SocketStatus.OPEN_READ)) {
                                 comet = true;
