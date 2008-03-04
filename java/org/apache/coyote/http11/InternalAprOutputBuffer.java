@@ -821,19 +821,22 @@ public class InternalAprOutputBuffer
         
         if (bbuf.position() > 0) {
             if (nonBlocking) {
-                System.out.println("No leftovers present");
                 // Perform non blocking writes until all data is written, or the result
                 // of the write is 0
                 int pos = 0;
                 int end = bbuf.position();
                 while (pos < end) {
-                    // FIXME: temp testing
-                    //res = 0;
                     res = Socket.sendibb(socket, pos, bbuf.position());
+                    if (res == 0) {
+                        System.out.println("Wrote 0 bytes");
+                    }
                     if (res > 0) {
                         pos += res;
                     } else {
                         break;
+                    }
+                    if (pos < end) {
+                        System.out.println("Wrote: " + pos + " of " + end);
                     }
                 }
                 if (pos < end) {
