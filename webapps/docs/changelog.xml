@@ -157,6 +157,9 @@
       <fix>
         ExtendedAccessLogValve cs-uri not print empty querystring (pero)
       </fix>
+      <fix>
+         <bug>44389</bug>: Memory leak caused by non static innerclass of ApplicationContext. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -183,6 +186,9 @@
       </fix>
       <fix>
         <bug>44223</bug>: Add support for remaining truststore system property. (markt)
+      </fix>
+      <fix>
+        Simplify response reset. (remm)
       </fix>
     </changelog>
   </subsection>
