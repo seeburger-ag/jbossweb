@@ -743,16 +743,19 @@ public class InternalAprOutputBuffer
                 }
                 //System.out.println("Flushed leftover " + res);
                 response.setLastWrite(res);
-                bbuf.clear();
                 if (pos < end) {
                     // Could not write all leftover data: put back to write poller
-                    leftover.setOffset(start + pos);
+                    leftover.setOffset(start);
+                    bbuf.position(pos);
                     return false;
+                } else {
+                    bbuf.clear();
                 }
             }
             if (thisTime > bbuf.capacity() - bbuf.position()) {
                 thisTime = bbuf.capacity() - bbuf.position();
             }
+            //System.out.println("Put " + thisTime + " bytes from leftover");
             bbuf.put(b, start, thisTime);
             len = len - thisTime;
             start = start + thisTime;
@@ -810,9 +813,10 @@ public class InternalAprOutputBuffer
                 res = Socket.send(socket, leftover.getBuffer(), leftover.getOffset(), leftover.getEnd());
                 leftover.recycle();
                 // Send current buffer
-                if (res > 0) {
+                if (res > 0 && bbuf.position() > 0) {
                     res = Socket.sendbb(socket, 0, bbuf.position());
                 }
+                bbuf.clear();
                 Socket.timeoutSet(socket, 0);
             } else {
                 throw new IOException("Backlog");
@@ -826,7 +830,7 @@ public class InternalAprOutputBuffer
                 int pos = 0;
                 int end = bbuf.position();
                 while (pos < end) {
-                    res = Socket.sendibb(socket, pos, bbuf.position());
+                    res = Socket.sendibb(socket, pos, end);
                     //if (res == 0) System.out.println("Wrote 0 bytes");
                     if (res > 0) {
                         pos += res;
@@ -840,7 +844,7 @@ public class InternalAprOutputBuffer
                         //System.out.println("Blocking write of all data");
                         // Switch to blocking mode and write the data
                         Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
-                        res = Socket.sendbb(socket, 0, bbuf.position());
+                        res = Socket.sendbb(socket, 0, end);
                         Socket.timeoutSet(socket, 0);
                     } else {
                         // Put any leftover bytes in the leftover byte chunk
