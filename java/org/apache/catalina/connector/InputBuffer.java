@@ -320,9 +320,15 @@ public class InputBuffer extends Reader
         if(state == INITIAL_STATE)
             state = BYTE_STATE;
 
-        int result = coyoteRequest.doRead(bb);
-
-        return result;
+        try {
+            return coyoteRequest.doRead(bb);
+        } catch (IOException e) {
+            // An IOException on a read is almost always due to
+            // the remote client aborting the request or a timeout occurring.
+            // Wrap this so that it can be handled better by the error 
+            // dispatcher.
+            throw new ClientAbortException(e);
+        }
 
     }
 
