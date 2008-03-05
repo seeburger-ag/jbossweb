@@ -984,14 +984,6 @@ public class Http11Processor implements ActionHook {
                 error = true;
             }
 
-        } else if (actionCode == ActionCode.ACTION_RESET) {
-
-            // Reset response
-
-            // Note: This must be called before the response is committed
-
-            outputBuffer.reset();
-
         } else if (actionCode == ActionCode.ACTION_CUSTOM) {
 
             // Do nothing

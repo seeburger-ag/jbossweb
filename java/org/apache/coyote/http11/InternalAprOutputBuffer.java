@@ -310,22 +310,6 @@ public class InternalAprOutputBuffer
 
 
     /**
-     * Reset current response.
-     * 
-     * @throws IllegalStateException if the response has already been committed
-     */
-    public void reset() {
-
-        if (committed)
-            throw new IllegalStateException(/*FIXME:Put an error message*/);
-
-        // Recycle Request object
-        response.recycle();
-
-    }
-
-
-    /**
      * Recycle the output buffer. This should be called when closing the 
      * connection.
      */
@@ -741,7 +725,6 @@ public class InternalAprOutputBuffer
                 if (res < 0) {
                     throw new IOException(sm.getString("oob.failedwrite"));
                 }
-                //System.out.println("Flushed leftover " + res);
                 response.setLastWrite(res);
                 if (pos < end) {
                     // Could not write all leftover data: put back to write poller
@@ -755,7 +738,6 @@ public class InternalAprOutputBuffer
             if (thisTime > bbuf.capacity() - bbuf.position()) {
                 thisTime = bbuf.capacity() - bbuf.position();
             }
-            //System.out.println("Put " + thisTime + " bytes from leftover");
             bbuf.put(b, start, thisTime);
             len = len - thisTime;
             start = start + thisTime;
@@ -766,7 +748,6 @@ public class InternalAprOutputBuffer
         int res = 0;
         while (pos < end) {
             res = Socket.sendibb(socket, pos, bbuf.position());
-            //System.out.println("Write from main buffer " + res);
             if (res > 0) {
                 pos += res;
             } else {
@@ -805,9 +786,7 @@ public class InternalAprOutputBuffer
         // - If the call is asynchronous, throw an exception
         // - If the call is synchronous, make regular blocking writes to flush the data
         if (leftover.getLength() > 0) {
-            //System.out.println("Leftovers present");
             if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
-                //System.out.println("Send leftovers using blocking");
                 Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
                 // Send leftover bytes
                 res = Socket.send(socket, leftover.getBuffer(), leftover.getOffset(), leftover.getEnd());
@@ -831,17 +810,14 @@ public class InternalAprOutputBuffer
                 int end = bbuf.position();
                 while (pos < end) {
                     res = Socket.sendibb(socket, pos, end);
-                    //if (res == 0) System.out.println("Wrote 0 bytes");
                     if (res > 0) {
                         pos += res;
                     } else {
                         break;
                     }
-                    //if (pos < end) System.out.println("Wrote: " + pos + " of " + end);
                 }
                 if (pos < end) {
                     if (response.getFlushLeftovers() && (Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
-                        //System.out.println("Blocking write of all data");
                         // Switch to blocking mode and write the data
                         Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
                         res = Socket.sendbb(socket, 0, end);
@@ -853,7 +829,6 @@ public class InternalAprOutputBuffer
                         bbuf.limit(end);
                         bbuf.get(leftover.getBuffer(), 0, end - pos);
                         leftover.setEnd(end - pos);
-                        //System.out.println("Put " + (end-pos) + " bytes in leftover: " + new String(leftover.getBuffer(), 0, end - pos) + " l:" + leftover.getBuffer().length);
                         // Call for a write event because it is possible that no further write
                         // operations are made
                         if (!response.getFlushLeftovers()) {
@@ -896,7 +871,6 @@ public class InternalAprOutputBuffer
             // part of the same write operation)
             if (leftover.getLength() > 0) {
                 leftover.append(chunk);
-                //System.out.println("Add chunk to leftover: " + chunk.getLength());
                 return chunk.getLength();
             }
             

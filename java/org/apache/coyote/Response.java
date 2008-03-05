@@ -299,29 +299,12 @@ public final class Response {
     public void reset() 
         throws IllegalStateException {
         
-        // Reset the headers only if this is the main request,
-        // not for included
-        contentType = null;
-        locale = DEFAULT_LOCALE;
-        contentLanguage = null;
-        characterEncoding = Constants.DEFAULT_CHARACTER_ENCODING;
-        contentLength = -1;
-        charsetSet = false;
-
-        status = 200;
-        message = null;
-        headers.clear();
-        
-        // Force the PrintWriter to flush its data to the output
-        // stream before resetting the output stream
-        //
-        // Reset the stream
         if (commited) {
-            //String msg = sm.getString("servletOutputStreamImpl.reset.ise"); 
             throw new IllegalStateException();
         }
-        
-        action(ActionCode.ACTION_RESET, this);
+
+        recycle();
+
     }
 
 

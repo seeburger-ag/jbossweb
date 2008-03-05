@@ -303,22 +303,6 @@ public class InternalOutputBuffer
 
 
     /**
-     * Reset current response.
-     * 
-     * @throws IllegalStateException if the response has already been committed
-     */
-    public void reset() {
-
-        if (committed)
-            throw new IllegalStateException(/*FIXME:Put an error message*/);
-
-        // Recycle Request object
-        response.recycle();
-
-    }
-
-
-    /**
      * Recycle the output buffer. This should be called when closing the 
      * connection.
      */
