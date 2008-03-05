@@ -412,7 +412,7 @@ public class InternalAprOutputBuffer
 
         if (!committed) {
             if (Socket.send(socket, Constants.ACK_BYTES, 0, Constants.ACK_BYTES.length) < 0)
-                throw new IOException(sm.getString("iib.failedwrite"));
+                throw new IOException(sm.getString("oob.failedwrite"));
         }
 
     }
@@ -547,10 +547,10 @@ public class InternalAprOutputBuffer
 
         }
 
-        // FIXME: If non blocking (comet) and there are leftover bytes, 
+        // If non blocking (comet) and there are leftover bytes, 
         // and lastWrite was 0 -> error
         if (leftover.getLength() > 0 && !(Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
-            throw new IOException("Backlog");
+            throw new IOException(sm.getString("oob.backlog"));
         }
 
         if (lastActiveFilter == -1)
@@ -739,7 +739,7 @@ public class InternalAprOutputBuffer
                     }
                 }
                 if (res < 0) {
-                    throw new IOException("Error");
+                    throw new IOException(sm.getString("oob.failedwrite"));
                 }
                 //System.out.println("Flushed leftover " + res);
                 response.setLastWrite(res);
@@ -774,7 +774,7 @@ public class InternalAprOutputBuffer
             }
         }
         if (res < 0) {
-            throw new IOException("Error");
+            throw new IOException(sm.getString("oob.failedwrite"));
         }
         response.setLastWrite(res);
         if (pos < end) {
@@ -801,9 +801,9 @@ public class InternalAprOutputBuffer
 
         int res = 0;
         
-        // If there are still leftover bytes here, there's a problem:
+        // If there are still leftover bytes here, this means the user did a direct flush:
         // - If the call is asynchronous, throw an exception
-        // - If the call is synchronous, make a regular blocking write to flush the data
+        // - If the call is synchronous, make regular blocking writes to flush the data
         if (leftover.getLength() > 0) {
             //System.out.println("Leftovers present");
             if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
@@ -819,7 +819,7 @@ public class InternalAprOutputBuffer
                 bbuf.clear();
                 Socket.timeoutSet(socket, 0);
             } else {
-                throw new IOException("Backlog");
+                throw new IOException(sm.getString("oob.backlog"));
             }
         }
         
@@ -867,7 +867,7 @@ public class InternalAprOutputBuffer
             response.setLastWrite(res);
             bbuf.clear();
             if (res < 0) {
-                throw new IOException("Error");
+                throw new IOException(sm.getString("oob.failedwrite"));
             }
         }
         
