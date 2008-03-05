@@ -743,10 +743,10 @@ public class InternalAprOutputBuffer
                 }
                 System.out.println("Flushed leftover " + res);
                 response.setLastWrite(res);
+                bbuf.clear();
                 if (pos < end) {
                     // Could not write all leftover data: put back to write poller
                     leftover.setOffset(start + pos);
-                    bbuf.clear();
                     return false;
                 }
             }
@@ -849,8 +849,8 @@ public class InternalAprOutputBuffer
                     } else {
                         // Put any leftover bytes in the leftover byte chunk
                         leftover.allocate(end - pos, -1);
-                        bbuf.position(0);
-                        bbuf.limit(end - pos);
+                        bbuf.position(pos);
+                        bbuf.limit(end);
                         bbuf.get(leftover.getBuffer(), 0, end - pos);
                         leftover.setEnd(end - pos);
                         System.out.println("Put " + (end-pos) + " bytes in leftover: " + new String(leftover.getBuffer(), 0, end - pos) + " l:" + leftover.getBuffer().length);
@@ -896,7 +896,7 @@ public class InternalAprOutputBuffer
             // part of the same write operation)
             if (leftover.getLength() > 0) {
                 leftover.append(chunk);
-                System.out.println("Add chunk to leftover");
+                System.out.println("Add chunk to leftover: " + chunk.getLength());
                 return chunk.getLength();
             }
             
