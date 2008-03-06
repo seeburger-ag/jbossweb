@@ -19,7 +19,7 @@
   <property name="version.build"         value="0" />
   <property name="version.patch"         value="0" />
   <property name="version.tag"           value="SNAPSHOT" />
-  <property name="version"               value="${version.major}.${version.minor}.${version.build}-${version.tag}" />
+  <property name="version"               value="${version.major}.${version.minor}.${version.build}.${version.tag}" />
   <property name="version.number"        value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
 
   <property name="project"               value="jboss-web" />
