@@ -1,4 +1,3 @@
-$Id: RUNNING.txt 354430 2005-12-06 13:44:26Z yoavs $
 
             ===========================================
             Running The JBoss Web Servlet/JSP Container

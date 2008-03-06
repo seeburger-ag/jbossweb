@@ -1,4 +1,3 @@
-$Id: BUILDING.txt 467221 2006-10-24 03:16:33Z markt $
 
             ============================================
             Building The JBoss Web Servlet/JSP Container
@@ -52,22 +51,22 @@ do the following:
 (2.1) Checkout or obtain the source code for JBoss Web
 
 * JBoss Web SVN repository URL:
-  http://svn.apache.org/repos/jbossweb/trunk
+  http://anonsvn.jboss.org/repos/jbossweb/trunk/
 
 * Download a source package from:
-  http://labs.jboss.com/jbossweb
+  http://labs.jboss.com/jbossweb/
 
 * Checkout the source using SVN, selecting the desired version or
   branch (current development source is at 
-  http://svn.apache.org/repos/jbossweb/trunk), or 
+  http://anonsvn.jboss.org/repos/jbossweb/trunk/), or 
   unpack the source package. The location where the source has been
-  placed will be referred as ${tomcat.source}.
+  placed will be referred as ${jboss-web.source}.
 
 (2.2) Building
 
 * Go to that directory, and do:
 
-    cd ${tomcat.source}
+    cd ${jboss-web.source}
     ant download
     ant
 
@@ -79,7 +78,7 @@ do the following:
   this usually corresponds to the "C:\usr\share\java" directory, unless Cygwin 
   is used. Read below to customize the directory used to download the binaries.
 
-* The build can be controlled by creating a ${tomcat.source}/build.properties
+* The build can be controlled by creating a ${jboss-web.source}/build.properties
   file, and adding the following content to it:
 
     # ----- Proxy setup -----
@@ -103,19 +102,19 @@ using your SVN client.
 
 For a quick rebuild of only modified code you can use:
    
-    cd ${tomcat.source}
+    cd ${jboss-web.source}
     ant
 
 (5) Building the Servlet and JSP API documentation
 
 The documentation can be easily built:
 
-    cd ${tomcat.source}
+    cd ${jboss-web.source}
     ant -f dist.xml dist-javadoc
 
 (6) Building a release running tests:
 
-    cd ${tomcat.source}
+    cd ${jboss-web.source}
     ant -f dist.xml release
 
 
