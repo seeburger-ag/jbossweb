@@ -73,9 +73,6 @@ ${StrRep}
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
 
-  ;License dialog
-  LicenseData License.rtf
-
   ;Component-selection page
     ;Descriptions
     LangString DESC_SecJBossWeb ${LANG_ENGLISH} "Install the JBoss Web Servlet container."
