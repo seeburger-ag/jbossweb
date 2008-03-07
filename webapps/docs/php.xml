@@ -28,7 +28,7 @@ The buildphp.sh will detect you platform, download and build the dynamic librari
 build the PHP servlet itself. Should should get a tarfile that contains the libraries and a war file with the examples.
 </p>
 Already build PHP servlets and libraries are available at:
-<a href="http://labs.jboss.com/portal/jbossweb/downloads/native">JBossWeb download area</a>
+<a href="http://labs.jboss.com/jbossweb/downloads/php/">JBossWeb download area</a>
 </section>
 
 <section name="Installing">
