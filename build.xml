@@ -64,6 +64,7 @@
     <fileset dir="${basedir}/lib">
       <include name="*.jar"/>
     </fileset>
+  	<pathelement path="${jasper-jdt.jar}"/>
   </path>
 
   <!-- Just build Tomcat -->
@@ -583,7 +584,7 @@
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
       </fileset>
-      <fileset dir="${basedir}/jboss">
+      <fileset dir="${basedir}/res/jboss">
         <include name="org/apache/catalina/startup/catalina.properties" />
       </fileset>
     </jar>

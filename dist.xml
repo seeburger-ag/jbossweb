@@ -132,10 +132,6 @@
     <fixcrlf srcdir="${tomcat.dist}/bin"   includes="*.bat" eol="crlf"/>
     <chmod      dir="${tomcat.dist}/bin"   includes="*.sh"  perm="+x"/>
 
-    <copy todir="${tomcat.jars}">
-      <fileset dir="${tomcat.build}/lib" />
-    </copy>
-
   </target>
 
   <target name="dist-javadoc" description="Create the Tomcat javadoc" >
