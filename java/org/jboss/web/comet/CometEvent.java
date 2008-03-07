@@ -107,8 +107,7 @@ public interface CometEvent {
     /**
      * Ends the request, which marks the end of the comet session. This will send 
      * back to the client a notice that the server has no more data to send 
-     * as part of this request. An END event will be sent to the 
-     * servlet.
+     * as part of this request. An END event will be sent to the servlet.
      * 
      * @throws IOException if an IO exception occurs
      */
