@@ -9,6 +9,7 @@
   <properties>
     <title>Apache Portable Runtime and JBoss Web</title>
     <author>Remy Maucherat</author>
+    <author>Jean-Frederic Clere</author>
   </properties>
 
 <body>
@@ -31,6 +32,11 @@
       a full fledged webserver platform rather than simply a backend focused technology.
   </p>
 
+  <p>
+      <a href="http://apr.apache.org/">JBoss Web Native</a> provides bundle for severals platforms.
+      The bundles contain APR, OpenSSL and tc-native ready to use.
+  </p>
+
   </section>
 
   <section name="Installation">
@@ -48,7 +54,7 @@
     
     <p>
       Windows binaries are provided for tcnative-1, which is a statically compiled .dll which includes
-      OpenSSL and APR. It can be downloaded from <a href="http://tomcat.heanet.ie/native/">here</a>
+      OpenSSL and APR. It can be downloaded from <a href="http://labs.jboss.com/jbossweb/downloads/jboss-native/">here</a>
       as 32bit or AMD x86-64 binaries.
       In security conscious production environments, it is recommended to use separate shared dlls
       for OpenSSL, APR, and libtcnative-1, and update them as needed according to security bulletins.
@@ -63,6 +69,7 @@
     <p>
       Most Linux distributions will ship packages for APR and OpenSSL. The JNI wrapper (libtcnative) will 
       then have to be compiled. It depends on APR, OpenSSL, and the Java headers.
+      Some ready to use bundles are available  <a href="http://labs.jboss.com/jbossweb/downloads/jboss-native/">here</a>.
     </p>
     
     <p>
