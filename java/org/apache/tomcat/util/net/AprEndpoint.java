@@ -1051,11 +1051,21 @@ public class AprEndpoint {
      * with very little actual use.
      */
     public class SocketInfo {
+        public static final int READ = 1;
+        public static final int WRITE = 2;
+        public static final int RESUME = 4;
         public long socket;
         public int timeout;
-        public boolean read;
-        public boolean write;
-        public boolean resume;
+        public int flags;
+        public boolean read() {
+            return (flags & READ) == READ;
+        }
+        public boolean write() {
+            return (flags & WRITE) == WRITE;
+        }
+        public boolean resume() {
+            return (flags & RESUME) == RESUME;
+        }
     }
     
     
@@ -1128,10 +1138,7 @@ public class AprEndpoint {
 
         protected long[] sockets;
         protected int[] timeouts;
-        // FIXME: replace with an int[] and flags
-        protected boolean[] reads;
-        protected boolean[] writes;
-        protected boolean[] resumes;
+        protected int[] flags;
         
         protected SocketInfo info = new SocketInfo();
         
@@ -1140,9 +1147,7 @@ public class AprEndpoint {
             pos = 0;
             sockets = new long[size];
             timeouts = new int[size];
-            reads = new boolean[size];
-            writes = new boolean[size];
-            resumes = new boolean[size];
+            flags = new int[size];
         }
         
         public int size() {
@@ -1155,9 +1160,7 @@ public class AprEndpoint {
             } else {
                 info.socket = sockets[pos];
                 info.timeout = timeouts[pos];
-                info.read = reads[pos];
-                info.write = writes[pos];
-                info.resume = resumes[pos];
+                info.flags = flags[pos];
                 pos++;
                 return info;
             }
@@ -1174,9 +1177,9 @@ public class AprEndpoint {
             } else {
                 sockets[size] = socket;
                 timeouts[size] = timeout;
-                reads[size] = read;
-                writes[size] = write;
-                resumes[size] = resume;
+                flags[size] = (read ? SocketInfo.READ : 0) 
+                    | (write ? SocketInfo.WRITE : 0)
+                    | (resume ? SocketInfo.RESUME : 0);
                 size++;
                 return true;
             }
@@ -1187,9 +1190,7 @@ public class AprEndpoint {
             copy.pos = pos;
             System.arraycopy(sockets, 0, copy.sockets, 0, size);
             System.arraycopy(timeouts, 0, copy.timeouts, 0, size);
-            System.arraycopy(reads, 0, copy.reads, 0, size);
-            System.arraycopy(writes, 0, copy.writes, 0, size);
-            System.arraycopy(resumes, 0, copy.resumes, 0, size);
+            System.arraycopy(flags, 0, copy.timeouts, 0, size);
         }
         
     }
@@ -1526,8 +1527,8 @@ public class AprEndpoint {
                         }
                         SocketInfo info = localAddList.get();
                         while (info != null) {
-                            if (info.read || info.write) {
-                                if (info.resume) {
+                            if (info.read() || info.write()) {
+                                if (info.resume()) {
                                     // Resume event
                                     timeouts.remove(info.socket);
                                     removeFromPoller(info.socket);
@@ -1540,10 +1541,10 @@ public class AprEndpoint {
                                     }
                                     // Windows only: check status code and loop over the other pollers
                                     int events = 0;
-                                    if (info.read) {
+                                    if (info.read()) {
                                         events = Poll.APR_POLLIN;
                                     }
-                                    if (info.write) {
+                                    if (info.write()) {
                                         events = events | Poll.APR_POLLOUT;
                                     }
                                     if (!addToPoller(info.socket, events)) {
@@ -1560,7 +1561,7 @@ public class AprEndpoint {
                             } else {
                                 // This is either a resume or a suspend.
                                 if (comet) {
-                                    if (info.resume) {
+                                    if (info.resume()) {
                                         // Resume event
                                         timeouts.remove(info.socket);
                                         removeFromPoller(info.socket);
