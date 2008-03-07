@@ -77,11 +77,8 @@ public class CometEventImpl implements CometEvent {
     }
     
     public void close() throws IOException {
-        if (request == null) {
-            throw new IllegalStateException(sm.getString("cometEvent.nullRequest"));
-        }
         request.setComet(false);
-        response.finishResponse();
+        request.resume();
     }
 
     public EventType getType() {

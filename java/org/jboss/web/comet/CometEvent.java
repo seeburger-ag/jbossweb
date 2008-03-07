@@ -107,12 +107,8 @@ public interface CometEvent {
     /**
      * Ends the request, which marks the end of the comet session. This will send 
      * back to the client a notice that the server has no more data to send 
-     * as part of this request. If this method is called from a Tomcat provided thread
-     * (during the processing of an event), the container will not call an END event.
-     * If this method is called asynchronously, an END event will be sent to the 
-     * servlet (note that this event will be sent whenever another event would have
-     * been sent, such as a READ or TIMEOUT event, so the servlet may not recieve the 
-     * END event immediately after the asynchronous close).
+     * as part of this request. An END event will be sent to the 
+     * servlet.
      * 
      * @throws IOException if an IO exception occurs
      */
