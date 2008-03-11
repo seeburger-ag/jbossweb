@@ -1259,7 +1259,6 @@ public class Http11AprProcessor implements ActionHook {
             internalBuffer.addActiveFilter(savedBody);
             
         } else if (actionCode == ActionCode.ACTION_AVAILABLE) {
-            //request.setAvailable(inputBuffer.available());
             inputBuffer.useAvailable();
         } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
             comet = true;

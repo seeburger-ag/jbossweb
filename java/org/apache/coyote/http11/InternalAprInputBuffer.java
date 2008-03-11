@@ -712,15 +712,6 @@ public class InternalAprInputBuffer implements InputBuffer {
      * Available bytes (note that due to encoding, this may not correspond )
      */
     public void useAvailable() {
-        /*
-        int result = (lastValid - pos);
-        if ((result == 0) && (lastActiveFilter >= 0)) {
-            for (int i = 0; (result == 0) && (i <= lastActiveFilter); i++) {
-                result = activeFilters[i].available();
-            }
-        }
-        return result;
-        */
         available = true;
     }
 
