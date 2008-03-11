@@ -190,6 +190,9 @@
       <fix>
         Simplify response reset. (remm)
       </fix>
+      <fix>
+        <bug>44558</bug>: Include address in bind exception message. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
