@@ -467,7 +467,7 @@ public class AprEndpoint {
         if (poller == null) {
             return 0;
         } else {
-            return poller.getConnectionsCount();
+            return poller.getConnectionCount();
         }
     }
 
@@ -1171,15 +1171,13 @@ public class AprEndpoint {
             pos = 0;
         }
         
-        public boolean add(long socket, int timeout, boolean read, boolean write, boolean resume) {
+        public boolean add(long socket, int timeout, int flag) {
             if (size == sockets.length) {
                 return false;
             } else {
                 sockets[size] = socket;
                 timeouts[size] = timeout;
-                flags[size] = (read ? SocketInfo.READ : 0) 
-                    | (write ? SocketInfo.WRITE : 0)
-                    | (resume ? SocketInfo.RESUME : 0);
+                flags[size] = flag;
                 size++;
                 return true;
             }
@@ -1262,8 +1260,8 @@ public class AprEndpoint {
         /**
          * Amount of connections inside this poller.
          */
-        protected int connectionsCount = 0;
-        public int getConnectionsCount() { return connectionsCount; }
+        protected int connectionCount = 0;
+        public int getConnectionCount() { return connectionCount; }
 
         public Poller(boolean comet) {
             this.comet = comet;
@@ -1317,7 +1315,7 @@ public class AprEndpoint {
             }
 
             desc = new long[actualPollerSize * 2];
-            connectionsCount = 0;
+            connectionCount = 0;
             addList = new SocketList(pollerSize);
             localAddList = new SocketList(pollerSize);
 
@@ -1362,7 +1360,7 @@ public class AprEndpoint {
                 }
             }
             Pool.destroy(pool);
-            connectionsCount = 0;
+            connectionCount = 0;
         }
 
         /**
@@ -1382,7 +1380,7 @@ public class AprEndpoint {
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
                 // at most for pollTime before being polled
-                if (addList.add(socket, timeout, true, false, false)) {
+                if (addList.add(socket, timeout, SocketInfo.READ)) {
                     ok = true;
                     this.notify();
                 }
@@ -1420,7 +1418,8 @@ public class AprEndpoint {
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
                 // at most for pollTime before being polled
-                if (addList.add(socket, timeout, read, write, resume)) {
+                if (addList.add(socket, timeout, 
+                        (read ? SocketInfo.READ : 0) | (write ? SocketInfo.WRITE : 0) | (resume ? SocketInfo.RESUME : 0))) {
                     ok = true;
                     this.notify();
                 }
@@ -1445,7 +1444,7 @@ public class AprEndpoint {
                     rv = Poll.add(pollers[i], socket, events);
                     if (rv == Status.APR_SUCCESS) {
                         pollerSpace[i]--;
-                        connectionsCount++;
+                        connectionCount++;
                         return true;
                     }
                 }
@@ -1463,7 +1462,7 @@ public class AprEndpoint {
                     rv = Poll.remove(pollers[i], socket);
                     if (rv != Status.APR_NOTFOUND) {
                         pollerSpace[i]++;
-                        connectionsCount--;
+                        connectionCount--;
                         break;
                     }
                 }
@@ -1499,6 +1498,7 @@ public class AprEndpoint {
             long maintainTime = 0;
             // Loop until we receive a shutdown command
             while (running) {
+
                 // Loop if endpoint is paused
                 while (paused) {
                     try {
@@ -1507,15 +1507,15 @@ public class AprEndpoint {
                         // Ignore
                     }
                 }
-
-                while (connectionsCount < 1 && addList.size() < 1) {
+                // Check timeouts for suspended connections if the poller is empty
+                while (connectionCount < 1 && addList.size() < 1) {
                     // Reset maintain time.
                     maintainTime = 1;
                     try {
                         synchronized (this) {
                             this.wait(10000);
                         }
-                        if (soTimeout > 0 && connectionsCount < 1 && addList.size() < 1 && running) {
+                        if (soTimeout > 0 && connectionCount < 1 && addList.size() < 1 && running) {
                             maintain();
                         }
                     } catch (InterruptedException e) {
@@ -1591,7 +1591,7 @@ public class AprEndpoint {
                         }
                         if (rv > 0) {
                             pollerSpace[i] += rv;
-                            connectionsCount -= rv;
+                            connectionCount -= rv;
                             for (int n = 0; n < rv; n++) {
                                 timeouts.remove(desc[n*2+1]);
                                 // Check for failed sockets and hand this socket off to a worker
@@ -1599,8 +1599,10 @@ public class AprEndpoint {
                                         || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)
                                         // Comet processes either a read or a write depending on what the poller returns
                                         || (comet && 
-                                                (((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) && !processSocket(desc[n*2+1], SocketStatus.OPEN_READ))
-                                                || (((desc[n*2] & Poll.APR_POLLOUT) == Poll.APR_POLLOUT) && !processSocket(desc[n*2+1], SocketStatus.OPEN_WRITE))) 
+                                                (((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) 
+                                                        && !processSocket(desc[n*2+1], SocketStatus.OPEN_READ))
+                                                || (((desc[n*2] & Poll.APR_POLLOUT) == Poll.APR_POLLOUT) 
+                                                        && !processSocket(desc[n*2+1], SocketStatus.OPEN_WRITE))) 
                                         || (!comet && !processSocket(desc[n*2+1]))) {
                                     // Close socket and clear pool
                                     if (comet) {
@@ -2014,7 +2016,7 @@ public class AprEndpoint {
                         // Ignore
                     }
                 }
-
+                // Loop if poller is empty
                 while (sendfileCount < 1 && addS.size() < 1) {
                     // Reset maintain time.
                     maintainTime = 0;
