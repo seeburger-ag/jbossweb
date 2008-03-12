@@ -1190,7 +1190,7 @@ public class AprEndpoint {
             copy.pos = pos;
             System.arraycopy(sockets, 0, copy.sockets, 0, size);
             System.arraycopy(timeouts, 0, copy.timeouts, 0, size);
-            System.arraycopy(flags, 0, copy.timeouts, 0, size);
+            System.arraycopy(flags, 0, copy.flags, 0, size);
         }
         
     }
@@ -1378,19 +1378,22 @@ public class AprEndpoint {
             if (timeout < 0) {
                 timeout = soTimeout;
             }
+            boolean ok = false;
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
                 // at most for pollTime before being polled
-                if (!addList.add(socket, timeout, true, false, false)) {
-                    // Can't do anything: close the socket right away
-                    if (comet) {
-                        processSocket(socket, SocketStatus.ERROR);
-                    } else {
-                        Socket.destroy(socket);
-                    }
-                    return;
+                if (addList.add(socket, timeout, true, false, false)) {
+                    ok = true;
+                    this.notify();
                 }
-                this.notify();
+            }
+            if (!ok) {
+                // Can't do anything: close the socket right away
+                if (comet) {
+                    processSocket(socket, SocketStatus.ERROR);
+                } else {
+                    Socket.destroy(socket);
+                }
             }
         }
 
@@ -1413,19 +1416,22 @@ public class AprEndpoint {
             if (timeout < 0) {
                 timeout = soTimeout;
             }
+            boolean ok = false;
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
                 // at most for pollTime before being polled
-                if (!addList.add(socket, timeout, read, write, resume)) {
-                    // Can't do anything: close the socket right away
-                    if (comet) {
-                        processSocket(socket, SocketStatus.ERROR);
-                    } else {
-                        Socket.destroy(socket);
-                    }
-                    return;
+                if (addList.add(socket, timeout, read, write, resume)) {
+                    ok = true;
+                    this.notify();
                 }
-                this.notify();
+            }
+            if (!ok) {
+                // Can't do anything: close the socket right away
+                if (comet) {
+                    processSocket(socket, SocketStatus.ERROR);
+                } else {
+                    Socket.destroy(socket);
+                }
             }
         }
 
@@ -1539,14 +1545,8 @@ public class AprEndpoint {
                                     if (comet) {
                                         removeFromPoller(info.socket);
                                     }
-                                    // Windows only: check status code and loop over the other pollers
-                                    int events = 0;
-                                    if (info.read()) {
-                                        events = Poll.APR_POLLIN;
-                                    }
-                                    if (info.write()) {
-                                        events = events | Poll.APR_POLLOUT;
-                                    }
+                                    int events = ((info.read()) ? Poll.APR_POLLIN : 0)
+                                        | ((info.write()) ? Poll.APR_POLLOUT : 0);
                                     if (!addToPoller(info.socket, events)) {
                                         // Can't do anything: close the socket right away
                                         if (comet) {
