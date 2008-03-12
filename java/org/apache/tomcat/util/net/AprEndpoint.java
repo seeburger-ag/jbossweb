@@ -467,7 +467,7 @@ public class AprEndpoint {
         if (poller == null) {
             return 0;
         } else {
-            return poller.getKeepAliveCount();
+            return poller.getConnectionsCount();
         }
     }
 
@@ -1260,10 +1260,10 @@ public class AprEndpoint {
         protected SocketTimeouts timeouts = null;
         
         /**
-         * Amount of kept alive connections inside this poller.
+         * Amount of connections inside this poller.
          */
-        protected int keepAliveCount = 0;
-        public int getKeepAliveCount() { return keepAliveCount; }
+        protected int connectionsCount = 0;
+        public int getConnectionsCount() { return connectionsCount; }
 
         public Poller(boolean comet) {
             this.comet = comet;
@@ -1317,7 +1317,7 @@ public class AprEndpoint {
             }
 
             desc = new long[actualPollerSize * 2];
-            keepAliveCount = 0;
+            connectionsCount = 0;
             addList = new SocketList(pollerSize);
             localAddList = new SocketList(pollerSize);
 
@@ -1362,7 +1362,7 @@ public class AprEndpoint {
                 }
             }
             Pool.destroy(pool);
-            keepAliveCount = 0;
+            connectionsCount = 0;
         }
 
         /**
@@ -1445,6 +1445,7 @@ public class AprEndpoint {
                     rv = Poll.add(pollers[i], socket, events);
                     if (rv == Status.APR_SUCCESS) {
                         pollerSpace[i]--;
+                        connectionsCount++;
                         return true;
                     }
                 }
@@ -1462,6 +1463,7 @@ public class AprEndpoint {
                     rv = Poll.remove(pollers[i], socket);
                     if (rv != Status.APR_NOTFOUND) {
                         pollerSpace[i]++;
+                        connectionsCount--;
                         break;
                     }
                 }
@@ -1506,14 +1508,14 @@ public class AprEndpoint {
                     }
                 }
 
-                while (keepAliveCount < 1 && addList.size() < 1) {
+                while (connectionsCount < 1 && addList.size() < 1) {
                     // Reset maintain time.
                     maintainTime = 1;
                     try {
                         synchronized (this) {
                             this.wait(10000);
                         }
-                        if (soTimeout > 0 && keepAliveCount < 1 && addList.size() < 1 && running) {
+                        if (soTimeout > 0 && connectionsCount < 1 && addList.size() < 1 && running) {
                             maintain();
                         }
                     } catch (InterruptedException e) {
@@ -1554,8 +1556,6 @@ public class AprEndpoint {
                                         } else {
                                             Socket.destroy(info.socket);
                                         }
-                                    } else {
-                                        keepAliveCount++;
                                     }
                                 }
                             } else {
@@ -1590,7 +1590,8 @@ public class AprEndpoint {
                             rv = Poll.poll(pollers[i], pollerTime, desc, true);
                         }
                         if (rv > 0) {
-                            keepAliveCount -= rv;
+                            pollerSpace[i] += rv;
+                            connectionsCount -= rv;
                             for (int n = 0; n < rv; n++) {
                                 timeouts.remove(desc[n*2+1]);
                                 // Check for failed sockets and hand this socket off to a worker
