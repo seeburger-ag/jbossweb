@@ -214,6 +214,7 @@ final class StandardWrapperValve
                         SystemLogHandler.startCapture();
                         if (comet) {
                             request.setComet(true);
+                            request.getSession(true);
                             filterChain.doFilterEvent(request.getEvent());
                         } else {
                             filterChain.doFilter(request.getRequest(), 
@@ -228,6 +229,7 @@ final class StandardWrapperValve
                 } else {
                     if (comet) {
                         request.setComet(true);
+                        request.getSession(true);
                         filterChain.doFilterEvent(request.getEvent());
                     } else {
                         filterChain.doFilter
