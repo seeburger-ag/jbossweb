@@ -1279,14 +1279,14 @@ public class Http11AprProcessor implements ActionHook {
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
             if (!cometProcessing && !resumeNotification) {
-                endpoint.getCometPoller().add(socket, timeout, false, false, true);
+                endpoint.getCometPoller().add(socket, cometTimeout, false, false, true);
             }
             resumeNotification = true;
         } else if (actionCode == ActionCode.ACTION_COMET_WRITE) {
             // An event is being processed already: adding for write will be done
             // when the socket gets back to the poller
             if (!cometProcessing && !writeNotification) {
-                endpoint.getCometPoller().add(socket, timeout, false, true, false);
+                endpoint.getCometPoller().add(socket, cometTimeout, false, true, false);
             }
             writeNotification = true;
         } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
