@@ -65,6 +65,10 @@ public class Response
     implements HttpServletResponse {
 
 
+    protected static final boolean FORCE_V1_COOKIES = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Response.FORCE_V1_COOKIES", "false")).booleanValue();
+
+
     // ----------------------------------------------------------- Constructors
 
     static {
@@ -950,6 +954,10 @@ public class Response
         if (included)
             return;
 
+        if (FORCE_V1_COOKIES) {
+            cookie.setVersion(1);
+        }
+        
         addCookieInternal(cookie);
 
     }
