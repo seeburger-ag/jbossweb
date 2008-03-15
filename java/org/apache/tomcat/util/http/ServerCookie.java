@@ -253,6 +253,18 @@ public class ServerCookie implements Serializable {
         
         version = maybeQuote2(version, buf, value);
 
+        // Add domain information, if present
+        if (domain!=null) {
+            buf.append("; Domain=");
+            version = maybeQuote2(version, buf, domain);
+        }
+
+        // Path=path
+        if (path!=null) {
+            buf.append ("; Path=");
+            version = maybeQuote2(version, buf, path);
+        }
+
         // Add version 1 specific information
         if (version == 1) {
             // Version=1 ... required
@@ -265,12 +277,6 @@ public class ServerCookie implements Serializable {
             }
         }
         
-        // Add domain information, if present
-        if (domain!=null) {
-            buf.append("; Domain=");
-            maybeQuote2(version, buf, domain);
-        }
-
         // Max-Age=secs ... or use old "Expires" format
         // TODO RFC2965 Discard
         if (maxAge >= 0) {
@@ -289,17 +295,6 @@ public class ServerCookie implements Serializable {
             } else {
                 buf.append ("; Max-Age=");
                 buf.append (maxAge);
-            }
-        }
-
-        // Path=path
-        if (path!=null) {
-            buf.append ("; Path=");
-            if (version > 0) {
-                // Don't quote the path for v0 cookies
-                maybeQuote2(version, buf, path);
-            } else {
-                buf.append(path);
             }
         }
 
