@@ -1,6 +1,6 @@
 
 ; JBoss Web script for Nullsoft Installer
-; $Id: jboss-web.nsi 524730 2007-04-02 06:24:33Z mturk $
+; $Id$
 
   ;Compression options
   CRCCheck on
