@@ -163,7 +163,7 @@ grant [signedBy &lt;signer&gt;,] [codeBase &lt;code source&gt;] {
 //
 // * Read access to the document root directory
 //
-// $Id: security-manager-howto.xml 467215 2006-10-24 03:12:55Z markt $
+// $Id$
 // ============================================================================
 
 

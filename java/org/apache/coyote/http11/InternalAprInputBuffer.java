@@ -779,7 +779,9 @@ public class InternalAprInputBuffer implements InputBuffer {
             pos = end;
             lastValid = pos;
             bbuf.clear();
+            System.out.println("Before Socket.recvbb");
             nRead = Socket.recvbb(socket, 0, buf.length - lastValid);
+            System.out.println("After Socket.recvbb " + nRead + " nonBlocking: " + nonBlocking);
             if (nRead > 0) {
                 bbuf.limit(nRead);
                 bbuf.get(buf, pos, nRead);
@@ -795,7 +797,9 @@ public class InternalAprInputBuffer implements InputBuffer {
                     } else {
                         // In this specific situation, perform the read again in blocking mode (the user is not
                         // using available and simply wants to read all data)
+                        System.out.println("Before Socket.recvbbt " + endpoint.getSoTimeout());
                         nRead = Socket.recvbbt(socket, 0, buf.length - lastValid, endpoint.getSoTimeout() * 1000);
+                        System.out.println("Before Socket.recvbbt: " + nRead);
                         if (nRead > 0) {
                             bbuf.limit(nRead);
                             bbuf.get(buf, pos, nRead);

@@ -9,7 +9,7 @@
   <properties>
     <author email="craigmcc@apache.org">Craig McClanahan</author>
     <title>MemoryRealm</title>
-    <revision>$Id: fs-memory-realm.xml 467215 2006-10-24 03:12:55Z markt $</revision>
+    <revision>$Id$</revision>
   </properties>
 
 <body>
