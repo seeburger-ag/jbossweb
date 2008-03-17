@@ -17,7 +17,7 @@
 /** SSL Context wrapper
  *
  * @author Mladen Turk
- * @version $Revision: 520518 $, $Date: 2007-03-20 19:48:25 +0100 (mar., 20 mars 2007) $
+ * @version $Revision$, $Date$
  */
 
 #include "tcn.h"

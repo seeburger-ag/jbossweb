@@ -2,7 +2,7 @@
 # -----------------------------------------------------------------------------
 # Script to digest password using the algorithm specified
 #
-# $Id: digest.sh 467182 2006-10-23 23:47:06Z markt $
+# $Id$
 # -----------------------------------------------------------------------------
 
 # resolve links - $0 may be a softlink

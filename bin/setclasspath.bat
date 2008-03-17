@@ -1,7 +1,7 @@
 rem ---------------------------------------------------------------------------
 rem Set CLASSPATH and Java options
 rem
-rem $Id: setclasspath.bat 505241 2007-02-09 10:22:58Z jfclere $
+rem $Id$
 rem ---------------------------------------------------------------------------
 
 rem Make sure prerequisite environment variables are set

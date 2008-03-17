@@ -17,7 +17,7 @@
 /*
  *
  * @author Mladen Turk
- * @version $Revision: 562478 $, $Date: 2007-08-03 16:33:51 +0200 (ven., 03 août 2007) $
+ * @version $Revision$, $Date$
  */
 
 #ifndef TCN_VERSION_H

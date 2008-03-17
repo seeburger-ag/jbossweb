@@ -17,7 +17,7 @@
 /*
  *
  * @author Mladen Turk
- * @version $Revision: 523564 $, $Date: 2007-03-29 07:22:47 +0200 (jeu., 29 mars 2007) $
+ * @version $Revision$, $Date$
  */
 
 #include "apr.h"

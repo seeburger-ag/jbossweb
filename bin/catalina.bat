@@ -49,7 +49,7 @@ rem
 rem                   -Xdebug -Xrunjdwp:transport=%JPDA_TRANSPORT%,
 rem                       address=%JPDA_ADDRESS%,server=y,suspend=%JPDA_SUSPEND%
 rem
-rem $Id: catalina.bat 537518 2007-05-12 21:11:40Z markt $
+rem $Id$
 rem ---------------------------------------------------------------------------
 
 rem Guess CATALINA_HOME if not defined

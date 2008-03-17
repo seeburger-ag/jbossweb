@@ -17,7 +17,7 @@
 /** SSL Utilities
  *
  * @author Mladen Turk
- * @version $Revision: 479112 $, $Date: 2006-11-25 11:22:33 +0100 (sam., 25 nov. 2006) $
+ * @version $Revision$, $Date$
  */
 
 #include "tcn.h"

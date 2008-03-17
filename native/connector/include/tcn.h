@@ -17,7 +17,7 @@
 /*
  *
  * @author Mladen Turk
- * @version $Revision: 473341 $, $Date: 2006-11-10 14:55:47 +0100 (ven., 10 nov. 2006) $
+ * @version $Revision$, $Date$
  */
 
 #ifndef TCN_H

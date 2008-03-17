@@ -26,7 +26,7 @@ rem
 rem name        (optional) If the second argument is present it is considered
 rem                        to be new service name                                           
 rem
-rem $Id: service.bat 571526 2007-08-31 17:17:29Z remm $
+rem $Id$
 rem ---------------------------------------------------------------------------
 
 rem Guess CATALINA_HOME if not defined

@@ -17,7 +17,7 @@
 /** SSL network wrapper
  *
  * @author Mladen Turk
- * @version $Revision: 479966 $, $Date: 2006-11-28 10:48:30 +0100 (mar., 28 nov. 2006) $
+ * @version $Revision$, $Date$
  */
 
 #include "tcn.h"
