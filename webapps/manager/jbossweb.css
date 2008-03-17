@@ -41,84 +41,15 @@ h2 {
 	color:#32444d;
 }
 
-h3 { }
+h3 {
+	font-size:13px;
+	color:#32444d;
+	border-bottom: 1px solid #e6eaef;
+}
+
 h4 { }
 h5 { }
 h6 { }
-
-table {
-    width: 100%;
-}
-
-td.page-title {
-    text-align: center;
-    vertical-align: top;
-    font-family:sans-serif,Tahoma,Arial;
-    font-weight: bold;
-    background: white;
-    color: black;
-}
-  
-td.title {
-    text-align: left;
-    vertical-align: top;
-    font-family:sans-serif,Tahoma,Arial;
-    font-style:italic;
-    font-weight: bold;
-    background: #4a5d75;
-}
-  
-td.header-left {
-    text-align: left;
-    vertical-align: top;
-    font-family:sans-serif,Tahoma,Arial;
-    font-weight: bold;
-    background: #656565;
-}
-  
-td.header-center {
-    text-align: center;
-    vertical-align: top;
-    font-family:sans-serif,Tahoma,Arial;
-    font-weight: bold;
-    background: #656565;
-}
-  
-td.row-left {
-    text-align: left;
-    vertical-align: middle;
-    font-family:sans-serif,Tahoma,Arial;
-    color: black;
-}
-  
-td.row-center {
-    text-align: center;
-    vertical-align: middle;
-    font-family:sans-serif,Tahoma,Arial;
-    color: black;
-}
-  
-td.row-right {
-    text-align: right;
-    vertical-align: middle;
-    font-family:sans-serif,Tahoma,Arial;
-    color: black;
-}
-  
-TH {
-    text-align: center;
-    vertical-align: top;
-    font-family:sans-serif,Tahoma,Arial;
-    font-weight: bold;
-    background: #656565;
-}
-  
-TD {
-    text-align: center;
-    vertical-align: middle;
-    font-family:sans-serif,Tahoma,Arial;
-    color: black;
-}
 
 .wrapper { 
 	min-width: 900px;
@@ -235,4 +166,163 @@ TD {
 #bread a {
 	color:#656565;
 	text-decoration: underline;
+}
+
+/*--------------------------------------------- Default table styles ------------------------------------------------------------------ */
+
+.tableStyle {
+	border-bottom: 4px solid #a4b2b9;
+	margin-bottom: 20px;
+}
+
+.tableStyle TH {
+	background-color:#a4b2b9;
+	padding: 2px 8px;
+	color:#ffffff;
+	font-size:14px;
+	text-align:left;
+}
+
+.tableStyle .SortableTableHeader td{
+/*the header of a data tables */
+    background-color: #d9e0e3;
+	background-image:url(images/TablePrimary_Norm.gif);
+    background-position: top;
+    background-repeat: repeat-x;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+    font-weight: bold;
+    color: #5f6a6f;
+	text-align:left;
+    border-top: 1px solid #e7eaed;
+	border-right: 1px solid #a4b2b9;
+	border-bottom: 1px solid #a4b2b9;
+	border-left: 1px solid #e7eaed;
+    padding-left: 8px;
+	line-height: 1.25 em;
+}
+.tableStyle .UnsortableTableHeader td {
+/*the header of a data tables */
+    background-color: #d9e0e3;
+	font-size: 10px;
+    font-weight: bold;
+    color: #5f6a6f;
+	text-align:left;
+    border-right: 1px solid #a4b2b9;
+    border-bottom: 1px solid #a4b2b9;
+    padding-left: 8px;
+	line-height: 1.25 em;
+}
+
+.tableStyle .UnsortableTableHeader, .SortableTableHeader a { 
+	text-decoration: none;
+	color: #5f6a6f;
+}
+
+.oddRow {
+    background-color: #eff4f7;
+}
+
+.evenRow{
+    background-color: #ffffff;
+}
+
+.oddRow td, .evenRow td {
+	font-size:12px;
+	font-weight:normal;
+	padding-left: 10px;
+	line-height:1.5em;
+    border-right: 1px solid #d9e0e3;
+    border-bottom: 1px solid #e6eaef;
+}
+.tableStyle .oddRow .first, .tableStyle .evenRow .first {
+    border-left: 1px solid #d9e0e3;
+}
+
+
+.tableStyle caption {
+	text-align:left;
+	font-style:italic;
+}
+
+
+/* --------------------------------------------- Buttons styles   ********************************************************/
+
+.buttonsmall {
+   font-size: 10px;
+   font-weight: bold;
+   color: #FFFFFF;
+   background-color: #5d779b;
+   border-top: 1px solid #81abd3;
+   border-right: 1px solid #254869;
+   border-bottom: 1px solid #254869;
+   border-left: 1px solid #81abd3;
+   padding: 0px;
+   background-image:url(images/button_bkg.gif);
+   background-position:top;
+   background-repeat:repeat-x;
+   cursor: pointer;
+}
+.buttonmed {
+   font-size: 12px;
+   font-weight: bold;
+   color: #FFFFFF;
+   background-color: #5d779b;
+   border-top: 1px solid #81abd3;
+   border-right: 1px solid #254869;
+   border-bottom: 1px solid #254869;
+   border-left: 1px solid #81abd3;
+   padding: 0px 2px;
+   background-image:url(images/button_bkg.gif);
+   background-position:top;
+   background-repeat:repeat-x;
+   cursor: pointer;
+}
+
+/* ----------------------- Messaging ------------------------------------------ */
+
+.message {
+	width:100%;
+	padding: 15px;
+	margin-bottom:15px;
+	border: 1px solid #ffbe5a;
+	background-color: #f7f3dc;
+	font-size:12px;
+}
+
+/* ------------------------------------------ documentation styles -------------------------------------------------- */
+
+.documentation {}
+
+.documentation h1 {
+	font-size:16px;
+}
+
+.documentation h2 {
+	font-size: 14px;
+	margin-top: 20px;
+	border-bottom: 1px solid #e6eaef;
+
+}
+.documentation h2 a {
+	color:#32444d;
+}
+
+.documentation h3 {
+	font-size: 12px;
+	margin-left: 0px;
+	margin-top: 15px;
+	border-bottom: 0px;
+}
+
+.documentation h3 a {
+	color:#32444d;
+}
+
+pre {
+	display:block; 
+	background-color:#f9f3b0;
+	color:#333;
+	overflow:auto;
+	padding: 15px 20px;
 }

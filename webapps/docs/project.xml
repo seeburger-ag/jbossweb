@@ -2,7 +2,7 @@
 <project name="JBoss Web Documentation"
         href="http://labs.jboss.com/jbossweb/">
 
-    <title></title>
+    <title>JBoss Web</title>
 
     <logo href="/images/jbossweblogo.gif">
       The JBoss Web Servlet/JSP Container

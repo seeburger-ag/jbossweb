@@ -208,7 +208,7 @@
     
     <attributes>
 
-    <attribute name="SSLEnabled" required="false">
+    <attribute name="SSLEnabled" required="true">
     <p>
       Enable SSL on the socket, default value is false. Set this value to true
       to enable SSL handshake/encryption/decryption in the APR connector.
