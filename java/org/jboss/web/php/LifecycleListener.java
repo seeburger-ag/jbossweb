@@ -34,7 +34,7 @@ import org.jboss.logging.Logger;
  * and destroy PHP.
  *
  * @author Mladen Turk
- * @version $Revision: 4354 $ $Date: 2006-05-22 19:53:20 +0200 (lun., 22 mai 2006) $
+ * @version $Revision$ $Date$
  * @since 1.0
  */
 

@@ -45,7 +45,7 @@ import org.jboss.web.comet.CometProcessor;
  * <code>StandardWrapper</code> container implementation.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 529036 $ $Date: 2007-04-15 19:45:34 +0200 (dim., 15 avr. 2007) $
+ * @version $Revision$ $Date$
  */
 
 final class StandardWrapperValve

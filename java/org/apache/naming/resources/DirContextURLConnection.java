@@ -45,7 +45,7 @@ import org.apache.naming.resources.ResourceAttributes;
  * content is directly returned.
  * 
  * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @version $Revision: 505593 $
+ * @version $Revision$
  */
 public class DirContextURLConnection 
     extends URLConnection {

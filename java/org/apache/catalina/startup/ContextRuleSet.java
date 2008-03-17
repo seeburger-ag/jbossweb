@@ -29,7 +29,7 @@ import org.apache.tomcat.util.digester.RuleSetBase;
  * DefaultContext, be sure to specify a prefix that ends with "/Default".</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 500684 $ $Date: 2007-01-28 00:27:18 +0100 (dim., 28 janv. 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class ContextRuleSet extends RuleSetBase {

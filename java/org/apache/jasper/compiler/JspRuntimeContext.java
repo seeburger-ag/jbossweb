@@ -53,7 +53,7 @@ import org.jboss.logging.Logger;
  * Only used if a web application context is a directory.
  *
  * @author Glenn L. Nielsen
- * @version $Revision: 505593 $
+ * @version $Revision$
  */
 public final class JspRuntimeContext {
 

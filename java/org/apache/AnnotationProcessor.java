@@ -25,7 +25,7 @@ import javax.naming.NamingException;
  * Comment
  *
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
- * @version $Revision: 467222 $
+ * @version $Revision$
  * @deprecated Replaced by InstanceManager which provides a subset of the capabilities
  */
 public interface AnnotationProcessor {

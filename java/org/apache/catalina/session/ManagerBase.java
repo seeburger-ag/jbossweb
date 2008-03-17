@@ -61,7 +61,7 @@ import org.jboss.logging.Logger;
  * be subclassed to create more sophisticated Manager implementations.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 573964 $ $Date: 2007-09-09 11:04:27 +0200 (Sun, 09 Sep 2007) $
+ * @version $Revision$ $Date$
  */
 
 public abstract class ManagerBase implements Manager, MBeanRegistration {

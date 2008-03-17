@@ -62,7 +62,7 @@ import org.apache.tomcat.util.http.mapper.MappingData;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 529466 $ $Date: 2007-04-17 03:52:50 +0200 (mar., 17 avr. 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class ApplicationContext

@@ -115,7 +115,7 @@ import org.jboss.logging.Logger;
  * @author Takayuki Kaneko
  * @author Peter Rossbach
  * 
- * @version $Revision: 575475 $ $Date: 2007-09-13 23:43:22 +0200 (Thu, 13 Sep 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class AccessLogValve

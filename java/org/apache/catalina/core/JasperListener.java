@@ -31,7 +31,7 @@ import org.jboss.logging.Logger;
  * started.
  *
  * @author Remy Maucherat
- * @version $Revision: 491990 $ $Date: 2007-01-03 01:36:57 +0100 (mer., 03 janv. 2007) $
+ * @version $Revision$ $Date$
  * @since 4.1
  */
 

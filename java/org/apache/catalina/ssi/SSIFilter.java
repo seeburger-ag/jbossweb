@@ -43,7 +43,7 @@ import org.apache.catalina.Globals;
  * from within web.xml.
  * 
  * @author David Becker
- * @version $Revision: 531303 $, $Date: 2007-04-23 02:24:01 +0200 (lun., 23 avr. 2007) $
+ * @version $Revision$, $Date$
  * @see org.apache.catalina.ssi.SSIServlet
  */
 public class SSIFilter implements Filter {

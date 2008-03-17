@@ -32,7 +32,7 @@ import org.apache.naming.EjbRef;
  * Object factory for EJBs.
  * 
  * @author Remy Maucherat
- * @version $Revision: 522136 $ $Date: 2007-03-25 03:08:07 +0200 (dim., 25 mars 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class EjbFactory

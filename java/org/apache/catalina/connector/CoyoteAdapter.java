@@ -44,7 +44,7 @@ import org.jboss.web.comet.CometEvent;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 548078 $ $Date: 2007-06-17 19:21:26 +0200 (dim., 17 juin 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class CoyoteAdapter

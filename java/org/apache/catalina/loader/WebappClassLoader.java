@@ -99,7 +99,7 @@ import org.apache.tomcat.util.IntrospectionUtils;
  *
  * @author Remy Maucherat
  * @author Craig R. McClanahan
- * @version $Revision: 510041 $ $Date: 2007-02-21 15:48:39 +0100 (mer., 21 févr. 2007) $
+ * @version $Revision$ $Date$
  */
 public class WebappClassLoader
     extends URLClassLoader

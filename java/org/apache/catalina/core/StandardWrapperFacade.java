@@ -29,7 +29,7 @@ import javax.servlet.ServletContext;
  * Facade for the <b>StandardWrapper</b> object.
  *
  * @author Remy Maucharat
- * @version $Revision: 505618 $ $Date: 2007-02-10 03:30:04 +0100 (sam., 10 févr. 2007) $
+ * @version $Revision$ $Date$
  */
 
 public final class StandardWrapperFacade

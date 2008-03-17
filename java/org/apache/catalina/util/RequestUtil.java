@@ -29,7 +29,7 @@ import java.util.TimeZone;
  *
  * @author Craig R. McClanahan
  * @author Tim Tye
- * @version $Revision: 528897 $ $Date: 2007-04-15 02:24:49 +0200 (dim., 15 avr. 2007) $
+ * @version $Revision$ $Date$
  */
 
 public final class RequestUtil {

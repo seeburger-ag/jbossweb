@@ -42,7 +42,7 @@ import org.jboss.logging.Logger;
  * synchronization is performed around accesses to the principals collection.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 514183 $ $Date: 2007-03-03 17:24:08 +0100 (sam., 03 mars 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class MemoryRealm  extends RealmBase {

@@ -36,7 +36,7 @@ import org.apache.catalina.util.URLEncoder;
  * @author Paul Speed
  * @author Dan Sandberg
  * @author David Becker
- * @version $Revision: 531303 $, $Date: 2007-04-23 02:24:01 +0200 (lun., 23 avr. 2007) $
+ * @version $Revision$, $Date$
  */
 public class SSIMediator {
     protected final static String DEFAULT_CONFIG_ERR_MSG = "[an error occurred while processing this directive]";

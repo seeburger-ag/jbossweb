@@ -42,7 +42,7 @@ import org.jboss.logging.Logger;
  * @author Craig R. McClanahan
  * @author Remy Maucherat
  * @author Glenn L. Nielsen
- * @version $Revision: 467222 $
+ * @version $Revision$
  */
 
 public class ExpandWar {

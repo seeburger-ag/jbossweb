@@ -48,7 +48,7 @@ import org.jboss.logging.Logger;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 480000 $ $Date: 2006-11-28 12:31:04 +0100 (mar., 28 nov. 2006) $
+ * @version $Revision$ $Date$
  */
 
 

@@ -52,7 +52,7 @@ import java.io.Serializable;
  * @see #trace(Object)
  * @see #trace(Object,Throwable)
  *
- * @version <tt>$Revision: 2081 $</tt>
+ * @version <tt>$Revision$</tt>
  * @author  Scott.Stark@jboss.org
  * @author  <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @author  <a href="mailto:sacha.labourey@cogito-info.ch">Sacha Labourey</a>

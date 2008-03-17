@@ -36,7 +36,7 @@ import java.util.logging.SimpleFormatter;
  * named {prefix}.{date}.{suffix} in a configured directory, with an
  * optional preceding timestamp.
  *
- * @version $Revision: 483782 $ $Date: 2006-12-08 03:24:30 +0100 (ven., 08 déc. 2006) $
+ * @version $Revision$ $Date$
  */
 
 public class FileHandler

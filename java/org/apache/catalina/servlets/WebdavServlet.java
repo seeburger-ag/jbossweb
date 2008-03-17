@@ -111,7 +111,7 @@ import org.xml.sax.SAXException;
  * http://host:port/context/webdavedit/content
  *
  * @author Remy Maucherat
- * @version $Revision: 600268 $ $Date: 2007-12-02 12:09:55 +0100 (Sun, 02 Dec 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class WebdavServlet

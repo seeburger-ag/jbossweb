@@ -27,7 +27,7 @@ import java.io.Reader;
  *
  * @author Neil Graham, IBM
  *
- * @version $Id: UCSReader.java 467222 2006-10-24 03:17:11Z markt $
+ * @version $Id$
  */
 public class UCSReader extends Reader {
 

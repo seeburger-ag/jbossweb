@@ -1,4 +1,4 @@
-/* $Id: ConnectorCreateRule.java 542189 2007-05-28 10:35:32Z remm $
+/* $Id$
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

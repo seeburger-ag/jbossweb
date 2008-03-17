@@ -50,7 +50,7 @@ import org.jboss.logging.Logger;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 536381 $ $Date: 2007-05-09 01:58:24 +0200 (mer., 09 mai 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class FormAuthenticator

@@ -77,7 +77,7 @@ import org.jboss.logging.Logger;
  * with each context and server.
  *
  * @author Remy Maucherat
- * @version $Revision: 527693 $ $Date: 2007-04-11 23:51:57 +0200 (mer., 11 avr. 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class NamingContextListener

@@ -29,7 +29,7 @@ package org.apache.catalina;
  * @author Bip Thelin
  * @author Remy Maucherat
  * @author Filip Hanik
- * @version $Revision: 500684 $, $Date: 2007-01-28 00:27:18 +0100 (dim., 28 janv. 2007) $
+ * @version $Revision$, $Date$
  */
 
 public interface Cluster {

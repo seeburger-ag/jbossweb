@@ -45,7 +45,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author <a href="mailto:martinc@apache.org">Martin Cooper</a>
  * @author Sean C. Sullivan
  *
- * @version $Id: DiskFileUpload.java 467222 2006-10-24 03:17:11Z markt $
+ * @version $Id$
  */
 public class DiskFileUpload
     extends FileUploadBase

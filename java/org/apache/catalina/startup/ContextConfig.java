@@ -64,7 +64,7 @@ import org.xml.sax.SAXParseException;
  *
  * @author Craig R. McClanahan
  * @author Jean-Francois Arcand
- * @version $Revision: 556489 $ $Date: 2007-07-16 04:01:01 +0200 (lun., 16 juil. 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class ContextConfig

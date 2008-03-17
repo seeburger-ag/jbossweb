@@ -31,7 +31,7 @@ import org.apache.tomcat.util.digester.RuleSetBase;
  * <code>ContextRuleSet</code>, respectively.</p>
  *
  * @author Craig R. McClanahan
- * @version $Revision: 520968 $ $Date: 2007-03-21 19:00:39 +0100 (mer., 21 mars 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class EngineRuleSet extends RuleSetBase {

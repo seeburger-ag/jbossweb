@@ -28,7 +28,7 @@ package org.jboss.logging;
  * TODO - Make sure serialization works correctly
  * 
  * @author <a href="mailto:dimitris@jboss.org">Dimitris Andreadis</a>
- * @version <tt>$Revision: 2081 $</tt>
+ * @version <tt>$Revision$</tt>
  * 
  * @since 4.0.3
  */

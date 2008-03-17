@@ -70,7 +70,7 @@ import org.jboss.logging.Logger;
  * requests.  Requests of any other type will simply be passed through.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 500626 $ $Date: 2007-01-27 22:25:41 +0100 (sam., 27 janv. 2007) $
+ * @version $Revision$ $Date$
  */
 
 

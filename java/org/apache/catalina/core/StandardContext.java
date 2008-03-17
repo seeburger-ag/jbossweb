@@ -114,7 +114,7 @@ import org.jboss.logging.Logger;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 542189 $ $Date: 2007-05-28 12:35:32 +0200 (lun., 28 mai 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class StandardContext

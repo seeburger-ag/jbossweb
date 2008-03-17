@@ -33,7 +33,7 @@ import org.apache.catalina.Wrapper;
  * registered InstanceListeners.
  *
  * @author Craig R. McClanahan
- * @version $Id: InstanceSupport.java 510474 2007-02-22 12:24:04Z remm $
+ * @version $Id$
  */
 
 public final class InstanceSupport {

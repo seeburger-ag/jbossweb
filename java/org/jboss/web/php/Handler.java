@@ -38,7 +38,7 @@ import org.apache.catalina.util.StringManager;
  * Handler.
  *
  * @author Mladen Turk
- * @version $Revision: 4721 $, $Date: 2006-06-11 00:28:06 +0200 (dim., 11 juin 2006) $
+ * @version $Revision$, $Date$
  * @since 1.0
  */
 public class Handler extends HttpServlet

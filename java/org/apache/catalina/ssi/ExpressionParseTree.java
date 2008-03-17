@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Represents a parsed expression.
  * 
- * @version $Revision: 531303 $
+ * @version $Revision$
  * @author Paul Speed
  */
 public class ExpressionParseTree {

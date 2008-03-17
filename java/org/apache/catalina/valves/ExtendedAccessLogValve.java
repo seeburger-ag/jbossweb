@@ -125,7 +125,7 @@ import org.jboss.logging.Logger;
  * @author Tim Funk
  * @author Peter Rossbach
  * 
- * @version $Revision: 575411 $ $Date: 2007-09-13 21:31:16 +0200 (Thu, 13 Sep 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class ExtendedAccessLogValve

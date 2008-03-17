@@ -56,7 +56,7 @@ import org.xml.sax.InputSource;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 523327 $ $Date: 2007-03-28 15:52:08 +0200 (mer., 28 mars 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class Catalina extends Embedded {

@@ -45,7 +45,7 @@ import org.jboss.web.comet.CometEvent;
  * when processing HTTP requests.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision$ $Date$
  */
 
 final class StandardContextValve

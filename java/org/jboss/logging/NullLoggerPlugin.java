@@ -29,7 +29,7 @@ package org.jboss.logging;
  * @see org.jboss.logging.LoggerPlugin
  *
  * @author  <a href="mailto:sacha.labourey@cogito-info.ch">Sacha Labourey</a>.
- * @version $Revision: 2081 $
+ * @version $Revision$
  */
 public class NullLoggerPlugin implements LoggerPlugin
 {

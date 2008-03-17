@@ -49,7 +49,7 @@ import org.jboss.web.comet.CometEvent;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 487694 $ $Date: 2006-12-15 23:30:51 +0100 (ven., 15 déc. 2006) $
+ * @version $Revision$ $Date$
  */
 
 final class StandardHostValve

@@ -1,4 +1,4 @@
-/* $Id: PathCallParamRule.java 467222 2006-10-24 03:17:11Z markt $
+/* $Id$
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

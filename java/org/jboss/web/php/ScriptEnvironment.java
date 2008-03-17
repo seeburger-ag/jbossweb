@@ -47,7 +47,7 @@ import org.jboss.logging.Logger;
  * that environment from the servlet container and request information.
  *
  * @author Mladen Turk
- * @version $Revision: 4551 $, $Date: 2006-06-01 19:17:43 +0200 (jeu., 01 juin 2006) $
+ * @version $Revision$, $Date$
  * @since 1.0
  */
 public class ScriptEnvironment {

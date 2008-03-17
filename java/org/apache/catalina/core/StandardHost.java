@@ -39,7 +39,7 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 497521 $ $Date: 2007-01-18 19:24:17 +0100 (jeu., 18 janv. 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class StandardHost

@@ -22,7 +22,7 @@ package org.apache.catalina.ssi;
  * information necessary to process the nested conditional commands ( if, elif,
  * else, endif ).
  * 
- * @version $Revision: 531303 $
+ * @version $Revision$
  * @author Dan Sandberg
  * @author Paul Speed
  */

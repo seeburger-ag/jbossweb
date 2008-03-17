@@ -45,7 +45,7 @@ import org.apache.catalina.util.StringManager;
  * @author <a href="mailto:nicolaken@supereva.it">Nicola Ken Barozzi</a> Aisa
  * @author <a href="mailto:stefano@apache.org">Stefano Mazzocchi</a>
  * @author Yoav Shapira
- * @version $Revision: 548078 $ $Date: 2007-06-17 19:21:26 +0200 (dim., 17 juin 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class ErrorReportValve

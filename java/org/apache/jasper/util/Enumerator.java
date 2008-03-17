@@ -35,7 +35,7 @@ import java.util.NoSuchElementException;
  * Constructors are provided to easliy create such wrappers.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 467222 $ $Date: 2006-10-24 05:17:11 +0200 (mar., 24 oct. 2006) $
+ * @version $Revision$ $Date$
  */
 
 public final class Enumerator implements Enumeration {

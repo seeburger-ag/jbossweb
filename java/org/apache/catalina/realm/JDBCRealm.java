@@ -46,7 +46,7 @@ import org.apache.catalina.util.StringManager;
 * @author Craig R. McClanahan
 * @author Carson McDonald
 * @author Ignacio Ortega
-* @version $Revision: 476979 $ $Date: 2006-11-20 00:52:52 +0100 (lun., 20 nov. 2006) $
+* @version $Revision$ $Date$
 */
 
 public class JDBCRealm

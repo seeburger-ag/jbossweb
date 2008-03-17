@@ -50,7 +50,7 @@ import org.jboss.web.comet.CometProcessor;
  * method itself.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 505593 $ $Date: 2007-02-10 01:54:56 +0100 (sam., 10 févr. 2007) $
+ * @version $Revision$ $Date$
  */
 
 final class ApplicationFilterChain implements FilterChain, CometFilterChain {

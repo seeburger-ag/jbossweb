@@ -97,7 +97,7 @@ import org.jboss.logging.Logger;
  * of how Tomcat is set up and launched as an Embedded application.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 534913 $ $Date: 2007-05-03 17:49:09 +0200 (jeu., 03 mai 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class Embedded  extends StandardService implements Lifecycle {

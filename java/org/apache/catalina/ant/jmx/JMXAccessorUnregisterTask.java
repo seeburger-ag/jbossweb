@@ -47,7 +47,7 @@ import org.apache.tools.ant.BuildException;
  * These tasks require Ant 1.6 or later interface.
  *
  * @author Peter Rossbach
- * @version $Revision: 500684 $
+ * @version $Revision$
  * @since 5.5.12
  */
 public class JMXAccessorUnregisterTask extends JMXAccessorTask {

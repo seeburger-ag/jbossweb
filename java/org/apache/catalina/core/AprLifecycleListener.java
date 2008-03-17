@@ -37,7 +37,7 @@ import org.jboss.logging.Logger;
  *
  * @author Remy Maucherat
  * @author Filip Hanik
- * @version $Revision: 534930 $ $Date: 2007-05-03 18:43:35 +0200 (jeu., 03 mai 2007) $
+ * @version $Revision$ $Date$
  * @since 4.1
  */
 

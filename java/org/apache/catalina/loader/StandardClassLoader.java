@@ -27,7 +27,7 @@ import java.net.URLClassLoader;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision: 476989 $ $Date: 2006-11-20 01:13:26 +0100 (lun., 20 nov. 2006) $
+ * @version $Revision$ $Date$
  */
 
 public class StandardClassLoader

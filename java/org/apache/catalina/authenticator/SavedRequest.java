@@ -39,7 +39,7 @@ import org.apache.tomcat.util.buf.ByteChunk;
  * internal collection classes is performed.
  *
  * @author Craig R. McClanahan
- * @version $Revision: 536381 $ $Date: 2007-05-09 01:58:24 +0200 (mer., 09 mai 2007) $
+ * @version $Revision$ $Date$
  */
 
 public final class SavedRequest {

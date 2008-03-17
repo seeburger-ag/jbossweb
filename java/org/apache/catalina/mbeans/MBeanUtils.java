@@ -55,7 +55,7 @@ import org.jboss.logging.Logger;
  *
  * @author Craig R. McClanahan
  * @author Amy Roh
- * @version $Revision: 500684 $ $Date: 2007-01-28 00:27:18 +0100 (dim., 28 janv. 2007) $
+ * @version $Revision$ $Date$
  */
 
 public class MBeanUtils {

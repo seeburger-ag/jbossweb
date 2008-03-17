@@ -26,7 +26,7 @@ import javax.naming.NameNotFoundException;
  * properly populated exceptions.
  * 
  * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
- * @version $Revision: 467222 $
+ * @version $Revision$
  */
 public class ImmutableNameNotFoundException
     extends NameNotFoundException {

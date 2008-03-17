@@ -45,7 +45,7 @@ import java.util.Properties;
  * saved are still subject to being expired based on inactivity.
  *
  * @author Bip Thelin
- * @version $Revision: 554109 $, $Date: 2007-07-07 03:40:19 +0200 (sam., 07 juil. 2007) $
+ * @version $Revision$, $Date$
  */
 
 public class JDBCStore
