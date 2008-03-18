@@ -83,7 +83,8 @@ public class StandardHost
     /**
      * The auto deploy flag for this Host.
      */
-    private boolean autoDeploy = true;
+    private boolean autoDeploy = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.autoDeploy", "true")).booleanValue();
 
 
     /**
@@ -105,13 +106,15 @@ public class StandardHost
     /**
      * The deploy on startup flag for this Host.
      */
-    private boolean deployOnStartup = true;
+    private boolean deployOnStartup = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.deployOnStartup", "true")).booleanValue();
 
 
     /**
      * deploy Context XML config files property.
      */
-    private boolean deployXML = true;
+    private boolean deployXML = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.deployXML", "true")).booleanValue();
 
 
     /**

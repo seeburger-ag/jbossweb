@@ -23,6 +23,14 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        Add 3 system properties to StandardHost to allow hardcoding safe default values for the
+        auto deployer when JBoss Web is embedded inside AS. (remm)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Coyote">
     <changelog>
       <fix>
