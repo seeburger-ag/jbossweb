@@ -68,11 +68,10 @@ controlRole tomcat
   </section>
 
   <section name="Manage JBoss Web with JMX remote Ant Tasks">
-   <p>For simple JBoss Web ant task usage with ant 1.6.x we have integrate import and antlib support.</p>   
-   <p><b>antlib</b>Copy your catalina-ant.jar from $CATALINA_HOME/server/lib to $ANT_HOME/lib.</p>
-   <p>Following example show the JMX Accessor usage:</p>
-   <table border="1">
-   <tr><td><p><pre>
+   <p>For simple JBoss Web ant task usage with ant 1.6.x we have integrate import and antlib support.
+   Copy your catalina-ant.jar from $CATALINA_HOME/server/lib to $ANT_HOME/lib. The following example 
+   show the JMX Accessor usage:</p>
+   <source>
 &lt;project name="Catalina Ant JMX" 
         xmlns:jmx="antlib:org.apache.catalina.ant.jmx" 
         default="state"
@@ -166,9 +165,7 @@ controlRole tomcat
     &lt;/target&gt;
  
 &lt;/project&gt;
-   </pre></p>
-   </td></tr>
-</table>
+   </source>
    <p><b>import:</b> Import the Catalina Ant tasks with 
    <em>&lt;import file="${CATALINA.HOME}/bin/catalina-tasks.xml" /&gt;</em> and
    reference the tasks with <em>jmxOpen</em>, <em>jmxSet</em>, <em>jmxGet</em>,
@@ -180,82 +177,49 @@ controlRole tomcat
 -->
 
 <section name="JMXAccessorOpenTask - jmx open connection task">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
+<p>List of Attributes</p>
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+  <attributes>
 
-  <tr>
-    <td>url</td>
-    <td>Set jmx connection url - <em>service:jmx:rmi:///jndi/rmi://localhost:8050/jmxrmi</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="url" required="false">
+      <p>Set jmx connection url - service:jmx:rmi:///jndi/rmi://localhost:8050/jmxrmi</p>
+    </attribute>
 
-  <tr>
-    <td>host</td>
-    <td>Set the host, shortcut the very long url syntax.
-    </td>
-    <td><code>localhost</code></td>
-  </tr>
+    <attribute name="host" required="false">
+      <p>Set the host, shortcut the very long url syntax. [localhost]</p>
+    </attribute>
 
-  <tr>
-    <td>port</td>
-    <td>Set the remote connection port 
-    </td>
-    <td><code>8050</code></td>
-  </tr>
+    <attribute name="port" required="false">
+      <p>Set the remote connection port. [8050]</p>
+    </attribute>
 
-  <tr>
-    <td>username</td>
-    <td>remote jmx connection user name.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="username" required="false">
+      <p>Remote jmx connection user name.</p>
+    </attribute>
 
-  <tr>
-    <td>password</td>
-    <td>remote jmx connection password.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="password" required="false">
+      <p>Remote jmx connection password.</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>Name of the internal connection referenz. With this attribute you can
-        configure more the one connection inside the same ant projekt.
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>Name of the internal connection reference. With this attribute you can configure 
+      more the one connection inside the same ant project. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo the command usage (for analyse access or debugging)
-    </td>
-    <td><code>false</code></td>
-  </tr>
-  
-  <tr>
-    <td>if</td>
-    <td>Only execute if a property of the given name <b>exists</b> in the current project.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
-  <tr>
-    <td>unless</td>
-    <td>Only execute if a property of the given name <b>not exists</b> in the current project.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="if" required="false">
+      <p>Only execute if a property of the given name exists in the current project.</p>
+    </attribute>
 
-</table>
-</p>
+    <attribute name="unless" required="false">
+      <p>Only execute if a property of the given name not exists in the current project.</p>
+    </attribute>
+
+  </attributes>
+
 <p>
 Example to open a new jmx connection<br/>
 <source>
@@ -303,69 +267,41 @@ other tasks and conditions.
 -->
 
 <section name="JMXAccessorGetTask:  get attribute value ant task">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+  <attributes>
 
-  <tr>
-    <td>name</td>
-    <td>Full qualified JMX ObjectName -- <em>Catalina:type=Server</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="name" required="false">
+      <p>Full qualified JMX ObjectName -- Catalina:type=Server</p>
+    </attribute>
 
-  <tr>
-    <td>attribute</td>
-    <td>Existing Mbean attribute (see JBoss Web mbean description above)
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="attribute" required="false">
+      <p>Existing Mbean attribute (see JBoss Web mbean description above).</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>JMX Connection reference
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>JMX Connection reference. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo command usage (access and result)
-    </td>
-    <td><code>false</code></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
-  <tr>
-    <td>resultproperty</td>
-    <td>Save result at this project property
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="resultproperty" required="false">
+      <p>Save result at this project property.</p>
+    </attribute>
 
-  <tr>
-    <td>delimiter</td>
-    <td>Split result with delimiter (java.util.StringTokenizier) 
-        and use resultproperty as prefix to store tokens.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="delimiter" required="false">
+      <p>Split result with delimiter (java.util.StringTokenizier) and use 
+      resultproperty as prefix to store tokens.</p>
+    </attribute>
 
-  <tr>
-    <td>separatearrayresults</td>
-    <td>When return value is an array, save result as property list 
-    (<em>$resultproperty.[0..N]</em> and <em>$resultproperty.lenght</em>) 
-    </td>
-    <td><code>true</code></td>
-  </tr>
+    <attribute name="separatearrayresults" required="false">
+      <p>When return value is an array, save result as property list 
+      ($resultproperty.[0..N] and $resultproperty.lenght). [true]</p>
+    </attribute>
 
-</table>
-</p>
+  </attributes>
+
 <p>
 Example to get remote mbean attribute from default jmx connection <br/>
 <source>
@@ -414,60 +350,34 @@ Example to get IDataSender attribute connected only when cluster is configured.
 -->
 
 <section name="JMXAccessorSetTask:  set attribute value ant task">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
+  <attributes>
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+    <attribute name="name" required="false">
+      <p>Full qualified JMX ObjectName -- Catalina:type=Server</p>
+    </attribute>
 
-  <tr>
-    <td>name</td>
-    <td>Full qualified JMX ObjectName -- <em>Catalina:type=Server</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="attribute" required="false">
+      <p>Existing Mbean attribute (see JBoss Web mbean description above).</p>
+    </attribute>
 
-  <tr>
-    <td>attribute</td>
-    <td>Existing Mbean attribute (see JBoss Web mbean description above)
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="value" required="false">
+      <p>Value to set to attribute.</p>
+    </attribute>
 
-  <tr>
-    <td>value</td>
-    <td>value that set to attribute 
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="type" required="false">
+      <p>Type of the attribute. [java.lang.String]</p>
+    </attribute>
 
-  <tr>
-    <td>type</td>
-    <td>type of the attribute.
-    </td>
-    <td>java.lang.String</td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>JMX Connection reference. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>JMX Connection reference
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo command usage (access and result)
-    </td>
-    <td><code>false</code></td>
-  </tr>
+  </attributes>
 
-</table>
-</p>
 <p>
 Example to set remote mbean attribute value<br/>
 <source>
@@ -486,70 +396,40 @@ Example to set remote mbean attribute value<br/>
 -->
 
 <section name="JMXAccessorInvokeTask:  invoke Mbean operation ant task">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
+  <attributes>
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+    <attribute name="name" required="false">
+      <p>Full qualified JMX ObjectName -- Catalina:type=Server</p>
+    </attribute>
 
-  <tr>
-    <td>name</td>
-    <td>Full qualified JMX ObjectName -- <em>Catalina:type=Server</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="operation" required="false">
+      <p>Existing Mbean operation.</p>
+    </attribute>
 
-  <tr>
-    <td>operation</td>
-    <td>Existing Mbean operation (see JBoss Web 
-        <a href="funcspecs/fs-admin-opers.html">funcspecs/fs-admin-opers.html</a>.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>JMX Connection reference. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>JMX Connection reference
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo command usage (access and result)
-    </td>
-    <td><code>false</code></td>
-  </tr>
+    <attribute name="resultproperty" required="false">
+      <p>Save result at this project property.</p>
+    </attribute>
 
-  <tr>
-    <td>resultproperty</td>
-    <td>Save result at this project property
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="delimiter" required="false">
+      <p>Split result with delimiter (java.util.StringTokenizier) and use 
+      resultproperty as prefix to store tokens.</p>
+    </attribute>
 
-  <tr>
-    <td>delimiter</td>
-    <td>Split result with delimiter (java.util.StringTokenizier) 
-        and use resultproperty as prefix to store tokens.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="separatearrayresults" required="false">
+      <p>When return value is an array, save result as property list 
+      ($resultproperty.[0..N] and $resultproperty.lenght). [true]</p>
+    </attribute>
 
-  <tr>
-    <td>separatearrayresults</td>
-    <td>When return value is an array, save result as property list 
-    (<em>$resultproperty.[0..N]</em> and <em>$resultproperty.lenght</em>) 
-    </td>
-    <td><code>true</code></td>
-  </tr>
+  </attributes>
 
-</table>
-</p>
 <p>
 stop an application <br/>
 <source>
@@ -606,69 +486,40 @@ proeprty.
 -->
 
 <section name="JMXAccessorQueryTask:  query Mbean ant task">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
+  <attributes>
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+    <attribute name="name" required="false">
+      <p>Full qualified JMX ObjectName -- Catalina:type=Server</p>
+    </attribute>
 
-  <tr>
-    <td>name</td>
-    <td>JMX  ObjectName query string -- <em>Catalina:type=Manager,*</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>JMX Connection reference. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>JMX Connection reference
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo command usage (access and result)
-    </td>
-    <td><code>false</code></td>
-  </tr>
+    <attribute name="resultproperty" required="false">
+      <p>Save result at this project property.</p>
+    </attribute>
 
-  <tr>
-    <td>resultproperty</td>
-    <td>Prefix project property name to all founded Mbeans (<em>mbeans.[0..N].objectname</em>)
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="attributebinding" required="false">
+      <p>Bind ALL MBean attributes in addition to name. [false]</p>
+    </attribute>
 
-  <tr>
-    <td>attributebinduing</td>
-    <td>bind ALL MBean attributes in addition to <em>name</em>
-    </td>
-    <td><code>false</code></td>
-  </tr>
+    <attribute name="delimiter" required="false">
+      <p>Split result with delimiter (java.util.StringTokenizier) and use 
+      resultproperty as prefix to store tokens.</p>
+    </attribute>
 
-  <tr>
-    <td>delimiter</td>
-    <td>Split result with delimiter (java.util.StringTokenizier) 
-        and use resultproperty as prefix to store tokens.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="separatearrayresults" required="false">
+      <p>When return value is an array, save result as property list 
+      ($resultproperty.[0..N] and $resultproperty.lenght). [true]</p>
+    </attribute>
 
-  <tr>
-    <td>separatearrayresults</td>
-    <td>When return value is an array, save result as property list 
-    (<em>$resultproperty.[0..N]</em> and <em>$resultproperty.lenght</em>) 
-    </td>
-    <td><code>true</code></td>
-  </tr>
+  </attributes>
 
-</table>
-</p>
 <p>
 Get all Manager ObjectNames from all services and Hosts <br/>
 <source>
@@ -737,55 +588,32 @@ Now you can find all MBeans inside the file <em>mbeans.properties</em>.
 -->
 
 <section name="JMXAccessorCreateTask:  remote create mbean ant task">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
+  <attributes>
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+    <attribute name="name" required="false">
+      <p>Full qualified JMX ObjectName -- Catalina:type=Server</p>
+    </attribute>
 
-  <tr>
-    <td>name</td>
-    <td>Full qualified JMX ObjectName -- <em>Catalina:type=MBeanFactory</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="className" required="false">
+      <p>Existing MBean full qualified classname (see JBoss Web mbean description above).</p>
+    </attribute>
 
-  <tr>
-    <td>className</td>
-    <td>Existing MBean full qualified classname (see JBoss Web mbean description above)
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="classLoader" required="false">
+      <p>ObjectName of server or web application classloader
+( Catalina:type=ServerClassLoader,name=[server,common,shared] or
+Catalina:type=WebappClassLoader,path=/myapps,host=localhost).</p>
+    </attribute>
 
-  <tr>
-    <td>classLoader</td>
-    <td>ObjectName of server or web application classloader <br/>
-    ( <em>Catalina:type=ServerClassLoader,name=[server,common,shared]</em> or<br/>
-     <em>Catalina:type=WebappClassLoader,path=/myapps,host=localhost</em>) 
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>JMX Connection reference. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>JMX Connection reference
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo command usage (access and result)
-    </td>
-    <td><code>false</code></td>
-  </tr>
+  </attributes>
 
-</table>
-</p>
 <p>
 Example to create remote mbean<br/>
 <source>
@@ -810,39 +638,22 @@ Example to create remote mbean<br/>
 -->
 
 <section name="JMXAccessorUnregisterTask:  remote unregister mbean ant task">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
+  <attributes>
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+    <attribute name="name" required="false">
+      <p>Full qualified JMX ObjectName -- Catalina:type=Server</p>
+    </attribute>
 
-  <tr>
-    <td>name</td>
-    <td>Full qualified JMX ObjectName -- <em>Catalina:type=MBeanFactory</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>JMX Connection reference. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>JMX Connection reference
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo command usage (access and result)
-    </td>
-    <td><code>false</code></td>
-  </tr>
+  </attributes>
 
-</table>
-</p>
 <p>
 Example to unregister remote mbean<br/>
 <source>
@@ -863,104 +674,59 @@ Example to unregister remote mbean<br/>
 -->
 
 <section name="JMXAccessorCondition:  express condition">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
+  <attributes>
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+    <attribute name="url" required="false">
+      <p>Set jmx connection url - service:jmx:rmi:///jndi/rmi://localhost:8050/jmxrmi</p>
+    </attribute>
 
- <tr>
-    <td>url</td>
-    <td>Set jmx connection url - <em>service:jmx:rmi:///jndi/rmi://localhost:8050/jmxrmi</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="host" required="false">
+      <p>Set the host, shortcut the very long url syntax. [localhost]</p>
+    </attribute>
 
-  <tr>
-    <td>host</td>
-    <td>Set the host, shortcut the very long url syntax.
-    </td>
-    <td><code>localhost</code></td>
-  </tr>
+    <attribute name="port" required="false">
+      <p>Set the remote connection port. [8050]</p>
+    </attribute>
 
-  <tr>
-    <td>port</td>
-    <td>Set the remote connection port 
-    </td>
-    <td><code>8050</code></td>
-  </tr>
+    <attribute name="username" required="false">
+      <p>Remote jmx connection user name.</p>
+    </attribute>
 
-  <tr>
-    <td>username</td>
-    <td>remote jmx connection user name.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="password" required="false">
+      <p>Remote jmx connection password.</p>
+    </attribute>
 
-  <tr>
-    <td>password</td>
-    <td>remote jmx connection password.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>Name of the internal connection reference. With this attribute you can configure 
+      more the one connection inside the same ant project. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>Name of the internal connection reference. With this attribute you can
-        configure more the one connection inside the same ant projekt.
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="name" required="false">
+      <p>Full qualified JMX ObjectName -- Catalina:type=Server.</p>
+    </attribute>
 
-  <tr>
-    <td>name</td>
-    <td>Full qualified JMX ObjectName -- <em>Catalina:type=Server</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo condition usage (access and result)
-    </td>
-    <td><code>false</code></td>
-  </tr>
+    <attribute name="if" required="false">
+      <p>Only execute if a property of the given name exists in the current project.</p>
+    </attribute>
 
-  <tr>
-    <td>if</td>
-    <td>Only execute if a property of the given name <b>exists</b> in the current project.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="unless" required="false">
+      <p>Only execute if a property of the given name not exists in the current project.</p>
+    </attribute>
 
-  <tr>
-    <td>unless</td>
-    <td>Only execute if a property of the given name <b>not exists</b> in the current project.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="value" required="true">
+      <p>Second arg for operation.</p>
+    </attribute>
 
-  <tr>
-    <td>value (requiered)</td>
-    <td>Second arg for operation
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="type" required="false">
+      <p>Value type to express operation (supports long and double). [long]</p>
+    </attribute>
 
-  <tr>
-    <td>type</td>
-    <td>Value type to express operation (support <em>long</em> and <em>double</em>)
-    </td>
-    <td><code>long</code></td>
-  </tr>
-
-  <tr>
-    <td>operation</td>
-    <td> express one 
+    <attribute name="operation" required="false">
+      <p>Express one 
     <ul>
     <li>==  equals</li>
     <li>!=  not equals</li>
@@ -969,12 +735,11 @@ List of Attributes<br/>
     <li>&lt; lesser than (&amp;lt;)</li>
     <li>&lt;= lesser than or equals (&amp;lt;=)</li>
     </ul>         
-    </td>
-    <td><code>==</code></td>
-  </tr>
+    [<code>==</code>]</p>
+    </attribute>
 
-</table>
-</p>
+  </attributes>
+
 <p>
 Wait for server connection and that cluster backup node is accessable<br/>
 <source>
@@ -1007,76 +772,43 @@ Wait for server connection and that cluster backup node is accessable<br/>
 -->
 
 <section name="JMXAccessorEqualsCondition:  equals Mbean ant condition">
-<p>
-List of Attributes<br/>
-<table border="1" cellpadding="5">
+  <attributes>
 
-  <tr>
-    <th align="center" bgcolor="aqua">Attribute</th>
-    <th align="center" bgcolor="aqua">Description</th>
-    <th align="center" bgcolor="aqua">Default value</th>
-  </tr>
+    <attribute name="url" required="false">
+      <p>Set jmx connection url - service:jmx:rmi:///jndi/rmi://localhost:8050/jmxrmi</p>
+    </attribute>
 
- <tr>
-    <td>url</td>
-    <td>Set jmx connection url - <em>service:jmx:rmi:///jndi/rmi://localhost:8050/jmxrmi</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="host" required="false">
+      <p>Set the host, shortcut the very long url syntax. [localhost]</p>
+    </attribute>
 
-  <tr>
-    <td>host</td>
-    <td>Set the host, shortcut the very long url syntax.
-    </td>
-    <td><code>localhost</code></td>
-  </tr>
+    <attribute name="port" required="false">
+      <p>Set the remote connection port. [8050]</p>
+    </attribute>
 
-  <tr>
-    <td>port</td>
-    <td>Set the remote connection port 
-    </td>
-    <td><code>8050</code></td>
-  </tr>
+    <attribute name="username" required="false">
+      <p>Remote jmx connection user name.</p>
+    </attribute>
 
-  <tr>
-    <td>username</td>
-    <td>remote jmx connection user name.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="password" required="false">
+      <p>Remote jmx connection password.</p>
+    </attribute>
 
-  <tr>
-    <td>password</td>
-    <td>remote jmx connection password.
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="ref" required="false">
+      <p>Name of the internal connection reference. With this attribute you can configure 
+      more the one connection inside the same ant project. [jmx.server]</p>
+    </attribute>
 
-  <tr>
-    <td>ref</td>
-    <td>Name of the internal connection referenz. With this attribute you can
-        configure more the one connection inside the same ant projekt.
-    </td>
-    <td><code>jmx.server</code></td>
-  </tr>
+    <attribute name="name" required="false">
+      <p>Full qualified JMX ObjectName -- Catalina:type=Server.</p>
+    </attribute>
 
-  <tr>
-    <td>name</td>
-    <td>Full qualified JMX ObjectName -- <em>Catalina:type=Server</em>
-    </td>
-    <td></td>
-  </tr>
+    <attribute name="echo" required="false">
+      <p>Echo the command usage (to analyze access or debugging). [false]</p>
+    </attribute>
 
+  </attributes>
 
-  <tr>
-    <td>echo</td>
-    <td>Echo condition usage (access and result)
-    </td>
-    <td><code>false</code></td>
-  </tr>
-
-</table>
-</p>
 <p>
 Wait for server connection and that cluster backup node is accessable<br/>
 <source>

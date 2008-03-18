@@ -109,18 +109,18 @@ WARNING: Running this command will download binaries to the
 <p>
 The build can be controlled by creating a ${jbossweb.source}/build.properties
   file, and adding the following content to it:
-<code><br/>
-    # ----- Proxy setup -----<br/>
-    # Uncomment if using a proxy server.<br/>
-    #proxy.host=proxy.domain<br/>
-    #proxy.port=8080<br/>
-    #proxy.use=on<br/>
-<br/>
-    # ----- Default Base Path for Dependent Packages -----<br/>
-    # Replace this path with the directory path where<br/>
-    # dependencies binaries should be downloaded.<br/>
-    base.path=/usr/share/java<br/>
-</code>
+<source>
+# ----- Proxy setup -----
+# Uncomment if using a proxy server.
+#proxy.host=proxy.domain
+#proxy.port=8080
+#proxy.use=on
+
+# ----- Default Base Path for Dependent Packages -----
+# Replace this path with the directory path where
+# dependencies binaries should be downloaded.
+base.path=/usr/share/java
+</source>
 </p>
 
 </section>
@@ -155,12 +155,17 @@ Use Windows-&gt;Preferences and then Java-&gt;Build Path-&gt;Classpath
 Variables to add two new Classpath variables:
 </p>
 
-<p>
-<table border="1">
- <tr><td>TOMCAT_LIBS_BASE</td><td>the base path where the binary dependencies have been downloaded</td></tr>
- <tr><td>ANT_HOME</td><td>the base path of Ant 1.6.2 or later</td></tr>
-</table>
-</p>
+  <properties>
+
+    <property name="TOMCAT_LIBS_BASE" required="false">
+      <p>The base path where the binary dependencies have been downloaded.</p>
+    </property>
+
+    <property name="ANT_HOME" required="false">
+      <p>The base path of Ant 1.6.5 or later.</p>
+    </property>
+  
+  </properties>
 
 <p>
 Use File-&gt;New Project to create a new Java project 

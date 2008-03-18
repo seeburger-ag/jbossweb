@@ -70,21 +70,18 @@ directory listings are enabled and debugging is turned off.
 
 <section name="What can I change?">
 <a name="change"></a>
-The DefaultServlet allows the following initParamters:
 
-<table border="1">
-  <tr>
-    <th valign='top'>debug</th>
-    <td valign='top'>
-        Debugging level. It is not very useful unless you are a JBoss Web
-        developer. As
-        of this writing, useful values are 0, 1, 11, 1000.
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>listings</th>
-    <td valign='top'>
-        If no welcome file is present, can a directory listing be
+  <p>The DefaultServlet allows the following initParamters:</p>
+
+  <attributes>
+
+    <attribute name="debug" required="false">
+      <p>Debugging level. It is not very useful unless you are a JBoss Web
+        developer. As of this writing, useful values are 0, 1, 11, 1000.</p>
+    </attribute>
+
+    <attribute name="listings" required="false">
+      <p>If no welcome file is present, can a directory listing be
         shown?
         value may be <b>true</b> or <b>false</b>
         <br />
@@ -92,79 +89,63 @@ The DefaultServlet allows the following initParamters:
         <br />
         <b>WARNING:</b> Listings of directories containing many entries are
         expensive. Multiple requests for large directory listings can consume
-        significant proportions of server resources.
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>readmeFile</th>
-    <td valign='top'>
-        If a directory listing is presented, a readme file may also
+        significant proportions of server resources.</p>
+    </attribute>
+
+    <attribute name="readmeFile" required="false">
+      <p>If a directory listing is presented, a readme file may also
         be presented with the listing. This file is inserted as is
-        so it may contain HTML. default value is null
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>globalXsltFile</th>
-    <td valign='top'>
-        If you wish to customize your directory listing, you
+        so it may contain HTML. The default value is null.</p>
+    </attribute>
+
+    <attribute name="globalXsltFile" required="false">
+      <p>If you wish to customize your directory listing, you
         can use an XSL transformation. This value is an absolute
         file name which be used for all direcotory listings.
         This can be disabled by per webapp by also declaring the
         default servlet in your local webapp's web.xml. The format
         of the xml is shown below.
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>localXsltFile</th>
-    <td valign='top'>
-        You may also customize your directory listing by directory by
+      </p>
+    </attribute>
+
+    <attribute name="localXsltFile" required="false">
+      <p>You may also customize your directory listing by directory by
         configuring <code>localXsltFile</code>. This should be a relative
         file name in the directory where the listing will take place.
         This overrides <code>globalXsltFile</code>. If this value
         is present but a file does not exist, then
         <code>globalXsltFile</code> will be used. If
         <code>globalXsltFile</code> does not exist, then the default
-        directory listing will be shown.
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>input</th>
-    <td valign='top'>
-        Input buffer size (in bytes) when reading
-        resources to be served.  [2048]
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>output</th>
-    <td valign='top'>
-        Output buffer size (in bytes) when writing
-        resources to be served.  [2048]
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>readonly</th>
-    <td valign='top'>
-        Is this context "read only", so HTTP commands like PUT and
-        DELETE are rejected?  [true]
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>fileEncoding</th>
-    <td valign='top'>
-        File encoding to be used when reading static resources.
-        [platform default]
-    </td>
-  </tr>
-  <tr>
-    <th valign='top'>sendfileSize</th>
-    <td valign='top'>
-        If the connector used supports sendfile, this represents the minimal 
-        file size in KB for which sendfile will be used. Use a negative value 
-        to always disable sendfile. [48]
-    </td>
-  </tr>
+        directory listing will be shown.</p>
+    </attribute>
 
-</table>
+    <attribute name="input" required="false">
+      <p>Input buffer size (in bytes) when reading resources to be served. [2048]</p>
+    </attribute>
+
+    <attribute name="output" required="false">
+      <p>Output buffer size (in bytes) when writing
+        resources to be served. [2048]</p>
+    </attribute>
+
+    <attribute name="readonly" required="false">
+      <p>Is this context "read only", so HTTP commands like PUT and
+        DELETE are rejected?  [true]</p>
+    </attribute>
+
+    <attribute name="fileEncoding" required="false">
+      <p>File encoding to be used when reading static resources.
+        [platform default]</p>
+    </attribute>
+
+    <attribute name="sendfileSize" required="false">
+      <p>If the connector used supports sendfile, this represents the minimal 
+        file size in KB for which sendfile will be used. Use a negative value 
+        to always disable sendfile. [48]</p>
+    </attribute>
+
+  </attributes>
+
 </section>
 
 <section name="How do I customize directory listings?">
