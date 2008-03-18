@@ -368,17 +368,17 @@ public final class HTMLManagerServlet extends ManagerServlet {
         String appsExpire = sm.getString("htmlManagerServlet.appsExpire");
 
         Iterator iterator = sortedContextPathsMap.entrySet().iterator();
-        boolean isHighlighted = true;
         boolean isDeployed = true;
-        String highlightColor = null;
+        boolean isHighlighted = false;
+        String highlightStyle = null;
 
         while (iterator.hasNext()) {
             // Bugzilla 34818, alternating row colors
             isHighlighted = !isHighlighted;
             if(isHighlighted) {
-                highlightColor = "#C3F3C3";
+                highlightStyle = "oddRow";
             } else {
-                highlightColor = "#FFFFFF";
+                highlightStyle = "evenRow";
             }
 
             Map.Entry entry = (Map.Entry) iterator.next();
@@ -413,8 +413,7 @@ public final class HTMLManagerServlet extends ManagerServlet {
                 } else {
                     args[4] = new Integer(0);
                 }
-
-                args[5] = highlightColor;
+                args[5] = highlightStyle;
 
                 writer.print
                     (MessageFormat.format(APPS_ROW_DETAILS_SECTION, args));
@@ -450,7 +449,7 @@ public final class HTMLManagerServlet extends ManagerServlet {
                 }
                 args[12] = sm.getString("htmlManagerServlet.expire.unit");
                 
-                args[13] = highlightColor;
+                args[13] = highlightStyle;
 
                 if (context.getPath().equals(this.context.getPath())) {
                     writer.print(MessageFormat.format(
@@ -954,178 +953,137 @@ public final class HTMLManagerServlet extends ManagerServlet {
     // (maximium of 10).
 
     private static final String APPS_HEADER_SECTION =
-        "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n" +
+        "<table width=\"100%\" cellspacing=\"0\" class=\"tableStyle\" >\n" +
         "<tr>\n" +
-        " <td colspan=\"5\" class=\"title\">{0}</td>\n" +
+        " <th colspan=\"5\">{0}</th>\n" +
         "</tr>\n" +
-        "<tr>\n" +
-        " <td class=\"header-left\"><small>{1}</small></td>\n" +
-        " <td class=\"header-left\"><small>{2}</small></td>\n" +
-        " <td class=\"header-center\"><small>{3}</small></td>\n" +
-        " <td class=\"header-center\"><small>{4}</small></td>\n" +
-        " <td class=\"header-left\"><small>{5}</small></td>\n" +
-        "</tr>\n";
+        "<tbody>\n" +
+        "  <tr class=\"UnsortableTableHeader\">\n" +
+        "    <td>{1}</td>\n" +
+        "    <td>{2}</td>\n" +
+        "    <td>{3}</td>\n" +
+        "    <td>{4}</td>\n" +
+        "    <td>{5}</td>\n" +
+        "  </tr>\n";
 
     private static final String APPS_ROW_DETAILS_SECTION =
-        "<tr>\n" +
-        " <td class=\"row-left\" bgcolor=\"{5}\" rowspan=\"2\"><small><a href=\"{0}\">{0}</a>" +
-        "</small></td>\n" +
-        " <td class=\"row-left\" bgcolor=\"{5}\" rowspan=\"2\"><small>{1}</small></td>\n" +
-        " <td class=\"row-center\" bgcolor=\"{5}\" rowspan=\"2\"><small>{2}</small></td>\n" +
-        " <td class=\"row-center\" bgcolor=\"{5}\" rowspan=\"2\">" +
-        "<small><a href=\"{3}\" target=\"_new\">{4}</a></small></td>\n";
+        "<tr class=\"{5}\">\n" +
+        " <td class=\"first\" rowspan=\"2\"><a href=\"{0}\">{0}</a></td>\n" +
+        " <td rowspan=\"2\">{1}</td>\n" +
+        " <td rowspan=\"2\">{2}</td>\n" +
+        " <td rowspan=\"2\"><a href=\"{3}\" target=\"_new\">{4}</a></td>\n";
 
     private static final String MANAGER_APP_ROW_BUTTON_SECTION =
-        " <td class=\"row-left\" bgcolor=\"{13}\">\n" +
-        "  <small>\n" +
+        " <td>\n" +
         "  &nbsp;{1}&nbsp;\n" +
         "  &nbsp;{3}&nbsp;\n" +
         "  &nbsp;{5}&nbsp;\n" +
         "  &nbsp;{7}&nbsp;\n" +
-        "  </small>\n" +
         " </td>\n" +
-        "</tr><tr>\n" +
-        " <td class=\"row-left\" bgcolor=\"{13}\">\n" +
+        "</tr><tr class=\"{13}\">\n" +
+        " <td>\n" +
         "  <form method=\"POST\" action=\"{8}\">\n" +
-        "  <small>\n" +
-        "  &nbsp;<input type=\"submit\" value=\"{9}\">&nbsp;{10}&nbsp;<input type=\"text\" name=\"idle\" size=\"5\" value=\"{11}\">&nbsp;{12}&nbsp;\n" +
-        "  </small>\n" +
+        "  &nbsp;<input type=\"submit\" value=\"{9}\" class=\"buttonmed\">&nbsp;{10}&nbsp;<input type=\"text\" name=\"idle\" size=\"5\" value=\"{11}\">&nbsp;{12}&nbsp;\n" +
         "  </form>\n" +
         " </td>\n" +
         "</tr>\n";
 
     private static final String STARTED_DEPLOYED_APPS_ROW_BUTTON_SECTION =
-        " <td class=\"row-left\" bgcolor=\"{13}\">\n" +
-        "  <small>\n" +
+        " <td>\n" +
         "  &nbsp;{1}&nbsp;\n" +
         "  &nbsp;<a href=\"{2}\" onclick=\"return(confirm('''Are you sure?'''))\">{3}</a>&nbsp;\n" +
         "  &nbsp;<a href=\"{4}\" onclick=\"return(confirm('''Are you sure?'''))\">{5}</a>&nbsp;\n" +
         "  &nbsp;<a href=\"{6}\" onclick=\"return(confirm('''Are you sure?'''))\">{7}</a>&nbsp;\n" +
-        "  </small>\n" +
         " </td>\n" +
-        " </tr><tr>\n" +
-        " <td class=\"row-left\" bgcolor=\"{13}\">\n" +
+        " </tr><tr class=\"{13}\">\n" +
+        " <td>\n" +
         "  <form method=\"POST\" action=\"{8}\">\n" +
-        "  <small>\n" +
-        "  &nbsp;<input type=\"submit\" value=\"{9}\">&nbsp;{10}&nbsp;<input type=\"text\" name=\"idle\" size=\"5\" value=\"{11}\">&nbsp;{12}&nbsp;\n" +
-        "  </small>\n" +
+        "  &nbsp;<input type=\"submit\" value=\"{9}\" class=\"buttonmed\">&nbsp;{10}&nbsp;<input type=\"text\" name=\"idle\" size=\"5\" value=\"{11}\">&nbsp;{12}&nbsp;\n" +
         "  </form>\n" +
         " </td>\n" +
         "</tr>\n";
 
     private static final String STOPPED_DEPLOYED_APPS_ROW_BUTTON_SECTION =
-        " <td class=\"row-left\" bgcolor=\"{13}\" rowspan=\"2\">\n" +
-        "  <small>\n" +
+        " <td rowspan=\"2\">\n" +
         "  &nbsp;<a href=\"{0}\" onclick=\"return(confirm('''Are you sure?'''))\">{1}</a>&nbsp;\n" +
         "  &nbsp;{3}&nbsp;\n" +
         "  &nbsp;{5}&nbsp;\n" +
         "  &nbsp;<a href=\"{6}\" onclick=\"return(confirm('''Are you sure?  This will delete the application.'''))\">{7}</a>&nbsp;\n" +
-        "  </small>\n" +
         " </td>\n" +
-        "</tr>\n<tr></tr>\n";
+        "</tr>\n<tr class=\"{13}\"></tr>\n";
 
     private static final String STARTED_NONDEPLOYED_APPS_ROW_BUTTON_SECTION =
-        " <td class=\"row-left\" bgcolor=\"{13}\" rowspan=\"2\">\n" +
-        "  <small>\n" +
+        " <td rowspan=\"2\">\n" +
         "  &nbsp;{1}&nbsp;\n" +
         "  &nbsp;<a href=\"{2}\" onclick=\"return(confirm('''Are you sure?'''))\">{3}</a>&nbsp;\n" +
         "  &nbsp;<a href=\"{4}\" onclick=\"return(confirm('''Are you sure?'''))\">{5}</a>&nbsp;\n" +
         "  &nbsp;{7}&nbsp;\n" +
-        "  </small>\n" +
         " </td>\n" +
-        "</tr>\n<tr></tr>\n";
+        "</tr>\n<tr class=\"{13}\"></tr>\n";
 
     private static final String STOPPED_NONDEPLOYED_APPS_ROW_BUTTON_SECTION =
-        " <td class=\"row-left\" bgcolor=\"{13}\" rowspan=\"2\">\n" +
-        "  <small>\n" +
+        " <td rowspan=\"2\">\n" +
         "  &nbsp;<a href=\"{0}\" onclick=\"return(confirm('''Are you sure?'''))\">{1}</a>&nbsp;\n" +
         "  &nbsp;{3}&nbsp;\n" +
         "  &nbsp;{5}&nbsp;\n" +
         "  &nbsp;{7}&nbsp;\n" +
-        "  </small>\n" +
         " </td>\n" +
-        "</tr>\n<tr></tr>\n";
+        "</tr>\n<tr class=\"{13}\"></tr>\n";
 
     private static final String DEPLOY_SECTION =
-        "</table>\n" +
-        "<br>\n" +
-        "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n" +
+        "</tbody></table>\n" +
+        "<table width=\"100%\" cellspacing=\"0\" class=\"tableStyle\">\n" +
         "<tr>\n" +
-        " <td colspan=\"2\" class=\"title\">{0}</td>\n" +
+        " <th colspan=\"2\">{0}</th>\n" +
         "</tr>\n" +
-        "<tr>\n" +
-        " <td colspan=\"2\" class=\"header-left\"><small>{1}</small></td>\n" +
+        "<tbody><tr class=\"UnsortableTableHeader\">\n" +
+        " <td colspan=\"2\">{1}</td>\n" +
         "</tr>\n" +
-        "<tr>\n" +
-        " <td colspan=\"2\">\n" +
+        "<tr class=\"oddRow\">\n" +
+        " <td colspan=\"2\" class=\"first\">\n" +
         "<form method=\"get\" action=\"{2}\">\n" +
-        "<table cellspacing=\"0\" cellpadding=\"3\">\n" +
+        "<table cellspacing=\"0\" cellpadding=\"3\" style=\"border:0px;\"><tbody>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  <small>{3}</small>\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"text\" name=\"deployPath\" size=\"20\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">{3}</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"text\" name=\"deployPath\" size=\"20\"></td>\n" +
         "</tr>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  <small>{4}</small>\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"text\" name=\"deployConfig\" size=\"20\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">{4}</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"text\" name=\"deployConfig\" size=\"20\"></td>\n" +
         "</tr>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  <small>{5}</small>\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"text\" name=\"deployWar\" size=\"40\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">{5}</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"text\" name=\"deployWar\" size=\"40\"></td>\n" +
         "</tr>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  &nbsp;\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"submit\" value=\"{6}\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">&nbsp;</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"submit\" value=\"{6}\" class=\"buttonmed\"></td>\n" +
         "</tr>\n" +
-        "</table>\n" +
+        "</tbody></table>\n" +
         "</form>\n" +
         "</td>\n" +
         "</tr>\n";
 
     private static final String UPLOAD_SECTION =
-        "<tr>\n" +
-        " <td colspan=\"2\" class=\"header-left\"><small>{0}</small></td>\n" +
+        "<tr class=\"UnsortableTableHeader\">\n" +
+        " <th colspan=\"2\">{0}</th>\n" +
         "</tr>\n" +
-        "<tr>\n" +
-        " <td colspan=\"2\">\n" +
+        "<tr class=\"evenRow\">\n" +
+        " <td colspan=\"2\" class=\"first\">\n" +
         "<form action=\"{1}\" method=\"post\" " +
         "enctype=\"multipart/form-data\">\n" +
-        "<table cellspacing=\"0\" cellpadding=\"3\">\n" +
+        "<table cellspacing=\"0\" cellpadding=\"3\"><tbody>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  <small>{2}</small>\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"file\" name=\"deployWar\" size=\"40\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">{2}</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"file\" name=\"deployWar\" size=\"40\"></td>\n" +
         "</tr>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  &nbsp;\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"submit\" value=\"{3}\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">&nbsp;</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"submit\" value=\"{3}\" class=\"buttonmed\"></td>\n" +
         "</tr>\n" +
-        "</table>\n" +
+        "</tbody></table>\n" +
         "</form>\n" +
-        "</table>\n" +
-        "<br>\n" +
+        "</td></tr></tbody></table>\n" +
         "\n";
 
 }

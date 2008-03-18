@@ -250,13 +250,23 @@ public final class HTMLHostManagerServlet extends HostManagerServlet {
 
         Iterator<Map.Entry<String,String>> iterator =
             sortedHostNamesMap.entrySet().iterator();
+        boolean isHighlighted = false;
+        String highlightStyle = null;
         while (iterator.hasNext()) {
             Map.Entry<String,String> entry = iterator.next();
             String hostName = (String) entry.getKey();
             Host host = (Host) engine.findChild(hostName);
 
             if (host != null ) {
-                args = new Object[2];
+
+                isHighlighted = !isHighlighted;
+                if(isHighlighted) {
+                    highlightStyle = "oddRow";
+                } else {
+                    highlightStyle = "evenRow";
+                }
+                
+                args = new Object[3];
                 args[0] = RequestUtil.filter(hostName);
                 String[] aliases = host.findAliases();
                 StringBuffer buf = new StringBuffer();
@@ -273,6 +283,8 @@ public final class HTMLHostManagerServlet extends HostManagerServlet {
                 } else {
                     args[1] = RequestUtil.filter(buf.toString());
                 }
+                
+                args[2] = highlightStyle;
 
                 writer.print
                     (MessageFormat.format(HOSTS_ROW_DETAILS_SECTION, args));
@@ -385,106 +397,76 @@ public final class HTMLHostManagerServlet extends HostManagerServlet {
     // (maximium of 10).
 
     private static final String HOSTS_HEADER_SECTION =
-        "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n" +
-        "<tr>\n" +
-        " <td colspan=\"5\" class=\"title\">{0}</td>\n" +
-        "</tr>\n" +
-        "<tr>\n" +
-        " <td class=\"header-left\"><small>{0}</small></td>\n" +
-        " <td class=\"header-center\"><small>{1}</small></td>\n" +
-        " <td class=\"header-center\"><small>{2}</small></td>\n" +
+        "<table width=\"100%\" cellspacing=\"0\" class=\"tableStyle\" >\n" +
+        "<thead><th colspan=\"5\">{0}</th></thead>\n" +
+        "<tr class=\"UnsortableTableHeader\">\n" +
+        " <td>{0}</td>\n" +
+        " <td>{1}</td>\n" +
+        " <td>{2}</td>\n" +
         "</tr>\n";
 
     private static final String HOSTS_ROW_DETAILS_SECTION =
-        "<tr>\n" +
-        " <td class=\"row-left\"><small><a href=\"http://{0}\">{0}</a>" +
-        "</small></td>\n" +
-        " <td class=\"row-center\"><small>{1}</small></td>\n";
+        "<tr class=\"{2}\">\n" +
+        " <td class=\"first\"><a href=\"http://{0}\">{0}</a></td>\n" +
+        " <td>{1}</td>\n";
 
     private static final String MANAGER_HOST_ROW_BUTTON_SECTION =
-        " <td class=\"row-left\">\n" +
-        "  <small>\n" +
+        " <td>\n" +
         "  &nbsp;{1}&nbsp;\n" +
         "  &nbsp;{3}&nbsp;\n" +
         "  &nbsp;{5}&nbsp;\n" +
-        "  </small>\n" +
         " </td>\n" +
         "</tr>\n";
 
     private static final String HOSTS_ROW_BUTTON_SECTION =
-        " <td class=\"row-left\" NOWRAP>\n" +
-        "  <small>\n" +
+        " <td NOWRAP>\n" +
         "  &nbsp;<a href=\"{0}\" onclick=\"return(confirm(''{1} {6}\\n\\nAre you sure?''))\">{1}</a>&nbsp;\n" +
         "  &nbsp;<a href=\"{2}\" onclick=\"return(confirm(''{3} {6}\\n\\nAre you sure?''))\">{3}</a>&nbsp;\n" +
         "  &nbsp;<a href=\"{4}\" onclick=\"return(confirm(''{5} {6}\\n\\nAre you sure?''))\">{5}</a>&nbsp;\n" +
-        "  </small>\n" +
         " </td>\n" +
         "</tr>\n";
 
     private static final String ADD_SECTION_START =
         "</table>\n" +
-        "<br>\n" +
-        "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n" +
+        "<table width=\"100%\" cellspacing=\"0\" class=\"tableStyle\">\n" +
         "<tr>\n" +
-        " <td colspan=\"2\" class=\"title\">{0}</td>\n" +
+        " <th colspan=\"2\">{0}</th>\n" +
         "</tr>\n" +
-        "<tr>\n" +
-        " <td colspan=\"2\" class=\"header-left\"><small>{1}</small></td>\n" +
-        "</tr>\n" +
-        "<tr>\n" +
-        " <td colspan=\"2\">\n" +
+        "<tbody>\n" +
+        " <tr class=\"UnsortableTableHeader\"><td>{1}</td></tr>\n" +
+        "<tr class=\"oddRow\">\n" +
+        " <td colspan=\"2\" class=\"first\">\n" +
         "<form method=\"get\" action=\"{2}\">\n" +
-        "<table cellspacing=\"0\" cellpadding=\"3\">\n" +
+        "<table cellpadding=\"3\" cellspacing=\"0\" style=\"border:0px;\"><tbody>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  <small>{3}</small>\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"text\" name=\"name\" size=\"20\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">{3}</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"text\" name=\"name\" size=\"20\"></td>\n" +
         "</tr>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  <small>{4}</small>\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"text\" name=\"aliases\" size=\"64\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">{4}</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"text\" name=\"aliases\" size=\"64\"></td>\n" +
         "</tr>\n" +
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  <small>{5}</small>\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"text\" name=\"appBase\" size=\"64\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">{5}</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"text\" name=\"appBase\" size=\"64\"></td>\n" +
         "</tr>\n" ;
     
         private static final String ADD_SECTION_BOOLEAN =
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  <small>{0}</small>\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"checkbox\" name=\"{1}\" {2}>\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">{0}</small></td>\n" +
+        " <td style=\"border:0px;\"><input type=\"checkbox\" name=\"{1}\" {2}></td>\n" +
         "</tr>\n" ;
         
         private static final String ADD_SECTION_END =
         "<tr>\n" +
-        " <td class=\"row-right\">\n" +
-        "  &nbsp;\n" +
-        " </td>\n" +
-        " <td class=\"row-left\">\n" +
-        "  <input type=\"submit\" value=\"{0}\">\n" +
-        " </td>\n" +
+        " <td style=\"border:0px;\">&nbsp;</td>\n" +
+        " <td style=\"border:0px;\"><input type=\"submit\" value=\"{0}\" class=\"buttonmed\"></td>\n" +
         "</tr>\n" +
-         "</table>\n" +
+         "</tbody></table>\n" +
         "</form>\n" +
         "</td>\n" +
         "</tr>\n" +
         "</table>\n" +
-        "<br>\n" +
         "\n";
 
 }

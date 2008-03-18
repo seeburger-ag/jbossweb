@@ -183,23 +183,22 @@ public class StatusTransformer {
         
         if (ok) {
             if (mode == 0){
-                writer.print("<h1>OS</h1>");
+                writer.print("<h3>OS</h3>");
 
                 writer.print("<p>");
-                writer.print(" Physical memory: ");
+                writer.print(" <strong>Physical memory:</strong> ");
                 writer.print(formatSize(new Long(result[0]), true));
-                writer.print(" Available memory: ");
+                writer.print("<br><strong>Available memory:</strong> ");
                 writer.print(formatSize(new Long(result[1]), true));
-                writer.print(" Total page file: ");
+                writer.print("<br><strong>Total page file:</strong> ");
                 writer.print(formatSize(new Long(result[2]), true));
-                writer.print(" Free page file: ");
+                writer.print("<br><strong>Free page file:</strong> ");
                 writer.print(formatSize(new Long(result[3]), true));
-                writer.print(" Memory load: ");
+                writer.print("<br><strong>Memory load:</strong> ");
                 writer.print(new Long(result[6]));
-                writer.print("<br>");
-                writer.print(" Process kernel time: ");
+                writer.print("<br><strong>Process kernel time:</strong> ");
                 writer.print(formatTime(new Long(result[11] / 1000), true));
-                writer.print(" Process user time: ");
+                writer.print("<br><strong>Process user time:</strong> ");
                 writer.print(formatTime(new Long(result[12] / 1000), true));
                 writer.print("</p>");
             } else if (mode == 1){
@@ -217,16 +216,16 @@ public class StatusTransformer {
         throws Exception {
 
         if (mode == 0){
-            writer.print("<h1>JVM</h1>");
+            writer.print("<h3>JVM</h3>");
 
             writer.print("<p>");
-            writer.print(" Free memory: ");
+            writer.print(" <strong>Free memory:</strong> ");
             writer.print(formatSize
                          (new Long(Runtime.getRuntime().freeMemory()), true));
-            writer.print(" Total memory: ");
+            writer.print(" <br><strong>Total memory:</strong> ");
             writer.print(formatSize
                          (new Long(Runtime.getRuntime().totalMemory()), true));
-            writer.print(" Max memory: ");
+            writer.print(" <br><strong>Max memory:</strong> ");
             writer.print(formatSize
                          (new Long(Runtime.getRuntime().maxMemory()), true));
             writer.print("</p>");
@@ -251,32 +250,29 @@ public class StatusTransformer {
                                            ObjectName tpName, String name,
                                            MBeanServer mBeanServer,
                                            Vector globalRequestProcessors,
-                                           Vector requestProcessors,
-                                           int mode)
+                                           Vector requestProcessors, int mode)
         throws Exception {
 
         if (mode == 0) {
-            writer.print("<h1>");
+            writer.print("<h3>");
             writer.print(name);
-            writer.print("</h1>");
+            writer.print("</h3>");
 
             writer.print("<p>");
-            writer.print(" Max threads: ");
+            writer.print(" <strong>Max threads:</strong> ");
             writer.print(mBeanServer.getAttribute(tpName, "maxThreads"));
-            writer.print(" Current thread count: ");
+            writer.print(" <br><strong>Current thread count:</strong> ");
             writer.print(mBeanServer.getAttribute(tpName, "currentThreadCount"));
-            writer.print(" Current thread busy: ");
+            writer.print(" <br><strong>Current thread busy:</strong> ");
             writer.print(mBeanServer.getAttribute(tpName, "currentThreadsBusy"));
             try {
                 Object value = mBeanServer.getAttribute(tpName, "keepAliveCount");
-                writer.print(" Keeped alive sockets count: ");
+                writer.print(" <br><strong>Keeped alive sockets count:</strong> ");
                 writer.print(value);
             } catch (Exception e) {
                 // Ignore
             }
             
-            writer.print("<br>");
-
             ObjectName grpName = null;
 
             Enumeration enumeration = globalRequestProcessors.elements();
@@ -291,41 +287,52 @@ public class StatusTransformer {
                 return;
             }
 
-            writer.print(" Max processing time: ");
+            writer.print(" <br><strong>Max processing time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (grpName, "maxTime"), false));
-            writer.print(" Processing time: ");
+            writer.print(" <br><strong>Processing time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (grpName, "processingTime"), true));
-            writer.print(" Request count: ");
+            writer.print(" <br><strong>Request count:</strong> ");
             writer.print(mBeanServer.getAttribute(grpName, "requestCount"));
-            writer.print(" Error count: ");
+            writer.print(" <br><strong>Error count:</strong> ");
             writer.print(mBeanServer.getAttribute(grpName, "errorCount"));
-            writer.print(" Bytes received: ");
+            writer.print(" <br><strong>Bytes received:</strong> ");
             writer.print(formatSize(mBeanServer.getAttribute
                                     (grpName, "bytesReceived"), true));
-            writer.print(" Bytes sent: ");
+            writer.print(" <br><strong>Bytes sent:</strong> ");
             writer.print(formatSize(mBeanServer.getAttribute
                                     (grpName, "bytesSent"), true));
             writer.print("</p>");
 
-            writer.print("<table border=\"0\"><tr><th>Stage</th><th>Time</th><th>B Sent</th><th>B Recv</th><th>Client</th><th>VHost</th><th>Request</th></tr>");
+            writer.print("<table width=\"100%\" cellspacing=\"0\" class=\"tableStyle\">");
+            writer.print("<thead><th colspan=\"7\">");
+            writer.print(name);
+            writer.print("</th></thead>");
+            writer.print("<tr class=\"UnsortableTableHeader\"><td>Stage</td><td>Time</td><td>B Sent</td><td>B Received</td><td>Client</td><td>V. Host</td><td>Request</td></tr><tbody>");
 
             enumeration = requestProcessors.elements();
+            boolean isHighlighted = false;
+            String highlightStyle = null;
             while (enumeration.hasMoreElements()) {
+                isHighlighted = !isHighlighted;
+                if(isHighlighted) {
+                    highlightStyle = "oddRow";
+                } else {
+                    highlightStyle = "evenRow";
+                }
                 ObjectName objectName = (ObjectName) enumeration.nextElement();
                 if (name.equals(objectName.getKeyProperty("worker"))) {
-                    writer.print("<tr>");
+                    writer.print("<tr class=\"");
+                    writer.print(highlightStyle);
+                    writer.print("\">");
                     writeProcessorState(writer, objectName, mBeanServer, mode);
                     writer.print("</tr>");
                 }
             }
 
-            writer.print("</table>");
+            writer.print("<caption align=\"bottom\">P: Parse and prepare request S: Service F: Finishing R: Ready K: Keepalive</caption></tbody></table>");
 
-            writer.print("<p>");
-            writer.print("P: Parse and prepare request S: Service F: Finishing R: Ready K: Keepalive");
-            writer.print("</p>");
         } else if (mode == 1){
             writer.write("<connector name='" + name + "'>");
 
@@ -429,7 +436,7 @@ public class StatusTransformer {
         }
 
         if (mode == 0) {
-            writer.write("<td><strong>");
+            writer.write("<td class=\"first\"><strong>");
             writer.write(stageStr);
             writer.write("</strong></td>");
 
@@ -575,8 +582,7 @@ public class StatusTransformer {
             Iterator iterator = hostsON.iterator();
             while (iterator.hasNext()) {
                 ObjectName contextON = (ObjectName) iterator.next();
-                writer.print("<a class=\"A.name\" name=\"" 
-                             + (count++) + ".0\">");
+                writer.print("<a name=\"" + (count++) + ".0\">");
                 writeContext(writer, contextON, mBeanServer, mode);
             }
 
@@ -677,20 +683,20 @@ public class StatusTransformer {
                 contextName = "";
             }
 
-            writer.print("<h1>");
+            writer.print("<h3>");
             writer.print(name);
-            writer.print("</h1>");
+            writer.print("</h3>");
             writer.print("</a>");
 
             writer.print("<p>");
             Object startTime = mBeanServer.getAttribute(objectName,
                                                         "startTime");
-            writer.print(" Start time: " +
+            writer.print(" <strong>Start time:</strong> " +
                          new Date(((Long) startTime).longValue()));
-            writer.print(" Startup time: ");
+            writer.print(" <br><strong>Startup time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (objectName, "startupTime"), false));
-            writer.print(" TLD scan time: ");
+            writer.print(" <br><strong>TLD scan time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (objectName, "tldScanTime"), false));
             if (managerON != null) {
@@ -726,30 +732,29 @@ public class StatusTransformer {
         throws Exception {
 
         if (mode == 0) {
-            writer.print("<br>");
-            writer.print(" Active sessions: ");
+            writer.print(" <br><strong>Active sessions:</strong> ");
             writer.print(mBeanServer.getAttribute
                          (objectName, "activeSessions"));
-            writer.print(" Session count: ");
+            writer.print(" <br><strong>Session count:</strong> ");
             writer.print(mBeanServer.getAttribute
                          (objectName, "sessionCounter"));
-            writer.print(" Max active sessions: ");
+            writer.print(" <br><strong>Max active sessions:</strong> ");
             writer.print(mBeanServer.getAttribute(objectName, "maxActive"));
-            writer.print(" Rejected session creations: ");
+            writer.print(" <br><strong>Rejected session creations:</strong> ");
             writer.print(mBeanServer.getAttribute
                          (objectName, "rejectedSessions"));
-            writer.print(" Expired sessions: ");
+            writer.print(" <br><strong>Expired sessions:</strong> ");
             writer.print(mBeanServer.getAttribute
                          (objectName, "expiredSessions"));
-            writer.print(" Longest session alive time: ");
+            writer.print(" <br><strong>Longest session alive time:</strong> ");
             writer.print(formatSeconds(mBeanServer.getAttribute(
                                                     objectName,
                                                     "sessionMaxAliveTime")));
-            writer.print(" Average session alive time: ");
+            writer.print(" <br><strong>Average session alive time:</strong> ");
             writer.print(formatSeconds(mBeanServer.getAttribute(
                                                     objectName,
                                                     "sessionAverageAliveTime")));
-            writer.print(" Processing time: ");
+            writer.print(" <br><strong>Processing time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (objectName, "processingTime"), false));
         } else if (mode == 1) {
@@ -781,10 +786,9 @@ public class StatusTransformer {
         }
 
         if (mode == 0) {
-            writer.print("<br>");
-            writer.print(" JSPs loaded: ");
+            writer.print(" <br><strong>JSPs loaded:</strong> ");
             writer.print(jspCount);
-            writer.print(" JSPs reloaded: ");
+            writer.print(" <br><strong>JSPs reloaded:</strong> ");
             writer.print(jspReloadCount);
         } else if (mode == 1) {
             // for now we don't write out anything
@@ -820,20 +824,20 @@ public class StatusTransformer {
             writer.print("</h2>");
             
             writer.print("<p>");
-            writer.print(" Processing time: ");
+            writer.print(" <strong>Processing time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (objectName, "processingTime"), true));
-            writer.print(" Max time: ");
+            writer.print(" <br><strong>Max time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (objectName, "maxTime"), false));
-            writer.print(" Request count: ");
+            writer.print(" <br><strong>Request count:</strong> ");
             writer.print(mBeanServer.getAttribute(objectName, "requestCount"));
-            writer.print(" Error count: ");
+            writer.print(" <br><strong>Error count:</strong> ");
             writer.print(mBeanServer.getAttribute(objectName, "errorCount"));
-            writer.print(" Load time: ");
+            writer.print(" <br><strong>Load time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (objectName, "loadTime"), false));
-            writer.print(" Classloading time: ");
+            writer.print(" <br><strong>Classloading time:</strong> ");
             writer.print(formatTime(mBeanServer.getAttribute
                                     (objectName, "classLoadTime"), false));
             writer.print("</p>");

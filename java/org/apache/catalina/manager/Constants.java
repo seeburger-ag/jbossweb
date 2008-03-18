@@ -43,14 +43,12 @@ public class Constants {
         "\n";
 
     public static final String MESSAGE_SECTION =
-        "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n" +
+        "<table border=\"0\" class=\"message\"><tbody>\n" +
         " <tr>\n" +
-        "  <td class=\"row-left\" width=\"10%\">" +
-        "<small><strong>{0}</strong></small>&nbsp;</td>\n" +
-        "  <td class=\"row-left\"><pre>{1}</pre></td>\n" +
+        "  <td width=\"10%\"><strong>{0}</strong></td>" +
+        "  <td>{1}</td>\n" +
         " </tr>\n" +
-        "</table>\n" +
-        "<br>\n" +
+        "</tbody></table>\n" +
         "\n";
 
     public static final String MANAGER_SECTION =
@@ -76,30 +74,29 @@ public class Constants {
         "<div class=\"maincol\">\n";
 
     public static final String SERVER_HEADER_SECTION =
-        "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n" +
-        "<tr>\n" +
-        " <td colspan=\"6\" class=\"title\">{0}</td>\n" +
-        "</tr>\n" +
-        "<tr>\n" +
-        " <td class=\"header-center\"><small>{1}</small></td>\n" +
-        " <td class=\"header-center\"><small>{2}</small></td>\n" +
-        " <td class=\"header-center\"><small>{3}</small></td>\n" +
-        " <td class=\"header-center\"><small>{4}</small></td>\n" +
-        " <td class=\"header-center\"><small>{5}</small></td>\n" +
-        " <td class=\"header-center\"><small>{6}</small></td>\n" +
+        "<table width=\"100%\" cellspacing=\"0\" class=\"tableStyle\" >\n" +
+        "<thead>\n" +
+        " <th colspan=\"6\">{0}</th>\n" +
+        "</thead>\n" +
+        "<tr class=\"UnsortableTableHeader\">\n" +
+        " <td>{1}</td>\n" +
+        " <td>{2}</td>\n" +
+        " <td>{3}</td>\n" +
+        " <td>{4}</td>\n" +
+        " <td>{5}</td>\n" +
+        " <td>{6}</td>\n" +
         "</tr>\n";
 
     public static final String SERVER_ROW_SECTION =
-        "<tr>\n" +
-        " <td class=\"row-center\"><small>{0}</small></td>\n" +
-        " <td class=\"row-center\"><small>{1}</small></td>\n" +
-        " <td class=\"row-center\"><small>{2}</small></td>\n" +
-        " <td class=\"row-center\"><small>{3}</small></td>\n" +
-        " <td class=\"row-center\"><small>{4}</small></td>\n" +
-        " <td class=\"row-center\"><small>{5}</small></td>\n" +
+        "<tbody><tr class=\"oddRow\">\n" +
+        " <td class=\"first\">{0}</small></td>\n" +
+        " <td>{1}</td>\n" +
+        " <td>{2}</td>\n" +
+        " <td>{3}</td>\n" +
+        " <td>{4}</td>\n" +
+        " <td>{5}</td>\n" +
         "</tr>\n" +
-        "</table>\n" +
-        "<br>\n" +
+        "</tbody></table>\n" +
         "\n";
 
     public static final String HTML_TAIL_SECTION =
