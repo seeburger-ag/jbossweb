@@ -77,12 +77,16 @@ h6 { }
 .maincol {
 	margin: 0px 20px 0px 325px;
 	padding-top: 30px;
+}
 
+.maincolprint {
+	margin: 0px 20px 0px 20px;
+	padding-top: 30px;
 }
 
 /* -------- This equalizes the two column heights in the layout ----------------- */
 
-.leftcol, .maincol {
+.leftcol, .maincol, .maincolprint {
 	padding-bottom: 30005px;
 	margin-bottom: -30000px;
 	}
@@ -241,6 +245,7 @@ h6 { }
 
 
 .tableStyle caption {
+	font-size:10px;
 	text-align:left;
 	font-style:italic;
 }

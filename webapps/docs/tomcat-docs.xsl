@@ -122,10 +122,10 @@
        
        <xsl:if test="$project-menu != 'menu'">
           
-         <table width="90%" cellspacing="0">
+       <div class="maincolprint documentation">
            <h1><xsl:value-of select="properties/title"/></h1>
            <xsl:apply-templates select="body/section"/>
-         </table>
+       </div>
        
        </xsl:if>
        

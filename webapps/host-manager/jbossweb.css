@@ -241,6 +241,7 @@ h6 { }
 
 
 .tableStyle caption {
+	font-size:10px;
 	text-align:left;
 	font-style:italic;
 }
