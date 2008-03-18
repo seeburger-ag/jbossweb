@@ -199,7 +199,7 @@
         </tr>
 
       <xsl:for-each select="attribute">
-        <tr class="evenRow">
+        <tr class="oddRow">
           <td class="first">
             <xsl:if test="@required = 'true'">
               <strong><code><xsl:value-of select="@name"/></code></strong>
@@ -226,7 +226,7 @@
         </tr>
 
       <xsl:for-each select="property">
-        <tr class="evenRow">
+        <tr class="oddRow">
           <td class="first"><code><xsl:value-of select="@name"/></code></td>
           <td><xsl:apply-templates/></td>
         </tr>

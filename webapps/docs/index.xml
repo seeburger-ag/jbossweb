@@ -42,6 +42,8 @@ JBoss Web, and using many of its features.</p>
     brief, high level, overview of JBoss Web.</li>
 <li><a href="setup.html"><strong>Setup</strong></a> - How to install and run
     JBoss Web on a variety of platforms.</li>
+<li><a href="sysprops.html"><strong>System Properties</strong></a> - System
+    properties used for JBoss Web configuration.</li>
 <li><a href="appdev/index.html"><strong>First web application</strong></a>
     - An introduction to the concepts of a <em>web application</em> as defined
     in the <a href="http://java.sun.com/products/servlet/download.html">Servlet
@@ -80,10 +82,14 @@ JBoss Web, and using many of its features.</p>
     Installing and
     configuring SSL support so that your JBoss Web will serve requests using
     the <code>https</code> protocol.</li>
+<li><a href="php.html"><strong>PHP</strong></a> -
+    Using PHPs with JBoss Web.</li>
 <li><a href="ssi-howto.html"><strong>SSI</strong></a> -
     Using Server Side Includes in JBoss Web.</li>
 <li><a href="cgi-howto.html"><strong>CGI</strong></a> -
     Using CGIs with JBoss Web.</li>
+<li><a href="rewrite.html"><strong>URL Rewriting</strong></a> -
+    Using rewriting features in JBoss Web.</li>
 <li><a href="proxy-howto.html"><strong>Proxy Support</strong></a> -
     Configuring JBoss Web to run behind a proxy server (or a web server
     functioning as a proxy server).</li>

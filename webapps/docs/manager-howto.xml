@@ -916,8 +916,7 @@ commands, you must perform the following setup operations:</p>
 <code>&lt;taskdef&gt;</code> element.  Therefore, your <code>build.xml</code>
 file might look something like this:</p>
 
-<table border="1">
-<tr><td><pre>
+<source>
 &lt;project name="My Application" default="compile" basedir="."&gt;
 
   &lt;!-- Configure the directory into which the web application is built --&gt;
@@ -965,8 +964,7 @@ file might look something like this:</p>
   &lt;/target&gt;
 
 &lt;/project&gt;
-</pre></td></tr>
-</table>
+</source>
 
 <p>Now, you can execute commands like <code>ant deploy</code> to deploy the
 application to a running instance of JBoss Web, or <code>ant reload</code> to
@@ -988,96 +986,69 @@ properties or external files. They support directly the following subset of the
 <code>&lt;redirector&gt;</code> type attributes:
 </p>
 
-<table border="1" cellpadding="2" cellspacing="0">
-<tbody>
-<tr>
-<td valign="top"><b>Attribute</b></td>
-<td valign="top"><b>Description</b></td>
-<td align="center" valign="top"><b>Required</b></td>
-</tr>
-<tr>
-<td valign="top">output</td>
-<td valign="top">Name of a file to which to write the output. If
+  <attributes>
+
+    <attribute name="output" required="false">
+      <p>Name of a file to which to write the output. If
 the error stream is not also redirected to a file or property, it will
-appear in this output.</td>
-<td align="center" valign="top">No</td>
-</tr>
-<tr>
-<td valign="top">error</td>
-<td valign="top">The file to which the standard error of the
-command should be redirected.</td>
-<td align="center" valign="top">No</td>
-</tr>
-<tr>
-<td valign="top">logError</td>
-<td valign="top">This attribute is used when you wish to see
+appear in this output.</p>
+    </attribute>
+
+    <attribute name="error" required="false">
+      <p>The file to which the standard error of the
+command should be redirected.</p>
+    </attribute>
+
+    <attribute name="logError" required="false">
+      <p>This attribute is used when you wish to see
 error output in Ant's log and you are redirecting output to a
 file/property. The error output will not be included in the output
 file/property. If you redirect error with the <i>error</i> or <i>errorProperty</i>
-attributes, this will have no effect.</td>
-<td align="center" valign="top">No</td>
-</tr>
-<tr>
-<td valign="top">append</td>
-<td valign="top">Whether output and error files should be
-appended to or overwritten. Defaults to <code>false</code>.</td>
-<td align="center" valign="top">No</td>
-</tr>
-<tr>
-<td valign="top">createemptyfiles</td>
-<td valign="top">Whether output and error files should be created
-even when empty. Defaults to <code>true</code>.</td>
-<td align="center" valign="top">No</td>
-</tr>
-<tr>
-<td valign="top">outputproperty</td>
-<td valign="top">The name of a property in which the output of
-the command should be stored. Unless the error stream is redirected to
-a separate file or stream, this property will include the error output.</td>
-<td align="center" valign="top">No</td>
-</tr>
-<tr>
-<td valign="top">errorproperty</td>
-<td valign="top">The name of a property in which the standard
-error of the command should be stored.</td>
-<td align="center" valign="top">No</td>
-</tr>
-</tbody>
-</table>
+attributes, this will have no effect.</p>
+    </attribute>
 
-<p>A couple of additional attributes can also be specified:
-</p>
-<table border="1" cellpadding="2" cellspacing="0">
-<tbody>
-<tr>
-<td valign="top"><b>Attribute</b></td>
-<td valign="top"><b>Description</b></td>
-<td align="center" valign="top"><b>Required</b></td>
-</tr>
-<tr>
-<td valign="top">alwaysLog</td>
-<td valign="top">This attribute is used when you wish to see the
+    <attribute name="append" required="false">
+      <p>Whether output and error files should be
+appended to or overwritten. Defaults to <code>false</code>.
+      </p>
+    </attribute>
+
+    <attribute name="createemptyfiles" required="false">
+      <p>Whether output and error files should be created
+even when empty. Defaults to <code>true</code>.</p>
+    </attribute>
+
+    <attribute name="outputproperty" required="false">
+      <p>The name of a property in which the output of
+the command should be stored. Unless the error stream is redirected to
+a separate file or stream, this property will include the error output.</p>
+    </attribute>
+
+    <attribute name="errorproperty" required="false">
+      <p>The name of a property in which the standard
+error of the command should be stored.</p>
+    </attribute>
+
+    <attribute name="alwaysLog" required="false">
+      <p>This attribute is used when you wish to see the
 output you are capturing, appearing also in the Ant's log. It must not be
 used unless you are capturing task output.
 Defaults to <code>false</code>.
 <em>This attribute will be supported directly by <code>&lt;redirector&gt;</code>
-in Ant 1.6.3</em></td>
-<td align="center" valign="top">No</td>
-</tr>
-<tr>
-<td valign="top">failonerror</td>
-<td valign="top">This attribute is used when you wish to avoid that
+in Ant 1.6.3</em></p>
+    </attribute>
+
+    <attribute name="failonerror" required="false">
+      <p>This attribute is used when you wish to avoid that
 any manager command processing error terminates the ant execution. Defaults to <code>true</code>.
 It must be set to <code>false</code>, if you want to capture error output,
 otherwise execution will terminate before anything can be captured.
 <br></br>
 This attribute acts only on manager command execution,
-any wrong or missing command attribute will still cause Ant execution termination.
-</td>
-<td align="center" valign="top">No</td>
-</tr>
-</tbody>
-</table>
+any wrong or missing command attribute will still cause Ant execution termination.</p>
+    </attribute>
+
+  </attributes>
 
 <p>They also support the embedded <code>&lt;redirector&gt;</code> element
 in which you can specify
@@ -1093,8 +1064,7 @@ Here is a sample build file extract that shows how this output redirection suppo
 can be used:
 </p>
 
-<table border="1">
-<tr><td><pre>
+<source>
 	&lt;target name="manager.deploy"
 		depends="context.status"
 		if="context.notInstalled"&gt;
@@ -1158,8 +1128,7 @@ can be used:
 			&lt;/or&gt;
 		&lt;/condition&gt;
 	&lt;/target&gt;
-</pre></td></tr>
-</table>
+</source>
 
 <p><strong>WARNING:</strong> even if it doesn't make many sense, and is always a bad idea,
 calling a Catalina task more than once,
@@ -1241,8 +1210,7 @@ http://webserver/manager/jmxproxy/?set=BEANNAME&amp;att=MYATTRIBUTE&amp;val=NEWV
     shown. For example, lets say we wish to turn up debugging on the fly for the
     <code>ErrorReportValve</code>. The following will set debugging to 10.
 <source>
-http://localhost:8080/manager/jmxproxy/
-?set=Catalina%3Atype%3DValve%2Cname%3DErrorReportValve%2Chost%3Dlocalhost&amp;att=debug&amp;val=10
+http://localhost:8080/manager/jmxproxy/?set=Catalina%3Atype%3DValve%2Cname%3DErrorReportValve%2Chost%3Dlocalhost&amp;att=debug&amp;val=10
 </source>
     and my result is (YMMV):
 <source>
@@ -1252,8 +1220,7 @@ Result: ok
     Here is what I see if I pass in a bad value. Here is the URL I used,
     I try set debugging equal to 'cowbell':
 <source>
-http://localhost:8080/manager/jmxproxy/
-?set=Catalina%3Atype%3DValve%2Cname%3DErrorReportValve%2Chost%3Dlocalhost&amp;att=debug&amp;val=cowbell
+http://localhost:8080/manager/jmxproxy/?set=Catalina%3Atype%3DValve%2Cname%3DErrorReportValve%2Chost%3Dlocalhost&amp;att=debug&amp;val=cowbell
 </source>
     When I try that, my result is
 <source>
