@@ -1109,7 +1109,7 @@ public class AprEndpoint {
         
         public long check(long date) {
             while (pos < size) {
-                if (date > timeouts[pos]) {
+                if (date >= timeouts[pos]) {
                     long result = sockets[pos];
                     sockets[pos] = sockets[size - 1];
                     timeouts[pos] = timeouts[size - 1];
