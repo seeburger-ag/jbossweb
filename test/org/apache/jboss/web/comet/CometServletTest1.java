@@ -39,7 +39,7 @@ public class CometServletTest1 extends HttpServlet implements CometProcessor {
     int count = 0;
     
     public void event(CometEvent event) throws IOException, ServletException {
-        System.out.println("[" + event.getHttpServletRequest().getSession(true).getId() + "] " + event.getType());
+        System.out.println((new java.util.Date()) + " [" + event.getHttpServletRequest().getSession(true).getId() + "] " + event.getType());
         switch (event.getType()) {
         case BEGIN:
             //event.suspend();

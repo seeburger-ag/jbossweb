@@ -29,12 +29,21 @@
         Add 3 system properties to StandardHost to allow hardcoding safe default values for the
         auto deployer when JBoss Web is embedded inside AS. (remm)
       </fix>
+      <update>
+        Add Comet EOF event when the end of the stream is reached without an error. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
     <changelog>
       <fix>
         Better fix for cookie path quoting scenario. (markt)
+      </fix>
+      <fix>
+        Possible NPE on shutdown if Comet is used. (remm)
+      </fix>
+      <fix>
+        Improve accuracy of typical timeout values. (remm)
       </fix>
     </changelog>
   </subsection>

@@ -466,9 +466,18 @@ public class Request
     /**
      * Read bytes into the low level buffer.
      */
-    public boolean read()
+    public int read()
         throws IOException {
-        return (inputBuffer.realReadBytes(null, 0, 0) > 0);
+        return (inputBuffer.realReadBytes(null, 0, 0));
+    }
+    
+
+    /**
+     * Read bytes into the low level buffer.
+     */
+    public boolean isClosed()
+        throws IOException {
+        return (inputBuffer.isClosed());
     }
     
 

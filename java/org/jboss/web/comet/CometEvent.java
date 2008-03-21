@@ -44,6 +44,10 @@ public interface CometEvent {
      *  not synchronized, so when they are accessed by multiple threads adequate
      *  synchronization is needed. After processing the initial event, the request 
      *  is considered to be committed.</li>
+     * <li>EOF - The end of file of the input has been reached, and no further data is
+     *  available. This event is sent because it can be difficult to detect otherwise.
+     *  Following the processing of this event and the processing of any subsequent
+     *  event, the event will be suspended.</li>
      * <li>END - End may be called to end the processing of the request. Fields that have
      *  been initialized in the begin method should be reset. After this event has
      *  been processed, the request and response objects, as well as all their dependent
@@ -79,7 +83,7 @@ public interface CometEvent {
      *  method always returns true.</li>
      * </ul>
      */
-    public enum EventType { BEGIN, END, ERROR, EVENT, READ, TIMEOUT, WRITE }
+    public enum EventType { BEGIN, END, ERROR, EVENT, READ, EOF, TIMEOUT, WRITE }
     
     
     /**

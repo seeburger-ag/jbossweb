@@ -119,7 +119,7 @@ public class CoyoteReader
 
 
     public boolean markSupported() {
-        return true;
+        return ib.markSupported();
     }
 
 

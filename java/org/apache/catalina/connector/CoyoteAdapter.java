@@ -141,6 +141,7 @@ public class CoyoteAdapter
             
             boolean error = false;
             boolean read = false;
+            boolean eof = false;
             boolean close = false;
             try {
                 if (response.isClosed()) {
@@ -159,8 +160,11 @@ public class CoyoteAdapter
                     } else {
                         try {
                             // Fill the read buffer of the servlet layer
-                            if (request.read()) {
+                            int n = request.read();
+                            if (n > 0) {
                                 read = true;
+                            } else if (n < 0) {
+                                eof = true;
                             }
                         } catch (IOException e) {
                             error = true;
@@ -169,6 +173,8 @@ public class CoyoteAdapter
                             request.getEvent().setType(CometEvent.EventType.READ);
                         } else if (error) {
                             request.getEvent().setType(CometEvent.EventType.ERROR);
+                        } else if (eof) {
+                            request.getEvent().setType(CometEvent.EventType.EOF);
                         } else {
                             // Data was present on the socket, but it did not translate into actual
                             // entity body bytes
@@ -234,6 +240,15 @@ public class CoyoteAdapter
                     request.getEvent().setType(CometEvent.EventType.ERROR);
                     error = true;
                     connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
+                }
+                if (!error && !eof && (status == SocketStatus.OPEN_READ) && request.isClosed()) {
+                    // Send an EOF event
+                    request.getEvent().setType(CometEvent.EventType.EOF);
+                    eof = true;
+                    connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
+                }
+                if (!error && request.isClosed()) {
+                    request.suspend();
                 }
                 if (error || close) {
                     response.finishResponse();

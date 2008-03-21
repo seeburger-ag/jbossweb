@@ -82,6 +82,10 @@
        this event will be called if the HTTP session associated with the connection
        times out, if the web application is reloaded, if the server is shutdown, or
        if the Comet connection was closed asynchronously.</li>
+  <li>EventType.EOF - The end of file of the input has been reached, and no further data is
+       available. This event is sent because it can be difficult to detect otherwise.
+       Following the processing of this event and the processing of any subsequent
+       event, the event will be automatically suspended.</li>
   <li>EventType.ERROR - Error will be called by the container in the case where an IO exception
        or a similar unrecoverable error occurs on the connection. Fields that have
        been initialized in the begin method should be reset. After this event has

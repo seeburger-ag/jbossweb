@@ -264,6 +264,14 @@ public class InputBuffer extends Reader
     }
 
 
+    /**
+     * Returns if the request is closed.
+     */
+    public boolean isClosed() {
+        return closed;
+    }
+
+
     public int available() {
         int available = 0;
         if (state == BYTE_STATE) {
@@ -321,7 +329,11 @@ public class InputBuffer extends Reader
             state = BYTE_STATE;
 
         try {
-            return coyoteRequest.doRead(bb);
+            int n = coyoteRequest.doRead(bb);
+            if (n < 0) {
+                closed = true;
+            }
+            return n;
         } catch (IOException e) {
             // An IOException on a read is almost always due to
             // the remote client aborting the request or a timeout occurring.
