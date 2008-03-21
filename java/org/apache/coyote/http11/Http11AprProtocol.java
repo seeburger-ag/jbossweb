@@ -560,7 +560,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
                         recycledProcessors.offer(result);
-                        if (state == SocketState.OPEN) {
+                        if (proto.endpoint.isRunning() && state == SocketState.OPEN) {
                             proto.endpoint.getPoller().add(socket);
                         }
                     } else {
