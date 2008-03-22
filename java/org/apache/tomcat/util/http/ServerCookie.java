@@ -38,9 +38,6 @@ import org.apache.tomcat.util.buf.MessageBytes;
 public class ServerCookie implements Serializable {
     
     
-    protected static final boolean USE_V1_COOKIES = 
-        !Boolean.valueOf(System.getProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "false")).booleanValue();
-    
     // Version 0 (Netscape) attributes
     private MessageBytes name=MessageBytes.newInstance();
     private MessageBytes value=MessageBytes.newInstance();
@@ -53,6 +50,13 @@ public class ServerCookie implements Serializable {
     private MessageBytes comment=MessageBytes.newInstance();
     private int maxAge = -1;
     private int version = 0;
+
+    /**
+     * If set to true, we parse cookies according to the servlet spec,
+     */
+    public static final boolean STRICT_SERVLET_COMPLIANCE =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "false")).booleanValue();
+
 
     // Note: Servlet Spec =< 2.5 only refers to Netscape and RFC2109,
     // not RFC2965
@@ -251,19 +255,7 @@ public class ServerCookie implements Serializable {
         buf.append("=");
         // Servlet implementation does not check anything else
         
-        version = maybeQuote2(version, buf, value);
-
-        // Add domain information, if present
-        if (domain!=null) {
-            buf.append("; Domain=");
-            version = maybeQuote2(version, buf, domain);
-        }
-
-        // Path=path
-        if (path!=null) {
-            buf.append ("; Path=");
-            version = maybeQuote2(version, buf, path);
-        }
+        version = maybeQuote2(version, buf, value,true);
 
         // Add version 1 specific information
         if (version == 1) {
@@ -277,6 +269,12 @@ public class ServerCookie implements Serializable {
             }
         }
         
+        // Add domain information, if present
+        if (domain!=null) {
+            buf.append("; Domain=");
+            maybeQuote2(version, buf, domain);
+        }
+
         // Max-Age=secs ... or use old "Expires" format
         // TODO RFC2965 Discard
         if (maxAge >= 0) {
@@ -296,6 +294,12 @@ public class ServerCookie implements Serializable {
                 buf.append ("; Max-Age=");
                 buf.append (maxAge);
             }
+        }
+
+        // Path=path
+        if (path!=null) {
+            buf.append ("; Path=");
+            maybeQuote2(version, buf, path);
         }
 
         // Secure
@@ -333,6 +337,10 @@ public class ServerCookie implements Serializable {
      * @param value
      */
     public static int maybeQuote2 (int version, StringBuffer buf, String value) {
+        return maybeQuote2(version,buf,value,false);
+    }
+
+    public static int maybeQuote2 (int version, StringBuffer buf, String value, boolean allowVersionSwitch) {
         if (value==null || value.length()==0) {
             buf.append("\"\"");
         }else if (containsCTL(value,version)) 
@@ -341,7 +349,7 @@ public class ServerCookie implements Serializable {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,1,value.length()-1));
             buf.append('"');
-        } else if (USE_V1_COOKIES && version==0 && !isToken2(value)) {
+        } else if (allowVersionSwitch && (!STRICT_SERVLET_COMPLIANCE) && version==0 && !isToken2(value)) {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,0,value.length()));
             buf.append('"');
@@ -354,7 +362,7 @@ public class ServerCookie implements Serializable {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,0,value.length()));
             buf.append('"');
-        } else {
+        }else {
             buf.append(value);
         }
         return version;

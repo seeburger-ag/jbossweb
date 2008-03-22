@@ -45,6 +45,9 @@
       <fix>
         Improve accuracy of typical timeout values. (remm)
       </fix>
+      <fix>
+        Comet state recycling. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
