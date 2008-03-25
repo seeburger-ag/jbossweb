@@ -31,6 +31,7 @@
   <xsl:param    name="standalone"       select="''"/>
   <xsl:param    name="buglink"          select="'http://issues.apache.org/bugzilla/show_bug.cgi?id='"/>
   <xsl:param    name="jiralink"         select="'http://jira.jboss.com/jira/browse/JBWEB-'"/>
+  <xsl:param    name="jbossjiralink"    select="'http://jira.jboss.com/jira/browse/'"/>
 
   <!-- Defined variables (non-overrideable) -->
   <xsl:variable name="body-bg"          select="'#ffffff'"/>
@@ -356,6 +357,12 @@
   <!-- Link to a JIRA report -->
   <xsl:template match="jira">
       <xsl:variable name="link"><xsl:value-of select="$jiralink"/><xsl:value-of select="text()"/></xsl:variable>
+      <a href="{$link}">JBWEB-<xsl:apply-templates/></a>
+  </xsl:template>
+
+  <!-- Link to a JBoss JIRA report for another project -->
+  <xsl:template match="jboss-jira">
+      <xsl:variable name="link"><xsl:value-of select="$jbossjiralink"/><xsl:value-of select="text()"/></xsl:variable>
       <a href="{$link}"><xsl:apply-templates/></a>
   </xsl:template>
 

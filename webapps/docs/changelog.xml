@@ -21,6 +21,9 @@
       <fix>
         Update to more polished CSS, submitted by James Cobb. (remm)
       </fix>
+      <fix>
+        Remove tomcat-native.tar.gz from the distribution (JBoss Native should be used instead). (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Catalina">
@@ -37,7 +40,7 @@
   <subsection name="Coyote">
     <changelog>
       <fix>
-        Fix for JBWEB-105. (jfclere)
+        <jira>105</jira>: The code that processes parameters from chars[] is incorrect. (jfclere)
       </fix>
       <fix>
         Better fix for cookie path quoting scenario. (markt)
