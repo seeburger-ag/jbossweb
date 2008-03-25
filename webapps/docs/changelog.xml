@@ -37,6 +37,9 @@
   <subsection name="Coyote">
     <changelog>
       <fix>
+        Fix for JBWEB-105. (jfclere)
+      </fix>
+      <fix>
         Better fix for cookie path quoting scenario. (markt)
       </fix>
       <fix>
