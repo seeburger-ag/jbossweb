@@ -503,17 +503,13 @@ public final class Parameters extends MultiMap {
     public void processParameters( MessageBytes data, String encoding ) {
         if( data==null || data.isNull() || data.getLength() <= 0 ) return;
 
-        if( data.getType() == MessageBytes.T_BYTES ) {
-            ByteChunk bc=data.getByteChunk();
-            processParameters( bc.getBytes(), bc.getOffset(),
-                               bc.getLength(), encoding);
-        } else {
-            if (data.getType()!= MessageBytes.T_CHARS ) 
-                data.toChars();
-            CharChunk cc=data.getCharChunk();
-            processParameters( cc.getChars(), cc.getOffset(),
-                               cc.getLength());
+        System.out.println("Parameters.processParameters: " + data.getType());
+        if (data.getType() != MessageBytes.T_BYTES) {
+            data.toBytes();
         }
+        ByteChunk bc=data.getByteChunk();
+        processParameters( bc.getBytes(), bc.getOffset(),
+                           bc.getLength(), encoding);
     }
 
     /** Debug purpose
