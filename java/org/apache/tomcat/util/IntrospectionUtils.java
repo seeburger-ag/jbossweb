@@ -498,7 +498,15 @@ public final class IntrospectionUtils {
                     prev = value.length();
                     continue;
                 }
-                String n = value.substring(pos + 2, endName);
+                int endName2 = value.indexOf(':', pos);
+                String n = null;
+                String d = null;
+                if (endName2 > 0 && endName2 < endName) {
+                    n = value.substring(pos + 2, endName2);
+                    d = value.substring(endName2 + 1, endName);
+                } else {
+                    n = value.substring(pos + 2, endName);
+                }
                 String v = null;
                 if (staticProp != null) {
                     v = (String) ((Hashtable) staticProp).get(n);
@@ -511,8 +519,13 @@ public final class IntrospectionUtils {
                         }
                     }
                 }
-                if (v == null)
-                    v = "${" + n + "}";
+                if (v == null) {
+                    if (d == null) {
+                        v = "${" + n + "}";
+                    } else {
+                        v = d;
+                    }
+                }
 
                 sb.append(v);
                 prev = endName + 1;

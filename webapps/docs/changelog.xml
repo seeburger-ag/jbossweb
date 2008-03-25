@@ -48,6 +48,9 @@
       <fix>
         Comet state recycling. (remm)
       </fix>
+      <update>
+        Add support for specifying defaults for properties (format is ${property:default}). (remm)
+      </update>
     </changelog>
   </subsection>
 </section>
