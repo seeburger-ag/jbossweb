@@ -125,6 +125,10 @@ public class CoyoteReader
 
     public void mark(int readAheadLimit)
         throws IOException {
+        // See BufferedReader#mark(int) JavaDoc
+        if (readAheadLimit < 0) {
+            throw new IllegalArgumentException("readAheadLimit value is negative");
+        }
         ib.mark(readAheadLimit);
     }
 
