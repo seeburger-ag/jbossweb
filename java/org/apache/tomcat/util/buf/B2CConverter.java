@@ -74,45 +74,39 @@ public class B2CConverter {
 	throws IOException
     {
 	// Set the ByteChunk as input to the Intermediate reader
-	convert(bb, cb, cb.getBuffer().length - cb.getEnd());
+	convert(bb, cb, bb.getLength());
     }
 
-    public void convert( ByteChunk bb, CharChunk cb, int limit) 
-        throws IOException
-    {
-        iis.setByteChunk( bb );
-        convert(cb, limit);
-    }
-
-    private void convert(CharChunk cb, int limit)
-	throws IOException
-    {
-	try {
-	    // read from the reader
-            int count = 0;
-	    while( limit > 0 ) { // conv.ready() ) {
+    public void convert(ByteChunk bb, CharChunk cb, int limit)
+    throws IOException {
+        iis.setByteChunk(bb);
+        try {
+            // read from the reader
+            int l = 0;
+            while( limit > 0 ) { // conv.ready() ) {
                 int size = limit < BUFFER_SIZE ? limit : BUFFER_SIZE;
-		int cnt=conv.read( result, 0, size );
-		if( cnt <= 0 ) {
-		    // End of stream ! - we may be in a bad state
-		    if( debug>0)
-			log( "EOF" );
-		    //		    reset();
-		    return;
-		}
-		if( debug > 1 )
-		    log("Converted: " + new String( result, 0, cnt ));
+                l = bb.getLength();
+                int cnt=conv.read( result, 0, size );
+                if( cnt <= 0 ) {
+                    // End of stream ! - we may be in a bad state
+                    if( debug>0)
+                        log( "EOF" );
+                    //		    reset();
+                    return;
+                }
+                if( debug > 1 )
+                    log("Converted: " + new String( result, 0, cnt ));
 
-		// XXX go directly
-		cb.append( result, 0, cnt );
-                limit -= cnt;
-	    }
-	} catch( IOException ex) {
-	    if( debug>0)
-		log( "Reseting the converter " + ex.toString() );
-	    reset();
-	    throw ex;
-	}
+                cb.setLimit(cb.getStart() + cnt);
+                cb.append( result, 0, cnt );
+                limit = limit - (l - bb.getLength());
+            }
+        } catch( IOException ex) {
+            if( debug>0)
+                log( "Reseting the converter " + ex.toString() );
+            reset();
+            throw ex;
+        }
     }
 
     public void reset()
