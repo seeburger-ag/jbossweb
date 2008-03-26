@@ -288,12 +288,6 @@
     <copy todir="${tomcat.dist}/bin">
        <fileset dir="res/procrun/" includes="jboss*.exe"/>
     </copy>
-    <copy todir="${tomcat.dist}/bin/amd64">
-       <fileset dir="res/procrun/amd64" includes="jboss*.exe"/>
-    </copy>
-    <copy todir="${tomcat.dist}/bin/ia64">
-       <fileset dir="res/procrun/ia64" includes="jboss*.exe"/>
-    </copy>  
     <zip zipfile="${tomcat.release}/v${version}/bin/${final.name}.zip">
       <zipfileset dir="${tomcat.dist}" prefix="${final.name}">
         <include name="bin/**"/>
@@ -314,8 +308,6 @@
              in build.properties or in this file
         -->
         <exclude name="bin/*.exe" if="exclude.service.binaries"/>
-        <exclude name="bin/amd64/" if="exclude.service.binaries"/>
-        <exclude name="bin/ia64/" if="exclude.service.binaries"/>
         <exclude name="bin/service.bat" if="exclude.service.binaries"/>
       </zipfileset>
     </zip>
@@ -392,8 +384,6 @@
         <exclude name="src/**" />
         <exclude name="bin/*.dll"/>
         <exclude name="bin/*.exe"/>
-        <exclude name="bin/amd64/"/>
-        <exclude name="bin/ia64/"/>
         <exclude name="bin/service.bat"/>
         <!-- Do we need windows .bat files as part of .tgz?
              If not apply the following rule
