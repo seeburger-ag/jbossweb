@@ -1795,21 +1795,30 @@ public class AprEndpoint {
                     if (setSocketOptions(socket)) {
                         getPoller().add(socket);
                     } else {
-                        // Close socket and pool
-                        Socket.destroy(socket);
+                        // Close socket and pool only if it wasn't closed
+                        // already by the parent pool
+                        if (serverSockPool != 0) {
+                            Socket.destroy(socket);
+                        }
                         socket = 0;
                     }
                 } else {
 
                     // Process the request from this socket
                     if ((status != null) && (handler.event(socket, status) == Handler.SocketState.CLOSED)) {
-                        // Close socket and pool
-                        Socket.destroy(socket);
+                        // Close socket and pool only if it wasn't closed
+                        // already by the parent pool
+                        if (serverSockPool != 0) {
+                            Socket.destroy(socket);
+                        }
                         socket = 0;
                     } else if ((status == null) && ((options && !setSocketOptions(socket)) 
                             || handler.process(socket) == Handler.SocketState.CLOSED)) {
-                        // Close socket and pool
-                        Socket.destroy(socket);
+                        // Close socket and pool only if it wasn't closed
+                        // already by the parent pool
+                        if (serverSockPool != 0) {
+                            Socket.destroy(socket);
+                        }
                         socket = 0;
                     }
                 }
