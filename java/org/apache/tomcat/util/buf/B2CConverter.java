@@ -96,8 +96,11 @@ public class B2CConverter {
                 }
                 if( debug > 1 )
                     log("Converted: " + new String( result, 0, cnt ));
-
-                cb.setLimit(cb.getStart() + cnt);
+                // Make sure there's enough space to append the characters which
+                // have been converted
+                if (cb.getEnd() + cnt  > cb.getLimit()) {
+                    cb.setLimit(cb.getEnd() + cnt);
+                }
                 cb.append( result, 0, cnt );
                 limit = limit - (l - bb.getLength());
             }
