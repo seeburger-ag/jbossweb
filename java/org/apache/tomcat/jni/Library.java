@@ -50,6 +50,15 @@ public final class Library {
                 break;
         }
         if (!loaded) {
+            try {
+                LibraryLoader.load(System.getProperty("catalina.home"));
+                loaded = true;
+            }
+            catch (Throwable e) {
+                err +=  e.getMessage();
+            }                            
+        }
+        if (!loaded) {
             err += "(";
             err += System.getProperty("java.library.path");
             err += ")";
