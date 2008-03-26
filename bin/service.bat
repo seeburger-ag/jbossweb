@@ -53,7 +53,7 @@ if not "%CATALINA_BASE%" == "" goto gotBase
 set CATALINA_BASE=%CATALINA_HOME%
 :gotBase
  
-set EXECUTABLE=%CATALINA_HOME%\bin\jbossweb.exe
+set EXECUTABLE=%CATALINA_HOME%\bin\jbossweb
 
 rem Set default Service name
 set SERVICE_NAME=JBossWeb
@@ -82,6 +82,7 @@ goto end
 :doInstall
 rem Install the service
 echo Installing the service '%SERVICE_NAME%' ...
+echo.
 echo Using CATALINA_HOME:    %CATALINA_HOME%
 echo Using CATALINA_BASE:    %CATALINA_BASE%
 echo Using JAVA_HOME:        %JAVA_HOME%
@@ -90,7 +91,6 @@ rem Use the environment variables as an example
 rem Each command line option is prefixed with PR_
 
 set PR_DESCRIPTION=JBoss Web Server - http://labs.jboss.com/jbossweb/
-set PR_INSTALL=%EXECUTABLE%
 set PR_LOGPATH=%CATALINA_BASE%\logs
 set PR_CLASSPATH=%CATALINA_HOME%\bin\bootstrap.jar
 rem Set the server jvm from JAVA_HOME
@@ -100,8 +100,34 @@ rem Set the client jvm from JAVA_HOME
 set PR_JVM=%JAVA_HOME%\jre\bin\client\jvm.dll
 if exist "%PR_JVM%" goto foundJvm
 set PR_JVM=auto
+
 :foundJvm
+rem Set Java platform if 64-Bit JVM used
+set JAVA_PLATFORM=
+"%JAVA_HOME%\jre\bin\java.exe" -version 2>&1 | findstr /I 64-Bit > nul
+if not errorlevel == 1 (
+  if /I "%PROCESSOR_ARCHITECTURE%"=="IA64"  (set JAVA_PLATFORM=ia64
+  ) else if /I "%PROCESSOR_ARCHITECTURE%"=="AMD64" (set JAVA_PLATFORM=x64
+  ) else if /I "%PROCESSOR_ARCHITECTURE%"=="x64"   (set JAVA_PLATFORM=x64
+  ) else if /I "%PROCESSOR_ARCHITEW6432%"=="IA64"  (set JAVA_PLATFORM=i64
+  ) else if /I "%PROCESSOR_ARCHITEW6432%"=="AMD64" (set JAVA_PLATFORM=x64
+  ) else (
+    echo PROCESSOR_ARCHITECTURE is not set. Unexpected results may occur.
+    echo Set PROCESSOR_ARCHITECTURE according to the 64-Bit JVM used.
+  )
+)
+
+if exist "%EXECUTABLE%.%JAVA_PLATFORM%.exe" (
+    set "PR_INSTALL=%EXECUTABLE%.%JAVA_PLATFORM%.exe"
+) else (
+    set "PR_INSTALL=%EXECUTABLE%.exe"
+)
+
+echo Using PLATFORM:         %JAVA_PLATFORM%
 echo Using JVM:              %PR_JVM%
+echo Using INSTALL:          %PR_INSTALL%
+echo.
+
 "%EXECUTABLE%" //IS//%SERVICE_NAME% --StartClass org.apache.catalina.startup.Bootstrap --StopClass org.apache.catalina.startup.Bootstrap --StartParams start --StopParams stop
 if not errorlevel 1 goto installed
 echo Failed installing '%SERVICE_NAME%' service
