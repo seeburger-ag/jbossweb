@@ -32,10 +32,9 @@ import java.nio.charset.CoderResult;
  */
 public class B2CConverter {
 
-    private static org.jboss.logging.Logger log =
+    protected static org.jboss.logging.Logger log =
         org.jboss.logging.Logger.getLogger(B2CConverter.class);
 
-    protected String charset = null;
     protected CharsetDecoder decoder = null;
     protected ByteBuffer bb = null;
     protected CharBuffer cb = null;
@@ -50,7 +49,6 @@ public class B2CConverter {
      */
     public B2CConverter(String charset) {
         decoder = Charset.forName(charset).newDecoder();
-        this.charset = charset;
         byte[] left = new byte[4];
         leftovers = ByteBuffer.wrap(left);
     }
