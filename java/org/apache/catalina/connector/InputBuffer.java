@@ -297,10 +297,6 @@ public class InputBuffer extends Reader
                 }
             }
         }
-        /*if (available == 0) {
-            coyoteRequest.action(ActionCode.ACTION_AVAILABLE, null);
-            available = (coyoteRequest.getAvailable() > 0) ? 1 : 0;
-        }*/
         return available;
     }
 
@@ -386,8 +382,7 @@ public class InputBuffer extends Reader
             setConverter();
 
         if (bb.getLength() <= 0) {
-            int nRead = realReadBytes(bb.getBytes(), 0, bb.getBytes().length);
-            if (nRead < 0) {
+            if (realReadBytes(bb.getBytes(), 0, bb.getBytes().length) < 0) {
                 return -1;
             }
         }
@@ -395,10 +390,19 @@ public class InputBuffer extends Reader
         if (markPos == -1) {
             cb.setOffset(0);
             cb.setEnd(0);
+        } else {
+            // Make sure there's enough space in the worst case
+            cb.makeSpace(bb.getLength());
+            if ((cb.getBuffer().length - cb.getEnd()) == 0) {
+                // We went over the limit
+                cb.setOffset(0);
+                cb.setEnd(0);
+                markPos = -1;
+            }
         }
 
         state = CHAR_STATE;
-        conv.convert(bb, cb, bb.getLength());
+        conv.convert(bb, cb);
 
         return cb.getLength();
 
@@ -484,7 +488,9 @@ public class InputBuffer extends Reader
         if (offset < size) {
             offset = size;
         }
-        cb.setLimit(cb.getStart() + offset);
+        if (cb.getStart() + offset > cb.getLimit()) {
+            cb.setLimit(cb.getStart() + offset);
+        }
         markPos = cb.getStart();
     }
 
@@ -493,8 +499,6 @@ public class InputBuffer extends Reader
         throws IOException {
         if (state == CHAR_STATE) {
             if (markPos < 0) {
-                cb.recycle();
-                markPos = -1;
                 throw new IOException();
             } else {
                 cb.setOffset(markPos);

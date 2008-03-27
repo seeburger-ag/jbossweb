@@ -651,7 +651,7 @@ public class CoyoteAdapter
                 } else {
                     conv.recycle();
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // Ignore
                 log.error("Invalid URI encoding; using HTTP default");
                 connector.setURIEncoding(null);

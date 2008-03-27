@@ -40,7 +40,7 @@ public final class UTF8Decoder extends B2CConverter {
     // may have state !!
     
     public UTF8Decoder() {
-
+        super("UTF-8");
     }
     
     public void recycle() {
