@@ -64,6 +64,10 @@
       <update>
         For consistency, refactor character output using the NIO character decoders. (remm)
       </update>
+      <update>
+        Move the parameters backend to the probably more efficient MultiMap from Hashtable,
+        and remove the nesting capabilities inherited from Tomcat 3. (remm)
+      </update>
     </changelog>
   </subsection>
 </section>

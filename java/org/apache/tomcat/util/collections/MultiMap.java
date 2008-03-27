@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.util.collections;
 
+import java.util.Enumeration;
+
 import org.apache.tomcat.util.buf.MessageBytes;
 
 // Originally MimeHeaders
@@ -73,6 +75,13 @@ public class MultiMap {
 	return count;
     }
 
+    /**
+     * Return names enumeration.
+     */
+    public Enumeration names() {
+        return new MultiMapNamesEnumeration(this, true, true);
+    }
+    
     /**
      * Returns the Nth header name
      * This may be used to iterate through all header fields.
