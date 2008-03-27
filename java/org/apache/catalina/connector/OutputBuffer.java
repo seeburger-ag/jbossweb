@@ -30,6 +30,7 @@ import org.apache.coyote.Response;
 import org.apache.catalina.Globals;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.C2BConverter;
+import org.apache.tomcat.util.buf.CharChunk;
 
 
 /**
@@ -41,7 +42,7 @@ import org.apache.tomcat.util.buf.C2BConverter;
  * @author Remy Maucherat
  */
 public class OutputBuffer extends Writer
-    implements ByteChunk.ByteOutputChannel {
+    implements ByteChunk.ByteOutputChannel, CharChunk.CharOutputChannel {
 
 
     // -------------------------------------------------------------- Constants
@@ -59,6 +60,12 @@ public class OutputBuffer extends Writer
      * The byte buffer.
      */
     private ByteChunk bb;
+
+
+    /**
+     * The chunk buffer.
+     */
+    private CharChunk cb;
 
 
     /**
@@ -98,6 +105,12 @@ public class OutputBuffer extends Writer
 
 
     /**
+     * Char chunk used to output chars.
+     */
+    private CharChunk outputCharChunk = new CharChunk();
+
+
+    /**
      * Encoding to use.
      */
     private String enc;
@@ -112,7 +125,8 @@ public class OutputBuffer extends Writer
     /**
      * List of encoders.
      */
-    protected HashMap encoders = new HashMap();
+    protected HashMap<String, C2BConverter> encoders = 
+        new HashMap<String, C2BConverter>();
 
 
     /**
@@ -156,6 +170,10 @@ public class OutputBuffer extends Writer
         bb = new ByteChunk(size);
         bb.setLimit(size);
         bb.setByteOutputChannel(this);
+        cb = new CharChunk(size);
+        cb.setLimit(size);
+        cb.setOptimizedWrite(false);
+        cb.setCharOutputChannel(this);
 
     }
 
@@ -169,7 +187,7 @@ public class OutputBuffer extends Writer
      * @param coyoteResponse Associated Coyote response
      */
     public void setResponse(Response coyoteResponse) {
-    this.coyoteResponse = coyoteResponse;
+        this.coyoteResponse = coyoteResponse;
     }
 
 
@@ -225,7 +243,9 @@ public class OutputBuffer extends Writer
         bytesWritten = 0;
         charsWritten = 0;
         
-        bb.recycle(); 
+        bb.recycle();
+        cb.recycle();
+        outputCharChunk.setChars(null, 0, 0);
         closed = false;
         suspended = false;
         
@@ -260,6 +280,12 @@ public class OutputBuffer extends Writer
             return;
         if (suspended)
             return;
+
+        // If there are chars, flush all of them to the byte buffer now as bytes are used to
+        // calculate the content-length (if everything fits into the byte buffer, of course).
+        if (cb.getLength() > 0) {
+            cb.flushBuffer();
+        }
 
         if ((!coyoteResponse.isCommitted()) 
             && (coyoteResponse.getContentLengthLong() == -1)) {
@@ -304,6 +330,9 @@ public class OutputBuffer extends Writer
         if (initial) {
             coyoteResponse.sendHeaders();
             initial = false;
+        }
+        if (cb.getLength() > 0) {
+            cb.flushBuffer();
         }
         if (bb.getLength() > 0) {
             bb.flushBuffer();
@@ -350,7 +379,7 @@ public class OutputBuffer extends Writer
      * @throws IOException An underlying IOException occurred
      */
     public void realWriteBytes(byte buf[], int off, int cnt)
-    throws IOException {
+        throws IOException {
 
         if (closed)
             return;
@@ -417,24 +446,42 @@ public class OutputBuffer extends Writer
     // ------------------------------------------------- Chars Handling Methods
 
 
+    /** 
+     * Convert the chars to bytes, then send the data to the client.
+     * 
+     * @param buf Char buffer to be written to the response
+     * @param off Offset
+     * @param len Length
+     * 
+     * @throws IOException An underlying IOException occurred
+     */
+    public void realWriteChars(char buf[], int off, int len)
+        throws IOException {
+
+        charsWritten += len;
+        outputCharChunk.setChars(buf, off, len);
+        while (outputCharChunk.getLength() > 0) { 
+            conv.convert(outputCharChunk, bb);
+            if (outputCharChunk.getLength() > 0) {
+                bb.flushBuffer();
+            }
+        }
+        
+    }
+
     public void write(int c)
         throws IOException {
 
         if (suspended)
             return;
 
-        conv.convert((char) c);
-        conv.flushBuffer();
-        charsWritten++;
-        
+        cb.append((char) c);
+
     }
 
 
     public void write(char c[])
         throws IOException {
-
-        if (suspended)
-            return;
 
         write(c, 0, c.length);
 
@@ -447,9 +494,7 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
-        conv.convert(c, off, len);
-        conv.flushBuffer();
-        charsWritten += len;
+        cb.append(c, off, len);
 
     }
 
@@ -463,11 +508,9 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
-        charsWritten += len;
         if (s == null)
             s = "null";
-        conv.convert(s, off, len);
-        conv.flushBuffer();
+        cb.append(s, off, len);
 
     }
 
@@ -480,8 +523,7 @@ public class OutputBuffer extends Writer
 
         if (s == null)
             s = "null";
-        conv.convert(s);
-        conv.flushBuffer();
+        cb.append(s);
 
     } 
 
@@ -518,7 +560,7 @@ public class OutputBuffer extends Writer
                             new PrivilegedExceptionAction(){
 
                                 public Object run() throws IOException{
-                                    return new C2BConverter(bb, enc);
+                                    return new C2BConverter(enc);
                                 }
 
                             }
@@ -529,7 +571,7 @@ public class OutputBuffer extends Writer
                         throw (IOException)e; 
                 }
             } else {
-                conv = new C2BConverter(bb, enc);
+                conv = new C2BConverter(enc);
             }
             
             encoders.put(enc, conv);
@@ -596,6 +638,7 @@ public class OutputBuffer extends Writer
     public void reset() {
 
         bb.recycle();
+        cb.recycle();
         bytesWritten = 0;
         charsWritten = 0;
         gotEnc = false;

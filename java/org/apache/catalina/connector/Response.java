@@ -1502,16 +1502,16 @@ public class Response
                 if (!leadingSlash) {
                     String relativePath = request.getDecodedRequestURI();
                     int pos = relativePath.lastIndexOf('/');
-                    relativePath = relativePath.substring(0, pos);
                     
-                    String encodedURI = null;
-                    final String frelativePath = relativePath;
+                    CharChunk encodedURI = null;
                     if (SecurityUtil.isPackageProtectionEnabled() ){
+                        final String frelativePath = relativePath;
+                        final int fend = pos;
                         try{
-                            encodedURI = (String)AccessController.doPrivileged( 
+                            encodedURI = (CharChunk)AccessController.doPrivileged( 
                                 new PrivilegedExceptionAction(){                                
                                     public Object run() throws IOException{
-                                        return urlEncoder.encodeURL(frelativePath);
+                                        return urlEncoder.encodeURL(frelativePath, 0, fend);
                                     }
                            });   
                         } catch (PrivilegedActionException pae){
@@ -1521,9 +1521,10 @@ public class Response
                             throw iae;
                         }
                     } else {
-                        encodedURI = urlEncoder.encodeURL(relativePath);
+                        encodedURI = urlEncoder.encodeURL(relativePath, 0, pos);
                     }
-                    redirectURLCC.append(encodedURI, 0, encodedURI.length());
+                    redirectURLCC.append(encodedURI);
+                    encodedURI.recycle();
                     redirectURLCC.append('/');
                 }
                 redirectURLCC.append(location, 0, location.length());

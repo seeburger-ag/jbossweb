@@ -31,33 +31,35 @@ import java.util.BitSet;
  *  while encoding a URL you can add "/".
  *
  *  @author Costin Manolache
+ *  @author Remy Maucherat
  */
 public final class UEncoder {
 
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger(UEncoder.class );
+    private static org.jboss.logging.Logger log =
+        org.jboss.logging.Logger.getLogger(UEncoder.class);
     
     // Not static - the set may differ ( it's better than adding
     // an extra check for "/", "+", etc
     private BitSet safeChars=null;
     private C2BConverter c2b=null;
     private ByteChunk bb=null;
+    private CharChunk cb=null;
+    private CharChunk output=null;
 
     private String encoding="UTF8";
     private static final int debug=0;
     
     public UEncoder() {
-	initSafeChars();
+        initSafeChars();
     }
 
     public void setEncoding( String s ) {
-	encoding=s;
+        encoding=s;
     }
 
     public void addSafeCharacter( char c ) {
-	safeChars.set( c );
+        safeChars.set( c );
     }
-
 
     /** URL Encode string, using a specified encoding.
      *
@@ -65,79 +67,63 @@ public final class UEncoder {
      * @param s string to be encoded
      * @throws IOException If an I/O error occurs
      */
-    public void urlEncode( Writer buf, String s )
-	throws IOException
-    {
-	if( c2b==null ) {
-	    bb=new ByteChunk(16); // small enough.
-	    c2b=new C2BConverter( bb, encoding );
-	}
+    public CharChunk encodeURL(String s, int start, int end)
+        throws IOException {
+        if (c2b == null) {
+            bb = new ByteChunk(8); // small enough.
+            cb = new CharChunk(2); // small enough.
+            output = new CharChunk(64); // small enough.
+            c2b = new C2BConverter(encoding);
+        } else {
+            bb.recycle();
+            cb.recycle();
+        }
 
-	for (int i = 0; i < s.length(); i++) {
-	    int c = (int) s.charAt(i);
-	    if( safeChars.get( c ) ) {
-		if( debug > 0 ) log("Safe: " + (char)c);
-		buf.write((char)c);
-	    } else {
-		if( debug > 0 ) log("Unsafe:  " + (char)c);
-		c2b.convert( (char)c );
-		
-		// "surrogate" - UTF is _not_ 16 bit, but 21 !!!!
-		// ( while UCS is 31 ). Amazing...
-		if (c >= 0xD800 && c <= 0xDBFF) {
-		    if ( (i+1) < s.length()) {
-			int d = (int) s.charAt(i+1);
-			if (d >= 0xDC00 && d <= 0xDFFF) {
-			    if( debug > 0 ) log("Unsafe:  " + c);
-			    c2b.convert( (char)d);
-			    i++;
-			}
-		    }
-		}
+        for (int i = start; i < end; i++) {
+            char c = s.charAt(i);
+            if (safeChars.get(c)) {
+                if( debug > 0 ) log("Safe: " + (char)c);
+                output.append(c);
+            } else {
+                if( debug > 0 ) log("Unsafe:  " + (char)c);
+                cb.append(c);
+                c2b.convert(cb, bb);
 
-		c2b.flushBuffer();
-		
-		urlEncode( buf, bb.getBuffer(), bb.getOffset(),
-			   bb.getLength() );
-		bb.recycle();
-	    }
-	}
+                // "surrogate" - UTF is _not_ 16 bit, but 21 !!!!
+                // ( while UCS is 31 ). Amazing...
+                if (c >= 0xD800 && c <= 0xDBFF) {
+                    if ((i+1) < end) {
+                        char d = s.charAt(i+1);
+                        if (d >= 0xDC00 && d <= 0xDFFF) {
+                            if( debug > 0 ) log("Unsafe:  " + d);
+                            cb.append(d);
+                            c2b.convert(cb, bb);
+                            i++;
+                        }
+                    }
+                }
+
+                urlEncode(output, bb);
+                cb.recycle();
+                bb.recycle();
+            }
+        }
+        
+        return output;
     }
 
-    /**
-     */
-    public void urlEncode( Writer buf, byte bytes[], int off, int len)
-	throws IOException
-    {
-	for( int j=off; j< len; j++ ) {
-	    buf.write( '%' );
-	    char ch = Character.forDigit((bytes[j] >> 4) & 0xF, 16);
-	    if( debug > 0 ) log("Encode:  " + ch);
-	    buf.write(ch);
-	    ch = Character.forDigit(bytes[j] & 0xF, 16);
-	    if( debug > 0 ) log("Encode:  " + ch);
-	    buf.write(ch);
-	}
-    }
-    
-    /**
-     * Utility funtion to re-encode the URL.
-     * Still has problems with charset, since UEncoder mostly
-     * ignores it.
-     */
-    public String encodeURL(String uri) {
-	String outUri=null;
-	try {
-	    // XXX optimize - recycle, etc
-	    CharArrayWriter out = new CharArrayWriter();
-	    urlEncode(out, uri);
-	    outUri=out.toString();
-	} catch (IOException iex) {
-	}
-	return outUri;
+    protected void urlEncode(CharChunk out, ByteChunk bb)
+        throws IOException {
+        byte[] bytes = bb.getBuffer();
+        for (int j = bb.getStart(); j < bb.getEnd(); j++) {
+            out.append('%');
+            char ch = Character.forDigit((bytes[j] >> 4) & 0xF, 16);
+            out.append(ch);
+            ch = Character.forDigit(bytes[j] & 0xF, 16);
+            out.append(ch);
+        }
     }
     
-
     // -------------------- Internal implementation --------------------
     
     // 

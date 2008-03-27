@@ -61,6 +61,9 @@
         <bug>44494</bug>: Fix incorrect reads with multibyte charsets by moving the byte to char
         converter to the NIO character decoders. (remm)
       </update>
+      <update>
+        For consistency, refactor character output using the NIO character decoders. (remm)
+      </update>
     </changelog>
   </subsection>
 </section>
