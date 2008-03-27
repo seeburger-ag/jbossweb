@@ -41,8 +41,7 @@ import org.apache.tomcat.util.buf.CharChunk;
  * @author Remy Maucherat
  */
 public class InputBuffer extends Reader
-    implements ByteChunk.ByteInputChannel, CharChunk.CharInputChannel,
-               CharChunk.CharOutputChannel {
+    implements ByteChunk.ByteInputChannel, CharChunk.CharInputChannel {
 
 
     // -------------------------------------------------------------- Constants
@@ -81,27 +80,9 @@ public class InputBuffer extends Reader
 
 
     /**
-     * Number of bytes read.
-     */
-    private int bytesRead = 0;
-
-
-    /**
-     * Number of chars read.
-     */
-    private int charsRead = 0;
-
-
-    /**
      * Flag which indicates if the input buffer is closed.
      */
     private boolean closed = false;
-
-
-    /**
-     * Byte chunk used to input bytes.
-     */
-    private ByteChunk inputChunk = new ByteChunk();
 
 
     /**
@@ -119,7 +100,8 @@ public class InputBuffer extends Reader
     /**
      * List of encoders.
      */
-    protected HashMap encoders = new HashMap();
+    protected HashMap<String, B2CConverter> encoders = 
+        new HashMap<String, B2CConverter>();
 
 
     /**
@@ -181,7 +163,6 @@ public class InputBuffer extends Reader
         cb.setLimit(size);
         cb.setOptimizedWrite(false);
         cb.setCharInputChannel(this);
-        cb.setCharOutputChannel(this);
 
     }
 
@@ -218,8 +199,6 @@ public class InputBuffer extends Reader
     public void recycle() {
         
         state = INITIAL_STATE;
-        bytesRead = 0;
-        charsRead = 0;
         
         // If usage of mark made the buffer too big, reallocate it
         if (cb.getChars().length > size) {
@@ -227,7 +206,6 @@ public class InputBuffer extends Reader
             cb.setLimit(size);
             cb.setOptimizedWrite(false);
             cb.setCharInputChannel(this);
-            cb.setCharOutputChannel(this);
         } else {
             cb.recycle();
         }
@@ -354,20 +332,6 @@ public class InputBuffer extends Reader
 
 
     // ------------------------------------------------- Chars Handling Methods
-
-
-    /**
-     * Since the converter will use append, it is possible to get chars to
-     * be removed from the buffer for "writing". Since the chars have already
-     * been read before, they are ignored. If a mark was set, then the
-     * mark is lost.
-     */
-    public void realWriteChars(char c[], int off, int len) 
-        throws IOException {
-        markPos = -1;
-        cb.setOffset(0);
-        cb.setEnd(0);
-    }
 
 
     public void setEncoding(String s) {
@@ -527,7 +491,7 @@ public class InputBuffer extends Reader
         gotEnc = true;
         if (enc == null)
             enc = DEFAULT_ENCODING;
-        conv = (B2CConverter) encoders.get(enc);
+        conv = encoders.get(enc);
         if (conv == null) {
             if (SecurityUtil.isPackageProtectionEnabled()){
                 try{
