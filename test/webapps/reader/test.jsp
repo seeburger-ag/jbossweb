@@ -39,26 +39,52 @@
             if (sb.length() > size) {
                 sb.delete(size, sb.length());
             }
-%>
 
-<FORM method="POST" action="<%= response.encodeURL("readLine.jsp") %>" enctype="multipart/form-data">
-request#getReader()#readLine test<BR>
-<input type="text" name="<%= formName %>" value="<%= sb.toString() %>" />
-<input type="submit" value="send" /></FORM>
-
-<FORM method="POST" action="<%= response.encodeURL("read.jsp") %>" enctype="multipart/form-data">
-request#getReader()#read() test<BR>
-<input type="text" name="<%= formName %>" value="<%= sb.toString() %>" />
-<input type="submit" value="send" /></FORM>
-
-<FORM method="POST" action="<%= response.encodeURL("readCharB.jsp") %>" enctype="multipart/form-data" >
-request#getReader()#read(char[1]) test<BR>
-<input type="text" name="<%= formName %>" value="<%= sb.toString() %>" />
-<input type="submit" value="send" /></FORM>
-
-<%
             session.setAttribute("expected", sb.toString());
             session.setAttribute("formName", formName);
+
+            String kind = request.getParameter("kind");
+
+            if ("read".equals(kind)) {
+%>
+
+<FORM method="POST" action="<%= response.encodeURL("readLine.jsp") %>"
+	enctype="multipart/form-data">request#getReader()#readLine test<BR>
+<input type="text" name="<%= formName %>" value="<%= sb.toString() %>" />
+<input type="submit" value="send" /></FORM>
+
+<FORM method="POST" action="<%= response.encodeURL("read.jsp") %>"
+	enctype="multipart/form-data">request#getReader()#read() test<BR>
+<input type="text" name="<%= formName %>" value="<%= sb.toString() %>" />
+<input type="submit" value="send" /></FORM>
+
+<FORM method="POST" action="<%= response.encodeURL("readCharB.jsp") %>"
+	enctype="multipart/form-data">request#getReader()#read(char[1])
+test<BR>
+<input type="text" name="<%= formName %>" value="<%= sb.toString() %>" />
+<input type="submit" value="send" /></FORM>
+<%
+} else if ("garbage".equals(kind)) {
+            session.setAttribute("readForGarbage",request.getParameter("readForGarbage"));
+%>
+<FORM method="POST"
+	action="<%= response.encodeURL("garbage.jsp")%>"
+	enctype="multipart/form-data">garbage in bufffer test<BR>
+<input type="text" name="<%= formName %>" value="<%= sb.toString() %>" />
+<input type="submit" value="send" /></FORM>
+<%
+} else if ("mark/reset".equals(kind)) {
+            session.setAttribute("readBeforeMark",request.getParameter("readBeforeMark"));
+            session.setAttribute("readAheadLimit",request.getParameter("readAheadLimit"));
+            session.setAttribute("readAfterMark",request.getParameter("readAfterMark"));
+%>
+<FORM method="POST"
+	action="<%= response.encodeURL("mark.jsp") %>"
+	enctype="multipart/form-data">mark/reset test<BR>
+<input type="text" name="<%= formName %>" value="<%= sb.toString() %>" />
+<input type="submit" value="send" /></FORM>
+<%
+}
 %>
 </BODY>
 </HTML>

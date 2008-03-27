@@ -20,15 +20,17 @@ readLine.jsp is called.
             readLine(reader, sb);
 
             //outln(out,sb.toString());
-            
+
             String boundary = null;
             String contentType = request.getContentType();
-            if(contentType != null){
+            if (contentType != null) {
                 int delim = contentType.indexOf("boundary=");
-                boundary = contentType.substring(delim+9).trim();
+                boundary = contentType.substring(delim + 9).trim();
             }
-            expected = "--"+boundary+"\r\nContent-Disposition: form-data; name=\""+formName+"\"\r\n\r\n"+expected+"\r\n--"+boundary+"--\r\n";
-            
+            expected = "--" + boundary
+                    + "\r\nContent-Disposition: form-data; name=\"" + formName
+                    + "\"\r\n\r\n" + expected + "\r\n--" + boundary + "--\r\n";
+
             outln(out, "Content-Type:" + request.getContentType());
             outln(out, "Character Encoding:" + request.getCharacterEncoding());
             outln(out, "Content-Length:" + request.getContentLength());
@@ -42,7 +44,7 @@ readLine.jsp is called.
 <%!void readLine(BufferedReader br, StringBuffer sb) throws IOException {
         String read = null;
         while ((read = br.readLine()) != null) {
-            sb.append(read+"\r\n");
+            sb.append(read + "\r\n");
         }
     }
 
