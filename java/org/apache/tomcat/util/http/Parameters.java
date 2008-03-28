@@ -175,6 +175,21 @@ public final class Parameters extends MultiMap {
     protected CharChunk tmpNameC = new CharChunk(32);
     protected CharChunk tmpValueC = new CharChunk(128);
 
+    public void processParameters( MessageBytes data ) {
+        processParameters(data, encoding);
+    }
+
+    public void processParameters( MessageBytes data, String encoding ) {
+        if( data==null || data.isNull() || data.getLength() <= 0 ) return;
+
+        if (data.getType() != MessageBytes.T_BYTES) {
+            data.toBytes();
+        }
+        ByteChunk bc=data.getByteChunk();
+        processParameters( bc.getBytes(), bc.getOffset(),
+                           bc.getLength(), encoding);
+    }
+
     public void processParameters( byte bytes[], int start, int len ) {
         processParameters(bytes, start, len, encoding);
     }
@@ -237,7 +252,7 @@ public final class Parameters extends MultiMap {
         } while( pos<end );
     }
 
-    private String urlDecode(ByteChunk bc, String enc)
+    protected String urlDecode(ByteChunk bc, String enc)
         throws IOException {
         if( urlDec==null ) {
             urlDec=new UDecoder();   
@@ -265,87 +280,6 @@ public final class Parameters extends MultiMap {
         return result;
     }
 
-    public void processParameters( char chars[], int start, int len ) {
-        int end=start+len;
-        int pos=start;
-        
-        if( debug>0 ) 
-            log( "Chars: " + new String( chars, start, len ));
-        do {
-            boolean noEq=false;
-            int nameStart=pos;
-            int valStart=-1;
-            int valEnd=-1;
-            
-            int nameEnd=CharChunk.indexOf(chars, nameStart, end, '=' );
-            int nameEnd2=CharChunk.indexOf(chars, nameStart, end, '&' );
-            if( (nameEnd2!=-1 ) &&
-                ( nameEnd==-1 || nameEnd > nameEnd2) ) {
-                nameEnd=nameEnd2;
-                noEq=true;
-                valStart=nameEnd;
-                valEnd=nameEnd;
-                if( debug>0) log("no equal " + nameStart + " " + nameEnd + " " + new String(chars, nameStart, nameEnd-nameStart) );
-            }
-            if( nameEnd== -1 ) nameEnd=end;
-            
-            if( ! noEq ) {
-                valStart= (nameEnd < end) ? nameEnd+1 : end;
-                valEnd=CharChunk.indexOf(chars, valStart, end, '&');
-                if( valEnd== -1 ) valEnd = (valStart < end) ? end : valStart;
-            }
-            
-            pos=valEnd+1;
-            
-            if( nameEnd<=nameStart ) {
-                continue;
-                // invalid chunk - no name, it's better to ignore
-                // XXX log it ?
-            }
-            
-            try {
-                tmpNameC.append( chars, nameStart, nameEnd-nameStart );
-                tmpValueC.append( chars, valStart, valEnd-valStart );
-
-                if( debug > 0 )
-                    log( tmpNameC + "= " + tmpValueC);
-
-                if( urlDec==null ) {
-                    urlDec=new UDecoder();   
-                }
-
-                urlDec.convert( tmpNameC );
-                urlDec.convert( tmpValueC );
-
-                if( debug > 0 )
-                    log( tmpNameC + "= " + tmpValueC);
-                
-                addParam( tmpNameC.toString(), tmpValueC.toString() );
-            } catch( IOException ex ) {
-                ex.printStackTrace();
-            }
-
-            tmpNameC.recycle();
-            tmpValueC.recycle();
-
-        } while( pos<end );
-    }
-    
-    public void processParameters( MessageBytes data ) {
-        processParameters(data, encoding);
-    }
-
-    public void processParameters( MessageBytes data, String encoding ) {
-        if( data==null || data.isNull() || data.getLength() <= 0 ) return;
-
-        if (data.getType() != MessageBytes.T_BYTES) {
-            data.toBytes();
-        }
-        ByteChunk bc=data.getByteChunk();
-        processParameters( bc.getBytes(), bc.getOffset(),
-                           bc.getLength(), encoding);
-    }
-
     /** Debug purpose
      */
     public String paramsAsString() {
@@ -368,78 +302,4 @@ public final class Parameters extends MultiMap {
             log.debug("Parameters: " + s );
     }
    
-    // -------------------- Old code, needs rewrite --------------------
-    
-    /** Used by RequestDispatcher
-     */
-    public void processParameters( String str ) {
-        int end=str.length();
-        int pos=0;
-        if( debug > 0)
-            log("String: " + str );
-        
-        do {
-            boolean noEq=false;
-            int valStart=-1;
-            int valEnd=-1;
-            
-            int nameStart=pos;
-            int nameEnd=str.indexOf('=', nameStart );
-            int nameEnd2=str.indexOf('&', nameStart );
-            if( nameEnd2== -1 ) nameEnd2=end;
-            if( (nameEnd2!=-1 ) &&
-                ( nameEnd==-1 || nameEnd > nameEnd2) ) {
-                nameEnd=nameEnd2;
-                noEq=true;
-                valStart=nameEnd;
-                valEnd=nameEnd;
-                if( debug>0) log("no equal " + nameStart + " " + nameEnd + " " + str.substring(nameStart, nameEnd) );
-            }
-
-            if( nameEnd== -1 ) nameEnd=end;
-
-            if( ! noEq ) {
-                valStart=nameEnd+1;
-                valEnd=str.indexOf('&', valStart);
-                if( valEnd== -1 ) valEnd = (valStart < end) ? end : valStart;
-            }
-            
-            pos=valEnd+1;
-            
-            if( nameEnd<=nameStart ) {
-                continue;
-            }
-            if( debug>0)
-                log( "XXX " + nameStart + " " + nameEnd + " "
-                     + valStart + " " + valEnd );
-            
-            try {
-                tmpNameC.append(str, nameStart, nameEnd-nameStart );
-                tmpValueC.append(str, valStart, valEnd-valStart );
-            
-                if( debug > 0 )
-                    log( tmpNameC + "= " + tmpValueC);
-
-                if( urlDec==null ) {
-                    urlDec=new UDecoder();   
-                }
-
-                urlDec.convert( tmpNameC );
-                urlDec.convert( tmpValueC );
-
-                if( debug > 0 )
-                    log( tmpNameC + "= " + tmpValueC);
-                
-                addParam( tmpNameC.toString(), tmpValueC.toString() );
-            } catch( IOException ex ) {
-                ex.printStackTrace();
-            }
-
-            tmpNameC.recycle();
-            tmpValueC.recycle();
-
-        } while( pos<end );
-    }
-
-
 }
