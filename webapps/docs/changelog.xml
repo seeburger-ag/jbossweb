@@ -24,6 +24,10 @@
       <fix>
         Remove tomcat-native.tar.gz from the distribution (JBoss Native should be used instead). (remm)
       </fix>
+      <fix>
+        <bug>44562</bug>: HEAD requests cannot use includes. Patch provided by
+        David Jencks. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Catalina">
