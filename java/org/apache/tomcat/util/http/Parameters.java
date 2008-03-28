@@ -107,9 +107,9 @@ public final class Parameters extends MultiMap {
     public String[] getParameterValues(String name) {
         handleQueryParameters();
         int pos = findFirst(name);
-        if (pos > 0) {
+        if (pos >= 0) {
             ArrayList<String> result = new ArrayList<String>();
-            while (pos > 0) {
+            while (pos >= 0) {
                 result.add(getValue(pos).toString());
                 pos = findNext(pos);
             }
@@ -128,7 +128,7 @@ public final class Parameters extends MultiMap {
     public String getParameter(String name) {
         handleQueryParameters();
         int pos = findFirst(name);
-        if (pos > 0) {
+        if (pos >= 0) {
             return getValue(pos).toString();
         } else {
             return null;

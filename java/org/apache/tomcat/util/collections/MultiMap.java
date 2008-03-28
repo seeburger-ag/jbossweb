@@ -195,21 +195,21 @@ public class MultiMap {
     }
 
     public int findNext( int startPos ) {
-	int next= fields[startPos].nextPos;
-	if( next != MultiMap.NEED_NEXT ) {
-	    return next;
-	}
+        int next= fields[startPos].nextPos;
+        if( next != MultiMap.NEED_NEXT ) {
+            return next;
+        }
 
-	// next==NEED_NEXT, we never searched for this header
-	MessageBytes name=fields[startPos].name;
-        for (int i = startPos; i < count; i++) {
-	    if (fields[i].name.equals(name)) {
-		// cache the search result
-		fields[startPos].nextPos=i;
-		return i;
-	    }
-	}
-	fields[startPos].nextPos= MultiMap.LAST;
+        // next==NEED_NEXT, we never searched for this header
+        MessageBytes name=fields[startPos].name;
+        for (int i = (startPos + 1); i < count; i++) {
+            if (fields[i].name.equals(name)) {
+                // cache the search result
+                fields[startPos].nextPos=i;
+                return i;
+            }
+        }
+        fields[startPos].nextPos= MultiMap.LAST;
         return -1;
     }
 
@@ -219,8 +219,8 @@ public class MultiMap {
 
     // -------------------- Internal representation --------------------
     final class Field {
-	MessageBytes name;
-	MessageBytes value;
+	MessageBytes name = MessageBytes.newInstance();
+	MessageBytes value = MessageBytes.newInstance();
 
 	// Extra info for speed
 	
