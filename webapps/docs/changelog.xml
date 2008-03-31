@@ -39,6 +39,15 @@
       <update>
         Add Comet EOF event when the end of the stream is reached without an error. (remm)
       </update>
+      <fix>
+        Remove hackish code to get the System environment in the CGI Servlet. (markt)
+      </fix>
+      <fix>
+        <bug>44529</bug>: No roles (deny all) trumps no auth-constraint (allow all). (markt)
+      </fix>
+      <fix>
+        <bug>44673</bug>: Fix ServletInputStream still readable when closed. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -71,6 +80,10 @@
       <update>
         Move the parameters backend to the probably more efficient MultiMap from Hashtable,
         and remove the nesting capabilities inherited from Tomcat 3. (remm)
+      </update>
+      <update>
+        Repackage MimeHeaders and Parameters using inner classes, and remove all obsolete
+        collections. (remm)
       </update>
     </changelog>
   </subsection>

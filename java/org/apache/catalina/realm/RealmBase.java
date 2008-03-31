@@ -751,7 +751,7 @@ public abstract class RealmBase
         // Which user principal have we already authenticated?
         Principal principal = request.getPrincipal();
         boolean status = false;
-        boolean denyfromall = false;
+        boolean denyFromAll = false;
         for(int i=0; i < constraints.length; i++) {
             SecurityConstraint constraint = constraints[i];
 
@@ -774,18 +774,17 @@ public abstract class RealmBase
                     if( log.isDebugEnabled() )
                         log.debug("No roles ");
                     status = false; // No listed roles means no access at all
-                    denyfromall = true;
+                    denyFromAll = true;
+                    break;
                 } else {
                     if(log.isDebugEnabled())
                         log.debug("Passing all access");
-                    return (true);
+                    status = true;
                 }
             } else if (principal == null) {
                 if (log.isDebugEnabled())
                     log.debug("  No user authenticated, cannot grant access");
-                status = false;
-            } else if(!denyfromall) {
-
+            } else {
                 for (int j = 0; j < roles.length; j++) {
                     if (hasRole(principal, roles[j]))
                         status = true;
@@ -795,7 +794,7 @@ public abstract class RealmBase
             }
         }
 
-        if (allRolesMode != AllRolesMode.STRICT_MODE && !status && principal != null) {
+        if (!denyFromAll && allRolesMode != AllRolesMode.STRICT_MODE && !status && principal != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Checking for all roles mode: " + allRolesMode);
             }
