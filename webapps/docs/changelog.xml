@@ -52,6 +52,10 @@
         <bug>44611</bug>: Implement DirContextURLConnection.getHeaderFields(), fix case
         sensitivity problem and return null for header values which don't exist. (markt)
       </fix>
+      <fix>
+        <bug>44646</bug>: Fix tracking problems in the Comet utility valve (which provides
+        notification for certain events such as session expiration and server shutdown). (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
