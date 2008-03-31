@@ -48,6 +48,10 @@
       <fix>
         <bug>44673</bug>: Fix ServletInputStream still readable when closed. (markt)
       </fix>
+      <fix>
+        <bug>44611</bug>: Implement DirContextURLConnection.getHeaderFields(), fix case
+        sensitivity problem and return null for header values which don't exist. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
