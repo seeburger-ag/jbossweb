@@ -473,11 +473,11 @@ public class Request
     
 
     /**
-     * Read bytes into the low level buffer.
+     * Return true if the EOF has been reached.
      */
-    public boolean isClosed()
+    public boolean isEof()
         throws IOException {
-        return (inputBuffer.isClosed());
+        return (inputBuffer.isEof());
     }
     
 

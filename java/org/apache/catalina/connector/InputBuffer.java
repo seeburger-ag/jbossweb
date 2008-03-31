@@ -86,6 +86,12 @@ public class InputBuffer extends Reader
 
 
     /**
+     * Flag which indicates if the end of stream has been reached.
+     */
+    private boolean eof = false;
+
+
+    /**
      * Encoding to use.
      */
     private String enc;
@@ -212,6 +218,7 @@ public class InputBuffer extends Reader
         markPos = -1;
         bb.recycle(); 
         closed = false;
+        eof = false;
         
         if (conv != null) {
             conv.recycle();
@@ -247,6 +254,14 @@ public class InputBuffer extends Reader
      */
     public boolean isClosed() {
         return closed;
+    }
+
+
+    /**
+     * Returns if the eof has been reached.
+     */
+    public boolean isEof() {
+        return eof;
     }
 
 
@@ -294,7 +309,7 @@ public class InputBuffer extends Reader
     public int realReadBytes(byte cbuf[], int off, int len)
 	throws IOException {
 
-        if (closed)
+        if (eof)
             return -1;
         if (coyoteRequest == null)
             return -1;
@@ -305,7 +320,7 @@ public class InputBuffer extends Reader
         try {
             int n = coyoteRequest.doRead(bb);
             if (n < 0) {
-                closed = true;
+                eof = true;
             }
             return n;
         } catch (IOException e) {

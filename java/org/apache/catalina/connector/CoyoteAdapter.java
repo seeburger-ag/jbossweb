@@ -241,13 +241,13 @@ public class CoyoteAdapter
                     error = true;
                     connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
                 }
-                if (!error && !eof && (status == SocketStatus.OPEN_READ) && request.isClosed()) {
+                if (!error && !eof && (status == SocketStatus.OPEN_READ) && request.isEof()) {
                     // Send an EOF event
                     request.getEvent().setType(CometEvent.EventType.EOF);
                     eof = true;
                     connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
                 }
-                if (!error && request.isClosed()) {
+                if (!error && request.isEof()) {
                     request.suspend();
                 }
                 if (error || close) {
