@@ -26,8 +26,10 @@ import java.nio.charset.CoderResult;
 
 /**
  * NIO based character encoder.
+ * 
+ * @author Remy Maucherat
  */
-public final class C2BConverter {
+public class C2BConverter {
     
     protected static org.jboss.logging.Logger log =
         org.jboss.logging.Logger.getLogger(C2BConverter.class);
@@ -44,14 +46,17 @@ public final class C2BConverter {
     }
 
     /** 
-     * The encoding remain in effect, the encoder remains allocated.
+     * Reset the encoder state.
      */
     public void recycle() {
         encoder.reset();
     }
 
     /**
-     * Convert the given charaters to bytes. 
+     * Convert the given characters to bytes. 
+     * 
+     * @param cc char input
+     * @param bc byte output
      */
     public void convert(CharChunk cc, ByteChunk bc) 
     throws IOException {
@@ -73,10 +78,8 @@ public final class C2BConverter {
             cb.position(cc.getStart());
             cb.limit(cc.getEnd());
         }
-        // Parse leftover if any are present
-        CoderResult result = null;
         // Do the decoding and get the results into the byte chunk and the char chunk
-        result = encoder.encode(cb, bb, false);
+        CoderResult result = encoder.encode(cb, bb, false);
         if (result.isError() || result.isMalformed()) {
             result.throwException();
         } else if (result.isOverflow()) {

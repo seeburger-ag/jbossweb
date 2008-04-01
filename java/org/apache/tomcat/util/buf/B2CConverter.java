@@ -26,7 +26,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 
 /**
- * Helper class to handle byte to char conversion using NIO.
+ * NIO based character decoder.
  * 
  * @author Remy Maucherat
  */
@@ -54,10 +54,18 @@ public class B2CConverter {
     }
 
     /**
-     * Convert the given bytes to chars.
+     * Reset the decoder state, and empty the leftover buffer.
+     */
+    public void recycle() {
+        decoder.reset();
+        leftovers.position(0);
+    }
+
+    /**
+     * Convert the given bytes to characters.
      * 
-     * @param bc
-     * @param cc
+     * @param bc byte input
+     * @param cc char output
      */
     public void convert(ByteChunk bc, CharChunk cc) 
         throws IOException {
@@ -78,10 +86,11 @@ public class B2CConverter {
             cb.position(cc.getEnd());
             cb.limit(cc.getBuffer().length);
         }
-        // Parse leftover if any are present
         CoderResult result = null;
+        // Parse leftover if any are present
         if (leftovers.position() > 0) {
             int pos = cb.position();
+            // Loop until one char is decoded or there is a decoder error
             do {
                 leftovers.put(bc.substractB());
                 leftovers.flip();
@@ -115,15 +124,6 @@ public class B2CConverter {
                 bc.substract(leftovers.array(), 0, bc.getLength());
             }
         }
-    }
-
-    /**
-     * Reset the internal state, empty the buffers.
-     * The encoding remain in effect, the internal buffers remain allocated.
-     */
-    public void recycle() {
-        decoder.reset();
-        leftovers.position(0);
     }
 
 }
