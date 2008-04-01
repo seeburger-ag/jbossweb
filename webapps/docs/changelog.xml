@@ -8,6 +8,7 @@
 
   <properties>
     <author email="remm@apache.org">Remy Maucherat</author>
+    <author email="jfclere@apache.org">Jean-Frederic Clere</author>
     <author email="yoavs@apache.org">Yoav Shapira</author>
     <author email="fhanik@apache.org">Filip Hanik</author>
     <title>Changelog</title>
@@ -96,6 +97,13 @@
       <fix>
         maxSavePostSize set to 0 for HTTP connectors should disable buffering done before SSL
         handshake. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+       Port Tomcat fix for bugzilla 42693. (jfclere).
       </fix>
     </changelog>
   </subsection>
