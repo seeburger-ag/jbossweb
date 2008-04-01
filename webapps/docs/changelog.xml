@@ -93,6 +93,10 @@
         Repackage MimeHeaders and Parameters using inner classes, and remove all obsolete
         collections. (remm)
       </update>
+      <fix>
+        maxSavePostSize set to 0 for HTTP connectors should disable buffering done before SSL
+        handshake. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

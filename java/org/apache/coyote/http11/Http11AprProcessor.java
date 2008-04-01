@@ -1226,7 +1226,7 @@ public class Http11AprProcessor implements ActionHook {
             if (ssl && (socket != 0)) {
                  // Consume and buffer the request body, so that it does not
                  // interfere with the client's handshake messages
-                if (maxSavePostSize > -2) {
+                if (maxSavePostSize != 0) {
                     InputFilter[] inputFilters = inputBuffer.getFilters();
                     ((BufferedInputFilter) inputFilters[Constants.BUFFERED_FILTER]).setLimit(maxSavePostSize);
                     inputBuffer.addActiveFilter(inputFilters[Constants.BUFFERED_FILTER]);
