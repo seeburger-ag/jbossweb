@@ -253,11 +253,6 @@
   <!--                                                                      -->
   <!--   outputEncoding      The encoding to use for the page that results  -->
   <!--                       from the SSI processing. [UTF-8]               -->
-  <!--                                                                      -->
-  <!--                                                                      -->
-  <!-- IMPORTANT: To use the SSI servlet, you also need to rename the       -->
-  <!--            $CATALINA_HOME/server/lib/servlets-ssi.renametojar file   -->
-  <!--            to $CATALINA_HOME/server/lib/servlets-ssi.jar             -->
 
 <!--
     <servlet>
@@ -310,10 +305,6 @@
   <!--                                                                      -->
   <!--   passShellEnvironment Should the shell environment variables (if    -->
   <!--                        any) be passed to the CGI script? [false]     -->
-  <!--                                                                      -->
-  <!-- IMPORTANT: To use the CGI servlet, you also need to rename the       -->
-  <!--            $CATALINA_HOME/server/lib/servlets-cgi.renametojar file   -->
-  <!--            to $CATALINA_HOME/server/lib/servlets-cgi.jar             -->
 
 <!--
     <servlet>

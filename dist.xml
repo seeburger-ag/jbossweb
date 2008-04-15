@@ -134,7 +134,7 @@
 
   </target>
 
-  <target name="dist-javadoc" description="Create the Tomcat javadoc" >
+  <target name="dist-javadoc" depends="dist-source" description="Create the Tomcat javadoc" >
     <javadoc packagenames="org.apache.*"
       sourcepath="${tomcat.dist}/src/java"
       destdir="${tomcat.dist}/webapps/docs/api"
