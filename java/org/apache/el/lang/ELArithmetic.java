@@ -110,12 +110,12 @@ public abstract class ELArithmetic {
     public final static class DoubleDelegate extends ELArithmetic {
 
         protected Number add(Number num0, Number num1) {
-        	// could only be one of these
-        	if (num0 instanceof BigDecimal) {
-        		return ((BigDecimal) num0).add(new BigDecimal(num1.doubleValue()));
-        	} else if (num1 instanceof BigDecimal) {
-        		return ((new BigDecimal(num0.doubleValue()).add((BigDecimal) num1)));
-        	}
+            // could only be one of these
+            if (num0 instanceof BigDecimal) {
+                return ((BigDecimal) num0).add(new BigDecimal(num1.doubleValue()));
+            } else if (num1 instanceof BigDecimal) {
+                return ((new BigDecimal(num0.doubleValue()).add((BigDecimal) num1)));
+            }
             return new Double(num0.doubleValue() + num1.doubleValue());
         }
 
@@ -123,7 +123,7 @@ public abstract class ELArithmetic {
             if (num instanceof Double)
                 return num;
             if (num instanceof BigInteger)
-            	return new BigDecimal((BigInteger) num);
+                return new BigDecimal((BigInteger) num);
             return new Double(num.doubleValue());
         }
 
@@ -140,22 +140,22 @@ public abstract class ELArithmetic {
         }
 
         protected Number subtract(Number num0, Number num1) {
-        	// could only be one of these
-        	if (num0 instanceof BigDecimal) {
-        		return ((BigDecimal) num0).subtract(new BigDecimal(num1.doubleValue()));
-        	} else if (num1 instanceof BigDecimal) {
-        		return ((new BigDecimal(num0.doubleValue()).subtract((BigDecimal) num1)));
-        	}
+            // could only be one of these
+            if (num0 instanceof BigDecimal) {
+                return ((BigDecimal) num0).subtract(new BigDecimal(num1.doubleValue()));
+            } else if (num1 instanceof BigDecimal) {
+                return ((new BigDecimal(num0.doubleValue()).subtract((BigDecimal) num1)));
+            }
             return new Double(num0.doubleValue() - num1.doubleValue());
         }
 
         protected Number multiply(Number num0, Number num1) {
-        	// could only be one of these
-        	if (num0 instanceof BigDecimal) {
-        		return ((BigDecimal) num0).multiply(new BigDecimal(num1.doubleValue()));
-        	} else if (num1 instanceof BigDecimal) {
-        		return ((new BigDecimal(num0.doubleValue()).multiply((BigDecimal) num1)));
-        	}
+            // could only be one of these
+            if (num0 instanceof BigDecimal) {
+                return ((BigDecimal) num0).multiply(new BigDecimal(num1.doubleValue()));
+            } else if (num1 instanceof BigDecimal) {
+                return ((new BigDecimal(num0.doubleValue()).multiply((BigDecimal) num1)));
+            }
             return new Double(num0.doubleValue() * num1.doubleValue());
         }
 
@@ -164,8 +164,6 @@ public abstract class ELArithmetic {
                     || obj1 instanceof Double
                     || obj0 instanceof Float
                     || obj1 instanceof Float
-                    || (obj0 != null && (Double.TYPE == obj0.getClass() || Float.TYPE == obj0.getClass()))
-                    || (obj1 != null && (Double.TYPE == obj1.getClass() || Float.TYPE == obj1.getClass()))
                     || (obj0 instanceof String && ELSupport
                             .isStringFloat((String) obj0)) || (obj1 instanceof String && ELSupport
                     .isStringFloat((String) obj1)));
@@ -326,8 +324,11 @@ public abstract class ELArithmetic {
         return (obj != null && isNumberType(obj.getClass()));
     }
 
-    public final static boolean isNumberType(final Class type) {
-        return type == (java.lang.Long.class) || type == Long.TYPE || type == (java.lang.Double.class) || type == Double.TYPE || type == (java.lang.Byte.class) || type == Byte.TYPE || type == (java.lang.Short.class) || type == Short.TYPE || type == (java.lang.Integer.class) || type == Integer.TYPE || type == (java.lang.Float.class) || type == Float.TYPE || type == (java.math.BigInteger.class) || type == (java.math.BigDecimal.class);
+    public final static boolean isNumberType(final Class<?> type) {
+        return type == Long.TYPE || type == Double.TYPE ||
+            type == Byte.TYPE || type == Short.TYPE ||
+            type == Integer.TYPE || type == Float.TYPE ||
+            Number.class.isAssignableFrom(type);
     }
 
     /**
@@ -359,13 +360,12 @@ public abstract class ELArithmetic {
             return coerce(ZERO);
         }
 
-        Class objType = obj.getClass();
-        if (Character.class.equals(objType) || Character.TYPE == objType) {
+        if (obj instanceof Character) {
             return coerce(new Short((short) ((Character) obj).charValue()));
         }
 
         throw new IllegalArgumentException(MessageFactory.get("error.convert",
-                obj, objType, "Number"));
+                obj, obj.getClass(), "Number"));
     }
 
     protected abstract Number coerce(final String str);

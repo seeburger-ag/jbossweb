@@ -112,6 +112,9 @@
       <fix>
         <bug>44428</bug>: NPE in function mapper. (markt)
       </fix>
+      <fix>
+        Make number types handling more flexible in EL. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
