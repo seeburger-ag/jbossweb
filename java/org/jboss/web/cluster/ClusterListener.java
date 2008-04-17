@@ -24,6 +24,9 @@
 package org.jboss.web.cluster;
 
 
+import java.net.InetAddress;
+import java.util.HashMap;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
@@ -38,6 +41,7 @@ import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.util.StringManager;
+import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.logging.Logger;
 
 
@@ -161,23 +165,56 @@ public class ClusterListener
     
     protected void config(Engine engine) {
         System.out.println("Config: " + engine.getName());
-        // FIXME: collect configuration from the connectors and service and call CONFIG
-        Service service = engine.getService();
-        Connector[] connectors = service.findConnectors();
+        // Collect configuration from the connectors and service and call CONFIG
+        Connector connector = findProxyConnector(engine.getService().findConnectors());
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        parameters.put("JVMRoute", engine.getJvmRoute());
+        boolean reverseConnection = 
+            Boolean.TRUE.equals(IntrospectionUtils.getProperty(connector.getProtocolHandler(), "reverseConnection"));
+        boolean ssl = 
+            Boolean.TRUE.equals(IntrospectionUtils.getProperty(connector.getProtocolHandler(), "SSLEnabled"));
+        boolean ajp = ((String) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "name")).startsWith("ajp-");
+
+        if (reverseConnection) {
+            parameters.put("ReverseConnectionPort", "" + connector.getPort());
+        } else {
+            parameters.put("Host", getAddress(connector));
+            parameters.put("Port", "" + connector.getPort());
+        }
+        if (ajp) {
+            parameters.put("Type", "ajp");
+        } else if (ssl) {
+            parameters.put("Type", "https");
+        } else {
+            parameters.put("Type", "http");
+        }
+        
+        // Send CONFIG request
+        // FIXME: By default, connect on localhost on some predefined port ?
     }
 
     
     protected void status(Engine engine) {
         System.out.println("Status: " + engine.getName());
         // FIXME: send STATUS
-        Service service = engine.getService();
-        Connector[] connectors = service.findConnectors();
+        Connector connector = findProxyConnector(engine.getService().findConnectors());
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        parameters.put("JVMRoute", engine.getJvmRoute());
+
+        // Send STATUS request
+        // FIXME: By default, connect on localhost on some predefined port ?
     }
 
     
     protected void addContext(Context context) {
         System.out.println("Deploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
         ((Lifecycle) context).addLifecycleListener(this);
+
+        boolean started = (((StandardContext) context).getState() == 1);
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        parameters.put("JVMRoute", getJvmRoute(context));
+        parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
+
         // FIXME: send ENABLE-APP if state is started
     }
 
@@ -185,6 +222,11 @@ public class ClusterListener
     protected void removeContext(Context context) {
         System.out.println("Undeploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
         ((Lifecycle) context).removeLifecycleListener(this);
+
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        parameters.put("JVMRoute", getJvmRoute(context));
+        parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
+
         // FIXME: send REMOVE-APP
     }
 
@@ -192,6 +234,11 @@ public class ClusterListener
     protected void startContext(Context context) {
         Container parent = context.getParent();
         System.out.println("Start context: " + context.getPath() + " to Host: " + parent.getName());
+
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        parameters.put("JVMRoute", getJvmRoute(context));
+        parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
+
         // FIXME: send ENABLE-APP
     }
 
@@ -199,8 +246,50 @@ public class ClusterListener
     protected void stopContext(Context context) {
         Container parent = context.getParent();
         System.out.println("Stop context: " + context.getPath() + " to Host: " + parent.getName());
+
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        parameters.put("JVMRoute", getJvmRoute(context));
+        parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
+
         // FIXME: send STOP-APP
     }
 
+    
+    protected String getJvmRoute(Context context) {
+        return ((Engine) context.getParent().getParent()).getJvmRoute();
+    }
+    
+    
+    protected Connector findProxyConnector(Connector[] connectors) {
+        int pos = 0;
+        int maxThreads = 0;
+        for (int i = 0; i < connectors.length; i++) {
+            if (connectors[i].getProtocol().startsWith("AJP")) {
+                // Return any AJP connector found
+                return connectors[i];
+            }
+            if (Boolean.TRUE.equals(IntrospectionUtils.getProperty(connectors[i].getProtocolHandler(), "reverseConnection"))) {
+                return connectors[i];
+            }
+            Integer mt = (Integer) IntrospectionUtils.getProperty(connectors[i].getProtocolHandler(), "maxThreads");
+            if (mt.intValue() > maxThreads) {
+                maxThreads = mt.intValue();
+                pos = i;
+            }
+        }
+        // If no AJP connector and no reverse, return the connector with the most threads
+        return connectors[pos];
+    }
+
+    protected String getAddress(Connector connector) {
+        InetAddress inetAddress = 
+            (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
+        if (inetAddress == null) {
+            // FIXME: Return local address ? This is hard ...
+            return null;
+        } else {
+            return inetAddress.toString();
+        }
+    }
 
 }
