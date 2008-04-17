@@ -61,6 +61,12 @@
         Better handling of lack of permission for context specific logging, and add permission
         for reading the JDK logging.properties. (markt)
       </fix>
+       <fix>
+        <bug>44391</bug>: Correct handling of escaped values in SSI processing. (markt) 
+      </fix>
+       <fix>
+        <bug>44392</bug>: HTML entities now handled correctly in SSI processing. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
