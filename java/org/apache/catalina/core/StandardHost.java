@@ -94,7 +94,7 @@ public class StandardHost
      * for deployed web applications.
      */
     private String configClass =
-        "org.apache.catalina.startup.ContextConfig";
+        System.getProperty("org.apache.catalina.core.StandardHost.configClass", "org.apache.catalina.startup.ContextConfig");
 
 
     /**
@@ -136,12 +136,6 @@ public class StandardHost
      */
     private static final String info =
         "org.apache.catalina.core.StandardHost/1.0";
-
-
-    /**
-     * The live deploy flag for this Host.
-     */
-    private boolean liveDeploy = true;
 
 
     /**
