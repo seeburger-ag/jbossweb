@@ -61,6 +61,8 @@ public class StandardHost
 
         super();
         pipeline.setBasic(new StandardHostValve());
+        startChildren = 
+            Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.startChildren", "true")).booleanValue();
 
     }
 

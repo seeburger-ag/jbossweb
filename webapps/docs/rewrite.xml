@@ -97,12 +97,11 @@
           where <em>NAME_OF_VARIABLE</em> can be a string taken
           from the following list: 
 
-          <table>
-          <columnspec><column width=".3"/><column width=".3"/>
-           <column width=".3"/></columnspec>
+          <table border="1">
+
             <tr>
               <th>HTTP headers:</th> <th>connection &amp; request:</th> <th></th>
-	    </tr>
+	        </tr>
 
             <tr>
 	      <td>

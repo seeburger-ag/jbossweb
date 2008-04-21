@@ -67,6 +67,9 @@
        <fix>
         <bug>44392</bug>: HTML entities now handled correctly in SSI processing. (markt)
       </fix>
+      <fix>
+        Add system property for JBoss default allowing not starting the context in init. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
