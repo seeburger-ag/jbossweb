@@ -112,6 +112,10 @@
         maxSavePostSize set to 0 for HTTP connectors should disable buffering done before SSL
         handshake. (remm)
       </fix>
+      <update>
+        Add reverse connection method (from the Java server to the proxy), which could
+        suppsedly provide better security, and could also improve quality of service. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Jasper">

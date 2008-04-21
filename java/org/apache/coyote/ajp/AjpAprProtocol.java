@@ -290,6 +290,9 @@ public class AjpAprProtocol
     public int getSoTimeout() { return endpoint.getSoTimeout(); }
     public void setSoTimeout(int soTimeout) { endpoint.setSoTimeout(soTimeout); }
 
+    public boolean getReverseConnection() { return endpoint.isReverseConnection(); }
+    public void setReverseConnection(boolean reverseConnection) { endpoint.setReverseConnection(reverseConnection); }
+
     /**
      * Should authentication be done in the native webserver layer, 
      * or in the Servlet container ?

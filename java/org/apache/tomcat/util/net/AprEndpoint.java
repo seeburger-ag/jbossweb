@@ -353,6 +353,27 @@ public class AprEndpoint {
 
 
     /**
+     * The server address.
+     */
+    protected long serverAddress = 0;
+    
+    
+    /**
+     * The server address family.
+     */
+    protected int serverAddressFamily = 0;
+    
+    
+    /**
+     * Reverse connection. In this proxied mode, the endpoint will not use a server
+     * socket, but will connect itself to the front end server.
+     */
+    protected boolean reverseConnection = false;
+    public boolean isReverseConnection() { return reverseConnection; }
+    public void setReverseConnection(boolean reverseConnection) { this.reverseConnection = reverseConnection; }
+
+
+    /**
      * SSL engine.
      */
     protected boolean SSLEnabled = false;
@@ -557,46 +578,53 @@ public class AprEndpoint {
             }
          }
 
-        long inetAddress = Address.info(addressStr, family,
-                port, 0, rootPool);
-        // Create the APR server socket
-        serverSock = Socket.create(family, Socket.SOCK_STREAM,
-                Socket.APR_PROTO_TCP, rootPool);
-        if (OS.IS_UNIX) {
-            Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);
-        }
-        // Deal with the firewalls that tend to drop the inactive sockets
-        Socket.optSet(serverSock, Socket.APR_SO_KEEPALIVE, 1);
-        // Bind the server socket
-        int ret = Socket.bind(serverSock, inetAddress);
-        if (ret != 0) {
-            throw new Exception(sm.getString("endpoint.init.bind", "" + ret, Error.strerror(ret)));
-        }
-        // Start listening on the server socket
-        ret = Socket.listen(serverSock, backlog);
-        if (ret != 0) {
-            throw new Exception(sm.getString("endpoint.init.listen", "" + ret, Error.strerror(ret)));
-        }
-        if (OS.IS_WIN32 || OS.IS_WIN64) {
-            // On Windows set the reuseaddr flag after the bind/listen
-            Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);
-        }
-
         // Sendfile usage on systems which don't support it cause major problems
         if (useSendfile && !Library.APR_HAS_SENDFILE) {
             useSendfile = false;
         }
 
-        // Delay accepting of new connections until data is available
-        // Only Linux kernels 2.4 + have that implemented
-        // on other platforms this call is noop and will return APR_ENOTIMPL.
-        if (Socket.optSet(serverSock, Socket.APR_TCP_DEFER_ACCEPT, 1) == Status.APR_ENOTIMPL) {
+        long inetAddress = Address.info(addressStr, family,
+                port, 0, rootPool);
+        
+        if (!reverseConnection) {
+            // Create the APR server socket
+            serverSock = Socket.create(family, Socket.SOCK_STREAM,
+                    Socket.APR_PROTO_TCP, rootPool);
+            if (OS.IS_UNIX) {
+                Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);
+            }
+            // Deal with the firewalls that tend to drop the inactive sockets
+            Socket.optSet(serverSock, Socket.APR_SO_KEEPALIVE, 1);
+            // Bind the server socket
+            int ret = Socket.bind(serverSock, inetAddress);
+            if (ret != 0) {
+                throw new Exception(sm.getString("endpoint.init.bind", "" + ret, Error.strerror(ret)));
+            }
+            // Start listening on the server socket
+            ret = Socket.listen(serverSock, backlog);
+            if (ret != 0) {
+                throw new Exception(sm.getString("endpoint.init.listen", "" + ret, Error.strerror(ret)));
+            }
+            if (OS.IS_WIN32 || OS.IS_WIN64) {
+                // On Windows set the reuseaddr flag after the bind/listen
+                Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);
+            }
+
+            // Delay accepting of new connections until data is available
+            // Only Linux kernels 2.4 + have that implemented
+            // on other platforms this call is noop and will return APR_ENOTIMPL.
+            if (Socket.optSet(serverSock, Socket.APR_TCP_DEFER_ACCEPT, 1) == Status.APR_ENOTIMPL) {
+                deferAccept = false;
+            }
+        } else {
+            serverAddress = inetAddress;
+            serverAddressFamily = family;
             deferAccept = false;
         }
 
         // Initialize SSL if needed
         if (SSLEnabled) {
-            
+
             // SSL protocol
             int value = SSL.SSL_PROTOCOL_ALL;
             if ("SSLv2".equalsIgnoreCase(SSLProtocol)) {
@@ -609,7 +637,7 @@ public class AprEndpoint {
                 value = SSL.SSL_PROTOCOL_SSLV2 | SSL.SSL_PROTOCOL_SSLV3;
             }
             // Create SSL Context
-            sslContext = SSLContext.make(rootPool, value, SSL.SSL_MODE_SERVER);
+            sslContext = SSLContext.make(rootPool, value, (reverseConnection) ? SSL.SSL_MODE_CLIENT : SSL.SSL_MODE_SERVER);
             // List the ciphers that the client is permitted to negotiate
             SSLContext.setCipherSuite(sslContext, SSLCipherSuite);
             // Load Server key and certificate
@@ -632,8 +660,9 @@ public class AprEndpoint {
             SSLContext.setVerify(sslContext, value, SSLVerifyDepth);
             // For now, sendfile is not supported with SSL
             useSendfile = false;
-        }
 
+        }
+        
         initialized = true;
 
     }
@@ -1022,16 +1051,49 @@ public class AprEndpoint {
                     }
                 }
 
-                try {
-                    // Accept the next incoming connection from the server socket
-                    long socket = Socket.accept(serverSock);
-                    // Hand this socket off to an appropriate processor
-                    if (!processSocketWithOptions(socket)) {
-                        // Close socket and pool right away
-                        Socket.destroy(socket);
+                if (reverseConnection) {
+                    if (poller.getConnectionCount() < (maxThreads / 5)) {
+                        // Create maxThreads / 5 sockets
+                        try {
+                            for (int i = 0; i < (maxThreads / 5); i++) {
+                                long socket = Socket.create(serverAddressFamily, Socket.SOCK_STREAM,
+                                        Socket.APR_PROTO_TCP, rootPool);
+                                Socket.connect(socket, serverAddress);
+                                // Hand this socket off to an appropriate processor
+                                if (!processSocketWithOptions(socket)) {
+                                    // Close socket and pool right away
+                                    Socket.destroy(socket);
+                                }
+                                // Don't immediately create another socket
+                                try {
+                                    Thread.sleep(1);
+                                } catch (InterruptedException e) {
+                                    // Ignore
+                                }
+                            }
+                        } catch (Throwable t) {
+                            log.error(sm.getString("endpoint.accept.fail"), t);
+                        }
                     }
-                } catch (Throwable t) {
-                    log.error(sm.getString("endpoint.accept.fail"), t);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        // Ignore
+                    }
+                } else {
+                
+                    try {
+                        // Accept the next incoming connection from the server socket
+                        long socket = Socket.accept(serverSock);
+                        // Hand this socket off to an appropriate processor
+                        if (!processSocketWithOptions(socket)) {
+                            // Close socket and pool right away
+                            Socket.destroy(socket);
+                        }
+                    } catch (Throwable t) {
+                        log.error(sm.getString("endpoint.accept.fail"), t);
+                    }
+
                 }
 
                 // The processor will recycle itself when it finishes
@@ -1039,7 +1101,7 @@ public class AprEndpoint {
             }
 
         }
-
+        
     }
 
 

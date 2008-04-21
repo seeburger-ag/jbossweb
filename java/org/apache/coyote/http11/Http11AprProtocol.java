@@ -244,6 +244,9 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public int getSoTimeout() { return endpoint.getSoTimeout(); }
     public void setSoTimeout(int soTimeout) { endpoint.setSoTimeout(soTimeout); }
 
+    public boolean getReverseConnection() { return endpoint.isReverseConnection(); }
+    public void setReverseConnection(boolean reverseConnection) { endpoint.setReverseConnection(reverseConnection); }
+
     /**
      * The number of seconds Tomcat will wait for a subsequent request
      * before closing the connection.
