@@ -133,6 +133,13 @@ public interface Container {
 
 
     /**
+     * Return if the container is started. This sort of conflicts with lifecycle
+     * but the purpose should be evident enough.
+     */
+    public boolean isStarted();
+
+
+    /**
      * Return descriptive information about this Container implementation and
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.

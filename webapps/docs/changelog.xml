@@ -71,6 +71,13 @@
         Add system properties for JBoss default allowing not starting the context in init, and set
         the configClass field. (remm)
       </fix>
+      <fix>
+        <bug>43683</bug>: Need to identify new wrapper for queued request after reload. (remm)
+      </fix>
+      <fix>
+        <bug>29936</bug>: In some circumstances, Tomcat would use the parser from a webapp 
+        to parse web.xml and possibly context.xml files. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -128,6 +135,13 @@
       </fix>
       <fix>
         Make number types handling more flexible in EL. (markt)
+      </fix>
+      <fix>
+        <bug>43656</bug>: coerceToType() modified some values, and additional numeric type fixes.
+        Patch provided by Nils Eckert. (markt)
+      </fix>
+      <fix>
+        <bug>31257</bug>: Quote endorsed dirs if they contain a space. (markt)
       </fix>
     </changelog>
   </subsection>

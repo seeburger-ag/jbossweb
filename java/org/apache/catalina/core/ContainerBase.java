@@ -283,6 +283,15 @@ public abstract class ContainerBase
 
 
     /**
+     * Return if the container is started. This sort of conflicts with lifecycle
+     * but the purpose should be evident enough.
+     */
+    public boolean isStarted() {
+        return started;
+    }
+
+
+    /**
      * Get the delay between the invocation of the backgroundProcess method on
      * this container and its children. Child containers will not be invoked
      * if their delay value is not negative (which would mean they are using 
