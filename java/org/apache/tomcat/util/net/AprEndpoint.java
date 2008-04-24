@@ -371,6 +371,14 @@ public class AprEndpoint {
     protected boolean reverseConnection = false;
     public boolean isReverseConnection() { return reverseConnection; }
     public void setReverseConnection(boolean reverseConnection) { this.reverseConnection = reverseConnection; }
+    /**
+     * List of socket counters.
+     */
+    class ListSock {
+       int count;
+       int port;
+    }
+    protected ListSock[] listsock = null;
 
 
     /**
@@ -617,6 +625,13 @@ public class AprEndpoint {
                 deferAccept = false;
             }
         } else {
+            /* Initialize the SockList */
+            listsock = new ListSock[10];
+            for (int i=0; i<listsock.length; i++) {
+                listsock[i] = new ListSock();
+                listsock[i].port = port + i;
+                listsock[i].count = 0;
+            }
             serverAddress = inetAddress;
             serverAddressFamily = family;
             deferAccept = false;
@@ -1053,16 +1068,42 @@ public class AprEndpoint {
 
                 if (reverseConnection) {
                     if (poller.getConnectionCount() < (maxThreads / 5)) {
+                        /* Sort the ListSock (by count) */
+                        boolean go = true;
+                        while (go) {
+                            go = false;
+                            for (int i=0; i<listsock.length -1; i++) {
+                                ListSock current;
+                                if (listsock[i+1].count<listsock[i].count) {
+                                    go = false;
+                                    current = listsock[i+1];
+                                    listsock[i+1] = listsock[i];
+                                    listsock[i] = current;
+                                }
+                            }
+                        }
+
                         // Create maxThreads / 5 sockets
-                        try {
-                            for (int i = 0; i < (maxThreads / 5); i++) {
+                        int nsock = maxThreads / 5;
+                        if (nsock>listsock.length)
+                            nsock = listsock.length;
+                        String addressStr = address.getHostAddress();
+                        for (int i=0; i < nsock; i++) {
+                            try {
                                 long socket = Socket.create(serverAddressFamily, Socket.SOCK_STREAM,
                                         Socket.APR_PROTO_TCP, rootPool);
-                                Socket.connect(socket, serverAddress);
+                                long inetAddress = Address.info(addressStr, serverAddressFamily,
+                                        listsock[i].port, 0, rootPool);
+                                if (Socket.connect(socket, inetAddress) != 0) {
+                                    Socket.destroy(socket);
+                                    continue; // try next one.
+                                }
                                 // Hand this socket off to an appropriate processor
                                 if (!processSocketWithOptions(socket)) {
                                     // Close socket and pool right away
                                     Socket.destroy(socket);
+                                } else {
+                                    listsock[i].count++;
                                 }
                                 // Don't immediately create another socket
                                 try {
@@ -1070,9 +1111,9 @@ public class AprEndpoint {
                                 } catch (InterruptedException e) {
                                     // Ignore
                                 }
+                            } catch (Throwable t) {
+                                log.error(sm.getString("endpoint.accept.fail"), t);
                             }
-                        } catch (Throwable t) {
-                            log.error(sm.getString("endpoint.accept.fail"), t);
                         }
                     }
                     try {
