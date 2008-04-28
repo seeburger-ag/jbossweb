@@ -68,6 +68,18 @@ public class ClusterListener
     // ---------------------------------------------- Properties
 
 
+    protected int proxyPort = 8000;
+    public int getProxyPort() { return proxyPort; }
+    public void setProxyPort(int proxyPort) { this.proxyPort = proxyPort; }
+
+
+    protected InetAddress proxyAddress = null;
+    public InetAddress getProxyAddress() { return proxyAddress; }
+    public void setAddress(InetAddress proxyAddress) { this.proxyAddress = proxyAddress; }
+
+
+    // ---------------------------------------------- LifecycleListener Methods
+
     /**
      * Acknowledge the occurrence of the specified event.
      * Note: Will never be called when the listener is associated to a Server,
@@ -100,8 +112,6 @@ public class ClusterListener
         }
 
     }
-
-    // ---------------------------------------------- LifecycleListener Methods
 
     /**
      * Primary entry point for startup and shutdown events.
@@ -176,11 +186,10 @@ public class ClusterListener
         boolean ajp = ((String) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "name")).startsWith("ajp-");
 
         if (reverseConnection) {
-            parameters.put("ReverseConnectionPort", "" + connector.getPort());
-        } else {
-            parameters.put("Host", getAddress(connector));
-            parameters.put("Port", "" + connector.getPort());
+            parameters.put("Reversed", "true");
         }
+        parameters.put("Host", getAddress(connector));
+        parameters.put("Port", "" + connector.getPort());
         if (ajp) {
             parameters.put("Type", "ajp");
         } else if (ssl) {
