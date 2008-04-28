@@ -1,80 +1,69 @@
 # -----------------------------------------------------------------------------
-# build.properties.sample
+# build.properties.default
 #
-# This is an example "build.properties" file, used to customize building 
-# JBoss Web for your local environment.  It defines the location of all external
-# modules that JBoss Web depends on.  Copy this file to "build.properties"
+# This is an example "build.properties" file, used to customize building Tomcat
+# for your local environment.  It defines the location of all external
+# modules that Tomcat depends on.  Copy this file to "build.properties"
 # in the top-level source directory, and customize it as needed.
 #
-# $Id: build.properties.default 526202 2007-04-06 15:44:38Z remm $
+# $Id: build.properties.default 4783 2006-06-20 07:19:31Z mladen.turk@jboss.com $
 # -----------------------------------------------------------------------------
 
-# ----- Version Control Flags -----
+# ----- Vesion Control Flags -----
 version.major=2
-version.minor=1
-version.build=1
-version.patch=0
-version.tag=SNAPSHOT
+version.minor=0
+version.build=0
+version.patch=GA_CP
+
+# ----- Vesion Control Flags -----
+jboss.version.major=5
+jboss.version.minor=0
+jboss.version.build=0
+jboss.version.patch=Beta
+
+# ----- Compile Control Flags -----
+compile.debug=on
+compile.deprecation=off
+compile.optimize=off
+
+
+# ----- Build Control Flags
+
+#Build all components
+#full.dist=on
+
+#Hide configuration flags display
+#flags.hide=on
+
+
+# ----- Proxy setup -----
+#proxy.host=proxy.domain
+#proxy.port=8080
+#proxy.use=on
+
 
 # ----- Default Base Path for Dependent Packages -----
-# Please note this path must be absolute, not relative,
-# as it is referenced with different working directory
-# contexts by the various build scripts.
 base.path=/usr/share/java
 #base.path=C:/path/to/the/repository
 #base.path=/usr/local
 
-compile.source=1.5
-compile.target=1.5
-compile.debug=true
+# ----- Jakarta files base location -----
+base-jakarta.loc=http://archive.apache.org/dist/jakarta
 
-base-commons.loc=http://archive.apache.org/dist/commons
+# ----- Logging files base location -----
+base-logging.loc=http://archive.apache.org/dist/logging
+
+# ----- XML files base location -----
+base-xml.loc=http://archive.apache.org/dist/xml
+
+# ----- Struts files base location -----
+base-struts.loc=http://archive.apache.org/dist/struts
+
+# ----- Tomcat files base location -----
 base-tomcat.loc=http://archive.apache.org/dist/tomcat
-base-sf.loc=http://downloads.sourceforge.net
 
-# ----- Webservices -----
-jaxrpc-src.loc=http://repo1.maven.org/maven2/geronimo-spec/geronimo-spec-jaxrpc/1.1-rc4/geronimo-spec-jaxrpc-1.1-rc4.jar
-wsdl4j-src.loc=http://repo1.maven.org/maven2/wsdl4j/wsdl4j/1.6.1/wsdl4j-1.6.1.jar
+# ----- Sourceforge files base location -----
+#base-sf.loc=http://switch.dl.sourceforge.net/sourceforge
+base-sf.loc=http://heanet.dl.sourceforge.net/sourceforge
+#base-sf.loc=http://internap.dl.sourceforge.net/sourceforge
 
-# ----- Eclipse JDT, version 3.2 or later -----
-jdt.home=${base.path}/eclipse/plugins
-jdt.lib=${jdt.home}
-jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.3.1.v_780_R33x.jar
-jdt.loc=http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops/R-3.3.1-200709211145/eclipse-JDT-3.3.1.zip
-
-# ----- Commons DBCP, version 1.1 or later -----
-commons-dbcp.version=1.2.2
-commons-dbcp.home=${base.path}/commons-dbcp-1.2.2-src
-commons-dbcp-src.loc=${base-commons.loc}/dbcp/source/commons-dbcp-1.2.2-src.tar.gz
-
-# ----- Commons Pool, version 1.1 or later -----
-commons-pool.home=${base.path}/commons-pool-1.4-src
-commons-pool-src.loc=${base-commons.loc}/pool/source/commons-pool-1.4-src.tar.gz
-
-# ----- Commons Collections, version 2.0 or later -----
-commons-collections.home=${base.path}/commons-collections-3.2-src
-commons-collections.lib=${commons-collections.home}
-commons-collections.jar=${commons-collections.lib}/commons-collections-3.2.jar
-commons-collections.loc=${base-jakarta.loc}/commons/collections/binaries/commons-collections-3.2.tar.gz
-commons-collections-src.loc=${base-commons.loc}/collections/source/commons-collections-3.2-src.tar.gz
-
-# ----- NSIS, version 2.0 or later -----
-nsis.home=${base.path}/nsis-2.35
-nsis.exe=${nsis.home}/makensis.exe
-nsis.installoptions.dll=${nsis.home}/Plugins/InstallOptions.dll
-nsis.nsexec.dll=${nsis.home}/Plugins/nsExec.dll
-nsis.nsisdl.dll=${nsis.home}/Plugins/NSISdl.dll
-nsis.loc=${base-sf.loc}/nsis/nsis-2.35.zip
-
-# ----- JBoss Native, version 2.0 or later -----
-jbossnative.home=${base.path}/jboss-native-2.0.3
-jbossnative.openssl=${base.path}/jboss-native-2.0.3/bin/openssl.exe
-jbossnative.dlls=${jbossnative.home}/bin/native
-jbossnative.loc=http://labs.jboss.com/downloading/?projectId=jbossweb&url=http://labs.jboss.com/file-access/default/members/jbossweb/freezone/dist/2.0.3.GA/jboss-native-2.0.3-windows-i686-ssl.zip
-
-# ----- Commons Daemon, version 1.0-Alpha or later -----
-commons-daemon.home=${base.path}/commons-daemon-1.0.1
-commons-daemon.lib=${commons-daemon.home}
-commons-daemon.jar=${commons-daemon.lib}/commons-daemon.jar
-commons-daemon.loc=${base-commons.loc}/daemon/binaries/commons-daemon-1.0.1.tar.gz
-commons-daemon.jsvc.tar.gz=${commons-daemon.lib}/bin/jsvc.tar.gz
