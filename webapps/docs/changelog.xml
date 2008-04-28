@@ -78,6 +78,16 @@
         <bug>29936</bug>: In some circumstances, Tomcat would use the parser from a webapp 
         to parse web.xml and possibly context.xml files. (markt)
       </fix>
+      <fix>
+        <bug>43470</bug>: Fix cut and paste errors in NamingResources, submitted 
+        by Lucas Galfaso. (markt)
+      </fix>
+      <fix>
+        <bug>43425</bug>: Annotations not spec compliant. Submitted by Dain Sundstrom. (markt)
+      </fix>
+      <fix>
+        <bug>43366</bug>: Provide backwards compatibility for sessions command. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -142,6 +152,12 @@
       </fix>
       <fix>
         <bug>31257</bug>: Quote endorsed dirs if they contain a space. (markt)
+      </fix>
+      <fix>
+        <bug>43617</bug>: Correctly handle quotes in attribute values for tag(x) files. (remm)
+      </fix>
+      <fix>
+        <bug>44877</bug>: Prevent collisions in tag pool names. (markt)
       </fix>
     </changelog>
   </subsection>

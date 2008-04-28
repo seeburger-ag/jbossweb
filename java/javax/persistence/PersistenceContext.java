@@ -34,4 +34,5 @@ public @interface PersistenceContext {
    String name() default "";
    String unitName() default "";
    PersistenceContextType type() default PersistenceContextType.TRANSACTION;
+   PersistenceProperty[] properties() default {};
 }

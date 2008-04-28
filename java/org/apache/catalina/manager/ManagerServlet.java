@@ -363,6 +363,8 @@ public class ManagerServlet
             serverinfo(writer);
         } else if (command.equals("/expire")) {
             expireSessions(writer, path, request);
+        } else if (command.equals("/sessions")) {
+            expireSessions(writer, path, request);
         } else if (command.equals("/start")) {
             start(writer, path);
         } else if (command.equals("/stop")) {
