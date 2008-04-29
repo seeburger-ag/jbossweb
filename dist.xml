@@ -293,11 +293,10 @@
     </copy>
 
   	<!-- Maven repository configuration -->
-  	<!--<property name="maven.repository.url" value="file:///home/remm/.m2/repository/maven2"/>
-  	<property name="maven.repository.url" value="dav:https://repository.jboss.org/maven2"/>
-  	<property name="maven.repository.id" value="repository.jboss.org"/>-->
-  	<property name="maven.repository.url" value="dav:https://snapshots.jboss.org/maven2"/>
-    <property name="maven.repository.id" value="snapshots.jboss.org"/>
+  	<property name="maven.repository.url" value="file:///somepath"/>
+  	<property name="maven.repository.id" value="repository.jboss.org"/>
+  	<!--<property name="maven.repository.url" value="dav:https://snapshots.jboss.org/maven2"/>
+    <property name="maven.repository.id" value="snapshots.jboss.org"/>-->
 
     <!-- Linux/Unix execs -->
     <exec dir="." executable="/bin/sh" os="Linux">
