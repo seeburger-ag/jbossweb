@@ -212,10 +212,10 @@ public abstract class PersistentManagerBase
 
 
     /**
-	 * Indicates how many seconds old a session can get, after its last use in a
-	 * request, before it should be backed up to the store. -1 means sessions
-	 * are not backed up.
-	 */
+     * Indicates how many seconds old a session can get, after its last use in a
+     * request, before it should be backed up to the store. -1 means sessions
+     * are not backed up.
+     */
     public int getMaxIdleBackup() {
 
         return maxIdleBackup;
@@ -315,13 +315,13 @@ public abstract class PersistentManagerBase
 
 
     /**
-	 * Set the Container with which this Manager has been associated. If it is a
-	 * Context (the usual case), listen for changes to the session timeout
-	 * property.
-	 * 
-	 * @param container
-	 *            The associated Container
-	 */
+     * Set the Container with which this Manager has been associated. If it is a
+     * Context (the usual case), listen for changes to the session timeout
+     * property.
+     * 
+     * @param container
+     *            The associated Container
+     */
     public void setContainer(Container container) {
 
         // De-register from the old Container (if any)
@@ -535,8 +535,8 @@ public abstract class PersistentManagerBase
     /**
      * Implements the Manager interface, direct call to processExpires and processPersistenceChecks
      */
-	public void processExpires() {
-		
+    public void processExpires() {
+        
         long timeNow = System.currentTimeMillis();
         Session sessions[] = findSessions();
         int expireHere = 0 ;
@@ -557,8 +557,8 @@ public abstract class PersistentManagerBase
         if(log.isDebugEnabled())
              log.debug("End expire sessions " + getName() + " processingTime " + (timeEnd - timeNow) + " expired sessions: " + expireHere);
         processingTime += (timeEnd - timeNow);
- 		
-	}
+        
+    }
 
 
     /**
@@ -590,6 +590,23 @@ public abstract class PersistentManagerBase
     public Session findSession(String id) throws IOException {
 
         Session session = super.findSession(id);
+        // OK, at this point, we're not sure if another thread is trying to
+        // remove the session or not so the only way around this is to lock it
+        // (or attempt to) and then try to get it by this session id again. If
+        // the other code ran swapOut, then we should get a null back during
+        // this run, and if not, we lock it out so we can access the session
+        // safely.
+        if(session != null) {
+            synchronized(session){
+                session = super.findSession(session.getIdInternal());
+                if(session != null){
+                   // To keep any external calling code from messing up the
+                   // concurrency.
+                   session.access();
+                   session.endAccess();
+                }
+            }
+        }
         if (session != null)
             return (session);
 
@@ -1024,24 +1041,24 @@ public abstract class PersistentManagerBase
         long timeNow = System.currentTimeMillis();
 
         // Swap out all sessions idle longer than maxIdleSwap
-        // FIXME: What's preventing us from mangling a session during
-        // a request?
         if (maxIdleSwap >= 0) {
             for (int i = 0; i < sessions.length; i++) {
                 StandardSession session = (StandardSession) sessions[i];
-                if (!session.isValid())
-                    continue;
-                int timeIdle = // Truncate, do not round up
-                    (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
-                if (timeIdle > maxIdleSwap && timeIdle > minIdleSwap) {
-                    if (log.isDebugEnabled())
-                        log.debug(sm.getString
-                            ("persistentManager.swapMaxIdle",
-                             session.getIdInternal(), new Integer(timeIdle)));
-                    try {
-                        swapOut(session);
-                    } catch (IOException e) {
-                        ;   // This is logged in writeSession()
+                synchronized (session) {
+                    if (!session.isValid())
+                        continue;
+                    int timeIdle = // Truncate, do not round up
+                        (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
+                    if (timeIdle > maxIdleSwap && timeIdle > minIdleSwap) {
+                        if (log.isDebugEnabled())
+                            log.debug(sm.getString
+                                ("persistentManager.swapMaxIdle",
+                                 session.getIdInternal(), new Integer(timeIdle)));
+                        try {
+                            swapOut(session);
+                        } catch (IOException e) {
+                            ;   // This is logged in writeSession()
+                        }
                     }
                 }
             }
@@ -1073,19 +1090,21 @@ public abstract class PersistentManagerBase
         long timeNow = System.currentTimeMillis();
 
         for (int i = 0; i < sessions.length && toswap > 0; i++) {
-            int timeIdle = // Truncate, do not round up
-                (int) ((timeNow - sessions[i].getLastAccessedTime()) / 1000L);
-            if (timeIdle > minIdleSwap) {
-                if(log.isDebugEnabled())
-                    log.debug(sm.getString
-                        ("persistentManager.swapTooManyActive",
-                         sessions[i].getIdInternal(), new Integer(timeIdle)));
-                try {
-                    swapOut(sessions[i]);
-                } catch (IOException e) {
-                    ;   // This is logged in writeSession()
+            synchronized (sessions[i]) {
+                int timeIdle = // Truncate, do not round up
+                    (int) ((timeNow - sessions[i].getLastAccessedTime()) / 1000L);
+                if (timeIdle > minIdleSwap) {
+                    if(log.isDebugEnabled())
+                        log.debug(sm.getString
+                            ("persistentManager.swapTooManyActive",
+                             sessions[i].getIdInternal(), new Integer(timeIdle)));
+                    try {
+                        swapOut(sessions[i]);
+                    } catch (IOException e) {
+                        ;   // This is logged in writeSession()
+                    }
+                    toswap--;
                 }
-                toswap--;
             }
         }
 
@@ -1107,20 +1126,22 @@ public abstract class PersistentManagerBase
         if (maxIdleBackup >= 0) {
             for (int i = 0; i < sessions.length; i++) {
                 StandardSession session = (StandardSession) sessions[i];
-                if (!session.isValid())
-                    continue;
-                int timeIdle = // Truncate, do not round up
-                    (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
-                if (timeIdle > maxIdleBackup) {
-                    if (log.isDebugEnabled())
-                        log.debug(sm.getString
-                            ("persistentManager.backupMaxIdle",
-                            session.getIdInternal(), new Integer(timeIdle)));
-
-                    try {
-                        writeSession(session);
-                    } catch (IOException e) {
-                        ;   // This is logged in writeSession()
+                synchronized (session) {
+                    if (!session.isValid())
+                        continue;
+                    int timeIdle = // Truncate, do not round up
+                        (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
+                    if (timeIdle > maxIdleBackup) {
+                        if (log.isDebugEnabled())
+                            log.debug(sm.getString
+                                ("persistentManager.backupMaxIdle",
+                                session.getIdInternal(), new Integer(timeIdle)));
+    
+                        try {
+                            writeSession(session);
+                        } catch (IOException e) {
+                            ;   // This is logged in writeSession()
+                        }
                     }
                 }
             }

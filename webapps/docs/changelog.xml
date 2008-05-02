@@ -16,6 +16,53 @@
 
 <body>
 
+<section name="JBoss Web 2.1.1.CR2 (remm)">
+  <subsection name="General">
+    <changelog>
+      <update>
+        Add Maven target to the dist script. (remm)
+      </update>
+      <fix>
+        <bug>43578</bug>: Tomcat doesn't start if installation path contains a space.
+        Patch submitted by Ray Sauers. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <bug>43142</bug>: Directory xxx.war is not always a war. (markt)
+      </fix>
+      <fix>
+        <jboss-jira>JBCTS-778</jboss-jira>: Fix updating charsWritten. (remm)
+      </fix>
+      <fix>
+        <bug>43343</bug>: Correctly handle the case where a request arrives for a session 
+        we are in the middle of persisting. (remm)
+      </fix>
+      <fix>
+        <bug>43150</bug>: Improve URL conversion so that some more special chars can be used
+        in the installation path. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        <jboss-jira>JBCTS-779</jboss-jira>: Exception types for invalid charset (should return the
+        java.io exception rather than the java.nio one). (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <jboss-jira>JBCTS-776</jboss-jira>: NPE regression in EL type handling. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.1.CR1 (remm)">
   <subsection name="General">
     <changelog>

@@ -458,7 +458,6 @@ public class OutputBuffer extends Writer
     public void realWriteChars(char buf[], int off, int len)
         throws IOException {
 
-        charsWritten += len;
         outputCharChunk.setChars(buf, off, len);
         while (outputCharChunk.getLength() > 0) { 
             conv.convert(outputCharChunk, bb);
@@ -476,6 +475,7 @@ public class OutputBuffer extends Writer
             return;
 
         cb.append((char) c);
+        charsWritten ++;
 
     }
 
@@ -495,6 +495,7 @@ public class OutputBuffer extends Writer
             return;
 
         cb.append(c, off, len);
+        charsWritten += len;
 
     }
 
@@ -511,6 +512,7 @@ public class OutputBuffer extends Writer
         if (s == null)
             s = "null";
         cb.append(s, off, len);
+        charsWritten += len;
 
     }
 
@@ -524,6 +526,7 @@ public class OutputBuffer extends Writer
         if (s == null)
             s = "null";
         cb.append(s);
+        charsWritten += s.length();
 
     } 
 
@@ -608,7 +611,7 @@ public class OutputBuffer extends Writer
     }
 
     public int getContentWritten() {
-        long size = bytesWritten + charsWritten ;
+        long size = bytesWritten + charsWritten;
         if (size < Integer.MAX_VALUE) {
             return (int) size;
         }

@@ -19,11 +19,13 @@
 package org.apache.tomcat.util.buf;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * NIO based character decoder.
@@ -47,8 +49,13 @@ public class B2CConverter {
     /**
      * Create a decoder for the specified charset.
      */
-    public B2CConverter(String charset) {
-        decoder = Charset.forName(charset).newDecoder();
+    public B2CConverter(String charset)
+        throws IOException {
+        try {
+            decoder = Charset.forName(charset).newDecoder();
+        } catch (UnsupportedCharsetException e) {
+            throw new UnsupportedEncodingException(charset);
+        }
         byte[] left = new byte[4];
         leftovers = ByteBuffer.wrap(left);
     }

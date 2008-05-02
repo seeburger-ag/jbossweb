@@ -18,11 +18,13 @@
 package org.apache.tomcat.util.buf;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
+import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * NIO based character encoder.
@@ -41,8 +43,13 @@ public class C2BConverter {
     /**
      * Create an encoder for the specified charset.
      */
-    public C2BConverter(String charset) {
-        encoder = Charset.forName(charset).newEncoder();
+    public C2BConverter(String charset)
+        throws IOException {
+        try {
+            encoder = Charset.forName(charset).newEncoder();
+        } catch (UnsupportedCharsetException e) {
+            throw new UnsupportedEncodingException(charset);
+        }
     }
 
     /** 

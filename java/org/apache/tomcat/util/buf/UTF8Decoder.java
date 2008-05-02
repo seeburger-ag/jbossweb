@@ -39,7 +39,8 @@ public final class UTF8Decoder extends B2CConverter {
     
     // may have state !!
     
-    public UTF8Decoder() {
+    public UTF8Decoder()
+        throws IOException {
         super("UTF-8");
     }
     
