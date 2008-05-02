@@ -152,6 +152,8 @@ public class ClusterListener
                 Service[] services = ((Server) source).findServices();
                 for (int i = 0; i < services.length; i++) {
                     services[i].getContainer().removeContainerListener(this);
+                    ((Lifecycle) services[i].getContainer()).removeLifecycleListener(this);
+                    removeAll((Engine) services[i].getContainer());
                     Container[] children = services[i].getContainer().findChildren();
                     for (int j = 0; j < children.length; j++) {
                         children[j].removeContainerListener(this);
@@ -203,6 +205,16 @@ public class ClusterListener
     }
 
     
+    protected void removeAll(Engine engine) {
+        System.out.println("Stop: " + engine.getName());
+        // FIXME: send STATUS
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        parameters.put("JVMRoute", engine.getJvmRoute());
+
+        // FIXME: Send REMOVE-APP * request
+    }
+
+
     protected void status(Engine engine) {
         System.out.println("Status: " + engine.getName());
         // FIXME: send STATUS
@@ -210,8 +222,7 @@ public class ClusterListener
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", engine.getJvmRoute());
 
-        // Send STATUS request
-        // FIXME: By default, connect on localhost on some predefined port ?
+        // FIXME: Send STATUS request
     }
 
     
