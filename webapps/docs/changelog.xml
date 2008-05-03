@@ -38,7 +38,7 @@
       </fix>
       <fix>
         <bug>43343</bug>: Correctly handle the case where a request arrives for a session 
-        we are in the middle of persisting. (remm)
+        we are in the middle of persisting. (markt)
       </fix>
       <fix>
         <bug>43150</bug>: Improve URL conversion so that some more special chars can be used
@@ -51,6 +51,10 @@
       <fix>
         <jboss-jira>JBCTS-779</jboss-jira>: Exception types for invalid charset (should return the
         java.io exception rather than the java.nio one). (remm)
+      </fix>
+      <fix>
+        <bug>43191</bug>: No way to turn off compression for some mime-types. Based on a patch 
+        by Len Popp. (markt)
       </fix>
     </changelog>
   </subsection>
