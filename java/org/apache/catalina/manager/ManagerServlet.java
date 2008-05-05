@@ -1306,6 +1306,9 @@ public class ManagerServlet
                     // Ignore
                 }
                 try {
+                    if (path.lastIndexOf('/') > 0) {
+                        path = "/" + path.substring(1).replace('/','#');
+                    }
                     File war = new File(getAppBase(), getDocBase(path) + ".war");
                     File dir = new File(getAppBase(), getDocBase(path));
                     File xml = new File(configBase, getConfigFile(path) + ".xml");
@@ -1317,9 +1320,9 @@ public class ManagerServlet
                         xml.delete();
                     }
                     // Perform new deployment
-                    check(path);
+                    check(path.replace('#','/'));
                 } finally {
-                    removeServiced(path);
+                    removeServiced(path.replace('#','/'));
                 }
             }
             writer.println(sm.getString("managerServlet.undeployed",
@@ -1351,14 +1354,14 @@ public class ManagerServlet
 
 
     /**
-     * Given a context path, get the config file name.
+     * Given a context path, get the doc abse.
      */
     protected String getDocBase(String path) {
         String basename = null;
         if (path.equals("")) {
             basename = "ROOT";
         } else {
-            basename = path.substring(1);
+            basename = path.substring(1).replace('/', '#');
         }
         return (basename);
     }

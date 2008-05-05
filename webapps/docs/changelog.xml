@@ -52,6 +52,9 @@
         <bug>43079</bug> and <bug>43080</bug>: Move odd url-pattern warning to StandardContext so a) we catch all patterns
         and b) it isn't logged to the wrong webapp. Based on a patch by John Kew. (markt)
       </fix>
+      <fix>
+        <bug>44021</bug>: Add support to manger and deployer for wars and dirs that use # to denote multi-level contexts. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
