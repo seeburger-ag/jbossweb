@@ -5048,7 +5048,7 @@ public class StandardContext
 
         // Acquire (or calculate) the work directory path
         String workDir = getWorkDir();
-        if (workDir == null) {
+        if (workDir == null || workDir.length() == 0) {
 
             // Retrieve our parent (normally a host) name
             String hostName = null;
@@ -5134,17 +5134,37 @@ public class StandardContext
             return (false);
         }
         if (urlPattern.startsWith("*.")) {
-            if (urlPattern.indexOf('/') < 0)
+            if (urlPattern.indexOf('/') < 0) {
+                checkUnusualURLPattern(urlPattern);
                 return (true);
-            else
+            } else {
                 return (false);
+            }
         }
         if ( (urlPattern.startsWith("/")) &&
-                (urlPattern.indexOf("*.") < 0))
+                (urlPattern.indexOf("*.") < 0)) {
+            checkUnusualURLPattern(urlPattern);
             return (true);
-        else
+        } else {
             return (false);
+        }
 
+    }
+
+
+    /**
+     * Check for unusual but valid <code>&lt;url-pattern&gt;</code>s.
+     * See Bugzilla 34805, 43079 & 43080
+     */
+    private void checkUnusualURLPattern(String urlPattern) {
+        if (log.isInfoEnabled()) {
+            if(urlPattern.endsWith("*") && (urlPattern.length() < 2 ||
+                    urlPattern.charAt(urlPattern.length()-2) != '/')) {
+                log.info("Suspicious url pattern: \"" + urlPattern + "\"" +
+                        " in context [" + getName() + "] - see" +
+                " section SRV.11.2 of the Servlet specification" );
+            }
+        }
     }
 
 
