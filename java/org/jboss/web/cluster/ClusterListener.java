@@ -358,6 +358,9 @@ public class ClusterListener
             while (keys.hasNext()) {
                 String key = keys.next();
                 String value = parameters.get(key);
+                if (value == null) {
+                    throw new IllegalStateException("Value for attribute " + key + " cannot be null");
+                }
                 keyCC = encoder.encodeURL(key, 0, key.length());
                 keyCC.append('=');
                 keyCC = encoder.encodeURL(value, 0, value.length());
