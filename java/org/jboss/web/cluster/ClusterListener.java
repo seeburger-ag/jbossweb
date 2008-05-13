@@ -24,8 +24,17 @@
 package org.jboss.web.cluster;
 
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
@@ -42,6 +51,8 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.IntrospectionUtils;
+import org.apache.tomcat.util.buf.CharChunk;
+import org.apache.tomcat.util.buf.UEncoder;
 import org.jboss.logging.Logger;
 
 
@@ -77,6 +88,14 @@ public class ClusterListener
     public InetAddress getProxyAddress() { return proxyAddress; }
     public void setAddress(InetAddress proxyAddress) { this.proxyAddress = proxyAddress; }
 
+    
+    protected String proxyURL = "/";
+    public String getProxyURL() { return proxyURL; }
+    public void setProxyURL(String proxyURL) { this.proxyURL = proxyURL; }
+
+
+    protected UEncoder encoder = new UEncoder();
+    
 
     // ---------------------------------------------- LifecycleListener Methods
 
@@ -126,7 +145,11 @@ public class ClusterListener
             if (source instanceof Context) {
                 // Start a webapp
                 startContext((Context) source);
-            } else if (source instanceof Server) {
+            } else {
+                return;
+            }
+        } else if (Lifecycle.AFTER_START_EVENT.equals(event.getType())) {
+            if (source instanceof Server) {
                 Service[] services = ((Server) source).findServices();
                 for (int i = 0; i < services.length; i++) {
                     services[i].getContainer().addContainerListener(this);
@@ -180,7 +203,12 @@ public class ClusterListener
         // Collect configuration from the connectors and service and call CONFIG
         Connector connector = findProxyConnector(engine.getService().findConnectors());
         HashMap<String, String> parameters = new HashMap<String, String>();
-        parameters.put("JVMRoute", engine.getJvmRoute());
+        if (engine.getJvmRoute() == null) {
+            // FIXME: automagical JVM route (some hash of address + port + engineName ?)
+            throw new IllegalStateException("JVMRoute must be set");
+        } else {
+            parameters.put("JVMRoute", engine.getJvmRoute());
+        }
         boolean reverseConnection = 
             Boolean.TRUE.equals(IntrospectionUtils.getProperty(connector.getProtocolHandler(), "reverseConnection"));
         boolean ssl = 
@@ -201,28 +229,30 @@ public class ClusterListener
         }
         
         // Send CONFIG request
-        // FIXME: By default, connect on localhost on some predefined port ?
+        sendRequest("CONFIG", false, parameters);
     }
 
     
     protected void removeAll(Engine engine) {
         System.out.println("Stop: " + engine.getName());
-        // FIXME: send STATUS
+
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", engine.getJvmRoute());
 
-        // FIXME: Send REMOVE-APP * request
+        // Send REMOVE-APP * request
+        sendRequest("REMOVE-APP", true, parameters);
     }
 
 
     protected void status(Engine engine) {
         System.out.println("Status: " + engine.getName());
-        // FIXME: send STATUS
+
         Connector connector = findProxyConnector(engine.getService().findConnectors());
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", engine.getJvmRoute());
 
-        // FIXME: Send STATUS request
+        // Send STATUS request
+        sendRequest("STATUS", false, parameters);
     }
 
     
@@ -230,12 +260,14 @@ public class ClusterListener
         System.out.println("Deploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
         ((Lifecycle) context).addLifecycleListener(this);
 
-        boolean started = (((StandardContext) context).getState() == 1);
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", getJvmRoute(context));
         parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
 
-        // FIXME: send ENABLE-APP if state is started
+        // Send ENABLE-APP if state is started
+        if (context.isStarted()) {
+            sendRequest("ENABLE-APP", false, parameters);
+        }
     }
 
 
@@ -247,7 +279,8 @@ public class ClusterListener
         parameters.put("JVMRoute", getJvmRoute(context));
         parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
 
-        // FIXME: send REMOVE-APP
+        // Send REMOVE-APP
+        sendRequest("REMOVE-APP", false, parameters);
     }
 
 
@@ -259,7 +292,8 @@ public class ClusterListener
         parameters.put("JVMRoute", getJvmRoute(context));
         parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
 
-        // FIXME: send ENABLE-APP
+        // Send ENABLE-APP
+        sendRequest("ENABLE-APP", false, parameters);
     }
 
 
@@ -271,7 +305,8 @@ public class ClusterListener
         parameters.put("JVMRoute", getJvmRoute(context));
         parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
 
-        // FIXME: send STOP-APP
+        // Send STOP-APP
+        sendRequest("STOP-APP", false, parameters);
     }
 
     
@@ -306,10 +341,108 @@ public class ClusterListener
             (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
         if (inetAddress == null) {
             // FIXME: Return local address ? This is hard ...
-            return null;
+            return "127.0.0.1";
         } else {
             return inetAddress.toString();
         }
     }
+    
+    protected String sendRequest(String command, boolean wildcard, HashMap<String, String> parameters) {
+        Reader reader = null;
+        Writer writer = null;
+        CharChunk keyCC = null;
+        Socket connection = null;
+        try {
+            // First, encode the POST body
+            Iterator<String> keys = parameters.keySet().iterator();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                String value = parameters.get(key);
+                keyCC = encoder.encodeURL(key, 0, key.length());
+                keyCC.append('=');
+                keyCC = encoder.encodeURL(value, 0, value.length());
+                if (keys.hasNext()) {
+                    keyCC.append('&');
+                }
+            }
+            
+            // Then, connect to the proxy
+            if (proxyAddress == null) {
+                connection = new Socket("127.0.0.1", proxyPort);
+            } else {
+                connection = new Socket(proxyAddress, proxyPort);
+            }
+            
+            String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
+            int contentLength = keyCC.getLength();
+            /*
+            URL url = new URL("http", (proxyAddress == null) ? "127.0.0.1" : proxyAddress.toString(), proxyPort, (wildcard) ? "*" : proxyURL);
+            System.out.println(url.toString() + " Request body: " + new String(keyCC.getBuffer(), keyCC.getStart(), keyCC.getLength()));
+             connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod(command);
+            //connection.addRequestProperty("Content-type", "application/x-www-form-urlencoded");
+            connection.setFixedLengthStreamingMode(keyCC.getLength());
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setUseCaches(false);
+            connection.connect();*/
 
+            writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
+            writer.write(requestLine);
+            writer.write("\r\n");
+            writer.write("Content-Length: " + contentLength + "\r\n");
+            writer.write("User-Agent: ClusterListener/1.0\r\n");
+            writer.write("\r\n");
+            writer.write(keyCC.getBuffer(), keyCC.getStart(), keyCC.getLength());
+            writer.write("\r\n");
+            writer.flush();
+            
+            // Read the response to a string
+            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuffer result = new StringBuffer();
+            char[] buf = new char[512];
+            while (true) {
+                int n = reader.read(buf);
+                if (n <= 0) {
+                    break;
+                } else {
+                    result.append(buf, 0, n);
+                }
+            }
+            //System.out.println("Response body: " + result.toString());
+            // FIXME: probably parse away the request header; generate an error if not 200 ?
+            return result.toString();
+            
+        } catch (IOException e) {
+            log.error("Error sending: " + command, e);
+        } finally {
+            if (keyCC != null) {
+                keyCC.recycle();
+            }
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
+        return null;
+    }
+
+    
 }
