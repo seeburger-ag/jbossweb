@@ -46,9 +46,11 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.buf.CharChunk;
@@ -159,20 +161,7 @@ public class ClusterListener
             }
         } else if (Lifecycle.AFTER_START_EVENT.equals(event.getType())) {
             if (source instanceof Server) {
-                Service[] services = ((Server) source).findServices();
-                for (int i = 0; i < services.length; i++) {
-                    services[i].getContainer().addContainerListener(this);
-                    ((Lifecycle) services[i].getContainer()).addLifecycleListener(this);
-                    config((Engine) services[i].getContainer());
-                    Container[] children = services[i].getContainer().findChildren();
-                    for (int j = 0; j < children.length; j++) {
-                        children[j].addContainerListener(this);
-                        Container[] children2 = children[j].findChildren();
-                        for (int k = 0; k < children2.length; k++) {
-                            addContext((Context) children2[k]);
-                        }
-                    }
-                }
+                startServer((Server) source);
             } else {
                 return;
             }
@@ -181,20 +170,7 @@ public class ClusterListener
                 // Stop a webapp
                 stopContext((Context) source);
             } else if (source instanceof Server) {
-                Service[] services = ((Server) source).findServices();
-                for (int i = 0; i < services.length; i++) {
-                    services[i].getContainer().removeContainerListener(this);
-                    ((Lifecycle) services[i].getContainer()).removeLifecycleListener(this);
-                    removeAll((Engine) services[i].getContainer());
-                    Container[] children = services[i].getContainer().findChildren();
-                    for (int j = 0; j < children.length; j++) {
-                        children[j].removeContainerListener(this);
-                        Container[] children2 = children[j].findChildren();
-                        for (int k = 0; k < children2.length; k++) {
-                            removeContext((Context) children2[k]);
-                        }
-                    }
-                }
+                stopServer((Server) source);
             } else {
                 return;
             }
@@ -204,6 +180,49 @@ public class ClusterListener
             }
         }
 
+    }
+    
+    
+    public String getProxyConfiguration() {
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        // Send DUMP * request
+        return sendRequest("DUMP", true, parameters);
+    }
+    
+    
+    protected void startServer(Server server) {
+        Service[] services = server.findServices();
+        for (int i = 0; i < services.length; i++) {
+            services[i].getContainer().addContainerListener(this);
+            ((Lifecycle) services[i].getContainer()).addLifecycleListener(this);
+            config((Engine) services[i].getContainer());
+            Container[] children = services[i].getContainer().findChildren();
+            for (int j = 0; j < children.length; j++) {
+                children[j].addContainerListener(this);
+                Container[] children2 = children[j].findChildren();
+                for (int k = 0; k < children2.length; k++) {
+                    addContext((Context) children2[k]);
+                }
+            }
+        }
+    }
+    
+    
+    protected void stopServer(Server server) {
+        Service[] services = server.findServices();
+        for (int i = 0; i < services.length; i++) {
+            services[i].getContainer().removeContainerListener(this);
+            ((Lifecycle) services[i].getContainer()).removeLifecycleListener(this);
+            removeAll((Engine) services[i].getContainer());
+            Container[] children = services[i].getContainer().findChildren();
+            for (int j = 0; j < children.length; j++) {
+                children[j].removeContainerListener(this);
+                Container[] children2 = children[j].findChildren();
+                for (int k = 0; k < children2.length; k++) {
+                    removeContext((Context) children2[k]);
+                }
+            }
+        }
     }
     
     
@@ -241,7 +260,7 @@ public class ClusterListener
         sendRequest("CONFIG", false, parameters);
     }
 
-    
+
     protected void removeAll(Engine engine) {
         System.out.println("Stop: " + engine.getName());
 
@@ -254,15 +273,22 @@ public class ClusterListener
 
 
     protected void status(Engine engine) {
-        System.out.println("Status: " + engine.getName());
+        if (state != State.OK) {
+            state = State.OK;
+            // Something went wrong in a status at some point, so fully restore the configuration
+            stopServer(ServerFactory.getServer());
+            startServer(ServerFactory.getServer());
+        } else {
+            System.out.println("Status: " + engine.getName());
 
-        Connector connector = findProxyConnector(engine.getService().findConnectors());
-        HashMap<String, String> parameters = new HashMap<String, String>();
-        parameters.put("JVMRoute", engine.getJvmRoute());
-        parameters.put("Load", "1");
+            Connector connector = findProxyConnector(engine.getService().findConnectors());
+            HashMap<String, String> parameters = new HashMap<String, String>();
+            parameters.put("JVMRoute", engine.getJvmRoute());
+            parameters.put("Load", "1");
 
-        // Send STATUS request
-        sendRequest("STATUS", false, parameters);
+            // Send STATUS request
+            sendRequest("STATUS", false, parameters);
+        }
     }
 
     
@@ -272,7 +298,8 @@ public class ClusterListener
 
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", getJvmRoute(context));
-        parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
+        parameters.put("Context", ("".equals(context.getPath())) ? "/" : context.getPath());
+        parameters.put("Alias", getHost(context));
 
         // Send ENABLE-APP if state is started
         if (context.isStarted()) {
@@ -287,7 +314,8 @@ public class ClusterListener
 
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", getJvmRoute(context));
-        parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
+        parameters.put("Context", ("".equals(context.getPath())) ? "/" : context.getPath());
+        parameters.put("Alias", getHost(context));
 
         // Send REMOVE-APP
         sendRequest("REMOVE-APP", false, parameters);
@@ -300,7 +328,8 @@ public class ClusterListener
 
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", getJvmRoute(context));
-        parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
+        parameters.put("Context", ("".equals(context.getPath())) ? "/" : context.getPath());
+        parameters.put("Alias", getHost(context));
 
         // Send ENABLE-APP
         sendRequest("ENABLE-APP", false, parameters);
@@ -313,7 +342,8 @@ public class ClusterListener
 
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", getJvmRoute(context));
-        parameters.put("context", ("".equals(context.getPath())) ? "/" : context.getPath());
+        parameters.put("Context", ("".equals(context.getPath())) ? "/" : context.getPath());
+        parameters.put("Alias", getHost(context));
 
         // Send STOP-APP
         sendRequest("STOP-APP", false, parameters);
@@ -322,6 +352,19 @@ public class ClusterListener
     
     protected String getJvmRoute(Context context) {
         return ((Engine) context.getParent().getParent()).getJvmRoute();
+    }
+    
+    
+    protected String getHost(Context context) {
+        StringBuffer result = new StringBuffer();
+        Host host = (Host) context.getParent();
+        result.append(host.getName());
+        String[] aliases = host.findAliases();
+        for (int i = 0; i < aliases.length; i++) {
+            result.append(',');
+            result.append(aliases[i]);
+        }
+        return result.toString();
     }
     
     
@@ -439,7 +482,8 @@ context: 5 [/manager] vhost: 1 node: 1 status: 1
                 }
             }
             //System.out.println("Response body: " + result.toString());
-            // FIXME: probably parse away the request header; generate an error if not 200 ?
+            // FIXME: probably parse away the request header
+            // FIXME: generate an IOE or similar if not 200, or simply mark as error ?
             ok = true;
             return result.toString();
             
