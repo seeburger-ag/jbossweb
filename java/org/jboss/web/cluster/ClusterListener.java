@@ -50,7 +50,6 @@ import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.buf.CharChunk;
@@ -75,40 +74,64 @@ public class ClusterListener
         StringManager.getManager(Constants.Package);
 
 
-    // ---------------------------------------------- Constants
+    // -------------------------------------------------------------- Constants
 
     
     protected enum State { OK, ERROR };
 
     
-    // ---------------------------------------------- Properties
+    // ----------------------------------------------------------------- Fields
 
 
+    /**
+     * URL encoder used to generate requests bodies.
+     */
+    protected UEncoder encoder = new UEncoder();
+    
+    
+    /**
+     * State of the node. If a communication error occurs with the
+     * frontend proxy, the configuration will be refreshed.
+     */
+    protected State state = State.OK;
+    
+
+    // ------------------------------------------------------------- Properties
+
+
+    /**
+     * Port on which the proxy is listening for balancer control commands.
+     */
     protected int proxyPort = 8000;
     public int getProxyPort() { return proxyPort; }
     public void setProxyPort(int proxyPort) { this.proxyPort = proxyPort; }
 
 
+    /**
+     * Address on which the proxy is listening for balancer control commands.
+     * Default is localhost.
+     */
     protected InetAddress proxyAddress = null;
     public InetAddress getProxyAddress() { return proxyAddress; }
     public void setAddress(InetAddress proxyAddress) { this.proxyAddress = proxyAddress; }
 
     
+    // FIXME: probably useless
     protected String proxyURL = "/";
     public String getProxyURL() { return proxyURL; }
     public void setProxyURL(String proxyURL) { this.proxyURL = proxyURL; }
 
 
+    /**
+     * Connection timeout for communication with the proxy.
+     */
     protected int socketTimeout = 5000;
     public int getSocketTimeout() { return socketTimeout; }
     public void setSocketTimeout(int socketTimeout) { this.socketTimeout = socketTimeout; }
 
 
-    protected UEncoder encoder = new UEncoder();
-    protected State state = State.OK;
-    
-
     // ---------------------------------------------- LifecycleListener Methods
+
 
     /**
      * Acknowledge the occurrence of the specified event.
@@ -142,6 +165,7 @@ public class ClusterListener
         }
 
     }
+
 
     /**
      * Primary entry point for startup and shutdown events.
@@ -183,13 +207,33 @@ public class ClusterListener
     }
     
     
+    /**
+     * Retrieves the full proxy configuration.
+     * 
+     * @return the proxy confguration
+     */
     public String getProxyConfiguration() {
         HashMap<String, String> parameters = new HashMap<String, String>();
         // Send DUMP * request
         return sendRequest("DUMP", true, parameters);
+        /*
+        response: HTTP/1.1 200 OK
+        response:
+        node: [1:1] JVMRoute: node1 Domain: [bla] Host: 127.0.0.1 Port: 8009 Type: ajp
+        host: 1 [] vhost: 1 node: 1
+        context: 1 [/] vhost: 1 node: 1 status: 1
+        context: 2 [/myapp] vhost: 1 node: 1 status: 1
+        context: 3 [/host-manager] vhost: 1 node: 1 status: 1
+        context: 4 [/docs] vhost: 1 node: 1 status: 1
+        context: 5 [/manager] vhost: 1 node: 1 status: 1
+        */
     }
     
     
+    /**
+     * Send commands to the front end server assocaited with the startup of the
+     * node.
+     */
     protected void startServer(Server server) {
         Service[] services = server.findServices();
         for (int i = 0; i < services.length; i++) {
@@ -208,6 +252,10 @@ public class ClusterListener
     }
     
     
+    /**
+     * Send commands to the front end server associated with the shutdown of the
+     * node.
+     */
     protected void stopServer(Server server) {
         Service[] services = server.findServices();
         for (int i = 0; i < services.length; i++) {
@@ -225,7 +273,12 @@ public class ClusterListener
         }
     }
     
-    
+
+    /**
+     * Send the configuration for the specified engine to the proxy. 
+     * 
+     * @param engine
+     */
     protected void config(Engine engine) {
         System.out.println("Config: " + engine.getName());
         // Collect configuration from the connectors and service and call CONFIG
@@ -261,6 +314,11 @@ public class ClusterListener
     }
 
 
+    /**
+     * Remove all contexts from the specified engine.
+     * 
+     * @param engine
+     */
     protected void removeAll(Engine engine) {
         System.out.println("Stop: " + engine.getName());
 
@@ -272,6 +330,12 @@ public class ClusterListener
     }
 
 
+    /**
+     * Send a periodic status request. If in error state, the listener will attempt to refresh
+     * the configuration on the front end server.
+     * 
+     * @param engine
+     */
     protected void status(Engine engine) {
         if (state != State.OK) {
             state = State.OK;
@@ -292,6 +356,11 @@ public class ClusterListener
     }
 
     
+    /**
+     * Add a new context.
+     * 
+     * @param context
+     */
     protected void addContext(Context context) {
         System.out.println("Deploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
         ((Lifecycle) context).addLifecycleListener(this);
@@ -308,6 +377,11 @@ public class ClusterListener
     }
 
 
+    /**
+     * Remove a context.
+     * 
+     * @param context
+     */
     protected void removeContext(Context context) {
         System.out.println("Undeploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
         ((Lifecycle) context).removeLifecycleListener(this);
@@ -322,6 +396,11 @@ public class ClusterListener
     }
 
 
+    /**
+     * Start a context.
+     * 
+     * @param context
+     */
     protected void startContext(Context context) {
         Container parent = context.getParent();
         System.out.println("Start context: " + context.getPath() + " to Host: " + parent.getName());
@@ -336,6 +415,11 @@ public class ClusterListener
     }
 
 
+    /**
+     * Stop a context.
+     * 
+     * @param context
+     */
     protected void stopContext(Context context) {
         Container parent = context.getParent();
         System.out.println("Stop context: " + context.getPath() + " to Host: " + parent.getName());
@@ -350,11 +434,23 @@ public class ClusterListener
     }
 
     
+    /**
+     * Return the JvmRoute for the specified context.
+     * 
+     * @param context
+     * @return
+     */
     protected String getJvmRoute(Context context) {
         return ((Engine) context.getParent().getParent()).getJvmRoute();
     }
     
-    
+
+    /**
+     * Return the host and its alias list with which the context is associated.
+     * 
+     * @param context
+     * @return
+     */
     protected String getHost(Context context) {
         StringBuffer result = new StringBuffer();
         Host host = (Host) context.getParent();
@@ -368,6 +464,13 @@ public class ClusterListener
     }
     
     
+    /**
+     * Find the most likely connector the proxy server should connect to, or
+     * accept connections from.
+     * 
+     * @param connectors
+     * @return
+     */
     protected Connector findProxyConnector(Connector[] connectors) {
         int pos = 0;
         int maxThreads = 0;
@@ -389,6 +492,13 @@ public class ClusterListener
         return connectors[pos];
     }
 
+    
+    /**
+     * Return the address on which the connector is bound.
+     * 
+     * @param connector
+     * @return
+     */
     protected String getAddress(Connector connector) {
         InetAddress inetAddress = 
             (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
@@ -400,7 +510,25 @@ public class ClusterListener
         }
     }
     
+    
+    /**
+     * Send HTTP request, with the specified list of parameters. If an IO error occurs, the error state will
+     * be set. If the front end server reports an error, will mark as error state. Other unexpected exceptions 
+     * will be thrown and the error state will be set.
+     * 
+     * @param command
+     * @param wildcard
+     * @param parameters
+     * @return the response body as a String; null if in error state or a normal error occurs
+     */
     protected String sendRequest(String command, boolean wildcard, HashMap<String, String> parameters) {
+
+        // If there was an error, do nothing until the next periodic event, where the whole configuration
+        // will be refreshed
+        if (state != State.OK) {
+            return null;
+        }
+        
         Reader reader = null;
         Writer writer = null;
         CharChunk keyCC = null;
@@ -435,30 +563,6 @@ public class ClusterListener
             
             String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
             int contentLength = keyCC.getLength();
-            /*
-            URL url = new URL("http", (proxyAddress == null) ? "127.0.0.1" : proxyAddress.toString(), proxyPort, (wildcard) ? "*" : proxyURL);
-            System.out.println(url.toString() + " Request body: " + new String(keyCC.getBuffer(), keyCC.getStart(), keyCC.getLength()));
-             connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(command);
-            //connection.addRequestProperty("Content-type", "application/x-www-form-urlencoded");
-            connection.setFixedLengthStreamingMode(keyCC.getLength());
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setUseCaches(false);
-            connection.connect();*/
-            
-            /*
-response: HTTP/1.1 200 OK
-response:
-node: [1:1] JVMRoute: node1 Domain: [øcx97;x97;¿À°] Host: 127.0.0.1 Port: 8009 Type: ajp
-host: 1 [] vhost: 1 node: 1
-context: 1 [/] vhost: 1 node: 1 status: 1
-context: 2 [/myapp] vhost: 1 node: 1 status: 1
-context: 3 [/host-manager] vhost: 1 node: 1 status: 1
-context: 4 [/docs] vhost: 1 node: 1 status: 1
-context: 5 [/manager] vhost: 1 node: 1 status: 1
-             */
-
             writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
             writer.write(requestLine);
             writer.write("\r\n");
@@ -518,7 +622,9 @@ context: 5 [/manager] vhost: 1 node: 1 status: 1
                 state = State.ERROR;
             }
         }
+        
         return null;
+        
     }
 
     
