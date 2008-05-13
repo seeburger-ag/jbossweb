@@ -75,7 +75,10 @@ public class ClusterListener
 
     // ---------------------------------------------- Constants
 
+    
+    protected enum State { OK, ERROR };
 
+    
     // ---------------------------------------------- Properties
 
 
@@ -94,7 +97,13 @@ public class ClusterListener
     public void setProxyURL(String proxyURL) { this.proxyURL = proxyURL; }
 
 
+    protected int socketTimeout = 5000;
+    public int getSocketTimeout() { return socketTimeout; }
+    public void setSocketTimeout(int socketTimeout) { this.socketTimeout = socketTimeout; }
+
+
     protected UEncoder encoder = new UEncoder();
+    protected State state = State.OK;
     
 
     // ---------------------------------------------- LifecycleListener Methods
@@ -250,6 +259,7 @@ public class ClusterListener
         Connector connector = findProxyConnector(engine.getService().findConnectors());
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", engine.getJvmRoute());
+        parameters.put("Load", "1");
 
         // Send STATUS request
         sendRequest("STATUS", false, parameters);
@@ -352,6 +362,7 @@ public class ClusterListener
         Writer writer = null;
         CharChunk keyCC = null;
         Socket connection = null;
+        boolean ok = false;
         try {
             // First, encode the POST body
             Iterator<String> keys = parameters.keySet().iterator();
@@ -363,7 +374,9 @@ public class ClusterListener
                 }
                 keyCC = encoder.encodeURL(key, 0, key.length());
                 keyCC.append('=');
-                keyCC = encoder.encodeURL(value, 0, value.length());
+                if (value != null) {
+                    keyCC = encoder.encodeURL(value, 0, value.length());
+                }
                 if (keys.hasNext()) {
                     keyCC.append('&');
                 }
@@ -375,6 +388,7 @@ public class ClusterListener
             } else {
                 connection = new Socket(proxyAddress, proxyPort);
             }
+            connection.setSoTimeout(socketTimeout);
             
             String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
             int contentLength = keyCC.getLength();
@@ -389,6 +403,18 @@ public class ClusterListener
             connection.setDoInput(true);
             connection.setUseCaches(false);
             connection.connect();*/
+            
+            /*
+response: HTTP/1.1 200 OK
+response:
+node: [1:1] JVMRoute: node1 Domain: [øcx97;x97;¿À°] Host: 127.0.0.1 Port: 8009 Type: ajp
+host: 1 [] vhost: 1 node: 1
+context: 1 [/] vhost: 1 node: 1 status: 1
+context: 2 [/myapp] vhost: 1 node: 1 status: 1
+context: 3 [/host-manager] vhost: 1 node: 1 status: 1
+context: 4 [/docs] vhost: 1 node: 1 status: 1
+context: 5 [/manager] vhost: 1 node: 1 status: 1
+             */
 
             writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
             writer.write(requestLine);
@@ -414,6 +440,7 @@ public class ClusterListener
             }
             //System.out.println("Response body: " + result.toString());
             // FIXME: probably parse away the request header; generate an error if not 200 ?
+            ok = true;
             return result.toString();
             
         } catch (IOException e) {
@@ -442,6 +469,9 @@ public class ClusterListener
                 } catch (IOException e) {
                     // Ignore
                 }
+            }
+            if (!ok) {
+                state = State.ERROR;
             }
         }
         return null;
