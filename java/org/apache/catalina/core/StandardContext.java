@@ -4291,15 +4291,6 @@ public class StandardContext
                     getCluster().registerManager(manager);
                 }
 
-                
-                // Start manager
-                if ((manager != null) && (manager instanceof Lifecycle)) {
-                    ((Lifecycle) getManager()).start();
-                }
-
-                // Start ContainerBackgroundProcessor thread
-                super.threadStart();
-
                 mainOk = true;
 
             }
@@ -4360,13 +4351,27 @@ public class StandardContext
                 lifecycle.fireLifecycleEvent(AFTER_START_EVENT, null);
             }
             
-            // Configure and call application event listeners and filters
+            // Configure and call application event listeners
             if (ok) {
                 if (!listenerStart()) {
                     log.error( "Error listenerStart");
                     ok = false;
                 }
             }
+
+            // Start manager
+            if (ok && (manager != null) && (manager instanceof Lifecycle)) {
+                ok = false;
+                ((Lifecycle) getManager()).start();
+                ok = true;
+            }
+
+            // Start ContainerBackgroundProcessor thread
+            if (ok) {
+                super.threadStart();
+            }
+
+            // Configure and call application filters
             if (ok) {
                 if (!filterStart()) {
                     log.error( "Error filterStart");

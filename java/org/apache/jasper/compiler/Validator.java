@@ -328,6 +328,7 @@ class Validator {
 
             Node.Root root = pageDir.getRoot();
             String configEnc = root.getJspConfigPageEncoding();
+            pageDirEnc = pageDirEnc.toUpperCase();
 
             /*
              * Compare the 'pageEncoding' attribute of the page directive with
@@ -336,9 +337,8 @@ class Validator {
              * "UTF-16LE" as identical.
              */
             if (configEnc != null) {
-                if (!pageDirEnc.equals(configEnc)
-                        && (!pageDirEnc.startsWith("UTF-16") || !configEnc
-                                .startsWith("UTF-16"))) {
+                if (!pageDirEnc.equalsIgnoreCase(configEnc)
+                        && (!pageDirEnc.startsWith("UTF-16") || !configEnc.startsWith("UTF-16"))) {
                     err.jspError(pageDir,
                             "jsp.error.config_pagedir_encoding_mismatch",
                             configEnc, pageDirEnc);
@@ -356,9 +356,8 @@ class Validator {
              */
             if ((root.isXmlSyntax() && root.isEncodingSpecifiedInProlog()) || root.isBomPresent()) {
                 String pageEnc = root.getPageEncoding();
-                if (!pageDirEnc.equals(pageEnc)
-                        && (!pageDirEnc.startsWith("UTF-16") || !pageEnc
-                                .startsWith("UTF-16"))) {
+                if (!pageDirEnc.equalsIgnoreCase(pageEnc)
+                        && (!pageDirEnc.startsWith("UTF-16") || !pageEnc.startsWith("UTF-16"))) {
                     err.jspError(pageDir,
                             "jsp.error.prolog_pagedir_encoding_mismatch",
                             pageEnc, pageDirEnc);

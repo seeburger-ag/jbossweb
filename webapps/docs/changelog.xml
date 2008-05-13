@@ -55,6 +55,9 @@
       <fix>
         <bug>44021</bug>: Add support to manger and deployer for wars and dirs that use # to denote multi-level contexts. (markt)
       </fix>
+      <fix>
+        <bug>42934</bug>: Trigger contextInitialized() before sessionDidActivate(). (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -77,6 +80,12 @@
     <changelog>
       <fix>
         <jboss-jira>JBCTS-776</jboss-jira>: NPE regression in EL type handling. (remm)
+      </fix>
+      <fix>
+        <jboss-jira>JBAS-5518</jboss-jira>: Case insensitive comparison of charsets. (remm)
+      </fix>
+      <fix>
+        <bug>42943</bug>: Make sure the nested element is inside a &lt;jsp:text&gt; element. (markt)
       </fix>
     </changelog>
   </subsection>
