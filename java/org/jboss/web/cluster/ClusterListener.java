@@ -59,13 +59,14 @@ import org.jboss.logging.Logger;
 
 
 /**
- * 
+ * This listener communicates with a front end mod_cluster enabled proxy to
+ * automatically maintain the node configuration according to what is 
+ * deployed.
  */
-
 public class ClusterListener
     implements LifecycleListener, ContainerListener {
 
-    private static Logger log = Logger.getLogger(ClusterListener.class);
+    protected static Logger log = Logger.getLogger(ClusterListener.class);
 
     /**
      * The string manager for this package.
@@ -280,7 +281,9 @@ public class ClusterListener
      * @param engine
      */
     protected void config(Engine engine) {
-        System.out.println("Config: " + engine.getName());
+        if (log.isDebugEnabled()) {
+            log.debug("Config: " + engine.getName());
+        }
         // Collect configuration from the connectors and service and call CONFIG
         Connector connector = findProxyConnector(engine.getService().findConnectors());
         HashMap<String, String> parameters = new HashMap<String, String>();
@@ -320,7 +323,9 @@ public class ClusterListener
      * @param engine
      */
     protected void removeAll(Engine engine) {
-        System.out.println("Stop: " + engine.getName());
+        if (log.isDebugEnabled()) {
+            log.debug("Stop: " + engine.getName());
+        }
 
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", engine.getJvmRoute());
@@ -343,7 +348,9 @@ public class ClusterListener
             stopServer(ServerFactory.getServer());
             startServer(ServerFactory.getServer());
         } else {
-            System.out.println("Status: " + engine.getName());
+            if (log.isDebugEnabled()) {
+                log.debug("Status: " + engine.getName());
+            }
 
             Connector connector = findProxyConnector(engine.getService().findConnectors());
             HashMap<String, String> parameters = new HashMap<String, String>();
@@ -362,7 +369,10 @@ public class ClusterListener
      * @param context
      */
     protected void addContext(Context context) {
-        System.out.println("Deploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
+        if (log.isDebugEnabled()) {
+            log.debug("Deploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
+        }
+
         ((Lifecycle) context).addLifecycleListener(this);
 
         HashMap<String, String> parameters = new HashMap<String, String>();
@@ -383,7 +393,10 @@ public class ClusterListener
      * @param context
      */
     protected void removeContext(Context context) {
-        System.out.println("Undeploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
+        if (log.isDebugEnabled()) {
+            log.debug("Undeploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
+        }
+
         ((Lifecycle) context).removeLifecycleListener(this);
 
         HashMap<String, String> parameters = new HashMap<String, String>();
@@ -402,8 +415,9 @@ public class ClusterListener
      * @param context
      */
     protected void startContext(Context context) {
-        Container parent = context.getParent();
-        System.out.println("Start context: " + context.getPath() + " to Host: " + parent.getName());
+        if (log.isDebugEnabled()) {
+            log.debug("Start context: " + context.getPath() + " to Host: " + context.getParent().getName());
+        }
 
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", getJvmRoute(context));
@@ -421,8 +435,9 @@ public class ClusterListener
      * @param context
      */
     protected void stopContext(Context context) {
-        Container parent = context.getParent();
-        System.out.println("Stop context: " + context.getPath() + " to Host: " + parent.getName());
+        if (log.isDebugEnabled()) {
+            log.debug("Stop context: " + context.getPath() + " to Host: " + context.getParent().getName());
+        }
 
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", getJvmRoute(context));
