@@ -29,8 +29,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
@@ -544,8 +542,8 @@ public class ClusterListener
             return null;
         }
         
-        Reader reader = null;
-        Writer writer = null;
+        BufferedReader reader = null;
+        BufferedWriter writer = null;
         CharChunk keyCC = null;
         Socket connection = null;
         boolean ok = false;
@@ -590,6 +588,18 @@ public class ClusterListener
             
             // Read the response to a string
             reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            // Read the first response line and skip the rest of the HTTP header
+            String responseStatus = reader.readLine();
+            // Parse the line, which is formed like HTTP/1.x YYY Message
+            int status = 500;
+            try {
+                responseStatus = responseStatus.substring(responseStatus.indexOf(' ') + 1, responseStatus.indexOf(' ', responseStatus.indexOf(' ') + 1));
+                status = Integer.parseInt(responseStatus);
+                while (!"".equals(reader.readLine())) {}
+            } catch (Exception e) {
+                log.info("Error parsing response header: " + command, e);
+            }
+            // Read the request body
             StringBuffer result = new StringBuffer();
             char[] buf = new char[512];
             while (true) {
@@ -600,14 +610,19 @@ public class ClusterListener
                     result.append(buf, 0, n);
                 }
             }
-            //System.out.println("Response body: " + result.toString());
-            // FIXME: probably parse away the request header
-            // FIXME: generate an IOE or similar if not 200, or simply mark as error ?
-            ok = true;
+
+            // Mark as error if the front end server did not return 200; the configuration will
+            // be refreshed during the next periodic event 
+            if (status != 200) {
+                ok = false;
+            } else {
+                ok = true;
+            }
+
             return result.toString();
             
         } catch (IOException e) {
-            log.error("Error sending: " + command, e);
+            log.info("Error sending: " + command, e);
         } finally {
             if (keyCC != null) {
                 keyCC.recycle();
