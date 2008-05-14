@@ -323,12 +323,12 @@ class Validator {
          * 
          * @throws JasperException in case of page encoding mismatch
          */
-        private String comparePageEncodings(String pageDirEnc,
+        private String comparePageEncodings(String thePageDirEnc,
                 Node.PageDirective pageDir) throws JasperException {
 
             Node.Root root = pageDir.getRoot();
-            String configEnc = root.getJspConfigPageEncoding();
-            pageDirEnc = pageDirEnc.toUpperCase();
+            String configEnc = root.getJspConfigPageEncoding().toUpperCase();
+            String pageDirEnc = thePageDirEnc.toUpperCase();
 
             /*
              * Compare the 'pageEncoding' attribute of the page directive with
@@ -337,8 +337,9 @@ class Validator {
              * "UTF-16LE" as identical.
              */
             if (configEnc != null) {
-                if (!pageDirEnc.equalsIgnoreCase(configEnc)
-                        && (!pageDirEnc.startsWith("UTF-16") || !configEnc.startsWith("UTF-16"))) {
+                if (!pageDirEnc.equals(configEnc)
+                        && (!pageDirEnc.startsWith("UTF-16") || !configEnc
+                                .startsWith("UTF-16"))) {
                     err.jspError(pageDir,
                             "jsp.error.config_pagedir_encoding_mismatch",
                             configEnc, pageDirEnc);
@@ -355,9 +356,10 @@ class Validator {
              * identical.
              */
             if ((root.isXmlSyntax() && root.isEncodingSpecifiedInProlog()) || root.isBomPresent()) {
-                String pageEnc = root.getPageEncoding();
-                if (!pageDirEnc.equalsIgnoreCase(pageEnc)
-                        && (!pageDirEnc.startsWith("UTF-16") || !pageEnc.startsWith("UTF-16"))) {
+                String pageEnc = root.getPageEncoding().toUpperCase();
+                if (!pageDirEnc.equals(pageEnc)
+                        && (!pageDirEnc.startsWith("UTF-16") || !pageEnc
+                                .startsWith("UTF-16"))) {
                     err.jspError(pageDir,
                             "jsp.error.prolog_pagedir_encoding_mismatch",
                             pageEnc, pageDirEnc);
