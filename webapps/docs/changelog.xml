@@ -36,6 +36,9 @@
   </subsection>
   <subsection name="Coyote">
     <changelog>
+      <fix>
+        <bug>44968</bug>: Provide more information when keystore load fails. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
