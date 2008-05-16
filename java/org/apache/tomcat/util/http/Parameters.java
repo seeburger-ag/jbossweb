@@ -99,7 +99,7 @@ public final class Parameters {
             for (; pos < count; pos++) {
                 next = getName(pos).toString();
                 for (int j = 0; j < pos; j++) {
-                    if (getName(j).equalsIgnoreCase(next)) {
+                    if (getName(j).equals(next)) {
                         // duplicate.
                         next = null;
                         break;

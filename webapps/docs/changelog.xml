@@ -39,6 +39,9 @@
       <fix>
         <bug>44968</bug>: Provide more information when keystore load fails. (markt)
       </fix>
+      <fix>
+        <jboss-jira>JBCTS-794</jboss-jira>: Case insensitivity bug enumerating parameter names. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
