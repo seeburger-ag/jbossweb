@@ -60,6 +60,8 @@ import org.jboss.logging.Logger;
  * This listener communicates with a front end mod_cluster enabled proxy to
  * automatically maintain the node configuration according to what is 
  * deployed.
+ * 
+ * FIXME: listeners don't get registered in JMX: this one should register itself 
  */
 public class ClusterListener
     implements LifecycleListener, ContainerListener {
@@ -76,7 +78,7 @@ public class ClusterListener
     // -------------------------------------------------------------- Constants
 
     
-    protected enum State { OK, ERROR };
+    protected enum State { OK, ERROR, DOWN };
 
     
     // ----------------------------------------------------------------- Fields
@@ -207,25 +209,35 @@ public class ClusterListener
     
     
     /**
-     * Retrieves the full proxy configuration.
+     * Retrieves the full proxy configuration. To be used through JMX or similar.
      * 
+     *         response: HTTP/1.1 200 OK
+     *   response:
+     *   node: [1:1] JVMRoute: node1 Domain: [bla] Host: 127.0.0.1 Port: 8009 Type: ajp
+     *   host: 1 [] vhost: 1 node: 1
+     *   context: 1 [/] vhost: 1 node: 1 status: 1
+     *   context: 2 [/myapp] vhost: 1 node: 1 status: 1
+     *   context: 3 [/host-manager] vhost: 1 node: 1 status: 1
+     *   context: 4 [/docs] vhost: 1 node: 1 status: 1
+     *   context: 5 [/manager] vhost: 1 node: 1 status: 1
+     *
      * @return the proxy confguration
      */
     public String getProxyConfiguration() {
         HashMap<String, String> parameters = new HashMap<String, String>();
         // Send DUMP * request
         return sendRequest("DUMP", true, parameters);
-        /*
-        response: HTTP/1.1 200 OK
-        response:
-        node: [1:1] JVMRoute: node1 Domain: [bla] Host: 127.0.0.1 Port: 8009 Type: ajp
-        host: 1 [] vhost: 1 node: 1
-        context: 1 [/] vhost: 1 node: 1 status: 1
-        context: 2 [/myapp] vhost: 1 node: 1 status: 1
-        context: 3 [/host-manager] vhost: 1 node: 1 status: 1
-        context: 4 [/docs] vhost: 1 node: 1 status: 1
-        context: 5 [/manager] vhost: 1 node: 1 status: 1
-        */
+    }
+    
+    
+    /**
+     * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
+     * be refreshed. To be used through JMX or similar.
+     */
+    public void reset() {
+        if (state == State.DOWN) {
+            state = State.ERROR;
+        }
     }
     
     
@@ -340,12 +352,12 @@ public class ClusterListener
      * @param engine
      */
     protected void status(Engine engine) {
-        if (state != State.OK) {
+        if (state == State.ERROR) {
             state = State.OK;
             // Something went wrong in a status at some point, so fully restore the configuration
             stopServer(ServerFactory.getServer());
             startServer(ServerFactory.getServer());
-        } else {
+        } else if (state == State.OK) {
             if (log.isDebugEnabled()) {
                 log.debug("Status: " + engine.getName());
             }
@@ -546,7 +558,6 @@ public class ClusterListener
         BufferedWriter writer = null;
         CharChunk keyCC = null;
         Socket connection = null;
-        boolean ok = false;
         try {
             // First, encode the POST body
             Iterator<String> keys = parameters.keySet().iterator();
@@ -592,35 +603,55 @@ public class ClusterListener
             String responseStatus = reader.readLine();
             // Parse the line, which is formed like HTTP/1.x YYY Message
             int status = 500;
+            String version = "0";
+            String message = null;
+            String errorType = null;
             try {
                 responseStatus = responseStatus.substring(responseStatus.indexOf(' ') + 1, responseStatus.indexOf(' ', responseStatus.indexOf(' ') + 1));
                 status = Integer.parseInt(responseStatus);
-                while (!"".equals(reader.readLine())) {}
+                String header = reader.readLine();
+                while (!"".equals(header)) {
+                    int colon = header.indexOf(':');
+                    String headerName = header.substring(0, colon).trim();
+                    String headerValue = header.substring(colon + 1).trim();
+                    if ("version".equalsIgnoreCase(headerName)) {
+                        version = headerValue;
+                    } else if ("type".equalsIgnoreCase(headerName)) {
+                        errorType = headerValue;
+                    } else if ("mess".equalsIgnoreCase(headerName)) {
+                        message = headerValue;
+                    }
+                    header = reader.readLine();
+                }
             } catch (Exception e) {
                 log.info("Error parsing response header: " + command, e);
             }
-            // Read the request body
-            StringBuffer result = new StringBuffer();
-            char[] buf = new char[512];
-            while (true) {
-                int n = reader.read(buf);
-                if (n <= 0) {
-                    break;
-                } else {
-                    result.append(buf, 0, n);
-                }
-            }
-
+            
             // Mark as error if the front end server did not return 200; the configuration will
             // be refreshed during the next periodic event 
-            if (status != 200) {
-                ok = false;
+            if (status == 200) {
+                // Read the request body
+                StringBuffer result = new StringBuffer();
+                char[] buf = new char[512];
+                while (true) {
+                    int n = reader.read(buf);
+                    if (n <= 0) {
+                        break;
+                    } else {
+                        result.append(buf, 0, n);
+                    }
+                }
+                return result.toString();
             } else {
-                ok = true;
+                if ("SYNTAX".equals(errorType)) {
+                    // Syntax error means the protocol is incorrect, which cannot be automatically fixed
+                    state = State.DOWN;
+                } else {
+                    state = State.ERROR;
+                }
+                log.info("Error sending: " + command + " Version: " + version + " Error type: " + errorType + " Message: " + message);
             }
 
-            return result.toString();
-            
         } catch (IOException e) {
             log.info("Error sending: " + command, e);
         } finally {
@@ -647,9 +678,6 @@ public class ClusterListener
                 } catch (IOException e) {
                     // Ignore
                 }
-            }
-            if (!ok) {
-                state = State.ERROR;
             }
         }
         
