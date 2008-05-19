@@ -34,6 +34,8 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.management.ObjectName;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
@@ -48,10 +50,12 @@ import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.UEncoder;
+import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 
 
@@ -60,8 +64,6 @@ import org.jboss.logging.Logger;
  * This listener communicates with a front end mod_cluster enabled proxy to
  * automatically maintain the node configuration according to what is 
  * deployed.
- * 
- * FIXME: listeners don't get registered in JMX: this one should register itself 
  */
 public class ClusterListener
     implements LifecycleListener, ContainerListener {
@@ -96,6 +98,12 @@ public class ClusterListener
      */
     protected State state = State.OK;
     
+
+    /**
+     * JMX registration information.
+     */
+    protected ObjectName oname;
+
 
     // ------------------------------------------------------------- Properties
 
@@ -246,12 +254,55 @@ public class ClusterListener
      * node.
      */
     protected void startServer(Server server) {
+
+        // JMX registration
+        if (oname==null) {
+            try {
+                oname = new ObjectName(((StandardServer) server).getDomain() + ":type=ClusterListener");
+                Registry.getRegistry(null, null).registerComponent(this, oname, null);
+            } catch (Exception e) {
+                log.error("Error registering ",e);
+            }
+        }
+                
         Service[] services = server.findServices();
         for (int i = 0; i < services.length; i++) {
             services[i].getContainer().addContainerListener(this);
-            ((Lifecycle) services[i].getContainer()).addLifecycleListener(this);
-            config((Engine) services[i].getContainer());
-            Container[] children = services[i].getContainer().findChildren();
+
+            Engine engine = (Engine) services[i].getContainer();
+            if (engine.getJvmRoute() == null) {
+                // Automagical JVM route (address + port + engineName)
+                try {
+                    Connector connector = findProxyConnector(engine.getService().findConnectors());
+                    InetAddress localAddress = 
+                        (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
+                    String hostName = null;
+                    if (localAddress == null) {
+                        Socket connection = null;
+                        if (proxyAddress == null) {
+                            connection = new Socket("127.0.0.1", proxyPort);
+                        } else {
+                            connection = new Socket(proxyAddress, proxyPort);
+                        }
+                        localAddress = connection.getLocalAddress();
+                    }
+                    if (localAddress != null) {
+                        hostName = localAddress.getHostName();
+                    } else {
+                        // Fallback
+                        hostName = "127.0.0.1";
+                    }
+                    String jvmRoute = hostName + ":" + connector.getPort() + ":" + engine.getName();
+                    engine.setJvmRoute(jvmRoute);
+                    log.info("Engine [" + engine.getName() + "] will use jvmRoute value: [" + jvmRoute + "]");
+                } catch (Exception e) {
+                    throw new IllegalStateException("JVMRoute must be set, automatic generation failed", e);
+                }
+            }
+            
+            ((Lifecycle) engine).addLifecycleListener(this);
+            config(engine);
+            Container[] children = engine.findChildren();
             for (int j = 0; j < children.length; j++) {
                 children[j].addContainerListener(this);
                 Container[] children2 = children[j].findChildren();
@@ -268,6 +319,16 @@ public class ClusterListener
      * node.
      */
     protected void stopServer(Server server) {
+        
+        // JMX unregistration
+        if (oname==null) {
+            try {
+                Registry.getRegistry(null, null).unregisterComponent(oname);
+            } catch (Exception e) {
+                log.error("Error registering ",e);
+            }
+        }
+
         Service[] services = server.findServices();
         for (int i = 0; i < services.length; i++) {
             services[i].getContainer().removeContainerListener(this);
@@ -297,12 +358,7 @@ public class ClusterListener
         // Collect configuration from the connectors and service and call CONFIG
         Connector connector = findProxyConnector(engine.getService().findConnectors());
         HashMap<String, String> parameters = new HashMap<String, String>();
-        if (engine.getJvmRoute() == null) {
-            // FIXME: automagical JVM route (some hash of address + port + engineName ?)
-            throw new IllegalStateException("JVMRoute must be set");
-        } else {
-            parameters.put("JVMRoute", engine.getJvmRoute());
-        }
+        parameters.put("JVMRoute", engine.getJvmRoute());
         boolean reverseConnection = 
             Boolean.TRUE.equals(IntrospectionUtils.getProperty(connector.getProtocolHandler(), "reverseConnection"));
         boolean ssl = 

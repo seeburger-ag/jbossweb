@@ -16,6 +16,31 @@
 
 <body>
 
+<section name="JBoss Web 2.1.1.CR4 (remm)">
+  <subsection name="General">
+    <changelog>
+    </changelog>
+  </subsection>
+  <subsection name="Catalina">
+    <changelog>
+      <update>
+        ClusterListener will automatically generate a JVMRoute in most cases. (remm)
+      </update>
+      <update>
+        Register ClusterListener in JMX. (remm)
+      </update>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.1.CR3 (remm)">
   <subsection name="General">
     <changelog>

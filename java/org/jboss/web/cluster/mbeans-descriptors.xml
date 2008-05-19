@@ -21,6 +21,18 @@
                type="java.lang.String"
                writeable="false"/>
     
+    <attribute name="proxyPort"
+               description="Port used to connect to the proxy"
+               type="int"/>
+
+    <attribute name="proxyAddress"
+               description="Address used to connect to the proxy"
+               type="java.net.InetAddress"/>
+
+    <attribute name="socketTimeout"
+               description="Connection timeout for communication with the proxy"
+               type="int"/>
+
     <operation name="reset"
                description="Move the node out of an error state"
                impact="ACTION"
