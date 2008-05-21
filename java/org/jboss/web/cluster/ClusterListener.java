@@ -103,8 +103,8 @@ public class ClusterListener
      * JMX registration information.
      */
     protected ObjectName oname;
-
-
+    
+    
     // ------------------------------------------------------------- Properties
 
 
@@ -125,7 +125,9 @@ public class ClusterListener
     public void setAddress(InetAddress proxyAddress) { this.proxyAddress = proxyAddress; }
 
     
-    // FIXME: probably useless
+    /**
+     * Most likely only useful for testing.
+     */
     protected String proxyURL = "/";
     public String getProxyURL() { return proxyURL; }
     public void setProxyURL(String proxyURL) { this.proxyURL = proxyURL; }
@@ -270,33 +272,43 @@ public class ClusterListener
             services[i].getContainer().addContainerListener(this);
 
             Engine engine = (Engine) services[i].getContainer();
-            if (engine.getJvmRoute() == null) {
+            Connector connector = findProxyConnector(engine.getService().findConnectors());
+            InetAddress localAddress = 
+                (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
+            if (engine.getJvmRoute() == null || localAddress == null) {
                 // Automagical JVM route (address + port + engineName)
                 try {
-                    Connector connector = findProxyConnector(engine.getService().findConnectors());
-                    InetAddress localAddress = 
-                        (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
-                    String hostName = null;
                     if (localAddress == null) {
                         Socket connection = null;
                         if (proxyAddress == null) {
-                            connection = new Socket("127.0.0.1", proxyPort);
+                            connection = new Socket(InetAddress.getLocalHost(), proxyPort);
                         } else {
                             connection = new Socket(proxyAddress, proxyPort);
                         }
                         localAddress = connection.getLocalAddress();
+                        if (localAddress != null) {
+                            IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", localAddress.getHostAddress());
+                        } else {
+                            // Should not happen
+                            IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", "127.0.0.1");
+                        }
+                        connection.close();
+                        log.info("Detected local adress: [" + localAddress.getHostAddress() + "]");
                     }
-                    if (localAddress != null) {
-                        hostName = localAddress.getHostName();
-                    } else {
-                        // Fallback
-                        hostName = "127.0.0.1";
+                    if (engine.getJvmRoute() == null) {
+                        String hostName = null;
+                        if (localAddress != null) {
+                            hostName = localAddress.getHostName();
+                        } else {
+                            // Fallback
+                            hostName = "127.0.0.1";
+                        }
+                        String jvmRoute = hostName + ":" + connector.getPort() + ":" + engine.getName();
+                        engine.setJvmRoute(jvmRoute);
+                        log.info("Engine [" + engine.getName() + "] will use jvmRoute value: [" + jvmRoute + "]");
                     }
-                    String jvmRoute = hostName + ":" + connector.getPort() + ":" + engine.getName();
-                    engine.setJvmRoute(jvmRoute);
-                    log.info("Engine [" + engine.getName() + "] will use jvmRoute value: [" + jvmRoute + "]");
                 } catch (Exception e) {
-                    throw new IllegalStateException("JVMRoute must be set, automatic generation failed", e);
+                    throw new IllegalStateException("JVMRoute and Address must be set on the connector", e);
                 }
             }
             
@@ -584,7 +596,7 @@ public class ClusterListener
         InetAddress inetAddress = 
             (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
         if (inetAddress == null) {
-            // FIXME: Return local address ? This is hard ...
+            // Should not happen
             return "127.0.0.1";
         } else {
             return inetAddress.toString();
