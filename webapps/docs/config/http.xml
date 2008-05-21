@@ -451,6 +451,14 @@
       </p>
     </attribute>
 
+    <attribute name="keystoreProvider" required="false">
+      <p>The name of the keystore provider to be used for the server
+      certificate. If not specified, the list of registered providers is
+      traversed in preference order and the first provider that supports the
+      <code>keystoreType</code> is used.
+      </p>
+    </attribute>
+
     <attribute name="keystoreType" required="false">
       <p>The type of keystore file to be used for the server certificate.
       If not specified, the default value is "<code>JKS</code>".</p>
@@ -478,6 +486,14 @@
     <attribute name="truststorePass" required="false">
       <p>The password to access the TrustStore. This defaults to the value
       of <code>keystorePass</code>.</p>
+    </attribute>
+
+    <attribute name="truststoreProvider" required="false">
+      <p>The name of the truststore provider to be used for the server
+      certificate. If not specified, the list of registered providers is
+      traversed in preference order and the first provider that supports the
+      <code>truststoreType</code> is used.
+      </p>
     </attribute>
 
     <attribute name="truststoreType" required="false">

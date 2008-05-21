@@ -33,10 +33,21 @@
   </subsection>
   <subsection name="Coyote">
     <changelog>
+      <update>
+        <bug>43094</bug>: Allow specification of keystore providers. Based on a
+        patch by Bruno Harbulot. (markt)
+      </update>
+      <fix>
+        After completing an asynchronous sendfile, the socket should be placed in the main poller
+        rather than assigned to a worker (where it would block). (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
     <changelog>
+      <fix>
+        <bug>44994</bug>: Correct BNF grammar so ${0 lt a ? 1 lt a ? "many": "one": "none"} works. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
