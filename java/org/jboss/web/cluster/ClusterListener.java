@@ -599,7 +599,7 @@ public class ClusterListener
             // Should not happen
             return "127.0.0.1";
         } else {
-            return inetAddress.toString();
+            return inetAddress.getHostAddress();
         }
     }
     
