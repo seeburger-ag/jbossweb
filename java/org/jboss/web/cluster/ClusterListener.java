@@ -272,6 +272,7 @@ public class ClusterListener
             services[i].getContainer().addContainerListener(this);
 
             Engine engine = (Engine) services[i].getContainer();
+            ((Lifecycle) engine).addLifecycleListener(this);
             Connector connector = findProxyConnector(engine.getService().findConnectors());
             InetAddress localAddress = 
                 (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
@@ -308,11 +309,12 @@ public class ClusterListener
                         log.info("Engine [" + engine.getName() + "] will use jvmRoute value: [" + jvmRoute + "]");
                     }
                 } catch (Exception e) {
-                    throw new IllegalStateException("JVMRoute and Address must be set on the connector", e);
+                    state = State.ERROR;
+                    log.info("Error connecting to proxy to determine Engine.JVMRoute or Connector.address", e);
+                    return;
                 }
             }
             
-            ((Lifecycle) engine).addLifecycleListener(this);
             config(engine);
             Container[] children = engine.findChildren();
             for (int j = 0; j < children.length; j++) {
@@ -337,7 +339,7 @@ public class ClusterListener
             try {
                 Registry.getRegistry(null, null).unregisterComponent(oname);
             } catch (Exception e) {
-                log.error("Error registering ",e);
+                log.error("Error unregistering ",e);
             }
         }
 
@@ -405,11 +407,14 @@ public class ClusterListener
             log.debug("Stop: " + engine.getName());
         }
 
-        HashMap<String, String> parameters = new HashMap<String, String>();
-        parameters.put("JVMRoute", engine.getJvmRoute());
+        // JVMRoute can be null here if nothing was ever initialized
+        if (engine.getJvmRoute() != null) {
+            HashMap<String, String> parameters = new HashMap<String, String>();
+            parameters.put("JVMRoute", engine.getJvmRoute());
 
-        // Send REMOVE-APP * request
-        sendRequest("REMOVE-APP", true, parameters);
+            // Send REMOVE-APP * request
+            sendRequest("REMOVE-APP", true, parameters);
+        }
     }
 
 
@@ -478,12 +483,16 @@ public class ClusterListener
         ((Lifecycle) context).removeLifecycleListener(this);
 
         HashMap<String, String> parameters = new HashMap<String, String>();
-        parameters.put("JVMRoute", getJvmRoute(context));
-        parameters.put("Context", ("".equals(context.getPath())) ? "/" : context.getPath());
-        parameters.put("Alias", getHost(context));
+        String jvmRoute = getJvmRoute(context);
+        // JVMRoute can be null here if nothing was ever initialized
+        if (jvmRoute != null) {
+            parameters.put("JVMRoute", jvmRoute);
+            parameters.put("Context", ("".equals(context.getPath())) ? "/" : context.getPath());
+            parameters.put("Alias", getHost(context));
 
-        // Send REMOVE-APP
-        sendRequest("REMOVE-APP", false, parameters);
+            // Send REMOVE-APP
+            sendRequest("REMOVE-APP", false, parameters);
+        }
     }
 
 
