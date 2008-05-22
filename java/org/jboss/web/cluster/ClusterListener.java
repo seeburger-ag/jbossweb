@@ -280,12 +280,7 @@ public class ClusterListener
                 // Automagical JVM route (address + port + engineName)
                 try {
                     if (localAddress == null) {
-                        Socket connection = null;
-                        if (proxyAddress == null) {
-                            connection = new Socket(InetAddress.getLocalHost(), proxyPort);
-                        } else {
-                            connection = new Socket(proxyAddress, proxyPort);
-                        }
+                        Socket connection = getConnection();
                         localAddress = connection.getLocalAddress();
                         if (localAddress != null) {
                             IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", localAddress.getHostAddress());
@@ -655,11 +650,7 @@ public class ClusterListener
             }
             
             // Then, connect to the proxy
-            if (proxyAddress == null) {
-                connection = new Socket("127.0.0.1", proxyPort);
-            } else {
-                connection = new Socket(proxyAddress, proxyPort);
-            }
+            connection = getConnection();
             connection.setSoTimeout(socketTimeout);
             
             String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
@@ -762,5 +753,18 @@ public class ClusterListener
         
     }
 
+    
+    /**
+     * Return a connection to the proxy.
+     */
+    protected Socket getConnection()
+        throws IOException {
+        if (proxyAddress == null) {
+            return new Socket(InetAddress.getLocalHost(), proxyPort);
+        } else {
+            return new Socket(proxyAddress, proxyPort);
+        }
+    }
+    
     
 }
