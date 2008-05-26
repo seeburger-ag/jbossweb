@@ -714,10 +714,13 @@ public class ClusterListener
                 if ("SYNTAX".equals(errorType)) {
                     // Syntax error means the protocol is incorrect, which cannot be automatically fixed
                     state = State.DOWN;
+                    log.error("Unrecoverable sytax error sending: " + command + " Version: " + version 
+                            + " Error type: " + errorType + " Message: " + message);
                 } else {
                     state = State.ERROR;
+                    log.info("Error sending: " + command + " Version: " + version + " Error type: " 
+                            + errorType + " Message: " + message);
                 }
-                log.info("Error sending: " + command + " Version: " + version + " Error type: " + errorType + " Message: " + message);
             }
 
         } catch (IOException e) {
