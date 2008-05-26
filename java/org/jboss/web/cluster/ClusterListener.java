@@ -721,6 +721,8 @@ public class ClusterListener
             }
 
         } catch (IOException e) {
+            // Most likely this is a connection error with the proxy
+            state = State.ERROR;
             log.info("Error sending: " + command, e);
         } finally {
             if (keyCC != null) {
@@ -759,6 +761,9 @@ public class ClusterListener
      */
     protected Socket getConnection()
         throws IOException {
+        if (proxyPort == -1) {
+            // FIXME: Determine connection port and address automagically
+        }
         if (proxyAddress == null) {
             return new Socket(InetAddress.getLocalHost(), proxyPort);
         } else {
