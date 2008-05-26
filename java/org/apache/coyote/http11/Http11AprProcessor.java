@@ -797,11 +797,11 @@ public class Http11AprProcessor implements ActionHook {
             recycle();
             return SocketState.CLOSED;
         } else if (!comet) {
-            inputBuffer.nextRequest();
+            boolean pipelined = inputBuffer.nextRequest();
             outputBuffer.nextRequest();
             recycleComet();
             recycle();
-            return SocketState.OPEN;
+            return (pipelined) ? SocketState.CLOSED : SocketState.OPEN;
         } else {
             return SocketState.LONG;
         }
@@ -932,16 +932,17 @@ public class Http11AprProcessor implements ActionHook {
             }
             request.updateCounters();
 
+            boolean pipelined = false;
             if (!comet) {
                 // Next request
-                inputBuffer.nextRequest();
+                pipelined = inputBuffer.nextRequest();
                 outputBuffer.nextRequest();
             }
             
             // Do sendfile as needed: add socket to sendfile and end
             if (sendfileData != null && !error) {
                 sendfileData.socket = socket;
-                sendfileData.keepAlive = keepAlive;
+                sendfileData.keepAlive = keepAlive && !pipelined;
                 if (!endpoint.getSendfile().add(sendfileData)) {
                     openSocket = true;
                     break;

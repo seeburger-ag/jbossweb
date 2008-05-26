@@ -323,8 +323,10 @@ public class InternalAprInputBuffer implements InputBuffer {
      * Note: All bytes of the current request should have been already 
      * consumed. This method only resets all the pointers so that we are ready
      * to parse the next HTTP request.
+     * 
+     * @return true if there is data left on input (most likely a pipelined request)
      */
-    public void nextRequest() {
+    public boolean nextRequest() {
 
         // Recycle Request object
         request.recycle();
@@ -354,6 +356,8 @@ public class InternalAprInputBuffer implements InputBuffer {
         swallowInput = true;
         nonBlocking = false;
 
+        return (lastValid > 0);
+        
     }
 
 

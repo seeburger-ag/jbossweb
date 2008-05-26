@@ -29,6 +29,9 @@
       <update>
         Register ClusterListener in JMX. (remm)
       </update>
+      <fix>
+        Improve fault recovery of ClusterListener. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -40,6 +43,10 @@
       <fix>
         After completing an asynchronous sendfile, the socket should be placed in the main poller
         rather than assigned to a worker (where it would block). (remm)
+      </fix>
+      <fix>
+        Close the connection if there's an attempt to pipeline requests when using Comet or an
+        asynchronous sendfile is needed. (remm)
       </fix>
     </changelog>
   </subsection>
