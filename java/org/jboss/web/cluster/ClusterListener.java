@@ -252,6 +252,49 @@ public class ClusterListener
     
     
     /**
+     * Refresh configuration. To be used through JMX or similar.
+     */
+    public void refresh() {
+        // Set as error, and the periodic
+        if (state == State.OK) {
+            state = State.ERROR;
+        }
+    }
+    
+    
+    /**
+     * Disable all webapps for all engines. To be used through JMX or similar.
+     */
+    public boolean disable() {
+    	Service[] services = ServerFactory.getServer().findServices();
+        for (int i = 0; i < services.length; i++) {
+            Engine engine = (Engine) services[i].getContainer();
+            HashMap<String, String> parameters = new HashMap<String, String>();
+            parameters.put("JVMRoute", engine.getJvmRoute());
+            // Send DISABLE-APP * request
+            sendRequest("DISABLE-APP", true, parameters);
+        }
+        return (state == State.OK);
+    }
+    
+    
+    /**
+     * Enable all webapps for all engines. To be used through JMX or similar.
+     */
+    public boolean enable() {
+    	Service[] services = ServerFactory.getServer().findServices();
+        for (int i = 0; i < services.length; i++) {
+            Engine engine = (Engine) services[i].getContainer();
+            HashMap<String, String> parameters = new HashMap<String, String>();
+            parameters.put("JVMRoute", engine.getJvmRoute());
+            // Send ENABLE-APP * request
+            sendRequest("ENABLE-APP", true, parameters);
+        }
+        return (state == State.OK);
+    }
+    
+    
+    /**
      * Send commands to the front end server assocaited with the startup of the
      * node.
      */

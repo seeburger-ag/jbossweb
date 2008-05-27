@@ -38,6 +38,16 @@
                impact="ACTION"
                returnType="void"/>
  
+    <operation name="disable"
+               description="Disable all webapps for all engines"
+               impact="ACTION"
+               returnType="boolean"/>
+ 
+    <operation name="enable"
+               description="Enable all webapps for all engines"
+               impact="ACTION"
+               returnType="boolean"/>
+ 
   </mbean>
 
 </mbeans-descriptors>

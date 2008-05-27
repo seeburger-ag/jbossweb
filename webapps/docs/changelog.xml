@@ -38,6 +38,9 @@
       <fix>
         Improve fault recovery of ClusterListener. (remm)
       </fix>
+      <update>
+        Add JMX callbacks to refresh configuration, enable and disable all contexts. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
