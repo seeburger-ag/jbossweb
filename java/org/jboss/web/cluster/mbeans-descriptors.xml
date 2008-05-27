@@ -33,6 +33,11 @@
                description="Connection timeout for communication with the proxy"
                type="int"/>
 
+    <operation name="refresh"
+               description="Refresh configuration"
+               impact="ACTION"
+               returnType="void"/>
+ 
     <operation name="reset"
                description="Move the node out of an error state"
                impact="ACTION"

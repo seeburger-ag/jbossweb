@@ -255,7 +255,7 @@ public class ClusterListener
      * Refresh configuration. To be used through JMX or similar.
      */
     public void refresh() {
-        // Set as error, and the periodic
+        // Set as error, and the periodic event will refresh the configuration
         if (state == State.OK) {
             state = State.ERROR;
         }
