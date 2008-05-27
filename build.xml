@@ -92,11 +92,12 @@
 
     <!-- Compile internal server components -->
     <javac srcdir="java" destdir="${tomcat.classes}"
-           debug="${compile.debug}"
-           deprecation="${compile.deprecation}"
-           source="${compile.source}"
-           optimize="${compile.optimize}"
-           excludes="**/CVS/**,**/.svn/**">
+        debug="${compile.debug}"
+        optimize="${compile.optimize}"
+        deprecation="${compile.deprecation}"
+        source="${compile.source}"
+        target="${compile.target}"
+        excludes="**/CVS/**,**/.svn/**">
 <!-- Comment this in to show unchecked warnings:     <compilerarg value="-Xlint:unchecked"/> -->
       <classpath refid="tomcat.classpath" />
     </javac>
@@ -667,7 +668,9 @@
   <target name="download"
           description="Builds and download dependent components">
 
-    <antcall target="downloadgz">
+    <mkdir dir="${base.path}" />
+
+  	<antcall target="downloadgz">
       <param name="sourcefile" value="${commons-daemon.loc}"/>
       <param name="destfile" value="${commons-daemon.jar}"/>
     </antcall>
@@ -688,6 +691,7 @@
     <mkdir dir="${tomcat-dbcp.home}"/>
     <antcall target="build-tomcat-dbcp">
       <param name="basedir" value="${tomcat-dbcp.home}" />
+      <param name="destfile" value="${tomcat-dbcp.jar}" />
     </antcall>
 
     <!-- Build Jasper JDT bundle -->
@@ -715,7 +719,7 @@
 
   </target>
 
-  <target name="build-tomcat-dbcp">
+  <target name="build-tomcat-dbcp" unless="exist" depends="testexist">
     <copy todir="${tomcat-dbcp.home}">
     <!-- 
       <fileset dir="${commons-collections.home}" >
@@ -757,12 +761,14 @@
     </move>
     <mkdir dir="${tomcat-dbcp.home}/classes"/>
     <javac destdir="${tomcat-dbcp.home}/classes"
-           optimize="off"
-           debug="${compile.debug}"
-           deprecation="${compile.deprecation}"
-           source="${compile.source}"
-           sourcepath="${tomcat-dbcp.home}/src/java"
-           srcdir="${tomcat-dbcp.home}/src/java" >
+        sourcepath="${tomcat-dbcp.home}/src/java"
+        srcdir="${tomcat-dbcp.home}/src/java"
+        debug="${compile.debug}"
+        optimize="${compile.optimize}"
+        deprecation="${compile.deprecation}"
+        source="${compile.source}"
+        target="${compile.target}"
+        excludes="**/CVS/**,**/.svn/**">
       <include name="**" />
     </javac>
     <jar jarfile="${tomcat-dbcp.jar}"

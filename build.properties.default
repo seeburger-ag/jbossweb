@@ -39,8 +39,8 @@ wsdl4j-src.loc=http://repo1.maven.org/maven2/wsdl4j/wsdl4j/1.6.1/wsdl4j-1.6.1.ja
 # ----- Eclipse JDT, version 3.2 or later -----
 jdt.home=${base.path}/eclipse/plugins
 jdt.lib=${jdt.home}
-jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.3.1.v_780_R33x.jar
-jdt.loc=http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops/R-3.3.1-200709211145/eclipse-JDT-3.3.1.zip
+jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.3.3.v_793_R33x.jar
+jdt.loc=http://download.eclipse.org/eclipse/downloads/drops/R-3.3.2-200802211800/eclipse-JDT-3.3.2.zip
 
 # ----- Commons DBCP, version 1.1 or later -----
 commons-dbcp.version=1.2.2
@@ -59,12 +59,12 @@ commons-collections.loc=${base-jakarta.loc}/commons/collections/binaries/commons
 commons-collections-src.loc=${base-commons.loc}/collections/source/commons-collections-3.2-src.tar.gz
 
 # ----- NSIS, version 2.0 or later -----
-nsis.home=${base.path}/nsis-2.36
+nsis.home=${base.path}/nsis-2.37
 nsis.exe=${nsis.home}/makensis.exe
 nsis.installoptions.dll=${nsis.home}/Plugins/InstallOptions.dll
 nsis.nsexec.dll=${nsis.home}/Plugins/nsExec.dll
 nsis.nsisdl.dll=${nsis.home}/Plugins/NSISdl.dll
-nsis.loc=${base-sf.loc}/nsis/nsis-2.36.zip
+nsis.loc=${base-sf.loc}/nsis/nsis-2.37.zip
 
 # ----- JBoss Native, version 2.0 or later -----
 jbossnative.home=${base.path}/jboss-native-2.0.3
