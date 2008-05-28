@@ -306,7 +306,7 @@ public class ClusterListener
                 oname = new ObjectName(((StandardServer) server).getDomain() + ":type=ClusterListener");
                 Registry.getRegistry(null, null).registerComponent(this, oname, null);
             } catch (Exception e) {
-                log.error("Error registering ",e);
+                log.error(sm.getString("clusterListener.error.jmxRegister"), e);
             }
         }
                 
@@ -332,7 +332,7 @@ public class ClusterListener
                             IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", "127.0.0.1");
                         }
                         connection.close();
-                        log.info("Detected local adress: [" + localAddress.getHostAddress() + "]");
+                        log.info(sm.getString("clusterListener.address", localAddress.getHostAddress()));
                     }
                     if (engine.getJvmRoute() == null) {
                         String hostName = null;
@@ -344,11 +344,11 @@ public class ClusterListener
                         }
                         String jvmRoute = hostName + ":" + connector.getPort() + ":" + engine.getName();
                         engine.setJvmRoute(jvmRoute);
-                        log.info("Engine [" + engine.getName() + "] will use jvmRoute value: [" + jvmRoute + "]");
+                        log.info(sm.getString("clusterListener.jvmRoute", engine.getName(), jvmRoute));
                     }
                 } catch (Exception e) {
                     state = State.ERROR;
-                    log.info("Error connecting to proxy to determine Engine.JVMRoute or Connector.address", e);
+                    log.info(sm.getString("clusterListener.error.addressJvmRoute"), e);
                     return;
                 }
             }
@@ -377,7 +377,7 @@ public class ClusterListener
             try {
                 Registry.getRegistry(null, null).unregisterComponent(oname);
             } catch (Exception e) {
-                log.error("Error unregistering ",e);
+                log.error(sm.getString("clusterListener.error.jmxUnregister"), e);
             }
         }
 
@@ -405,7 +405,7 @@ public class ClusterListener
      */
     protected void config(Engine engine) {
         if (log.isDebugEnabled()) {
-            log.debug("Config: " + engine.getName());
+            log.debug(sm.getString("clusterListener.config", engine.getName()));
         }
         // Collect configuration from the connectors and service and call CONFIG
         Connector connector = findProxyConnector(engine.getService().findConnectors());
@@ -442,7 +442,7 @@ public class ClusterListener
      */
     protected void removeAll(Engine engine) {
         if (log.isDebugEnabled()) {
-            log.debug("Stop: " + engine.getName());
+            log.debug(sm.getString("clusterListener.stop", engine.getName()));
         }
 
         // JVMRoute can be null here if nothing was ever initialized
@@ -470,7 +470,7 @@ public class ClusterListener
             startServer(ServerFactory.getServer());
         } else if (state == State.OK) {
             if (log.isDebugEnabled()) {
-                log.debug("Status: " + engine.getName());
+                log.debug(sm.getString("clusterListener.status", engine.getName()));
             }
 
             Connector connector = findProxyConnector(engine.getService().findConnectors());
@@ -491,7 +491,7 @@ public class ClusterListener
      */
     protected void addContext(Context context) {
         if (log.isDebugEnabled()) {
-            log.debug("Deploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
+            log.debug(sm.getString("clusterListener.context.enable", context.getPath(), context.getParent().getName(), ((StandardContext) context).getState()));
         }
 
         ((Lifecycle) context).addLifecycleListener(this);
@@ -515,7 +515,7 @@ public class ClusterListener
      */
     protected void removeContext(Context context) {
         if (log.isDebugEnabled()) {
-            log.debug("Undeploy context: " + context.getPath() + " to Host: " + context.getParent().getName() + " State: " + ((StandardContext) context).getState());
+            log.debug(sm.getString("clusterListener.context.disable", context.getPath(), context.getParent().getName(), ((StandardContext) context).getState()));
         }
 
         ((Lifecycle) context).removeLifecycleListener(this);
@@ -541,7 +541,7 @@ public class ClusterListener
      */
     protected void startContext(Context context) {
         if (log.isDebugEnabled()) {
-            log.debug("Start context: " + context.getPath() + " to Host: " + context.getParent().getName());
+            log.debug(sm.getString("clusterListener.context.start", context.getPath(), context.getParent().getName()));
         }
 
         HashMap<String, String> parameters = new HashMap<String, String>();
@@ -561,7 +561,7 @@ public class ClusterListener
      */
     protected void stopContext(Context context) {
         if (log.isDebugEnabled()) {
-            log.debug("Stop context: " + context.getPath() + " to Host: " + context.getParent().getName());
+            log.debug(sm.getString("clusterListener.context.stop", context.getPath(), context.getParent().getName()));
         }
 
         HashMap<String, String> parameters = new HashMap<String, String>();
@@ -680,7 +680,8 @@ public class ClusterListener
                 String key = keys.next();
                 String value = parameters.get(key);
                 if (value == null) {
-                    throw new IllegalStateException("Value for attribute " + key + " cannot be null");
+                    state = State.DOWN;
+                    throw new IllegalStateException(sm.getString("clusterListener.error.nullAttribute", key));
                 }
                 keyCC = encoder.encodeURL(key, 0, key.length());
                 keyCC.append('=');
@@ -735,7 +736,7 @@ public class ClusterListener
                     header = reader.readLine();
                 }
             } catch (Exception e) {
-                log.info("Error parsing response header: " + command, e);
+                log.info(sm.getString("clusterListener.error.parse", command), e);
             }
             
             // Mark as error if the front end server did not return 200; the configuration will
@@ -757,19 +758,17 @@ public class ClusterListener
                 if ("SYNTAX".equals(errorType)) {
                     // Syntax error means the protocol is incorrect, which cannot be automatically fixed
                     state = State.DOWN;
-                    log.error("Unrecoverable sytax error sending: " + command + " Version: " + version 
-                            + " Error type: " + errorType + " Message: " + message);
+                    log.error(sm.getString("clusterListener.error.syntax", command, version, errorType, message));
                 } else {
                     state = State.ERROR;
-                    log.info("Error sending: " + command + " Version: " + version + " Error type: " 
-                            + errorType + " Message: " + message);
+                    log.error(sm.getString("clusterListener.error.other", command, version, errorType, message));
                 }
             }
 
         } catch (IOException e) {
             // Most likely this is a connection error with the proxy
             state = State.ERROR;
-            log.info("Error sending: " + command, e);
+            log.info(sm.getString("clusterListener.error.io", command), e);
         } finally {
             if (keyCC != null) {
                 keyCC.recycle();
