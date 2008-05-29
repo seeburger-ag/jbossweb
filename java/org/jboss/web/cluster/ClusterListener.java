@@ -141,6 +141,102 @@ public class ClusterListener
     public void setSocketTimeout(int socketTimeout) { this.socketTimeout = socketTimeout; }
 
 
+    /**
+     * Domain parameter, which allows tying a jvmRoute to a particular domain.
+     */
+    protected String domain = null;
+    public String getDomain() { return domain; }
+    public void setDomain(String domain) { this.domain = domain; }
+
+
+    /**
+     * Allows controlling flushing of packets.
+     */
+    protected boolean flushPackets = false;
+    public boolean getFlushPackets() { return flushPackets; }
+    public void setFlushPackets(boolean flushPackets) { this.flushPackets = flushPackets; }
+
+
+    /**
+     * Time to wait before flushing packets.
+     */
+    protected int flushWait = -1;
+    public int getFlushWait() { return flushWait; }
+    public void setFlushWait(int flushWait) { this.flushWait = flushWait; }
+
+
+    /**
+     * Time to wait for a pong answer to a ping.
+     */
+    protected int ping = -1;
+    public int getPing() { return ping; }
+    public void setPing(int ping) { this.ping = ping; }
+
+
+    /**
+     * Soft maximum inactive connection count.
+     */
+    protected int smax = -1;
+    public int getSmax() { return smax; }
+    public void setSmax(int smax) { this.smax = smax; }
+
+
+    /**
+     * Maximum time on seconds for idle connections above smax.
+     */
+    protected int ttl = -1;
+    public int getTtl() { return ttl; }
+    public void setTtl(int ttl) { this.ttl = ttl; }
+
+
+    /**
+     * Name of the balancer.
+     */
+    protected String balancer = null;
+    public String getBalancer() { return balancer; }
+    public void setBalancer(String balancer) { this.balancer = balancer; }
+
+
+    /**
+     * Enables sticky sessions.
+     */
+    protected boolean stickySession = true;
+    public boolean getStickySession() { return stickySession; }
+    public void setStickySession(boolean stickySession) { this.stickySession = stickySession; }
+
+
+    /**
+     * Remove session when the request cannot be routed to the right node.
+     */
+    protected boolean stickySessionRemove = false;
+    public boolean getStickySessionRemove() { return stickySessionRemove; }
+    public void setStickySessionRemove(boolean stickySessionRemove) { this.stickySessionRemove = stickySessionRemove; }
+
+
+    /**
+     * Return an error when the request cannot be routed to the right node.
+     */
+    protected boolean stickySessionForce = true;
+    public boolean getStickySessionForce() { return stickySessionForce; }
+    public void setStickySessionForce(boolean stickySessionForce) { this.stickySessionForce = stickySessionForce; }
+
+
+    /**
+     * Timeout to wait for an available worker (default is no wait).
+     */
+    protected int workerTimeout = -1;
+    public int getWorkerTimeout() { return workerTimeout; }
+    public void setWorkerTimeout(int workerTimeout) { this.workerTimeout = workerTimeout; }
+
+
+    /**
+     * Maximum number of attempts to send the request to the backend server.
+     */
+    protected int maxAttempts = -1;
+    public int getMaxAttempts() { return maxAttempts; }
+    public void setMaxAttempts(int maxAttempts) { this.maxAttempts = maxAttempts; }
+
+
     // ---------------------------------------------- LifecycleListener Methods
 
 
@@ -428,6 +524,50 @@ public class ClusterListener
             parameters.put("Type", "https");
         } else {
             parameters.put("Type", "http");
+        }
+        
+        // Other configuration parameters
+        if (domain != null) {
+        	parameters.put("Domain", domain);
+        }
+        if (flushPackets) {
+        	parameters.put("flushpackets", "On");
+        }
+        if (flushWait != -1) {
+        	parameters.put("flushwait", "" + flushWait);
+        }
+        if (ping != -1) {
+        	parameters.put("ping", "" + ping);
+        }
+        if (smax != -1) {
+        	parameters.put("smax", "" + smax);
+        }
+        if (ttl != -1) {
+        	parameters.put("ttl", "" + ttl);
+        }
+        if (balancer != null) {
+        	parameters.put("Balancer", balancer);
+        }
+        if (!stickySession) {
+        	parameters.put("StickySession", "No");
+        }
+        if (org.apache.catalina.Globals.SESSION_COOKIE_NAME.equals("JSESSIONID")) {
+        	parameters.put("StickySessionCookie", org.apache.catalina.Globals.SESSION_COOKIE_NAME);
+        }
+        if (org.apache.catalina.Globals.SESSION_PARAMETER_NAME.equals("jsessionid")) {
+        	parameters.put("StickySessionPath", org.apache.catalina.Globals.SESSION_PARAMETER_NAME);
+        }
+        if (stickySessionRemove) {
+        	parameters.put("StickSessionRemove", "Yes");
+        }
+        if (!stickySessionForce) {
+        	parameters.put("StickySessionForce", "No");
+        }
+        if (workerTimeout != -1) {
+        	parameters.put("Timeout", "" + workerTimeout);
+        }
+        if (maxAttempts != -1) {
+        	parameters.put("Maxattempts", "" + maxAttempts);
         }
         
         // Send CONFIG request
