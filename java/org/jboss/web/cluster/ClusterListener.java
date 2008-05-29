@@ -31,8 +31,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 
@@ -93,38 +95,28 @@ public class ClusterListener
     
     
     /**
-     * State of the node. If a communication error occurs with the
-     * frontend proxy, the configuration will be refreshed.
-     */
-    protected State state = State.OK;
-    
-
-    /**
      * JMX registration information.
      */
     protected ObjectName oname;
+    
+    
+    /**
+     * Proxies.
+     */
+    protected Proxy[] proxies = null;
     
     
     // ------------------------------------------------------------- Properties
 
 
     /**
-     * Port on which the proxy is listening for balancer control commands.
+     * Proxy list, format "address:port,address:port".
      */
-    protected int proxyPort = 8000;
-    public int getProxyPort() { return proxyPort; }
-    public void setProxyPort(int proxyPort) { this.proxyPort = proxyPort; }
+    protected String proxyList = null;
+    public String getProxyList() { return proxyList; }
+    public void setProxyList(String proxyList) { this.proxyList = proxyList; }
 
 
-    /**
-     * Address on which the proxy is listening for balancer control commands.
-     * Default is localhost.
-     */
-    protected InetAddress proxyAddress = null;
-    public InetAddress getProxyAddress() { return proxyAddress; }
-    public void setAddress(InetAddress proxyAddress) { this.proxyAddress = proxyAddress; }
-
-    
     /**
      * Most likely only useful for testing.
      */
@@ -187,6 +179,14 @@ public class ClusterListener
     protected int ttl = -1;
     public int getTtl() { return ttl; }
     public void setTtl(int ttl) { this.ttl = ttl; }
+
+
+    /**
+     * Maximum time on seconds for idle connections the proxy will wait to connect to the node.
+     */
+    protected int nodeTimeout = -1;
+    public int getNodeTimeout() { return nodeTimeout; }
+    public void setNodeTimeout(int nodeTimeout) { this.nodeTimeout = nodeTimeout; }
 
 
     /**
@@ -256,7 +256,7 @@ public class ClusterListener
         if (type.equals(Container.ADD_CHILD_EVENT)) {
             if (container instanceof Host) {
                 // Deploying a webapp
-                addContext((Context) child);
+                addContext((Context) child, -1);
             } else if (container instanceof Engine) {
                 // Deploying a host
                 container.addContainerListener(this);
@@ -264,7 +264,7 @@ public class ClusterListener
         } else if (type.equals(Container.REMOVE_CHILD_EVENT)) {
             if (container instanceof Host) {
                 // Undeploying a webapp
-                removeContext((Context) child);
+                removeContext((Context) child, -1);
             } else if (container instanceof Engine) {
                 // Undeploying a host
                 container.removeContainerListener(this);
@@ -286,22 +286,55 @@ public class ClusterListener
         if (Lifecycle.START_EVENT.equals(event.getType())) {
             if (source instanceof Context) {
                 // Start a webapp
-                startContext((Context) source);
+                startContext((Context) source, -1);
             } else {
                 return;
             }
         } else if (Lifecycle.AFTER_START_EVENT.equals(event.getType())) {
             if (source instanceof Server) {
-                startServer((Server) source);
+
+                if (this.proxyList == null) {
+                    proxies = new Proxy[1];
+                    proxies[0] = new Proxy();
+                } else {
+                    ArrayList<Proxy> proxyList = new ArrayList<Proxy>();
+                    StringTokenizer tok = new StringTokenizer(this.proxyList, ",");
+                    while (tok.hasMoreTokens()) {
+                        String token = tok.nextToken().trim();
+                        Proxy proxy = new Proxy();
+                        int pos = token.indexOf(':');
+                        String address = null;
+                        if (pos < 0) {
+                            address = token;
+                        } else if (pos == 0) {
+                            address = null;
+                            proxy.port = Integer.parseInt(token.substring(1));
+                        } else {
+                            address = token.substring(0, pos);
+                            proxy.port = Integer.parseInt(token.substring(pos + 1));
+                        }
+                        try {
+                            if (address != null) {
+                                proxy.address = InetAddress.getByName(address);
+                            }
+                        } catch (Exception e) {
+                            throw new IllegalArgumentException(e);
+                        }
+                        proxyList.add(proxy);
+                    }
+                    proxies = proxyList.toArray(new Proxy[0]);
+                }
+
+                startServer((Server) source, -1);
             } else {
                 return;
             }
         } else if (Lifecycle.STOP_EVENT.equals(event.getType())) {
             if (source instanceof Context) {
                 // Stop a webapp
-                stopContext((Context) source);
+                stopContext((Context) source, -1);
             } else if (source instanceof Server) {
-                stopServer((Server) source);
+                stopServer((Server) source, -1);
             } else {
                 return;
             }
@@ -332,7 +365,15 @@ public class ClusterListener
     public String getProxyConfiguration() {
         HashMap<String, String> parameters = new HashMap<String, String>();
         // Send DUMP * request
-        return sendRequest("DUMP", true, parameters);
+    	Proxy[] local = proxies;
+    	StringBuffer result = new StringBuffer();
+    	for (int i = 0; i < local.length; i++) {
+    		result.append("Proxy[").append(i).append("]:[").append(local[i].address)
+    				.append(':').append(local[i].port).append("]: \r\n"); 
+    		result.append(sendRequest("DUMP", true, parameters, i));
+    		result.append("\r\n");
+    	}
+    	return result.toString();
     }
     
     
@@ -341,9 +382,12 @@ public class ClusterListener
      * be refreshed. To be used through JMX or similar.
      */
     public void reset() {
-        if (state == State.DOWN) {
-            state = State.ERROR;
-        }
+    	Proxy[] local = proxies;
+    	for (int i = 0; i < local.length; i++) {
+    		if (local[i].state == State.DOWN) {
+    			local[i].state = State.ERROR;
+    		}
+    	}
     }
     
     
@@ -352,9 +396,12 @@ public class ClusterListener
      */
     public void refresh() {
         // Set as error, and the periodic event will refresh the configuration
-        if (state == State.OK) {
-            state = State.ERROR;
-        }
+    	Proxy[] local = proxies;
+    	for (int i = 0; i < local.length; i++) {
+    		if (local[i].state == State.OK) {
+    			local[i].state = State.ERROR;
+    		}
+    	}
     }
     
     
@@ -370,7 +417,7 @@ public class ClusterListener
             // Send DISABLE-APP * request
             sendRequest("DISABLE-APP", true, parameters);
         }
-        return (state == State.OK);
+        return (proxies[0].state == State.OK);
     }
     
     
@@ -386,7 +433,40 @@ public class ClusterListener
             // Send ENABLE-APP * request
             sendRequest("ENABLE-APP", true, parameters);
         }
-        return (state == State.OK);
+        return (proxies[0].state == State.OK);
+    }
+    
+    
+    /**
+     * Parse proxy list.
+     */
+    protected void parseProxyList(String list) {
+    	if (list == null) {
+    		proxies = new Proxy[1];
+    		proxies[0] = new Proxy();
+    	} else {
+    		ArrayList<Proxy> proxyList = new ArrayList<Proxy>();
+    		StringTokenizer tok = new StringTokenizer(list, ",");
+    		while (tok.hasMoreTokens()) {
+    			String token = tok.nextToken().trim();
+    			Proxy proxy = new Proxy();
+    			int pos = token.indexOf(':');
+    			String address = null;
+    			if (pos > 0) {
+    				address = token.substring(0, pos);
+    				proxy.port = Integer.parseInt(token.substring(pos + 1));
+    			} else {
+    				address = token;
+    			}
+    			try {
+    				proxy.address = InetAddress.getByName(address);
+    			} catch (Exception e) {
+    				throw new IllegalArgumentException(e);
+    			}
+    			proxyList.add(proxy);
+    		}
+    		proxies = proxyList.toArray(new Proxy[0]);
+    	}
     }
     
     
@@ -394,7 +474,7 @@ public class ClusterListener
      * Send commands to the front end server assocaited with the startup of the
      * node.
      */
-    protected void startServer(Server server) {
+    protected void startServer(Server server, int pos) {
 
         // JMX registration
         if (oname==null) {
@@ -419,7 +499,7 @@ public class ClusterListener
                 // Automagical JVM route (address + port + engineName)
                 try {
                     if (localAddress == null) {
-                        Socket connection = getConnection();
+                        Socket connection = getConnection(0);
                         localAddress = connection.getLocalAddress();
                         if (localAddress != null) {
                             IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", localAddress.getHostAddress());
@@ -443,19 +523,19 @@ public class ClusterListener
                         log.info(sm.getString("clusterListener.jvmRoute", engine.getName(), jvmRoute));
                     }
                 } catch (Exception e) {
-                    state = State.ERROR;
+                    proxies[0].state = State.ERROR;
                     log.info(sm.getString("clusterListener.error.addressJvmRoute"), e);
                     return;
                 }
             }
             
-            config(engine);
+            config(engine, pos);
             Container[] children = engine.findChildren();
             for (int j = 0; j < children.length; j++) {
                 children[j].addContainerListener(this);
                 Container[] children2 = children[j].findChildren();
                 for (int k = 0; k < children2.length; k++) {
-                    addContext((Context) children2[k]);
+                    addContext((Context) children2[k], pos);
                 }
             }
         }
@@ -466,7 +546,7 @@ public class ClusterListener
      * Send commands to the front end server associated with the shutdown of the
      * node.
      */
-    protected void stopServer(Server server) {
+    protected void stopServer(Server server, int pos) {
         
         // JMX unregistration
         if (oname==null) {
@@ -481,13 +561,13 @@ public class ClusterListener
         for (int i = 0; i < services.length; i++) {
             services[i].getContainer().removeContainerListener(this);
             ((Lifecycle) services[i].getContainer()).removeLifecycleListener(this);
-            removeAll((Engine) services[i].getContainer());
+            removeAll((Engine) services[i].getContainer(), pos);
             Container[] children = services[i].getContainer().findChildren();
             for (int j = 0; j < children.length; j++) {
                 children[j].removeContainerListener(this);
                 Container[] children2 = children[j].findChildren();
                 for (int k = 0; k < children2.length; k++) {
-                    removeContext((Context) children2[k]);
+                    removeContext((Context) children2[k], pos);
                 }
             }
         }
@@ -499,7 +579,7 @@ public class ClusterListener
      * 
      * @param engine
      */
-    protected void config(Engine engine) {
+    protected void config(Engine engine, int pos) {
         if (log.isDebugEnabled()) {
             log.debug(sm.getString("clusterListener.config", engine.getName()));
         }
@@ -545,6 +625,9 @@ public class ClusterListener
         if (ttl != -1) {
         	parameters.put("ttl", "" + ttl);
         }
+        if (nodeTimeout != -1) {
+        	parameters.put("Timeout", "" + nodeTimeout);
+        }
         if (balancer != null) {
         	parameters.put("Balancer", balancer);
         }
@@ -564,14 +647,14 @@ public class ClusterListener
         	parameters.put("StickySessionForce", "No");
         }
         if (workerTimeout != -1) {
-        	parameters.put("Timeout", "" + workerTimeout);
+        	parameters.put("WaitWorker", "" + workerTimeout);
         }
         if (maxAttempts != -1) {
         	parameters.put("Maxattempts", "" + maxAttempts);
         }
         
         // Send CONFIG request
-        sendRequest("CONFIG", false, parameters);
+        sendRequest("CONFIG", false, parameters, pos);
     }
 
 
@@ -580,7 +663,7 @@ public class ClusterListener
      * 
      * @param engine
      */
-    protected void removeAll(Engine engine) {
+    protected void removeAll(Engine engine, int pos) {
         if (log.isDebugEnabled()) {
             log.debug(sm.getString("clusterListener.stop", engine.getName()));
         }
@@ -603,23 +686,26 @@ public class ClusterListener
      * @param engine
      */
     protected void status(Engine engine) {
-        if (state == State.ERROR) {
-            state = State.OK;
-            // Something went wrong in a status at some point, so fully restore the configuration
-            stopServer(ServerFactory.getServer());
-            startServer(ServerFactory.getServer());
-        } else if (state == State.OK) {
-            if (log.isDebugEnabled()) {
-                log.debug(sm.getString("clusterListener.status", engine.getName()));
+        Proxy[] local = proxies;
+        for (int i = 0; i < local.length; i++) {
+            if (local[i].state == State.ERROR) {
+                local[i].state = State.OK;
+                // Something went wrong in a status at some point, so fully restore the configuration
+                stopServer(ServerFactory.getServer(), i);
+                startServer(ServerFactory.getServer(), i);
+            } else if (local[i].state == State.OK) {
+                if (log.isDebugEnabled()) {
+                    log.debug(sm.getString("clusterListener.status", engine.getName()));
+                }
+
+                Connector connector = findProxyConnector(engine.getService().findConnectors());
+                HashMap<String, String> parameters = new HashMap<String, String>();
+                parameters.put("JVMRoute", engine.getJvmRoute());
+                parameters.put("Load", "1");
+
+                // Send STATUS request
+                sendRequest("STATUS", false, parameters, i);
             }
-
-            Connector connector = findProxyConnector(engine.getService().findConnectors());
-            HashMap<String, String> parameters = new HashMap<String, String>();
-            parameters.put("JVMRoute", engine.getJvmRoute());
-            parameters.put("Load", "1");
-
-            // Send STATUS request
-            sendRequest("STATUS", false, parameters);
         }
     }
 
@@ -629,7 +715,7 @@ public class ClusterListener
      * 
      * @param context
      */
-    protected void addContext(Context context) {
+    protected void addContext(Context context, int pos) {
         if (log.isDebugEnabled()) {
             log.debug(sm.getString("clusterListener.context.enable", context.getPath(), context.getParent().getName(), ((StandardContext) context).getState()));
         }
@@ -653,7 +739,7 @@ public class ClusterListener
      * 
      * @param context
      */
-    protected void removeContext(Context context) {
+    protected void removeContext(Context context, int pos) {
         if (log.isDebugEnabled()) {
             log.debug(sm.getString("clusterListener.context.disable", context.getPath(), context.getParent().getName(), ((StandardContext) context).getState()));
         }
@@ -679,7 +765,7 @@ public class ClusterListener
      * 
      * @param context
      */
-    protected void startContext(Context context) {
+    protected void startContext(Context context, int pos) {
         if (log.isDebugEnabled()) {
             log.debug(sm.getString("clusterListener.context.start", context.getPath(), context.getParent().getName()));
         }
@@ -699,7 +785,7 @@ public class ClusterListener
      * 
      * @param context
      */
-    protected void stopContext(Context context) {
+    protected void stopContext(Context context, int pos) {
         if (log.isDebugEnabled()) {
             log.debug(sm.getString("clusterListener.context.stop", context.getPath(), context.getParent().getName()));
         }
@@ -801,27 +887,25 @@ public class ClusterListener
      * @param parameters
      * @return the response body as a String; null if in error state or a normal error occurs
      */
-    protected String sendRequest(String command, boolean wildcard, HashMap<String, String> parameters) {
+    protected void sendRequest(String command, boolean wildcard, HashMap<String, String> parameters) {
+    	sendRequest(command, wildcard, parameters, -1);
+    }
 
-        // If there was an error, do nothing until the next periodic event, where the whole configuration
-        // will be refreshed
-        if (state != State.OK) {
-            return null;
-        }
-        
+    protected String sendRequest(String command, boolean wildcard, HashMap<String, String> parameters, int pos) {
+
         BufferedReader reader = null;
         BufferedWriter writer = null;
         CharChunk keyCC = null;
         Socket connection = null;
+        
+        // First, encode the POST body
         try {
-            // First, encode the POST body
             Iterator<String> keys = parameters.keySet().iterator();
             while (keys.hasNext()) {
                 String key = keys.next();
                 String value = parameters.get(key);
                 if (value == null) {
-                    state = State.DOWN;
-                    throw new IllegalStateException(sm.getString("clusterListener.error.nullAttribute", key));
+                    throw new IllegalArgumentException(sm.getString("clusterListener.error.nullAttribute", key));
                 }
                 keyCC = encoder.encodeURL(key, 0, key.length());
                 keyCC.append('=');
@@ -832,110 +916,139 @@ public class ClusterListener
                     keyCC.append('&');
                 }
             }
-            
-            // Then, connect to the proxy
-            connection = getConnection();
-            connection.setSoTimeout(socketTimeout);
-            
-            String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
-            int contentLength = keyCC.getLength();
-            writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
-            writer.write(requestLine);
-            writer.write("\r\n");
-            writer.write("Content-Length: " + contentLength + "\r\n");
-            writer.write("User-Agent: ClusterListener/1.0\r\n");
-            writer.write("\r\n");
-            writer.write(keyCC.getBuffer(), keyCC.getStart(), keyCC.getLength());
-            writer.write("\r\n");
-            writer.flush();
-            
-            // Read the response to a string
-            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            // Read the first response line and skip the rest of the HTTP header
-            String responseStatus = reader.readLine();
-            // Parse the line, which is formed like HTTP/1.x YYY Message
-            int status = 500;
-            String version = "0";
-            String message = null;
-            String errorType = null;
-            try {
-                responseStatus = responseStatus.substring(responseStatus.indexOf(' ') + 1, responseStatus.indexOf(' ', responseStatus.indexOf(' ') + 1));
-                status = Integer.parseInt(responseStatus);
-                String header = reader.readLine();
-                while (!"".equals(header)) {
-                    int colon = header.indexOf(':');
-                    String headerName = header.substring(0, colon).trim();
-                    String headerValue = header.substring(colon + 1).trim();
-                    if ("version".equalsIgnoreCase(headerName)) {
-                        version = headerValue;
-                    } else if ("type".equalsIgnoreCase(headerName)) {
-                        errorType = headerValue;
-                    } else if ("mess".equalsIgnoreCase(headerName)) {
-                        message = headerValue;
-                    }
-                    header = reader.readLine();
-                }
-            } catch (Exception e) {
-                log.info(sm.getString("clusterListener.error.parse", command), e);
+        } catch (IOException e) {
+            // Error encoding URL, should not happen
+            throw new IllegalArgumentException(e);
+        }
+
+        int start = 0;
+        int end = proxies.length;
+        if (pos != -1) {
+            start = pos;
+            end = pos + 1;
+        }
+
+        for (int i = start; i < end; i++) {
+
+            // If there was an error, do nothing until the next periodic event, where the whole configuration
+            // will be refreshed
+            if (proxies[i].state != State.OK) {
+                continue;
             }
             
-            // Mark as error if the front end server did not return 200; the configuration will
-            // be refreshed during the next periodic event 
-            if (status == 200) {
-                // Read the request body
-                StringBuffer result = new StringBuffer();
-                char[] buf = new char[512];
-                while (true) {
-                    int n = reader.read(buf);
-                    if (n <= 0) {
-                        break;
+            if (log.isDebugEnabled()) {
+                log.debug(sm.getString("clusterListener.request", command, wildcard, proxies[i]));
+            }
+            
+            try {
+
+                // Then, connect to the proxy
+                connection = getConnection(i);
+                connection.setSoTimeout(socketTimeout);
+
+                String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
+                int contentLength = keyCC.getLength();
+                writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
+                writer.write(requestLine);
+                writer.write("\r\n");
+                writer.write("Content-Length: " + contentLength + "\r\n");
+                writer.write("User-Agent: ClusterListener/1.0\r\n");
+                writer.write("\r\n");
+                writer.write(keyCC.getBuffer(), keyCC.getStart(), keyCC.getLength());
+                writer.write("\r\n");
+                writer.flush();
+
+                // Read the response to a string
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                // Read the first response line and skip the rest of the HTTP header
+                String responseStatus = reader.readLine();
+                // Parse the line, which is formed like HTTP/1.x YYY Message
+                int status = 500;
+                String version = "0";
+                String message = null;
+                String errorType = null;
+                try {
+                    responseStatus = responseStatus.substring(responseStatus.indexOf(' ') + 1, responseStatus.indexOf(' ', responseStatus.indexOf(' ') + 1));
+                    status = Integer.parseInt(responseStatus);
+                    String header = reader.readLine();
+                    while (!"".equals(header)) {
+                        int colon = header.indexOf(':');
+                        String headerName = header.substring(0, colon).trim();
+                        String headerValue = header.substring(colon + 1).trim();
+                        if ("version".equalsIgnoreCase(headerName)) {
+                            version = headerValue;
+                        } else if ("type".equalsIgnoreCase(headerName)) {
+                            errorType = headerValue;
+                        } else if ("mess".equalsIgnoreCase(headerName)) {
+                            message = headerValue;
+                        }
+                        header = reader.readLine();
+                    }
+                } catch (Exception e) {
+                    log.info(sm.getString("clusterListener.error.parse", command), e);
+                }
+
+                // Mark as error if the front end server did not return 200; the configuration will
+                // be refreshed during the next periodic event 
+                if (status == 200) {
+                    // Read the request body
+                    StringBuffer result = new StringBuffer();
+                    char[] buf = new char[512];
+                    while (true) {
+                        int n = reader.read(buf);
+                        if (n <= 0) {
+                            break;
+                        } else {
+                            result.append(buf, 0, n);
+                        }
+                    }
+                    if (pos != -1) {
+                        return result.toString();
+                    }
+                } else {
+                    if ("SYNTAX".equals(errorType)) {
+                        // Syntax error means the protocol is incorrect, which cannot be automatically fixed
+                        proxies[i].state = State.DOWN;
+                        log.error(sm.getString("clusterListener.error.syntax", command, proxies[i], errorType, message));
                     } else {
-                        result.append(buf, 0, n);
+                        proxies[i].state = State.ERROR;
+                        log.error(sm.getString("clusterListener.error.other", command, proxies[i], errorType, message));
                     }
                 }
-                return result.toString();
-            } else {
-                if ("SYNTAX".equals(errorType)) {
-                    // Syntax error means the protocol is incorrect, which cannot be automatically fixed
-                    state = State.DOWN;
-                    log.error(sm.getString("clusterListener.error.syntax", command, version, errorType, message));
-                } else {
-                    state = State.ERROR;
-                    log.error(sm.getString("clusterListener.error.other", command, version, errorType, message));
+
+            } catch (IOException e) {
+                // Most likely this is a connection error with the proxy
+                proxies[i].state = State.ERROR;
+                log.info(sm.getString("clusterListener.error.io", command, proxies[i]), e);
+            } finally {
+                if (keyCC != null) {
+                    keyCC.recycle();
+                }
+                if (writer != null) {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
+                }
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
                 }
             }
 
-        } catch (IOException e) {
-            // Most likely this is a connection error with the proxy
-            state = State.ERROR;
-            log.info(sm.getString("clusterListener.error.io", command), e);
-        } finally {
-            if (keyCC != null) {
-                keyCC.recycle();
-            }
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
         }
-        
+
         return null;
         
     }
@@ -944,16 +1057,32 @@ public class ClusterListener
     /**
      * Return a connection to the proxy.
      */
-    protected Socket getConnection()
+    protected Socket getConnection(int i)
         throws IOException {
-        if (proxyPort == -1) {
+        if (proxies[i].port == -1) {
             // FIXME: Determine connection port and address automagically
         }
-        if (proxyAddress == null) {
-            return new Socket(InetAddress.getLocalHost(), proxyPort);
+        if (proxies[i].address == null) {
+            return new Socket(InetAddress.getLocalHost(), proxies[i].port);
         } else {
-            return new Socket(proxyAddress, proxyPort);
+            return new Socket(proxies[i].address, proxies[i].port);
         }
+    }
+    
+    
+    protected static class Proxy {
+    	public InetAddress address = null;
+    	public int port = 8000;
+    	public State state = State.OK;
+    	
+    	public String toString() {
+    	    if (address == null) {
+    	        return ":" + port;
+    	    } else {
+    	        return address.getHostAddress() + ":" + port;
+    	    }
+    	}
+    	
     }
     
     
