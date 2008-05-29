@@ -41,6 +41,9 @@
       <update>
         Add JMX callbacks to refresh configuration, enable and disable all contexts. (remm)
       </update>
+      <update>
+        Add all CONFIG parameters to the cluster listener as fields. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -56,6 +59,9 @@
       <fix>
         Close the connection if there's an attempt to pipeline requests when using Comet or an
         asynchronous sendfile is needed. (remm)
+      </fix>
+      <fix>
+        <bug>42750</bug>: Make parsing of request line more tolerant of multiple SP and/or HT. (markt)
       </fix>
     </changelog>
   </subsection>
