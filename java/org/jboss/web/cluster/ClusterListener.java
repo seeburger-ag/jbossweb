@@ -318,7 +318,8 @@ public class ClusterListener
                                 proxy.address = InetAddress.getByName(address);
                             }
                         } catch (Exception e) {
-                            throw new IllegalArgumentException(e);
+                            log.error(sm.getString("clusterListener.error.invalidHost", address), e);
+                            continue;
                         }
                         proxyList.add(proxy);
                     }
@@ -575,6 +576,28 @@ public class ClusterListener
     
 
     /**
+     * Reset configuration for a particular proxy following an error.
+     */
+    protected void reset(int pos) {
+        
+        Service[] services = ServerFactory.getServer().findServices();
+        for (int i = 0; i < services.length; i++) {
+            Engine engine = (Engine) services[i].getContainer();
+            removeAll((Engine) services[i].getContainer(), pos);
+            config(engine, pos);
+            Container[] children = engine.findChildren();
+            for (int j = 0; j < children.length; j++) {
+                Container[] children2 = children[j].findChildren();
+                for (int k = 0; k < children2.length; k++) {
+                    addContext((Context) children2[k], pos);
+                }
+            }
+        }
+        
+    }
+    
+
+    /**
      * Send the configuration for the specified engine to the proxy. 
      * 
      * @param engine
@@ -674,7 +697,7 @@ public class ClusterListener
             parameters.put("JVMRoute", engine.getJvmRoute());
 
             // Send REMOVE-APP * request
-            sendRequest("REMOVE-APP", true, parameters);
+            sendRequest("REMOVE-APP", true, parameters, pos);
         }
     }
 
@@ -691,8 +714,7 @@ public class ClusterListener
             if (local[i].state == State.ERROR) {
                 local[i].state = State.OK;
                 // Something went wrong in a status at some point, so fully restore the configuration
-                stopServer(ServerFactory.getServer(), i);
-                startServer(ServerFactory.getServer(), i);
+                reset(i);
             } else if (local[i].state == State.OK) {
                 if (log.isDebugEnabled()) {
                     log.debug(sm.getString("clusterListener.status", engine.getName()));
@@ -729,7 +751,7 @@ public class ClusterListener
 
         // Send ENABLE-APP if state is started
         if (context.isStarted()) {
-            sendRequest("ENABLE-APP", false, parameters);
+            sendRequest("ENABLE-APP", false, parameters, pos);
         }
     }
 
@@ -755,7 +777,7 @@ public class ClusterListener
             parameters.put("Alias", getHost(context));
 
             // Send REMOVE-APP
-            sendRequest("REMOVE-APP", false, parameters);
+            sendRequest("REMOVE-APP", false, parameters, pos);
         }
     }
 
@@ -776,7 +798,7 @@ public class ClusterListener
         parameters.put("Alias", getHost(context));
 
         // Send ENABLE-APP
-        sendRequest("ENABLE-APP", false, parameters);
+        sendRequest("ENABLE-APP", false, parameters, pos);
     }
 
 
@@ -796,7 +818,7 @@ public class ClusterListener
         parameters.put("Alias", getHost(context));
 
         // Send STOP-APP
-        sendRequest("STOP-APP", false, parameters);
+        sendRequest("STOP-APP", false, parameters, pos);
     }
 
     
