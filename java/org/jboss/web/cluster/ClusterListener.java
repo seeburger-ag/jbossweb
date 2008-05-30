@@ -719,12 +719,9 @@ public class ClusterListener
                 if (log.isDebugEnabled()) {
                     log.debug(sm.getString("clusterListener.status", engine.getName()));
                 }
-
-                Connector connector = findProxyConnector(engine.getService().findConnectors());
                 HashMap<String, String> parameters = new HashMap<String, String>();
                 parameters.put("JVMRoute", engine.getJvmRoute());
                 parameters.put("Load", "1");
-
                 // Send STATUS request
                 sendRequest("STATUS", false, parameters, i);
             }
@@ -1081,9 +1078,7 @@ public class ClusterListener
      */
     protected Socket getConnection(int i)
         throws IOException {
-        if (proxies[i].port == -1) {
-            // FIXME: Determine connection port and address automagically
-        }
+        // FIXME: Add SSL (using a client cert)
         if (proxies[i].address == null) {
             return new Socket(InetAddress.getLocalHost(), proxies[i].port);
         } else {
