@@ -657,10 +657,10 @@ public class ClusterListener
         if (!stickySession) {
         	parameters.put("StickySession", "No");
         }
-        if (org.apache.catalina.Globals.SESSION_COOKIE_NAME.equals("JSESSIONID")) {
+        if (!org.apache.catalina.Globals.SESSION_COOKIE_NAME.equals("JSESSIONID")) {
         	parameters.put("StickySessionCookie", org.apache.catalina.Globals.SESSION_COOKIE_NAME);
         }
-        if (org.apache.catalina.Globals.SESSION_PARAMETER_NAME.equals("jsessionid")) {
+        if (!org.apache.catalina.Globals.SESSION_PARAMETER_NAME.equals("jsessionid")) {
         	parameters.put("StickySessionPath", org.apache.catalina.Globals.SESSION_PARAMETER_NAME);
         }
         if (stickySessionRemove) {
@@ -914,11 +914,13 @@ public class ClusterListener
 
         BufferedReader reader = null;
         BufferedWriter writer = null;
-        CharChunk keyCC = null;
+        CharChunk body = null;
         Socket connection = null;
         
         // First, encode the POST body
         try {
+            body = encoder.encodeURL("", 0, 0);
+            body.recycle();
             Iterator<String> keys = parameters.keySet().iterator();
             while (keys.hasNext()) {
                 String key = keys.next();
@@ -926,16 +928,17 @@ public class ClusterListener
                 if (value == null) {
                     throw new IllegalArgumentException(sm.getString("clusterListener.error.nullAttribute", key));
                 }
-                keyCC = encoder.encodeURL(key, 0, key.length());
-                keyCC.append('=');
+                body = encoder.encodeURL(key, 0, key.length());
+                body.append('=');
                 if (value != null) {
-                    keyCC = encoder.encodeURL(value, 0, value.length());
+                    body = encoder.encodeURL(value, 0, value.length());
                 }
                 if (keys.hasNext()) {
-                    keyCC.append('&');
+                    body.append('&');
                 }
             }
         } catch (IOException e) {
+            body.recycle();
             // Error encoding URL, should not happen
             throw new IllegalArgumentException(e);
         }
@@ -966,14 +969,15 @@ public class ClusterListener
                 connection.setSoTimeout(socketTimeout);
 
                 String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
-                int contentLength = keyCC.getLength();
+                int contentLength = body.getLength();
+                System.out.println("Body: " + new String(body.getBuffer(), body.getStart(), body.getLength()));
                 writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
                 writer.write(requestLine);
                 writer.write("\r\n");
                 writer.write("Content-Length: " + contentLength + "\r\n");
                 writer.write("User-Agent: ClusterListener/1.0\r\n");
                 writer.write("\r\n");
-                writer.write(keyCC.getBuffer(), keyCC.getStart(), keyCC.getLength());
+                writer.write(body.getBuffer(), body.getStart(), body.getLength());
                 writer.write("\r\n");
                 writer.flush();
 
@@ -1040,9 +1044,6 @@ public class ClusterListener
                 proxies[i].state = State.ERROR;
                 log.info(sm.getString("clusterListener.error.io", command, proxies[i]), e);
             } finally {
-                if (keyCC != null) {
-                    keyCC.recycle();
-                }
                 if (writer != null) {
                     try {
                         writer.close();
