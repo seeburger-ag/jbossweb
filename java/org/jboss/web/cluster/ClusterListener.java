@@ -256,6 +256,7 @@ public class ClusterListener
         if (type.equals(Container.ADD_CHILD_EVENT)) {
             if (container instanceof Host) {
                 // Deploying a webapp
+                ((Lifecycle) child).addLifecycleListener(this);
                 addContext((Context) child, -1);
             } else if (container instanceof Engine) {
                 // Deploying a host
@@ -264,6 +265,7 @@ public class ClusterListener
         } else if (type.equals(Container.REMOVE_CHILD_EVENT)) {
             if (container instanceof Host) {
                 // Undeploying a webapp
+                ((Lifecycle) child).removeLifecycleListener(this);
                 removeContext((Context) child, -1);
             } else if (container instanceof Engine) {
                 // Undeploying a host
@@ -536,6 +538,7 @@ public class ClusterListener
                 children[j].addContainerListener(this);
                 Container[] children2 = children[j].findChildren();
                 for (int k = 0; k < children2.length; k++) {
+                    ((Lifecycle) children2[k]).addLifecycleListener(this);
                     addContext((Context) children2[k], pos);
                 }
             }
@@ -568,6 +571,7 @@ public class ClusterListener
                 children[j].removeContainerListener(this);
                 Container[] children2 = children[j].findChildren();
                 for (int k = 0; k < children2.length; k++) {
+                    ((Lifecycle) children2[k]).removeLifecycleListener(this);
                     removeContext((Context) children2[k], pos);
                 }
             }
@@ -739,8 +743,6 @@ public class ClusterListener
             log.debug(sm.getString("clusterListener.context.enable", context.getPath(), context.getParent().getName(), ((StandardContext) context).getState()));
         }
 
-        ((Lifecycle) context).addLifecycleListener(this);
-
         HashMap<String, String> parameters = new HashMap<String, String>();
         parameters.put("JVMRoute", getJvmRoute(context));
         parameters.put("Context", ("".equals(context.getPath())) ? "/" : context.getPath());
@@ -762,8 +764,6 @@ public class ClusterListener
         if (log.isDebugEnabled()) {
             log.debug(sm.getString("clusterListener.context.disable", context.getPath(), context.getParent().getName(), ((StandardContext) context).getState()));
         }
-
-        ((Lifecycle) context).removeLifecycleListener(this);
 
         HashMap<String, String> parameters = new HashMap<String, String>();
         String jvmRoute = getJvmRoute(context);
@@ -970,7 +970,6 @@ public class ClusterListener
 
                 String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
                 int contentLength = body.getLength();
-                System.out.println("Body: " + new String(body.getBuffer(), body.getStart(), body.getLength()));
                 writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
                 writer.write(requestLine);
                 writer.write("\r\n");
