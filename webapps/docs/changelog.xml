@@ -44,6 +44,19 @@
       <update>
         Add all CONFIG parameters to the cluster listener as fields. (remm)
       </update>
+      <fix>
+        <bug>43683</bug>: If the context is reloaded, the classloader will have changed so need to reset it. (markt)
+      </fix>
+      <fix>
+        <bug>45101</bug>: Format dates for header value from DirContextURLConnection using HTTP format.
+        Patch provided by Chris Hubick. (markt)
+      </fix>
+      <fix>
+        Avoid overriding existing system properties. (remm)
+      </fix>
+      <update>
+        Add security to ClusterListener using SSL client certificate. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">

@@ -37,6 +37,11 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
@@ -104,6 +109,12 @@ public class ClusterListener
      * Proxies.
      */
     protected Proxy[] proxies = null;
+    
+    
+    /**
+     * Socket factory.
+     */
+    
     
     
     // ------------------------------------------------------------- Properties
@@ -236,7 +247,135 @@ public class ClusterListener
     public int getMaxAttempts() { return maxAttempts; }
     public void setMaxAttempts(int maxAttempts) { this.maxAttempts = maxAttempts; }
 
+    
+    /**
+     * SSL client cert usage to connect to the proxy.
+     */
+    protected boolean ssl = false;
+    public boolean isSsl() { return ssl; }
+    public void setSsl(boolean ssl) { this.ssl = ssl; }
 
+    
+    /**
+     * SSL ciphers.
+     */
+    protected String sslCiphers = null;
+    public String getSslCiphers() { return sslCiphers; }
+    public void setSslCiphers(String sslCiphers) { this.sslCiphers = sslCiphers; }
+    
+    
+    /**
+     * SSL protocol.
+     */
+    protected String sslProtocol = "TLS";
+    public String getSslProtocol() { return sslProtocol; }
+    public void setSslProtocol(String sslProtocol) { this.sslProtocol = sslProtocol; }
+
+    
+    /**
+     * Certificate encoding algorithm.
+     */
+    protected String sslCertificateEncodingAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
+    public String getSslCertificateEncodingAlgorithm() { return sslCertificateEncodingAlgorithm; }
+    public void setSslCertificateEncodingAlgorithm(String sslCertificateEncodingAlgorithm) { this.sslCertificateEncodingAlgorithm = sslCertificateEncodingAlgorithm; }
+
+    
+    /**
+     * SSL keystore.
+     */
+    protected String sslKeyStore = System.getProperty("user.home") + "/.keystore";
+    public String getSslKeyStore() { return sslKeyStore; }
+    public void setSslKeyStore(String sslKeyStore) { this.sslKeyStore = sslKeyStore; }
+    
+    
+    /**
+     * SSL keystore password.
+     */
+    protected String sslKeyStorePass = "changeit";
+    public String getSslKeyStorePass() { return sslKeyStorePass; }
+    public void setSslKeyStorePass(String sslKeyStorePass) { this.sslKeyStorePass = sslKeyStorePass; }
+    
+    
+    /**
+     * Keystore type.
+     */
+    protected String sslKeyStoreType = "JKS";
+    public String getSslKeyStoreType() { return sslKeyStoreType; }
+    public void setSslKeyStoreType(String sslKeyStoreType) { this.sslKeyStoreType = sslKeyStoreType; }
+
+    
+    /**
+     * Keystore provider.
+     */
+    protected String sslKeyStoreProvider = null;
+    public String getSslKeyStoreProvider() { return sslKeyStoreProvider; }
+    public void setSslKeyStoreProvider(String sslKeyStoreProvider) { this.sslKeyStoreProvider = sslKeyStoreProvider; }
+
+    
+    /**
+     * Truststore algorithm.
+     */
+    protected String sslTrustAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+    public String getSslTrustAlgorithm() { return sslTrustAlgorithm; }
+    public void setSslTrustAlgorithm(String sslTrustAlgorithm) { this.sslTrustAlgorithm = sslTrustAlgorithm; }
+
+    
+    /**
+     * Key alias.
+     */
+    protected String sslKeyAlias = null;
+    public String getSslKeyAlias() { return sslKeyAlias; }
+    public void setSslKeyAlias(String sslKeyAlias) { this.sslKeyAlias = sslKeyAlias; }
+
+    
+    /**
+     * Certificate revocation list.
+     */
+    protected String sslCrlFile = null;
+    public String getSslCrlFile() { return sslCrlFile; }
+    public void setSslCrlFile(String sslCrlFile) { this.sslCrlFile = sslCrlFile; }
+
+    
+    /**
+     * Trust max certificate length.
+     */
+    protected int sslTrustMaxCertLength = 5;
+    public int getSslTrustMaxCertLength() { return sslTrustMaxCertLength; }
+    public void setSslTrustMaxCertLength(int sslTrustMaxCertLength) { this.sslTrustMaxCertLength = sslTrustMaxCertLength; }
+
+    
+    /**
+     * Trust store file.
+     */
+    protected String sslTrustStore = System.getProperty("javax.net.ssl.trustStore");
+    public String getSslTrustStore() { return sslTrustStore; }
+    public void setSslTrustStore(String sslTrustStore) { this.sslTrustStore = sslTrustStore; }
+
+    
+    /**
+     * Trust store password.
+     */
+    protected String sslTrustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+    public String getSslTrustStorePassword() { return sslTrustStorePassword; }
+    public void setSslTrustStorePassword(String sslTrustStorePassword) { this.sslTrustStorePassword = sslTrustStorePassword; }
+
+    
+    /**
+     * Trust store type.
+     */
+    protected String sslTrustStoreType = System.getProperty("javax.net.ssl.trustStoreType");
+    public String getSslTrustStoreType() { return sslTrustStoreType; }
+    public void setSslTrustStoreType(String sslTrustStoreType) { this.sslTrustStoreType = sslTrustStoreType; }
+
+    
+    /**
+     * Trust store provider.
+     */
+    protected String sslTrustStoreProvider = System.getProperty("javax.net.ssl.trustStoreProvider");
+    public String getSslTrustStoreProvider() { return sslTrustStoreProvider; }
+    public void setSslTrustStoreProvider(String sslTrustStoreProvider) { this.sslTrustStoreProvider = sslTrustStoreProvider; }
+
+    
     // ---------------------------------------------- LifecycleListener Methods
 
 
@@ -328,6 +467,7 @@ public class ClusterListener
                     proxies = proxyList.toArray(new Proxy[0]);
                 }
 
+                sslInit();
                 startServer((Server) source, -1);
             } else {
                 return;
@@ -1074,15 +1214,32 @@ public class ClusterListener
 
     
     /**
+     * SSL init.
+     */
+    protected void sslInit() {
+    }
+    
+    
+    /**
      * Return a connection to the proxy.
      */
     protected Socket getConnection(int i)
         throws IOException {
         // FIXME: Add SSL (using a client cert)
-        if (proxies[i].address == null) {
-            return new Socket(InetAddress.getLocalHost(), proxies[i].port);
+        if (!ssl) {
+            if (proxies[i].address == null) {
+                return new Socket(InetAddress.getLocalHost(), proxies[i].port);
+            } else {
+                return new Socket(proxies[i].address, proxies[i].port);
+            }
         } else {
-            return new Socket(proxies[i].address, proxies[i].port);
+            if (proxies[i].address == null) {
+                return SSLSocketFactory.getDefault()
+                    .createSocket(InetAddress.getLocalHost(), proxies[i].port);
+            } else {
+                return SSLSocketFactory.getDefault()
+                    .createSocket(proxies[i].address, proxies[i].port);
+            }
         }
     }
     
