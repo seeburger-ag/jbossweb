@@ -136,7 +136,7 @@ public class CatalinaProperties {
         while (enumeration.hasMoreElements()) {
             String name = (String) enumeration.nextElement();
             String value = properties.getProperty(name);
-            if (value != null) {
+            if (value != null && (System.getProperty(name) == null)) {
                 System.setProperty(name, value);
             }
         }
