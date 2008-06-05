@@ -55,7 +55,10 @@
         Avoid overriding existing system properties. (remm)
       </fix>
       <update>
-        Add security to ClusterListener using SSL client certificate. (remm)
+        Add security to ClusterListener using SSL and possible client certificate usage. (remm)
+      </update>
+      <update>
+        Add HTTP/1.0 keep-alive to ClusterListener. (remm)
       </update>
     </changelog>
   </subsection>

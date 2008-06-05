@@ -38,9 +38,6 @@ import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.catalina.Container;
@@ -117,6 +114,30 @@ public class ClusterListener
     protected JSSESocketFactory sslSocketFactory = null;
     
     
+    /**
+     * Active connections.
+     */
+    protected Socket[] connections = null;
+    
+    
+    /**
+     * Connection readers.
+     */
+    protected BufferedReader[] connectionReaders = null;
+    
+    
+    /**
+     * Connection writers.
+     */
+    protected BufferedWriter[] connectionWriters = null;
+    
+    
+    /**
+     * Initialization flag.
+     */
+    protected boolean init = false;
+    
+    
     // ------------------------------------------------------------- Properties
 
 
@@ -139,7 +160,7 @@ public class ClusterListener
     /**
      * Connection timeout for communication with the proxy.
      */
-    protected int socketTimeout = 5000;
+    protected int socketTimeout = 20000;
     public int getSocketTimeout() { return socketTimeout; }
     public void setSocketTimeout(int socketTimeout) { this.socketTimeout = socketTimeout; }
 
@@ -467,8 +488,13 @@ public class ClusterListener
                     proxies = proxyList.toArray(new Proxy[0]);
                 }
 
+                connections = new Socket[proxies.length];
+                connectionReaders = new BufferedReader[proxies.length];
+                connectionWriters = new BufferedWriter[proxies.length];
+
                 sslInit();
                 startServer((Server) source, -1);
+                init = true;
             } else {
                 return;
             }
@@ -478,11 +504,15 @@ public class ClusterListener
                 stopContext((Context) source, -1);
             } else if (source instanceof Server) {
                 stopServer((Server) source, -1);
+                for (int i = 0; i < connections.length; i++) {
+                    closeConnection(i);
+                }
+                init = false;
             } else {
                 return;
             }
         } else if (Lifecycle.PERIODIC_EVENT.equals(event.getType())) {
-            if (source instanceof Engine) {
+            if (init && source instanceof Engine) {
                 status((Engine) source);
             }
         }
@@ -638,7 +668,7 @@ public class ClusterListener
             Connector connector = findProxyConnector(engine.getService().findConnectors());
             InetAddress localAddress = 
                 (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
-            if (engine.getJvmRoute() == null || localAddress == null) {
+            if ((engine.getJvmRoute() == null || localAddress == null) && proxies.length > 0) {
                 // Automagical JVM route (address + port + engineName)
                 try {
                     if (localAddress == null) {
@@ -650,7 +680,6 @@ public class ClusterListener
                             // Should not happen
                             IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", "127.0.0.1");
                         }
-                        connection.close();
                         log.info(sm.getString("clusterListener.address", localAddress.getHostAddress()));
                     }
                     if (engine.getJvmRoute() == null) {
@@ -1055,7 +1084,6 @@ public class ClusterListener
         BufferedReader reader = null;
         BufferedWriter writer = null;
         CharChunk body = null;
-        Socket connection = null;
         
         // First, encode the POST body
         try {
@@ -1105,23 +1133,34 @@ public class ClusterListener
             try {
 
                 // Then, connect to the proxy
-                connection = getConnection(i);
-                connection.setSoTimeout(socketTimeout);
+                getConnection(i);
+                writer = getConnectionWriter(i);
+                // Check connection to see if it is still alive (not really allowed, 
+                // but httpd deals with the extra CRLF)
+                try {
+                    writer.write("\r\n");
+                    writer.flush();
+                } catch (IOException e) {
+                    // Get a new connection; if it fails this second time, it is an error
+                    closeConnection(i);
+                    getConnection(i);
+                    writer = getConnectionWriter(i);
+                }
 
+                // Generate and write request
                 String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
-                int contentLength = body.getLength();
-                writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
                 writer.write(requestLine);
                 writer.write("\r\n");
-                writer.write("Content-Length: " + contentLength + "\r\n");
+                writer.write("Content-Length: " + body.getLength() + "\r\n");
                 writer.write("User-Agent: ClusterListener/1.0\r\n");
+                writer.write("Connection: Keep-Alive\r\n");
                 writer.write("\r\n");
                 writer.write(body.getBuffer(), body.getStart(), body.getLength());
                 writer.write("\r\n");
                 writer.flush();
 
                 // Read the response to a string
-                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                reader = getConnectionReader(i);
                 // Read the first response line and skip the rest of the HTTP header
                 String responseStatus = reader.readLine();
                 // Parse the line, which is formed like HTTP/1.x YYY Message
@@ -1129,6 +1168,7 @@ public class ClusterListener
                 String version = "0";
                 String message = null;
                 String errorType = null;
+                int contentLength = 0;
                 try {
                     responseStatus = responseStatus.substring(responseStatus.indexOf(' ') + 1, responseStatus.indexOf(' ', responseStatus.indexOf(' ') + 1));
                     status = Integer.parseInt(responseStatus);
@@ -1143,6 +1183,8 @@ public class ClusterListener
                             errorType = headerValue;
                         } else if ("mess".equalsIgnoreCase(headerName)) {
                             message = headerValue;
+                        } else if ("content-length".equalsIgnoreCase(headerName)) {
+                            contentLength = Integer.parseInt(headerValue);
                         }
                         header = reader.readLine();
                     }
@@ -1155,13 +1197,18 @@ public class ClusterListener
                 if (status == 200) {
                     // Read the request body
                     StringBuffer result = new StringBuffer();
-                    char[] buf = new char[512];
-                    while (true) {
-                        int n = reader.read(buf);
-                        if (n <= 0) {
-                            break;
-                        } else {
-                            result.append(buf, 0, n);
+                    if (contentLength > 0) {
+                        int thisTime = contentLength;
+                        char[] buf = new char[512];
+                        while (contentLength > 0) {
+                            thisTime = (contentLength > buf.length) ? buf.length : contentLength;
+                            int n = reader.read(buf, 0, thisTime);
+                            if (n <= 0) {
+                                break;
+                            } else {
+                                result.append(buf, 0, n);
+                                contentLength -= n;
+                            }
                         }
                     }
                     if (pos != -1) {
@@ -1183,26 +1230,9 @@ public class ClusterListener
                 proxies[i].state = State.ERROR;
                 log.info(sm.getString("clusterListener.error.io", command, proxies[i]), e);
             } finally {
-                if (writer != null) {
-                    try {
-                        writer.close();
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                }
-                if (connection != null) {
-                    try {
-                        connection.close();
-                    } catch (IOException e) {
-                        // Ignore
-                    }
+                // If there's an error of any sort, or if the proxy did not return 200, it is an error
+                if (proxies[i].state != State.OK) {
+                    closeConnection(i);
                 }
             }
 
@@ -1224,17 +1254,75 @@ public class ClusterListener
     
     
     /**
-     * Return a connection to the proxy.
+     * Return a reader to the proxy.
      */
     protected Socket getConnection(int i)
         throws IOException {
-        InetAddress address = 
-            (proxies[i].address == null) ? InetAddress.getLocalHost() : proxies[i].address;
-        if (ssl) {
-            return sslSocketFactory.createSocket(address, proxies[i].port);
-        } else {
-            return new Socket(address, proxies[i].port);
+        if (connections[i] == null) {
+            InetAddress address = (proxies[i].address == null) ? InetAddress.getLocalHost() : proxies[i].address;
+            if (ssl) {
+                connections[i] = sslSocketFactory.createSocket(address, proxies[i].port);
+            } else {
+                connections[i] = new Socket(address, proxies[i].port);
+            }
+            connections[i].setSoTimeout(socketTimeout);
         }
+        return connections[i];
+    }
+    
+
+    /**
+     * Return a reader to the proxy.
+     */
+    protected BufferedReader getConnectionReader(int i)
+        throws IOException {
+        if (connectionReaders[i] == null) {
+            connectionReaders[i] = new BufferedReader(new InputStreamReader(connections[i].getInputStream()));
+        }
+        return connectionReaders[i];
+    }
+    
+
+    /**
+     * Return a writer to the proxy.
+     */
+    protected BufferedWriter getConnectionWriter(int i)
+        throws IOException {
+        if (connectionWriters[i] == null) {
+            connectionWriters[i] = new BufferedWriter(new OutputStreamWriter(connections[i].getOutputStream()));
+        }
+        return connectionWriters[i];
+    }
+    
+
+    /**
+     * Close connection.
+     */
+    protected void closeConnection(int i) {
+        try {
+            if (connectionReaders[i] != null) {
+                connectionReaders[i].close();
+            }
+        } catch (IOException e) {
+            // Ignore
+        }
+        connectionReaders[i] = null;
+        try {
+            if (connectionWriters[i] != null) {
+                connectionWriters[i].close();
+            }
+        } catch (IOException e) {
+            // Ignore
+        }
+        connectionWriters[i] = null;
+        try {
+            if (connections[i] != null) {
+                connections[i].close();
+            }
+        } catch (IOException e) {
+            // Ignore
+        }
+        connections[i] = null;
     }
     
     
