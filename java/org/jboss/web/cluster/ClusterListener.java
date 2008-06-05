@@ -114,7 +114,7 @@ public class ClusterListener
     /**
      * Socket factory.
      */
-    
+    protected JSSESocketFactory sslSocketFactory = null;
     
     
     // ------------------------------------------------------------- Properties
@@ -1217,6 +1217,9 @@ public class ClusterListener
      * SSL init.
      */
     protected void sslInit() {
+        if (ssl) {
+            sslSocketFactory = new JSSESocketFactory(this);
+        }
     }
     
     
@@ -1225,25 +1228,22 @@ public class ClusterListener
      */
     protected Socket getConnection(int i)
         throws IOException {
-        // FIXME: Add SSL (using a client cert)
-        if (!ssl) {
-            if (proxies[i].address == null) {
-                return new Socket(InetAddress.getLocalHost(), proxies[i].port);
-            } else {
-                return new Socket(proxies[i].address, proxies[i].port);
-            }
+        InetAddress address = 
+            (proxies[i].address == null) ? InetAddress.getLocalHost() : proxies[i].address;
+        if (ssl) {
+            return sslSocketFactory.createSocket(address, proxies[i].port);
         } else {
-            if (proxies[i].address == null) {
-                return SSLSocketFactory.getDefault()
-                    .createSocket(InetAddress.getLocalHost(), proxies[i].port);
-            } else {
-                return SSLSocketFactory.getDefault()
-                    .createSocket(proxies[i].address, proxies[i].port);
-            }
+            return new Socket(address, proxies[i].port);
         }
     }
     
     
+    // ------------------------------------------------------ Proxy Inner Class
+
+    
+    /**
+     * This class represents a front-end httpd server.
+     */
     protected static class Proxy {
     	public InetAddress address = null;
     	public int port = 8000;
