@@ -150,9 +150,9 @@ public class ClusterListener
 
 
     /**
-     * Most likely only useful for testing.
+     * URL prefix.
      */
-    protected String proxyURL = "/";
+    protected String proxyURL = null;
     public String getProxyURL() { return proxyURL; }
     public void setProxyURL(String proxyURL) { this.proxyURL = proxyURL; }
 
@@ -1148,7 +1148,17 @@ public class ClusterListener
                 }
 
                 // Generate and write request
-                String requestLine = command + " " + ((wildcard) ? "*" : proxyURL) + " HTTP/1.0";
+                String url = proxyURL;
+                if (url == null) {
+                    url = (wildcard) ? "/*" : "/";
+                } else {
+                    if (url.endsWith("/") && wildcard) {
+                        url = url + "*";
+                    } else if (wildcard) {
+                        url = url + "/*";
+                    }
+                }
+                String requestLine = command + " " + url + " HTTP/1.0";
                 writer.write(requestLine);
                 writer.write("\r\n");
                 writer.write("Content-Length: " + body.getLength() + "\r\n");
