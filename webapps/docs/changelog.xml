@@ -60,6 +60,12 @@
       <update>
         Add HTTP/1.0 keep-alive to ClusterListener. (remm)
       </update>
+      <add>
+        Add a new valve that works-around the broken MS WedDAV client. (markt)
+      </add>
+      <fix>
+        Fix XSS in the host manager. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -85,6 +91,10 @@
     <changelog>
       <fix>
         <bug>44994</bug>: Correct BNF grammar so ${0 lt a ? 1 lt a ? "many": "one": "none"} works. (markt)
+      </fix>
+      <fix>
+        Add an additional layer of protection in case app fails to protect against an XSS.
+        Copied filter code to jasper module so no new dependency is created. (markt)
       </fix>
     </changelog>
   </subsection>

@@ -29,13 +29,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.PeriodicEventListener;
-
 import org.apache.jasper.Constants;
 import org.apache.jasper.EmbeddedServletOptions;
 import org.apache.jasper.Options;
 import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.Localizer;
-import org.jboss.logging.Logger;
+import org.apache.jasper.security.SecurityUtil;
 import org.jboss.logging.Logger;
 
 /**
@@ -311,8 +310,10 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
                         if (includeRequestUri != null) {
                             // This file was included. Throw an exception as
                             // a response.sendError() will be ignored
-                            throw new ServletException(Localizer.getMessage(
-                                    "jsp.error.file.not.found",jspUri));
+                            String msg = Localizer.getMessage("jsp.error.file.not.found", jspUri);
+                            // Strictly, filtering this is an application
+                            // responsibility but just in case...
+                            throw new ServletException(SecurityUtil.filter(msg));
                         } else {
                             try {
                                 response.sendError(
