@@ -138,6 +138,18 @@ public class ClusterListener
     protected boolean init = false;
     
     
+    /**
+     * Add proxy list.
+     */
+    protected ArrayList<Proxy> addProxies = new ArrayList<Proxy>(); 
+    
+    
+    /**
+     * Remove proxy list.
+     */
+    protected ArrayList<Proxy> removeProxies = new ArrayList<Proxy>(); 
+    
+    
     // ------------------------------------------------------------- Properties
 
 
@@ -456,6 +468,11 @@ public class ClusterListener
             if (source instanceof Server) {
 
                 if (this.proxyList == null) {
+                    // if (advertise) {
+                    // FIXME: enable simple advertise service in this case, most likely
+                    //        using a flag
+                    // } else {
+                    // Default to a httpd on localhost on the default port
                     proxies = new Proxy[1];
                     proxies[0] = new Proxy();
                 } else {
@@ -517,6 +534,37 @@ public class ClusterListener
             }
         }
 
+    }
+    
+    
+    /**
+     * Add proxy.
+     */
+    public synchronized void addProxy(String host, int port) {
+        Proxy proxy = new Proxy();
+        try {
+            proxy.address = InetAddress.getByName(host);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+        proxy.port = port;
+        proxy.state = State.ERROR;
+        addProxies.add(proxy);
+    }
+    
+    
+    /**
+     * Remove proxy.
+     */
+    public synchronized void removeProxy(String host, int port) {
+        Proxy proxy = new Proxy();
+        try {
+            proxy.address = InetAddress.getByName(host);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+        proxy.port = port;
+        removeProxies.add(proxy);
     }
     
     
@@ -607,39 +655,6 @@ public class ClusterListener
             sendRequest("ENABLE-APP", true, parameters);
         }
         return (proxies[0].state == State.OK);
-    }
-    
-    
-    /**
-     * Parse proxy list.
-     */
-    protected void parseProxyList(String list) {
-    	if (list == null) {
-    		proxies = new Proxy[1];
-    		proxies[0] = new Proxy();
-    	} else {
-    		ArrayList<Proxy> proxyList = new ArrayList<Proxy>();
-    		StringTokenizer tok = new StringTokenizer(list, ",");
-    		while (tok.hasMoreTokens()) {
-    			String token = tok.nextToken().trim();
-    			Proxy proxy = new Proxy();
-    			int pos = token.indexOf(':');
-    			String address = null;
-    			if (pos > 0) {
-    				address = token.substring(0, pos);
-    				proxy.port = Integer.parseInt(token.substring(pos + 1));
-    			} else {
-    				address = token;
-    			}
-    			try {
-    				proxy.address = InetAddress.getByName(address);
-    			} catch (Exception e) {
-    				throw new IllegalArgumentException(e);
-    			}
-    			proxyList.add(proxy);
-    		}
-    		proxies = proxyList.toArray(new Proxy[0]);
-    	}
     }
     
     
@@ -882,6 +897,39 @@ public class ClusterListener
      * @param engine
      */
     protected void status(Engine engine) {
+        
+        // Check to add or remove proxies, and rebuild a new list if needed
+        synchronized (this) {
+            if (!addProxies.isEmpty() || !removeProxies.isEmpty()) {
+                ArrayList<Proxy> currentProxies = new ArrayList<Proxy>();
+                for (int i = 0; i < proxies.length; i++) {
+                    currentProxies.add(proxies[i]);
+                }
+                for (int i = 0; i < addProxies.size(); i++) {
+                    if (!currentProxies.contains(addProxies.get(i))) {
+                        currentProxies.add(addProxies.get(i));
+                    }
+                }
+                for (int i = 0; i < removeProxies.size(); i++) {
+                    if (currentProxies.contains(removeProxies.get(i))) {
+                        currentProxies.remove(removeProxies.get(i));
+                    }
+                }
+                addProxies.clear();
+                removeProxies.clear();
+                proxies = currentProxies.toArray(new Proxy[0]);
+                // Reset all connections
+                if (connections != null) {
+                    for (int i = 0; i < connections.length; i++) {
+                        closeConnection(i);
+                    }
+                }
+                connections = new Socket[proxies.length];
+                connectionReaders = new BufferedReader[proxies.length];
+                connectionWriters = new BufferedWriter[proxies.length];
+            }
+        }
+        
         Proxy[] local = proxies;
         for (int i = 0; i < local.length; i++) {
             if (local[i].state == State.ERROR) {
@@ -1179,27 +1227,29 @@ public class ClusterListener
                 String message = null;
                 String errorType = null;
                 int contentLength = 0;
-                try {
-                    responseStatus = responseStatus.substring(responseStatus.indexOf(' ') + 1, responseStatus.indexOf(' ', responseStatus.indexOf(' ') + 1));
-                    status = Integer.parseInt(responseStatus);
-                    String header = reader.readLine();
-                    while (!"".equals(header)) {
-                        int colon = header.indexOf(':');
-                        String headerName = header.substring(0, colon).trim();
-                        String headerValue = header.substring(colon + 1).trim();
-                        if ("version".equalsIgnoreCase(headerName)) {
-                            version = headerValue;
-                        } else if ("type".equalsIgnoreCase(headerName)) {
-                            errorType = headerValue;
-                        } else if ("mess".equalsIgnoreCase(headerName)) {
-                            message = headerValue;
-                        } else if ("content-length".equalsIgnoreCase(headerName)) {
-                            contentLength = Integer.parseInt(headerValue);
+                if (responseStatus != null) {
+                    try {
+                        responseStatus = responseStatus.substring(responseStatus.indexOf(' ') + 1, responseStatus.indexOf(' ', responseStatus.indexOf(' ') + 1));
+                        status = Integer.parseInt(responseStatus);
+                        String header = reader.readLine();
+                        while (!"".equals(header)) {
+                            int colon = header.indexOf(':');
+                            String headerName = header.substring(0, colon).trim();
+                            String headerValue = header.substring(colon + 1).trim();
+                            if ("version".equalsIgnoreCase(headerName)) {
+                                version = headerValue;
+                            } else if ("type".equalsIgnoreCase(headerName)) {
+                                errorType = headerValue;
+                            } else if ("mess".equalsIgnoreCase(headerName)) {
+                                message = headerValue;
+                            } else if ("content-length".equalsIgnoreCase(headerName)) {
+                                contentLength = Integer.parseInt(headerValue);
+                            }
+                            header = reader.readLine();
                         }
-                        header = reader.readLine();
+                    } catch (Exception e) {
+                        log.info(sm.getString("clusterListener.error.parse", command), e);
                     }
-                } catch (Exception e) {
-                    log.info(sm.getString("clusterListener.error.parse", command), e);
                 }
 
                 // Mark as error if the front end server did not return 200; the configuration will
@@ -1353,6 +1403,23 @@ public class ClusterListener
     	    } else {
     	        return address.getHostAddress() + ":" + port;
     	    }
+    	}
+    	
+    	public boolean equals(Object o) {
+    	    if (o instanceof Proxy) {
+    	        Proxy compare = (Proxy) o;
+    	        if (port != compare.port) {
+    	            return false;
+    	        }
+    	        if (compare.address == null) {
+    	            if (address == null) {
+    	                return true;
+    	            }
+    	        } else if ((compare.address.equals(address)) && port == compare.port) {
+    	            return true;
+    	        }
+    	    }
+    	    return false;
     	}
     	
     }

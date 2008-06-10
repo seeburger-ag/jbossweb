@@ -93,6 +93,30 @@
                impact="ACTION"
                returnType="boolean"/>
  
+    <operation name="addProxy"
+               description="Add a proxy"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="host"
+                 description="Proxy address"
+                 type="java.lang.String"/>
+      <parameter name="port"
+                 description="Proxy port"
+                 type="int"/>
+    </operation>
+
+    <operation name="removeProxy"
+               description="Remove a proxy"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="host"
+                 description="Proxy address"
+                 type="java.lang.String"/>
+      <parameter name="port"
+                 description="Proxy port"
+                 type="int"/>
+    </operation>
+
   </mbean>
 
 </mbeans-descriptors>
