@@ -26,7 +26,6 @@ package org.jboss.web.cluster.advertise;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Collection; 
 
 /**
  * Advertised server instance
@@ -52,11 +51,6 @@ public class AdvertisedServer
     public static String MANAGER_VERSION   = "X-Manager-Version";
     /** Manager-Host header             */
     public static String MANAGER_HOST      = "X-Manager-Host";
-
-    private AdvertisedServer()
-    {
-        // Disable creation.
-    }
 
     protected AdvertisedServer(String server)
     {

@@ -25,24 +25,18 @@
 package org.jboss.web.cluster.advertise;
 
 import java.io.IOException;
-
-import java.net.InetAddress;
-import java.net.SocketAddress;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.NetworkInterface;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Locale;
-import java.util.HashMap;
-import java.util.Collection;
-
 import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 
 import org.jboss.web.cluster.ClusterListener;
 
