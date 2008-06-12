@@ -61,6 +61,7 @@ import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.UEncoder;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
+import org.jboss.web.cluster.advertise.AdvertiseListener;
 
 
 
@@ -147,10 +148,25 @@ public class ClusterListener
     /**
      * Remove proxy list.
      */
-    protected ArrayList<Proxy> removeProxies = new ArrayList<Proxy>(); 
+    protected ArrayList<Proxy> removeProxies = new ArrayList<Proxy>();
+    
+    
+    /**
+     * Advertise listener.
+     */
+    protected AdvertiseListener listener = null;
     
     
     // ------------------------------------------------------------- Properties
+
+
+    /**
+     * Receive advertisements from httpd proxies (default is to use advertisements
+     * if the proxyList is not set).
+     */
+    protected int advertise = -1;
+    public boolean getAdvertise() { return (advertise == 0) ? false : true; }
+    public void setAdvertise(boolean advertise) { this.advertise = advertise ? 1 : 0; }
 
 
     /**
@@ -468,13 +484,14 @@ public class ClusterListener
             if (source instanceof Server) {
 
                 if (this.proxyList == null) {
-                    // if (advertise) {
-                    // FIXME: enable simple advertise service in this case, most likely
-                    //        using a flag
-                    // } else {
-                    // Default to a httpd on localhost on the default port
-                    proxies = new Proxy[1];
-                    proxies[0] = new Proxy();
+                    if (advertise != 0) {
+                        proxies = new Proxy[0];
+                        startListener();
+                    } else {
+                        // Default to a httpd on localhost on the default port
+                        proxies = new Proxy[1];
+                        proxies[0] = new Proxy();
+                    }
                 } else {
                     ArrayList<Proxy> proxyList = new ArrayList<Proxy>();
                     StringTokenizer tok = new StringTokenizer(this.proxyList, ",");
@@ -511,6 +528,11 @@ public class ClusterListener
 
                 sslInit();
                 startServer((Server) source, -1);
+                
+                if (advertise == 1) {
+                    startListener();
+                }
+                
                 init = true;
             } else {
                 return;
@@ -520,6 +542,7 @@ public class ClusterListener
                 // Stop a webapp
                 stopContext((Context) source, -1);
             } else if (source instanceof Server) {
+                stopListener();
                 stopServer((Server) source, -1);
                 for (int i = 0; i < connections.length; i++) {
                     closeConnection(i);
@@ -540,6 +563,26 @@ public class ClusterListener
     /**
      * Add proxy.
      */
+    public void addProxy(String address) {
+        int pos = address.indexOf(':');
+        String host = null;
+        int port = 0;
+        if (pos < 0) {
+            host = address;
+        } else if (pos == 0) {
+            host = null;
+            port = Integer.parseInt(address.substring(1));
+        } else {
+            host = address.substring(0, pos);
+            port = Integer.parseInt(address.substring(pos + 1));
+        }
+        addProxy(host, port);
+    }
+    
+    
+    /**
+     * Add proxy.
+     */
     public synchronized void addProxy(String host, int port) {
         Proxy proxy = new Proxy();
         try {
@@ -547,7 +590,9 @@ public class ClusterListener
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-        proxy.port = port;
+        if (port > 0) {
+            proxy.port = port;
+        }
         proxy.state = State.ERROR;
         addProxies.add(proxy);
     }
@@ -563,7 +608,9 @@ public class ClusterListener
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-        proxy.port = port;
+        if (port > 0) {
+            proxy.port = port;
+        }
         removeProxies.add(proxy);
     }
     
@@ -658,6 +705,34 @@ public class ClusterListener
     }
     
     
+    /**
+     * Start the advertise listener.
+     */
+    protected void startListener() {
+        listener = new AdvertiseListener(this);
+        try {
+            listener.start();
+        } catch (IOException e) {
+            log.info(sm.getString("clusterListener.error.startListener"), e);
+        }
+    }
+
+
+    /**
+     * Stop the advertise listener.
+     */
+    protected void stopListener() {
+        if (listener != null) {
+            try {
+                listener.destroy();
+            } catch (IOException e) {
+                log.info(sm.getString("clusterListener.error.stopListener"), e);
+            }
+            listener = null;
+        }
+    }
+
+
     /**
      * Send commands to the front end server assocaited with the startup of the
      * node.
