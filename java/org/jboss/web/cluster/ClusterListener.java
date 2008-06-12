@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -167,6 +168,30 @@ public class ClusterListener
     protected int advertise = -1;
     public boolean getAdvertise() { return (advertise == 0) ? false : true; }
     public void setAdvertise(boolean advertise) { this.advertise = advertise ? 1 : 0; }
+
+
+    /**
+     * Advertise group.
+     */
+    protected String advertiseGroupAddress = null;
+    public String getAdvertiseGroupAddress() { return advertiseGroupAddress; }
+    public void setAdvertiseGroupAddress(String advertiseGroupAddress) { this.advertiseGroupAddress = advertiseGroupAddress; }
+
+
+    /**
+     * Advertise port.
+     */
+    protected int advertisePort = -1;
+    public int getAdvertisePort() { return advertisePort; }
+    public void setAdvertisePort(int advertisePort) { this.advertisePort = advertisePort; }
+
+
+    /**
+     * Advertise security key.
+     */
+    protected String advertiseSecurityKey = null;
+    public String getAdvertiseSecurityKey() { return advertiseSecurityKey; }
+    public void setAdvertiseSecurityKey(String advertiseSecurityKey) { this.advertiseSecurityKey = advertiseSecurityKey; }
 
 
     /**
@@ -710,10 +735,22 @@ public class ClusterListener
      */
     protected void startListener() {
         listener = new AdvertiseListener(this);
+        if (advertiseGroupAddress != null) {
+            listener.setGroupAddress(advertiseGroupAddress);
+        }
+        if (advertisePort > 0) {
+            listener.setAdvertisePort(advertisePort);
+        }
         try {
+            if (advertiseSecurityKey != null) {
+                listener.setSecurityKey(advertiseSecurityKey);
+            }
             listener.start();
         } catch (IOException e) {
-            log.info(sm.getString("clusterListener.error.startListener"), e);
+            log.error(sm.getString("clusterListener.error.startListener"), e);
+        } catch (NoSuchAlgorithmException e) {
+            // Should never happen
+            log.error(sm.getString("clusterListener.error.startListener"), e);
         }
     }
 
@@ -726,7 +763,7 @@ public class ClusterListener
             try {
                 listener.destroy();
             } catch (IOException e) {
-                log.info(sm.getString("clusterListener.error.stopListener"), e);
+                log.error(sm.getString("clusterListener.error.stopListener"), e);
             }
             listener = null;
         }

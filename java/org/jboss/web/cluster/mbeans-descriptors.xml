@@ -29,6 +29,22 @@
                description="Connection timeout for communication with the proxy"
                type="int"/>
 
+    <attribute name="advertise"
+               description="Enable autodiscovery of httpd servers"
+               type="boolean"/>
+
+    <attribute name="advertiseGroupAddress"
+               description="Multicast address for discovery"
+               type="java.lang.String"/>
+
+    <attribute name="advertisePort"
+               description="Multicast port for discovery"
+               type="int"/>
+
+    <attribute name="advertiseSecurityKey"
+               description="Security key for discovery"
+               type="java.lang.String"/>
+
     <attribute name="domain"
                description="Domain parameter, which allows tying a jvmRoute to a particular domain"
                type="java.lang.String"/>
