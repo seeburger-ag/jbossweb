@@ -26,13 +26,12 @@ import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-
-
+import org.apache.catalina.core.StandardContext;
+import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.mapper.Mapper;
+import org.apache.tomcat.util.http.mapper.MappingData;
 import org.apache.tomcat.util.modeler.Registry;
-
 import org.apache.tomcat.util.res.StringManager;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -430,6 +429,17 @@ public class MapperListener
         if (contextName.equals("/")) {
             contextName = "";
         }
+        // Don't un-map a context that is paused
+        MessageBytes hostMB = MessageBytes.newInstance();
+        hostMB.setString(hostName);
+        MessageBytes contextMB = MessageBytes.newInstance();
+        contextMB.setString(contextName);
+        MappingData mappingData = new MappingData();
+        mapper.map(hostMB, contextMB, mappingData);
+        if (mappingData.context instanceof StandardContext &&
+                ((StandardContext)mappingData.context).getPaused()) {
+            return;
+        } 
         if(log.isDebugEnabled())
             log.debug(sm.getString
                   ("mapperListener.unregisterContext", contextName));
