@@ -136,6 +136,11 @@ public final class StandardServer
      */
     private int port = 8005;
 
+    /**
+     * The address on which we wait for shutdown commands.
+     */
+    private String address = "localhost";
+
 
     /**
      * A random number generator that is <strong>only</strong> used if
@@ -280,6 +285,27 @@ public final class StandardServer
 
 
     /**
+     * Return the address on which we listen to for shutdown commands.
+     */
+    public String getAddress() {
+
+        return (this.address);
+
+    }
+
+
+    /**
+     * Set the address on which we listen to for shutdown commands.
+     *
+     * @param address The new address
+     */
+    public void setAddress(String address) {
+
+        this.address = address;
+
+    }
+
+    /**
      * Return the shutdown command string we are waiting for.
      */
     public String getShutdown() {
@@ -371,9 +397,10 @@ public final class StandardServer
         try {
             serverSocket =
                 new ServerSocket(port, 1,
-                                 InetAddress.getByName("localhost"));
+                                 InetAddress.getByName(address));
         } catch (IOException e) {
-            log.error("StandardServer.await: create[" + port
+            log.error("StandardServer.await: create[" + address
+                               + ":" + port
                                + "]: ", e);
             System.exit(1);
         }
