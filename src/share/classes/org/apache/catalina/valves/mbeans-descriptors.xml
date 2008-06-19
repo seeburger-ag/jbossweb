@@ -19,7 +19,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
     <attribute name="directory"
                description="The directory in which log files are created"
@@ -89,7 +90,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
   </mbean>
 
@@ -111,7 +113,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
     <attribute name="directory"
                description="The directory in which log files are created"
@@ -176,7 +179,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
     <attribute name="directory"
                description="The directory in which log files are created"
@@ -226,7 +230,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
     <attribute name="concurrency"
                description="Desired concurrency level"
@@ -250,7 +255,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
     <attribute   name="className"
                description="Fully qualified class name of the managed object"
@@ -277,7 +283,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
     <attribute   name="className"
                description="Fully qualified class name of the managed object"
@@ -298,7 +305,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
     <attribute name="className"
                description="Fully qualified class name of the managed object"
@@ -320,7 +328,8 @@
 
     <attribute name="containerName"
                description="Object name of the container"
-               type="javax.management.ObjectName"/>
+               type="javax.management.ObjectName"
+               writeable="false"/>
 
   </mbean>
 
