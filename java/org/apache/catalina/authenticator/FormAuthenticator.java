@@ -430,7 +430,8 @@ public class FormAuthenticator
         if ("POST".equalsIgnoreCase(saved.getMethod())) {
             ByteChunk body = saved.getBody();
             
-            if (body != null) {
+            if (body != null && body.getLength() > 0) {
+                request.clearParameters();
                 request.getCoyoteRequest().action
                     (ActionCode.ACTION_REQ_SET_BODY_REPLAY, body);
     
@@ -445,6 +446,16 @@ public class FormAuthenticator
 
                 contentType.setString(savedContentType);
                 request.getCoyoteRequest().setContentType(contentType);
+
+            } else {
+                // Restore the parameters.
+                Iterator params = saved.getParameterNames();
+                while (params.hasNext()) {
+                    String name = (String) params.next();
+                    request.addParameter(name,
+                                        saved.getParameterValues(name));
+                }
+                
             }
         }
         request.getCoyoteRequest().method().setString(saved.getMethod());
@@ -504,6 +515,16 @@ public class FormAuthenticator
             }
             saved.setContentType(request.getContentType());
             saved.setBody(body);
+
+            if (body.getLength() == 0) {
+                // It means that parameters have already been parsed.
+                Enumeration e = request.getParameterNames();
+                for ( ; e.hasMoreElements() ;) {
+                    String name = (String) e.nextElement();
+                    String[] val = request.getParameterValues(name);
+                    saved.addParameter(name, val);
+                }
+            }
         }
 
         saved.setMethod(request.getMethod());

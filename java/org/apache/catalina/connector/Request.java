@@ -1590,7 +1590,7 @@ public class Request
      * Clear the collection of parameters associated with this Request.
      */
     public void clearParameters() {
-        // Not used
+        parametersParsed = false;
     }
 
 
