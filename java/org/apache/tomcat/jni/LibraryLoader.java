@@ -143,6 +143,12 @@ public final class LibraryLoader {
             }
             catch (Throwable d) {
                 if (!optional) {
+                    java.io.File fd = new java.io.File(fullPath);
+                    if (fd.exists()) {
+                        d.printStackTrace();
+                    } else {
+                        System.out.println("Can't find: " + fullPath);
+                    }
                     throw new UnsatisfiedLinkError(dlibName);
                 }
             }
