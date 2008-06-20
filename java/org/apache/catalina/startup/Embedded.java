@@ -810,13 +810,18 @@ public class Embedded  extends StandardService implements Lifecycle {
         // Initialize some naming specific properties
         initNaming();
 
+        // Initialise if not already done.
+        if (!initialized) {
+            initialized = true;
+            lifecycle.fireLifecycleEvent(INIT_EVENT, null);
+        }
+
         // Validate and update our current component state
         if (started)
             throw new LifecycleException
                 (sm.getString("embedded.alreadyStarted"));
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
-        initialized = true;
 
         // Start our defined Engines first
         for (int i = 0; i < engines.length; i++) {
@@ -864,6 +869,10 @@ public class Embedded  extends StandardService implements Lifecycle {
         for (int i = 0; i < engines.length; i++) {
             if (engines[i] instanceof Lifecycle)
                 ((Lifecycle) engines[i]).stop();
+        }
+        if (initialized) {
+            initialized = false;
+            lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
         }
 
     }
