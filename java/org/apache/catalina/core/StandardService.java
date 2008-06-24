@@ -567,9 +567,11 @@ public class StandardService
         lifecycle.fireLifecycleEvent(BEFORE_STOP_EVENT, null);
 
         // Stop our defined Connectors first
-        synchronized (connectors) {
-            for (int i = 0; i < connectors.length; i++) {
-                connectors[i].pause();
+        if (!DELAY_CONNECTOR_STARTUP) {
+            synchronized (connectors) {
+                for (int i = 0; i < connectors.length; i++) {
+                    connectors[i].pause();
+                }
             }
         }
 
@@ -589,10 +591,12 @@ public class StandardService
         }
 
         // Stop our defined Connectors first
-        synchronized (connectors) {
-            for (int i = 0; i < connectors.length; i++) {
-                if (connectors[i] instanceof Lifecycle)
-                    ((Lifecycle) connectors[i]).stop();
+        if (!DELAY_CONNECTOR_STARTUP) {
+            synchronized (connectors) {
+                for (int i = 0; i < connectors.length; i++) {
+                    if (connectors[i] instanceof Lifecycle)
+                        ((Lifecycle) connectors[i]).stop();
+                }
             }
         }
 
