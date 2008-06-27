@@ -4322,7 +4322,7 @@ public class StandardContext
         oldCCL = bindThread();
 
         // Annotation processor setup
-        if (ok ) {
+        if (ok && ! getIgnoreAnnotations() ) {
             if (instanceManager == null) {
                 javax.naming.Context context = null;
                 if (isUseNaming() && namingContextListener != null) {
