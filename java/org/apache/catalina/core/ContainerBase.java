@@ -923,6 +923,8 @@ public abstract class ContainerBase
         synchronized(children) {
             if (children.get(child.getName()) == null)
                 return;
+            if (children.get(child.getName()) != child)
+                return;
             children.remove(child.getName());
         }
         
