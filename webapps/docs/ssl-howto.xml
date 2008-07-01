@@ -430,7 +430,7 @@ values, depending on how you configured your keystore earlier:</p>
       <p>The type of keystore file to be used for the server certificate.
       If not specified, the default value is "<code>JKS</code>". 
       For example the *.p12 files from openssl can be used using 
-      <code>PKCS12</code></td></p>
+      <code>PKCS12</code></p>
     </attribute>
 
     <attribute name="sslProtocol" required="false">
