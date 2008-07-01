@@ -66,6 +66,35 @@
       <fix>
         Fix XSS in the host manager. (markt)
       </fix>
+      <add>
+        Add discovery of httpd servers to ClusterListener. (remm)
+      </add>
+      <fix>
+        Possible NPE when logging on shutdown. (fhanik)
+      </fix>
+      <fix>
+        <bug>45195</bug>: NPE when calling getAttribute(null). (markt)
+      </fix>
+      <fix>
+        <bug>43683</bug>: There was a short period where the context didn't appear in the mapper 
+        that resulted in some more 404s. (markt)
+      </fix>
+      <fix>
+        Allow to start several JBossWEB on one machine with multiple IP. (jfclere)
+      </fix>
+      <fix>
+        <jboss-jira>JBAS-5645</jboss-jira>: Fix FORM issues with body. (jfclere)
+      </fix>
+      <fix>
+        Better information if native library fails to load. (jfclere)
+      </fix>
+      <fix>
+        <jboss-jira>JBAS-5636</jboss-jira>: In DELAY_CONNECTOR_STARTUP mode, also let the embedding server 
+        control stopping the connectors. (remm)
+      </fix>
+      <fix>
+        <jboss-jira>JBAS-5671</jboss-jira>: Check child the right child is passed when removing it. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -85,6 +114,10 @@
       <fix>
         <bug>42750</bug>: Make parsing of request line more tolerant of multiple SP and/or HT. (markt)
       </fix>
+      <fix>
+        <bug>45272</bug>: IE is not fully compliant, and the redone cookies could cause issues with
+        quoted paths. (fhanik)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
@@ -95,6 +128,13 @@
       <fix>
         Add an additional layer of protection in case app fails to protect against an XSS.
         Copied filter code to jasper module so no new dependency is created. (markt)
+      </fix>
+      <fix>
+        <bug>43285</bug>: Make forced coercion of null and "" to zero optional. Patch by Nils Eckert. (markt)
+      </fix>
+      <fix>
+        <bug>45015</bug>: Raise an error if attributes are not correctly quoted, with an option
+        to disable. (markt)
       </fix>
     </changelog>
   </subsection>
