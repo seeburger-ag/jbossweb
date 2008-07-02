@@ -1239,7 +1239,7 @@ public class ClusterListener
     	sendRequest(command, wildcard, parameters, -1);
     }
 
-    protected String sendRequest(String command, boolean wildcard, HashMap<String, String> parameters, int pos) {
+    protected synchronized String sendRequest(String command, boolean wildcard, HashMap<String, String> parameters, int pos) {
 
         BufferedReader reader = null;
         BufferedWriter writer = null;
