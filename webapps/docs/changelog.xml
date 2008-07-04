@@ -93,7 +93,7 @@
         control stopping the connectors. (remm)
       </fix>
       <fix>
-        <jboss-jira>JBAS-5671</jboss-jira>: Check child the right child is passed when removing it. (remm)
+        <jboss-jira>JBAS-5671</jboss-jira>: Check the right child is passed when removing it. (remm)
       </fix>
       <fix>
         Extract the query string before normalization when getting a request dispatcher. (remm)

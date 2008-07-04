@@ -578,6 +578,7 @@
         <include name="org/apache/tomcat/util/**" />
         <include name="org/apache/jasper/**" />
         <include name="org/apache/el/**" />
+        <include name="org/jboss/servlet/**" />
         <include name="org/jboss/web/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
