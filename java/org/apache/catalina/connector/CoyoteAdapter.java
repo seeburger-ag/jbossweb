@@ -35,7 +35,7 @@ import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.ServerCookie;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.jboss.logging.Logger;
-import org.jboss.web.comet.CometEvent;
+import org.jboss.servlet.http.HttpEvent;
 
 
 /**
@@ -147,7 +147,7 @@ public class CoyoteAdapter
                 if (response.isClosed()) {
                     // The response IO has been closed asynchronously, so call end 
                     // in most cases
-                    request.getEvent().setType(CometEvent.EventType.END);
+                    request.getEvent().setType(HttpEvent.EventType.END);
                     request.setComet(false);
                     close = true;
                 }
@@ -155,7 +155,7 @@ public class CoyoteAdapter
                     if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
-                        request.getEvent().setType(CometEvent.EventType.END);
+                        request.getEvent().setType(HttpEvent.EventType.END);
                         close = true;
                     } else {
                         try {
@@ -170,11 +170,11 @@ public class CoyoteAdapter
                             error = true;
                         }
                         if (read) {
-                            request.getEvent().setType(CometEvent.EventType.READ);
+                            request.getEvent().setType(HttpEvent.EventType.READ);
                         } else if (error) {
-                            request.getEvent().setType(CometEvent.EventType.ERROR);
+                            request.getEvent().setType(HttpEvent.EventType.ERROR);
                         } else if (eof) {
-                            request.getEvent().setType(CometEvent.EventType.EOF);
+                            request.getEvent().setType(HttpEvent.EventType.EOF);
                         } else {
                             // Data was present on the socket, but it did not translate into actual
                             // entity body bytes
@@ -185,10 +185,10 @@ public class CoyoteAdapter
                     if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
-                        request.getEvent().setType(CometEvent.EventType.END);
+                        request.getEvent().setType(HttpEvent.EventType.END);
                         close = true;
                     } else {
-                        request.getEvent().setType(CometEvent.EventType.WRITE);
+                        request.getEvent().setType(HttpEvent.EventType.WRITE);
                     }
                 } else if (status == SocketStatus.OPEN_CALLBACK) {
                     if (!request.isComet()) {
@@ -196,28 +196,28 @@ public class CoyoteAdapter
                         // read to cleanup the pipeline
                         // In nearly all cases, the close does a resume which will end up
                         // here
-                        request.getEvent().setType(CometEvent.EventType.END);
+                        request.getEvent().setType(HttpEvent.EventType.END);
                         close = true;
                     } else {
-                        request.getEvent().setType(CometEvent.EventType.EVENT);
+                        request.getEvent().setType(HttpEvent.EventType.EVENT);
                     }
                 } else if (status == SocketStatus.DISCONNECT) {
-                    request.getEvent().setType(CometEvent.EventType.ERROR);
+                    request.getEvent().setType(HttpEvent.EventType.ERROR);
                     error = true;
                 } else if (status == SocketStatus.ERROR) {
-                    request.getEvent().setType(CometEvent.EventType.ERROR);
+                    request.getEvent().setType(HttpEvent.EventType.ERROR);
                     error = true;
                 } else if (status == SocketStatus.STOP) {
-                    request.getEvent().setType(CometEvent.EventType.END);
+                    request.getEvent().setType(HttpEvent.EventType.END);
                     close = true;
                 } else if (status == SocketStatus.TIMEOUT) {
                     if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
-                        request.getEvent().setType(CometEvent.EventType.END);
+                        request.getEvent().setType(HttpEvent.EventType.END);
                         close = true;
                     } else {
-                        request.getEvent().setType(CometEvent.EventType.TIMEOUT);
+                        request.getEvent().setType(HttpEvent.EventType.TIMEOUT);
                     }
                 }
 
@@ -229,7 +229,7 @@ public class CoyoteAdapter
                 if (!error && (request.getAttribute(Globals.EXCEPTION_ATTR) != null)) {
                     // An unexpected exception occurred while processing the event, so
                     // error should be called
-                    request.getEvent().setType(CometEvent.EventType.ERROR);
+                    request.getEvent().setType(HttpEvent.EventType.ERROR);
                     error = true;
                     connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
                 }
@@ -237,13 +237,13 @@ public class CoyoteAdapter
                     // If this was a read and not all bytes have been read, or if no data
                     // was read from the connector, then it is an error
                     log.error(sm.getString("coyoteAdapter.read"));
-                    request.getEvent().setType(CometEvent.EventType.ERROR);
+                    request.getEvent().setType(HttpEvent.EventType.ERROR);
                     error = true;
                     connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
                 }
                 if (!error && !eof && (status == SocketStatus.OPEN_READ) && request.isEof()) {
                     // Send an EOF event
-                    request.getEvent().setType(CometEvent.EventType.EOF);
+                    request.getEvent().setType(HttpEvent.EventType.EOF);
                     eof = true;
                     connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
                 }

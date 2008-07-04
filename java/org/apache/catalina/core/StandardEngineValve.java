@@ -29,7 +29,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.jboss.web.comet.CometEvent;
+import org.jboss.servlet.http.HttpEvent;
 
 
 /**
@@ -121,7 +121,7 @@ final class StandardEngineValve
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
      */
-    public final void event(Request request, Response response, CometEvent event)
+    public final void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
 
         // Ask this Host to process this request

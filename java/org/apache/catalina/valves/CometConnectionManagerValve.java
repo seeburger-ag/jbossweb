@@ -35,13 +35,13 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.connector.CometEventImpl;
+import org.apache.catalina.connector.HttpEventImpl;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.jboss.web.comet.CometEvent;
-import org.jboss.web.comet.CometProcessor;
+import org.jboss.servlet.http.HttpEvent;
+import org.jboss.servlet.http.HttpEventServlet;
 
 
 /**
@@ -205,8 +205,8 @@ public class CometConnectionManagerValve
                 }
                 // Close the comet connection
                 try {
-                    CometEventImpl cometEvent = request.getEvent();
-                    cometEvent.setType(CometEvent.EventType.END);
+                    HttpEventImpl cometEvent = request.getEvent();
+                    cometEvent.setType(HttpEvent.EventType.END);
                     getNext().event(request, request.getResponse(), cometEvent);
                     cometEvent.close();
                 } catch (Exception e) {
@@ -286,7 +286,7 @@ public class CometConnectionManagerValve
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
-    public void event(Request request, Response response, CometEvent event)
+    public void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
         
         // Perform the request
@@ -296,8 +296,8 @@ public class CometConnectionManagerValve
             ok = true;
         } finally {
             if (!ok || response.isClosed() 
-                    || (event.getType() == CometEvent.EventType.END)
-                    || (event.getType() == CometEvent.EventType.ERROR)) {
+                    || (event.getType() == HttpEvent.EventType.END)
+                    || (event.getType() == HttpEvent.EventType.ERROR)) {
                 
                 // Remove the connection from webapp reload tracking
                 cometRequests.remove(request);
@@ -353,9 +353,9 @@ public class CometConnectionManagerValve
             for (int i = 0; i < reqs.length; i++) {
                 Request req = reqs[i];
                 try {
-                    CometEventImpl event = req.getEvent();
-                    event.setType(CometEvent.EventType.END);
-                    ((CometProcessor) req.getWrapper().getServlet()).event(event);
+                    HttpEventImpl event = req.getEvent();
+                    event.setType(HttpEvent.EventType.END);
+                    ((HttpEventServlet) req.getWrapper().getServlet()).event(event);
                     event.close();
                 } catch (Exception e) {
                     req.getWrapper().getParent().getLogger().warn(sm.getString(

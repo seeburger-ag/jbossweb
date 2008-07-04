@@ -20,11 +20,12 @@ package org.apache.catalina;
 
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.jboss.web.comet.CometEvent;
+import org.jboss.servlet.http.HttpEvent;
 
 
 /**
@@ -142,7 +143,7 @@ public interface Valve {
      * @exception ServletException if a servlet error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet
      */
-    public void event(Request request, Response response, CometEvent event)
+    public void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException;
 
 

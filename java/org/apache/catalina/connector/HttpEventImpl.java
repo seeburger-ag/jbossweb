@@ -24,9 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.util.StringManager;
-import org.jboss.web.comet.CometEvent;
+import org.jboss.servlet.http.HttpEvent;
 
-public class CometEventImpl implements CometEvent {
+public class HttpEventImpl implements HttpEvent {
 
     /**
      * The string manager for this package.
@@ -35,7 +35,7 @@ public class CometEventImpl implements CometEvent {
         StringManager.getManager(Constants.Package);
 
 
-    public CometEventImpl(Request request, Response response) {
+    public HttpEventImpl(Request request, Response response) {
         this.request = request;
         this.response = response;
     }
@@ -97,7 +97,11 @@ public class CometEventImpl implements CometEvent {
         request.setTimeout(timeout);
     }
     
-    public boolean ready() {
+    public boolean isReadReady() {
+        return request.isReadable();
+    }
+    
+    public boolean isWriteReady() {
         return response.isWriteable();
     }
     

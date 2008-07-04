@@ -35,7 +35,7 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.MessageBytes;
-import org.jboss.web.comet.CometEvent;
+import org.jboss.servlet.http.HttpEvent;
 
 /**
  * Valve that implements the default basic behavior for the
@@ -226,7 +226,7 @@ final class StandardContextValve
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
      */
-    public final void event(Request request, Response response, CometEvent event)
+    public final void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
 
         // Select the Wrapper to be used for this Request

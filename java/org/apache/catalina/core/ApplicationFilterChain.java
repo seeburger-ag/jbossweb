@@ -37,10 +37,10 @@ import org.apache.catalina.InstanceEvent;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.InstanceSupport;
 import org.apache.catalina.util.StringManager;
-import org.jboss.web.comet.CometEvent;
-import org.jboss.web.comet.CometFilter;
-import org.jboss.web.comet.CometFilterChain;
-import org.jboss.web.comet.CometProcessor;
+import org.jboss.servlet.http.HttpEvent;
+import org.jboss.servlet.http.HttpEventFilter;
+import org.jboss.servlet.http.HttpEventFilterChain;
+import org.jboss.servlet.http.HttpEventServlet;
 
 /**
  * Implementation of <code>javax.servlet.FilterChain</code> used to manage
@@ -53,7 +53,7 @@ import org.jboss.web.comet.CometProcessor;
  * @version $Revision$ $Date$
  */
 
-final class ApplicationFilterChain implements FilterChain, CometFilterChain {
+final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain {
 
     // Used to enforce requirements of SRV.8.2 / SRV.14.2.5.1
     private final static ThreadLocal lastServicedRequest;
@@ -152,14 +152,14 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
      * <code>doFilterEvent</code> is invoked.
      */
     private static Class[] cometClassType = 
-        new Class[]{ CometEvent.class, CometFilterChain.class};
+        new Class[]{ HttpEvent.class, HttpEventFilterChain.class};
                                                    
     /**
      * Static class array used when the SecurityManager is turned on and 
      * <code>event</code> is invoked.
      */                                                 
     private static Class[] classTypeUsedInEvent = 
-        new Class[] { CometEvent.class };
+        new Class[] { HttpEvent.class };
 
     // ---------------------------------------------------- FilterChain Methods
 
@@ -333,11 +333,11 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet exception occurs
      */
-    public void doFilterEvent(CometEvent event)
+    public void doFilterEvent(HttpEvent event)
         throws IOException, ServletException {
 
         if( Globals.IS_SECURITY_ENABLED ) {
-            final CometEvent ev = event;
+            final HttpEvent ev = event;
             try {
                 java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedExceptionAction() {
@@ -387,15 +387,15 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
     }
     
     
-    private void internalDoFilterEvent(CometEvent event)
+    private void internalDoFilterEvent(HttpEvent event)
         throws IOException, ServletException {
 
         // Call the next filter if there is one
         if (pos < n) {
             ApplicationFilterConfig filterConfig = filters[pos++];
-            CometFilter filter = null;
+            HttpEventFilter filter = null;
             try {
-                filter = (CometFilter) filterConfig.getFilter();
+                filter = (HttpEventFilter) filterConfig.getFilter();
                 // FIXME: No instance listener processing for events for now
                 /*
                 support.fireInstanceEvent(InstanceEvent.BEFORE_FILTER_EVENT,
@@ -403,7 +403,7 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
                         */
 
                 if( Globals.IS_SECURITY_ENABLED ) {
-                    final CometEvent ev = event;
+                    final HttpEvent ev = event;
                     Principal principal = 
                         ev.getHttpServletRequest().getUserPrincipal();
 
@@ -456,7 +456,7 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
                     servlet, request, response);
                     */
             if( Globals.IS_SECURITY_ENABLED ) {
-                final CometEvent ev = event;
+                final HttpEvent ev = event;
                 Principal principal = 
                     ev.getHttpServletRequest().getUserPrincipal();
                 Object[] args = new Object[]{ ev };
@@ -467,7 +467,7 @@ final class ApplicationFilterChain implements FilterChain, CometFilterChain {
                         principal);
                 args = null;
             } else {  
-                ((CometProcessor) servlet).event(event);
+                ((HttpEventServlet) servlet).event(event);
             }
             /*
             support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,

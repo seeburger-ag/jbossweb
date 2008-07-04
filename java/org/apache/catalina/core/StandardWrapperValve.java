@@ -37,8 +37,8 @@ import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.log.SystemLogHandler;
-import org.jboss.web.comet.CometEvent;
-import org.jboss.web.comet.CometProcessor;
+import org.jboss.servlet.http.HttpEvent;
+import org.jboss.servlet.http.HttpEventServlet;
 
 /**
  * Valve that implements the default basic behavior for the
@@ -159,7 +159,7 @@ final class StandardWrapperValve
 
         // Identify if the request is Comet related now that the servlet has been allocated
         boolean comet = false;
-        if (servlet instanceof CometProcessor 
+        if (servlet instanceof HttpEventServlet 
                 && request.getAttribute("org.apache.tomcat.comet.support") == Boolean.TRUE) {
             comet = true;
             request.setComet(true);
@@ -349,7 +349,7 @@ final class StandardWrapperValve
      * @exception ServletException if a servlet error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet
      */
-    public void event(Request request, Response response, CometEvent event)
+    public void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
         
         // Initialize local variables we may need

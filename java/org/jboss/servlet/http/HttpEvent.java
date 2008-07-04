@@ -133,7 +133,7 @@ public interface HttpEvent {
      * Returns true when data may be read from the connection (the flag becomes false if no data
      * is available to read). When the flag becomes false, the Servlet can attempt to read additional
      * data, but it will block until data is available. This method is equivalent to 
-     * (Reader.ready() > 0) and InputStream.available().
+     * Reader.ready() and (InputStream.available() > 0).
      * 
      * @return boolean true if data can be read without blocking
      */

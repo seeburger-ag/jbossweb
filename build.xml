@@ -208,8 +208,8 @@
       <fileset dir="${tomcat.classes}">
         <include name="org/apache/*" />
         <include name="org/apache/catalina/**" />
-        <include name="org/apache/comet/**" />
         <include name="org/apache/naming/**" />
+        <include name="org/jboss/servlet/http/**" />
         <include name="org/jboss/web/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="org/jboss/web/php/**" />

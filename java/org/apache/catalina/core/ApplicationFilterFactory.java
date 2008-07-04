@@ -27,7 +27,7 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.FilterMap;
-import org.jboss.web.comet.CometFilter;
+import org.jboss.servlet.http.HttpEventFilter;
 
 /**
  * Factory for the creation and caching of Filters and creationg 
@@ -174,7 +174,7 @@ public final class ApplicationFilterFactory {
             boolean isCometFilter = false;
             if (comet) {
                 try {
-                    isCometFilter = filterConfig.getFilter() instanceof CometFilter;
+                    isCometFilter = filterConfig.getFilter() instanceof HttpEventFilter;
                 } catch (Exception e) {
                     // Note: The try catch is there because getFilter has a lot of 
                     // declared exceptions. However, the filter is allocated much
@@ -204,7 +204,7 @@ public final class ApplicationFilterFactory {
             boolean isCometFilter = false;
             if (comet) {
                 try {
-                    isCometFilter = filterConfig.getFilter() instanceof CometFilter;
+                    isCometFilter = filterConfig.getFilter() instanceof HttpEventFilter;
                 } catch (Exception e) {
                     // Note: The try catch is there because getFilter has a lot of 
                     // declared exceptions. However, the filter is allocated much

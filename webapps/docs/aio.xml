@@ -39,10 +39,10 @@
     other source).
   </p>
 
-  <subsection name="CometEvent">
+  <subsection name="HttpEvent">
   
   <p>
-    Servlets which implement the <code>org.jboss.web.comet.CometProcessor</code>
+    Servlets which implement the <code>org.jboss.servlet.http.HttpEventServlet</code>
     interface will have their event method invoked rather than the usual service
     method, according to the event which occurred. The event object gives
     access to the usual request and response objects, which may be used in the
@@ -81,7 +81,7 @@
        objects will be recycled and used to process other requests. In particular,
        this event will be called if the HTTP session associated with the connection
        times out, if the web application is reloaded, if the server is shutdown, or
-       if the Comet connection was closed asynchronously.</li>
+       if the connection was closed asynchronously.</li>
   <li>EventType.EOF - The end of file of the input has been reached, and no further data is
        available. This event is sent because it can be difficult to detect otherwise.
        Following the processing of this event and the processing of any subsequent
@@ -94,7 +94,7 @@
   <li>EventType.TIMEOUT - the connection timed out, but the connection will not be closed unless 
        the servlet uses the close method of the event</li>
   <li>EventType.EVENT - Event will be called by the container after the resume() method is called,
-       during which any operations can be performed, including closing the Comet connection
+       during which any operations can be performed, including closing the connection
        using the close() method.</li>
   <li>EventType.WRITE - Write is sent if the servlet is using the ready method. This means that 
        the connection is ready to receive data to be written out. This event will never
@@ -103,13 +103,13 @@
   </ul>
 
   <p>
-    As described above, the typical lifecycle of a Comet request will consist in a series of
+    As described above, the typical lifecycle of a request will consist in a series of
     events such as: BEGIN -> READ -> READ -> READ -> TIMEOUT. At any time, the servlet 
     may end processing of the request by using the close method of the event object.
   </p>
   
   <p>
-    The close() method ends the request, which marks the end of the comet session. This will send 
+    The close() method ends the request, which marks the end of the processing. This will send 
       back to the client a notice that the server has no more data to send 
       as part of this request. An END event will be sent to the servlet.
   </p>
@@ -122,7 +122,15 @@
   </p>
   
   <p>
-     The ready() method returns true when data may be written to the connection (the flag becomes false 
+     The isReadReady() method returns true when data may be read from the connection (the flag becomes false if no data
+     is available to read). When the flag becomes false, the Servlet can attempt to read additional
+     data, but it will block until data is available. This method is equivalent to 
+     Reader.ready() and (InputStream.available() > 0).
+
+  </p>
+  
+  <p>
+     The isWriteReady() method returns true when data may be written to the connection (the flag becomes false 
       when the client is unable to accept data fast enough). When the flag becomes false, 
       the servlet must stop writing data. If there's an attempt to flush additional data 
       to the client and data still cannot be written immediately, an IOException will be 
@@ -152,15 +160,15 @@
   
   </subsection>
 
-  <subsection name="CometFilter">
+  <subsection name="HttpEventFilter">
   
   <p>
-    Similar to regular filters, a filter chain is invoked when comet events are processed.
-    These filters should implement the CometFilter interface (which works in the same way as 
+    Similar to regular filters, a filter chain is invoked when events are processed.
+    These filters should implement the HttpEventFilter interface (which works in the same way as 
     the regular Filter interface), and should be declared and mapped in the deployment
     descriptor in the same way as a regular filter. The filter chain when processing an event
     will only include filters which match all the usual mapping rules, and also implement
-    the CometFiler interface.
+    the HttpEventFiler interface.
   </p>
   
   </subsection>
@@ -174,7 +182,7 @@
   
   <source>
 public class ChatServlet
-    extends HttpServlet implements CometProcessor {
+    extends HttpServlet implements HttpEventServlet {
 
     protected ArrayList&lt;HttpServletResponse> connections = 
         new ArrayList&lt;HttpServletResponse>();
@@ -195,13 +203,13 @@ public class ChatServlet
     }
 
     /**
-     * Process the given Comet event.
+     * Process the given event.
      * 
-     * @param event The Comet event that will be processed
+     * @param event The event that will be processed
      * @throws IOException
      * @throws ServletException
      */
-    public void event(CometEvent event)
+    public void event(HttpEvent event)
         throws IOException, ServletException {
         HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();

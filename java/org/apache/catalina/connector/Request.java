@@ -205,7 +205,7 @@ public class Request
     /**
      * Associated event.
      */
-    protected CometEventImpl event = null;
+    protected HttpEventImpl event = null;
     
 
     /**
@@ -481,6 +481,14 @@ public class Request
     }
     
 
+    /**
+     * Return true if bytes are available.
+     */
+    public boolean isReadable() {
+        return (inputBuffer.available() > 0);
+    }
+
+    
     // -------------------------------------------------------- Request Methods
 
 
@@ -2239,9 +2247,9 @@ public class Request
      * Get the event associated with the request.
      * @return
      */
-    public CometEventImpl getEvent() {
+    public HttpEventImpl getEvent() {
         if (event == null) {
-            event = new CometEventImpl(this, response);
+            event = new HttpEventImpl(this, response);
         }
         return event;
     }

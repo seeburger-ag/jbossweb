@@ -40,7 +40,7 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.StringManager;
 import org.jboss.logging.Logger;
-import org.jboss.web.comet.CometEvent;
+import org.jboss.servlet.http.HttpEvent;
 
 
 /**
@@ -193,7 +193,7 @@ public abstract class ValveBase
      * @exception ServletException if a servlet error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet
      */
-    public void event(Request request, Response response, CometEvent event)
+    public void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
         // Perform the request
         getNext().event(request, response, event);

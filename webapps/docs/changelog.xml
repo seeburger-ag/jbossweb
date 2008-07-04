@@ -98,6 +98,9 @@
       <fix>
         Extract the query string before normalization when getting a request dispatcher. (remm)
       </fix>
+      <update>
+        Update the Comet API names to org.jboss.servlet.http. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
