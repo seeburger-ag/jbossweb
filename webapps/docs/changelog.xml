@@ -95,6 +95,9 @@
       <fix>
         <jboss-jira>JBAS-5671</jboss-jira>: Check child the right child is passed when removing it. (remm)
       </fix>
+      <fix>
+        Extract the query string before normalization when getting a request dispatcher. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -117,6 +120,9 @@
       <fix>
         <bug>45272</bug>: IE is not fully compliant, and the redone cookies could cause issues with
         quoted paths. (fhanik)
+      </fix>
+      <fix>
+        Do not use custom messages in headers by default. (markt)
       </fix>
     </changelog>
   </subsection>

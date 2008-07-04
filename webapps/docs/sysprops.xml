@@ -110,8 +110,31 @@
       with that id.</p>
     </property>
 
+    <property
+    name="org.apache.coyote. USE_CUSTOM_STATUS_MSG_IN_HEADER">
+      <p>If this is <code>true</code> custom HTTP status messages will be used
+      within HTTP headers. Users must ensure that any such message is
+      ISO-8859-1 encoded, particularly if user provided input is included in
+      the message, to prevent a possible XSS vulnerability. If not specified
+      the default value of <code>false</code> will be used.</p>
+    </property>
+
   </properties>
 
+</section>
+
+
+<section name="EL">
+  <properties>
+
+    <property name="org.apache.el.parser.COERCE_TO_ZERO">
+      <p>If <code>true</code>, when coercing expressions to numbers
+      <code>""</code> and <code>null</code> will be coerced to zero as required
+      by the specification. If not specified, the default value of
+      <code>true</code> will be used.</p>
+    </property>
+
+  </properties>
 </section>
 
 
@@ -128,6 +151,13 @@
       <p>The name of the variable to use for the instance manager factory. If
       not specified, the default value of <code>_jsp_instancemanager</code> will
       be used.</p>
+    </property>
+
+    <property name="org.apache.jasper.compiler. Parser.STRICT_QUOTE_ESCAPING">
+      <p>If <code>false</code> the requirements for escpaing quotes in JSP
+      attributes will be relaxed so that a missing required quote will not
+      cause an error. If not specified, the specification compliant default of
+      <code>true</code> will be used.</p>
     </property>
 
 <!--
