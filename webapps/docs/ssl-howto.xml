@@ -187,13 +187,13 @@ via (among other things) OpenSSL and Microsoft's Key-Manager.
 keystore implmentations treat alaises in a case insensitive manner, case
 sensitive implementations are available. The <code>PKCS11</code> specification,
 for example, requires that aliases are case sensitive. To avoid issues related
-to the case sensitivity of aliaises, it is not recommended to use aliases that
+to the case sensitivity of aliases, it is not recommended to use aliases that
 differ only in case.
 </p>
 
 <p>To import an existing certificate into a JKS keystore, please read the
 documentation (in your JDK documentation package) about <code>keytool</code>.
-Note that openssl often adds a readable comments before the key, <code>keytool</code>does not support that, so remove the openssl comments if they exist before importing the key using <code>keytool</code>.
+Note that OpenSSL often adds a readable comments before the key, <code>keytool</code>does not support that, so remove the OpenSSL comments if they exist before importing the key using <code>keytool</code>.
 </p>
 <p>To import an existing certificate signed by your own CA into a PKCS12 
 keystore using OpenSSL you would execute a command like:
@@ -202,7 +202,7 @@ keystore using OpenSSL you would execute a command like:
                         -caname root -chain
 </source>
 For more advanced cases, consult the <a href="http://www.openssl.org/">OpenSSL
-documententation</a>.
+documentation</a>.
 </p>
 <p>To create a new keystore from scratch, containing a single self-signed
 Certificate, execute the following from a terminal command line:</p>
