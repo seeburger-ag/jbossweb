@@ -668,6 +668,25 @@ public class ClusterListener
     	}
     	return result.toString();
     }
+    /**
+     * Retrieves the full proxy info message.
+     * 
+     *
+     * @return the proxy confguration
+     */
+    public String getProxyInfo() {
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        // Send INFO * request
+    	Proxy[] local = proxies;
+    	StringBuffer result = new StringBuffer();
+    	for (int i = 0; i < local.length; i++) {
+    		result.append("Proxy[").append(i).append("]:[").append(local[i].address)
+    				.append(':').append(local[i].port).append("]: \r\n"); 
+    		result.append(sendRequest("INFO", true, parameters, i));
+    		result.append("\r\n");
+    	}
+    	return result.toString();
+    }
     
     
     /**
