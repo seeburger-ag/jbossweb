@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 2.1.1.CR5 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <jboss-jira>JBAS-4965</jboss-jira>: Ignore exploded JARs in extension validator to avoid classcast. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.1.CR4 (remm)">
   <subsection name="General">
     <changelog>

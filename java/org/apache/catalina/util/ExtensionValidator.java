@@ -179,15 +179,17 @@ public final class ExtensionValidator {
                 if (!binding.getName().toLowerCase().endsWith(".jar")) {
                     continue;
                 }
-                Resource resource = (Resource)dirContext.lookup
-                                        ("/WEB-INF/lib/" + binding.getName());
-                Manifest jmanifest = getManifest(resource.streamContent());
-                if (jmanifest != null) {
-                    ManifestResource mre = new ManifestResource(
-                                                binding.getName(),
-                                                jmanifest, 
-                                                ManifestResource.APPLICATION);
-                    appManifestResources.add(mre);
+                Object resourceObject = dirContext.lookup("/WEB-INF/lib/" + binding.getName());
+                if (resourceObject instanceof Resource) {
+                    Resource resource = (Resource) resourceObject;
+                    Manifest jmanifest = getManifest(resource.streamContent());
+                    if (jmanifest != null) {
+                        ManifestResource mre = new ManifestResource(
+                                binding.getName(),
+                                jmanifest, 
+                                ManifestResource.APPLICATION);
+                        appManifestResources.add(mre);
+                    }
                 }
             }
         } catch (NamingException nex) {
