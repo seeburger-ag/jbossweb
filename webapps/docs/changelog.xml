@@ -17,10 +17,35 @@
 <body>
 
 <section name="JBoss Web 2.1.1.CR5 (remm)">
+  <subsection name="General">
+    <changelog>
+      <fix>
+        <bug>45332</bug>: Don't assume UTF-8 and use the correct encoding when generating
+        tomcat-users.xml from the Windows installer. (markt)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Catalina">
     <changelog>
       <fix>
         <jboss-jira>JBAS-4965</jboss-jira>: Ignore exploded JARs in extension validator to avoid classcast. (remm)
+      </fix>
+      <fix>
+        <bug>45285</bug>: Look for annotations up the class hierarchy. (markt)
+      </fix>
+      <fix>
+        Concurrency issues on ClusterListener.status with multiple engines. (jfclere)
+      </fix>
+      <fix>
+        <bug>42678</bug>: Only ignore docBase it it really is a subdir of appBase. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <bug>42565</bug>: EL ternary expression without space before colon now works. 
+        Patch provided by Lucas Galfaso. (markt)
       </fix>
     </changelog>
   </subsection>
