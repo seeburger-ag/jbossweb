@@ -661,7 +661,7 @@ public class ClusterListener
     	Proxy[] local = proxies;
     	StringBuffer result = new StringBuffer();
     	for (int i = 0; i < local.length; i++) {
-    		result.append("Proxy[").append(i).append("]:[").append(local[i].address)
+    		result.append("Proxy[").append(i).append("]: [").append(local[i].address)
     				.append(':').append(local[i].port).append("]: \r\n"); 
     		result.append(sendRequest("DUMP", true, parameters, i));
     		result.append("\r\n");
@@ -680,7 +680,7 @@ public class ClusterListener
     	Proxy[] local = proxies;
     	StringBuffer result = new StringBuffer();
     	for (int i = 0; i < local.length; i++) {
-    		result.append("Proxy[").append(i).append("]:[").append(local[i].address)
+    		result.append("Proxy[").append(i).append("]: [").append(local[i].address)
     				.append(':').append(local[i].port).append("]: \r\n"); 
     		result.append(sendRequest("INFO", true, parameters, i));
     		result.append("\r\n");
@@ -897,8 +897,8 @@ public class ClusterListener
     /**
      * Reset configuration for a particular proxy following an error.
      */
-    protected void reset(int pos) {
-        
+    protected synchronized void reset(int pos) {
+       
         Service[] services = ServerFactory.getServer().findServices();
         for (int i = 0; i < services.length; i++) {
             Engine engine = (Engine) services[i].getContainer();
