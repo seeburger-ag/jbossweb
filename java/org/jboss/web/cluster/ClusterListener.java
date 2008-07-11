@@ -897,7 +897,7 @@ public class ClusterListener
     /**
      * Reset configuration for a particular proxy following an error.
      */
-    protected synchronized void reset(int pos) {
+    protected void reset(int pos) {
        
         Service[] services = ServerFactory.getServer().findServices();
         for (int i = 0; i < services.length; i++) {
@@ -1027,7 +1027,7 @@ public class ClusterListener
      * 
      * @param engine
      */
-    protected void status(Engine engine) {
+    protected synchronized void status(Engine engine) {
         
         // Check to add or remove proxies, and rebuild a new list if needed
         synchronized (this) {
