@@ -50,7 +50,7 @@ import org.apache.catalina.core.Constants;
 import org.apache.catalina.util.StringManager;
 
 /**
- * @version $Rev:$ $Date:$
+ * @version $Rev$ $Date$
  */
 public class DefaultInstanceManager implements InstanceManager {
 
@@ -336,7 +336,7 @@ public class DefaultInstanceManager implements InstanceManager {
     }
 
     protected Class loadClass(String className, ClassLoader classLoader) throws ClassNotFoundException {
-        if (className.startsWith("org.apache.catalina")) {
+        if (className.startsWith("org.apache.catalina") || className.startsWith("org.jboss.web")) {
             return containerClassLoader.loadClass(className);
         }
         try {

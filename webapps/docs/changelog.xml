@@ -39,6 +39,12 @@
       <fix>
         <bug>42678</bug>: Only ignore docBase it it really is a subdir of appBase. (markt)
       </fix>
+      <fix>
+        <bug>42722</bug>: Fix possible NPE in CGI. (markt)
+      </fix>
+      <fix>
+        org.jboss.web should be loaded as container classes. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
@@ -46,6 +52,13 @@
       <fix>
         <bug>42565</bug>: EL ternary expression without space before colon now works. 
         Patch provided by Lucas Galfaso. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Native">
+    <changelog>
+      <fix>
+        Remove system.out. (jfclere)
       </fix>
     </changelog>
   </subsection>
