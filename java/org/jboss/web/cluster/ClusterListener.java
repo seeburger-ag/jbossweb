@@ -1030,35 +1030,33 @@ public class ClusterListener
     protected synchronized void status(Engine engine) {
         
         // Check to add or remove proxies, and rebuild a new list if needed
-        synchronized (this) {
-            if (!addProxies.isEmpty() || !removeProxies.isEmpty()) {
-                ArrayList<Proxy> currentProxies = new ArrayList<Proxy>();
-                for (int i = 0; i < proxies.length; i++) {
-                    currentProxies.add(proxies[i]);
-                }
-                for (int i = 0; i < addProxies.size(); i++) {
-                    if (!currentProxies.contains(addProxies.get(i))) {
-                        currentProxies.add(addProxies.get(i));
-                    }
-                }
-                for (int i = 0; i < removeProxies.size(); i++) {
-                    if (currentProxies.contains(removeProxies.get(i))) {
-                        currentProxies.remove(removeProxies.get(i));
-                    }
-                }
-                addProxies.clear();
-                removeProxies.clear();
-                proxies = currentProxies.toArray(new Proxy[0]);
-                // Reset all connections
-                if (connections != null) {
-                    for (int i = 0; i < connections.length; i++) {
-                        closeConnection(i);
-                    }
-                }
-                connections = new Socket[proxies.length];
-                connectionReaders = new BufferedReader[proxies.length];
-                connectionWriters = new BufferedWriter[proxies.length];
+        if (!addProxies.isEmpty() || !removeProxies.isEmpty()) {
+            ArrayList<Proxy> currentProxies = new ArrayList<Proxy>();
+            for (int i = 0; i < proxies.length; i++) {
+                currentProxies.add(proxies[i]);
             }
+            for (int i = 0; i < addProxies.size(); i++) {
+                if (!currentProxies.contains(addProxies.get(i))) {
+                    currentProxies.add(addProxies.get(i));
+                }
+            }
+            for (int i = 0; i < removeProxies.size(); i++) {
+                if (currentProxies.contains(removeProxies.get(i))) {
+                    currentProxies.remove(removeProxies.get(i));
+                }
+            }
+            addProxies.clear();
+            removeProxies.clear();
+            proxies = currentProxies.toArray(new Proxy[0]);
+            // Reset all connections
+            if (connections != null) {
+                for (int i = 0; i < connections.length; i++) {
+                    closeConnection(i);
+                }
+            }
+            connections = new Socket[proxies.length];
+            connectionReaders = new BufferedReader[proxies.length];
+            connectionWriters = new BufferedWriter[proxies.length];
         }
         
         Proxy[] local = proxies;
