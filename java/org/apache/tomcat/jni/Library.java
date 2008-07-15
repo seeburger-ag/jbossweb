@@ -43,6 +43,9 @@ public final class Library {
                 loaded = true;
             }
             catch (Throwable e) {
+                if ( i > 0)
+                    err += ", ";
+
                 String name = System.mapLibraryName(NAMES[i]);
                 String path = System.getProperty("java.library.path");
                 String sep = System.getProperty("path.separator");
@@ -50,11 +53,9 @@ public final class Library {
                 for (int j=0; j<paths.length; j++) {
                     java.io.File fd = new java.io.File(paths[j] + System.getProperty("file.separator") + name);
                     if (fd.exists()) {
-                        e.printStackTrace();
+                        err += "(Error on: " + paths[j] + System.getProperty("file.separator") + name +")";
                     }
                 }
-                if ( i > 0)
-                    err += ", ";
                 err +=  e.getMessage();
             }
             if (loaded)
