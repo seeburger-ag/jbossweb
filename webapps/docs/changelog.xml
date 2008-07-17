@@ -45,6 +45,12 @@
       <fix>
         org.jboss.web should be loaded as container classes. (remm)
       </fix>
+      <fix>
+        Instance manager checks were not done properly. (remm)
+      </fix>
+      <fix>
+        Prevent various possible character encoding hacks. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
@@ -52,6 +58,9 @@
       <fix>
         <bug>42565</bug>: EL ternary expression without space before colon now works. 
         Patch provided by Lucas Galfaso. (markt)
+      </fix>
+      <fix>
+        <jira>98</jira>: Remove mandatory usage of URLClassLoader for better integration with AS. (remm)
       </fix>
     </changelog>
   </subsection>

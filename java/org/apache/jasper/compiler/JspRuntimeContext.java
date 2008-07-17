@@ -110,11 +110,9 @@ public final class JspRuntimeContext {
         this.options = options;
 
         // Get the parent class loader
-        parentClassLoader =
-            (URLClassLoader) Thread.currentThread().getContextClassLoader();
+        parentClassLoader = Thread.currentThread().getContextClassLoader();
         if (parentClassLoader == null) {
-            parentClassLoader =
-                (URLClassLoader)this.getClass().getClassLoader();
+            parentClassLoader = this.getClass().getClassLoader();
         }
 
 	if (log.isDebugEnabled()) {
