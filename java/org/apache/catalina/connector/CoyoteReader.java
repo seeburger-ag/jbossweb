@@ -156,7 +156,7 @@ public class CoyoteReader
             mark(MAX_LINE_LENGTH);
             while ((pos < MAX_LINE_LENGTH) && (end < 0)) {
                 int nRead = read(lineBuffer, pos, MAX_LINE_LENGTH - pos);
-                if (nRead < 0) {
+                if (nRead < 0 && aggregator == null) {
                     if (pos == 0) {
                         return null;
                     }

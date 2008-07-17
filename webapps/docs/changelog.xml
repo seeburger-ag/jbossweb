@@ -46,6 +46,10 @@
         org.jboss.web should be loaded as container classes. (remm)
       </fix>
       <fix>
+        <bug>42727</bug>: Handle request lines that are exact multiples of 4096 in length.
+        Patch provided by Will Pugh. (markt)
+      </fix>
+      <fix>
         Instance manager checks were not done properly. (remm)
       </fix>
       <fix>
