@@ -830,11 +830,11 @@ public class CoyoteAdapter
     /**
      * Check that the URI is normalized following character decoding.
      * <p>
-     * This method checks for "\", "//", "/./" and "/../". This method will
-     * return false if sequences that are supposed to be normalized still 
+     * This method checks for "\", 0, "//", "/./" and "/../". This method will
+     * return false if sequences that are supposed to be normalized are still 
      * present in the URI.
      * 
-     * @param uriMB URI to be normalized
+     * @param uriMB URI to be checked (should be chars)
      */
     public static boolean checkNormalize(MessageBytes uriMB) {
 
@@ -845,7 +845,7 @@ public class CoyoteAdapter
 
         int pos = 0;
 
-        // Check for '\' and for null byte
+        // Check for '\' and 0
         for (pos = start; pos < end; pos++) {
             if (c[pos] == '\\') {
                 return false;
@@ -864,7 +864,7 @@ public class CoyoteAdapter
             }
         }
 
-        // Check for URI ending with "/." or "/.."
+        // Check for ending with "/." or "/.."
         if (((end - start) >= 2) && (c[end - 1] == '.')) {
             if ((c[end - 2] == '/') 
                     || ((c[end - 2] == '.') 
@@ -878,7 +878,7 @@ public class CoyoteAdapter
             return false;
         }
 
-        // Check for "/./"
+        // Check for "/../"
         if (uriCC.indexOf("/../", 0, 4, 0) >= 0) {
             return false;
         }
