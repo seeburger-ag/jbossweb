@@ -55,6 +55,9 @@
       <fix>
         Prevent various possible character encoding hacks. (remm)
       </fix>
+      <fix>
+        <jira>16</jira>: Add new catalina.work system property to use as the optional base for work folders. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

@@ -1928,7 +1928,7 @@ public class StandardContext
         }
         File workDir = new File(getWorkDir());
         if (!workDir.isAbsolute()) {
-            File catalinaHome = engineBase();
+            File catalinaHome = workBase();
             String catalinaHomePath = null;
             try {
                 catalinaHomePath = catalinaHome.getCanonicalPath();
@@ -4769,6 +4769,16 @@ public class StandardContext
     }
 
 
+    protected File workBase() {
+        String base = System.getProperty("catalina.work");
+        if( base == null ) {
+            return engineBase();
+        } else {
+            return (new File(base));
+        }
+    }
+
+
     // -------------------------------------------------------- Private Methods
 
 
@@ -5092,16 +5102,7 @@ public class StandardContext
         }
 
         // Create this directory if necessary
-        File dir = new File(workDir);
-        if (!dir.isAbsolute()) {
-            File catalinaHome = engineBase();
-            String catalinaHomePath = null;
-            try {
-                catalinaHomePath = catalinaHome.getCanonicalPath();
-                dir = new File(catalinaHomePath, workDir);
-            } catch (IOException e) {
-            }
-        }
+        File dir = new File(getWorkPath());
         dir.mkdirs();
 
         // Set the appropriate servlet context attribute
