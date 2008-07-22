@@ -244,22 +244,6 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
             }
         }
 
-        if (log.isDebugEnabled()) {	    
-            log.debug("JspEngine --> " + jspUri);
-            log.debug("\t     ServletPath: " + request.getServletPath());
-            log.debug("\t        PathInfo: " + request.getPathInfo());
-            log.debug("\t        RealPath: " + context.getRealPath(jspUri));
-            log.debug("\t      RequestURI: " + request.getRequestURI());
-            log.debug("\t     QueryString: " + request.getQueryString());
-            log.debug("\t  Request Params: ");
-            Enumeration e = request.getParameterNames();
-            while (e.hasMoreElements()) {
-                String name = (String) e.nextElement();
-                log.debug("\t\t " + name + " = " 
-                          + request.getParameter(name));
-            }
-        }
-
         try {
             boolean precompile = preCompile(request);
             serviceJspFile(request, response, jspUri, null, precompile);
