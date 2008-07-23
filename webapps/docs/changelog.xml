@@ -23,6 +23,18 @@
         <bug>45332</bug>: Don't assume UTF-8 and use the correct encoding when generating
         tomcat-users.xml from the Windows installer. (markt)
       </fix>
+      <update>
+        NSIS 2.38. (remm)
+      </update>
+      <update>
+        JBoss Native 2.0.4. (remm)
+      </update>
+      <update>
+        Commons Collections 3.2.1. (remm)
+      </update>
+      <update>
+        Eclipse JDT 3.4. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
