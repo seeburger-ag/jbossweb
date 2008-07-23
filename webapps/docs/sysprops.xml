@@ -239,6 +239,12 @@
       handler instances. If not specified, <code>false</code> will be used.</p>
     </property>
 
+    <property name="org.apache.jasper.Constants. USE_INSTANCE_MANAGER_FOR_TAGS">
+      <p>If <code>true</code>, annotations specified in tags will be processed and
+      injected. This can have a performance impact when using simple tags, or if tag 
+      pooling is disabled. If not specified, <code>true</code> will be used.</p>
+    </property>
+
   </properties>
 
 </section>

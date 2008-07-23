@@ -73,6 +73,9 @@
         <jira>110</jira>: Remove the per request logging of everything in JSP Servlet, which caused 
         i18n issues. (remm)
       </fix>
+      <update>
+        Add a system property to disable injection for tags. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Native">

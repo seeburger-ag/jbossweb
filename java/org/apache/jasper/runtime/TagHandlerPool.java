@@ -126,7 +126,9 @@ public class TagHandlerPool {
         		return (Tag) instanceManager.newInstance(handlerClass.getName(), handlerClass.getClassLoader());
         	} else {
                 Tag instance = (Tag) handlerClass.newInstance();
-                instanceManager.newInstance(instance);
+                if (Constants.INJECT_TAGS) {
+                    instanceManager.newInstance(instance);
+                }
                 return instance;
         	}
         } catch (Exception e) {
@@ -150,11 +152,13 @@ public class TagHandlerPool {
         }
         // There is no need for other threads to wait for us to release
         handler.release();
-        try {
-            instanceManager.destroyInstance(handler);
-        } catch (Exception e) {
-            log.warn("Error processing preDestroy on tag instance of "
-                    + handler.getClass().getName(), e);
+        if (Constants.INJECT_TAGS) {
+            try {
+                instanceManager.destroyInstance(handler);
+            } catch (Exception e) {
+                log.warn("Error processing preDestroy on tag instance of "
+                        + handler.getClass().getName(), e);
+            }
         }
     }
 
@@ -165,11 +169,13 @@ public class TagHandlerPool {
     public synchronized void release() {
         for (int i = current; i >= 0; i--) {
             handlers[i].release();
-            try {
-                instanceManager.destroyInstance(handlers[i]);
-            } catch (Exception e) {
-                log.warn("Error processing preDestroy on tag instance of "
-                        + handlers[i].getClass().getName(), e);
+            if (Constants.INJECT_TAGS) {
+                try {
+                    instanceManager.destroyInstance(handlers[i]);
+                } catch (Exception e) {
+                    log.warn("Error processing preDestroy on tag instance of "
+                            + handlers[i].getClass().getName(), e);
+                }
             }
         }
     }

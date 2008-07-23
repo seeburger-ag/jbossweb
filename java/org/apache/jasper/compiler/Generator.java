@@ -2252,18 +2252,22 @@ class Generator {
         		out.print("new ");
         		out.print(tagHandlerClassName);
         		out.println("());");
-        		out.printin(VAR_INSTANCEMANAGER);
-        		out.print(".newInstance(");
-        		out.print(tagHandlerVar);
-        		out.println(");");
+                if (Constants.INJECT_TAGS) {
+                    out.printin(VAR_INSTANCEMANAGER);
+                    out.print(".newInstance(");
+                    out.print(tagHandlerVar);
+                    out.println(");");
+                }
         	}
         }
 
         private void writeDestroyInstance(String tagHandlerVar) {
-            out.printin(VAR_INSTANCEMANAGER);
-            out.print(".destroyInstance(");
-            out.print(tagHandlerVar);
-            out.println(");");
+            if (Constants.INJECT_TAGS) {
+                out.printin(VAR_INSTANCEMANAGER);
+                out.print(".destroyInstance(");
+                out.print(tagHandlerVar);
+                out.println(");");
+            }
         }
 
         private void generateCustomEnd(Node.CustomTag n, String tagHandlerVar,

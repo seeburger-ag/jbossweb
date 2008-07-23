@@ -196,6 +196,9 @@ public class Constants {
     public static final boolean USE_INSTANCE_MANAGER_FOR_TAGS =
         Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.USE_INSTANCE_MANAGER_FOR_TAGS", "false")).booleanValue();
 
+    public static final boolean INJECT_TAGS =
+        Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.INJECT_TAGS", "true")).booleanValue();
+
     /**
      * The name of the path parameter used to pass the session identifier
      * back and forth with the client.
