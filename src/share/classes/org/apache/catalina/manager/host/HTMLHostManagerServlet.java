@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Host;
+import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 
 /**
@@ -195,7 +196,11 @@ public final class HTMLHostManagerServlet extends HostManagerServlet {
         // Message Section
         args = new Object[3];
         args[0] = sm.getString("htmlHostManagerServlet.messageLabel");
-        args[1] = (message == null || message.length() == 0) ? "OK" : message;
+        if (message == null || message.length() == 0) {
+            args[1] = "OK";
+        } else {
+            args[1] = RequestUtil.filter(message);
+        }
         writer.print(MessageFormat.format(Constants.MESSAGE_SECTION, args));
 
         // Manager Section
@@ -248,7 +253,7 @@ public final class HTMLHostManagerServlet extends HostManagerServlet {
 
             if (host != null ) {
                 args = new Object[2];
-                args[0] = hostName;
+                args[0] = RequestUtil.filter(hostName);
                 String[] aliases = host.findAliases();
                 StringBuffer buf = new StringBuffer();
                 if (aliases.length > 0) {
@@ -260,9 +265,11 @@ public final class HTMLHostManagerServlet extends HostManagerServlet {
 
                 if (buf.length() == 0) {
                     buf.append("&nbsp;");
+                    args[1] = buf.toString();
+                } else {
+                    args[1] = buf.toString();
                 }
 
-                args[1] = buf.toString();
                 writer.print
                     (MessageFormat.format(HOSTS_ROW_DETAILS_SECTION, args));
 
