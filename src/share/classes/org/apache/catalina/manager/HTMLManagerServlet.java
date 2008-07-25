@@ -202,7 +202,7 @@ public final class HTMLManagerServlet extends ManagerServlet {
                 if (basename.equals("ROOT")) {
                     path = "";
                 } else {
-                    path = "/" + basename;
+                    path = "/" + basename.replace('#', '/');
                 }
 
                 if (!isServiced(path)) {
