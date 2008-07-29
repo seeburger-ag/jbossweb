@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 2.1.1.CR6 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <bug>45453</bug>: Sync getPrincipal in JDBCRealm. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.1.CR5 (remm)">
   <subsection name="General">
     <changelog>

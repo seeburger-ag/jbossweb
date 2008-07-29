@@ -38,10 +38,9 @@ import org.apache.catalina.util.StringManager;
 * See the JDBCRealm.howto for more details on how to set up the database and
 * for configuration options.
 *
-* <p><strong>TODO</strong> - Support connection pooling (including message
-* format objects) so that <code>authenticate()</code>,
-* <code>getPassword()</code> and <code>authenticate()</code> do not have to be
-* synchronized and would fix the ugly connection logic. </p>
+* <p><strong>NOTE</strong>: This realm features simple configuration, but
+* uses a single connection to the database. In cases where authentication
+* becomes a bottleneck, the DataSource realm must be used instead.</p>
 *
 * @author Craig R. McClanahan
 * @author Carson McDonald
@@ -591,7 +590,7 @@ public class JDBCRealm
     /**
      * Return the Principal associated with the given user name.
      */
-    protected Principal getPrincipal(String username) {
+    protected synchronized Principal getPrincipal(String username) {
 
         return (new GenericPrincipal(this,
                                      username,
