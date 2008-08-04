@@ -596,7 +596,7 @@ public class AprEndpoint {
         
         if (!reverseConnection) {
             // Create the APR server socket
-            serverSock = Socket.create(family, Socket.SOCK_STREAM,
+            serverSock = Socket.create(Address.getInfo(inetAddress).family, Socket.SOCK_STREAM,
                     Socket.APR_PROTO_TCP, rootPool);
             if (OS.IS_UNIX) {
                 Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);

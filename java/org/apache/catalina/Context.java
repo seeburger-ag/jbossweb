@@ -21,8 +21,6 @@ package org.apache.catalina;
 
 import javax.servlet.ServletContext;
 
-import org.apache.tomcat.util.http.mapper.Mapper;
-
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.deploy.FilterDef;
@@ -30,7 +28,9 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.util.CharsetMapper;
+import org.apache.tomcat.util.http.mapper.Mapper;
 
 
 /**
@@ -172,6 +172,20 @@ public interface Context extends Container {
      * Return the "use cookies for session ids" flag.
      */
     public boolean getCookies();
+
+
+    /**
+     * Set the session cookie configuration.
+     *
+     * @param sessionCookie The new value
+     */
+    public void setSessionCookie(SessionCookie sessionCookie);
+
+
+    /**
+     * Return the session cookie configuration.
+     */
+    public SessionCookie getSessionCookie();
 
 
     /**

@@ -193,6 +193,12 @@ public class ContextRuleSet extends RuleSetBase {
                 new SetNextNamingRule("addResourceLink",
                         "org.apache.catalina.deploy.ContextResourceLink"));
 
+        digester.addObjectCreate(prefix + "Context/SessionCookie",
+            "org.apache.catalina.deploy.SessionCookie");
+        digester.addSetProperties(prefix + "Context/SessionCookie");
+        digester.addSetNext(prefix + "Context/SessionCookie",
+                "setSessionCookie", "org.apache.catalina.deploy.SessionCookie");
+
         digester.addObjectCreate(prefix + "Context/Valve",
                                  null, // MUST be specified in the element
                                  "className");

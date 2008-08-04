@@ -22,6 +22,12 @@
       <fix>
         <bug>45453</bug>: Sync getPrincipal in JDBCRealm. (markt)
       </fix>
+      <add>
+        <jira>107</jira>: Servlet 3.0 style session cookie configuration. (remm)
+      </add>
+      <add>
+        New embedded API (startup.Tomcat class). (remm)
+      </add>
     </changelog>
   </subsection>
 </section>

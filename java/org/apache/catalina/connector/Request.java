@@ -2396,8 +2396,27 @@ public class Request
      */
     protected void configureSessionCookie(Cookie cookie) {
         cookie.setMaxAge(-1);
-        cookie.setPath("/");
-        if (isSecure()) {
+        if (context.getSessionCookie().getPath() != null) {
+            cookie.setPath(context.getSessionCookie().getPath());
+        } else {
+            String contextPath = context.getEncodedPath();
+            if ("".equals(contextPath)) {
+                contextPath = "/";
+            }
+            cookie.setPath(contextPath);
+        }
+        if (context.getSessionCookie().getComment() != null) {
+            cookie.setComment(context.getSessionCookie().getComment());
+        }
+        if (context.getSessionCookie().getDomain() != null) {
+            cookie.setDomain(context.getSessionCookie().getDomain());
+        }
+        if (context.getSessionCookie().isHttpOnly()) {
+            // FIXME: in Servlet 3.0
+        }
+        if (context.getSessionCookie().isSecure()) {
+            cookie.setSecure(true);
+        } else if (isSecure()) {
             cookie.setSecure(true);
         }
     }
