@@ -120,8 +120,7 @@ final class StandardContextValve
             || (requestPathMB.equalsIgnoreCase("/META-INF"))
             || (requestPathMB.startsWithIgnoreCase("/WEB-INF/", 0))
             || (requestPathMB.equalsIgnoreCase("/WEB-INF"))) {
-            String requestURI = request.getDecodedRequestURI();
-            notFound(requestURI, response);
+            notFound(response);
             return;
         }
 
@@ -137,8 +136,7 @@ final class StandardContextValve
         // Select the Wrapper to be used for this Request
         Wrapper wrapper = request.getWrapper();
         if (wrapper == null) {
-            String requestURI = request.getDecodedRequestURI();
-            notFound(requestURI, response);
+            notFound(response);
             return;
         }
 
@@ -289,10 +287,10 @@ final class StandardContextValve
      * @param requestURI The request URI for the requested resource
      * @param response The response we are creating
      */
-    private void notFound(String requestURI, HttpServletResponse response) {
+    private void notFound(HttpServletResponse response) {
 
         try {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, requestURI);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } catch (IllegalStateException e) {
             ;
         } catch (IOException e) {
