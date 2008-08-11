@@ -35,6 +35,9 @@
       <fix>
         <bug>45511</bug>: New fix for 42565. (markt)
       </fix>
+      <add>
+        <jira>108</jira>: Experimental support for JCI. (remm)
+      </add>
     </changelog>
   </subsection>
 </section>

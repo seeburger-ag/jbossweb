@@ -218,6 +218,11 @@ public class JspCompilationContext {
                 if (jspCompiler == null) {
                     jspCompiler = createCompiler("org.apache.jasper.compiler.AntCompiler");
                 }
+            } else if (options.getCompiler().startsWith("jci:")) {
+                jspCompiler = createCompiler("org.apache.jasper.compiler.JCICompiler");
+                if (jspCompiler == null) {
+                    jspCompiler = createCompiler("org.apache.jasper.compiler.JDTCompiler");
+                }
             } else {
                 jspCompiler = createCompiler("org.apache.jasper.compiler.AntCompiler");
                 if (jspCompiler == null) {
@@ -241,13 +246,9 @@ public class JspCompilationContext {
         } catch (IllegalAccessException e) {
             log.warn(Localizer.getMessage("jsp.error.compiler"), e);
         } catch (NoClassDefFoundError e) {
-            if (log.isDebugEnabled()) {
-                log.debug(Localizer.getMessage("jsp.error.compiler"), e);
-            }
+            log.info(Localizer.getMessage("jsp.error.compiler"), e);
         } catch (ClassNotFoundException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(Localizer.getMessage("jsp.error.compiler"), e);
-            }
+            log.info(Localizer.getMessage("jsp.error.compiler"), e);
         }
         return compiler;
     }
