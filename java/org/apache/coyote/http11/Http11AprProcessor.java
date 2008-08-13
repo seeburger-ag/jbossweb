@@ -328,7 +328,7 @@ public class Http11AprProcessor implements ActionHook {
     protected boolean readNotifications = true;
     protected boolean writeNotification = false;
     protected boolean resumeNotification = false;
-    protected boolean cometProcessing = false;
+    protected boolean cometProcessing = true;
     
 
     // ------------------------------------------------------------- Properties
@@ -793,13 +793,11 @@ public class Http11AprProcessor implements ActionHook {
         if (error) {
             inputBuffer.nextRequest();
             outputBuffer.nextRequest();
-            recycleComet();
             recycle();
             return SocketState.CLOSED;
         } else if (!comet) {
             boolean pipelined = inputBuffer.nextRequest();
             outputBuffer.nextRequest();
-            recycleComet();
             recycle();
             return (pipelined) ? SocketState.CLOSED : SocketState.OPEN;
         } else {
@@ -962,6 +960,7 @@ public class Http11AprProcessor implements ActionHook {
                 recycle();
                 return SocketState.CLOSED;
             } else {
+                cometProcessing = false;
                 return SocketState.LONG;
             }
         } else {
@@ -1001,15 +1000,11 @@ public class Http11AprProcessor implements ActionHook {
         inputBuffer.recycle();
         outputBuffer.recycle();
         this.socket = 0;
-    }
-    
-
-    public void recycleComet() {
         cometTimeout = -1;
         readNotifications = true;
         writeNotification = false;
         resumeNotification = false;
-        cometProcessing = false;
+        cometProcessing = true;
     }
     
 
