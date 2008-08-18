@@ -42,6 +42,9 @@
       <add>
         <bug>41407</bug>: Add support for CLIENT-CERT to the JASS Realm. (markt)
       </add>
+      <fix>
+        NPE on shutdown when an error occurs starting connectors. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

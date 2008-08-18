@@ -156,9 +156,10 @@ public class MapperListener
     public void destroy() {
         try {
 
-            ObjectName objectName = new ObjectName(
-                    "JMImplementation:type=MBeanServerDelegate");
-            mBeanServer.removeNotificationListener(objectName, this);
+            ObjectName objectName = new ObjectName("JMImplementation:type=MBeanServerDelegate");
+            if (mBeanServer != null) {
+                mBeanServer.removeNotificationListener(objectName, this);
+            }
         } catch (Exception e) {
             log.warn("Error unregistering MBeanServerDelegate", e);
         }
