@@ -24,11 +24,10 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.TextInputCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.catalina.util.StringManager;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
 
 /**
  * <p>Implementation of the JAAS <code>CallbackHandler</code> interface,
@@ -49,7 +48,6 @@ import org.jboss.logging.Logger;
  */
 
 public class JAASCallbackHandler implements CallbackHandler {
-    private static Logger log = Logger.getLogger(JAASCallbackHandler.class);
 
     // ------------------------------------------------------------ Constructor
 
@@ -78,6 +76,35 @@ public class JAASCallbackHandler implements CallbackHandler {
         }
     }
 
+    
+    /**
+     * Construct a callback handler for DIGEST authentication.
+     *
+     * @param realm         Our associated JAASRealm instance
+     * @param username      Username to be authenticated with
+     * @param password      Password to be authenticated with
+     * @param nonce         Server generated nonce
+     * @param nc            Nonce count
+     * @param cnonce        Client generated nonce
+     * @param qop           Quality of protection aplied to the message
+     * @param realmName     Realm name
+     * @param md5a2         Second MD5 digest used to calculate the digest
+     *                      MD5(Method + ":" + uri)
+     * @param authMethod    The authentication mehtod in use 
+     */
+    public JAASCallbackHandler(JAASRealm realm, String username,
+                               String password, String nonce, String nc,
+                               String cnonce, String qop, String realmName,
+                               String md5a2, String authMethod) {
+        this(realm, username, password);
+        this.nonce = nonce;
+        this.nc = nc;
+        this.cnonce = cnonce;
+        this.qop = qop;
+        this.realmName = realmName;
+        this.md5a2 = md5a2;
+        this.authMethod = authMethod;
+    }
 
     // ----------------------------------------------------- Instance Variables
 
@@ -98,20 +125,55 @@ public class JAASCallbackHandler implements CallbackHandler {
      */
     protected JAASRealm realm = null;
 
-
     /**
      * The username to be authenticated with.
      */
     protected String username = null;
 
+    /**
+     * Server generated nonce.
+     */
+    protected String nonce = null;
+    
+    /**
+     * Nonce count.
+     */
+    protected String nc = null;
+    
+    /**
+     * Client generated nonce.
+     */
+    protected String cnonce = null;
+
+    /**
+     * Quality of protection aplied to the message.
+     */
+    protected String qop;
+
+    /**
+     * Realm name.
+     */
+    protected String realmName;
+
+    /**
+     * Second MD5 digest.
+     */
+    protected String md5a2;
+
+    /**
+     * The authentication methdod to be used. If null, assume BASIC/FORM.
+     */
+    protected String authMethod;
 
     // --------------------------------------------------------- Public Methods
 
 
     /**
      * Retrieve the information requested in the provided <code>Callbacks</code>.
-     * This implementation only recognizes <code>NameCallback</code> and
-     * <code>PasswordCallback</code> instances.
+     * This implementation only recognizes {@link NameCallback},
+     * {@link PasswordCallback} and {@link TextInputCallback}.
+     * {@link TextInputCallback} is ued to pass the various additional
+     * parameters required for DIGEST authentication. 
      *
      * @param callbacks The set of <code>Callback</code>s to be processed
      *
@@ -137,6 +199,25 @@ public class JAASCallbackHandler implements CallbackHandler {
                 }
                 ((PasswordCallback) callbacks[i]).setPassword
                     (passwordcontents);
+            } else if (callbacks[i] instanceof TextInputCallback) {
+                TextInputCallback cb = ((TextInputCallback) callbacks[i]);
+                if (cb.getPrompt().equals("nonce")) {
+                    cb.setText(nonce);
+                } else if (cb.getPrompt().equals("nc")) {
+                    cb.setText(nc);
+                } else if (cb.getPrompt().equals("cnonce")) {
+                    cb.setText(cnonce);
+                } else if (cb.getPrompt().equals("qop")) {
+                    cb.setText(qop);
+                } else if (cb.getPrompt().equals("realmName")) {
+                    cb.setText(realmName);
+                } else if (cb.getPrompt().equals("md5a2")) {
+                    cb.setText(md5a2);
+                } else if (cb.getPrompt().equals("authMethod")) {
+                    cb.setText(authMethod);
+                } else {
+                    throw new UnsupportedCallbackException(callbacks[i]);
+                }
             } else {
                 throw new UnsupportedCallbackException(callbacks[i]);
             }

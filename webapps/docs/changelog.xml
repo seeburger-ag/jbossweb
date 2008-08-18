@@ -28,6 +28,20 @@
       <add>
         New embedded API (startup.Tomcat class). (remm)
       </add>
+      <add>
+        <bug>45576</bug>: Add DIGEST support to the JAAS Realm. (markt)
+      </add>
+      <fix>
+        <bug>45585</bug>: Allow Tomcat to start if using
+        <code>$CATALINA_BASE</code> but not JULI. Patch based on a suggestion by
+        Ian Ward Comfort. (markt)
+      </fix>
+      <fix>
+        The JAAS Realm did not assign roles to authenticated users. (markt)
+      </fix>
+      <add>
+        <bug>41407</bug>: Add support for CLIENT-CERT to the JASS Realm. (markt)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Coyote">

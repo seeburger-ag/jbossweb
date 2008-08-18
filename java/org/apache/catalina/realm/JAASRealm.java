@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.AccountExpiredException;
 import javax.security.auth.login.CredentialExpiredException;
 import javax.security.auth.login.FailedLoginException;
@@ -33,12 +34,13 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.util.StringManager;
 import org.jboss.logging.Logger;
 
 
 /**
- * <p>Implmentation of <b>Realm</b> that authenticates users via the <em>Java
+ * <p>Implementation of <b>Realm</b> that authenticates users via the <em>Java
  * Authentication and Authorization Service</em> (JAAS).  JAAS support requires
  * either JDK 1.4 (which includes it as part of the standard platform) or
  * JDK 1.3 (with the plug-in <code>jaas.jar</code> file).</p>
@@ -213,7 +215,7 @@ public class JAASRealm
      * @return The value of useContextClassLoader
      */
     public boolean isUseContextClassLoader() {
-    return useContextClassLoader;
+        return useContextClassLoader;
     } 
 
     public void setContainer(Container container) {
@@ -309,19 +311,55 @@ public class JAASRealm
 
 
     /**
-     * Return the <code>Principal</code> associated with the specified username and
-     * credentials, if there is one; otherwise return <code>null</code>.
-     *
-     * If there are any errors with the JDBC connection, executing
-     * the query or anything we return null (don't authenticate). This
-     * event is also logged, and the connection will be closed so that
-     * a subsequent request will automatically re-open it.
+     * Return the <code>Principal</code> associated with the specified username
+     * and credentials, if there is one; otherwise return <code>null</code>.
      *
      * @param username Username of the <code>Principal</code> to look up
      * @param credentials Password or other credentials to use in
      *  authenticating this username
      */
     public Principal authenticate(String username, String credentials) {
+        return authenticate(username,
+                new JAASCallbackHandler(this, username, credentials));
+    }
+     
+
+    /**
+     * Return the <code>Principal</code> associated with the specified username
+     * and digest, if there is one; otherwise return <code>null</code>.
+     *
+     * @param username      Username of the <code>Principal</code> to look up
+     * @param clientDigest  Digest to use in authenticating this username
+     * @param nonce         Server generated nonce
+     * @param nc            Nonce count
+     * @param cnonce        Client generated nonce
+     * @param qop           Quality of protection aplied to the message
+     * @param realmName     Realm name
+     * @param md5a2         Second MD5 digest used to calculate the digest
+     *                          MD5(Method + ":" + uri)
+     * @param authMethod    The authentication scheme in use
+     */
+    public Principal authenticate(String username, String clientDigest,
+            String nonce, String nc, String cnonce, String qop,
+            String realmName, String md5a2) {
+        return authenticate(username,
+                new JAASCallbackHandler(this, username, clientDigest, nonce,
+                        nc, cnonce, qop, realmName, md5a2,
+                        Constants.DIGEST_METHOD));
+    }
+
+
+    // -------------------------------------------------------- Package Methods
+
+
+    // ------------------------------------------------------ Protected Methods
+
+
+    /**
+     * Perform the actual JAAS authentication
+     */
+    protected Principal authenticate(String username,
+            CallbackHandler callbackHandler) {
 
         // Establish a LoginContext to use for authentication
         try {
@@ -341,9 +379,7 @@ public class JAASRealm
         }
 
         try {
-            loginContext = new LoginContext
-                (appName, new JAASCallbackHandler(this, username,
-                                                  credentials));
+            loginContext = new LoginContext(appName, callbackHandler);
         } catch (Throwable e) {
             log.error(sm.getString("jaasRealm.unexpectedError"), e);
             return (null);
@@ -405,13 +441,6 @@ public class JAASRealm
             return null;
         }
     }
-     
-
-    // -------------------------------------------------------- Package Methods
-
-
-    // ------------------------------------------------------ Protected Methods
-
 
     /**
      * Return a short name for this <code>Realm</code> implementation.
@@ -424,7 +453,9 @@ public class JAASRealm
 
 
     /**
-     * Return the password associated with the given principal's user name.
+     * Return the password associated with the given principal's user name. This
+     * always returns null as the JAASRealm has no way of obtaining this
+     * information.
      */
     protected String getPassword(String username) {
 
@@ -438,7 +469,9 @@ public class JAASRealm
      */
     protected Principal getPrincipal(String username) {
 
-        return (null);
+        return authenticate(username,
+                new JAASCallbackHandler(this, username, null, null, null, null,
+                        null, null, null, Constants.CERT_METHOD));
 
     }
 

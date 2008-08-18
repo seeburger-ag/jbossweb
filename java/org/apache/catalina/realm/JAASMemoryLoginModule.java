@@ -31,6 +31,7 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.TextInputCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
@@ -38,12 +39,12 @@ import javax.security.auth.spi.LoginModule;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Realm;
+import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.digester.Digester;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -194,8 +195,19 @@ public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, R
             return (false);
 
         // Add our Principal to the Subject if needed
-        if (!subject.getPrincipals().contains(principal))
+        if (!subject.getPrincipals().contains(principal)) {
             subject.getPrincipals().add(principal);
+            // Add the roles as additional sudjucts as per the contract with the
+            // JAASRealm
+            if (principal instanceof GenericPrincipal) {
+                String roles[] = ((GenericPrincipal) principal).getRoles();
+                for (int i = 0; i < roles.length; i++) {
+                    subject.getPrincipals().add(
+                            new GenericPrincipal(null, roles[i], null));
+                }
+                
+            }
+        }
 
         committed = true;
         return (true);
@@ -212,7 +224,7 @@ public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, R
      */
     public SecurityConstraint [] findSecurityConstraints(Request request,
                                                      Context context) {
-        ArrayList results = null;
+        ArrayList<SecurityConstraint> results = null;
         // Are there any defined security constraints?
         SecurityConstraint constraints[] = context.findConstraints();
         if ((constraints == null) || (constraints.length == 0)) {
@@ -235,7 +247,7 @@ public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, R
                     constraints[i].included(uri, method));
             if (constraints[i].included(uri, method)) {
                 if(results == null) {
-                    results = new ArrayList();
+                    results = new ArrayList<SecurityConstraint>();
                 }
                 results.add(constraints[i]);
             }
@@ -298,18 +310,40 @@ public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, R
         // Set up our CallbackHandler requests
         if (callbackHandler == null)
             throw new LoginException("No CallbackHandler specified");
-        Callback callbacks[] = new Callback[2];
+        Callback callbacks[] = new Callback[9];
         callbacks[0] = new NameCallback("Username: ");
         callbacks[1] = new PasswordCallback("Password: ", false);
+        callbacks[2] = new TextInputCallback("nonce");
+        callbacks[3] = new TextInputCallback("nc");
+        callbacks[4] = new TextInputCallback("cnonce");
+        callbacks[5] = new TextInputCallback("qop");
+        callbacks[6] = new TextInputCallback("realmName");
+        callbacks[7] = new TextInputCallback("md5a2");
+        callbacks[8] = new TextInputCallback("authMethod");
 
         // Interact with the user to retrieve the username and password
         String username = null;
         String password = null;
+        String nonce = null;
+        String nc = null;
+        String cnonce = null;
+        String qop = null;
+        String realmName = null;
+        String md5a2 = null;
+        String authMethod = null;
+
         try {
             callbackHandler.handle(callbacks);
             username = ((NameCallback) callbacks[0]).getName();
             password =
                 new String(((PasswordCallback) callbacks[1]).getPassword());
+            nonce = ((TextInputCallback) callbacks[2]).getText();
+            nc = ((TextInputCallback) callbacks[3]).getText();
+            cnonce = ((TextInputCallback) callbacks[4]).getText();
+            qop = ((TextInputCallback) callbacks[5]).getText();
+            realmName = ((TextInputCallback) callbacks[6]).getText();
+            md5a2 = ((TextInputCallback) callbacks[7]).getText();
+            authMethod = ((TextInputCallback) callbacks[8]).getText();
         } catch (IOException e) {
             throw new LoginException(e.toString());
         } catch (UnsupportedCallbackException e) {
@@ -317,7 +351,17 @@ public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, R
         }
 
         // Validate the username and password we have received
-        principal = super.authenticate(username, password);
+        if (authMethod == null) {
+            // BASIC or FORM
+            principal = super.authenticate(username, password);
+        } else if (authMethod.equals(Constants.DIGEST_METHOD)) {
+            principal = super.authenticate(username, password, nonce, nc,
+                    cnonce, qop, realmName, md5a2);
+        } else if (authMethod.equals(Constants.CERT_METHOD)) {
+            principal = super.getPrincipal(username);
+        } else {
+            throw new LoginException("Unknown authentication method");
+        }
 
         log.debug("login " + username + " " + principal);
 
