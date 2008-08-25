@@ -53,6 +53,9 @@
         Consider that a normal request is Comet (it is possible to get a resume before
         officially going into Comet mode). (remm)
       </fix>
+      <fix>
+        Add configuration checks for java.io SSL. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
