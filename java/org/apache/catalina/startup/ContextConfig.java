@@ -259,9 +259,9 @@ public class ContextConfig
         // Process the event that has occurred
         if (event.getType().equals(Lifecycle.START_EVENT)) {
             start();
-        } else if (event.getType().equals(StandardContext.BEFORE_START_EVENT)) {
+        } else if (event.getType().equals(Lifecycle.BEFORE_START_EVENT)) {
             beforeStart();
-        } else if (event.getType().equals(StandardContext.AFTER_START_EVENT)) {
+        } else if (event.getType().equals(Lifecycle.AFTER_START_EVENT)) {
             // Restore docBase for management tools
             if (originalDocBase != null) {
                 String docBase = context.getDocBase();
