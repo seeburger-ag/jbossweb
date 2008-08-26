@@ -19,9 +19,9 @@
 package org.apache.catalina.connector;
 
 
-import java.io.InputStream;
-import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
@@ -45,17 +45,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.tomcat.util.buf.B2CConverter;
-import org.apache.tomcat.util.buf.MessageBytes;
-import org.apache.tomcat.util.buf.StringCache;
-import org.apache.tomcat.util.http.Cookies;
-import org.apache.tomcat.util.http.FastHttpDateFormat;
-import org.apache.tomcat.util.http.Parameters;
-import org.apache.tomcat.util.http.ServerCookie;
-import org.apache.tomcat.util.http.mapper.MappingData;
-
-import org.apache.coyote.ActionCode;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
@@ -71,6 +60,16 @@ import org.apache.catalina.util.ParameterMap;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.StringParser;
+import org.apache.coyote.ActionCode;
+import org.apache.tomcat.util.buf.B2CConverter;
+import org.apache.tomcat.util.buf.MessageBytes;
+import org.apache.tomcat.util.buf.StringCache;
+import org.apache.tomcat.util.http.Cookies;
+import org.apache.tomcat.util.http.FastHttpDateFormat;
+import org.apache.tomcat.util.http.Parameters;
+import org.apache.tomcat.util.http.ServerCookie;
+import org.apache.tomcat.util.http.TomcatCookie;
+import org.apache.tomcat.util.http.mapper.MappingData;
 
 
 /**
@@ -2374,7 +2373,7 @@ public class Request
         if ( (session != null) && (getContext() != null)
                && getContext().getCookies()
                && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(getRequestedSessionId()))) ) {
-            Cookie cookie = new Cookie(Globals.SESSION_COOKIE_NAME,
+            TomcatCookie cookie = new TomcatCookie(Globals.SESSION_COOKIE_NAME,
                     session.getIdInternal());
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
@@ -2394,7 +2393,7 @@ public class Request
      *
      * @param cookie The JSESSIONID cookie to be configured
      */
-    protected void configureSessionCookie(Cookie cookie) {
+    protected void configureSessionCookie(TomcatCookie cookie) {
         cookie.setMaxAge(-1);
         if (context.getSessionCookie().getPath() != null) {
             cookie.setPath(context.getSessionCookie().getPath());
@@ -2412,7 +2411,7 @@ public class Request
             cookie.setDomain(context.getSessionCookie().getDomain());
         }
         if (context.getSessionCookie().isHttpOnly()) {
-            // FIXME: in Servlet 3.0
+            cookie.setHttpOnly(true);
         }
         if (context.getSessionCookie().isSecure()) {
             cookie.setSecure(true);
