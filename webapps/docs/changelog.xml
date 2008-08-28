@@ -60,15 +60,9 @@
   </subsection>
   <subsection name="Jasper">
     <changelog>
-      <fix>
-        <bug>45511</bug>: New EL fix for 42565. (markt)
-      </fix>
       <add>
         <jira>108</jira>: Experimental support for JCI. (remm)
       </add>
-      <fix>
-        Revert to EL from CR5, due to regressions. (remm)
-      </fix>
     </changelog>
   </subsection>
 </section>
