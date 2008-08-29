@@ -17,6 +17,13 @@
 <body>
 
 <section name="JBoss Web 2.1.1.CR6 (remm)">
+  <subsection name="General">
+    <changelog>
+      <update>
+        NSIS 2.39. (remm)
+      </update>
+    </changelog>
+  </subsection>
   <subsection name="Catalina">
     <changelog>
       <fix>
