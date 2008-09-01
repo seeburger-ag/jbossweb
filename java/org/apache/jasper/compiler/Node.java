@@ -17,10 +17,10 @@
 
 package org.apache.jasper.compiler;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-import java.util.ArrayList;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -39,6 +39,7 @@ import javax.servlet.jsp.tagext.TagVariableInfo;
 import javax.servlet.jsp.tagext.TryCatchFinally;
 import javax.servlet.jsp.tagext.VariableInfo;
 
+import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.compiler.tagplugin.TagPluginContext;
 import org.xml.sax.Attributes;
@@ -470,6 +471,11 @@ abstract class Node implements TagConstants {
         private boolean isBomPresent;
 
         /*
+         * Sequence number for temporary variables.
+         */
+        private int tempSequenceNumber = 0;
+
+        /*
          * Constructor.
          */
         Root(Mark start, Node parent, boolean isXmlSyntax) {
@@ -547,6 +553,18 @@ abstract class Node implements TagConstants {
          */
         public Root getParentRoot() {
             return parentRoot;
+        }
+
+        /**
+         * Generates a new temporary variable name.
+         */
+        public String nextTemporaryVariableName() {
+            if (parentRoot == null) {
+                return Constants.TEMP_VARIABLE_NAME_PREFIX + (tempSequenceNumber++);
+            } else {
+                return parentRoot.nextTemporaryVariableName();
+            }
+            
         }
     }
 
@@ -1866,7 +1884,7 @@ abstract class Node implements TagConstants {
 
             super(qName, ATTRIBUTE_ACTION, attrs, nonTaglibXmlnsAttrs,
                     taglibAttrs, start, parent);
-            temporaryVariableName = JspUtil.nextTemporaryVariableName();
+            temporaryVariableName = getRoot().nextTemporaryVariableName();
             if ("false".equals(this.getAttributeValue("trim"))) {
                 // (if null or true, leave default of true)
                 trim = false;
