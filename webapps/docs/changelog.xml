@@ -16,6 +16,22 @@
 
 <body>
 
+<section name="JBoss Web 2.1.1.CR7 (remm)">
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        Sync with EL from Tomcat, to fix a number of complex expressions. (remm)
+      </fix>
+      <fix>
+        <bug>45691</bug>: Fix possible duplicates variable names. (markt)
+      </fix>
+      <fix>
+        <bug>45666</bug>: Fir infinite loop on include. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.1.CR6 (remm)">
   <subsection name="General">
     <changelog>
