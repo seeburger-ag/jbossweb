@@ -4238,8 +4238,6 @@ public class StandardContext
         // Binding thread
         ClassLoader oldCCL = bindThread();
 
-        boolean mainOk = false;
-
         try {
 
             if (ok) {
@@ -4294,12 +4292,7 @@ public class StandardContext
                 Manager contextManager = null;
                 if (manager == null) {
                     if ( (getCluster() != null) && distributable) {
-                        try {
-                            contextManager = getCluster().createManager(getName());
-                        } catch (Exception ex) {
-                            log.error("standardContext.clusterFail", ex);
-                            ok = false;
-                        }
+                        contextManager = getCluster().createManager(getName());
                     } else {
                         contextManager = new StandardManager();
                     }
@@ -4316,22 +4309,18 @@ public class StandardContext
                     getCluster().registerManager(manager);
                 }
 
-                mainOk = true;
-
             }
 
+        } catch (Throwable t) {
+            // This can happen in rare cases with custom components
+            ok = false;
+            log.error(sm.getString("standardContext.startFailed", getName()), t);
         } finally {
             // Unbinding thread
             unbindThread(oldCCL);
-            if (!mainOk) {
-                // An exception occurred
-                // Register with JMX anyway, to allow management
-                registerJMX();
-            }
         }
 
         if (!getConfigured()) {
-            log.error( "Error getConfigured");
             ok = false;
         }
 

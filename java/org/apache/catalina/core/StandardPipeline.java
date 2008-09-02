@@ -214,9 +214,11 @@ public class StandardPipeline
     public synchronized void start() throws LifecycleException {
 
         // Validate and update our current component state
-        if (started)
-            throw new LifecycleException
-                (sm.getString("standardPipeline.alreadyStarted"));
+        if (started) {
+            if(log.isDebugEnabled())
+                log.debug(sm.getString("standardPipeline.alreadyStarted"));
+            return;
+        }
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
@@ -253,9 +255,11 @@ public class StandardPipeline
     public synchronized void stop() throws LifecycleException {
 
         // Validate and update our current component state
-        if (!started)
-            throw new LifecycleException
-                (sm.getString("standardPipeline.notStarted"));
+        if (!started) {
+            if(log.isDebugEnabled())
+                log.debug(sm.getString("standardPipeline.notStarted"));
+            return;
+        }
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(BEFORE_STOP_EVENT, null);

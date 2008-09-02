@@ -17,7 +17,15 @@
 <body>
 
 <section name="JBoss Web 2.1.1.CR7 (remm)">
-  <subsection name="Jasper">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <jboss-jira>JBAS-5917</jboss-jira>: Fix error handling starting one of the core components, 
+        and harmonize lifecycle checks of StandardPipeline zith the other components. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+ <subsection name="Jasper">
     <changelog>
       <fix>
         Sync with EL from Tomcat, to fix a number of complex expressions. (remm)
