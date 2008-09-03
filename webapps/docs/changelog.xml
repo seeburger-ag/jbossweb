@@ -21,11 +21,21 @@
     <changelog>
       <fix>
         <jboss-jira>JBAS-5917</jboss-jira>: Fix error handling starting one of the core components, 
-        and harmonize lifecycle checks of StandardPipeline zith the other components. (remm)
+        and harmonize lifecycle checks of StandardPipeline with the other components. (remm)
+      </fix>
+      <fix>
+        <bug>45628</bug>: JARs without deps should always be fulfilled. (markt)
       </fix>
     </changelog>
   </subsection>
- <subsection name="Jasper">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        Fix a rare problem identifying AJP body packets that should be dropped. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
     <changelog>
       <fix>
         Sync with EL from Tomcat, to fix a number of complex expressions. (remm)
