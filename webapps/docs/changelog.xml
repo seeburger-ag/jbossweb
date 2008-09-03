@@ -24,7 +24,10 @@
         and harmonize lifecycle checks of StandardPipeline with the other components. (remm)
       </fix>
       <fix>
-        <bug>45628</bug>: JARs without deps should always be fulfilled. (markt)
+        <bug>45628</bug>: JARs without dependencies should always be fulfilled. (markt)
+      </fix>
+      <fix>
+        <bug>45735</bug>: More consistent getETag. (remm)
       </fix>
     </changelog>
   </subsection>
