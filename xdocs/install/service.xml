@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="service.html">
+    &project;
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>Windows service</title>
+  </properties>
+
+  <body>
+    <section name="Overview">
+      <br/>
+      <p>JBoss Web comes with Windows service executable that can run JBoss Web Server
+      as service.
+      </p>
+      <p>The service executable <code>jbosssvc.exe</code> transforms the <code>run.bat</code>
+      and <code>shutdown.bat</code> batch scripts to services. This means that any change
+      made to those scripts will be used both in service and command line mode.
+      </p>
+      <subsection name="Installing service">
+         <p>To install the JBoss Web server as Windows service use the provided
+         <code>service.bat</code> batch file
+         </p>
+         <screen>
+           <note>Change directory to the JBossWeb bin directory</note>
+           <typedos>cd c:\jbossweb-4.0.4RC1-windows-i586\bin</typedos>
+           <note>Install the service</note>
+           <typedos>service.bat install</typedos>
+        </screen>
+      </subsection>
+
+      <subsection name="Starting the service">
+         <p>To start the JBoss Web server as Windows service use Control pannel or
+         <code>net start</code> command.
+         </p>
+         <screen>
+           <note>Start the service</note>
+           <typedos>net start JBossWebServer</typedos>
+           <note>The JBoss Web Server 4 service is starting.</note>
+           <note>The JBoss Web Server 4 service was started successfully.</note>
+        </screen>
+        <p>When running in service mode the console output is redirected to the
+        file <code>run.log</code>. You can inspect the file for any errors during
+        service startup.
+        </p>
+      </subsection>
+
+      <subsection name="Stopping the service">
+         <p>To stop the JBoss Web server as Windows service use Control pannel or
+         <code>net stop</code> command.
+         </p>
+         <screen>
+           <note>Stop the service</note>
+           <typedos>net stop JBossWebServer</typedos>
+           <note>The JBoss Web Server 4 service was stopped successfully.</note>
+        </screen>
+        <p>When running in service mode the console output is redirected to the
+        file <code>shutdown.log</code>. You can inspect the file for any errors during
+        service shutdown.
+        </p>
+      </subsection>
+
+      <subsection name="Restarting the service">
+         <p>To restart the JBoss Web server as Windows service use Control pannel.
+         </p>
+      </subsection>
+
+      <subsection name="Removing service">
+         <p>To remove the JBoss Web server as Windows service use the provided
+         <code>service.bat</code> batch file.
+         </p>
+         <screen>
+           <note>Change directory to the JBossWeb bin directory</note>
+           <typedos>cd c:\jbossweb-4.0.4RC1-windows-i586\bin</typedos>
+           <note>Remove the service</note>
+           <typedos>service.bat uninstall</typedos>
+        </screen>
+      </subsection>
+
+    </section>
+    <section name="Customization">
+      <br/>
+      <p>Service customization is done by editing the service.bat script.
+      Each command has a separate section that you can customize. The most
+      common customization task would be changing service names if more then
+      one service instances per box are required.
+      </p>
+    </section>
+  </body>
+</document>
