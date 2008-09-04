@@ -29,6 +29,12 @@
       <fix>
         <bug>45735</bug>: More consistent getETag. (remm)
       </fix>
+      <fix>
+        Better logging of security exceptions reading logging configuration. (rjung)
+      </fix>
+      <add>
+        Add a special CombinedRealm which can aggregate authentication from multiple realms. (markt)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Coyote">
