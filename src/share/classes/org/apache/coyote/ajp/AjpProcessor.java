@@ -997,6 +997,15 @@ public class AjpProcessor implements ActionHook {
         // Add the end message
         output.write(endMessageArray);
 
+
+        // read remaining data from the special first-body-chunk
+        if (first && request.getContentLength() > 0) {
+            try {
+                receive();
+            } catch (IOException e) {
+            } 
+        }
+
     }
 
 
