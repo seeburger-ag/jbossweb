@@ -40,7 +40,7 @@
   <subsection name="Coyote">
     <changelog>
       <fix>
-        Fix a rare problem identifying AJP body packets that should be dropped. (remm)
+        Fix a rare problem identifying AJP body packets that should be dropped. (jfclere)
       </fix>
     </changelog>
   </subsection>
