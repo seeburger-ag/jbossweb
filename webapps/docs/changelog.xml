@@ -47,13 +47,16 @@
   <subsection name="Jasper">
     <changelog>
       <fix>
-        Sync with EL from Tomcat, to fix a number of complex expressions. (remm)
+        Sync with EL parser from Tomcat, to fix a number of complex expressions. (remm)
       </fix>
       <fix>
         <bug>45691</bug>: Fix possible duplicates variable names. (markt)
       </fix>
       <fix>
         <bug>45666</bug>: Fir infinite loop on include. (markt)
+      </fix>
+      <fix>
+        Rebuild EL parser with JavaCC 4.1. (remm)
       </fix>
     </changelog>
   </subsection>

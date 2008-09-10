@@ -32,6 +32,7 @@ options
     JAVA_UNICODE_ESCAPE=false;
     UNICODE_INPUT=true;
     BUILD_NODE_FILES=true;
+    LOOKAHEAD=3;
 }
 
 /* == Parser Declaration == */

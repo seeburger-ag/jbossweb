@@ -117,4 +117,11 @@ The documentation can be easily built:
     cd ${jboss-web.source}
     ant -f dist.xml release
 
+(7) Building EL parser with JavaCC 4.1+:
 
+    Download JavaCC 4.1+
+    export JAVACC_HOME=/somepath/javacc-4.1
+    export PATH=$JAVACC_HOME/bin:$PATH
+    cd java/org/apache/el/parser
+    jjtree ELParser.jjt
+    javacc ELParser.jj
