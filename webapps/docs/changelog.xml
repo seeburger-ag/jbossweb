@@ -16,6 +16,22 @@
 
 <body>
 
+<section name="JBoss Web 2.1.1.GA (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <bug>45785</bug>: Add a check in the loader in addition to the fix for JBAS-4965. (markt)
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.1.CR7 (remm)">
   <subsection name="Catalina">
     <changelog>
