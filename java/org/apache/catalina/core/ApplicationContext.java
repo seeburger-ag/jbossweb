@@ -327,7 +327,7 @@ public class ApplicationContext
         if (wrapper == null)
             return (null);
         
-        return new ApplicationDispatcher(wrapper, null, null, null, null, name);
+        return new ApplicationDispatcher(wrapper, null, null, null, null, null, name);
 
     }
 
@@ -429,6 +429,7 @@ public class ApplicationContext
         }
 
         Wrapper wrapper = (Wrapper) mappingData.wrapper;
+        String requestPath = mappingData.requestPath.toString();
         String wrapperPath = mappingData.wrapperPath.toString();
         String pathInfo = mappingData.pathInfo.toString();
 
@@ -436,7 +437,7 @@ public class ApplicationContext
         
         // Construct a RequestDispatcher to process this request
         return new ApplicationDispatcher
-            (wrapper, uriCC.toString(), wrapperPath, pathInfo, 
+            (wrapper, uriCC.toString(), requestPath, wrapperPath, pathInfo, 
              queryString, null);
 
     }

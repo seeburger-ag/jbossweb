@@ -162,6 +162,7 @@ final class ApplicationDispatcher
      * @param wrapper The Wrapper associated with the resource that will
      *  be forwarded to or included (required)
      * @param requestURI The request URI to this resource (if any)
+     * @param requestPath The revised path to this resource, relative to the context (if any)
      * @param servletPath The revised servlet path to this resource (if any)
      * @param pathInfo The revised extra path information to this resource
      *  (if any)
@@ -171,7 +172,7 @@ final class ApplicationDispatcher
      *  else <code>null</code>
      */
     public ApplicationDispatcher
-        (Wrapper wrapper, String requestURI, String servletPath,
+        (Wrapper wrapper, String requestURI, String requestPath, String servletPath,
          String pathInfo, String queryString, String name) {
 
         super();
@@ -180,6 +181,7 @@ final class ApplicationDispatcher
         this.wrapper = wrapper;
         this.context = (Context) wrapper.getParent();
         this.requestURI = requestURI;
+        this.requestPath = requestPath;
         this.servletPath = servletPath;
         this.pathInfo = pathInfo;
         this.queryString = queryString;
@@ -223,6 +225,12 @@ final class ApplicationDispatcher
      * The query string parameters for this RequestDispatcher.
      */
     private String queryString = null;
+
+
+    /**
+     * The request path for this RequestDispatcher.
+     */
+    private String requestPath = null;
 
 
     /**
@@ -429,7 +437,7 @@ final class ApplicationDispatcher
             if (disInt.intValue() != ApplicationFilterFactory.ERROR) {
                 state.outerRequest.setAttribute
                     (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-                     servletPath);
+                     requestPath);
                 state.outerRequest.setAttribute
                     (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
                      Integer.valueOf(ApplicationFilterFactory.FORWARD));
@@ -499,7 +507,7 @@ final class ApplicationDispatcher
                     Integer.valueOf(ApplicationFilterFactory.INCLUDE));
             wrequest.setAttribute(
                     ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-                    servletPath);
+                    requestPath);
             invoke(state.outerRequest, state.outerResponse, state);
         }
 
@@ -531,7 +539,7 @@ final class ApplicationDispatcher
                     Integer.valueOf(ApplicationFilterFactory.INCLUDE));
             wrequest.setAttribute(
                     ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-                    servletPath);
+                    requestPath);
             invoke(state.outerRequest, state.outerResponse, state);
         }
 

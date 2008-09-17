@@ -19,7 +19,15 @@
 <section name="JBoss Web 2.1.1.GA (remm)">
   <subsection name="Catalina">
     <changelog>
-      <bug>45785</bug>: Add a check in the loader in addition to the fix for JBAS-4965. (markt)
+      <fix>
+        <bug>45785</bug>: Add a check in the loader in addition to the fix for JBAS-4965. (markt)
+      </fix>
+      <fix>
+        <bug>45823</bug>: Log missing request headers as - not null. Based on a patch by Per Landberg. (markt)
+      </fix>
+      <fix>
+        <bug>45441</bug>: Correctly map filters for FORWARD and INCLUDE. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
