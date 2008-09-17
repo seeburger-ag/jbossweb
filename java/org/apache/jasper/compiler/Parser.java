@@ -771,9 +771,9 @@ class Parser implements TagConstants {
             }
             if (currentChar == -1)
                 err.jspError(start, "jsp.error.unterminated", type + "{");
-            if (currentChar == '"')
+            if (currentChar == '"' && !singleQuoted)
                 doubleQuoted = !doubleQuoted;
-            if (currentChar == '\'')
+            if (currentChar == '\'' && !doubleQuoted)
                 singleQuoted = !singleQuoted;
         } while (currentChar != '}' || (singleQuoted || doubleQuoted));
 

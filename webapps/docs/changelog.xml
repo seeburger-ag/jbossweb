@@ -36,6 +36,9 @@
   </subsection>
   <subsection name="Jasper">
     <changelog>
+      <fix>
+        <bug>45427</bug>: Correct parsing of quoted stings in EL. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
