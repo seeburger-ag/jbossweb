@@ -28,6 +28,9 @@
       <fix>
         <bug>45441</bug>: Correctly map filters for FORWARD and INCLUDE. (remm)
       </fix>
+      <fix>
+        <bug>45419</bug>: Set Accept-Ranges for static resources served by DefaultServlet. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

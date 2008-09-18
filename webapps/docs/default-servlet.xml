@@ -144,6 +144,11 @@ directory listings are enabled and debugging is turned off.
         to always disable sendfile. [48]</p>
     </attribute>
 
+    <attribute name="useAcceptRanges" required="false">
+      <p>If true, the Accept-Ranges header will be set when appropriate for the
+        response. [true]</p>
+    </attribute>
+
   </attributes>
 
 </section>
