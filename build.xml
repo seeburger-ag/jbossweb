@@ -50,6 +50,7 @@
   <property name="catalina-ant.jar" value="${tomcat.build}/lib/catalina-ant.jar"/>
   <property name="catalina-optional.jar" value="${tomcat.build}/lib/catalina-optional.jar"/>
   <property name="tomcat-coyote.jar" value="${tomcat.build}/lib/tomcat-coyote.jar"/>
+  <property name="tomcat-bayeux.jar" value="${tomcat.build}/lib/tomcat-bayeux.jar"/>
 
   <property name="jasper.jar" value="${tomcat.build}/lib/jasper.jar"/>
   <property name="jasper-el.jar" value="${tomcat.build}/lib/jasper-el.jar"/>
@@ -243,6 +244,17 @@
         <include name="org/apache/coyote/**" />
         <include name="org/apache/tomcat/jni/**" />
         <include name="org/apache/tomcat/util/**" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+    <!-- Bayeux -->
+    <jar jarfile="${tomcat-bayeux.jar}">
+      <fileset dir="${tomcat.classes}">
+        <include name="org/apache/cometd/**" />
+        <include name="org/apache/tomcat/bayeux/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
         <exclude name="**/LocalStrings_*" />
@@ -574,9 +586,11 @@
         <include name="org/apache/naming/**" />
         <include name="org/apache/comet/**" />
         <include name="org/apache/coyote/**" />
+        <include name="org/apache/tomcat/bayeux/**" />
         <include name="org/apache/tomcat/jni/**" />
         <include name="org/apache/tomcat/util/**" />
         <include name="org/apache/jasper/**" />
+        <include name="org/apache/cometd/bayeux/**" />
         <include name="org/apache/el/**" />
         <include name="org/jboss/servlet/**" />
         <include name="org/jboss/web/**" />
@@ -694,6 +708,13 @@
       <param name="basedir" value="${tomcat-dbcp.home}" />
       <param name="destfile" value="${tomcat-dbcp.jar}" />
     </antcall>
+
+    <!-- Download json libraries
+    <antcall target="downloadfile">
+      <param name="sourcefile" value="${json-lib.loc}"/>
+      <param name="destfile" value="${json-lib.jar}"/>
+      <param name="destdir" value="${json-lib.home}"/>
+    </antcall> -->
 
     <!-- Build Jasper JDT bundle -->
     <antcall target="downloadzip">

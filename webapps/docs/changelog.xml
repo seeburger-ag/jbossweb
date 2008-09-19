@@ -31,10 +31,16 @@
       <fix>
         <bug>45419</bug>: Set Accept-Ranges for static resources served by DefaultServlet. (markt)
       </fix>
+      <add>
+        Bayeux support using a BayeuxServlet written as an event driven servlet. (remm, fhanik)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Coyote">
     <changelog>
+      <add>
+        Package renamed JSON library. (remm)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Jasper">

@@ -49,6 +49,9 @@
   <!--   readmeFile          File name to display with the directory        -->
   <!--                       contents. [null]                               -->
   <!--                                                                      -->
+  <!--   useAcceptRanges     Should the Accept-Ranges header be included    -->
+  <!--                       in responses where appropriate? [true]         -->
+  <!--                                                                      -->
   <!--   sendfileSize        If the connector used supports sendfile, this  -->
   <!--                       represents the minimal file size in KB for     -->
   <!--                       which sendfile will be used. Use a negative    -->
