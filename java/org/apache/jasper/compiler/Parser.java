@@ -27,7 +27,6 @@ import javax.servlet.jsp.tagext.TagFileInfo;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 
-import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.xml.sax.Attributes;
@@ -264,18 +263,19 @@ class Parser implements TagConstants {
     private String parseQuoted(Mark start, String tx, char quote)
     throws JasperException {
         StringBuffer buf = new StringBuffer();
+        boolean possibleEL = tx.contains("${");
         int size = tx.length();
         int i = 0;
         while (i < size) {
             char ch = tx.charAt(i);
             if (ch == '&') {
                 if (i + 5 < size && tx.charAt(i + 1) == 'a'
-                        && tx.charAt(i + 2) == 'p' && tx.charAt(i + 3) == 'o'
+                    && tx.charAt(i + 2) == 'p' && tx.charAt(i + 3) == 'o'
                         && tx.charAt(i + 4) == 's' && tx.charAt(i + 5) == ';') {
                     buf.append('\'');
                     i += 6;
                 } else if (i + 5 < size && tx.charAt(i + 1) == 'q'
-                        && tx.charAt(i + 2) == 'u' && tx.charAt(i + 3) == 'o'
+                    && tx.charAt(i + 2) == 'u' && tx.charAt(i + 3) == 'o'
                         && tx.charAt(i + 4) == 't' && tx.charAt(i + 5) == ';') {
                     buf.append('"');
                     i += 6;
@@ -285,12 +285,21 @@ class Parser implements TagConstants {
                 }
             } else if (ch == '\\' && i + 1 < size) {
                 ch = tx.charAt(i + 1);
-                if (ch == '\\' || ch == '\"' || ch == '\'' || ch == '>') {
+                if (ch == '\\' || ch == '\"' || ch == '\'') {
+                    if (pageInfo.isELIgnored() || !possibleEL) {
+                        // EL is not enabled or no chance of EL
+                        // Unescape these now
+                        buf.append(ch);
+                        i += 2;
+                    } else {
+                        // EL is enabled and ${ appears in value
+                        // EL processing will escape these
+                        buf.append('\\');
+                        buf.append(ch);
+                        i += 2;
+                    }
+                } else if (ch == '>') {
                     buf.append(ch);
-                    i += 2;
-                } else if (ch == '$') {
-                    // Replace "\$" with some special char. XXX hack!
-                    buf.append(Constants.ESC);
                     i += 2;
                 } else {
                     buf.append('\\');

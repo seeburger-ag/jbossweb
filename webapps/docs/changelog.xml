@@ -54,6 +54,11 @@
       <fix>
         Fix bad EL exception cast. (rjung)
       </fix>
+      <fix>
+        <bug>45451</bug>: Testing for this threw up all sorts of other failures around use of \${...} These 
+        should all now be fixed. The two pass parsing means we can do away with the previous 'replace with 
+        unused unicode character' trick. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

@@ -1337,7 +1337,6 @@ class Validator {
                         }
 
                     } else {
-                        value = value.replace(Constants.ESC, '$');
                         result = new Node.JspAttribute(tai, qName, uri,
                                 localName, value, false, null, dynamic);
                     }
@@ -1692,16 +1691,14 @@ class Validator {
         }
     }
 
-    public static void validate(Compiler compiler, Node.Nodes page)
-            throws JasperException {
-
-        /*
-         * Visit the page/tag directives first, as they are global to the page
-         * and are position independent.
-         */
+    public static void validateDirectives(Compiler compiler, Node.Nodes page)
+    throws JasperException {
         page.visit(new DirectiveVisitor(compiler));
+    }
 
-        // Determine the default output content type
+    public static void validateExDirectives(Compiler compiler, Node.Nodes page)
+    throws JasperException {
+//      Determine the default output content type
         PageInfo pageInfo = compiler.getPageInfo();
         String contentType = pageInfo.getContentType();
 
