@@ -48,6 +48,12 @@
       <fix>
         <bug>45427</bug>: Correct parsing of quoted stings in EL. (markt)
       </fix>
+      <fix>
+        Optimize EL parser lookahead. (markt)
+      </fix>
+      <fix>
+        Fix bad EL exception cast. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>

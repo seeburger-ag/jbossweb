@@ -122,6 +122,6 @@ The documentation can be easily built:
     Download JavaCC 4.1+
     export JAVACC_HOME=/somepath/javacc-4.1
     export PATH=$JAVACC_HOME/bin:$PATH
-    cd java/org/apache/el/parser
+    cd ${jboss-web.source}/java/org/apache/el/parser
     jjtree ELParser.jjt
     javacc ELParser.jj
