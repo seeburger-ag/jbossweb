@@ -34,6 +34,9 @@
       <add>
         Bayeux support using a BayeuxServlet written as an event driven servlet. (remm, fhanik)
       </add>
+      <add>
+        LockOutRealm to lock out users after a number of failed authentication attempts. (markt)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Coyote">

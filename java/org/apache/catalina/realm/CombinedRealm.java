@@ -23,6 +23,8 @@ import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.management.ObjectName;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
@@ -33,7 +35,8 @@ import org.jboss.logging.Logger;
 /**
  * Realm implementation that contains one or more realms. Authentication is
  * attempted for each realm in the order they were configured. If any realm
- * authenticates the user then the authentication succeeds.
+ * authenticates the user then the authentication succeeds. When combining
+ * realms usernames should be unique across all combined realms.
  */
 public class CombinedRealm extends RealmBase {
 
@@ -62,6 +65,21 @@ public class CombinedRealm extends RealmBase {
             sm.getString("combinedRealm.addRealm", theRealm.getInfo(), 
                     Integer.toString(realms.size()));
         }
+    }
+
+
+    /**
+     * Return the set of Realms that this Realm is wrapping
+     */
+    public ObjectName[] getRealms() {
+        ObjectName[] result = new ObjectName[realms.size()];
+        for (Realm realm : realms) {
+            if (realm instanceof RealmBase) {
+                result[realms.indexOf(realm)] =
+                    ((RealmBase) realm).getObjectName();
+            }
+        }
+        return result;
     }
 
 
@@ -178,8 +196,14 @@ public class CombinedRealm extends RealmBase {
      * @param container The associated Container
      */
     public void setContainer(Container container) {
-        // Set the container for sub-realms. Mainly so logging works.
         for(Realm realm : realms) {
+            // Set the realmPath for JMX naming
+            if (realm instanceof RealmBase) {
+                ((RealmBase) realm).setRealmPath(
+                        getRealmPath() + "/realm" + realms.indexOf(realm));
+            }
+            
+            // Set the container for sub-realms. Mainly so logging works.
             realm.setContainer(container);
         }
         super.setContainer(container);
