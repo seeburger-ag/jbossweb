@@ -115,6 +115,7 @@ Section "Core" SecJBossWebCore
   SetOutPath $INSTDIR
   File jboss-web.ico
   File LICENSE
+  File NOTICE
   SetOutPath $INSTDIR\lib
   File /r lib\*.*
   SetOutPath $INSTDIR\logs
@@ -598,6 +599,7 @@ Section Uninstall
   RMDir /r "$SMPROGRAMS\JBoss Web 2.1"
   Delete "$INSTDIR\jboss-web.ico"
   Delete "$INSTDIR\LICENSE"
+  Delete "$INSTDIR\NOTICE"
   RMDir /r "$INSTDIR\bin"
   RMDir /r "$INSTDIR\lib"
   Delete "$INSTDIR\conf\*.dtd"

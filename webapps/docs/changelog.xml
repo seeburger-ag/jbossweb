@@ -62,6 +62,9 @@
         should all now be fixed. The two pass parsing means we can do away with the previous 'replace with 
         unused unicode character' trick. (markt)
       </fix>
+      <fix>
+        Remove unused code in ELSupport. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Others">
