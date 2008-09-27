@@ -37,6 +37,12 @@
       <add>
         LockOutRealm to lock out users after a number of failed authentication attempts. (markt)
       </add>
+      <fix>
+        Fix SSI HTML replacement bug. (markt)
+      </fix>
+      <fix>
+        Tighten up the max size for content caching (which is often useless due to sendfile). (markt, remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -44,6 +50,10 @@
       <add>
         Package renamed JSON library. (remm)
       </add>
+      <fix>
+        IntrospectionUtils.replaceProperties should return the original String if no substitutions are
+        needed. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
@@ -64,6 +74,9 @@
       </fix>
       <fix>
         Remove unused code in ELSupport. (markt)
+      </fix>
+      <fix>
+        Ascii parsing bug. (markt)
       </fix>
     </changelog>
   </subsection>

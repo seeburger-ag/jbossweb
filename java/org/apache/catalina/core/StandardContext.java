@@ -244,7 +244,7 @@ public class StandardContext
     /**
      * The broadcaster that sends j2ee notifications. 
      */
-    private NotificationBroadcasterSupport broadcaster = null;
+    private transient NotificationBroadcasterSupport broadcaster = null;
     
     /**
      * The Locale to character set mapper for this application.
@@ -401,7 +401,7 @@ public class StandardContext
     /**
      * The mapper associated with this context.
      */
-    private org.apache.tomcat.util.http.mapper.Mapper mapper = 
+    private transient org.apache.tomcat.util.http.mapper.Mapper mapper = 
         new org.apache.tomcat.util.http.mapper.Mapper();
 
 
@@ -640,6 +640,12 @@ public class StandardContext
 
 
     /**
+     * Cache object max size in KB.
+     */
+    protected int cacheObjectMaxSize = 256; // 256K
+
+
+    /**
      * Cache TTL in ms.
      */
     protected int cacheTTL = 5000;
@@ -799,6 +805,22 @@ public class StandardContext
      */
     public void setCacheMaxSize(int cacheMaxSize) {
         this.cacheMaxSize = cacheMaxSize;
+    }
+
+
+    /**
+     * Return the maximum size of objects to be cached in KB.
+     */
+    public int getCacheObjectMaxSize() {
+        return cacheObjectMaxSize;
+    }
+
+
+    /**
+     * Set the maximum size of objects to be placed the cache in KB.
+     */
+    public void setCacheObjectMaxSize(int cacheObjectMaxSize) {
+        this.cacheObjectMaxSize = cacheObjectMaxSize;
     }
 
 
@@ -1896,6 +1918,7 @@ public class StandardContext
             ((BaseDirContext) resources).setCached(isCachingAllowed());
             ((BaseDirContext) resources).setCacheTTL(getCacheTTL());
             ((BaseDirContext) resources).setCacheMaxSize(getCacheMaxSize());
+            ((BaseDirContext) resources).setCacheObjectMaxSize(getCacheObjectMaxSize());
         }
         if (resources instanceof FileDirContext) {
             filesystemBased = true;
