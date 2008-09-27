@@ -43,6 +43,9 @@
       <fix>
         Tighten up the max size for content caching (which is often useless due to sendfile). (markt, remm)
       </fix>
+      <fix>
+        Sync date format usage in SSI. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
