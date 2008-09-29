@@ -580,24 +580,6 @@ public class DefaultServlet
 
 
     /**
-     * Get the ETag associated with a file.
-     *
-     * @param resourceAttributes The resource information
-     */
-    protected String getETag(ResourceAttributes resourceAttributes) {
-        String result = null;
-        if ((result = resourceAttributes.getETag(true)) != null) {
-            return result;
-        } else if ((result = resourceAttributes.getETag()) != null) {
-            return result;
-        } else {
-            return "W/\"" + resourceAttributes.getContentLength() + "-"
-                + resourceAttributes.getLastModified() + "\"";
-        }
-    }
-
-
-    /**
      * URL rewriter.
      *
      * @param path Path which has to be rewiten
@@ -737,7 +719,7 @@ public class DefaultServlet
             ranges = parseRange(request, response, cacheEntry.attributes);
 
             // ETag header
-            response.setHeader("ETag", getETag(cacheEntry.attributes));
+            response.setHeader("ETag", cacheEntry.attributes.getETag());
 
             // Last-Modified header
             response.setHeader("Last-Modified",
@@ -983,7 +965,7 @@ public class DefaultServlet
                 ;
             }
 
-            String eTag = getETag(resourceAttributes);
+            String eTag = resourceAttributes.getETag();
             long lastModified = resourceAttributes.getLastModified();
 
             if (headerValueTime == (-1L)) {
@@ -1535,7 +1517,7 @@ public class DefaultServlet
                                  ResourceAttributes resourceAttributes)
         throws IOException {
 
-        String eTag = getETag(resourceAttributes);
+        String eTag = resourceAttributes.getETag();
         String headerValue = request.getHeader("If-Match");
         if (headerValue != null) {
             if (headerValue.indexOf('*') == -1) {
@@ -1591,6 +1573,7 @@ public class DefaultServlet
                     // The entity has not been modified since the date
                     // specified by the client. This is not an error case.
                     response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                    response.setHeader("ETag", resourceAttributes.getETag());
                     return false;
                 }
             }
@@ -1617,7 +1600,7 @@ public class DefaultServlet
                                      ResourceAttributes resourceAttributes)
         throws IOException {
 
-        String eTag = getETag(resourceAttributes);
+        String eTag = resourceAttributes.getETag();
         String headerValue = request.getHeader("If-None-Match");
         if (headerValue != null) {
 
@@ -1647,6 +1630,7 @@ public class DefaultServlet
                 if ( ("GET".equals(request.getMethod()))
                      || ("HEAD".equals(request.getMethod())) ) {
                     response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                    response.setHeader("ETag", eTag);
                     return false;
                 } else {
                     response.sendError

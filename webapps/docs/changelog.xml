@@ -46,6 +46,9 @@
       <fix>
         Sync date format usage in SSI. (markt)
       </fix>
+      <fix>
+        <bug>45906</bug>: Another ETag improvement. Patch provided by Chris Hubick. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
