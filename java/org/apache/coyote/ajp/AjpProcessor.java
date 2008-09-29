@@ -90,6 +90,16 @@ public class AjpProcessor implements ActionHook {
         responseHeaderMessage = new AjpMessage(packetSize);
         bodyMessage = new AjpMessage(packetSize);
         
+        // Set the get body message buffer
+        AjpMessage getBodyMessage = new AjpMessage(16);
+        getBodyMessage.reset();
+        getBodyMessage.appendByte(Constants.JK_AJP13_GET_BODY_CHUNK);
+        getBodyMessage.appendInt(packetSize - Constants.READ_HEAD_LEN);
+        getBodyMessage.end();
+        getBodyMessageArray = new byte[getBodyMessage.getLen()];
+        System.arraycopy(getBodyMessage.getBuffer(), 0, getBodyMessageArray, 
+                0, getBodyMessage.getLen());
+
         // Cause loading of HexUtils
         int foo = HexUtils.DEC[0];
 
@@ -240,7 +250,7 @@ public class AjpProcessor implements ActionHook {
     /**
      * Direct buffer used for sending right away a get body message.
      */
-    protected static final byte[] getBodyMessageArray;
+    protected final byte[] getBodyMessageArray;
 
 
     /**
@@ -264,17 +274,6 @@ public class AjpProcessor implements ActionHook {
 
 
     static {
-
-        // Set the get body message buffer
-
-        AjpMessage getBodyMessage = new AjpMessage(16);
-        getBodyMessage.reset();
-        getBodyMessage.appendByte(Constants.JK_AJP13_GET_BODY_CHUNK);
-        getBodyMessage.appendInt(Constants.MAX_READ_SIZE);
-        getBodyMessage.end();
-        getBodyMessageArray = new byte[getBodyMessage.getLen()];
-        System.arraycopy(getBodyMessage.getBuffer(), 0, getBodyMessageArray, 
-                0, getBodyMessage.getLen());
 
         // Set the read body message buffer
         AjpMessage pongMessage = new AjpMessage(16);
@@ -929,6 +928,10 @@ public class AjpProcessor implements ActionHook {
             message = HttpMessages.getMessage(response.getStatus());
         } else {
             message = message.replace('\n', ' ').replace('\r', ' ');
+        }
+        if (message == null) {
+            // Many httpd 2.x wants a non empty status message
+            message = Integer.toString(response.getStatus());
         }
         tmpMB.setString(message);
         responseHeaderMessage.appendBytes(tmpMB);

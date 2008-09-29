@@ -18,11 +18,13 @@
 package org.apache.tomcat.util.http;
 
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.text.FieldPosition;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.tomcat.util.buf.ByteChunk;
-import org.apache.tomcat.util.buf.DateTool;
 import org.apache.tomcat.util.buf.MessageBytes;
 
 
@@ -245,8 +247,10 @@ public class ServerCookie implements Serializable {
         }
     }
 
-    private static final String ancientDate =
-        DateTool.formatOldCookie(new Date(10000));
+    private final static DateFormat oldCookieFormat =
+        new SimpleDateFormat("EEE, dd-MMM-yyyy HH:mm:ss z", Locale.US);
+
+    private static final String ancientDate = oldCookieFormat.format(new Date(10000));
 
     // TODO RFC2965 fields also need to be passed
     public static void appendCookieValue( StringBuffer headerBuf,
@@ -293,14 +297,16 @@ public class ServerCookie implements Serializable {
                 // Wdy, DD-Mon-YY HH:MM:SS GMT ( Expires Netscape format )
                 buf.append ("; Expires=");
                 // To expire immediately we need to set the time in past
-                if (maxAge == 0)
+                if (maxAge == 0) {
                     buf.append( ancientDate );
-                else
-                    DateTool.formatOldCookie
+                } else {
+                    synchronized(oldCookieFormat) {
+                        oldCookieFormat.format
                         (new Date( System.currentTimeMillis() +
-                                   maxAge *1000L), buf,
-                         new FieldPosition(0));
-
+                                maxAge *1000L), buf,
+                                new FieldPosition(0));
+                    }
+                }
             } else {
                 buf.append ("; Max-Age=");
                 buf.append (maxAge);
