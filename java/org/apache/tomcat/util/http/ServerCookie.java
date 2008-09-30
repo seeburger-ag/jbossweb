@@ -23,6 +23,7 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
@@ -52,6 +53,19 @@ public class ServerCookie implements Serializable {
     private MessageBytes comment=MessageBytes.newInstance();
     private int maxAge = -1;
     private int version = 0;
+
+    // Other fields
+    private static final String OLD_COOKIE_PATTERN =
+        "EEE, dd-MMM-yyyy HH:mm:ss z";
+    private static final DateFormat OLD_COOKIE_FORMAT;
+    private static final String ancientDate;
+
+
+    static {
+        OLD_COOKIE_FORMAT = new SimpleDateFormat(OLD_COOKIE_PATTERN, Locale.US);
+        OLD_COOKIE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
+        ancientDate = OLD_COOKIE_FORMAT.format(new Date(10000));
+    }
 
     /**
      * If set to true, we parse cookies according to the servlet spec,
@@ -247,11 +261,6 @@ public class ServerCookie implements Serializable {
         }
     }
 
-    private final static DateFormat oldCookieFormat =
-        new SimpleDateFormat("EEE, dd-MMM-yyyy HH:mm:ss z", Locale.US);
-
-    private static final String ancientDate = oldCookieFormat.format(new Date(10000));
-
     // TODO RFC2965 fields also need to be passed
     public static void appendCookieValue( StringBuffer headerBuf,
                                           int version,
@@ -262,7 +271,7 @@ public class ServerCookie implements Serializable {
                                           String comment,
                                           int maxAge,
                                           boolean isSecure,
-                                          boolean httpOnly)
+                                          boolean isHttpOnly)
     {
         StringBuffer buf = new StringBuffer();
         // Servlet implementation checks name
@@ -297,16 +306,16 @@ public class ServerCookie implements Serializable {
                 // Wdy, DD-Mon-YY HH:MM:SS GMT ( Expires Netscape format )
                 buf.append ("; Expires=");
                 // To expire immediately we need to set the time in past
-                if (maxAge == 0) {
+                if (maxAge == 0)
                     buf.append( ancientDate );
-                } else {
-                    synchronized(oldCookieFormat) {
-                        oldCookieFormat.format
-                        (new Date( System.currentTimeMillis() +
-                                maxAge *1000L), buf,
-                                new FieldPosition(0));
+                else
+                    synchronized (OLD_COOKIE_FORMAT) {
+                        OLD_COOKIE_FORMAT.format(
+                                new Date(System.currentTimeMillis() +
+                                        maxAge*1000L),
+                                buf, new FieldPosition(0));
                     }
-                }
+
             } else {
                 buf.append ("; Max-Age=");
                 buf.append (maxAge);
@@ -325,14 +334,13 @@ public class ServerCookie implements Serializable {
 
         // Secure
         if (isSecure) {
-            buf.append ("; Secure");
+          buf.append ("; Secure");
         }
         
         // HttpOnly
-        if (httpOnly) {
-            buf.append ("; HttpOnly");
+        if (isHttpOnly) {
+            buf.append("; HttpOnly");
         }
-        
         headerBuf.append(buf);
     }
 
@@ -457,3 +465,4 @@ public class ServerCookie implements Serializable {
         bc.setEnd(dest);
     }
 }
+

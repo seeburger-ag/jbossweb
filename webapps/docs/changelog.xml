@@ -61,14 +61,14 @@
         needed. (remm)
       </fix>
       <fix>
-        Sync date format usage for old cookies. (remm)
-      </fix>
-      <fix>
         <bug>45026</bug>: AJP should not use an empty reason phrase, due to httpd 2 having a problem
         with that at the moment. (rjung)
       </fix>
       <fix>
         Allow AJP to read large body packets, up to the configured packet size. (remm)
+      </fix>
+      <fix>
+        Remote date tool class, since it has sync issues. (markt, remm)
       </fix>
     </changelog>
   </subsection>
