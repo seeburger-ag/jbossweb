@@ -49,6 +49,9 @@
       <fix>
         <bug>45906</bug>: Another ETag improvement. Patch provided by Chris Hubick. (remm)
       </fix>
+      <fix>
+        CGI servlet generics cleanup. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
