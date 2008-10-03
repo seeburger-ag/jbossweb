@@ -1,0 +1,7 @@
+Patched dropped
+
+http://svn.apache.org/viewvc?rev=701358&view=rev
+Some symlink fix (too many checks needed)
+
+http://svn.apache.org/viewvc?rev=701355&view=rev
+XML parser in webapp fix (significant refactoring, partial)
