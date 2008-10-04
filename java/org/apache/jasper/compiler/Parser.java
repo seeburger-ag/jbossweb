@@ -294,7 +294,8 @@ class Parser implements TagConstants {
                     } else {
                         // EL is enabled and ${ appears in value
                         // EL processing will escape these
-                        buf.append('\\');
+                        //FIXME: remm: I don't see how to do without unescaping right now
+                        //buf.append('\\');
                         buf.append(ch);
                         i += 2;
                     }
