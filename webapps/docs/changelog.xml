@@ -73,6 +73,9 @@
       <fix>
         Remote date tool class, since it has sync issues. (markt, remm)
       </fix>
+      <add>
+        Add AJP support for certificate chains. (billbarker)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Jasper">
@@ -96,6 +99,9 @@
       </fix>
       <fix>
         Ascii parsing bug. (markt)
+      </fix>
+      <fix>
+        Fix regression in Big* types handling. Patch provided by Nils Eckert. (markt)
       </fix>
     </changelog>
   </subsection>
