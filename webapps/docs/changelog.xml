@@ -52,6 +52,9 @@
       <fix>
         CGI servlet generics cleanup. (markt)
       </fix>
+      <fix>
+        Better nested context handling. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
