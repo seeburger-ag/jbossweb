@@ -79,6 +79,9 @@
       <add>
         Add AJP support for certificate chains. (billbarker)
       </add>
+      <fix>
+        Null out socket in java.io HTTP connector. (fhanik)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

@@ -235,7 +235,7 @@ public class ELSupport {
             if (number instanceof BigInteger) {
                 return new BigDecimal((BigInteger) number);
             }
-            return new BigDecimal(number.toString());
+            return new BigDecimal(number.doubleValue());
         }
         if (Byte.TYPE == type || Byte.class.equals(type)) {
             return new Byte(number.byteValue());
