@@ -202,10 +202,10 @@ public class Substitution {
                             ((ServerVariableEnvElement) newElement).key = sub.substring(colon + 1, close);
                         } else if (type.equals("SSL")) {
                             newElement = new ServerVariableSslElement();
-                            ((ServerVariableEnvElement) newElement).key = sub.substring(colon + 1, close);
+                            ((ServerVariableSslElement) newElement).key = sub.substring(colon + 1, close);
                         } else if (type.equals("HTTP")) {
                             newElement = new ServerVariableHttpElement();
-                            ((ServerVariableEnvElement) newElement).key = sub.substring(colon + 1, close);
+                            ((ServerVariableHttpElement) newElement).key = sub.substring(colon + 1, close);
                         } else {
                             throw new IllegalArgumentException(sub + ": Bad type: " + type);
                         }
