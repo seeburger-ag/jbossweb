@@ -55,6 +55,9 @@
       <fix>
         Better nested context handling. (markt)
       </fix>
+      <fix>
+        The default annotation name should be based on the class in which the annotation was found. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

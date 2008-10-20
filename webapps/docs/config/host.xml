@@ -265,7 +265,7 @@
     <code>true</code> (which is the default value):</p>
     <ul>
     <li>Any XML file in the 
-        <code>$CATALINA_HOME/conf/[engine_name]/[host_name]</code> directory is
+        <code>$CATALINA_BASE/conf/[engine_name]/[host_name]</code> directory is
         assumed to contain a
         <a href="context.html">Context</a> element (and its associated
         subelements) for a single web application.  The <code>docBase</code>
@@ -279,20 +279,21 @@
         directory of the same name (without the ".war" extension) will be
         automatically expanded, unless the <code>unpackWARs</code> property
         is set to <code>false</code>.  If you redeploy an updated WAR file,
-        be sure to delete the expanded directory when restarting JBoss Web, so
+        be sure to delete the expanded directory when restarting Tomcat, so
         that the updated WAR file will be re-expanded (note that the auto
         deployer, if enabled, will automatically expand the updated WAR file
-        once the previously expanded directory is removed).</li>
+        once the previously expanded directory is removed). Multi-level contexts
+        may be defined by using #, eg use a WAR named <code>foo#bar.war</code>
+        for a context path of <code>/foo/bar</code>.</li>
     <li>Any subdirectory within the <em>application base directory</em>
         will receive an automatically generated <a href="context.html">
         Context</a> element, even if this directory is not mentioned in the
-        <code>conf/server.xml</code> file.
-        This generated Context entry will be configured according to the
-        properties set in any <a href="defaultcontext.html">DefaultContext</a>
-        element nested in this Host element.  The context path for this
+        <code>conf/server.xml</code> file. The context path for this
         deployed Context will be a slash character ("/") followed by the
         directory name, unless the directory name is ROOT, in which case
-        the context path will be an empty string ("").</li>
+        the context path will be an empty string (""). Multi-level contexts
+        may be defined by using #, eg use a directory named <code>foo#bar</code>
+        for a context path of <code>/foo/bar</code>.</li>
     </ul>
 
     <p>In addition to the automatic deployment that occurs at startup time,

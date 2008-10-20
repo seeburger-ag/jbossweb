@@ -50,7 +50,7 @@ import org.apache.catalina.core.Constants;
 import org.apache.catalina.util.StringManager;
 
 /**
- * @version $Rev$ $Date$
+ * @version $Rev:$ $Date:$
  */
 public class DefaultInstanceManager implements InstanceManager {
 
@@ -112,12 +112,12 @@ public class DefaultInstanceManager implements InstanceManager {
     }
 
     public Object newInstance(String className) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
-        Class clazz = loadClassMaybePrivileged(className, classLoader);
+        Class<?> clazz = loadClassMaybePrivileged(className, classLoader);
         return newInstance(clazz.newInstance(), clazz);
     }
 
     public Object newInstance(final String className, final ClassLoader classLoader) throws IllegalAccessException, NamingException, InvocationTargetException, InstantiationException, ClassNotFoundException {
-        Class clazz = classLoader.loadClass(className);
+        Class<?> clazz = classLoader.loadClass(className);
         return newInstance(clazz.newInstance(), clazz);
     }
 
@@ -126,7 +126,7 @@ public class DefaultInstanceManager implements InstanceManager {
         newInstance(o, o.getClass());
     }
 
-    private Object newInstance(Object instance, Class clazz) throws IllegalAccessException, InvocationTargetException, NamingException {
+    private Object newInstance(Object instance, Class<?> clazz) throws IllegalAccessException, InvocationTargetException, NamingException {
         if (!ignoreAnnotations) {
             Map<String, String> injections = injectionMap.get(clazz.getName());
             processAnnotations(instance, injections);
@@ -150,9 +150,9 @@ public class DefaultInstanceManager implements InstanceManager {
      * @throws java.lang.reflect.InvocationTargetException
      *                                if call fails
      */
-    protected void postConstruct(Object instance, Class clazz)
+    protected void postConstruct(Object instance, Class<?> clazz)
             throws IllegalAccessException, InvocationTargetException {
-        Class superClass = clazz.getSuperclass();
+        Class<?> superClass = clazz.getSuperclass();
         if (superClass != Object.class) {
             postConstruct(instance, superClass);
         }
@@ -193,9 +193,9 @@ public class DefaultInstanceManager implements InstanceManager {
      * @throws java.lang.reflect.InvocationTargetException
      *                                if call fails
      */
-    protected void preDestroy(Object instance, Class clazz)
+    protected void preDestroy(Object instance, Class<?> clazz)
             throws IllegalAccessException, InvocationTargetException {
-        Class superClass = clazz.getSuperclass();
+        Class<?> superClass = clazz.getSuperclass();
         if (superClass != Object.class) {
             preDestroy(instance, superClass);
         }
@@ -252,25 +252,31 @@ public class DefaultInstanceManager implements InstanceManager {
             Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
                 if (injections != null && injections.containsKey(field.getName())) {
-                    lookupFieldResource(context, instance, field, injections.get(field.getName()));
+                    lookupFieldResource(context, instance, field,
+                            injections.get(field.getName()), clazz);
                 } else if (field.isAnnotationPresent(Resource.class)) {
                     Resource annotation = field.getAnnotation(Resource.class);
-                    lookupFieldResource(context, instance, field, annotation.name());
+                    lookupFieldResource(context, instance, field,
+                            annotation.name(), clazz);
                 } else if (field.isAnnotationPresent(EJB.class)) {
                     EJB annotation = field.getAnnotation(EJB.class);
-                    lookupFieldResource(context, instance, field, annotation.name());
+                    lookupFieldResource(context, instance, field,
+                            annotation.name(), clazz);
                 } else if (field.isAnnotationPresent(WebServiceRef.class)) {
                     WebServiceRef annotation =
                             field.getAnnotation(WebServiceRef.class);
-                    lookupFieldResource(context, instance, field, annotation.name());
+                    lookupFieldResource(context, instance, field,
+                            annotation.name(), clazz);
                 } else if (field.isAnnotationPresent(PersistenceContext.class)) {
                     PersistenceContext annotation =
                             field.getAnnotation(PersistenceContext.class);
-                    lookupFieldResource(context, instance, field, annotation.name());
+                    lookupFieldResource(context, instance, field,
+                            annotation.name(), clazz);
                 } else if (field.isAnnotationPresent(PersistenceUnit.class)) {
                     PersistenceUnit annotation =
                             field.getAnnotation(PersistenceUnit.class);
-                    lookupFieldResource(context, instance, field, annotation.name());
+                    lookupFieldResource(context, instance, field,
+                            annotation.name(), clazz);
                 }
             }
     
@@ -281,28 +287,34 @@ public class DefaultInstanceManager implements InstanceManager {
                 if (injections != null && methodName.startsWith("set") && methodName.length() > 3) {
                     String fieldName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
                     if (injections.containsKey(fieldName)) {
-                        lookupMethodResource(context, instance, method, injections.get(fieldName));
+                        lookupMethodResource(context, instance, method,
+                                injections.get(fieldName), clazz);
                         break;
                     }
                 }
                 if (method.isAnnotationPresent(Resource.class)) {
                     Resource annotation = method.getAnnotation(Resource.class);
-                    lookupMethodResource(context, instance, method, annotation.name());
+                    lookupMethodResource(context, instance, method,
+                            annotation.name(), clazz);
                 } else if (method.isAnnotationPresent(EJB.class)) {
                     EJB annotation = method.getAnnotation(EJB.class);
-                    lookupMethodResource(context, instance, method, annotation.name());
+                    lookupMethodResource(context, instance, method,
+                            annotation.name(), clazz);
                 } else if (method.isAnnotationPresent(WebServiceRef.class)) {
                     WebServiceRef annotation =
                             method.getAnnotation(WebServiceRef.class);
-                    lookupMethodResource(context, instance, method, annotation.name());
+                    lookupMethodResource(context, instance, method,
+                            annotation.name(), clazz);
                 } else if (method.isAnnotationPresent(PersistenceContext.class)) {
                     PersistenceContext annotation =
                             method.getAnnotation(PersistenceContext.class);
-                    lookupMethodResource(context, instance, method, annotation.name());
+                    lookupMethodResource(context, instance, method,
+                            annotation.name(), clazz);
                 } else if (method.isAnnotationPresent(PersistenceUnit.class)) {
                     PersistenceUnit annotation =
                             method.getAnnotation(PersistenceUnit.class);
-                    lookupMethodResource(context, instance, method, annotation.name());
+                    lookupMethodResource(context, instance, method,
+                            annotation.name(), clazz);
                 }
             }
             clazz = clazz.getSuperclass();
@@ -311,13 +323,13 @@ public class DefaultInstanceManager implements InstanceManager {
     }
 
 
-    protected Class loadClassMaybePrivileged(final String className, final ClassLoader classLoader) throws ClassNotFoundException {
-        Class clazz;
+    protected Class<?> loadClassMaybePrivileged(final String className, final ClassLoader classLoader) throws ClassNotFoundException {
+        Class<?> clazz;
         if (SecurityUtil.isPackageProtectionEnabled()) {
             try {
-                clazz = AccessController.doPrivileged(new PrivilegedExceptionAction<Class>() {
+                clazz = AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
 
-                    public Class run() throws Exception {
+                    public Class<?> run() throws Exception {
                         return loadClass(className, classLoader);
                     }
                 });
@@ -335,12 +347,12 @@ public class DefaultInstanceManager implements InstanceManager {
         return clazz;
     }
 
-    protected Class loadClass(String className, ClassLoader classLoader) throws ClassNotFoundException {
-        if (className.startsWith("org.apache.catalina") || className.startsWith("org.jboss.web")) {
+    protected Class<?> loadClass(String className, ClassLoader classLoader) throws ClassNotFoundException {
+        if (className.startsWith("org.apache.catalina")) {
             return containerClassLoader.loadClass(className);
         }
         try {
-            Class clazz = containerClassLoader.loadClass(className);
+            Class<?> clazz = containerClassLoader.loadClass(className);
             if (ContainerServlet.class.isAssignableFrom(clazz)) {
                 return clazz;
             }
@@ -350,7 +362,7 @@ public class DefaultInstanceManager implements InstanceManager {
         return classLoader.loadClass(className);
     }
 
-    private void checkAccess(Class clazz) {
+    private void checkAccess(Class<?> clazz) {
         if (privileged) return;
         if (Filter.class.isAssignableFrom(clazz)) {
             checkAccess(clazz, restrictedFilters);
@@ -361,10 +373,10 @@ public class DefaultInstanceManager implements InstanceManager {
         }
     }
 
-    private void checkAccess(Class clazz, Properties restricted) {
+    private void checkAccess(Class<?> clazz, Properties restricted) {
         while (clazz != null) {
             if ("restricted".equals(restricted.getProperty(clazz.getName()))) {
-                throw new SecurityException("Restricted class: " + clazz.getName());
+                throw new SecurityException("Restricted class" + clazz);
             }
             clazz = clazz.getSuperclass();
         }
@@ -378,11 +390,12 @@ public class DefaultInstanceManager implements InstanceManager {
      * @param instance object to inject into
      * @param field    field target for injection
      * @param name     jndi name value is bound under
+     * @param clazz    class annotation is defined in
      * @throws IllegalAccessException       if field is inaccessible
      * @throws javax.naming.NamingException if value is not accessible in naming context
      */
     protected static void lookupFieldResource(Context context,
-            Object instance, Field field, String name)
+            Object instance, Field field, String name, Class<?> clazz)
             throws NamingException, IllegalAccessException {
 
         Object lookedupResource;
@@ -392,7 +405,8 @@ public class DefaultInstanceManager implements InstanceManager {
                 (name.length() > 0)) {
             lookedupResource = context.lookup(name);
         } else {
-            lookedupResource = context.lookup(instance.getClass().getName() + "/" + field.getName());
+            lookedupResource =
+                context.lookup(clazz.getName() + "/" + field.getName());
         }
 
         accessibility = field.isAccessible();
@@ -408,13 +422,14 @@ public class DefaultInstanceManager implements InstanceManager {
      * @param instance object to inject into
      * @param method   field target for injection
      * @param name     jndi name value is bound under
+     * @param clazz    class annotation is defined in
      * @throws IllegalAccessException       if method is inaccessible
      * @throws javax.naming.NamingException if value is not accessible in naming context
      * @throws java.lang.reflect.InvocationTargetException
      *                                      if setter call fails
      */
     protected static void lookupMethodResource(Context context,
-            Object instance, Method method, String name)
+            Object instance, Method method, String name, Class<?> clazz)
             throws NamingException, IllegalAccessException, InvocationTargetException {
 
         if (!method.getName().startsWith("set")
@@ -430,8 +445,8 @@ public class DefaultInstanceManager implements InstanceManager {
                 (name.length() > 0)) {
             lookedupResource = context.lookup(name);
         } else {
-            lookedupResource =
-                    context.lookup(instance.getClass().getName() + "/" + method.getName().substring(3));
+            lookedupResource = context.lookup(
+                    clazz.getName() + "/" + method.getName().substring(3));
         }
 
         accessibility = method.isAccessible();
