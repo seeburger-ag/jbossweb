@@ -85,6 +85,9 @@
       <fix>
         Null out socket in java.io HTTP connector. (fhanik)
       </fix>
+      <fix>
+        Handling for invalid AJP messages. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

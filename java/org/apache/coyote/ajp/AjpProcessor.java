@@ -1110,7 +1110,9 @@ public class AjpProcessor implements ActionHook {
 
         read(buf, 0, message.getHeaderLength());
 
-        message.processHeader();
+        if (message.processHeader() < 0) {
+            throw new IOException(sm.getString("ajpprotocol.badmessage"));
+        }
         read(buf, message.getHeaderLength(), message.getLen());
 
         return true;

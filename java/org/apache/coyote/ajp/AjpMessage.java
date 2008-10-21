@@ -398,6 +398,7 @@ public class AjpMessage {
             if (log.isDebugEnabled()) {
                 dump("In: ");
             }
+            len = 0;
             return -1;
         }
         if (log.isDebugEnabled())  {
