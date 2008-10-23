@@ -88,6 +88,9 @@
       <fix>
         Handling for invalid AJP messages. (remm)
       </fix>
+      <fix>
+        New maxThreads default to 200, up from 40. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
