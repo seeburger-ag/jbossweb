@@ -71,7 +71,7 @@ public abstract class RequestBase implements BayeuxRequest {
     
     protected HashMap<String, Object> response = null;
     
-    protected int reconnectInterval;
+    protected int reconnectInterval = 1000;
     
     protected RequestBase(TomcatBayeux tb, HttpEvent event, JSONObject jsReq) throws JSONException {
         this.tomcatBayeux = tb;

@@ -93,7 +93,7 @@ public class BayeuxServlet implements HttpEventServlet {
     
     protected int getReconnectInterval() {
         String rs = servletConfig.getInitParameter("reconnectInterval");
-        int rct = 5000; //5 seconds
+        int rct = 1000; // 1 seconds
         try {
             rct = Integer.parseInt(rs);
         }catch (NumberFormatException nfe) {
