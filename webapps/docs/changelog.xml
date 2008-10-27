@@ -94,6 +94,9 @@
       <fix>
         <bug>46077</bug>: Add configuration for deferAccept flag. (remm)
       </fix>
+      <fix>
+        Add maxThreads warning. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
