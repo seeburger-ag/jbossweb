@@ -152,6 +152,10 @@
 
     <attributes>
  
+    <attribute name="deferAccept" required="false">
+      <p>Use defer accept feature if available. The default value is true.</p>
+    </attribute>
+
     <attribute name="keepAliveTimeout" required="false">
       <p>The number of milliseconds this <strong>Connector</strong> will wait for
        another HTTP request before closing the connection.
@@ -315,6 +319,10 @@
 
     <attributes>
  
+    <attribute name="deferAccept" required="false">
+      <p>Use defer accept feature if available. The default value is true.</p>
+    </attribute>
+
     <attribute name="pollTime" required="false">
       <p>Duration of a poll call. Lowering this value will slightly decrease latency of connections 
       being kept alive in some cases, but will use more CPU as more poll calls are being made. The

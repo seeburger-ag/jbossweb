@@ -91,6 +91,9 @@
       <fix>
         New maxThreads default to 200, up from 40. (remm)
       </fix>
+      <fix>
+        <bug>46077</bug>: Add configuration for deferAccept flag. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

@@ -247,6 +247,9 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public boolean getReverseConnection() { return endpoint.isReverseConnection(); }
     public void setReverseConnection(boolean reverseConnection) { endpoint.setReverseConnection(reverseConnection); }
 
+    public boolean getDeferAccept() { return endpoint.getDeferAccept(); }
+    public void setDeferAccept(boolean deferAccept) { endpoint.setDeferAccept(deferAccept); }
+
     /**
      * The number of seconds Tomcat will wait for a subsequent request
      * before closing the connection.

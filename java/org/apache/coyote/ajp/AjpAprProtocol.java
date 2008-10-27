@@ -293,6 +293,9 @@ public class AjpAprProtocol
     public boolean getReverseConnection() { return endpoint.isReverseConnection(); }
     public void setReverseConnection(boolean reverseConnection) { endpoint.setReverseConnection(reverseConnection); }
 
+    public boolean getDeferAccept() { return endpoint.getDeferAccept(); }
+    public void setDeferAccept(boolean deferAccept) { endpoint.setDeferAccept(deferAccept); }
+
     /**
      * Should authentication be done in the native webserver layer, 
      * or in the Servlet container ?

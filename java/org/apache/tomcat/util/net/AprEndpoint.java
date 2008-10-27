@@ -155,12 +155,6 @@ public class AprEndpoint {
     protected long sslContext = 0;
 
     
-    /**
-     * Defer accept.
-     */
-    protected boolean deferAccept = true;
-    
-
     // ------------------------------------------------------------- Properties
 
 
@@ -260,6 +254,14 @@ public class AprEndpoint {
     protected int soTimeout = -1;
     public int getSoTimeout() { return soTimeout; }
     public void setSoTimeout(int soTimeout) { this.soTimeout = soTimeout; }
+
+
+    /**
+     * Defer accept.
+     */
+    protected boolean deferAccept = true;
+    public void setDeferAccept(boolean deferAccept) { this.deferAccept = deferAccept; }
+    public boolean getDeferAccept() { return deferAccept; }
 
 
     /**
@@ -621,7 +623,7 @@ public class AprEndpoint {
             // Delay accepting of new connections until data is available
             // Only Linux kernels 2.4 + have that implemented
             // on other platforms this call is noop and will return APR_ENOTIMPL.
-            if (Socket.optSet(serverSock, Socket.APR_TCP_DEFER_ACCEPT, 1) == Status.APR_ENOTIMPL) {
+            if (deferAccept && (Socket.optSet(serverSock, Socket.APR_TCP_DEFER_ACCEPT, 1) == Status.APR_ENOTIMPL)) {
                 deferAccept = false;
             }
         } else {
