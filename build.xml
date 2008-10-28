@@ -813,4 +813,30 @@
     </jar>
   </target>
 
+  <target name="tests">
+    <antcall target="downloadgz">
+      <param name="sourcefile" value="${dojo-js.loc}"/>
+      <param name="destfile" value="${dojo-js.jar}"/>
+    </antcall>
+
+    <mkdir dir="${tomcat.build}/webapps/cometd"/>
+    <mkdir dir="${tomcat.build}/webapps/cometd/WEB-INF/classes"/>
+    <copy todir="${tomcat.build}/webapps/cometd">
+      <fileset dir="${basedir}/test/webapps/cometd">
+      </fileset>
+      <fileset dir="${dojo-js.home}">
+        <include name="dojo/**"/>
+        <include name="dojox/**"/>
+      </fileset>    
+    </copy>
+    <javac srcdir="${basedir}/test/java" destdir="${tomcat.build}/webapps/cometd/WEB-INF/classes"
+         debug="${compile.debug}"
+         deprecation="${compile.deprecation}"
+         source="${compile.source}"
+         optimize="${compile.optimize}"
+  	     classpath="${tomcat.classes}">
+      <include name="org/apache/cometd/**" />
+    </javac>
+  </target>
+	
 </project>
