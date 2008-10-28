@@ -17,6 +17,13 @@
 <body>
 
 <section name="JBoss Web 2.1.1.GA (remm)">
+  <subsection name="General">
+    <changelog>
+      <update>
+        NSIS 2.40. (remm)
+      </update>
+    </changelog>
+  </subsection>
   <subsection name="Catalina">
     <changelog>
       <fix>
@@ -58,6 +65,16 @@
       <fix>
         The default annotation name should be based on the class in which the annotation was found. (markt)
       </fix>
+      <fix>
+        <bug>46075</bug>: Don't create ByteArrayOutputStream at maximum possible size. (markt)
+      </fix>
+      <fix>
+        <bug>46096</bug>: Support annotation processing whilst running under a security manager. (markt)
+      </fix>
+      <fix>
+        <bug>46085</bug>: Date handling in sessions should use int offsets, and longs can get
+        corrupted. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -96,6 +113,9 @@
       </fix>
       <fix>
         Add maxThreads warning. (markt)
+      </fix>
+      <fix>
+        Cleanup some type oddities in MimeHeaders. (remm)
       </fix>
     </changelog>
   </subsection>

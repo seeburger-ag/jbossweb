@@ -99,24 +99,22 @@ public class MimeHeaders {
      * we want to keep add O(1).
      */
     protected class NamesEnumerator implements Enumeration {
-        int pos;
-        int size;
-        String next;
-        MimeHeaders headers;
+        protected int pos;
+        protected int size;
+        protected String next;
 
-        NamesEnumerator(MimeHeaders headers) {
-            this.headers = headers;
+        protected NamesEnumerator() {
             pos = 0;
-            size = headers.size();
+            size = size();
             findNext();
         }
 
         private void findNext() {
             next = null;
             for (; pos < size; pos++) {
-                next = headers.getName(pos).toString();
+                next = getName(pos).toString();
                 for (int j = 0; j < pos; j++) {
-                    if (headers.getName(j).equalsIgnoreCase(next)) {
+                    if (getName(j).equalsIgnoreCase(next)) {
                         // duplicate.
                         next = null;
                         break;
@@ -147,26 +145,24 @@ public class MimeHeaders {
     value element.
      */
     protected class ValuesEnumerator implements Enumeration {
-        int pos;
-        int size;
-        MessageBytes next;
-        MimeHeaders headers;
-        String name;
+        protected int pos;
+        protected int size;
+        protected MessageBytes next;
+        protected String name;
 
-        ValuesEnumerator(MimeHeaders headers, String name) {
+        protected ValuesEnumerator(String name) {
             this.name = name;
-            this.headers = headers;
             pos = 0;
-            size = headers.size();
+            size = size();
             findNext();
         }
 
         private void findNext() {
             next = null;
             for (; pos < size; pos++) {
-                MessageBytes n1 = headers.getName(pos);
+                MessageBytes n1 = getName(pos);
                 if (n1.equalsIgnoreCase(name)) {
-                    next = headers.getValue(pos);
+                    next = getValue(pos);
                     break;
                 }
             }
@@ -320,11 +316,11 @@ public class MimeHeaders {
      * that multiple fields with that name exist in this header.
      */
     public Enumeration names() {
-        return new NamesEnumerator(this);
+        return new NamesEnumerator();
     }
 
     public Enumeration values(String name) {
-        return new ValuesEnumerator(this, name);
+        return new ValuesEnumerator(name);
     }
 
     // -------------------- Adding headers --------------------
