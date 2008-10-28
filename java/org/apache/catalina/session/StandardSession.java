@@ -204,7 +204,7 @@ public class StandardSession
     /**
      * The last accessed time for this Session.
      */
-    protected long lastAccessedTime = creationTime;
+    protected int lastAccessedTime = 0;
 
 
     /**
@@ -279,7 +279,7 @@ public class StandardSession
     /**
      * The current accessed time for this session.
      */
-    protected long thisAccessedTime = creationTime;
+    protected int thisAccessedTime = 0;
 
 
     /**
@@ -326,8 +326,8 @@ public class StandardSession
     public void setCreationTime(long time) {
 
         this.creationTime = time;
-        this.lastAccessedTime = time;
-        this.thisAccessedTime = time;
+        this.lastAccessedTime = 0;
+        this.thisAccessedTime = 0;
 
     }
 
@@ -440,7 +440,7 @@ public class StandardSession
                 (sm.getString("standardSession.getLastAccessedTime.ise"));
         }
 
-        return (this.lastAccessedTime);
+        return (lastAccessedTime + creationTime);
     }
 
     /**
@@ -448,7 +448,7 @@ public class StandardSession
      * @see #getLastAccessedTime().
      */
     public long getLastAccessedTimeInternal() {
-        return (this.lastAccessedTime);
+        return (lastAccessedTime + creationTime);
     }
 
     /**
@@ -586,8 +586,8 @@ public class StandardSession
         }
 
         if (maxInactiveInterval >= 0) { 
-            long timeNow = System.currentTimeMillis();
-            int timeIdle = (int) ((timeNow - thisAccessedTime) / 1000L);
+            int offset = (int) (System.currentTimeMillis() - creationTime);
+            int timeIdle = (offset - thisAccessedTime) / 1000;
             if (timeIdle >= maxInactiveInterval) {
                 expire(true);
             }
@@ -618,7 +618,7 @@ public class StandardSession
     public void access() {
 
         this.lastAccessedTime = this.thisAccessedTime;
-        this.thisAccessedTime = System.currentTimeMillis();
+        this.thisAccessedTime = (int) (System.currentTimeMillis() - creationTime);
         
         if (ACTIVITY_CHECK) {
             accessCount.incrementAndGet();
@@ -861,7 +861,7 @@ public class StandardSession
         creationTime = 0L;
         expiring = false;
         id = null;
-        lastAccessedTime = 0L;
+        lastAccessedTime = 0;
         maxInactiveInterval = -1;
         notes.clear();
         setPrincipal(null);
@@ -1420,11 +1420,11 @@ public class StandardSession
         // Deserialize the scalar instance variables (except Manager)
         authType = null;        // Transient only
         creationTime = ((Long) stream.readObject()).longValue();
-        lastAccessedTime = ((Long) stream.readObject()).longValue();
+        lastAccessedTime = (int) (((Long) stream.readObject()).longValue() - creationTime);
         maxInactiveInterval = ((Integer) stream.readObject()).intValue();
         isNew = ((Boolean) stream.readObject()).booleanValue();
         isValid = ((Boolean) stream.readObject()).booleanValue();
-        thisAccessedTime = ((Long) stream.readObject()).longValue();
+        thisAccessedTime = (int) (((Long) stream.readObject()).longValue() - creationTime);
         principal = null;        // Transient only
         //        setId((String) stream.readObject());
         id = (String) stream.readObject();
@@ -1483,11 +1483,11 @@ public class StandardSession
 
         // Write the scalar instance variables (except Manager)
         stream.writeObject(new Long(creationTime));
-        stream.writeObject(new Long(lastAccessedTime));
+        stream.writeObject(new Long(creationTime + lastAccessedTime));
         stream.writeObject(new Integer(maxInactiveInterval));
         stream.writeObject(new Boolean(isNew));
         stream.writeObject(new Boolean(isValid));
-        stream.writeObject(new Long(thisAccessedTime));
+        stream.writeObject(new Long(creationTime + thisAccessedTime));
         stream.writeObject(id);
         if (manager.getContainer().getLogger().isDebugEnabled())
             manager.getContainer().getLogger().debug
