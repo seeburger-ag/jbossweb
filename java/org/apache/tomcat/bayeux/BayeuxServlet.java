@@ -228,6 +228,11 @@ public class BayeuxServlet implements HttpEventServlet {
             ctx.setAttribute(TOMCAT_BAYEUX_ATTR,new TomcatBayeux());
         this.tb = (TomcatBayeux)ctx.getAttribute(TOMCAT_BAYEUX_ATTR);
         tb.setReconnectInterval(getReconnectInterval());
+        if (servletConfig.getInitParameter("debug") != null)
+            debug = Integer.parseInt(servletConfig.getInitParameter("debug"));
+        if (debug > 0) {
+            servletConfig.getServletContext().log("Init " + getServletInfo());
+        }
     }
 
     public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
