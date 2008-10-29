@@ -30,10 +30,13 @@ import org.apache.cometd.bayeux.Client;
 import org.apache.cometd.bayeux.Listener;
 import org.apache.cometd.bayeux.Message;
 import org.apache.tomcat.util.json.JSONObject;
+import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
 public class ClientImpl implements Client {
     
+    private static Logger log = Logger.getLogger(ClientImpl.class);
+
     public static final int SUPPORT_CALLBACK_POLL = 0x1;
     public static final int SUPPORT_LONG_POLL = 0x2; 
 
@@ -139,9 +142,9 @@ public class ClientImpl implements Client {
                                 map.put(Bayeux.CHANNEL_FIELD,message.getChannel().getId());
                                 map.put(Bayeux.DATA_FIELD,message);
                                 JSONObject json = new JSONObject(map);
-                                /*if (log.isDebugEnabled()) {
-                                    log.debug("Message instantly delivered to remote client["+this+"] message:"+json);
-                                }*/
+                                if (log.isTraceEnabled()) {
+                                    log.trace("Message instantly delivered to remote client["+this+"] message:"+json);
+                                }
                                 rq.addToDeliveryQueue(this, json);
                                 //deliver the batch
                                 if (i==(msgs.length-1)) {
@@ -150,18 +153,17 @@ public class ClientImpl implements Client {
                                     removeCometEvent(event); //and delivered instantly
                                 }
                                 delivered = true;
-                            } catch (Exception x) {
+                            } catch (Exception e) {
                                 // TODO: fix
-                                x.printStackTrace();
-                                //log.error(x);
+                                log.warn("Exception", e);
                             }
                         }
                     }
                 } 
                 if (!delivered) {
-                    /*if (log.isDebugEnabled()) {
-                        log.debug("Message added to queue for remote client["+this+"] message:"+message);
-                    }*/
+                    if (log.isTraceEnabled()) {
+                        log.trace("Message added to queue for remote client["+this+"] message:"+message);
+                    }
                     //queue the message for the next round
                     messages.add(message);
                 }

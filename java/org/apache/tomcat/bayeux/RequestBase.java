@@ -34,6 +34,7 @@ import org.apache.cometd.bayeux.Message;
 import org.apache.tomcat.util.json.JSONArray;
 import org.apache.tomcat.util.json.JSONException;
 import org.apache.tomcat.util.json.JSONObject;
+import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
 /**
@@ -46,6 +47,8 @@ import org.jboss.servlet.http.HttpEvent;
  */
 public abstract class RequestBase implements BayeuxRequest {
     
+    private static Logger log = Logger.getLogger(RequestBase.class);
+
     protected static final SimpleDateFormat timestampFmt =
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     static {
@@ -154,9 +157,9 @@ public abstract class RequestBase implements BayeuxRequest {
         JSONArray jarray = getJSONArray(event,true);
         if ( jarray == null ) throw new BayeuxException("No message to send!");
         String jsonstring = jarray.toString();
-        /*if (log.isDebugEnabled()) {
-            log.debug("["+Thread.currentThread().getName()+"] Delivering message to[" + to + "] message:" + jsonstring);
-        }*/
+        if (log.isTraceEnabled()) {
+            log.trace("["+Thread.currentThread().getName()+"] Delivering message to[" + to + "] message:" + jsonstring);
+        }
 
         if (to!=null) {
             if (to.useJsonFiltered()) {
@@ -193,7 +196,6 @@ public abstract class RequestBase implements BayeuxRequest {
         out.flush();
         event.getHttpServletResponse().flushBuffer();
 
-        
     }
 
     protected static JSONArray getJSONArray(HttpEvent event, boolean nullok) {

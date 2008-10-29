@@ -18,17 +18,18 @@ package org.apache.tomcat.bayeux;
 
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cometd.bayeux.Bayeux;
 import org.apache.tomcat.util.json.JSONArray;
 import org.apache.tomcat.util.json.JSONException;
 import org.apache.tomcat.util.json.JSONObject;
+import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
 
@@ -38,25 +39,30 @@ import org.jboss.servlet.http.HttpEventServlet;
  * @author Guy Molinari
  * @version 1.0
  */
-public class BayeuxServlet implements HttpEventServlet {
+public class BayeuxServlet extends HttpServlet implements HttpEventServlet {
+
+
+    private static Logger log = Logger.getLogger(BayeuxServlet.class);
+    
+    
+    /**
+     * The timeout.
+     */
+    protected int timeout = 0;
 
 
     /**
-     * The debugging detail level for this servlet.
+     * The reconnect interval.
      */
-    protected int debug = 0;
+    protected int reconnectInterval = 0;
 
 
     /**
      * Attribute to hold the TomcatBayeux object in the servlet context
      */
     public static final String TOMCAT_BAYEUX_ATTR = Bayeux.DOJOX_COMETD_BAYEUX;
-    
-    /**
-     * Servlet config - for future use
-     */
-    protected ServletConfig servletConfig;
-    
+
+
     /**
      * Reference to the global TomcatBayeux object
      */
@@ -67,10 +73,9 @@ public class BayeuxServlet implements HttpEventServlet {
      * TomcatBayeux object and terminate any outstanding events.
      */
     public void destroy() {
-        servletConfig = null;
-        //to do, close all outstanding comet events
+        // FIXME, close all outstanding comet events
         //tb.destroy();
-        tb = null;//TO DO, close everything down
+        tb = null;//FIXME, close everything down
         
     }
     
@@ -81,53 +86,37 @@ public class BayeuxServlet implements HttpEventServlet {
      * @return int - the timeout for a connection in milliseconds
      */
     protected int getTimeout() {
-        String timeoutS = servletConfig.getInitParameter("timeout");
-        int timeout = 120*1000; //2 min
-        try {
-            timeout = Integer.parseInt(timeoutS);
-        }catch (NumberFormatException nfe) {
-            //ignore, we have a default value
-        }
         return timeout;
     }
     
     protected int getReconnectInterval() {
-        String rs = servletConfig.getInitParameter("reconnectInterval");
-        int rct = 1000; // 1 seconds
-        try {
-            rct = Integer.parseInt(rs);
-        }catch (NumberFormatException nfe) {
-            //ignore, we have a default value
-        }
-        return rct;
+        return reconnectInterval;
     }
 
 
     public void event(HttpEvent cometEvent) throws IOException, ServletException {
         HttpEvent.EventType type = cometEvent.getType();
-        if (debug > 0) {
-            getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] Received Comet Event type="+type);
+        if (log.isTraceEnabled()) {
+            log.trace("["+Thread.currentThread().getName()+"] Received Comet Event type="+type);
         }
-        synchronized (cometEvent) {
-            switch (type) {
-            case BEGIN:
-                cometEvent.setTimeout(getTimeout());
-                break;
-            case READ:
-                checkBayeux(cometEvent);
-                break;
-            case EOF:
-            case EVENT:
-            case WRITE:
-                break;
-            case ERROR:
-            case END:
-            case TIMEOUT:
-                tb.remove(cometEvent);
-                cometEvent.close();
-                break;
-            }
-        }//synchronized
+        switch (type) {
+        case BEGIN:
+            cometEvent.setTimeout(getTimeout());
+            break;
+        case READ:
+            checkBayeux(cometEvent);
+            break;
+        case EOF:
+        case EVENT:
+        case WRITE:
+            break;
+        case ERROR:
+        case END:
+        case TIMEOUT:
+            tb.remove(cometEvent);
+            cometEvent.close();
+            break;
+        }
     }//event
 
     /**
@@ -137,30 +126,37 @@ public class BayeuxServlet implements HttpEventServlet {
      * @throws IOException
      * @throws UnsupportedOperationException
      */
-    protected void checkBayeux(HttpEvent cometEvent) throws IOException, UnsupportedOperationException {
-        //we actually have data.
-        //data can be text/json or 
-        if (Bayeux.JSON_CONTENT_TYPE.equals(cometEvent.getHttpServletRequest().getContentType())) {
-            //read and decode the bytes according to content length
-            getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] JSON encoding not supported, will throw an exception and abort the request.");
-            int contentlength = cometEvent.getHttpServletRequest().getContentLength();
-            throw new UnsupportedOperationException("Decoding "+Bayeux.JSON_CONTENT_TYPE+" not yet implemented.");
-        } else { //GET method or application/x-www-form-urlencoded
-            String message = cometEvent.getHttpServletRequest().getParameter(Bayeux.MESSAGE_PARAMETER);
-            if (debug > 0) {
-                getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] Received JSON message:"+message);
+    protected void checkBayeux(HttpEvent cometEvent) throws IOException,
+            UnsupportedOperationException {
+        // we actually have data.
+        // data can be text/json or
+        if (Bayeux.JSON_CONTENT_TYPE.equals(cometEvent.getHttpServletRequest()
+                .getContentType())) {
+            // read and decode the bytes according to content length
+            int contentlength = cometEvent.getHttpServletRequest()
+                    .getContentLength();
+            throw new UnsupportedOperationException("Decoding "
+                    + Bayeux.JSON_CONTENT_TYPE + " not yet implemented.");
+        } else { // GET method or application/x-www-form-urlencoded
+            String message = cometEvent.getHttpServletRequest().getParameter(
+                    Bayeux.MESSAGE_PARAMETER);
+            if (log.isTraceEnabled()) {
+                log.trace("[" + Thread.currentThread().getName()
+                        + "] Received JSON message:" + message);
             }
             try {
                 int action = handleBayeux(message, cometEvent);
-                if (debug > 0) {
-                    getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] Bayeux handling complete, action result="+action);
+                if (log.isTraceEnabled()) {
+                    log.trace("[" + Thread.currentThread().getName()
+                            + "] Bayeux handling complete, action result="
+                            + action);
                 }
-                if (action<=0) {
+                if (action <= 0) {
                     cometEvent.close();
                 }
-            }catch (Exception x) {
+            } catch (Exception e) {
                 tb.remove(cometEvent);
-                getServletConfig().getServletContext().log(x, "Exception in check");
+                log.warn("Exception in check", e);
                 cometEvent.close();
             }
         }
@@ -176,63 +172,61 @@ public class BayeuxServlet implements HttpEventServlet {
             for (int i = 0; i < jsArray.length(); i++) {
                 JSONObject msg = jsArray.getJSONObject(i);
                 
-                if (debug > 0) {
-                    getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] Processing bayeux message:"+msg);
+                if (log.isTraceEnabled()) {
+                    log.trace("["+Thread.currentThread().getName()+"] Processing bayeux message:"+msg);
                 }
                 request = RequestFactory.getRequest(tb,event,msg);
-                if (debug > 0) {
-                    getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] Processing bayeux message using request:"+request);
+                if (log.isTraceEnabled()) {
+                    log.trace("["+Thread.currentThread().getName()+"] Processing bayeux message using request:"+request);
                 }
                 result = request.process(result);
-                if (debug > 0) {
-                    getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] Processing bayeux message result:"+result);
+                if (log.isTraceEnabled()) {
+                    log.trace("["+Thread.currentThread().getName()+"] Processing bayeux message result:"+result);
                 }
             }
             if (result>0 && request!=null) {
                 event.getHttpServletRequest().setAttribute(BayeuxRequest.LAST_REQ_ATTR, request);
                 ClientImpl ci = (ClientImpl)tb.getClient(((RequestBase)request).getClientId());
                 ci.addCometEvent(event);
-                if (debug > 0) {
-                    getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] Done bayeux message added to request attribute");
+                if (log.isTraceEnabled()) {
+                    log.trace("["+Thread.currentThread().getName()+"] Done bayeux message added to request attribute");
                 }
             } else if (result == 0 && request!=null) {
                 RequestBase.deliver(event,(ClientImpl)tb.getClient(((RequestBase)request).getClientId()));
-                if (debug > 0) {
-                    getServletConfig().getServletContext().log("["+Thread.currentThread().getName()+"] Done bayeux message, delivered to client");
+                if (log.isTraceEnabled()) {
+                    log.trace("["+Thread.currentThread().getName()+"] Done bayeux message, delivered to client");
                 }
             }
             
-        }catch (JSONException x) {
-            getServletConfig().getServletContext().log(x, "Error");//to do impl error handling
+        }catch (JSONException e) {
+            log.warn("Error", e);// FIXME impl error handling
             result = -1;
-        }catch (BayeuxException x) {
-            getServletConfig().getServletContext().log(x, "Error"); //to do impl error handling
+        }catch (BayeuxException e) {
+            log.warn("Error", e); // FIXME impl error handling
             result = -1;
         }
         return result;
-    }
-
-    public ServletConfig getServletConfig() {
-        return servletConfig;
     }
 
     public String getServletInfo() {
         return "Tomcat/BayeuxServlet/1.0";
     }
 
-    public void init(ServletConfig servletConfig) throws ServletException {
+    public void init() throws ServletException {
         
-        this.servletConfig = servletConfig;
-        ServletContext ctx = servletConfig.getServletContext();
+        if (getServletConfig().getInitParameter("timeout") != null) {
+            timeout = Integer.parseInt(getServletConfig().getInitParameter("timeout"));
+        }
+        if (getServletConfig().getInitParameter("reconnectInterval") != null) {
+            reconnectInterval = Integer.parseInt(getServletConfig().getInitParameter("reconnectInterval"));
+        }
+
+        ServletContext ctx = getServletConfig().getServletContext();
         if (ctx.getAttribute(TOMCAT_BAYEUX_ATTR)==null)
             ctx.setAttribute(TOMCAT_BAYEUX_ATTR,new TomcatBayeux());
         this.tb = (TomcatBayeux)ctx.getAttribute(TOMCAT_BAYEUX_ATTR);
         tb.setReconnectInterval(getReconnectInterval());
-        if (servletConfig.getInitParameter("debug") != null)
-            debug = Integer.parseInt(servletConfig.getInitParameter("debug"));
-        if (debug > 0) {
-            servletConfig.getServletContext().log("Init " + getServletInfo());
-        }
+
     }
 
     public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
