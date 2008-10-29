@@ -29,12 +29,14 @@ import java.io.Writer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
+import org.jboss.servlet.http.HttpEvent;
+import org.jboss.servlet.http.HttpEventServlet;
 
-public class CometServletTest2 extends HttpServlet implements CometProcessor {
+public class CometServletTest2 extends HttpServlet implements HttpEventServlet {
 
     int count = 0;
     
-    public void event(CometEvent event) throws IOException, ServletException {
+    public void event(HttpEvent event) throws IOException, ServletException {
         System.out.println("[" + event.getHttpServletRequest().getSession(true).getId() + "] " + event.getType());
         switch (event.getType()) {
         case BEGIN:
@@ -51,7 +53,7 @@ public class CometServletTest2 extends HttpServlet implements CometProcessor {
             // will cause the write to be performed in blocking mode.
             // boolean b = true;
             // while (b) {
-            while (event.ready()) {
+            while (event.isWriteReady()) {
                 if (count % 100 == 0) {
                     writer.write((count++) + " \r\n");
                 } else {

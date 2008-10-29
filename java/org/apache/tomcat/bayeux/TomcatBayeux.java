@@ -16,7 +16,6 @@
  */
 package org.apache.tomcat.bayeux;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -147,7 +146,23 @@ public class TomcatBayeux implements Bayeux {
 
     public String createUUID(String idprefix) {
         if (idprefix==null) idprefix="";
-        return idprefix + Arrays.toString(UUIDGenerator.randomUUID(false));
+        return idprefix + TomcatBayeux.toString(UUIDGenerator.randomUUID(false));
+    }
+    
+    protected static String toString(byte[] data) {
+        return toString(data,0,data!=null?data.length:0);
+    }
+
+    protected static String toString(byte[] data, int offset, int length) {
+        StringBuffer buf = new StringBuffer("{");
+        if ( data != null && length > 0 ) {
+            buf.append(data[offset++]);
+            for (int i = offset; i < length; i++) {
+                buf.append(", ").append(data[i]);
+            }
+        }
+        buf.append("}");
+        return buf.toString();
     }
     
     public List<Channel> getChannels() {

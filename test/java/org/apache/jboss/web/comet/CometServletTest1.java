@@ -31,14 +31,14 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 
-import org.jboss.web.comet.CometEvent;
-import org.jboss.web.comet.CometProcessor;
+import org.jboss.servlet.http.HttpEvent;
+import org.jboss.servlet.http.HttpEventServlet;
 
-public class CometServletTest1 extends HttpServlet implements CometProcessor {
+public class CometServletTest1 extends HttpServlet implements HttpEventServlet {
 
     int count = 0;
     
-    public void event(CometEvent event) throws IOException, ServletException {
+    public void event(HttpEvent event) throws IOException, ServletException {
         System.out.println("[" + event.getHttpServletRequest().getSession(true).getId() + "] " + event.getType());
         switch (event.getType()) {
         case BEGIN:
@@ -55,7 +55,7 @@ public class CometServletTest1 extends HttpServlet implements CometProcessor {
             // will cause the write to be performed in blocking mode.
             // boolean b = true;
             // while (b) {
-            while (event.ready()) {
+            while (event.isWriteReady()) {
                 if (count % 100 == 0) {
                     os.println((count++) + " ");
                 } else {
