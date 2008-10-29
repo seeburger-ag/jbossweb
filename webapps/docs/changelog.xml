@@ -117,6 +117,9 @@
       <fix>
         Cleanup some type oddities in MimeHeaders. (remm)
       </fix>
+      <fix>
+        Refactor generation of the READ event which follows a BEGIN into the HTTP protocol handler. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

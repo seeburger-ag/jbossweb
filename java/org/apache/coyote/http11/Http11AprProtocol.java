@@ -598,9 +598,15 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     // processed by this thread will use either a new or a recycled
                     // processor.
                     connections.put(socket, processor);
-                    proto.endpoint.getCometPoller().add(socket, processor.getCometTimeout(), 
-                            processor.getReadNotifications(), false, false);
-                } else {
+                    if (processor.getAvailable() && processor.getReadNotifications()) {
+                        // Call a read event right away
+                        state = event(socket, SocketStatus.OPEN_READ);
+                    } else {
+                        proto.endpoint.getCometPoller().add(socket, processor.getCometTimeout(), 
+                                processor.getReadNotifications(), false, false);
+                    }
+                }
+                if (state != SocketState.LONG) {
                     recycledProcessors.offer(processor);
                 }
                 return state;

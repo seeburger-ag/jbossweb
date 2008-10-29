@@ -278,7 +278,7 @@ public class InputBuffer extends Reader
             return -1;
         }
         int available = 0;
-        if (state == BYTE_STATE) {
+        if (state != CHAR_STATE) {
             available = bb.getLength();
             if (request.isComet() && available == 0) {
                 try {
@@ -289,7 +289,7 @@ public class InputBuffer extends Reader
                     // will occur elsewhere
                 }
             }
-        } else if (state == CHAR_STATE) {
+        } else {
             available = cb.getLength();
             if (request.isComet() && available == 0) {
                 try {

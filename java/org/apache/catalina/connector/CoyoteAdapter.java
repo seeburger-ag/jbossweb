@@ -151,7 +151,8 @@ public class CoyoteAdapter
                     request.setComet(false);
                     close = true;
                 }
-                if (status == SocketStatus.OPEN_READ) {
+                switch (status) {
+                case OPEN_READ:
                     if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
@@ -181,7 +182,8 @@ public class CoyoteAdapter
                             return true;
                         }
                     }
-                } else if (status == SocketStatus.OPEN_WRITE) {
+                    break;
+                case OPEN_WRITE:
                     if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
@@ -190,7 +192,8 @@ public class CoyoteAdapter
                     } else {
                         request.getEvent().setType(HttpEvent.EventType.WRITE);
                     }
-                } else if (status == SocketStatus.OPEN_CALLBACK) {
+                    break;
+                case OPEN_CALLBACK:
                     if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
@@ -201,16 +204,17 @@ public class CoyoteAdapter
                     } else {
                         request.getEvent().setType(HttpEvent.EventType.EVENT);
                     }
-                } else if (status == SocketStatus.DISCONNECT) {
+                    break;
+                case DISCONNECT:
+                case ERROR:
                     request.getEvent().setType(HttpEvent.EventType.ERROR);
                     error = true;
-                } else if (status == SocketStatus.ERROR) {
-                    request.getEvent().setType(HttpEvent.EventType.ERROR);
-                    error = true;
-                } else if (status == SocketStatus.STOP) {
+                    break;
+                case STOP:
                     request.getEvent().setType(HttpEvent.EventType.END);
                     close = true;
-                } else if (status == SocketStatus.TIMEOUT) {
+                    break;
+                case TIMEOUT:
                     if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
@@ -219,6 +223,7 @@ public class CoyoteAdapter
                     } else {
                         request.getEvent().setType(HttpEvent.EventType.TIMEOUT);
                     }
+                    break;
                 }
 
                 req.getRequestProcessor().setWorkerThreadName(Thread.currentThread().getName());
@@ -327,14 +332,7 @@ public class CoyoteAdapter
                 if (request.isComet()) {
                     if (!response.isClosed() && !response.isError()) {
                         res.action(ActionCode.ACTION_COMET_BEGIN, null);
-                        if (request.ready()) {
-                            // Invoke a read event right away if there are available bytes
-                            if (event(req, res, SocketStatus.OPEN_READ)) {
-                                comet = true;
-                            }
-                        } else {
-                            comet = true;
-                        }
+                        comet = true;
                     } else {
                         // Clear the filter chain, as otherwise it will not be reset elsewhere
                         // since this is a Comet request

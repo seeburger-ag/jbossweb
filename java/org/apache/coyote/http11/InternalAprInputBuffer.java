@@ -314,6 +314,7 @@ public class InternalAprInputBuffer implements InputBuffer {
         lastActiveFilter = -1;
         parsingHeader = true;
         swallowInput = true;
+        available = false;
 
     }
 
@@ -355,6 +356,7 @@ public class InternalAprInputBuffer implements InputBuffer {
         parsingHeader = true;
         swallowInput = true;
         nonBlocking = false;
+        available = false;
 
         return (lastValid > 0);
         
@@ -749,6 +751,15 @@ public class InternalAprInputBuffer implements InputBuffer {
     }
 
 
+    /**
+     * Available bytes in the buffer ? (these may not translate to application
+     * readable data)
+     */
+    public boolean available() {
+        return (lastValid - pos > 0);
+    }
+
+
     // ---------------------------------------------------- InputBuffer Methods
 
 
@@ -845,6 +856,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                     throw new IOException(sm.getString("iib.failedread"));
                 }
             }
+            available = false;
 
         }
 

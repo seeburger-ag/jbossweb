@@ -364,6 +364,11 @@ public class Http11AprProcessor implements ActionHook {
     }
     
 
+    public boolean getAvailable() {
+        return inputBuffer.available();
+    }
+    
+
     /**
      * Return compression level.
      */
