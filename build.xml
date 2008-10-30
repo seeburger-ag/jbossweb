@@ -835,6 +835,8 @@
          source="${compile.source}"
          optimize="${compile.optimize}"
   	     classpath="${tomcat.classes}">
+    	<include name="org/jboss/web/comet/**" />
+        <include name="org/apache/cometd/**" />
     </javac>
   </target>
 	
