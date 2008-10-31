@@ -15,16 +15,13 @@ http://nsis.sourceforge.net.
 
 Java compilation software for JSP pages is provided by Eclipse, 
 which is open source software. The orginal software and 
-related infomation is available at
-http://www.eclipse.org.
+related infomation is available at http://www.eclipse.org.
 
 org.apache.tomcat.util.json
-Copyright (c) 2002 JSON.org
-
-org.apache.cometd.bayeux is derivative work originating at the Dojo Foundation
+Copyright 2002 JSON.org
 
 org.apache.tomcat.bayeux
+Copyright 2007 Dojo Foundation
 Copyright 2007-2008 Guy Molinari
 Copyright 2007-2008 Filip Hanik
-Copyright 2007 Dojo Foundation
 Copyright 2007 Mort Bay Consulting Pty. Ltd.
