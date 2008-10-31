@@ -22,6 +22,9 @@
       <update>
         NSIS 2.40. (remm)
       </update>
+      <update>
+        JBoss Native 2.0.6. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
@@ -74,6 +77,9 @@
       <fix>
         <bug>46085</bug>: Date handling in sessions should use int offsets, and longs can get
         corrupted. (remm)
+      </fix>
+      <fix>
+        <bug>46105</bug>: Set query string URI encoding when replaying request. (markt)
       </fix>
     </changelog>
   </subsection>
