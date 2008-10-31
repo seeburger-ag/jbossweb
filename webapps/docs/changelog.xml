@@ -25,6 +25,9 @@
       <update>
         JBoss Native 2.0.6. (remm)
       </update>
+      <update>
+        Eclipse JDT 3.4.1. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
