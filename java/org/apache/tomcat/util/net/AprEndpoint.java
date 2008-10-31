@@ -57,7 +57,6 @@ public class AprEndpoint {
 
     // -------------------------------------------------------------- Constants
 
-
     protected static Logger log = Logger.getLogger(AprEndpoint.class);
 
     protected static StringManager sm =
@@ -1448,9 +1447,7 @@ public class AprEndpoint {
             // Close all sockets in the add queue
             SocketInfo info = addList.get();
             while (info != null) {
-                if (comet) {
-                    processSocket(info.socket, SocketStatus.STOP);
-                } else {
+                if (!comet || (comet && !processSocket(info.socket, SocketStatus.STOP))) {
                     Socket.destroy(info.socket);
                 }
                 info = addList.get();
@@ -1461,9 +1458,7 @@ public class AprEndpoint {
                 int rv = Poll.pollset(pollers[i], desc);
                 if (rv > 0) {
                     for (int n = 0; n < rv; n++) {
-                        if (comet) {
-                            processSocket(desc[n*2+1], SocketStatus.STOP);
-                        } else {
+                        if (!comet || (comet && !processSocket(desc[n*2+1], SocketStatus.STOP))) {
                             Socket.destroy(desc[n*2+1]);
                         }
                     }
@@ -1497,9 +1492,7 @@ public class AprEndpoint {
             }
             if (!ok) {
                 // Can't do anything: close the socket right away
-                if (comet) {
-                    processSocket(socket, SocketStatus.ERROR);
-                } else {
+                if (!comet || (comet && !processSocket(socket, SocketStatus.ERROR))) {
                     Socket.destroy(socket);
                 }
             }
@@ -1536,9 +1529,7 @@ public class AprEndpoint {
             }
             if (!ok) {
                 // Can't do anything: close the socket right away
-                if (comet) {
-                    processSocket(socket, SocketStatus.ERROR);
-                } else {
+                if (!comet || (comet && !processSocket(socket, SocketStatus.ERROR))) {
                     Socket.destroy(socket);
                 }
             }
@@ -1548,7 +1539,7 @@ public class AprEndpoint {
          * Add specified socket to one of the pollers. 
          */
         protected boolean addToPoller(long socket, int events) {
-            int rv = 0;
+            int rv = -1;
             for (int i = 0; i < pollers.length; i++) {
                 if (pollerSpace[i] > 0) {
                     rv = Poll.add(pollers[i], socket, events);
@@ -1566,7 +1557,7 @@ public class AprEndpoint {
          * Remove specified socket from the pollers. 
          */
         protected boolean removeFromPoller(long socket) {
-            int rv = 0;
+            int rv = -1;
             for (int i = 0; i < pollers.length; i++) {
                 if (pollerSpace[i] < actualPollerSize) {
                     rv = Poll.remove(pollers[i], socket);
@@ -1589,14 +1580,30 @@ public class AprEndpoint {
             long socket = timeouts.check(date);
             while (socket != 0) {
                 removeFromPoller(socket);
-                if (comet) {
-                    processSocket(socket, SocketStatus.TIMEOUT);
-                } else {
+                if (!comet || (comet && !processSocket(socket, SocketStatus.TIMEOUT))) {
                     Socket.destroy(socket);
                 }
                 socket = timeouts.check(date);
             }
 
+        }
+        
+        /**
+         * Displays the list of sockets in the pollers.
+         */
+        public String toString() {
+            StringBuffer buf = new StringBuffer();
+            buf.append("Poller comet=[").append(comet).append("]");
+            long[] res = new long[actualPollerSize * 2];
+            for (int i = 0; i < pollers.length; i++) {
+                int count = Poll.pollset(pollers[i], res);
+                buf.append(" [ ");
+                for (int j = 0; j < count; j++) {
+                    buf.append(desc[2*j+1]).append(" ");
+                }
+                buf.append("]");
+            }
+            return buf.toString();
         }
         
         /**
@@ -1661,9 +1668,7 @@ public class AprEndpoint {
                                         | ((info.write()) ? Poll.APR_POLLOUT : 0);
                                     if (!addToPoller(info.socket, events)) {
                                         // Can't do anything: close the socket right away
-                                        if (comet) {
-                                            processSocket(info.socket, SocketStatus.ERROR);
-                                        } else {
+                                        if (!comet || (comet && !processSocket(info.socket, SocketStatus.ERROR))) {
                                             Socket.destroy(info.socket);
                                         }
                                     }
@@ -1682,7 +1687,7 @@ public class AprEndpoint {
                                     }
                                 } else {
                                     // Should never happen, if not Comet, the socket is always put in
-                                    // the list with the read flag. 
+                                    // the list with the read flag.
                                     Socket.destroy(info.socket);
                                 }
                             }
@@ -1694,6 +1699,11 @@ public class AprEndpoint {
 
                     // Poll for the specified interval
                     for (int i = 0; i < pollers.length; i++) {
+                        
+                        // Flags to ask to reallocate the pool
+                        boolean reset = false;
+                        ArrayList<Long> skip = null;
+                        
                         int rv = 0;
                         // Iterate on each pollers, but no need to poll empty pollers
                         if (pollerSpace[i] < actualPollerSize) {
@@ -1705,22 +1715,52 @@ public class AprEndpoint {
                             for (int n = 0; n < rv; n++) {
                                 timeouts.remove(desc[n*2+1]);
                                 // Check for failed sockets and hand this socket off to a worker
-                                if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
-                                        || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)
-                                        // Comet processes either a read or a write depending on what the poller returns
-                                        || (comet && 
-                                                (((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) 
-                                                        && !processSocket(desc[n*2+1], SocketStatus.OPEN_READ))
-                                                || (((desc[n*2] & Poll.APR_POLLOUT) == Poll.APR_POLLOUT) 
-                                                        && !processSocket(desc[n*2+1], SocketStatus.OPEN_WRITE))) 
-                                        || (!comet && !processSocket(desc[n*2+1]))) {
-                                    // Close socket and clear pool
-                                    if (comet) {
-                                        processSocket(desc[n*2+1], SocketStatus.DISCONNECT);
-                                    } else {
-                                        Socket.destroy(desc[n*2+1]);
+                                if (comet) {
+                                    // Comet processes either a read or a write depending on what the poller returns
+                                    if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
+                                            || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
+                                        if (!processSocket(desc[n*2+1], SocketStatus.ERROR)) {
+                                            // Close socket and clear pool
+                                            Socket.destroy(desc[n*2+1]);
+                                        }
+                                        // FIXME: decide vs destroy
+                                        /*
+                                        if ((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP) {
+                                            // Destroy and reallocate the poller
+                                            reset = true;
+                                            if (skip == null) {
+                                                skip = new ArrayList<Long>();
+                                            }
+                                            skip.add(desc[n*2+1]);
+                                        }*/
+                                    } else if ((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) {
+                                        if (!processSocket(desc[n*2+1], SocketStatus.OPEN_READ)) {
+                                            // Close socket and clear pool
+                                            Socket.destroy(desc[n*2+1]);
+                                        }
+                                    } else if ((desc[n*2] & Poll.APR_POLLOUT) == Poll.APR_POLLOUT) {
+                                        if (!processSocket(desc[n*2+1], SocketStatus.OPEN_WRITE)) {
+                                            // Close socket and clear pool
+                                            Socket.destroy(desc[n*2+1]);
+                                        }
                                     }
-                                    continue;
+                                } else if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
+                                        || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
+                                    // Close socket and clear pool
+                                    Socket.destroy(desc[n*2+1]);
+                                    // FIXME: decide vs destroy
+                                    /*
+                                    if ((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP) {
+                                        // Destroy and reallocate the poller
+                                        reset = true;
+                                        if (skip == null) {
+                                            skip = new ArrayList<Long>();
+                                        }
+                                        skip.add(desc[n*2+1]);
+                                    }*/
+                                } else if (!processSocket(desc[n*2+1])) {
+                                    // Close socket and clear pool
+                                    Socket.destroy(desc[n*2+1]);
                                 }
                             }
                         } else if (rv < 0) {
@@ -1731,14 +1771,30 @@ public class AprEndpoint {
                                     errn -=  Status.APR_OS_START_USERERR;
                                 }
                                 log.error(sm.getString("endpoint.poll.fail", "" + errn, Error.strerror(errn)));
-                                // Handle poll critical failure
-                                synchronized (this) {
-                                    destroy();
-                                    init();
-                                }
-                                continue;
+                                // Destroy and reallocate the poller
+                                reset = true;
                             }
                         }
+                        
+                        if (reset) {
+                            // Reallocate the current poller
+                            int count = Poll.pollset(pollers[i], desc);
+                            long newPoller = allocatePoller(actualPollerSize, pool, -1);
+                            for (int j = 0; j < count; j++) {
+                                int events = (int) desc[2*j];
+                                long socket = desc[2*j+1];
+                                Poll.remove(pollers[i], socket);
+                                if (skip != null && skip.contains(socket)) {
+                                    continue;
+                                }
+                                if (Poll.add(newPoller, socket, events) != Status.APR_SUCCESS) {
+                                    // Skip
+                                }
+                            }
+                            Poll.destroy(pollers[i]);
+                            pollers[i] = newPoller;
+                        }
+                        
                     }
                     
                     // Process socket timeouts
@@ -1910,10 +1966,8 @@ public class AprEndpoint {
                         if (serverSockPool != 0) {
                             Socket.destroy(socket);
                         }
-                        socket = 0;
                     }
                 } else {
-
                     // Process the request from this socket
                     if ((status != null) && (handler.event(socket, status) == Handler.SocketState.CLOSED)) {
                         // Close socket and pool only if it wasn't closed
@@ -1921,7 +1975,6 @@ public class AprEndpoint {
                         if (serverSockPool != 0) {
                             Socket.destroy(socket);
                         }
-                        socket = 0;
                     } else if ((status == null) && ((options && !setSocketOptions(socket)) 
                             || handler.process(socket) == Handler.SocketState.CLOSED)) {
                         // Close socket and pool only if it wasn't closed
@@ -1929,7 +1982,6 @@ public class AprEndpoint {
                         if (serverSockPool != 0) {
                             Socket.destroy(socket);
                         }
-                        socket = 0;
                     }
                 }
 
@@ -2359,7 +2411,6 @@ public class AprEndpoint {
                 } else {
                     // Close socket and pool
                     Socket.destroy(socket);
-                    socket = 0;
                 }
             } else {
                 // Process the request from this socket
@@ -2367,9 +2418,9 @@ public class AprEndpoint {
                         || handler.process(socket) == Handler.SocketState.CLOSED) {
                     // Close socket and pool
                     Socket.destroy(socket);
-                    socket = 0;
                 }
             }
+            socket = 0;
 
         }
         
@@ -2397,8 +2448,8 @@ public class AprEndpoint {
             if (handler.process(socket) == Handler.SocketState.CLOSED) {
                 // Close socket and pool
                 Socket.destroy(socket);
-                socket = 0;
             }
+            socket = 0;
 
         }
         
@@ -2428,8 +2479,8 @@ public class AprEndpoint {
             if (handler.event(socket, status) == Handler.SocketState.CLOSED) {
                 // Close socket and pool
                 Socket.destroy(socket);
-                socket = 0;
             }
+            socket = 0;
 
         }
         
