@@ -100,7 +100,7 @@
         Allow AJP to read large body packets, up to the configured packet size. (remm)
       </fix>
       <fix>
-        Remote date tool class, since it has sync issues. (markt, remm)
+        Remove date tool class, since it has sync issues. (markt, remm)
       </fix>
       <add>
         Add AJP support for certificate chains. (billbarker)
@@ -112,7 +112,7 @@
         Handling for invalid AJP messages. (remm)
       </fix>
       <fix>
-        New maxThreads default to 200, up from 40. (remm)
+        New maxThreads default to 200, up from 40. (remm, fhanik)
       </fix>
       <fix>
         <bug>46077</bug>: Add configuration for deferAccept flag. (remm)
@@ -125,6 +125,12 @@
       </fix>
       <fix>
         Refactor generation of the READ event which follows a BEGIN into the HTTP protocol handler. (remm)
+      </fix>
+      <fix>
+        <jira>124</jira>: Comet instability fixes. (remm)
+      </fix>
+      <fix>
+        Fix timeout processing in many cases. (remm)
       </fix>
     </changelog>
   </subsection>
@@ -158,7 +164,7 @@
   <subsection name="Others">
     <changelog>
       <fix>
-        <jboss-jira>JBWEB-122</jboss-jira>: Fix exception when using SSL and HTTP variables. (jfclere)
+        <jira>122</jira>: Fix exception when using SSL and HTTP variables. (jfclere)
       </fix>
     </changelog>
   </subsection>

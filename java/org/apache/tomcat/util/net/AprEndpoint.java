@@ -1366,6 +1366,13 @@ public class AprEndpoint {
          */
         protected SocketTimeouts timeouts = null;
         
+        
+        /**
+         * Last run of maintain. Maintain will run usually every 5s.
+         */
+        protected long lastMaintain = System.currentTimeMillis();
+        
+        
         /**
          * Amount of connections inside this poller.
          */
@@ -1577,6 +1584,12 @@ public class AprEndpoint {
         protected void maintain() {
 
             long date = System.currentTimeMillis();
+            // Maintain runs at most once every 5s, although it will likely get called more
+            if ((date - lastMaintain) < 5000L) {
+                return;
+            } else {
+                lastMaintain = date;
+            }
             long socket = timeouts.check(date);
             while (socket != 0) {
                 removeFromPoller(socket);
@@ -1612,7 +1625,7 @@ public class AprEndpoint {
          */
         public void run() {
 
-            long maintainTime = 0;
+            int maintain = 0;
             // Loop until we receive a shutdown command
             while (running) {
 
@@ -1627,13 +1640,12 @@ public class AprEndpoint {
                 // Check timeouts for suspended connections if the poller is empty
                 while (connectionCount < 1 && addList.size() < 1) {
                     // Reset maintain time.
-                    maintainTime = 1;
                     try {
+                        if (soTimeout > 0 && running) {
+                            maintain();
+                        }
                         synchronized (this) {
                             this.wait(10000);
-                        }
-                        if (soTimeout > 0 && connectionCount < 1 && addList.size() < 1 && running) {
-                            maintain();
                         }
                     } catch (InterruptedException e) {
                         // Ignore
@@ -1694,8 +1706,6 @@ public class AprEndpoint {
                             info = localAddList.get();
                         }
                     }
-
-                    maintainTime += pollTime;
 
                     // Poll for the specified interval
                     for (int i = 0; i < pollers.length; i++) {
@@ -1798,16 +1808,15 @@ public class AprEndpoint {
                     }
                     
                     // Process socket timeouts
-                    if (soTimeout > 0 && maintainTime > 1000000L && running) {
+                    if (soTimeout > 0 && maintain++ > 1000 && running) {
                         // This works and uses only one timeout mechanism for everything, but the
                         // non Comet poller might be a bit faster by using the old maintain.
-                        maintainTime = 0;
+                        maintain = 0;
                         maintain();
-                        maintainTime = 1;
                     }
 
                 } catch (Throwable t) {
-                    if (maintainTime == 0) {
+                    if (maintain == 0) {
                         log.error(sm.getString("endpoint.maintain.error"), t);
                     } else {
                         log.error(sm.getString("endpoint.poll.error"), t);
