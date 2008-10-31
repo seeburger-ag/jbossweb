@@ -1669,7 +1669,9 @@ public class AprEndpoint {
                                     // Resume event
                                     timeouts.remove(info.socket);
                                     removeFromPoller(info.socket);
-                                    processSocket(info.socket, SocketStatus.OPEN_CALLBACK);
+                                    if (!processSocket(info.socket, SocketStatus.OPEN_CALLBACK)) {
+                                        Socket.destroy(info.socket);
+                                    }
                                 } else {
                                     // Store timeout
                                     timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
@@ -1680,6 +1682,7 @@ public class AprEndpoint {
                                         | ((info.write()) ? Poll.APR_POLLOUT : 0);
                                     if (!addToPoller(info.socket, events)) {
                                         // Can't do anything: close the socket right away
+                                        timeouts.remove(info.socket);
                                         if (!comet || (comet && !processSocket(info.socket, SocketStatus.ERROR))) {
                                             Socket.destroy(info.socket);
                                         }
@@ -1692,7 +1695,9 @@ public class AprEndpoint {
                                         // Resume event
                                         timeouts.remove(info.socket);
                                         removeFromPoller(info.socket);
-                                        processSocket(info.socket, SocketStatus.OPEN_CALLBACK);
+                                        if (!processSocket(info.socket, SocketStatus.OPEN_CALLBACK)) {
+                                            Socket.destroy(info.socket);
+                                        }
                                     } else {
                                         // Suspend
                                         timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
@@ -1700,7 +1705,9 @@ public class AprEndpoint {
                                 } else {
                                     // Should never happen, if not Comet, the socket is always put in
                                     // the list with the read flag.
+                                    timeouts.remove(info.socket);
                                     Socket.destroy(info.socket);
+                                    log.error(sm.getString("endpoint.poll.error"));
                                 }
                             }
                             info = localAddList.get();

@@ -269,10 +269,10 @@ public class CoyoteAdapter
                 req.getRequestProcessor().setWorkerThreadName(null);
                 // Recycle the wrapper request and response
                 if (error || close || response.isClosed()) {
-                    res.action(ActionCode.ACTION_COMET_END, null);
                     request.recycle();
                     request.setFilterChain(null);
                     response.recycle();
+                    res.action(ActionCode.ACTION_COMET_END, null);
                 }
             }
             

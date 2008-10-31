@@ -1259,9 +1259,9 @@ public class Http11AprProcessor implements ActionHook {
         } else if (actionCode == ActionCode.ACTION_COMET_END) {
             comet = false;
             // End non blocking mode
-            Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
             outputBuffer.setNonBlocking(false);
             inputBuffer.setNonBlocking(false);
+            Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
         } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
             readNotifications = false;
         } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
