@@ -881,9 +881,6 @@ public class Http11Processor implements ActionHook {
 
             rp.setStage(org.apache.coyote.Constants.STAGE_KEEPALIVE);
 
-            // Don't reset the param - we'll see it as ended. Next request
-            // will reset it
-            // thrA.setParam(null);
             // Next request
             inputBuffer.nextRequest();
             outputBuffer.nextRequest();
