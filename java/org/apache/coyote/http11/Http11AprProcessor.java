@@ -780,6 +780,9 @@ public class Http11AprProcessor implements ActionHook {
             } else if (status == SocketStatus.OPEN_CALLBACK) {
                 // The resume notification is now done
                 resumeNotification = false;
+            } else if (status == SocketStatus.ERROR) {
+                // Set error flag right away
+                error = true;
             }
             containerThread.set(Boolean.TRUE);
             rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
@@ -1261,7 +1264,9 @@ public class Http11AprProcessor implements ActionHook {
             // End non blocking mode
             outputBuffer.setNonBlocking(false);
             inputBuffer.setNonBlocking(false);
-            Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
+            if (!error) {
+                Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
+            }
         } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
             readNotifications = false;
         } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
