@@ -690,6 +690,30 @@ public class Response
 
 
     /**
+     * Reset the data buffer and the using Writer/Stream flags but not any
+     * status or header information.
+     *
+     * @param resetWriterStreamFlags <code>true</code> if the internal
+     *        <code>usingWriter</code>, <code>usingOutputStream</code>,
+     *        <code>isCharacterEncodingSet</code> flags should also be reset
+     * 
+     * @exception IllegalStateException if the response has already
+     *  been committed
+     */
+    public void resetBuffer(boolean resetWriterStreamFlags) {
+
+        resetBuffer();
+        
+        if(resetWriterStreamFlags) {
+            usingOutputStream = false;
+            usingWriter = false;
+            isCharacterEncodingSet = false;
+        }
+
+    }
+
+    
+    /**
      * Set the buffer size to be used for this Response.
      *
      * @param size The new buffer size

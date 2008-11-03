@@ -84,6 +84,9 @@
       <fix>
         <bug>46105</bug>: Set query string URI encoding when replaying request. (markt)
       </fix>
+      <fix>
+        Only reset the buffer and usage of IS or writer when forwarding to a custom error page. (markt, remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
