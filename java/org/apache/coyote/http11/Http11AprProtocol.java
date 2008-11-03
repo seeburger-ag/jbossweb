@@ -572,7 +572,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     } else {
                         if (proto.endpoint.isRunning()) {
                             proto.endpoint.getCometPoller().add(socket, result.getCometTimeout(), 
-                                    result.getReadNotifications(), result.getWriteNotification(), result.getResumeNotification());
+                                    result.getReadNotifications(), result.getWriteNotification(), result.getResumeNotification(), false);
                         }
                     }
                     result.endProcessing();
@@ -603,7 +603,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         state = event(socket, SocketStatus.OPEN_READ);
                     } else {
                         proto.endpoint.getCometPoller().add(socket, processor.getCometTimeout(), 
-                                processor.getReadNotifications(), false, false);
+                                processor.getReadNotifications(), false, false, false);
                     }
                 } else {
                     recycledProcessors.offer(processor);
