@@ -8,3 +8,6 @@ XML parser in webapp fix (significant refactoring, partial)
 
 http://svn.apache.org/viewvc?rev=709821&view=rev
 Endline configuration for PrintWriter based on a server system property
+
+http://svn.apache.org/viewvc?rev=709018&view=rev
+Async logger is not ready
