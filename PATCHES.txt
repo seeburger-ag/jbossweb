@@ -11,3 +11,6 @@ Endline configuration for PrintWriter based on a server system property
 
 http://svn.apache.org/viewvc?rev=709018&view=rev
 Async logger is not ready
+
+http://svn.apache.org/viewvc?rev=710179&view=rev
+Invoker servlet removal

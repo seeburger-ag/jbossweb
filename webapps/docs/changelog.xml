@@ -165,6 +165,10 @@
       <fix>
         Fix regression in Big* types handling. Patch provided by Nils Eckert. (markt)
       </fix>
+      <fix>
+        <bug>46047</bug>: Include jar in path for dependencies if they are in a JAR.
+        Patch provided by Cédric Mailleux. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Others">
