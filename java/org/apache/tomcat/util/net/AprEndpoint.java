@@ -1159,7 +1159,7 @@ public class AprEndpoint {
      * Socket list class, used to avoid using a possibly large amount of objects
      * with very little actual use.
      */
-    public class SocketInfo {
+    public static class SocketInfo {
         public static final int READ = 1;
         public static final int WRITE = 2;
         public static final int RESUME = 4;
@@ -1178,6 +1178,12 @@ public class AprEndpoint {
         }
         public boolean wakeup() {
             return (flags & WAKEUP) == WAKEUP;
+        }
+        public static int merge(int flag1, int flag2) {
+            return ((flag1 & READ) | (flag2 & READ))
+                | ((flag1 & WRITE) | (flag2 & WRITE)) 
+                | ((flag1 & RESUME) | (flag2 & RESUME)) 
+                | ((flag1 & WAKEUP) & (flag2 & WAKEUP));
         }
     }
     
@@ -1290,7 +1296,7 @@ public class AprEndpoint {
             } else {
                 for (int i = 0; i < size; i++) {
                     if (sockets[i] == socket) {
-                        flags[i] = flags[i] | flag;
+                        flags[i] = SocketInfo.merge(flags[i], flag);
                         return true;
                     }
                 }

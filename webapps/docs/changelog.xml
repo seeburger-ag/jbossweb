@@ -133,7 +133,8 @@
         Refactor generation of the READ event which follows a BEGIN into the HTTP protocol handler. (remm)
       </fix>
       <fix>
-        <jira>124</jira>: Comet instability fixes. (remm)
+        <jira>124</jira>, <jira>125</jira>: APR instability fixes involving asynchronous resume()
+        calls. (remm)
       </fix>
       <fix>
         Fix timeout processing in many cases. (remm)
