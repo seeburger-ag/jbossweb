@@ -26,6 +26,9 @@
       <fix>
         <bug>42707</bug>: Adding host aliases should be dynamic. (markt)
       </fix>
+      <fix>
+        JNDI realm feature additions. (rjung)
+      </fix>
     </changelog>
   </subsection>
 </section>
