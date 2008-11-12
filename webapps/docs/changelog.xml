@@ -32,6 +32,10 @@
       <fix>
         <bug>42747</bug>: Harmonize handling of context.xml between war and exploded folder. (markt)
       </fix>
+      <fix>
+        <bug>42673</bug>: In SSI, correctly handle includes with multi-level contexts.
+        Patch provided by Peter Jodeleit. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
