@@ -23,6 +23,9 @@
         <bug>46011</bug>: Make Principal accessible (if set) via Subject.getSubject(AccessController.getContext()) when processing filters.
         Based on a patch provided by tsveg1. (markt)
       </fix>
+      <fix>
+        <bug>42707</bug>: Adding host aliases should be dynamic. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

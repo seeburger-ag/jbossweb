@@ -26,6 +26,10 @@ import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
+import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.ContainerListener;
+import org.apache.catalina.Host;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.core.StandardContext;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.mapper.Mapper;
@@ -42,7 +46,7 @@ import org.jboss.logging.Logger;
  * @author Costin Manolache
  */
 public class MapperListener
-    implements NotificationListener 
+    implements NotificationListener, ContainerListener
  {
     private static Logger log = Logger.getLogger(MapperListener.class);
 
@@ -251,6 +255,18 @@ public class MapperListener
     }
 
 
+    // --------------------------------------------- Container Listener methods
+
+    public void containerEvent(ContainerEvent event) {
+
+        if (event.getType() == Host.ADD_ALIAS_EVENT) {
+            mapper.addHostAlias(((Host) event.getSource()).getName(),
+                    event.getData().toString());
+        } else if (event.getType() == Host.REMOVE_ALIAS_EVENT) {
+            mapper.removeHostAlias(event.getData().toString());
+        }
+    }
+
     // ------------------------------------------------------ Protected Methods
 
     private void registerEngine()
@@ -293,7 +309,7 @@ public class MapperListener
             if (!isRegisteredWithAlias)
                 log.warn(sm.getString("mapperListener.unknownDefaultHost", defaultHost));
         }
-        // This should probablt be called later 
+        // This should probably be called later 
         if( defaultHost != null ) {
             mapper.setDefaultHostName(defaultHost);
         }
@@ -306,9 +322,11 @@ public class MapperListener
         throws Exception {
         String name=objectName.getKeyProperty("host");
         if( name != null ) {        
-            String[] aliases = (String[])
-                mBeanServer.invoke(objectName, "findAliases", null, null);
+            Host host = (Host) ServerFactory.getServer().findService(
+                    domain).getContainer().findChild(name);
+            String[] aliases = host.findAliases();
             mapper.addHost(name, aliases, objectName);
+            host.addContainerListener(this);
             if(log.isDebugEnabled())
                 log.debug(sm.getString
                      ("mapperListener.registerHost", name, domain));
