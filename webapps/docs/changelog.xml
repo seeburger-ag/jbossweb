@@ -26,8 +26,11 @@
       <fix>
         <bug>42707</bug>: Adding host aliases should be dynamic. (markt)
       </fix>
-      <fix>
+      <update>
         JNDI realm feature additions. (rjung)
+      </update>
+      <fix>
+        <bug>42747</bug>: Harmonize handling of context.xml between war and exploded folder. (markt)
       </fix>
     </changelog>
   </subsection>
