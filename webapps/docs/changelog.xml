@@ -16,6 +16,17 @@
 
 <body>
 
+<section name="JBoss Web 2.1.2.CR1 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <bug>46011</bug>: Make Principal accessible (if set) via Subject.getSubject(AccessController.getContext()) when processing filters.
+        Based on a patch provided by tsveg1. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.1.GA (remm)">
   <subsection name="General">
     <changelog>

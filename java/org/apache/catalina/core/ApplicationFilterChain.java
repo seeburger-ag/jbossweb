@@ -228,7 +228,7 @@ final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain 
 
                     Object[] args = new Object[]{req, res, this};
                     SecurityUtil.doAsPrivilege
-                        ("doFilter", filter, classType, args);
+                        ("doFilter", filter, classType, args, principal);
                     
                     args = null;
                 } else {  
@@ -409,7 +409,7 @@ final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain 
 
                     Object[] args = new Object[]{ev, this};
                     SecurityUtil.doAsPrivilege
-                        ("doFilterEvent", (Filter) filter, cometClassType, args);
+                        ("doFilterEvent", (Filter) filter, cometClassType, args, principal);
 
                     args = null;
                 } else {  
