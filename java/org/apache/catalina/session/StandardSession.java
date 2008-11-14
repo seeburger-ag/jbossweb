@@ -1443,9 +1443,6 @@ public class StandardSession
             Object value = (Object) stream.readObject();
             if ((value instanceof String) && (value.equals(NOT_SERIALIZED)))
                 continue;
-            if (manager.getContainer().getLogger().isDebugEnabled())
-                manager.getContainer().getLogger().debug("  loading attribute '" + name +
-                    "' with value '" + value + "'");
             attributes.put(name, value);
         }
         isValid = isValidSave;
@@ -1517,10 +1514,6 @@ public class StandardSession
             stream.writeObject((String) saveNames.get(i));
             try {
                 stream.writeObject(saveValues.get(i));
-                if (manager.getContainer().getLogger().isDebugEnabled())
-                    manager.getContainer().getLogger().debug
-                        ("  storing attribute '" + saveNames.get(i) +
-                        "' with value '" + saveValues.get(i) + "'");
             } catch (NotSerializableException e) {
                 manager.getContainer().getLogger().warn
                     (sm.getString("standardSession.notSerializable",

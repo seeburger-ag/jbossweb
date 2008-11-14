@@ -111,6 +111,9 @@
       <fix>
         Only reset the buffer and usage of IS or writer when forwarding to a custom error page. (markt, remm)
       </fix>
+      <fix>
+        Remove verbose attribute value logging during session passivation. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
