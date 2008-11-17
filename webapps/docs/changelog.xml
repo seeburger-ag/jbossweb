@@ -36,6 +36,9 @@
         <bug>42673</bug>: In SSI, correctly handle includes with multi-level contexts.
         Patch provided by Peter Jodeleit. (markt)
       </fix>
+      <fix>
+        If throwing an exception for a non serializable attribute, mention the attribute name in the exception. (mturk)
+      </fix>
     </changelog>
   </subsection>
 </section>
