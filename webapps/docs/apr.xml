@@ -17,7 +17,7 @@
   <section name="Introduction">
 
   <p>
-      Tomcat can use the <a href="http://apr.apache.org/">Apache Portable Runtime</a> to 
+      JBoss Web can use the <a href="http://apr.apache.org/">Apache Portable Runtime</a> to 
       provide superior scalability, performance, and better integration with native server 
       technologies. The Apache Portable Runtime is a highly portable library that is at 
       the heart of Apache HTTP Server 2.x. APR has many uses, including access to advanced IO
@@ -33,7 +33,7 @@
   </p>
 
   <p>
-      <a href="http://labs.jboss.com/jbossweb/native.html">JBoss Web Native</a> provides bundle for severals platforms.
+      <a href="http://www.jboss.org/jbossweb/native.html">JBoss Native</a> provides bundle for severals platforms.
       The bundles contain APR, OpenSSL and tc-native ready to use.
   </p>
 
@@ -69,7 +69,7 @@
     <p>
       Most Linux distributions will ship packages for APR and OpenSSL. The JNI wrapper (libtcnative) will 
       then have to be compiled. It depends on APR, OpenSSL, and the Java headers.
-      Some ready to use bundles are available  <a href="http://labs.jboss.com/jbossweb/downloads/jboss-native/">here</a>.
+      Some ready to use bundles are available <a href="http://labs.jboss.com/jbossweb/downloads/jboss-native/">here</a>.
     </p>
     
     <p>
@@ -83,8 +83,7 @@
     </p>
     
     <p>
-      The wrapper library sources are located in the JBoss Web binary bundle, in the 
-      <code>bin/tomcat-native.tar.gz</code> archive.
+      The wrapper library sources are located <a href="http://labs.jboss.com/jbossweb/downloads/jboss-native/">here</a>.
       Once the build environment is installed and the source archive is extracted, the wrapper library 
       can be compiled using (from the folder containing the configure script):
       <source>./configure &amp;&amp; make &amp;&amp; make install</source>
