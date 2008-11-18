@@ -39,6 +39,9 @@
       <fix>
         If throwing an exception for a non serializable attribute, mention the attribute name in the exception. (mturk)
       </fix>
+      <fix>
+        Create configBase also when dealing with directory deployment. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
