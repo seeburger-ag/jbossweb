@@ -194,7 +194,6 @@ public abstract class RequestBase implements BayeuxRequest {
             out.print(");");
         } 
         out.flush();
-        event.getHttpServletResponse().flushBuffer();
 
     }
 
