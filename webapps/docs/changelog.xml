@@ -42,6 +42,12 @@
       <fix>
         Create configBase also when dealing with directory deployment. (markt)
       </fix>
+      <fix>
+        Pass attribute changes to the executor to allow dynamic configuration. (markt)
+      </fix>
+      <fix>
+        <bug>42077</bug>: In javax.el iterators, don't return null elements. Based on a patch by Mathias Broekelmann. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
