@@ -29,16 +29,16 @@
 
   </section>
 
-  <section name="Comet support">
+  <section name="Event driven Servlets">
 
   <p>
-    Comet support allows a servlet to process IO asynchronously, receiving
+    This API allows writing Servlets which can process IO asynchronously, receiving
     events when data is available for reading on the connection (rather than
     always using a blocking read), and writing data back on connections
-    asynchronously (most likely responding to some event raised from some
+    asynchronously without blocking (most likely responding to some event raised from some
     other source).
   </p>
-
+  
   <subsection name="HttpEvent">
   
   <p>
@@ -48,7 +48,7 @@
     access to the usual request and response objects, which may be used in the
     usual way. The main difference is that those objects remain valid and fully
     functional at any time between processing of the BEGIN event until processing
-    an END or ERROR event.
+    an END or ERROR event, so that asynchronous operations are possible.
     The following event types exist:
   </p>
   
@@ -146,7 +146,7 @@
     The suspend() method suspends processing of the connection until the configured timeout occurs, 
       or resume() is called. In practice, this means the servlet will no longer 
       receive read events. Reading should always be performed synchronously in 
-      the contaner threads unless the connection has been suspended.
+      the container threads unless the connection has been suspended.
   </p>
   
   <p>
@@ -156,6 +156,17 @@
       some asynchronous processing is done). This also resumes read events 
       if they have been disabled using suspend. It is then possible to call suspend 
       again later. It is also possible to call resume without calling suspend before.
+  </p>
+  
+  <p>
+    The Servlet container will never, under any circumstance, invoke the event method of a Servlet
+    with an event pertaining to a particular connection concurrently. For example, if
+    a READ event is being processed, and some asynchronous thread closes the event using event.close(),
+    an END event will only be called after the Servlet has completed processing of the READ event.
+    However, the application must still synchronize any concurrent access it makes to an event or any
+    objects provided by the Servlet API. The event object remains allocated for the entire duration
+    of the connection, and can safely be used for synchronization purposes. For example, two possibly 
+    concurrent writes done on the same connection should likely synchronize on the event object. 
   </p>
   
   </subsection>
@@ -324,6 +335,15 @@ public class ChatServlet
   
   </subsection>
 
+  </section>
+
+  <section name="Tomcat Bayeux API">
+
+  <p>
+    JBoss Web supports the Apache Tomcat Bayeux API which provides a ready to use
+    toolkit for building simple Comet enabled web applications.
+  </p>
+  
   </section>
 
   <section name="Asynchronous writes">
