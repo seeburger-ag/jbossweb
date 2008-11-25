@@ -22,7 +22,7 @@
   </p>
 
   <p>
-    <b>IMPORTANT NOTE: Usage of these features requires using the APR connector. 
+    <b>IMPORTANT NOTE: Usage of these features requires using the APR HTTP connector. 
     The classic java.io HTTP connector and the AJP connectors
     do not support them.</b>
   </p>
@@ -52,7 +52,7 @@
   </p>
   
   <ul>
-  <li>EventType.BEGIN - will be called at the beginning 
+  <li>EventType.<b>BEGIN</b> - will be called at the beginning 
        of the processing of the connection. It can be used to initialize any relevant 
        fields using the request and response objects. Between the end of the processing 
        of this event, and the beginning of the processing of the end or error events,
@@ -61,7 +61,7 @@
        not synchronized, so when they are accessed by multiple threads adequate
        synchronization is needed. After processing the initial event, the request 
        is considered to be committed.</li>
-  <li>EventType.READ - This indicates that input data is available, and that at least one 
+  <li>EventType.<b>READ</b> - This indicates that input data is available, and that at least one 
        read call can be made without blocking. The available and ready methods of the InputStream and
        Reader may be used to determine if there is a risk of blocking: the servlet
        must continue reading while data is reported available. When encountering a read error, 
@@ -73,35 +73,35 @@
        of the event. It is not allowed to attempt reading data from the request 
        outside of the event method scope.
   </li>
-  <li>EventType.END - End may be called to end the processing of the request. Fields that have
+  <li>EventType.<b>END</b> - End may be called to end the processing of the request. Fields that have
        been initialized in the begin method should be reset. After this event has
        been processed, the request and response objects, as well as all their dependent
        objects will be recycled and used to process other requests. In particular,
        this event will be called if the HTTP session associated with the connection
        times out, if the web application is reloaded, if the server is shutdown, or
        if the connection was closed asynchronously.</li>
-  <li>EventType.EOF - The end of file of the input has been reached, and no further data is
+  <li>EventType.<b>EOF</b> - The end of file of the input has been reached, and no further data is
        available. This event is sent because it can be difficult to detect otherwise, for
        example when chunked transfer encoding is being used.
        Following the processing of this event and the processing of any subsequent
        event, the event will be automatically suspended, as and no additional read events
        will be sent.</li>
-  <li>EventType.ERROR - Error will be called by the container in the case where an IO exception
+  <li>EventType.<b>ERROR</b> - Error will be called by the container in the case where an IO exception
        or a similar unrecoverable error occurs, or if the Servlet has thrown an exception during
        the invocation of the event method. Fields that have
        been initialized in the begin method should be reset (similar to what should be done
        when the END event is received). After this event has
        been processed, the request and response objects, as well as all their dependent
        objects will be recycled and used to process other requests.</li>
-  <li>EventType.TIMEOUT - The connection timed out according to the timeout value which has been
+  <li>EventType.<b>TIMEOUT</b> - The connection timed out according to the timeout value which has been
        set (the default value is the timeout value of the connector), but the connection will not be closed unless 
        the servlet uses the close method of the event. The timeout is calculated from the last event sent
        to the Servlet, any asynchronous writes are not monitored. Depending on the situation, the handling of the
        event could change.</li>
-  <li>EventType.EVENT - Event will be called by the container after the resume() method is called,
+  <li>EventType.<b>EVENT</b> - Event will be called by the container after the resume() method is called,
        during which any operation can be performed, including closing the connection
        using the close() method.</li>
-  <li>EventType.WRITE - Write is sent if the servlet is using the isWriteReady method. This means that 
+  <li>EventType.<b>WRITE</b> - Write is sent if the servlet is using the isWriteReady method. This means that 
        the connection is ready to receive data to be written out without blocking. This event will never
        be received if the servlet is not using the isWriteReady method, or if the isWriteReady
        method always returns true.</li>
@@ -114,13 +114,13 @@
   </p>
   
   <p>
-    The close() method ends the request, which marks the end of the processing. This will send 
+    The <b>close()</b> method ends the request, which marks the end of the processing. This will send 
       back to the client a notice that the server has no more data to send 
       as part of this request. An END event will be sent to the servlet.
   </p>
   
   <p>
-    The setTimeout() method sets the timeout in milliseconds of idle time on the connection.
+    The <b>setTimeout()</b> method sets the timeout in milliseconds of idle time on the connection.
       A timeout occurs if the amount of time since the last event processed by the Servlet is greater
       than the timeout value. If a timeout occurs, the Servlet will receive an TIMEOUT event which
       will not result in automatically closing the event (the event may be closed using the close() method
@@ -128,14 +128,14 @@
   </p>
   
   <p>
-     The isReadReady() method returns true when data may be read from the connection (the flag becomes false if no data
+     The <b>isReadReady()</b> method returns true when data may be read from the connection (the flag becomes false if no data
      is available to read). When the flag becomes false, the Servlet can attempt to read additional
      data, but it will block until data is available. This method is equivalent to 
      Reader.ready() and (InputStream.available() > 0).
   </p>
   
   <p>
-     The isWriteReady() method returns true when data may be written to the connection without
+     The <b>isWriteReady()</b> method returns true when data may be written to the connection without
       blocking (the flag becomes false 
       when the client is unable to accept data fast enough). When the flag becomes false, 
       the servlet must stop writing data. If there's an attempt to flush additional data 
@@ -154,14 +154,14 @@
   </p>
   
   <p>
-    The suspend() method suspends processing of the connection until the configured timeout occurs, 
+    The <b>suspend()</b> method suspends processing of the connection until the configured timeout occurs, 
       or resume() is called. In practice, this means the servlet will no longer 
       receive read events. Reading should always be performed synchronously in 
       the container threads unless the connection has been suspended.
   </p>
   
   <p>
-     The resume() method will cause the servlet container to send a generic event 
+     The <b>resume()</b> method will cause the servlet container to send a generic event 
       to the servlet, where the request can be processed synchronously 
       (for example, it is possible to use this to complete the request after 
       some asynchronous processing is done). This also resumes read events 
