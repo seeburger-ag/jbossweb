@@ -22,3 +22,7 @@ Useless session access time refactoring
 719602
 Dynamic change for maxThreads in the bare bones thread pool, which go against its simplicity goal
 (an executor should be used instead)
+
+720728
+Multiple pollers, which adds the complexity of needing a map to track to which poller a connection belongs 
+(needed in IO event mode). There are 3 pollers already, which should be able to handle a lot of traffic. 
