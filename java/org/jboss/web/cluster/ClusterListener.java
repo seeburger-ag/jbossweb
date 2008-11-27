@@ -107,7 +107,7 @@ public class ClusterListener
     /**
      * Proxies.
      */
-    protected Proxy[] proxies = null;
+    protected Proxy[] proxies = new Proxy[0];
     
     
     /**
