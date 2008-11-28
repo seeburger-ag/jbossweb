@@ -48,6 +48,9 @@
       <fix>
         <bug>42077</bug>: In javax.el iterators, don't return null elements. Based on a patch by Mathias Broekelmann. (markt)
       </fix>
+      <fix>
+        Possible NPE on shutdown of ClusterListener. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

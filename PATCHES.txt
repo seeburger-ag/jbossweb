@@ -1,22 +1,22 @@
 Dropped Tomcat patches
 SVN URL: http://svn.apache.org/viewvc?rev=XXXXXX&view=rev
 
-701358:
+701358
 Some symlink fix (too many checks needed)
 
-701355:
+701355
 XML parser in webapp fix (significant refactoring, partial)
 
-709821:
+709821
 Endline configuration for PrintWriter based on a server system property
 
-709018:
+709018
 Async logger is not ready
 
-710179:
+710179
 Invoker servlet removal
 
-711711, 711714, 711716, 711720:
+711711 711714 711716 711720
 Useless session access time refactoring
 
 719602
