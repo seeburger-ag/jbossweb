@@ -51,6 +51,16 @@
       <fix>
         Possible NPE on shutdown of ClusterListener. (remm)
       </fix>
+      <fix>
+        InstanceManager security manager fixes. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        EL security manager fixes. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

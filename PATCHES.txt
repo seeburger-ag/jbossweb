@@ -26,3 +26,7 @@ Dynamic change for maxThreads in the bare bones thread pool, which go against it
 720728
 Multiple pollers, which adds the complexity of needing a map to track to which poller a connection belongs 
 (needed in IO event mode). There are 3 pollers already, which should be able to handle a lot of traffic. 
+
+various
+All changesets introducing generics, which have small value (new code or refactorings should use generics,
+however)
