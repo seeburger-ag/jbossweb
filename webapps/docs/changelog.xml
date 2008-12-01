@@ -54,6 +54,9 @@
       <fix>
         InstanceManager security manager fixes. (markt)
       </fix>
+      <add>
+        Add a log formatter which logs on one line. (markt)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Jasper">
