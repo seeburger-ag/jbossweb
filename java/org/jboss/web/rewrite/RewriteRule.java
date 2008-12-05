@@ -23,6 +23,7 @@
 
 package org.jboss.web.rewrite;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,21 @@ public class RewriteRule {
         // Parse conditions
         for (int i = 0; i < conditions.length; i++) {
             conditions[i].parse(maps);
+        }
+        // Parse flag which have substitution values
+        if (isEnv()) {
+            for (int i = 0; i < envValue.size(); i++) {
+                Substitution newEnvSubstitution = new Substitution();
+                newEnvSubstitution.setSub(envValue.get(i));
+                newEnvSubstitution.parse(maps);
+                envSubstitution.add(newEnvSubstitution);
+                envResult.add(new ThreadLocal<String>());
+            }
+        }
+        if (isCookie()) {
+            cookieSubstitution = new Substitution();
+            cookieSubstitution.setSub(cookieValue);
+            cookieSubstitution.parse(maps);
         }
     }
     
@@ -112,6 +128,14 @@ public class RewriteRule {
         }
         // Use the substitution to rewrite the url
         if (rewrite) {
+            if (isEnv()) {
+                for (int i = 0; i < envSubstitution.size(); i++) {
+                    envResult.get(i).set(envSubstitution.get(i).evaluate(matcher, lastMatcher, resolver));
+                }
+            }
+            if (isCookie()) {
+                cookieResult.set(cookieSubstitution.evaluate(matcher, lastMatcher, resolver));
+            }
             if (substitution != null) {
                 return substitution.evaluate(matcher, lastMatcher, resolver);
             } else {
@@ -153,19 +177,24 @@ public class RewriteRule {
     protected boolean cookie = false;
     protected String cookieName = null;
     protected String cookieValue = null;
+    protected String cookieDomain = null;
+    protected int cookieLifetime = -1;
+    protected String cookiePath = null;
+    protected boolean cookieSecure = false;
+    protected boolean cookieHttpOnly = false;
+    protected Substitution cookieSubstitution = null;
+    protected ThreadLocal<String> cookieResult = new ThreadLocal<String>();
     
     /**
-     *  This forces an environment variable named VAR to be set to the value VAL, 
-     *  where VAL can contain regexp backreferences $N and %N which will be 
-     *  expanded. You can use this flag more than once to set more than one variable. 
-     *  The variables can be later dereferenced in many situations, but usually 
-     *  from within XSSI (via <!--#echo var="VAR"-->) or CGI (e.g.  $ENV{'VAR'}). 
-     *  Additionally you can dereference it in a following RewriteCond pattern via 
-     *  %{ENV:VAR}. Use this to strip but remember information from URLs.
+     *  This forces a request attribute named VAR to be set to the value VAL, 
+     *  where VAL can contain regexp back references $N and %N which will be 
+     *  expanded. Multiple env flags are allowed.
      */
     protected boolean env = false;
-    protected String envName = null;
-    protected String envValue = null;
+    protected ArrayList<String> envName = new ArrayList<String>();
+    protected ArrayList<String> envValue = new ArrayList<String>();
+    protected ArrayList<Substitution> envSubstitution = new ArrayList<Substitution>();
+    protected ArrayList<ThreadLocal<String>> envResult = new ArrayList<ThreadLocal<String>>();
     
     /**
      *  This forces the current URL to be forbidden, i.e., it immediately sends 
@@ -249,11 +278,11 @@ public class RewriteRule {
      *  module. Use this flag to achieve a more powerful implementation of the 
      *  ProxyPass directive, to map some remote stuff into the namespace of 
      *  the local server.
-     *  FIXME: Likely no impl for this, so replace with a redirect
+     *  FIXME: No proxy
      */
 
     /**
-     * FIMXE: No passthrough ?
+     * FIXME: No passthrough ?
      */
     
     /**
@@ -331,23 +360,32 @@ public class RewriteRule {
     public void setCookieValue(String cookieValue) {
         this.cookieValue = cookieValue;
     }
+    public String getCookieResult() {
+        return cookieResult.get();
+    }
     public boolean isEnv() {
         return env;
+    }
+    public int getEnvSize() {
+        return envName.size();
     }
     public void setEnv(boolean env) {
         this.env = env;
     }
-    public String getEnvName() {
-        return envName;
+    public String getEnvName(int i) {
+        return envName.get(i);
     }
-    public void setEnvName(String envName) {
-        this.envName = envName;
+    public void addEnvName(String envName) {
+        this.envName.add(envName);
     }
-    public String getEnvValue() {
-        return envValue;
+    public String getEnvValue(int i) {
+        return envValue.get(i);
     }
-    public void setEnvValue(String envValue) {
-        this.envValue = envValue;
+    public void addEnvValue(String envValue) {
+        this.envValue.add(envValue);
+    }
+    public String getEnvResult(int i) {
+        return envResult.get(i).get();
     }
     public boolean isForbidden() {
         return forbidden;
@@ -456,6 +494,46 @@ public class RewriteRule {
 
     public void setHost(boolean host) {
         this.host = host;
+    }
+
+    public String getCookieDomain() {
+        return cookieDomain;
+    }
+
+    public void setCookieDomain(String cookieDomain) {
+        this.cookieDomain = cookieDomain;
+    }
+
+    public int getCookieLifetime() {
+        return cookieLifetime;
+    }
+
+    public void setCookieLifetime(int cookieLifetime) {
+        this.cookieLifetime = cookieLifetime;
+    }
+
+    public String getCookiePath() {
+        return cookiePath;
+    }
+
+    public void setCookiePath(String cookiePath) {
+        this.cookiePath = cookiePath;
+    }
+
+    public boolean isCookieSecure() {
+        return cookieSecure;
+    }
+
+    public void setCookieSecure(boolean cookieSecure) {
+        this.cookieSecure = cookieSecure;
+    }
+
+    public boolean isCookieHttpOnly() {
+        return cookieHttpOnly;
+    }
+
+    public void setCookieHttpOnly(boolean cookieHttpOnly) {
+        this.cookieHttpOnly = cookieHttpOnly;
     }
     
 }

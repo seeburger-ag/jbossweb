@@ -561,17 +561,11 @@ cannot use <code>$N</code> in the substitution string!
         <li>
         '<strong><code>env|E=</code></strong><em>VAR</em>:<em>VAL</em>'
         (set <strong>e</strong>nvironment variable)<br />
-        This forces an environment variable named <em>VAR</em> to
+        This forces a request attribute named <em>VAR</em> to
         be set to the value <em>VAL</em>, where <em>VAL</em> can
         contain regexp backreferences (<code>$N</code> and
         <code>%N</code>) which will be expanded. You can use this
-        flag more than once, to set more than one variable. The
-        variables can later be dereferenced in many situations, most commonly
-	from within XSSI (via <code>&lt;!--#echo
-        var="VAR"--&gt;</code>) or CGI (<code>$ENV{'VAR'}</code>). 
-	You can also dereference the variable in a later RewriteCond pattern, using
-        <code>%{ENV:VAR}</code>. Use this to strip 
-        information from URLs, while maintaining a record of that information.</li>
+        flag more than once, to set more than one variable.</li>
 
         <li>'<strong><code>forbidden|F</code></strong>' (force URL
         to be <strong>f</strong>orbidden)<br />

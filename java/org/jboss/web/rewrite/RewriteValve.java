@@ -53,6 +53,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
+import org.apache.tomcat.util.http.TomcatCookie;
 import org.apache.tomcat.util.net.URL;
 
 public class RewriteValve extends ValveBase
@@ -356,13 +357,20 @@ public class RewriteValve extends ValveBase
 
             // - cookie
             if (rules[i].isCookie() && newtest != null) {
-                response.addCookie(new Cookie(rules[i].getCookieName(), 
-                        rules[i].getCookieValue()));
-                // FIXME: Cookie impl for other parameters
+                TomcatCookie cookie = new TomcatCookie(rules[i].getCookieName(), 
+                        rules[i].getCookieResult());
+                cookie.setDomain(rules[i].getCookieDomain());
+                cookie.setMaxAge(rules[i].getCookieLifetime());
+                cookie.setPath(rules[i].getCookiePath());
+                cookie.setSecure(rules[i].isCookieSecure());
+                cookie.setHttpOnly(rules[i].isCookieHttpOnly());
+                response.addCookie(cookie);
             }
-            // - env (note: this sets a system property)
+            // - env (note: this sets a request attribute)
             if (rules[i].isEnv() && newtest != null) {
-                System.setProperty(rules[i].getEnvName(), rules[i].getEnvValue());
+                for (int j = 0; j < rules[i].getEnvSize(); j++) {
+                    request.setAttribute(rules[i].getEnvName(j), rules[i].getEnvResult(j));
+                }
             }
             // - content type (note: this will not force the content type, use a filter
             //   to do that)
@@ -614,12 +622,31 @@ public class RewriteValve extends ValveBase
             } else if (flag.startsWith("C=")) {
                 flag = flag.substring("C=".length());
             }
-            int pos = flag.indexOf(':');
-            if (pos == -1 || (pos + 1) == flag.length()) {
+            StringTokenizer tokenizer = new StringTokenizer(flag, ":");
+            if (tokenizer.countTokens() < 2) {
                 throw new IllegalArgumentException("Invalid flag in: " + line);
             }
-            rule.setCookieName(flag.substring(0, pos));
-            rule.setCookieValue(flag.substring(pos + 1));
+            rule.setCookieName(tokenizer.nextToken());
+            rule.setCookieValue(tokenizer.nextToken());
+            if (tokenizer.hasMoreTokens()) {
+                rule.setCookieDomain(tokenizer.nextToken());
+            }
+            if (tokenizer.hasMoreTokens()) {
+                try {
+                    rule.setCookieLifetime(Integer.parseInt(tokenizer.nextToken()));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Invalid flag in: " + line, e);
+                }
+            }
+            if (tokenizer.hasMoreTokens()) {
+                rule.setCookiePath(tokenizer.nextToken());
+            }
+            if (tokenizer.hasMoreTokens()) {
+                rule.setCookieSecure(Boolean.parseBoolean(tokenizer.nextToken()));
+            }
+            if (tokenizer.hasMoreTokens()) {
+                rule.setCookieHttpOnly(Boolean.parseBoolean(tokenizer.nextToken()));
+            }
         } else if (flag.startsWith("env=") || flag.startsWith("E=")) {
             rule.setEnv(true);
             if (flag.startsWith("env=")) {
@@ -631,8 +658,8 @@ public class RewriteValve extends ValveBase
             if (pos == -1 || (pos + 1) == flag.length()) {
                 throw new IllegalArgumentException("Invalid flag in: " + line);
             }
-            rule.setEnvName(flag.substring(0, pos));
-            rule.setEnvValue(flag.substring(pos + 1));
+            rule.addEnvName(flag.substring(0, pos));
+            rule.addEnvValue(flag.substring(pos + 1));
         } else if (flag.startsWith("forbidden") || flag.startsWith("F")) {
             rule.setForbidden(true);
         } else if (flag.startsWith("gone") || flag.startsWith("G")) {
@@ -648,8 +675,7 @@ public class RewriteValve extends ValveBase
         } else if (flag.startsWith("noescape") || flag.startsWith("NE")) {
             rule.setNoescape(true);
         } else if (flag.startsWith("proxy") || flag.startsWith("P")) {
-            // FIXME: Proxy not supported at the moment, would require proxy
-            // capabilities
+            // FIXME: Proxy not supported at the moment, would require proxy capabilities
             //rule.setProxy(true);
         } else if (flag.startsWith("qsappend") || flag.startsWith("QSA")) {
             rule.setQsappend(true);

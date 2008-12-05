@@ -57,6 +57,16 @@
       <add>
         Add a log formatter which logs on one line. (markt)
       </add>
+      <update>
+        <jira>129</jira>: Support substitution for cookies and env flags in RewriteRule, and map the env flag
+        to request attributes. (remm)
+      </update>
+      <update>
+        Support multiple env flags in RewriteRule. (remm)
+      </update>
+      <update>
+        Support all cookie flags in RewriteRule. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Jasper">

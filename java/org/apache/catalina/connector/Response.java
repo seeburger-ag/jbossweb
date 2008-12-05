@@ -986,6 +986,23 @@ public class Response
      *
      * @param cookie Cookie to be added
      */
+    public void addTomcatCookie(final TomcatCookie cookie) {
+
+        // Ignore any call from an included servlet
+        if (included)
+            return;
+
+        addCookieInternal(cookie);
+
+    }
+
+
+    /**
+     * Add the specified Cookie to those that will be included with
+     * this Response.
+     *
+     * @param cookie Cookie to be added
+     */
     public void addCookieInternal(final Cookie cookie) {
 
         if (isCommitted())
