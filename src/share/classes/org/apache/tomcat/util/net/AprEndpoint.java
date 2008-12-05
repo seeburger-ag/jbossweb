@@ -725,14 +725,6 @@ public class AprEndpoint {
                 workers = new WorkerStack(maxThreads);
             }
 
-            // Start acceptor threads
-            for (int i = 0; i < acceptorThreadCount; i++) {
-                Thread acceptorThread = new Thread(new Acceptor(), getName() + "-Acceptor-" + i);
-                acceptorThread.setPriority(threadPriority);
-                acceptorThread.setDaemon(daemon);
-                acceptorThread.start();
-            }
-
             // Start poller threads
             pollers = new Poller[pollerThreadCount];
             for (int i = 0; i < pollerThreadCount; i++) {
@@ -766,6 +758,14 @@ public class AprEndpoint {
                     sendfileThread.setDaemon(true);
                     sendfileThread.start();
                 }
+            }
+            
+            // Start acceptor threads
+            for (int i = 0; i < acceptorThreadCount; i++) {
+                Thread acceptorThread = new Thread(new Acceptor(), getName() + "-Acceptor-" + i);
+                acceptorThread.setPriority(threadPriority);
+                acceptorThread.setDaemon(daemon);
+                acceptorThread.start();
             }
         }
     }
