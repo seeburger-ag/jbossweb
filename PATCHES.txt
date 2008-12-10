@@ -30,3 +30,7 @@ Multiple pollers, which adds the complexity of needing a map to track to which p
 various
 All changesets introducing generics, which have small value (new code or refactorings should use generics,
 however)
+
+724886
+Executor modifications, very specialized work that breaks the Executor design (a single task can be submitted
+to the real executor more than once) to supposedly work better with the NIO connector 
