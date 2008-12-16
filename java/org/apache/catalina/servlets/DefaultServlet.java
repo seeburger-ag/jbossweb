@@ -643,9 +643,8 @@ public class DefaultServlet
                 // to be ignored by the resource that is including us.
                 // Therefore, the only way we can let the including resource
                 // know is by including warning message in response
-                response.getWriter().write(
-                    sm.getString("defaultServlet.missingResource",
-                    requestUri));
+                response.getWriter().write(sm.getString("defaultServlet.missingResource",
+                            RequestUtil.filter(requestUri)));
             }
 
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
