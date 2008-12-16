@@ -20,7 +20,7 @@ Invoker servlet removal
 Useless session access time refactoring
 
 719602
-Dynamic change for maxThreads in the bare bones thread pool, which go against its simplicity goal
+Dynamic change for maxThreads in the bare bones thread pool, which goes against its simplicity goal
 (an executor should be used instead)
 
 720728
