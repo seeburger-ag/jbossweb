@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -73,7 +71,7 @@ public class Http11Processor implements ActionHook {
     protected static StringManager sm =
         StringManager.getManager(Constants.Package);
 
-
+    
     // ------------------------------------------------------------ Constructor
 
 
@@ -95,6 +93,9 @@ public class Http11Processor implements ActionHook {
 
         // Cause loading of HexUtils
         int foo = HexUtils.DEC[0];
+
+        // Cause loading of FastHttpDateFormat
+        FastHttpDateFormat.getCurrentDate();
 
     }
 
@@ -1529,19 +1530,7 @@ public class Http11Processor implements ActionHook {
         }
 
         // Add date header
-        String date = null;
-        if (org.apache.coyote.Constants.IS_SECURITY_ENABLED){
-            date = AccessController.doPrivileged(
-                    new PrivilegedAction<String>() {
-                        public String run(){
-                            return FastHttpDateFormat.getCurrentDate();
-                        }
-                    }
-            );
-        } else {
-            date = FastHttpDateFormat.getCurrentDate();
-        }
-        headers.setValue("Date").setString(date);
+        headers.setValue("Date").setString(FastHttpDateFormat.getCurrentDate());
 
         // FIXME: Add transfer encoding header
 
