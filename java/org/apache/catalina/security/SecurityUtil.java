@@ -52,17 +52,22 @@ public final class SecurityUtil{
     private final static int INIT= 0;
     private final static int SERVICE = 1;
     private final static int DOFILTER = 1;
-    private final static int DESTROY = 2;
+    private final static int EVENT = 2;
+    private final static int DOFILTEREVENT = 2;
+    private final static int DESTROY = 3;
     
     private final static String INIT_METHOD = "init";
     private final static String DOFILTER_METHOD = "doFilter";
     private final static String SERVICE_METHOD = "service";
+    private final static String EVENT_METHOD = "event";
+    private final static String DOFILTEREVENT_METHOD = "doFilterEvent";
     private final static String DESTROY_METHOD = "destroy";
    
     /**
      * Cache every object for which we are creating method on it.
      */
-    private static HashMap objectCache = new HashMap();
+    private static HashMap<Object,Method[]> objectCache =
+        new HashMap<Object,Method[]>();
         
     private static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger( SecurityUtil.class );
@@ -108,7 +113,7 @@ public final class SecurityUtil{
      */
     public static void doAsPrivilege(final String methodName, 
                                      final Servlet targetObject, 
-                                     final Class[] targetType,
+                                     final Class<?>[] targetType,
                                      final Object[] targetArguments) 
         throws java.lang.Exception{    
 
@@ -136,7 +141,7 @@ public final class SecurityUtil{
      */    
     public static void doAsPrivilege(final String methodName, 
                                      final Servlet targetObject, 
-                                     final Class[] targetType,
+                                     final Class<?>[] targetType,
                                      final Object[] targetArguments,
                                      Principal principal) 
         throws java.lang.Exception{
@@ -144,7 +149,7 @@ public final class SecurityUtil{
         Method method = null;
         Method[] methodsCache = null;
         if(objectCache.containsKey(targetObject)){
-            methodsCache = (Method[])objectCache.get(targetObject);
+            methodsCache = objectCache.get(targetObject);
             method = findMethod(methodsCache, methodName);
             if (method == null){
                 method = createMethodAndCacheIt(methodsCache,
@@ -180,7 +185,7 @@ public final class SecurityUtil{
  
     
     /**
-     * Perform work as a particular </code>Subject</code>. Here the work
+     * Perform work as a particular <code>Subject</code>. Here the work
      * will be granted to a <code>null</code> subject. 
      *
      * @param methodName the method to apply the security restriction
@@ -193,7 +198,7 @@ public final class SecurityUtil{
      */    
     public static void doAsPrivilege(final String methodName, 
                                      final Filter targetObject, 
-                                     final Class[] targetType,
+                                     final Class<?>[] targetType,
                                      final Object[] targetArguments) 
         throws java.lang.Exception{
 
@@ -217,7 +222,7 @@ public final class SecurityUtil{
      */    
     public static void doAsPrivilege(final String methodName, 
                                      final Filter targetObject, 
-                                     final Class[] targetType,
+                                     final Class<?>[] targetType,
                                      final Object[] targetArguments,
                                      Principal principal) 
         throws java.lang.Exception{
@@ -225,7 +230,7 @@ public final class SecurityUtil{
 
         Method[] methodsCache = null;
         if(objectCache.containsKey(targetObject)){
-            methodsCache = (Method[])objectCache.get(targetObject);
+            methodsCache = objectCache.get(targetObject);
             method = findMethod(methodsCache, methodName);
             if (method == null){
                 method = createMethodAndCacheIt(methodsCache,
@@ -264,8 +269,9 @@ public final class SecurityUtil{
        
         try{   
             Subject subject = null;
-            PrivilegedExceptionAction pea = new PrivilegedExceptionAction(){
-                    public Object run() throws Exception{
+            PrivilegedExceptionAction<Void> pea =
+                new PrivilegedExceptionAction<Void>(){
+                    public Void run() throws Exception{
                        method.invoke(targetObject, targetArguments);
                        return null;
                     }
@@ -299,9 +305,14 @@ public final class SecurityUtil{
             }
 
             Subject.doAsPrivileged(subject, pea, null);       
-       } catch( PrivilegedActionException pe) {
-            Throwable e = ((InvocationTargetException)pe.getException())
+        } catch( PrivilegedActionException pe) {
+            Throwable e;
+            if (pe.getException() instanceof InvocationTargetException) {
+                e = ((InvocationTargetException)pe.getException())
                                 .getTargetException();
+            } else {
+                e = pe;
+            }
             
             if (log.isDebugEnabled()){
                 log.debug(sm.getString("SecurityUtil.doAsPrivilege"), e); 
@@ -341,6 +352,12 @@ public final class SecurityUtil{
         } else if (methodName.equalsIgnoreCase(DOFILTER_METHOD) 
                 && methodsCache[DOFILTER] != null){
             return methodsCache[DOFILTER];          
+        } else if (methodName.equalsIgnoreCase(EVENT_METHOD) 
+                && methodsCache[EVENT] != null){
+            return methodsCache[EVENT];          
+        } else if (methodName.equalsIgnoreCase(DOFILTEREVENT_METHOD) 
+                && methodsCache[DOFILTEREVENT] != null){
+            return methodsCache[DOFILTEREVENT];          
         } 
         return null;
     }
@@ -359,11 +376,11 @@ public final class SecurityUtil{
     private static Method createMethodAndCacheIt(Method[] methodsCache,
                                                  String methodName,
                                                  Object targetObject,
-                                                 Class[] targetType) 
+                                                 Class<?>[] targetType) 
             throws Exception{
         
         if ( methodsCache == null){
-            methodsCache = new Method[3];
+            methodsCache = new Method[4];
         }               
                 
         Method method = 
@@ -377,6 +394,10 @@ public final class SecurityUtil{
             methodsCache[SERVICE] = method;
         } else if (methodName.equalsIgnoreCase(DOFILTER_METHOD)){
             methodsCache[DOFILTER] = method;
+        } else if (methodName.equalsIgnoreCase(EVENT_METHOD)){
+            methodsCache[EVENT] = method;
+        } else if (methodName.equalsIgnoreCase(DOFILTEREVENT_METHOD)){
+            methodsCache[DOFILTEREVENT] = method;
         } 
          
         objectCache.put(targetObject, methodsCache );
