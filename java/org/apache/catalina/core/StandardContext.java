@@ -1557,7 +1557,7 @@ public class StandardContext
      */
     public void setPath(String path) {
         // XXX Use host in name
-        setName(RequestUtil.URLDecode(path));
+        setName(path);
 
     }
 
