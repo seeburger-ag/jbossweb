@@ -411,6 +411,9 @@ public class Catalina extends Embedded {
         }
 
         // Stop the existing server
+        if (server.getPort() < 0) {
+            return;
+        }
         try {
             Socket socket = new Socket(server.getAddress(), server.getPort());
             OutputStream stream = socket.getOutputStream();
