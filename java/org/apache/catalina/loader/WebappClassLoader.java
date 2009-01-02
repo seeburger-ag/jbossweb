@@ -1768,7 +1768,11 @@ public class WebappClassLoader
             return clazz;
 
         synchronized (this) {
-            if (entry.binaryContent == null && entry.loadedClass == null)
+            clazz = entry.loadedClass;
+            if (clazz != null)
+                return clazz;
+
+            if (entry.binaryContent == null)
                 throw new ClassNotFoundException(name);
 
             // Looking up the package
@@ -1817,19 +1821,15 @@ public class WebappClassLoader
     
             }
 
-            if (entry.loadedClass == null) {
-                clazz = defineClass(name, entry.binaryContent, 0,
-                        entry.binaryContent.length, 
-                        new CodeSource(entry.codeBase, entry.certificates));
-                entry.loadedClass = clazz;
-                entry.binaryContent = null;
-                entry.source = null;
-                entry.codeBase = null;
-                entry.manifest = null;
-                entry.certificates = null;
-            } else {
-                clazz = entry.loadedClass;
-            }
+            clazz = defineClass(name, entry.binaryContent, 0,
+                    entry.binaryContent.length, 
+                    new CodeSource(entry.codeBase, entry.certificates));
+            entry.loadedClass = clazz;
+            entry.binaryContent = null;
+            entry.source = null;
+            entry.codeBase = null;
+            entry.manifest = null;
+            entry.certificates = null;
         }
         
         return clazz;
