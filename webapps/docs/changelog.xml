@@ -115,6 +115,9 @@
       <fix>
         <bug>46462</bug>: Compatibility with ASF projects which use JSP. (markt)
       </fix>
+      <fix>
+        <bug>46381</bug>: Coerce EL to String rather than Object when concatenating. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
