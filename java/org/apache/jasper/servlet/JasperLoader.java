@@ -36,6 +36,7 @@ import org.apache.jasper.Constants;
  */
 public class JasperLoader extends URLClassLoader {
 
+    private static final String JSP_PACKAGE_PREFIX = Constants.JSP_PACKAGE_NAME + ".";
     private PermissionCollection permissionCollection;
     private CodeSource codeSource;
     private String className;
@@ -122,7 +123,7 @@ public class JasperLoader extends URLClassLoader {
             }                              
         }
 
-	if( !name.startsWith(Constants.JSP_PACKAGE_NAME) ) {
+	if( !name.startsWith(JSP_PACKAGE_PREFIX) ) {
             // Class is not in org.apache.jsp, therefore, have our
             // parent load it
             clazz = parent.loadClass(name);            

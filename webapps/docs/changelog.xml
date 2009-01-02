@@ -86,6 +86,12 @@
       <fix>
         <bug>46261</bug>: Handling for / in context path. (markt)
       </fix>
+      <fix>
+        Filter out negative ports on shutdown, so no connection attempt at all. (remm)
+      </fix>
+      <fix>
+        <bug>23066</bug>: Rare NPE when loading a class. Submitted by Konstantin Kolinko. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -102,6 +108,12 @@
     <changelog>
       <fix>
         EL security manager fixes. (markt)
+      </fix>
+      <fix>
+        <bug>36923</bug>: If EL is diabled, handle as template text. (markt)
+      </fix>
+      <fix>
+        <bug>46462</bug>: Compatibility with ASF projects which use JSP. (markt)
       </fix>
     </changelog>
   </subsection>

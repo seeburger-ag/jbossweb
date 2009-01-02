@@ -1312,7 +1312,7 @@ class Parser implements TagConstants {
             if (ch == '<') {
                 reader.pushChar();
                 break;
-            } else if (ch == '$' || ch == '#') {
+            } else if ((ch == '$' || ch == '#') && !pageInfo.isELIgnored()) {
                 if (!reader.hasMoreInput()) {
                     ttext.write(ch);
                     break;
@@ -1332,11 +1332,8 @@ class Parser implements TagConstants {
                 }
                 char next = (char) reader.peekChar();
                 // Looking for \% or \$ or \#
-                // TODO: only recognize \$ or \# if isELIgnored is false, but since
-                // it can be set in a page directive, it cannot be determined
-                // here. Argh! (which is the way it should be since we shouldn't
-                // convolude multiple steps at once and create confusing parsers...)
-                if (next == '%' || next == '$' || next == '#') {
+                if (next == '%' || ((next == '$' || next == '#') &&
+                        !pageInfo.isELIgnored())) {
                     ch = reader.nextChar();
                 }
             }
@@ -1455,9 +1452,9 @@ class Parser implements TagConstants {
             parseXMLScriptlet(parent);
         } else if (reader.matches("<jsp:text")) {
             parseXMLTemplateText(parent);
-        } else if (reader.matches("${")) {
+        } else if (reader.matches("${") && !pageInfo.isELIgnored()) {
             parseELExpression(parent, '$');
-        } else if (reader.matches("#{")) {
+        } else if (reader.matches("#{") && !pageInfo.isELIgnored()) {
             parseELExpression(parent, '#');
         } else if (reader.matches("<jsp:")) {
             parseStandardAction(parent);
