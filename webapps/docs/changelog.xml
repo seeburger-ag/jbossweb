@@ -199,6 +199,9 @@
       <fix>
         Remove verbose attribute value logging during session passivation. (remm)
       </fix>
+      <fix>
+        Specific error message for webapps that fail to start. (fhanik)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
