@@ -110,13 +110,16 @@
         EL security manager fixes. (markt)
       </fix>
       <fix>
-        <bug>36923</bug>: If EL is diabled, handle as template text. (markt)
+        <bug>36923</bug>: If EL is disabled, handle as template text. (markt)
       </fix>
       <fix>
         <bug>46462</bug>: Compatibility with ASF projects which use JSP. (markt)
       </fix>
       <fix>
         <bug>46381</bug>: Coerce EL to String rather than Object when concatenating. (markt)
+      </fix>
+      <fix>
+        <bug>37515</bug>: Add options for 1.6 and 1.7 source and target to JDT compiler. (markt)
       </fix>
     </changelog>
   </subsection>
