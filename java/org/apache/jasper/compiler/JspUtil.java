@@ -835,16 +835,38 @@ public class JspUtil {
     /**
      * Gets the fully-qualified class name of the tag handler corresponding to
      * the given tag file path.
-     *
-     * @param path Tag file path
-     * @param err Error dispatcher
-     *
-     * @return Fully-qualified class name of the tag handler corresponding to 
-     * the given tag file path
+     * 
+     * @param path
+     *            Tag file path
+     * @param err
+     *            Error dispatcher
+     * 
+     * @return Fully-qualified class name of the tag handler corresponding to
+     *         the given tag file path
+     * 
+     * @deprecated Use {@link #getTagHandlerClassName(String, String,
+     *             ErrorDispatcher)
+     *             See https://issues.apache.org/bugzilla/show_bug.cgi?id=46471
      */
-    public static String getTagHandlerClassName(String path,
-                        ErrorDispatcher err)
-                throws JasperException {
+    public static String getTagHandlerClassName(String path, ErrorDispatcher err)
+            throws JasperException {
+        return getTagHandlerClassName(path, null, err);
+    }
+    
+    /**
+     * Gets the fully-qualified class name of the tag handler corresponding to
+     * the given tag file path.
+     * 
+     * @param path
+     *            Tag file path
+     * @param err
+     *            Error dispatcher
+     * 
+     * @return Fully-qualified class name of the tag handler corresponding to
+     *         the given tag file path
+     */
+    public static String getTagHandlerClassName(String path, String urn,
+            ErrorDispatcher err) throws JasperException {
 
         String className = null;
         int begin = 0;
@@ -872,7 +894,7 @@ public class JspUtil {
         } else {
         index = path.indexOf(META_INF_TAGS);
         if (index != -1) {
-        className = "org.apache.jsp.tag.meta.";
+        className = getClassNameBase(urn);
         begin = index + META_INF_TAGS.length();
         } else {
         err.jspError("jsp.error.tagfile.illegalPath", path);
@@ -882,6 +904,15 @@ public class JspUtil {
         className += makeJavaPackage(path.substring(begin));
   
        return className;
+    }
+
+    private static String getClassNameBase(String urn) {
+        StringBuffer base = new StringBuffer("org.apache.jsp.tag.meta.");
+        if (urn != null) {
+            base.append(makeJavaPackage(urn));
+            base.append('.');
+        }
+        return base.toString();
     }
 
     /**

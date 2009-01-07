@@ -75,7 +75,8 @@
         Support all cookie flags in RewriteRule. (remm)
       </update>
       <fix>
-        Remove useless normalization when getting a request dispatcher through a request. (remm)
+        Remove useless normalization when getting a request dispatcher through a request, and
+        refactor normalization to use the implementation in RequestUtil. (remm, markt)
       </fix>
       <fix>
         Filter not found URI in default servlet. (remm)
@@ -120,6 +121,10 @@
       </fix>
       <fix>
         <bug>37515</bug>: Add options for 1.6 and 1.7 source and target to JDT compiler. (markt)
+      </fix>
+      <fix>
+        <bug>46471</bug>: Use jar url and tag file path to uniquely ID a tag file to prevent naming
+        clashes. (markt)
       </fix>
     </changelog>
   </subsection>
