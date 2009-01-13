@@ -126,9 +126,6 @@
         <bug>46471</bug>: Use jar url and tag file path to uniquely ID a tag file to prevent naming
         clashes. (markt)
       </fix>
-      <fix>
-        <bug>46339</bug>: Fix variable sync problems for fragments. Submitted by Kin-Man Chung. (markt)
-      </fix>
     </changelog>
   </subsection>
 </section>

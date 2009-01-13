@@ -40,3 +40,12 @@ Lame IE 6 and 7 cookie hack for expires.
 
 various
 New JDBC pool module
+
+733748
+SSL session tracking (may not be practical at all)
+
+733768 733769 733775
+Generics in Servlet API (not accepted yet)
+
+733771
+Deprecate some wrapper methods in Servlet API (not accepted yet)
