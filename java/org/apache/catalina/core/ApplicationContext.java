@@ -45,6 +45,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.util.Enumerator;
+import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResourceSet;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
@@ -378,7 +379,7 @@ public class ApplicationContext
             path = path.substring(0, pos);
         }
  
-        path = normalize(path);
+        path = RequestUtil.normalize(path);
         if (path == null)
             return (null);
 
@@ -461,7 +462,7 @@ public class ApplicationContext
             throw new MalformedURLException(sm.getString("applicationContext.requestDispatcher.iae", path));
         }
         
-        path = normalize(path);
+        path = RequestUtil.normalize(path);
         if (path == null)
             return (null);
 
@@ -510,8 +511,11 @@ public class ApplicationContext
      */
     public InputStream getResourceAsStream(String path) {
 
-        path = normalize(path);
         if (path == null || (Globals.STRICT_SERVLET_COMPLIANCE && !path.startsWith("/")))
+            return (null);
+
+        path = RequestUtil.normalize(path);
+        if (path == null)
             return (null);
 
         DirContext resources = context.getResources();
@@ -546,7 +550,7 @@ public class ApplicationContext
                 (sm.getString("applicationContext.resourcePaths.iae", path));
         }
 
-        path = normalize(path);
+        path = RequestUtil.normalize(path);
         if (path == null)
             return (null);
 
@@ -850,45 +854,6 @@ public class ApplicationContext
 
 
     // -------------------------------------------------------- Private Methods
-
-
-    /**
-     * Return a context-relative path, beginning with a "/", that represents
-     * the canonical version of the specified path after ".." and "." elements
-     * are resolved out.  If the specified path attempts to go outside the
-     * boundaries of the current context (i.e. too many ".." path elements
-     * are present), return <code>null</code> instead.
-     *
-     * @param path Path to be normalized
-     */
-    private String normalize(String path) {
-
-        if (path == null) {
-            return null;
-        }
-
-        String normalized = path;
-
-        // Normalize the slashes
-        if (normalized.indexOf('\\') >= 0)
-            normalized = normalized.replace('\\', '/');
-
-        // Resolve occurrences of "/../" in the normalized path
-        while (true) {
-            int index = normalized.indexOf("/../");
-            if (index < 0)
-                break;
-            if (index == 0)
-                return (null);  // Trying to go outside our context
-            int index2 = normalized.lastIndexOf('/', index - 1);
-            normalized = normalized.substring(0, index2) +
-                normalized.substring(index + 3);
-        }
-
-        // Return the normalized path that we have completed
-        return (normalized);
-
-    }
 
 
     /**
