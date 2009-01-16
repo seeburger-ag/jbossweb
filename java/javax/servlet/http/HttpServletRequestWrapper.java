@@ -84,7 +84,7 @@ public class HttpServletRequestWrapper extends ServletRequestWrapper implements 
      * The default behavior of this method is to return getHeaders(String name)
      * on the wrapped request object.
      */
-    public Enumeration getHeaders(String name) {
+    public Enumeration<String> getHeaders(String name) {
 	return this._getHttpServletRequest().getHeaders(name);
     }  
 
@@ -93,7 +93,7 @@ public class HttpServletRequestWrapper extends ServletRequestWrapper implements 
      * on the wrapped request object.
      */
   
-    public Enumeration getHeaderNames() {
+    public Enumeration<String> getHeaderNames() {
 	return this._getHttpServletRequest().getHeaderNames();
     }
     
@@ -253,6 +253,7 @@ public class HttpServletRequestWrapper extends ServletRequestWrapper implements 
     /**
      * The default behavior of this method is to return isRequestedSessionIdFromUrl()
      * on the wrapped request object.
+     * @deprecated As of Version 3.0 of the Java Servlet API
      */
     public boolean isRequestedSessionIdFromUrl() {
 	return this._getHttpServletRequest().isRequestedSessionIdFromUrl();

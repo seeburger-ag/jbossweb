@@ -89,7 +89,7 @@ public class ServletRequestWrapper implements ServletRequest {
      * on the wrapped request object.
      */
 
-    public Enumeration getAttributeNames() {
+    public Enumeration<String> getAttributeNames() {
 	return this.request.getAttributeNames();
 	}    
     
@@ -162,7 +162,7 @@ public class ServletRequestWrapper implements ServletRequest {
       * The default behavior of this method is to return getParameterMap()
      * on the wrapped request object.
      */
-    public Map getParameterMap() {
+    public Map<String,String[]> getParameterMap() {
 	return this.request.getParameterMap();
     }
     
@@ -174,7 +174,7 @@ public class ServletRequestWrapper implements ServletRequest {
      * on the wrapped request object.
      */
      
-    public Enumeration getParameterNames() {
+    public Enumeration<String> getParameterNames() {
 	return this.request.getParameterNames();
     }
     
@@ -315,7 +315,7 @@ public class ServletRequestWrapper implements ServletRequest {
      * on the wrapped request object.
      */
 
-    public Enumeration getLocales() {
+    public Enumeration<Locale> getLocales() {
 	return this.request.getLocales();
     }
     
@@ -349,6 +349,7 @@ public class ServletRequestWrapper implements ServletRequest {
     /**
       * The default behavior of this method is to return getRealPath(String path)
      * on the wrapped request object.
+     * @deprecated As of Version 3.0 of the Java Servlet API
      */
 
     public String getRealPath(String path) {
@@ -396,6 +397,116 @@ public class ServletRequestWrapper implements ServletRequest {
     public int getLocalPort(){
         return this.request.getLocalPort();
     }
+
+    /**
+     * The default behavior of this method is to return
+     * getServletContext() on the wrapped request object.
+     * 
+     * @return
+     * @since 3.0
+     */
+    public ServletContext getServletContext() {
+        return request.getServletContext();
+    }
     
+    /**
+     * The default behavior of this method is to return
+     * startAsync() on the wrapped request object.
+     * 
+     * @return
+     * @throws java.lang.IllegalStateException
+     * @since 3.0
+     */
+    public AsyncContext startAsync() throws java.lang.IllegalStateException {
+        return request.startAsync();
+    }
+    
+    /**
+     * The default behavior of this method is to return
+     * startAsync(ServletRequest, ServletResponse) on the wrapped request
+     * object.
+     * 
+     * @param servletRequest
+     * @param servletResponse
+     * @return
+     * @throws java.lang.IllegalStateException
+     * @since 3.0
+     */
+    public AsyncContext startAsync(ServletRequest servletRequest,
+            ServletResponse servletResponse)
+            throws java.lang.IllegalStateException {
+        return request.startAsync(servletRequest, servletResponse);
+    }
+    
+    /**
+     * The default behavior of this method is to return
+     * isAsyncStarted() on the wrapped request object.
+     * 
+     * @return
+     * @since 3.0
+     */
+    public boolean isAsyncStarted() {
+        return request.isAsyncStarted();
+    }
+    
+    /**
+     * The default behavior of this method is to return
+     * isAsyncSupported() on the wrapped request object.
+     * 
+     * @return
+     * @since 3.0
+     */
+    public boolean isAsyncSupported() {
+        return request.isAsyncSupported();
+    }
+    
+    /**
+     * The default behavior of this method is to return
+     * getAsyncContext() on the wrapped request object.
+     * 
+     * @return
+     * @since 3.0
+     */
+    public AsyncContext getAsyncContext() {
+        return request.getAsyncContext();
+    }
+
+    /**
+     * The default behavior of this method is to call
+     * addAsyncListener(AsyncListener) on the wrapped request object.
+     * 
+     * @param listener
+     * @since 3.0
+     */
+    public void addAsyncListener(AsyncListener listener) {
+        request.addAsyncListener(listener);
+    }
+    
+    /**
+     * The default behavior of this method is to call
+     * addAsyncListener(AsyncListener, ServletRequest, ServletResponse) on the
+     * wrapped request object.
+     * 
+     * @param listener
+     * @param servletRequest
+     * @param servletResponse
+     * @since 3.0
+     */
+    public void addAsyncListener(AsyncListener listener,
+            ServletRequest servletRequest, ServletResponse servletResponse) {
+        addAsyncListener(listener, servletRequest, servletResponse);
+    }
+    
+    /**
+     * The default behavior of this method is to call
+     * startAsync() on the wrapped request object.
+     * 
+     * @param timeout
+     * @since 3.0
+     */
+    public void setAsyncTimeout(long timeout) {
+        request.setAsyncTimeout(timeout);
+    }
+
 }
 
