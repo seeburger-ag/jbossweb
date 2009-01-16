@@ -16,6 +16,27 @@
 
 <body>
 
+<section name="JBoss Web 3.0.0.CR1 (remm)">
+  <subsection name="General">
+    <changelog>
+      <update>
+        Servlet 3.0 API. (markt, remm)
+      </update>
+    </changelog>
+  </subsection>
+  <subsection name="Catalina">
+    <changelog>
+      <update>
+        Replace TomcatCookie class with the new Cookie API. (remm)
+      </update>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.2.CR1 (remm)">
   <subsection name="General">
     <changelog>
