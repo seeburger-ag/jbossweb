@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="faq01.html">
+
+  &project;
+
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>General FAQ's</title>
+  </properties>
+
+<body>
+
+<section name="What is the JBossWeb Architecture?">
+  <figure src="/images/design/jbosswebblockda.png" name="Figure 1" text="JBossWeb architecture"/>
+  <p>For detailed JBossWeb architecture documentation see
+  <a href="../reference/arch.html">Architecture section</a>.
+  </p>
+  <br/>
+</section>
+</body>
+</document>
