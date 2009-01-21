@@ -52,6 +52,7 @@ import org.apache.tomcat.util.res.StringManager;
  *
  * @author Mladen Turk
  * @author Remy Maucherat
+ * @author <a href="mailto:galder.zamarreno@jboss.com">Galder Zamarreno</a>
  */
 public class AprEndpoint {
 
@@ -766,6 +767,14 @@ public class AprEndpoint {
                     sendfileThread.setDaemon(true);
                     sendfileThread.start();
                 }
+            }
+            
+            // Start acceptor threads
+            for (int i = 0; i < acceptorThreadCount; i++) {
+                Thread acceptorThread = new Thread(new Acceptor(), getName() + "-Acceptor-" + i);
+                acceptorThread.setPriority(threadPriority);
+                acceptorThread.setDaemon(daemon);
+                acceptorThread.start();
             }
         }
     }
