@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -59,6 +60,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequestAttributeListener;
 import javax.servlet.ServletRequestListener;
+import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
@@ -296,12 +298,20 @@ public class StandardContext
 
 
     /**
-     * Should we attempt to use cookies for session id communication?
+     * Session tracking modes.
      */
-    private boolean cookies = true;
-
+    // FIXME: see about SSL tracking mode
+    private EnumSet<SessionTrackingMode> defaultSessionTrackingModes = 
+        EnumSet.of(SessionTrackingMode.URL, SessionTrackingMode.COOKIE /*, SessionTrackingMode.SSL*/);
+    
 
     /**
+     * Session tracking modes.
+     */
+    private EnumSet<SessionTrackingMode> sessionTrackingModes = defaultSessionTrackingModes;
+    
+
+   /**
      * Should we allow the <code>ServletContext.getContext()</code> method
      * to access the context of other web applications in this server?
      */
@@ -374,9 +384,23 @@ public class StandardContext
 
     /**
      * The set of filter mappings for this application, in the order
-     * they were defined in the deployment descriptor.
+     * they were defined in the deployment descriptor with additional mappings
+     * added via the {@link ServletContext} possibly both before and after those
+     * defined in the deployment descriptor.
      */
     private FilterMap filterMaps[] = new FilterMap[0];
+
+
+    /**
+     * Filter mappings added via {@link ServletContext} may have to be inserted
+     * before the mappings in the deploymenmt descriptor but must be inserted in
+     * the order the {@link ServletContext} methods are called. This isn't an
+     * issue for the mappings added after the deployment descriptor - they are
+     * just added to the end - but correctly the adding mappings before the
+     * deployment descriptor mappings requires knowing where the last 'before'
+     * mapping was added.
+     */
+    private int filterMapInsertPoint = 0;
 
 
     /**
@@ -1130,7 +1154,7 @@ public class StandardContext
      */
     public boolean getCookies() {
 
-        return (this.cookies);
+        return (sessionTrackingModes.contains(SessionTrackingMode.COOKIE));
 
     }
 
@@ -1142,11 +1166,18 @@ public class StandardContext
      */
     public void setCookies(boolean cookies) {
 
-        boolean oldCookies = this.cookies;
-        this.cookies = cookies;
-        support.firePropertyChange("cookies",
-                                   new Boolean(oldCookies),
-                                   new Boolean(this.cookies));
+        boolean oldCookies = sessionTrackingModes.contains(SessionTrackingMode.COOKIE);
+        if (oldCookies && !cookies) {
+            defaultSessionTrackingModes.remove(SessionTrackingMode.COOKIE);
+        }
+        if (!oldCookies && cookies) {
+            defaultSessionTrackingModes.add(SessionTrackingMode.COOKIE);
+        }
+        if (oldCookies != cookies) {
+            support.firePropertyChange("cookies",
+                    new Boolean(oldCookies),
+                    new Boolean(cookies));
+        }
 
     }
 
@@ -1710,6 +1741,22 @@ public class StandardContext
     }
 
 
+    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
+        return defaultSessionTrackingModes;
+    }
+
+
+    public EnumSet<SessionTrackingMode> getSessionTrackingModes() {
+        return sessionTrackingModes;
+    }
+
+
+    public void setSessionTrackingModes(
+            EnumSet<SessionTrackingMode> sessionTrackingModes) {
+        this.sessionTrackingModes = sessionTrackingModes;
+    }
+    
+    
     /**
      * Return the "replace welcome files" property.
      */
@@ -2237,7 +2284,8 @@ public class StandardContext
 
 
     /**
-     * Add a filter mapping to this Context.
+     * Add a filter mapping to this Context at the end of the current set
+     * of filter mappings.
      *
      * @param filterMap The filter mapping to be added
      *
@@ -2247,34 +2295,7 @@ public class StandardContext
      */
     public void addFilterMap(FilterMap filterMap) {
 
-        // Validate the proposed filter mapping
-        String filterName = filterMap.getFilterName();
-        String[] servletNames = filterMap.getServletNames();
-        String[] urlPatterns = filterMap.getURLPatterns();
-        if (findFilterDef(filterName) == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.name", filterName));
-        if (!filterMap.getMatchAllServletNames()
-                && !filterMap.getMatchAllUrlPatterns()
-                && (servletNames.length == 0) && (urlPatterns.length == 0))
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.either"));
-        // FIXME: Older spec revisions may still check this
-        /*
-        if ((servletNames.length != 0) && (urlPatterns.length != 0))
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.either"));
-        */
-        // Because filter-pattern is new in 2.3, no need to adjust
-        // for 2.2 backwards compatibility
-        for (int i = 0; i < urlPatterns.length; i++) {
-            if (!validateURLPattern(urlPatterns[i])) {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.filterMap.pattern",
-                            urlPatterns[i]));
-            }
-        }
-
+        validateFilterMap(filterMap);
         // Add this filter mapping to our registered set
         synchronized (filterMaps) {
             FilterMap results[] =new FilterMap[filterMaps.length + 1];
@@ -2283,7 +2304,71 @@ public class StandardContext
             filterMaps = results;
         }
         fireContainerEvent("addFilterMap", filterMap);
+    }
 
+    
+    /**
+     * Add a filter mapping to this Context before the mappings defined in the
+     * deployment descriptor but after any other mappings added via this method.
+     *
+     * @param filterMap The filter mapping to be added
+     *
+     * @exception IllegalArgumentException if the specified filter name
+     *  does not match an existing filter definition, or the filter mapping
+     *  is malformed
+     */
+    public void addFilterMapBefore(FilterMap filterMap) {
+
+        validateFilterMap(filterMap);
+
+        // Add this filter mapping to our registered set
+        synchronized (filterMaps) {
+            FilterMap results[] = new FilterMap[filterMaps.length + 1];
+            System.arraycopy(filterMaps, 0, results, 0, filterMapInsertPoint);
+            results[filterMapInsertPoint] = filterMap;
+            System.arraycopy(filterMaps, filterMapInsertPoint, results,
+                    filterMaps.length - filterMapInsertPoint+1,
+                    filterMapInsertPoint);
+            
+            filterMapInsertPoint++;
+            
+            results[filterMaps.length] = filterMap;
+            filterMaps = results;
+        }
+        fireContainerEvent("addFilterMap", filterMap);
+    }
+
+
+    /**
+     * Validate the supplied FilterMap.
+     */
+    private void validateFilterMap(FilterMap filterMap) {
+        // Validate the proposed filter mapping
+        String filterName = filterMap.getFilterName();
+        String[] servletNames = filterMap.getServletNames();
+        String[] urlPatterns = filterMap.getURLPatterns();
+        if (findFilterDef(filterName) == null)
+            throw new IllegalArgumentException
+                (sm.getString("standardContext.filterMap.name", filterName));
+
+        if (!filterMap.getMatchAllServletNames() && 
+            !filterMap.getMatchAllUrlPatterns() && 
+            (servletNames.length == 0) && (urlPatterns.length == 0))
+            throw new IllegalArgumentException
+                (sm.getString("standardContext.filterMap.either"));
+        // FIXME: Older spec revisions may still check this
+        /*
+        if ((servletNames.length != 0) && (urlPatterns.length != 0))
+            throw new IllegalArgumentException
+                (sm.getString("standardContext.filterMap.either"));
+        */
+        for (int i = 0; i < urlPatterns.length; i++) {
+            if (!validateURLPattern(urlPatterns[i])) {
+                throw new IllegalArgumentException
+                    (sm.getString("standardContext.filterMap.pattern",
+                            urlPatterns[i]));
+            }
+        }
     }
 
 
@@ -3385,6 +3470,9 @@ public class StandardContext
             System.arraycopy(filterMaps, 0, results, 0, n);
             System.arraycopy(filterMaps, n + 1, results, n,
                              (filterMaps.length - 1) - n);
+            if (n < filterMapInsertPoint) {
+                filterMapInsertPoint--;
+            }
             filterMaps = results;
 
         }
@@ -5783,6 +5871,6 @@ public class StandardContext
         }
         
     }
-    
-    
+
+
 }

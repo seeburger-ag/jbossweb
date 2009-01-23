@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,17 +34,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ApplicationParameter;
+import org.apache.catalina.deploy.FilterDef;
+import org.apache.catalina.deploy.FilterMap;
+import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResourceSet;
@@ -144,6 +151,12 @@ public class ApplicationContext
     private ThreadLocal<DispatchData> dispatchData =
         new ThreadLocal<DispatchData>();
 
+
+    /**
+     * Effective session cookie config.
+     */
+    private SessionCookieConfig sessionCookieConfig = null;
+    
 
     // --------------------------------------------------------- Public Methods
 
@@ -798,6 +811,155 @@ public class ApplicationContext
             }
         }
 
+    }
+
+
+    public void addFilter(String filterName, String description,
+            String className, Map<String, String> initParameters,
+            boolean isAsyncSupported) {
+
+        if (context.initialized) {
+            //TODO Spec breaking enhancement to ignore this restriction
+            throw new IllegalStateException(
+                    sm.getString("applicationContext.addFilter.ise",
+                            getContextPath()));
+        }
+        FilterDef filterDef = new FilterDef();
+        filterDef.setFilterName(filterName);
+        filterDef.setDescription(description);
+        filterDef.setFilterClass(className);
+        filterDef.getParameterMap().putAll(initParameters);
+        context.addFilterDef(filterDef);
+        // TODO SERVLET3 - ASync support
+    }
+
+
+    public void addFilterMappingForServletNames(String filterName,
+            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
+            String... servletNames) {
+        if (context.initialized) {
+            //TODO Spec breaking enhancement to ignore this restriction
+            throw new IllegalStateException(sm.getString(
+                    "applicationContext.addFilterMapping", getContextPath()));
+        }
+        FilterMap filterMap = new FilterMap(); 
+        for (String servletName : servletNames) {
+            filterMap.addServletName(servletName);
+        }
+        filterMap.setFilterName(filterName);
+        for (DispatcherType dispatcherType: dispatcherTypes) {
+            filterMap.setDispatcher(dispatcherType.name());
+        }
+        if (isMatchAfter) {
+            context.addFilterMap(filterMap);
+        } else {
+            context.addFilterMapBefore(filterMap);
+        }
+    }
+
+
+    public void addFilterMappingForUrlPatterns(String filterName,
+            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
+            String... urlPatterns) {
+        
+        if (context.initialized) {
+            //TODO Spec breaking enhancement to ignore this restriction
+            throw new IllegalStateException(sm.getString(
+                    "applicationContext.addFilterMapping", getContextPath()));
+        }
+        FilterMap filterMap = new FilterMap(); 
+        for (String urlPattern : urlPatterns) {
+            filterMap.addURLPattern(urlPattern);
+        }
+        filterMap.setFilterName(filterName);
+        for (DispatcherType dispatcherType: dispatcherTypes) {
+            filterMap.setDispatcher(dispatcherType.name());
+        }
+        if (isMatchAfter) {
+            context.addFilterMap(filterMap);
+        } else {
+            context.addFilterMapBefore(filterMap);
+        }
+    }
+
+
+    public void addServletMapping(String servletName, String[] urlPatterns) {
+        if (context.initialized) {
+            //TODO Spec breaking enhancement to ignore this restriction
+            throw new IllegalStateException(sm.getString(
+                    "applicationContext.addServletMapping", getContextPath()));
+        }
+        for (String urlPattern : urlPatterns) {
+            boolean jspWildCard = ("*.jsp".equals(urlPattern));
+            context.addServletMapping(servletName, urlPattern, jspWildCard);
+        }
+    }
+
+
+    /**
+     * By default {@link SessionTrackingMode#URL} is always supported, {@link
+     * SessionTrackingMode#COOKIE} is supported unless the <code>cookies</code>
+     * attribute has been set to <code>false</code> for the context and {@link
+     * SessionTrackingMode#SSL} is supported if at least one of the connectors
+     * used by this context has the attribute <code>secure</code> set to
+     * <code>true</code>.
+     */
+    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
+        return context.getDefaultSessionTrackingModes();
+    }
+
+    /**
+     * Return the supplied value if one was previously set, else return the
+     * defaults.
+     */
+    public EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+        return context.getSessionTrackingModes();
+    }
+
+
+    public SessionCookieConfig getSessionCookieConfig() {
+        if (sessionCookieConfig != null) {
+            return sessionCookieConfig;
+        }
+        SessionCookie sessionCookie = context.getSessionCookie();
+        sessionCookieConfig = new SessionCookieConfig(sessionCookie.getDomain(), sessionCookie.getPath(),
+                sessionCookie.getComment(), sessionCookie.isHttpOnly(), sessionCookie.isSecure());
+        return sessionCookieConfig;
+    }
+
+
+    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
+        // FIXME: do something ...
+        this.sessionCookieConfig = sessionCookieConfig;
+    }
+
+
+    /**
+     * @throws IllegalStateException if the context has already been initialised
+     * @throws IllegalArgumentException TODO SERVLET3 Something to do with SSL
+     *                                  but the spec language is not clear
+     *                                  If an unsupported tracking mode is
+     *                                  requested
+     */
+    public void setSessionTrackingModes(EnumSet<SessionTrackingMode> sessionTrackingModes) {
+
+        if (context.getAvailable()) {
+            throw new IllegalStateException(
+                    sm.getString("applicationContext.setSessionTracking.ise",
+                            getContextPath()));
+        }
+        
+        // Check that only supported tracking modes have been requested
+        for (SessionTrackingMode sessionTrackingMode : sessionTrackingModes) {
+            if (!getDefaultSessionTrackingModes().contains(sessionTrackingMode)) {
+                throw new IllegalArgumentException(sm.getString(
+                        "applicationContext.setSessionTracking.iae",
+                        sessionTrackingMode.toString(), getContextPath()));
+            }
+        }
+        // TODO SERVLET3 - The SSL test
+        
+        context.setSessionTrackingModes(sessionTrackingModes);
     }
 
 
