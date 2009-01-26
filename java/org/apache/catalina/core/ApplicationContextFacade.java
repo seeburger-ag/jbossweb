@@ -27,14 +27,19 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.security.SecurityUtil;
@@ -364,6 +369,109 @@ public final class ApplicationContextFacade
     }
 
        
+    public void addFilter(String filterName, String description,
+            String className, Map<String, String> initParameters,
+            boolean isAsyncSupported) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("addFilter", new Object[]{filterName, description,
+                    className, initParameters,
+                    Boolean.valueOf(isAsyncSupported)});
+        } else {
+            context.addFilter(filterName, description, className,
+                    initParameters, isAsyncSupported);
+        }
+    }
+
+
+    public void addFilterMappingForServletNames(String filterName,
+            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
+            String... servletNames) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("addFilterMappingForServletNames",
+                    new Object[]{filterName, dispatcherTypes,
+                    Boolean.valueOf(isMatchAfter), servletNames});
+        } else {
+            context.addFilterMappingForServletNames(filterName, dispatcherTypes,
+                    isMatchAfter, servletNames);
+        }
+    }
+
+
+    public void addFilterMappingForUrlPatterns(String filterName,
+            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
+            String... urlPatterns) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("addFilterMappingForUrlPatterns",
+                    new Object[]{filterName, dispatcherTypes,
+                    Boolean.valueOf(isMatchAfter), urlPatterns});
+        } else {
+            context.addFilterMappingForUrlPatterns(filterName, dispatcherTypes,
+                    isMatchAfter, urlPatterns);
+        }
+    }
+
+
+    public void addServletMapping(String servletName, String[] urlPatterns) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("addServletMapping",
+                    new Object[]{servletName, urlPatterns});
+        } else {
+            context.addServletMapping(servletName, urlPatterns);
+        }
+    }
+
+
+    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (EnumSet<SessionTrackingMode>)
+                doPrivileged("getDefaultSessionTrackingModes", null);
+        } else {
+            return context.getDefaultSessionTrackingModes();
+        }
+    }
+
+
+    public EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (EnumSet<SessionTrackingMode>)
+                doPrivileged("getEffectiveSessionTrackingModes", null);
+        } else {
+            return context.getEffectiveSessionTrackingModes();
+        }
+    }
+
+
+    public SessionCookieConfig getSessionCookieConfig() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (SessionCookieConfig)
+                doPrivileged("getSessionCookieConfig", null);
+        } else {
+            return context.getSessionCookieConfig();
+        }
+    }
+
+
+    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("setSessionCookieConfig",
+                    new Object[]{sessionCookieConfig});
+        } else {
+            context.setSessionCookieConfig(sessionCookieConfig);
+        }
+    }
+
+
+    public void setSessionTrackingModes(
+            EnumSet<SessionTrackingMode> sessionTrackingModes) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("setSessionTrackingModes",
+                    new Object[]{sessionTrackingModes});
+        } else {
+            context.setSessionTrackingModes(sessionTrackingModes);
+        }
+    }
+
+
     /**
      * Use reflection to invoke the requested method. Cache the method object 
      * to speed up the process
@@ -507,4 +615,6 @@ public final class ApplicationContextFacade
         
         throw realException;
     }
+
+
 }

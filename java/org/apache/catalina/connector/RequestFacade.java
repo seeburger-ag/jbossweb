@@ -26,8 +26,13 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.AsyncListener;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -930,6 +935,98 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return request.getRemotePort();
+    }
+
+
+    public void addAsyncListener(AsyncListener listener,
+            ServletRequest servletRequest, ServletResponse servletResponse) {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        request.addAsyncListener(listener, servletRequest, servletResponse);
+    }
+
+
+    public void addAsyncListener(AsyncListener listener) {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        request.addAsyncListener(listener);
+    }
+
+
+    public AsyncContext getAsyncContext() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.getAsyncContext();
+    }
+
+
+    public ServletContext getServletContext() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.getServletContext();
+    }
+
+
+    public boolean isAsyncStarted() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.isAsyncStarted();
+    }
+
+
+    public boolean isAsyncSupported() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.isAsyncSupported();
+    }
+
+
+     public void setAsyncTimeout(long timeout) {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        request.setAsyncTimeout(timeout);
+    }
+
+
+    public AsyncContext startAsync() throws IllegalStateException {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.startAsync();
+    }
+
+
+    public AsyncContext startAsync(ServletRequest servletRequest,
+            ServletResponse servletResponse) throws IllegalStateException {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.startAsync(servletRequest, servletResponse);
     }
 
 }

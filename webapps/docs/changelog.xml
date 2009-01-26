@@ -29,6 +29,9 @@
       <update>
         Replace TomcatCookie class with the new Cookie API. (remm)
       </update>
+      <update>
+        Cookie tracking and Servlet 3.0 cookie configuration. (markt, remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
