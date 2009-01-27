@@ -19,11 +19,8 @@
 package org.apache.catalina.deploy;
 
 
-import java.io.Serializable;
-
-import javax.servlet.DispatcherType;
-
 import org.apache.catalina.util.RequestUtil;
+import java.io.Serializable;
 
 
 /**
@@ -164,7 +161,7 @@ public class FilterMap implements Serializable {
     public void setDispatcher(String dispatcherString) {
         String dispatcher = dispatcherString.toUpperCase();
         
-        if (dispatcher.equals(DispatcherType.FORWARD.name())) {
+        if (dispatcher.equals("FORWARD")) {
 
             // apply FORWARD to the global dispatcherMapping.
             switch (dispatcherMapping) {
@@ -177,7 +174,7 @@ public class FilterMap implements Serializable {
                 case REQUEST_ERROR_INCLUDE : dispatcherMapping = REQUEST_ERROR_FORWARD_INCLUDE; break;
                 case REQUEST_INCLUDE : dispatcherMapping = REQUEST_FORWARD_INCLUDE; break;
             }
-        } else if (dispatcher.equals(DispatcherType.INCLUDE.name())) {
+        } else if (dispatcher.equals("INCLUDE")) {
             // apply INCLUDE to the global dispatcherMapping.
             switch (dispatcherMapping) {
                 case NOT_SET  :  dispatcherMapping = INCLUDE; break;
@@ -189,7 +186,7 @@ public class FilterMap implements Serializable {
                 case REQUEST_ERROR_FORWARD : dispatcherMapping = REQUEST_ERROR_FORWARD_INCLUDE; break;
                 case REQUEST_FORWARD : dispatcherMapping = REQUEST_FORWARD_INCLUDE; break;
             }
-        } else if (dispatcher.equals(DispatcherType.REQUEST.name())) {
+        } else if (dispatcher.equals("REQUEST")) {
             // apply REQUEST to the global dispatcherMapping.
             switch (dispatcherMapping) {
                 case NOT_SET  :  dispatcherMapping = REQUEST; break;
@@ -201,7 +198,7 @@ public class FilterMap implements Serializable {
                 case INCLUDE_FORWARD : dispatcherMapping = REQUEST_FORWARD_INCLUDE; break;
                 case INCLUDE_ERROR_FORWARD : dispatcherMapping = REQUEST_ERROR_FORWARD_INCLUDE; break;
             }
-        }  else if (dispatcher.equals(DispatcherType.ERROR.name())) {
+        }  else if (dispatcher.equals("ERROR")) {
             // apply ERROR to the global dispatcherMapping.
             switch (dispatcherMapping) {
                 case NOT_SET  :  dispatcherMapping = ERROR; break;

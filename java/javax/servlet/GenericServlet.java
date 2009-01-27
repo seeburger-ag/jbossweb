@@ -119,7 +119,7 @@ public abstract class GenericServlet
     *
     */
 
-    public Enumeration<String> getInitParameterNames() {
+    public Enumeration getInitParameterNames() {
 	return getServletConfig().getInitParameterNames();
     }   
     

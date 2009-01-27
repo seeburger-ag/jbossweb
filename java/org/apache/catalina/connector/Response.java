@@ -51,6 +51,7 @@ import org.apache.tomcat.util.buf.UEncoder;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.http.ServerCookie;
+import org.apache.tomcat.util.http.TomcatCookie;
 import org.apache.tomcat.util.net.URL;
 
 /**
@@ -985,6 +986,23 @@ public class Response
      *
      * @param cookie Cookie to be added
      */
+    public void addTomcatCookie(final TomcatCookie cookie) {
+
+        // Ignore any call from an included servlet
+        if (included)
+            return;
+
+        addCookieInternal(cookie);
+
+    }
+
+
+    /**
+     * Add the specified Cookie to those that will be included with
+     * this Response.
+     *
+     * @param cookie Cookie to be added
+     */
     public void addCookieInternal(final Cookie cookie) {
 
         if (isCommitted())
@@ -1000,7 +1018,7 @@ public class Response
                         (sb, cookie.getVersion(), cookie.getName(), 
                          cookie.getValue(), cookie.getPath(), 
                          cookie.getDomain(), cookie.getComment(), 
-                         cookie.getMaxAge(), cookie.getSecure(), cookie.isHttpOnly());
+                         cookie.getMaxAge(), cookie.getSecure(), false);
                     return null;
                 }
             });
@@ -1008,7 +1026,48 @@ public class Response
             ServerCookie.appendCookieValue
                 (sb, cookie.getVersion(), cookie.getName(), cookie.getValue(),
                      cookie.getPath(), cookie.getDomain(), cookie.getComment(), 
-                     cookie.getMaxAge(), cookie.getSecure(), cookie.isHttpOnly());
+                     cookie.getMaxAge(), cookie.getSecure(), false);
+        }
+        // if we reached here, no exception, cookie is valid
+        // the header name is Set-Cookie for both "old" and v.1 ( RFC2109 )
+        // RFC2965 is not supported by browsers and the Servlet spec
+        // asks for 2109.
+        addHeader("Set-Cookie", sb.toString());
+
+        cookies.add(cookie);
+    }
+
+
+    /**
+     * Add the specified Cookie to those that will be included with
+     * this Response.
+     *
+     * @param cookie Cookie to be added
+     */
+    public void addCookieInternal(final TomcatCookie cookie) {
+
+        if (isCommitted())
+            return;
+
+        final StringBuffer sb = new StringBuffer();
+        // web application code can receive a IllegalArgumentException 
+        // from the appendCookieValue invocation
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run(){
+                    ServerCookie.appendCookieValue
+                        (sb, cookie.getVersion(), cookie.getName(), 
+                         cookie.getValue(), cookie.getPath(), 
+                         cookie.getDomain(), cookie.getComment(), 
+                         cookie.getMaxAge(), cookie.getSecure(), cookie.getHttpOnly());
+                    return null;
+                }
+            });
+        } else {
+            ServerCookie.appendCookieValue
+                (sb, cookie.getVersion(), cookie.getName(), cookie.getValue(),
+                     cookie.getPath(), cookie.getDomain(), cookie.getComment(), 
+                     cookie.getMaxAge(), cookie.getSecure(), cookie.getHttpOnly());
         }
         // if we reached here, no exception, cookie is valid
         // the header name is Set-Cookie for both "old" and v.1 ( RFC2109 )

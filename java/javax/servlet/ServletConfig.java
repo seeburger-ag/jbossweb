@@ -89,7 +89,7 @@ public interface ServletConfig {
      *
      */
 
-    public Enumeration<String> getInitParameterNames();
+    public Enumeration getInitParameterNames();
 
 
 }

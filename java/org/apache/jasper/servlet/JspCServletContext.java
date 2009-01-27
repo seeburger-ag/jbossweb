@@ -23,21 +23,16 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
 
 
 /**
@@ -441,57 +436,6 @@ public class JspCServletContext implements ServletContext {
 
     }
 
-
-    public void addFilter(String filterName, String description,
-            String className, Map<String, String> initParameters,
-            boolean isAsyncSupported) {
-        // Do nothing
-    }
-
-
-    public void addFilterMappingForServletNames(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... servletNames) {
-        // Do nothing
-    }
-
-
-    public void addFilterMappingForUrlPatterns(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... urlPatterns) {
-        // Do nothing
-    }
-
-
-    public void addServletMapping(String servletName, String[] urlPatterns) {
-        // Do nothing
-    }
-
-
-    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        return EnumSet.noneOf(SessionTrackingMode.class);
-    }
-
-
-    public EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        return EnumSet.noneOf(SessionTrackingMode.class);
-    }
-
-
-    public SessionCookieConfig getSessionCookieConfig() {
-        return null;
-    }
-
-
-    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
-        // Do nothing
-    }
-
-
-    public void setSessionTrackingModes(
-            EnumSet<SessionTrackingMode> sessionTrackingModes) {
-        // Do nothing
-    }
 
 
 }

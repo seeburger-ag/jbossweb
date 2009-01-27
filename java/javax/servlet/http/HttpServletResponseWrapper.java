@@ -87,7 +87,6 @@ public class HttpServletResponseWrapper extends ServletResponseWrapper implement
     /**
      * The default behavior of this method is to call encodeUrl(String url)
      * on the wrapped response object.
-     * @deprecated As of Version 3.0 of the Java Servlet API
      */
     public String encodeUrl(String url) {
 	return this._getHttpServletResponse().encodeUrl(url);
@@ -96,7 +95,6 @@ public class HttpServletResponseWrapper extends ServletResponseWrapper implement
     /**
      * The default behavior of this method is to return encodeRedirectUrl(String url)
      * on the wrapped response object.
-     * @deprecated As of Version 3.0 of the Java Servlet API
      */
     public String encodeRedirectUrl(String url) {
 	return this._getHttpServletResponse().encodeRedirectUrl(url);
@@ -189,7 +187,6 @@ public class HttpServletResponseWrapper extends ServletResponseWrapper implement
     /**
      * The default behavior of this method is to call setStatus(int sc, String sm)
      * on the wrapped response object.
-     * @deprecated As of Version 3.0 of the Java Servlet API
      */
      public void setStatus(int sc, String sm) {
 	this._getHttpServletResponse().setStatus(sc, sm);

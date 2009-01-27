@@ -35,16 +35,12 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 import javax.security.auth.Subject;
-import javax.servlet.AsyncContext;
-import javax.servlet.AsyncListener;
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestAttributeEvent;
 import javax.servlet.ServletRequestAttributeListener;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -71,6 +67,7 @@ import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.Parameters;
 import org.apache.tomcat.util.http.ServerCookie;
+import org.apache.tomcat.util.http.TomcatCookie;
 import org.apache.tomcat.util.http.mapper.MappingData;
 
 
@@ -2054,13 +2051,6 @@ public class Request
     }
 
 
-    public ServletContext getServletContext() {
-        if (context == null)
-            return (null);
-        return context.getServletContext();
-    }
-
-
     /**
      * Return the portion of the request URI used to select the servlet
      * that will process this request.
@@ -2381,7 +2371,7 @@ public class Request
         if ( (session != null) && (getContext() != null)
                && getContext().getCookies()
                && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(getRequestedSessionId()))) ) {
-            Cookie cookie = new Cookie(Globals.SESSION_COOKIE_NAME,
+            TomcatCookie cookie = new TomcatCookie(Globals.SESSION_COOKIE_NAME,
                     session.getIdInternal());
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
@@ -2401,7 +2391,7 @@ public class Request
      *
      * @param cookie The JSESSIONID cookie to be configured
      */
-    protected void configureSessionCookie(Cookie cookie) {
+    protected void configureSessionCookie(TomcatCookie cookie) {
         cookie.setMaxAge(-1);
         if (context.getSessionCookie().getPath() != null) {
             cookie.setPath(context.getSessionCookie().getPath());
@@ -2729,56 +2719,6 @@ public class Request
             }
         }
         return true;
-    }
-
-    @Override
-    public void addAsyncListener(AsyncListener listener,
-            ServletRequest servletRequest, ServletResponse servletResponse) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void addAsyncListener(AsyncListener listener) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public AsyncContext getAsyncContext() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean isAsyncStarted() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean isAsyncSupported() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public void setAsyncTimeout(long timeout) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public AsyncContext startAsync() throws IllegalStateException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public AsyncContext startAsync(ServletRequest servletRequest,
-            ServletResponse servletResponse) throws IllegalStateException {
-        // TODO Auto-generated method stub
-        return null;
     }
     
 }

@@ -30,14 +30,10 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.AsyncListener;
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -267,18 +263,6 @@ public class DummyRequest
     public String getLocalName() { return null; }
     public int getLocalPort() { return -1; }
     public int getRemotePort() { return -1; }
-
-    public void addAsyncListener(AsyncListener listener,
-            ServletRequest servletRequest, ServletResponse servletResponse) {}
-    public void addAsyncListener(AsyncListener listener) {}
-    public AsyncContext getAsyncContext() { return null; }
-    public ServletContext getServletContext() { return null; }
-    public boolean isAsyncStarted() { return false; }
-    public boolean isAsyncSupported() { return false; }
-    public void setAsyncTimeout(long timeout) {}
-    public AsyncContext startAsync() throws IllegalStateException { return null; }
-    public AsyncContext startAsync(ServletRequest servletRequest,
-            ServletResponse servletResponse) throws IllegalStateException { return null; }
     
 }
 

@@ -84,18 +84,18 @@ public class HttpUtils {
      *
      */
 
-    static public Hashtable<String,String[]> parseQueryString(String s) {
+    static public Hashtable parseQueryString(String s) {
 
 	String valArray[] = null;
 	
 	if (s == null) {
 	    throw new IllegalArgumentException();
 	}
-	Hashtable<String,String[]> ht = new Hashtable<String,String[]>();
+	Hashtable ht = new Hashtable();
 	StringBuffer sb = new StringBuffer();
 	StringTokenizer st = new StringTokenizer(s, "&");
 	while (st.hasMoreTokens()) {
-	    String pair = st.nextToken();
+	    String pair = (String)st.nextToken();
 	    int pos = pair.indexOf('=');
 	    if (pos == -1) {
 		// XXX
@@ -105,7 +105,7 @@ public class HttpUtils {
 	    String key = parseName(pair.substring(0, pos), sb);
 	    String val = parseName(pair.substring(pos+1, pair.length()), sb);
 	    if (ht.containsKey(key)) {
-		String oldVals[] = ht.get(key);
+		String oldVals[] = (String []) ht.get(key);
 		valArray = new String[oldVals.length + 1];
 		for (int i = 0; i < oldVals.length; i++) 
 		    valArray[i] = oldVals[i];
@@ -163,16 +163,14 @@ public class HttpUtils {
      */
      
 
-    static public Hashtable<String,String[]> parsePostData(int len, 
+    static public Hashtable parsePostData(int len, 
 					  ServletInputStream in)
     {
 	// XXX
 	// should a length of 0 be an IllegalArgumentException
 	
-    // cheap hack to return an empty hash
-	if (len <=0) 
-	    return new Hashtable<String,String[]>();
-
+	if (len <=0)
+	    return new Hashtable(); // cheap hack to return an empty hash
 
 	if (in == null) {
 	    throw new IllegalArgumentException();

@@ -192,7 +192,7 @@ public interface HttpServletRequest extends ServletRequest {
      *
      */			
 
-    public Enumeration<String> getHeaders(String name); 
+    public Enumeration getHeaders(String name); 
     
     
     
@@ -219,7 +219,7 @@ public interface HttpServletRequest extends ServletRequest {
      *
      */
 
-    public Enumeration<String> getHeaderNames();
+    public Enumeration getHeaderNames();
     
     
     
