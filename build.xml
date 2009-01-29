@@ -144,6 +144,7 @@
     <jar  jarfile="${servlet-api.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="javax/servlet/*" />
+        <include name="javax/servlet/annotation/*" />
         <include name="javax/servlet/http/*" />
         <include name="javax/servlet/resources/*" />
         <!-- Javadoc and i18n exclusions -->
