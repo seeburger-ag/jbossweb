@@ -441,6 +441,10 @@ public class WebappLoader
         return sb.toString();
     }
 
+    public String[] findLoaderRepositories() {
+        return getLoaderRepositories();
+    }
+    
     public String[] getLoaderRepositories() {
         if( loaderRepositories==null ) return  null;
         String res[]=new String[ loaderRepositories.size()];
@@ -941,7 +945,7 @@ public class WebappLoader
 
             // Adding the repository to the class loader
             classLoader.addRepository(classesPath + "/", classRepository);
-            loaderRepositories.add(classesPath + "/" );
+            loaderRepositories.add(classRepository.getAbsolutePath());
 
         }
 
@@ -1016,7 +1020,7 @@ public class WebappLoader
                         // in the dir
                     }
                     
-                    loaderRepositories.add( filename );
+                    loaderRepositories.add(destFile.getAbsolutePath());
 
                 }
             } catch (NamingException e) {

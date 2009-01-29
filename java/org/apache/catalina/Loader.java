@@ -129,6 +129,13 @@ public interface Loader {
 
 
     /**
+     * Return the set of loader repositories defined for this class loader.
+     * If none are defined, a zero-length array is returned.
+     */
+    public String[] findLoaderRepositories();
+
+
+    /**
      * Add a property change listener to this component.
      *
      * @param listener The listener to add
