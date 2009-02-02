@@ -39,6 +39,15 @@
     other source).
   </p>
   
+  <p>
+    The number of concurrent connections that can be handled by JBoss Web is constrained by the
+    poller size that has been configured on the connector (see the pollerSize attribute in the APR
+    documentation). JBoss Web uses two separate pollers for keep alive and event processing, so by
+    default it can handle a maximum of 8192 kept alive connections and 8192 event driven connections
+    (for event connections, failure to put a socket in the poller will result in the end of the
+    processing of the connection).
+  </p>
+  
   <subsection name="HttpEvent">
   
   <p>
@@ -178,6 +187,14 @@
     objects provided by the Servlet API. The event object remains allocated for the entire duration
     of the connection, and can safely be used for synchronization purposes. For example, two possibly 
     concurrent writes done on the same connection should likely synchronize on the event object. 
+  </p>
+  
+  <p>
+    When the processing of the END or ERROR event is done, the connection may be closed, and no
+    additional data should be written on the connection. Unsynchronized asynchronous writes may
+    cause stability issues when this happens. It is valid however to add the proper synchronization
+    in the END or ERROR event processing (so that they wait for the asynchronous write loop to get
+    done rather than synchronizing all writes).
   </p>
   
   </subsection>
