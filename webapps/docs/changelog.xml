@@ -47,6 +47,13 @@
   </subsection>
   <subsection name="Catalina">
     <changelog>
+      <fix>
+        <bug>38553</bug>: A lack of certs is normal if the user doesn't have a trusted cert. Return 401, 
+        not 400 in this case. (markt)
+      </fix>
+      <fix>
+        <bug>46606</bug>: Max depth limit configurable in WebDAV Servlet. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -60,6 +67,9 @@
       </fix>
       <fix>
         Validator code cleanup. (markt)
+      </fix>
+      <fix>
+        <bug>38197</bug>: Take account of jsp:attribute elements when naming tag pools. (markt)
       </fix>
     </changelog>
   </subsection>
