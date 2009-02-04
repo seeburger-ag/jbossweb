@@ -121,9 +121,9 @@ import org.jboss.logging.Logger;
 
 public class StandardContext
     extends ContainerBase
-    implements Context, Serializable, NotificationEmitter
+    implements Context, NotificationEmitter
 {
-    private static transient Logger log = Logger.getLogger(StandardContext.class);
+    private static Logger log = Logger.getLogger(StandardContext.class);
 
 
     // ----------------------------------------------------------- Constructors
@@ -220,14 +220,14 @@ public class StandardContext
     /**
      * The set of instantiated application event listener objects</code>.
      */
-    private transient Object applicationEventListenersObjects[] = 
+    private Object applicationEventListenersObjects[] = 
         new Object[0];
 
 
     /**
      * The set of instantiated application lifecycle listener objects</code>.
      */
-    private transient Object applicationLifecycleListenersObjects[] = 
+    private Object applicationLifecycleListenersObjects[] = 
         new Object[0];
 
 
@@ -246,12 +246,12 @@ public class StandardContext
     /**
      * The broadcaster that sends j2ee notifications. 
      */
-    private transient NotificationBroadcasterSupport broadcaster = null;
+    private NotificationBroadcasterSupport broadcaster = null;
     
     /**
      * The Locale to character set mapper for this application.
      */
-    private transient CharsetMapper charsetMapper = null;
+    private CharsetMapper charsetMapper = null;
 
 
     /**
@@ -282,7 +282,7 @@ public class StandardContext
     /**
      * The ServletContext implementation associated with this Context.
      */
-    protected transient ApplicationContext context = null;
+    protected ApplicationContext context = null;
 
 
     /**
@@ -425,14 +425,14 @@ public class StandardContext
     /**
      * The mapper associated with this context.
      */
-    private transient org.apache.tomcat.util.http.mapper.Mapper mapper = 
+    private org.apache.tomcat.util.http.mapper.Mapper mapper = 
         new org.apache.tomcat.util.http.mapper.Mapper();
 
 
     /**
      * The naming context listener for this web application.
      */
-    private transient NamingContextListener namingContextListener = null;
+    private NamingContextListener namingContextListener = null;
 
 
     /**
@@ -680,7 +680,7 @@ public class StandardContext
     /**
      * Non proxied resources.
      */
-    private transient DirContext webappResources = null;
+    private DirContext webappResources = null;
 
     private long startupTime;
     private long startTime;

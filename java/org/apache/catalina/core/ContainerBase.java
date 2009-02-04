@@ -22,7 +22,6 @@ package org.apache.catalina.core;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -56,7 +55,6 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -121,7 +119,7 @@ import org.jboss.logging.Logger;
  */
 
 public abstract class ContainerBase
-    implements Container, Lifecycle, Pipeline, MBeanRegistration, Serializable {
+    implements Container, Lifecycle, Pipeline, MBeanRegistration {
 
     private static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger( ContainerBase.class );
@@ -1406,7 +1404,7 @@ public abstract class ContainerBase
     protected String suffix;
     protected ObjectName oname;
     protected ObjectName controller;
-    protected transient MBeanServer mserver;
+    protected MBeanServer mserver;
 
     public ObjectName getJmxName() {
         return oname;
