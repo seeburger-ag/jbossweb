@@ -30,6 +30,12 @@
       <fix>
         <bug>46606</bug>: Max depth limit configurable in WebDAV Servlet. (markt)
       </fix>
+      <fix>
+        <bug>38570</bug>: Fix checking of appBase against docBase. (markt)
+      </fix>
+      <fix>
+        <bug>39013</bug>: Fix appBase test when deleting resources. (markt)
+      </fix> 
     </changelog>
   </subsection>
   <subsection name="Coyote">
