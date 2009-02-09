@@ -20,13 +20,12 @@ package org.apache.catalina.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.naming.Binding;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.servlet.annotation.InitParam;
 import javax.servlet.annotation.ServletFilter;
@@ -34,15 +33,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.annotation.WebServletContextListener;
 
 import org.apache.catalina.Context;
-import org.apache.naming.resources.Resource;
 
 public class AnnotationScanner {
 
-    // FIXME: probably should not be static, and tied to a Context, to allow pluggability ?
-    
-    public static final Class<?>[] ANNOTATIONS_TYPES =
-    { InitParam.class, ServletFilter.class, WebServlet.class, WebServletContextListener.class };
-    
     public static final boolean USE_JAVASSIST = 
         Boolean.valueOf(System.getProperty("org.apache.catalina.core.AnnotationScanner.USE_JAVASSIST", "false")).booleanValue();
 
@@ -51,25 +44,25 @@ public class AnnotationScanner {
      * 
      * @param context
      */
-    public static void scan(Context context) {
-        // FIXME: obviously needs to return a result
+    public List<Class<?>> scan(Context context) {
+        ArrayList<Class<?>> result = new ArrayList<Class<?>>();
         
         if (context.getLoader().findLoaderRepositories() != null) {
             String[] repositories = context.getLoader().findLoaderRepositories();
             for (int i = 0; i < repositories.length; i++) {
-                System.out.println("Repo: " + repositories[i]);
                 if (repositories[i].endsWith(".jar")) {
                     try {
-                        scanJar(context, new JarFile(repositories[i]));
+                        scanJar(result, context, new JarFile(repositories[i]));
                     } catch (IOException e) {
                         // Ignore
                     }
                 } else {
-                    scanClasses(context, new File(repositories[i]), "");
+                    scanClasses(result, context, new File(repositories[i]), "");
                 }
             }
         }
 
+        return result;
         /*
         DirContext resources = context.getResources();
         DirContext webInfClasses = null;
@@ -99,15 +92,18 @@ public class AnnotationScanner {
     /**
      * Scan folder containing class files.
      */
-    public static void scanClasses(Context context, File folder, String path) {
+    public void scanClasses(List<Class<?>> result, Context context, File folder, String path) {
         String[] files = folder.list();
         for (int i = 0; i < files.length; i++) {
             File file = new File(folder, files[i]);
             if (file.isDirectory()) {
-                scanClasses(context, file, path + "/" + files[i]);
+                scanClasses(result, context, file, path + "/" + files[i]);
             } else if (files[i].endsWith(".class")) {
                 String className = getClassName(path + "/" + files[i]);
-                scanClass(context, className, file, null);
+                Class<?> annotated = scanClass(context, className, file, null);
+                if (annotated != null) {
+                    result.add(annotated);
+                }
             }
         }
     }
@@ -143,14 +139,13 @@ public class AnnotationScanner {
     /**
      * Scan folder containing JAR files.
      */
-    public static void scanJars(Context context, DirContext folder) {
+    public void scanJars(List<Class<?>> result, Context context, DirContext folder) {
         if (context.getLoader().findLoaderRepositories() != null) {
             String[] repositories = context.getLoader().findLoaderRepositories();
             for (int i = 0; i < repositories.length; i++) {
-                System.out.println("Repo: " + repositories[i]);
                 if (repositories[i].endsWith(".jar")) {
                     try {
-                        scanJar(context, new JarFile(repositories[i]));
+                        scanJar(result, context, new JarFile(repositories[i]));
                     } catch (IOException e) {
                         // Ignore
                     }
@@ -188,12 +183,15 @@ public class AnnotationScanner {
     /**
      * Scan all class files in the given JAR.
      */
-    public static void scanJar(Context context, JarFile file) {
+    public void scanJar(List<Class<?>> result, Context context, JarFile file) {
         Enumeration<JarEntry> entries = file.entries();
         while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
             if (entry.getName().endsWith(".class")) {
-                scanClass(context, getClassName(entry.getName()), null, entry);
+                Class<?> annotated = scanClass(context, getClassName(entry.getName()), null, entry);
+                if (annotated != null) {
+                    result.add(annotated);
+                }
             }
         }
         try {
@@ -208,7 +206,7 @@ public class AnnotationScanner {
      * Get class name given a path to a classfile.
      * /my/class/MyClass.class -> my.class.MyClass
      */
-    public static String getClassName(String filePath) {
+    public String getClassName(String filePath) {
         if (filePath.startsWith("/")) {
             filePath = filePath.substring(1);
         }
@@ -222,20 +220,30 @@ public class AnnotationScanner {
     /**
      * Scan class for interesting annotations.
      */
-    public static boolean scanClass(Context context, String className, File file, JarEntry entry) {
+    public Class<?> scanClass(Context context, String className, File file, JarEntry entry) {
         if (USE_JAVASSIST) {
             // FIXME: Javassist implementation
+            try {
+                
+                return context.getLoader().getClassLoader().loadClass(className);
+            } catch (Throwable t) {
+                // Ignore classloading errors here
+            }
         } else {
             // Load the class using the classloader, and see if it implements one of the web annotations
             try {
-                System.out.println("Scan class: " + className);
                 Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
+                if (clazz.isAnnotationPresent(InitParam.class)
+                        || clazz.isAnnotationPresent(ServletFilter.class)
+                        || clazz.isAnnotationPresent(WebServlet.class)
+                        || clazz.isAnnotationPresent(WebServletContextListener.class)) {
+                    return clazz;
+                }
             } catch (Throwable t) {
                 // Ignore classloading errors here
-                System.out.println("CL Error: " + t);
             }
         }
-        return false;
+        return null;
     }
     
     
