@@ -111,7 +111,7 @@ public class RewriteValve extends ValveBase
     public void start() throws LifecycleException {
 
         InputStream is = null;
-        
+
         // Process configuration file for this valve
         if (getContainer() instanceof Context) {
             context = true;
@@ -348,6 +348,7 @@ public class RewriteValve extends ValveBase
                     urlString.insert(0, request.getContext().getEncodedPath());
                 }
                 response.sendRedirect(urlString.toString());
+                response.setStatus(rules[i].getRedirectCode());
                 done = true;
                 break;
             }
