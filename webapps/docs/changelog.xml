@@ -36,6 +36,9 @@
       <fix>
         <bug>39013</bug>: Fix appBase test when deleting resources. (markt)
       </fix> 
+      <fix>
+        Status code for redirect rule in rewrite valve. (jfclere)
+      </fix> 
     </changelog>
   </subsection>
   <subsection name="Coyote">

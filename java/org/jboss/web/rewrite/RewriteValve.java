@@ -349,6 +349,7 @@ public class RewriteValve extends ValveBase
                     urlString.insert(0, request.getContext().getEncodedPath());
                 }
                 response.sendRedirect(urlString.toString());
+                response.setStatus(rules[i].getRedirectCode());
                 done = true;
                 break;
             }
