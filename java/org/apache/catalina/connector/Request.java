@@ -37,6 +37,7 @@ import java.util.TreeMap;
 import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncListener;
+import javax.servlet.DispatcherType;
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -2777,6 +2778,18 @@ public class Request
     @Override
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public DispatcherType getDispatcherType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ServletResponse getServletResponse() {
         // TODO Auto-generated method stub
         return null;
     }

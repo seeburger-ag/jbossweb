@@ -120,6 +120,9 @@ public class DummyResponse
     public void setIntHeader(String name, int value) {}
     public void setStatus(int status) {}
     public void setStatus(int status, String message) {}
+    public void disable() {}
+    public void enable() {}
+    public boolean isDisabled() { return false; }
 
 
 }

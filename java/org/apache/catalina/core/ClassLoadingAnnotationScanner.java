@@ -21,10 +21,11 @@ package org.apache.catalina.core;
 import java.io.File;
 import java.util.jar.JarEntry;
 
-import javax.servlet.annotation.InitParam;
-import javax.servlet.annotation.ServletFilter;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.annotation.WebServletContextListener;
+import javax.servlet.http.annotation.FilterMapping;
+import javax.servlet.http.annotation.InitParam;
+import javax.servlet.http.annotation.Servlet;
+import javax.servlet.http.annotation.ServletContextListener;
+import javax.servlet.http.annotation.ServletFilter;
 
 import org.apache.catalina.Context;
 
@@ -40,8 +41,9 @@ public class ClassLoadingAnnotationScanner
             Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
             if (clazz.isAnnotationPresent(InitParam.class)
                     || clazz.isAnnotationPresent(ServletFilter.class)
-                    || clazz.isAnnotationPresent(WebServlet.class)
-                    || clazz.isAnnotationPresent(WebServletContextListener.class)) {
+                    || clazz.isAnnotationPresent(FilterMapping.class)
+                    || clazz.isAnnotationPresent(Servlet.class)
+                    || clazz.isAnnotationPresent(ServletContextListener.class)) {
                 return clazz;
             }
         } catch (Throwable t) {

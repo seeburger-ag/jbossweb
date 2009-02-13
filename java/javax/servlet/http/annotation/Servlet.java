@@ -17,34 +17,30 @@
  * under the License.
  */
 
-package javax.servlet;
 
+package javax.servlet.http.annotation;
 
-	/** 
-	 * This is the event class for notifications about changes to
-	 * the servlet context of a web application.
-	 * @see ServletContextListener
-	 * @since	v 2.3
-	 */
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-public class ServletContextEvent extends java.util.EventObject { 
+/**
+ * @version $Rev: 675701 $ $Date: 2008-07-10 21:49:52 +0200 (Thu, 10 Jul 2008) $
+ * @since 3.0
+ */
 
-	/** Construct a ServletContextEvent from the given context.
-	 *
-	 * @param source - the ServletContext that is sending the event.
-	 */
-    public ServletContextEvent(ServletContext source) {
-	super(source);
-    }
-    
-	/**
-	 * Return the ServletContext that changed.
-	 *
-	 * @return the ServletContext that sent the event.
-	 */
-    public ServletContext getServletContext () { 
-	return (ServletContext) super.getSource();
-    }
+@Target(value= ElementType.TYPE)
+@Retention(value= RetentionPolicy.RUNTIME)
+public @interface Servlet {
+    String[] urlMappings();
+
+    String icon() default "";
+
+    InitParam[] initParams() default {};
+
+    int loadOnStartup() default -1;
+
+    String name() default "";
     
 }
-

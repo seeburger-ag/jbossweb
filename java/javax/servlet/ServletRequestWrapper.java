@@ -1,19 +1,22 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package javax.servlet;
 
 import java.io.BufferedReader;
@@ -89,7 +92,7 @@ public class ServletRequestWrapper implements ServletRequest {
      * on the wrapped request object.
      */
 
-    public Enumeration<String> getAttributeNames() {
+    public Enumeration getAttributeNames() {
 	return this.request.getAttributeNames();
 	}    
     
@@ -162,7 +165,7 @@ public class ServletRequestWrapper implements ServletRequest {
       * The default behavior of this method is to return getParameterMap()
      * on the wrapped request object.
      */
-    public Map<String,String[]> getParameterMap() {
+    public Map getParameterMap() {
 	return this.request.getParameterMap();
     }
     
@@ -174,7 +177,7 @@ public class ServletRequestWrapper implements ServletRequest {
      * on the wrapped request object.
      */
      
-    public Enumeration<String> getParameterNames() {
+    public Enumeration getParameterNames() {
 	return this.request.getParameterNames();
     }
     
@@ -315,7 +318,7 @@ public class ServletRequestWrapper implements ServletRequest {
      * on the wrapped request object.
      */
 
-    public Enumeration<Locale> getLocales() {
+    public Enumeration getLocales() {
 	return this.request.getLocales();
     }
     
@@ -349,7 +352,6 @@ public class ServletRequestWrapper implements ServletRequest {
     /**
       * The default behavior of this method is to return getRealPath(String path)
      * on the wrapped request object.
-     * @deprecated As of Version 3.0 of the Java Servlet API
      */
 
     public String getRealPath(String path) {
@@ -399,114 +401,138 @@ public class ServletRequestWrapper implements ServletRequest {
     }
 
     /**
-     * The default behavior of this method is to return
-     * getServletContext() on the wrapped request object.
-     * 
-     * @return
+     * Get the servlet context the request-response pair was last dispatched through.
+     *
+     * @return the latest ServletContext on the dispatch chain.
      * @since 3.0
      */
     public ServletContext getServletContext() {
         return request.getServletContext();
     }
-    
+
     /**
-     * The default behavior of this method is to return
-     * startAsync() on the wrapped request object.
-     * 
-     * @return
-     * @throws java.lang.IllegalStateException
+     * Gets the associated servlet response.
+     *
+     * @return the ServletResponse associated with this request.
      * @since 3.0
      */
-    public AsyncContext startAsync() throws java.lang.IllegalStateException {
-        return request.startAsync();
+    public ServletResponse getServletResponse() {
+        return request.getServletResponse();
     }
-    
-    /**
-     * The default behavior of this method is to return
-     * startAsync(ServletRequest, ServletResponse) on the wrapped request
-     * object.
-     * 
-     * @param servletRequest
-     * @param servletResponse
-     * @return
-     * @throws java.lang.IllegalStateException
-     * @since 3.0
-     */
-    public AsyncContext startAsync(ServletRequest servletRequest,
-            ServletResponse servletResponse)
-            throws java.lang.IllegalStateException {
-        return request.startAsync(servletRequest, servletResponse);
+
+    public void addAsyncListener(AsyncListener listener) {
+        request.addAsyncListener(listener);
     }
-    
-    /**
-     * The default behavior of this method is to return
-     * isAsyncStarted() on the wrapped request object.
-     * 
-     * @return
-     * @since 3.0
-     */
-    public boolean isAsyncStarted() {
-        return request.isAsyncStarted();
+
+    public void addAsyncListener(AsyncListener listener, ServletRequest request, ServletResponse response) {
+        request.addAsyncListener(listener, request, response);
     }
-    
-    /**
-     * The default behavior of this method is to return
-     * isAsyncSupported() on the wrapped request object.
-     * 
-     * @return
-     * @since 3.0
-     */
-    public boolean isAsyncSupported() {
-        return request.isAsyncSupported();
-    }
-    
-    /**
-     * The default behavior of this method is to return
-     * getAsyncContext() on the wrapped request object.
-     * 
-     * @return
-     * @since 3.0
-     */
+
     public AsyncContext getAsyncContext() {
         return request.getAsyncContext();
     }
 
-    /**
-     * The default behavior of this method is to call
-     * addAsyncListener(AsyncListener) on the wrapped request object.
-     * 
-     * @param listener
-     * @since 3.0
-     */
-    public void addAsyncListener(AsyncListener listener) {
-        request.addAsyncListener(listener);
+    public boolean isAsyncStarted() {
+        return request.isAsyncStarted();
     }
-    
-    /**
-     * The default behavior of this method is to call
-     * addAsyncListener(AsyncListener, ServletRequest, ServletResponse) on the
-     * wrapped request object.
-     * 
-     * @param listener
-     * @param servletRequest
-     * @param servletResponse
-     * @since 3.0
-     */
-    public void addAsyncListener(AsyncListener listener,
-            ServletRequest servletRequest, ServletResponse servletResponse) {
-        addAsyncListener(listener, servletRequest, servletResponse);
+
+    public boolean isAsyncSupported() {
+        return request.isAsyncSupported();
     }
-    
-    /**
-     * The default behavior of this method is to call
-     * startAsync() on the wrapped request object.
-     * 
-     * @param timeout
-     * @since 3.0
-     */
+
     public void setAsyncTimeout(long timeout) {
         request.setAsyncTimeout(timeout);
     }
+
+    public AsyncContext startAsync() {
+        return request.startAsync();
+    }
+
+    public AsyncContext startAsync(ServletRequest request, ServletResponse response) {
+        return request.startAsync(request, response);
+    }
+
+    public DispatcherType getDispatcherType() {
+        return request.getDispatcherType();
+    }
+
+//    /**
+//     * complete a suspended request.
+//     *
+//     * @throws IllegalStateException
+//     * @since 3.0
+//     */
+//    public void complete() throws IllegalStateException {
+//        request.complete();
+//    }
+//
+//    /**
+//     * Suspend request processing.  Must be called by a thread that is processing this request.
+//     *
+//     * @param timeoutMilliseconds new timeout period, in milliseconds
+//     * @throws IllegalStateException if called by a thread not processing this request or after error dispatch
+//     * @see #complete
+//     * @see #resume
+//     * @since 3.0
+//     */
+//    public void suspend(long timeoutMilliseconds) throws IllegalStateException {
+//        request.suspend(timeoutMilliseconds);
+//    }
+//
+//    /**
+//     * Similar to suspend(timeoutMilliseconds) but with a container supplied timeout period.
+//     *
+//     * @throws IllegalStateException
+//     * @see #complete
+//     * @see #resume
+//     * @since 3.0
+//     */
+//    public void suspend() throws IllegalStateException {
+//        request.suspend();
+//    }
+//
+//    /**
+//     * Resume a suspended request
+//     *
+//     * @throws IllegalStateException if the request is not suspended
+//     * @see #suspend
+//     * @since 3.0
+//     */
+//    public void resume() throws IllegalStateException {
+//        request.resume();
+//    }
+//
+//    /**
+//     * @return if the request is suspended
+//     * @since 3.0
+//     */
+//    public boolean isSuspended() {
+//        return request.isSuspended();
+//    }
+//
+//    /**
+//     * @return if the request is resumed
+//     * @since 3.0
+//     */
+//    public boolean isResumed() {
+//        return request.isResumed();
+//    }
+//
+//    /**
+//     * @return if the request is timed out
+//     * @since 3.0
+//     */
+//    public boolean isTimeout() {
+//        return request.isTimeout();
+//    }
+//
+//    /**
+//     * @return if the request has never been suspended (or resumed)
+//     * @since 3.0
+//     */
+//    public boolean isInitial() {
+//        return request.isInitial();
+//    }
 
 }
 

@@ -1,77 +1,61 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
+
+
 package javax.servlet;
 
 /**
- * 
+ * @version $Rev: 675701 $ $Date: 2008-07-10 21:49:52 +0200 (Thu, 10 Jul 2008) $
  * @since 3.0
- * $Id: SessionCookieConfig.java 733271 2009-01-10 13:37:33Z markt $
  */
 public class SessionCookieConfig {
-    private String domain;
-    private String path;
-    private String comment;
-    private boolean httpOnly;
-    private boolean secure;
 
-    /**
-     * 
-     * @param domain      Domain to use for session cookies generated for a
-     *                    {@link ServletContext} in which this
-     *                    {@link SessionCookieConfig} has been set
-     * @param path        Path to use for session cookies generated for a
-     *                    {@link ServletContext} in which this
-     *                    {@link SessionCookieConfig} has been set. If null
-     *                    {@link ServletContext#getContextPath()} is used
-     * @param comment     Comment to use for session cookies generated for a
-     *                    {@link ServletContext} in which this
-     *                    {@link SessionCookieConfig} has been set
-     * @param isHttpOnly  HttpOnly flag to use for session cookies generated for
-     *                    a {@link ServletContext} in which this
-     *                    {@link SessionCookieConfig} has been set
-     * @param isSecure    If <code>true</code>, the cookie will always be marked
-     *                    as secure. If <code>false</code> the cookie will only
-     *                    be marked as secure if the request is secure.
-     */
-    public SessionCookieConfig(String domain, String path, String comment,
-            boolean isHttpOnly, boolean isSecure) {
+    private final String domain;
+    private final String path;
+    private final String comment;
+    private final boolean httpOnly;
+    private final boolean secure;
+
+    public SessionCookieConfig(String domain, String path, String comment, boolean httpOnly, boolean secure) {
         this.domain = domain;
         this.path = path;
         this.comment = comment;
-        this.httpOnly = isHttpOnly;
-        this.secure = isSecure;
+        this.httpOnly = httpOnly;
+        this.secure = secure;
     }
-    
-    public java.lang.String getDomain() {
+
+    public String getDomain() {
         return domain;
     }
-    
-    public java.lang.String getPath() {
+
+    public String getPath() {
         return path;
     }
-    
-    public java.lang.String getComment() {
+
+    public String getComment() {
         return comment;
     }
-    
+
     public boolean isHttpOnly() {
         return httpOnly;
     }
-    
+
     public boolean isSecure() {
         return secure;
     }

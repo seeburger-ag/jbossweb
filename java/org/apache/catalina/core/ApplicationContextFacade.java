@@ -34,10 +34,12 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 
@@ -369,54 +371,44 @@ public final class ApplicationContextFacade
     }
 
        
-    public void addFilter(String filterName, String description,
-            String className, Map<String, String> initParameters,
-            boolean isAsyncSupported) {
+    public FilterRegistration addFilter(String filterName, String className)
+            throws IllegalArgumentException, IllegalStateException {
         if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("addFilter", new Object[]{filterName, description,
-                    className, initParameters,
-                    Boolean.valueOf(isAsyncSupported)});
+            return (FilterRegistration) doPrivileged("addFilter",
+                    new Object[]{filterName, className});
         } else {
-            context.addFilter(filterName, description, className,
-                    initParameters, isAsyncSupported);
+            return context.addFilter(filterName, className);
         }
     }
 
 
-    public void addFilterMappingForServletNames(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... servletNames) {
+    public ServletRegistration addServlet(String servletName, String className)
+            throws IllegalArgumentException, IllegalStateException {
         if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("addFilterMappingForServletNames",
-                    new Object[]{filterName, dispatcherTypes,
-                    Boolean.valueOf(isMatchAfter), servletNames});
+            return (ServletRegistration) doPrivileged("addServlet",
+                    new Object[]{servletName, className});
         } else {
-            context.addFilterMappingForServletNames(filterName, dispatcherTypes,
-                    isMatchAfter, servletNames);
+            return context.addServlet(servletName, className);
         }
     }
 
 
-    public void addFilterMappingForUrlPatterns(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... urlPatterns) {
+    public FilterRegistration findFilterRegistration(String filterName) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("addFilterMappingForUrlPatterns",
-                    new Object[]{filterName, dispatcherTypes,
-                    Boolean.valueOf(isMatchAfter), urlPatterns});
+            return (FilterRegistration) doPrivileged("findFilterRegistration",
+                    new Object[]{filterName});
         } else {
-            context.addFilterMappingForUrlPatterns(filterName, dispatcherTypes,
-                    isMatchAfter, urlPatterns);
+            return context.findFilterRegistration(filterName);
         }
     }
 
 
-    public void addServletMapping(String servletName, String[] urlPatterns) {
+    public ServletRegistration findServletRegistration(String servletName) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("addServletMapping",
-                    new Object[]{servletName, urlPatterns});
+            return (ServletRegistration) doPrivileged("findServletRegistration",
+                    new Object[]{servletName});
         } else {
-            context.addServletMapping(servletName, urlPatterns);
+            return context.findServletRegistration(servletName);
         }
     }
 

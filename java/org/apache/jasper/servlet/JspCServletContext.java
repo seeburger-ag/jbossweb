@@ -27,15 +27,15 @@ import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 
@@ -442,29 +442,25 @@ public class JspCServletContext implements ServletContext {
     }
 
 
-    public void addFilter(String filterName, String description,
-            String className, Map<String, String> initParameters,
-            boolean isAsyncSupported) {
-        // Do nothing
+    public FilterRegistration addFilter(String filterName, String className)
+            throws IllegalArgumentException, IllegalStateException {
+        return null;
     }
 
 
-    public void addFilterMappingForServletNames(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... servletNames) {
-        // Do nothing
+    public ServletRegistration addServlet(String servletName, String className)
+            throws IllegalArgumentException, IllegalStateException {
+        return null;
     }
 
 
-    public void addFilterMappingForUrlPatterns(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... urlPatterns) {
-        // Do nothing
+    public FilterRegistration findFilterRegistration(String filterName) {
+        return null;
     }
 
 
-    public void addServletMapping(String servletName, String[] urlPatterns) {
-        // Do nothing
+    public ServletRegistration findServletRegistration(String servletName) {
+        return null;
     }
 
 

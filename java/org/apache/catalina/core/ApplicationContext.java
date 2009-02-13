@@ -35,11 +35,13 @@ import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
+import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 
@@ -814,6 +816,7 @@ public class ApplicationContext
     }
 
 
+    // FIXME: removed
     public void addFilter(String filterName, String description,
             String className, Map<String, String> initParameters,
             boolean isAsyncSupported) {
@@ -834,6 +837,7 @@ public class ApplicationContext
     }
 
 
+    // FIXME: removed
     public void addFilterMappingForServletNames(String filterName,
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... servletNames) {
@@ -858,6 +862,7 @@ public class ApplicationContext
     }
 
 
+    // FIXME: removed
     public void addFilterMappingForUrlPatterns(String filterName,
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... urlPatterns) {
@@ -883,6 +888,7 @@ public class ApplicationContext
     }
 
 
+    // FIXME: removed
     public void addServletMapping(String servletName, String[] urlPatterns) {
         if (context.initialized) {
             //TODO Spec breaking enhancement to ignore this restriction
@@ -893,6 +899,32 @@ public class ApplicationContext
             boolean jspWildCard = ("*.jsp".equals(urlPattern));
             context.addServletMapping(servletName, urlPattern, jspWildCard);
         }
+    }
+
+
+    public FilterRegistration addFilter(String filterName, String className)
+            throws IllegalArgumentException, IllegalStateException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public ServletRegistration addServlet(String servletName, String className)
+            throws IllegalArgumentException, IllegalStateException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public FilterRegistration findFilterRegistration(String filterName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public ServletRegistration findServletRegistration(String servletName) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 

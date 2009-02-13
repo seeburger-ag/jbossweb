@@ -17,34 +17,37 @@
  * under the License.
  */
 
+
 package javax.servlet;
 
+import java.util.Map;
 
-	/** 
-	 * This is the event class for notifications about changes to
-	 * the servlet context of a web application.
-	 * @see ServletContextListener
-	 * @since	v 2.3
-	 */
+/**
+ * @version $Rev: 743426 $ $Date: 2009-02-11 18:52:39 +0100 (Wed, 11 Feb 2009) $
+ * @since 3.0
+ */
+public abstract class ServletRegistration {
 
-public class ServletContextEvent extends java.util.EventObject { 
+    protected String description;
+    protected boolean isAsyncSupported;
+    protected int loadOnStartup;
 
-	/** Construct a ServletContextEvent from the given context.
-	 *
-	 * @param source - the ServletContext that is sending the event.
-	 */
-    public ServletContextEvent(ServletContext source) {
-	super(source);
+    public void setDescription(String description) {
+        this.description = description;
     }
-    
-	/**
-	 * Return the ServletContext that changed.
-	 *
-	 * @return the ServletContext that sent the event.
-	 */
-    public ServletContext getServletContext () { 
-	return (ServletContext) super.getSource();
+
+    public void setAsyncSupported(boolean asyncSupported) {
+        isAsyncSupported = asyncSupported;
     }
+
+    public void setLoadOnStartup(int loadOnStartup) {
+        this.loadOnStartup = loadOnStartup;
+    }
+
+    public abstract void addMapping(String... urlPatterns);
+
+    public abstract void setInitParameter(String name, String value);
+
+    public abstract void setInitParameters(Map<String, String> initParameters);
     
 }
-

@@ -32,6 +32,7 @@ import java.util.Map;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncListener;
+import javax.servlet.DispatcherType;
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -279,6 +280,8 @@ public class DummyRequest
     public AsyncContext startAsync() throws IllegalStateException { return null; }
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException { return null; }
+    public DispatcherType getDispatcherType() { return null; }
+    public ServletResponse getServletResponse() { return null; }
     
 }
 

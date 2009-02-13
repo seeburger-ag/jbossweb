@@ -20,25 +20,31 @@
 
 package javax.servlet;
 
+import java.util.EnumSet;
+import java.util.Map;
+
 /**
  * @version $Rev: 743426 $ $Date: 2009-02-11 18:52:39 +0100 (Wed, 11 Feb 2009) $
  * @since 3.0
  */
-public class AsyncEvent {
+public abstract class FilterRegistration {
+    protected String description;
+    protected boolean isAsyncSupported;
 
-    private final ServletRequest request;
-    private final ServletResponse response;
-
-    public AsyncEvent(ServletRequest request, ServletResponse response) {
-        this.request = request;
-        this.response = response;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public ServletRequest getRequest() {
-        return request;
+    public void setAsyncSupported(boolean asyncSupported) {
+        isAsyncSupported = asyncSupported;
     }
 
-    public ServletResponse getResponse() {
-        return response;
-    }
+    public abstract void addMappingForServletNames(EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter, String ... servletNames);
+
+    public abstract void addMappingForUrlPatterns(EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter, String ... urlPatterns);
+
+    public abstract void setInitParameter(String name, String value);
+
+    public abstract void setInitParameters(Map<String, String> initParameters);
+
 }

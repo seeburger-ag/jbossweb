@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncListener;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
@@ -1027,6 +1028,26 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return request.startAsync(servletRequest, servletResponse);
+    }
+
+
+    public DispatcherType getDispatcherType() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.getDispatcherType();
+    }
+
+
+    public ServletResponse getServletResponse() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.getServletResponse();
     }
 
 }

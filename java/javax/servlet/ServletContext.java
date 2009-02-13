@@ -1,28 +1,31 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package javax.servlet;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.Set;
+import java.util.Map;
+import java.util.EnumSet;
 
 
 /**
@@ -92,10 +95,10 @@ public interface ServletContext {
     /**
      * Returns the major version of the Java Servlet API that this
      * servlet container supports. All implementations that comply
-     * with Version 3.0 must have this method
-     * return the integer 3.
+     * with Version 2.4 must have this method
+     * return the integer 2.
      *
-     * @return 		3
+     * @return 		2
      *
      */
     
@@ -106,10 +109,10 @@ public interface ServletContext {
     /**
      * Returns the minor version of the Servlet API that this
      * servlet container supports. All implementations that comply
-     * with Version 3.0 must have this method
-     * return the integer 0.
+     * with Version 2.4 must have this method
+     * return the integer 4.
      *
-     * @return 		0
+     * @return 		4
      *
      */
 
@@ -162,7 +165,7 @@ public interface ServletContext {
     * @since Servlet 2.3
     */
     
-    public Set<String> getResourcePaths(String path);
+    public Set getResourcePaths(String path);
     
     
 
@@ -352,7 +355,7 @@ public interface ServletContext {
      *
      */
     
-    public Enumeration<Servlet> getServlets();
+    public Enumeration getServlets();
     
     
     
@@ -371,7 +374,7 @@ public interface ServletContext {
      *
      */
  
-    public Enumeration<String> getServletNames();
+    public Enumeration getServletNames();
     
   
   
@@ -524,7 +527,7 @@ public interface ServletContext {
      * @see ServletConfig#getInitParameter
      */
 
-    public Enumeration<String> getInitParameterNames();
+    public Enumeration getInitParameterNames();
     
     
 
@@ -577,7 +580,7 @@ public interface ServletContext {
      *
      */
 
-    public Enumeration<String> getAttributeNames();
+    public Enumeration getAttributeNames();
     
     
     
@@ -643,87 +646,93 @@ public interface ServletContext {
      */
     
     public String getServletContextName();
-    
-    /**
-     * 
-     * @param servletName
-     * @param urlPatterns
-     * @since 3.0
-     */
-    public void addServletMapping(String servletName, String[] urlPatterns);
 
     /**
-     * 
-     * @param filterName
-     * @param description
-     * @param className
-     * @param initParameters
-     * @param isAsyncSupported
+     * Add the specified servlet to the context
+     * @param servletName servlet's name
+     * @param className class name of servlet
+     * @throws IllegalArgumentException duplicate servletName
+     * @throws IllegalStateException this method called after #initialize
+     * @return ServletRegistration allowing configuration of the servlet
+     *
      * @since 3.0
      */
-    public void addFilter(String filterName, String description,
-            String className, Map<String,String> initParameters,
-            boolean isAsyncSupported);
-    
-    /**
-     * 
-     * @param filterName
-     * @param dispatcherTypes
-     * @param isMatchAfter
-     * @param servletNames
-     * @since 3.0
-     */
-    public void addFilterMappingForServletNames(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... servletNames);
-    
-    /**
-     * 
-     * @param filterName
-     * @param dispatcherTypes
-     * @param isMatchAfter
-     * @param urlPatterns
-     * @since 3.0
-     */
-    public void addFilterMappingForUrlPatterns(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... urlPatterns);
-    
-    /**
-     * 
-     * @param sessionCookieConfig
-     * @since 3.0
-     */
-    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig);
-    
-    /**
-     * 
-     * @return
-     * @since 3.0
-     */
-    public SessionCookieConfig getSessionCookieConfig();
+    ServletRegistration addServlet(String servletName,
+                    String className) throws IllegalArgumentException, IllegalStateException;
 
     /**
-     * 
-     * @param sessionTrackingModes
+     * Fish out the servlet registration for a named servlet
+     * @param servletName name of the servlet you want to configure
+     * @return ServletRegistration for servlet you want
+     *
      * @since 3.0
      */
-    public void setSessionTrackingModes(
-            EnumSet<SessionTrackingMode> sessionTrackingModes);
-    
+    ServletRegistration findServletRegistration(String servletName);
+
     /**
-     * 
-     * @return
+     * Add a filter to this context
+     * @param filterName name of filter
+     * @param className class name of filter
+     * @throws IllegalArgumentException duplicate filter name
+     * @throws IllegalStateException if called after #initialise
+     * @return  FilterRegistration allowing configuration of filter
+     *
      * @since 3.0
      */
-    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes();
-    
+    FilterRegistration addFilter(String filterName,
+                   String className) throws IllegalArgumentException, IllegalStateException;
+
     /**
-     * 
-     * @return
+     *
+     * @param filterName Name of filter you want to configure
+     * @return FilterRegistration allowing configuration of filter
+     *
      * @since 3.0
      */
-    public EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes();
+    FilterRegistration findFilterRegistration(String filterName);
+
+    /**
+     *
+     * @param sessionCookieConfig configuration of session cookie
+     *
+     * @since 3.0
+     */
+    void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig);
+
+    /**
+     *
+     * @return configuration of session cookie
+     *
+     * @since 3.0
+     */
+    SessionCookieConfig getSessionCookieConfig();
+
+    /**
+     *
+     * @param sessionTrackingModes set of SessionTrackingModes for this web app
+     *
+     * @since 3.0
+     */
+    void setSessionTrackingModes(EnumSet<SessionTrackingMode> sessionTrackingModes);
+
+    /**
+     *
+     * @return the default session tracking modes
+     *
+     * @since 3.0
+     */
+    EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes();
+
+    /**
+     *
+     * @return the actual session tracking modes.  These will be the default ones unless they've been explicitly set.
+     *
+     * @since 3.0
+     */
+    EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes();
+
+    
+
 }
 
 

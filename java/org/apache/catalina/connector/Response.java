@@ -866,6 +866,22 @@ public class Response
     }
 
 
+    public void disable() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void enable() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public boolean isDisabled() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+
     // --------------------------------------------------- HttpResponse Methods
 
 
@@ -1623,7 +1639,6 @@ public class Response
         return (sb.toString());
 
     }
-
 
 }
 
