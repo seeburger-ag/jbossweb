@@ -27,17 +27,12 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import javax.naming.directory.DirContext;
-import javax.servlet.annotation.InitParam;
-import javax.servlet.annotation.ServletFilter;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.annotation.WebServletContextListener;
 
+import org.apache.catalina.AnnotationScanner;
 import org.apache.catalina.Context;
 
-public class AnnotationScanner {
-
-    public static final boolean USE_JAVASSIST = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.AnnotationScanner.USE_JAVASSIST", "false")).booleanValue();
+public abstract class BaseAnnotationScanner
+    implements AnnotationScanner {
 
     /**
      * Scan the given context's default locations for annotations.
@@ -220,31 +215,7 @@ public class AnnotationScanner {
     /**
      * Scan class for interesting annotations.
      */
-    public Class<?> scanClass(Context context, String className, File file, JarEntry entry) {
-        if (USE_JAVASSIST) {
-            // FIXME: Javassist implementation
-            try {
-                
-                return context.getLoader().getClassLoader().loadClass(className);
-            } catch (Throwable t) {
-                // Ignore classloading errors here
-            }
-        } else {
-            // Load the class using the classloader, and see if it implements one of the web annotations
-            try {
-                Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
-                if (clazz.isAnnotationPresent(InitParam.class)
-                        || clazz.isAnnotationPresent(ServletFilter.class)
-                        || clazz.isAnnotationPresent(WebServlet.class)
-                        || clazz.isAnnotationPresent(WebServletContextListener.class)) {
-                    return clazz;
-                }
-            } catch (Throwable t) {
-                // Ignore classloading errors here
-            }
-        }
-        return null;
-    }
+    public abstract Class<?> scanClass(Context context, String className, File file, JarEntry entry);
     
     
 }
