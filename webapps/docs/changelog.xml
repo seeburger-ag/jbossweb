@@ -46,6 +46,9 @@
       <fix>
         HTTP/1.0 handling differed from the old org.apache.jk connector. (remm)
       </fix>
+      <fix>
+        Optimize date format for v0 cookies. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

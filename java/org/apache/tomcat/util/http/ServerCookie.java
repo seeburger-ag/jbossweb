@@ -57,14 +57,20 @@ public class ServerCookie implements Serializable {
     // Other fields
     private static final String OLD_COOKIE_PATTERN =
         "EEE, dd-MMM-yyyy HH:mm:ss z";
-    private static final DateFormat OLD_COOKIE_FORMAT;
+    private static final ThreadLocal<DateFormat> OLD_COOKIE_FORMAT =
+        new ThreadLocal<DateFormat>() {
+        protected DateFormat initialValue() {
+            DateFormat df =
+                new SimpleDateFormat(OLD_COOKIE_PATTERN, Locale.US);
+            df.setTimeZone(TimeZone.getTimeZone("GMT"));
+            return df;
+        }
+    };
     private static final String ancientDate;
 
 
     static {
-        OLD_COOKIE_FORMAT = new SimpleDateFormat(OLD_COOKIE_PATTERN, Locale.US);
-        OLD_COOKIE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
-        ancientDate = OLD_COOKIE_FORMAT.format(new Date(10000));
+        ancientDate = OLD_COOKIE_FORMAT.get().format(new Date(10000));
     }
 
     /**
@@ -306,16 +312,14 @@ public class ServerCookie implements Serializable {
                 // Wdy, DD-Mon-YY HH:MM:SS GMT ( Expires Netscape format )
                 buf.append ("; Expires=");
                 // To expire immediately we need to set the time in past
-                if (maxAge == 0)
+                if (maxAge == 0) {
                     buf.append( ancientDate );
-                else
-                    synchronized (OLD_COOKIE_FORMAT) {
-                        OLD_COOKIE_FORMAT.format(
-                                new Date(System.currentTimeMillis() +
-                                        maxAge*1000L),
-                                buf, new FieldPosition(0));
-                    }
-
+                } else {
+                    OLD_COOKIE_FORMAT.get().format(
+                            new Date(System.currentTimeMillis() +
+                                    maxAge*1000L),
+                                    buf, new FieldPosition(0));
+                }
             } else {
                 buf.append ("; Max-Age=");
                 buf.append (maxAge);
