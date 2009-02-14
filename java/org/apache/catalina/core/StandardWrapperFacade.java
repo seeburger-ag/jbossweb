@@ -20,9 +20,11 @@ package org.apache.catalina.core;
 
 
 import java.util.Enumeration;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
 
 
 /**
@@ -33,6 +35,7 @@ import javax.servlet.ServletContext;
  */
 
 public final class StandardWrapperFacade
+    extends ServletRegistration
     implements ServletConfig {
 
 
@@ -42,10 +45,10 @@ public final class StandardWrapperFacade
     /**
      * Create a new facede around a StandardWrapper.
      */
-    public StandardWrapperFacade(StandardWrapper config) {
+    public StandardWrapperFacade(StandardWrapper wrapper) {
 
         super();
-        this.config = (ServletConfig) config;
+        this.wrapper = wrapper;
 
     }
 
@@ -56,7 +59,7 @@ public final class StandardWrapperFacade
     /**
      * Wrapped config.
      */
-    private ServletConfig config = null;
+    private StandardWrapper wrapper = null;
 
 
     /**
@@ -69,13 +72,13 @@ public final class StandardWrapperFacade
 
 
     public String getServletName() {
-        return config.getServletName();
+        return wrapper.getServletName();
     }
 
 
     public ServletContext getServletContext() {
         if (context == null) {
-            context = config.getServletContext();
+            context = wrapper.getServletContext();
             if ((context != null) && (context instanceof ApplicationContext))
                 context = ((ApplicationContext) context).getFacade();
         }
@@ -84,12 +87,54 @@ public final class StandardWrapperFacade
 
 
     public String getInitParameter(String name) {
-        return config.getInitParameter(name);
+        return wrapper.getInitParameter(name);
     }
 
 
     public Enumeration getInitParameterNames() {
-        return config.getInitParameterNames();
+        return wrapper.getInitParameterNames();
+    }
+
+
+    @Override
+    public void addMapping(String... urlPatterns) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void setAsyncSupported(boolean asyncSupported) {
+        // TODO Auto-generated method stub
+        super.setAsyncSupported(asyncSupported);
+    }
+
+
+    @Override
+    public void setDescription(String description) {
+        // TODO Auto-generated method stub
+        super.setDescription(description);
+    }
+
+
+    @Override
+    public void setInitParameter(String name, String value) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void setInitParameters(Map<String, String> initParameters) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void setLoadOnStartup(int loadOnStartup) {
+        // TODO Auto-generated method stub
+        super.setLoadOnStartup(loadOnStartup);
     }
 
 

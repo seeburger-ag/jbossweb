@@ -1098,6 +1098,7 @@ public class ContextConfig
         }
 
         // Process the default and application web.xml files
+        // FIXME: Processing of web fragments
         defaultWebConfig();
         applicationWebConfig();
         if (!context.getIgnoreAnnotations()) {
