@@ -22,6 +22,9 @@
       <update>
         Servlet 3.0 API. (markt, remm)
       </update>
+      <update>
+        NSIS 2.43. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
