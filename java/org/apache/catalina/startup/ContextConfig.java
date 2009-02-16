@@ -25,16 +25,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.annotation.FilterMapping;
-import javax.servlet.http.annotation.InitParam;
-import javax.servlet.http.annotation.Servlet;
-import javax.servlet.http.annotation.ServletContextListener;
-import javax.servlet.http.annotation.ServletFilter;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
@@ -48,7 +42,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.ClassLoadingAnnotationScanner;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
@@ -300,36 +293,6 @@ public class ContextConfig
     protected void applicationAnnotationsConfig() {
         
         long t1=System.currentTimeMillis();
-        
-        Iterator<Class<?>> annotatedClasses = (new ClassLoadingAnnotationScanner()).scan(context).iterator();
-        while (annotatedClasses.hasNext()) {
-            Class<?> clazz = annotatedClasses.next();
-            if (clazz.isAnnotationPresent(InitParam.class)) {
-                InitParam annotation = clazz.getAnnotation(InitParam.class);
-                // Add init param
-                // FIXME
-            }
-            if (clazz.isAnnotationPresent(ServletFilter.class)) {
-                ServletFilter annotation = clazz.getAnnotation(ServletFilter.class);
-                // Add servlet filter
-                // FIXME
-            }
-            if (clazz.isAnnotationPresent(FilterMapping.class)) {
-                FilterMapping annotation = clazz.getAnnotation(FilterMapping.class);
-                // Add filter mapping
-                // FIXME
-            }
-            if (clazz.isAnnotationPresent(Servlet.class)) {
-                Servlet annotation = clazz.getAnnotation(Servlet.class);
-                // Add servlet
-                // FIXME
-            }
-            if (clazz.isAnnotationPresent(ServletContextListener.class)) {
-                ServletContextListener annotation = clazz.getAnnotation(ServletContextListener.class);
-                // Add listener
-                // FIXME
-            }
-        }
         
         WebAnnotationSet.loadApplicationAnnotations(context);
         
@@ -1098,7 +1061,6 @@ public class ContextConfig
         }
 
         // Process the default and application web.xml files
-        // FIXME: Processing of web fragments
         defaultWebConfig();
         applicationWebConfig();
         if (!context.getIgnoreAnnotations()) {

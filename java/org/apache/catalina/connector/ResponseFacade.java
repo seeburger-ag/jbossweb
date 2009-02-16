@@ -552,34 +552,4 @@ public class ResponseFacade
         response.setCharacterEncoding(arg0);
     }
 
-
-    public void disable() {
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        response.disable();
-    }
-
-
-    public void enable() {
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        response.enable();
-    }
-
-
-    public boolean isDisabled() {
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        return response.isDisabled();
-    }
-
 }

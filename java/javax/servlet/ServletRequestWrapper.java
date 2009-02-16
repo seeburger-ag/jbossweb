@@ -1,22 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package javax.servlet;
 
 import java.io.BufferedReader;
@@ -399,140 +396,6 @@ public class ServletRequestWrapper implements ServletRequest {
     public int getLocalPort(){
         return this.request.getLocalPort();
     }
-
-    /**
-     * Get the servlet context the request-response pair was last dispatched through.
-     *
-     * @return the latest ServletContext on the dispatch chain.
-     * @since 3.0
-     */
-    public ServletContext getServletContext() {
-        return request.getServletContext();
-    }
-
-    /**
-     * Gets the associated servlet response.
-     *
-     * @return the ServletResponse associated with this request.
-     * @since 3.0
-     */
-    public ServletResponse getServletResponse() {
-        return request.getServletResponse();
-    }
-
-    public void addAsyncListener(AsyncListener listener) {
-        request.addAsyncListener(listener);
-    }
-
-    public void addAsyncListener(AsyncListener listener, ServletRequest request, ServletResponse response) {
-        request.addAsyncListener(listener, request, response);
-    }
-
-    public AsyncContext getAsyncContext() {
-        return request.getAsyncContext();
-    }
-
-    public boolean isAsyncStarted() {
-        return request.isAsyncStarted();
-    }
-
-    public boolean isAsyncSupported() {
-        return request.isAsyncSupported();
-    }
-
-    public void setAsyncTimeout(long timeout) {
-        request.setAsyncTimeout(timeout);
-    }
-
-    public AsyncContext startAsync() {
-        return request.startAsync();
-    }
-
-    public AsyncContext startAsync(ServletRequest request, ServletResponse response) {
-        return request.startAsync(request, response);
-    }
-
-    public DispatcherType getDispatcherType() {
-        return request.getDispatcherType();
-    }
-
-//    /**
-//     * complete a suspended request.
-//     *
-//     * @throws IllegalStateException
-//     * @since 3.0
-//     */
-//    public void complete() throws IllegalStateException {
-//        request.complete();
-//    }
-//
-//    /**
-//     * Suspend request processing.  Must be called by a thread that is processing this request.
-//     *
-//     * @param timeoutMilliseconds new timeout period, in milliseconds
-//     * @throws IllegalStateException if called by a thread not processing this request or after error dispatch
-//     * @see #complete
-//     * @see #resume
-//     * @since 3.0
-//     */
-//    public void suspend(long timeoutMilliseconds) throws IllegalStateException {
-//        request.suspend(timeoutMilliseconds);
-//    }
-//
-//    /**
-//     * Similar to suspend(timeoutMilliseconds) but with a container supplied timeout period.
-//     *
-//     * @throws IllegalStateException
-//     * @see #complete
-//     * @see #resume
-//     * @since 3.0
-//     */
-//    public void suspend() throws IllegalStateException {
-//        request.suspend();
-//    }
-//
-//    /**
-//     * Resume a suspended request
-//     *
-//     * @throws IllegalStateException if the request is not suspended
-//     * @see #suspend
-//     * @since 3.0
-//     */
-//    public void resume() throws IllegalStateException {
-//        request.resume();
-//    }
-//
-//    /**
-//     * @return if the request is suspended
-//     * @since 3.0
-//     */
-//    public boolean isSuspended() {
-//        return request.isSuspended();
-//    }
-//
-//    /**
-//     * @return if the request is resumed
-//     * @since 3.0
-//     */
-//    public boolean isResumed() {
-//        return request.isResumed();
-//    }
-//
-//    /**
-//     * @return if the request is timed out
-//     * @since 3.0
-//     */
-//    public boolean isTimeout() {
-//        return request.isTimeout();
-//    }
-//
-//    /**
-//     * @return if the request has never been suspended (or resumed)
-//     * @since 3.0
-//     */
-//    public boolean isInitial() {
-//        return request.isInitial();
-//    }
-
+    
 }
 

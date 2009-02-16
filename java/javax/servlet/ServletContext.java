@@ -1,22 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package javax.servlet;
 
 import java.io.InputStream;
@@ -24,8 +21,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Set;
-import java.util.Map;
-import java.util.EnumSet;
 
 
 /**
@@ -646,93 +641,6 @@ public interface ServletContext {
      */
     
     public String getServletContextName();
-
-    /**
-     * Add the specified servlet to the context
-     * @param servletName servlet's name
-     * @param className class name of servlet
-     * @throws IllegalArgumentException duplicate servletName
-     * @throws IllegalStateException this method called after #initialize
-     * @return ServletRegistration allowing configuration of the servlet
-     *
-     * @since 3.0
-     */
-    ServletRegistration addServlet(String servletName,
-                    String className) throws IllegalArgumentException, IllegalStateException;
-
-    /**
-     * Fish out the servlet registration for a named servlet
-     * @param servletName name of the servlet you want to configure
-     * @return ServletRegistration for servlet you want
-     *
-     * @since 3.0
-     */
-    ServletRegistration findServletRegistration(String servletName);
-
-    /**
-     * Add a filter to this context
-     * @param filterName name of filter
-     * @param className class name of filter
-     * @throws IllegalArgumentException duplicate filter name
-     * @throws IllegalStateException if called after #initialise
-     * @return  FilterRegistration allowing configuration of filter
-     *
-     * @since 3.0
-     */
-    FilterRegistration addFilter(String filterName,
-                   String className) throws IllegalArgumentException, IllegalStateException;
-
-    /**
-     *
-     * @param filterName Name of filter you want to configure
-     * @return FilterRegistration allowing configuration of filter
-     *
-     * @since 3.0
-     */
-    FilterRegistration findFilterRegistration(String filterName);
-
-    /**
-     *
-     * @param sessionCookieConfig configuration of session cookie
-     *
-     * @since 3.0
-     */
-    void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig);
-
-    /**
-     *
-     * @return configuration of session cookie
-     *
-     * @since 3.0
-     */
-    SessionCookieConfig getSessionCookieConfig();
-
-    /**
-     *
-     * @param sessionTrackingModes set of SessionTrackingModes for this web app
-     *
-     * @since 3.0
-     */
-    void setSessionTrackingModes(EnumSet<SessionTrackingMode> sessionTrackingModes);
-
-    /**
-     *
-     * @return the default session tracking modes
-     *
-     * @since 3.0
-     */
-    EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes();
-
-    /**
-     *
-     * @return the actual session tracking modes.  These will be the default ones unless they've been explicitly set.
-     *
-     * @since 3.0
-     */
-    EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes();
-
-    
-
 }
 
 

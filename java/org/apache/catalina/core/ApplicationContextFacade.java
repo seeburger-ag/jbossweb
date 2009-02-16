@@ -27,19 +27,14 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Set;
 
-import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.security.SecurityUtil;
@@ -369,99 +364,6 @@ public final class ApplicationContextFacade
     }
 
        
-    public FilterRegistration addFilter(String filterName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (FilterRegistration) doPrivileged("addFilter",
-                    new Object[]{filterName, className});
-        } else {
-            return context.addFilter(filterName, className);
-        }
-    }
-
-
-    public ServletRegistration addServlet(String servletName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (ServletRegistration) doPrivileged("addServlet",
-                    new Object[]{servletName, className});
-        } else {
-            return context.addServlet(servletName, className);
-        }
-    }
-
-
-    public FilterRegistration findFilterRegistration(String filterName) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (FilterRegistration) doPrivileged("findFilterRegistration",
-                    new Object[]{filterName});
-        } else {
-            return context.findFilterRegistration(filterName);
-        }
-    }
-
-
-    public ServletRegistration findServletRegistration(String servletName) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (ServletRegistration) doPrivileged("findServletRegistration",
-                    new Object[]{servletName});
-        } else {
-            return context.findServletRegistration(servletName);
-        }
-    }
-
-
-    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (EnumSet<SessionTrackingMode>)
-                doPrivileged("getDefaultSessionTrackingModes", null);
-        } else {
-            return context.getDefaultSessionTrackingModes();
-        }
-    }
-
-
-    public EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (EnumSet<SessionTrackingMode>)
-                doPrivileged("getEffectiveSessionTrackingModes", null);
-        } else {
-            return context.getEffectiveSessionTrackingModes();
-        }
-    }
-
-
-    public SessionCookieConfig getSessionCookieConfig() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (SessionCookieConfig)
-                doPrivileged("getSessionCookieConfig", null);
-        } else {
-            return context.getSessionCookieConfig();
-        }
-    }
-
-
-    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("setSessionCookieConfig",
-                    new Object[]{sessionCookieConfig});
-        } else {
-            context.setSessionCookieConfig(sessionCookieConfig);
-        }
-    }
-
-
-    public void setSessionTrackingModes(
-            EnumSet<SessionTrackingMode> sessionTrackingModes) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("setSessionTrackingModes",
-                    new Object[]{sessionTrackingModes});
-        } else {
-            context.setSessionTrackingModes(sessionTrackingModes);
-        }
-    }
-
-
     /**
      * Use reflection to invoke the requested method. Cache the method object 
      * to speed up the process
@@ -605,6 +507,4 @@ public final class ApplicationContextFacade
         
         throw realException;
     }
-
-
 }

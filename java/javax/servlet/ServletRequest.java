@@ -1,22 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package javax.servlet;
 
 import java.io.BufferedReader;
@@ -46,6 +43,9 @@ import java.util.Map;
  */
 
 public interface ServletRequest {
+
+
+
 
     /**
      *
@@ -343,7 +343,7 @@ public interface ServletRequest {
      * @return					a <code>BufferedReader</code>
      *						containing the body of the request	
      *
-     * @exception java.io.UnsupportedEncodingException         if the character set encoding
+     * @exception UnsupportedEncodingException 	if the character set encoding
      * 						used is not supported and the 
      *						text cannot be decoded
      *
@@ -594,99 +594,5 @@ public interface ServletRequest {
      */
     public int getLocalPort();
 
-    /**
-     * Get the servlet context the request-response pair was last dispatched through.
-     * @return the latest ServletContext on the dispatch chain.
-     * @since 3.0
-     */
-    ServletContext getServletContext();
-
-    /**
-     * Gets the associated servlet response.
-     * @return the ServletResponse associated with this request.
-     * @since 3.0
-     */
-    ServletResponse getServletResponse();
-
-    void addAsyncListener(AsyncListener listener);
-    
-    void addAsyncListener(AsyncListener listener, ServletRequest request, ServletResponse response);
-
-    AsyncContext getAsyncContext();
-
-    boolean isAsyncStarted();
-
-    boolean isAsyncSupported();
-
-    void setAsyncTimeout(long timeout);
-
-    AsyncContext startAsync();
-
-    AsyncContext startAsync(ServletRequest request, ServletResponse response);
-
-    DispatcherType getDispatcherType();
-
-
-//    /**
-//      * complete a suspended request.
-//      * @throws IllegalStateException
-//      * @since 3.0
-//      */
-//    void complete() throws IllegalStateException;
-//
-//    /**
-//     * Suspend request processing.  Must be called by a thread that is processing this request.
-//     * @param timeoutMilliseconds new timeout period, in milliseconds
-//     * @throws IllegalStateException if called by a thread not processing this request or after error dispatch
-//     * @since 3.0
-//     * @see #complete
-//     * @see #resume
-//     */
-//    void suspend(long timeoutMilliseconds) throws IllegalStateException;
-//
-//    /**
-//     * Similar to suspend(timeoutMilliseconds) but with a container supplied timeout period.
-//     * @throws IllegalStateException
-//     * @since 3.0
-//     * @see #complete
-//     * @see #resume
-//     */
-//    void suspend() throws IllegalStateException;
-//
-//    /**
-//     * Resume a suspended request
-//     * @throws IllegalStateException if the request is not suspended
-//     * @since 3.0
-//     * @see #suspend
-//     */
-//    void resume() throws IllegalStateException;
-//
-//    /**
-//     *
-//     * @return if the request is suspended
-//     * @since 3.0
-//     */
-//    boolean isSuspended();
-//
-//    /**
-//     *
-//     * @return if the request is resumed
-//     * @since 3.0
-//     */
-//    boolean isResumed();
-//
-//    /**
-//     *
-//     * @return if the request is timed out
-//     * @since 3.0
-//     */
-//    boolean isTimeout();
-//
-//    /**
-//     *
-//     * @return if the request has never been suspended (or resumed)
-//     * @since 3.0
-//     */
-//    boolean isInitial();
 }
 
