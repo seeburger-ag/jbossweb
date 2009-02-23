@@ -32,115 +32,130 @@ import javax.el.PropertyNotWritableException;
 import javax.el.ResourceBundleELResolver;
 import javax.servlet.jsp.el.VariableResolver;
 
+import org.apache.catalina.Globals;
+
 public final class ELResolverImpl extends ELResolver {
-	
-	public final static ELResolver DefaultResolver = new CompositeELResolver();
+    /** @deprecated - Use getDefaultResolver(). Needs to be made private */
+    public final static ELResolver DefaultResolver = new CompositeELResolver();
 
-	static {
-		((CompositeELResolver) DefaultResolver).add(new MapELResolver());
-		((CompositeELResolver) DefaultResolver).add(new ResourceBundleELResolver());
-		((CompositeELResolver) DefaultResolver).add(new ListELResolver());
-		((CompositeELResolver) DefaultResolver).add(new ArrayELResolver());
-		((CompositeELResolver) DefaultResolver).add(new BeanELResolver());
-	}
+    static {
+        ((CompositeELResolver) DefaultResolver).add(new MapELResolver());
+        ((CompositeELResolver) DefaultResolver).add(new ResourceBundleELResolver());
+        ((CompositeELResolver) DefaultResolver).add(new ListELResolver());
+        ((CompositeELResolver) DefaultResolver).add(new ArrayELResolver());
+        ((CompositeELResolver) DefaultResolver).add(new BeanELResolver());
+    }
 
-	private final VariableResolver variableResolver;
+    private final VariableResolver variableResolver;
 
-	public ELResolverImpl(VariableResolver variableResolver) {
-		this.variableResolver = variableResolver;
-	}
+    public ELResolverImpl(VariableResolver variableResolver) {
+        this.variableResolver = variableResolver;
+    }
 
-	public Object getValue(ELContext context, Object base, Object property)
-			throws NullPointerException, PropertyNotFoundException, ELException {
-		if (context == null) {
-			throw new NullPointerException();
-		}
+    public Object getValue(ELContext context, Object base, Object property)
+            throws NullPointerException, PropertyNotFoundException, ELException {
+        if (context == null) {
+            throw new NullPointerException();
+        }
 
-		if (base == null) {
-			context.setPropertyResolved(true);
-			if (property != null) {
-				try {
-					return this.variableResolver.resolveVariable(property
-							.toString());
-				} catch (javax.servlet.jsp.el.ELException e) {
-					throw new ELException(e.getMessage(), e.getCause());
-				}
-			}
-		}
+        if (base == null) {
+            context.setPropertyResolved(true);
+            if (property != null) {
+                try {
+                    return this.variableResolver.resolveVariable(property
+                            .toString());
+                } catch (javax.servlet.jsp.el.ELException e) {
+                    throw new ELException(e.getMessage(), e.getCause());
+                }
+            }
+        }
 
-		if (!context.isPropertyResolved()) {
-			return DefaultResolver.getValue(context, base, property);
-		}
-		return null;
-	}
+        if (!context.isPropertyResolved()) {
+            return getDefaultResolver().getValue(context, base, property);
+        }
+        return null;
+    }
 
-	public Class<?> getType(ELContext context, Object base, Object property)
-			throws NullPointerException, PropertyNotFoundException, ELException {
-		if (context == null) {
-			throw new NullPointerException();
-		}
+    public Class<?> getType(ELContext context, Object base, Object property)
+            throws NullPointerException, PropertyNotFoundException, ELException {
+        if (context == null) {
+            throw new NullPointerException();
+        }
 
-		if (base == null) {
-			context.setPropertyResolved(true);
-			if (property != null) {
-				try {
-					Object obj = this.variableResolver.resolveVariable(property
-							.toString());
-					return (obj != null) ? obj.getClass() : null;
-				} catch (javax.servlet.jsp.el.ELException e) {
-					throw new ELException(e.getMessage(), e.getCause());
-				}
-			}
-		}
+        if (base == null) {
+            context.setPropertyResolved(true);
+            if (property != null) {
+                try {
+                    Object obj = this.variableResolver.resolveVariable(property
+                            .toString());
+                    return (obj != null) ? obj.getClass() : null;
+                } catch (javax.servlet.jsp.el.ELException e) {
+                    throw new ELException(e.getMessage(), e.getCause());
+                }
+            }
+        }
 
-		if (!context.isPropertyResolved()) {
-			return DefaultResolver.getType(context, base, property);
-		}
-		return null;
-	}
+        if (!context.isPropertyResolved()) {
+            return getDefaultResolver().getType(context, base, property);
+        }
+        return null;
+    }
 
-	public void setValue(ELContext context, Object base, Object property,
-			Object value) throws NullPointerException,
-			PropertyNotFoundException, PropertyNotWritableException,
-			ELException {
-		if (context == null) {
-			throw new NullPointerException();
-		}
+    public void setValue(ELContext context, Object base, Object property,
+            Object value) throws NullPointerException,
+            PropertyNotFoundException, PropertyNotWritableException,
+            ELException {
+        if (context == null) {
+            throw new NullPointerException();
+        }
 
-		if (base == null) {
-			context.setPropertyResolved(true);
-			throw new PropertyNotWritableException(
-					"Legacy VariableResolver wrapped, not writable");
-		}
+        if (base == null) {
+            context.setPropertyResolved(true);
+            throw new PropertyNotWritableException(
+                    "Legacy VariableResolver wrapped, not writable");
+        }
 
-		if (!context.isPropertyResolved()) {
-			DefaultResolver.setValue(context, base, property, value);
-		}
-	}
+        if (!context.isPropertyResolved()) {
+            getDefaultResolver().setValue(context, base, property, value);
+        }
+    }
 
-	public boolean isReadOnly(ELContext context, Object base, Object property)
-			throws NullPointerException, PropertyNotFoundException, ELException {
-		if (context == null) {
-			throw new NullPointerException();
-		}
+    public boolean isReadOnly(ELContext context, Object base, Object property)
+            throws NullPointerException, PropertyNotFoundException, ELException {
+        if (context == null) {
+            throw new NullPointerException();
+        }
 
-		if (base == null) {
-			context.setPropertyResolved(true);
-			return true;
-		}
+        if (base == null) {
+            context.setPropertyResolved(true);
+            return true;
+        }
 
-		return DefaultResolver.isReadOnly(context, base, property);
-	}
+        return getDefaultResolver().isReadOnly(context, base, property);
+    }
 
-	public Iterator<java.beans.FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
-		return DefaultResolver.getFeatureDescriptors(context, base);
-	}
+    public Iterator<java.beans.FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
+        return getDefaultResolver().getFeatureDescriptors(context, base);
+    }
 
-	public Class<?> getCommonPropertyType(ELContext context, Object base) {
-		if (base == null) {
-			return String.class;
-		}
-		return DefaultResolver.getCommonPropertyType(context, base);
-	}
+    public Class<?> getCommonPropertyType(ELContext context, Object base) {
+        if (base == null) {
+            return String.class;
+        }
+        return getDefaultResolver().getCommonPropertyType(context, base);
+    }
 
+    public static ELResolver getDefaultResolver() {
+        if (Globals.IS_SECURITY_ENABLED) {
+            ELResolver defaultResolver = new CompositeELResolver();
+            ((CompositeELResolver) defaultResolver).add(new MapELResolver());
+            ((CompositeELResolver) defaultResolver).add(new ResourceBundleELResolver());
+            ((CompositeELResolver) defaultResolver).add(new ListELResolver());
+            ((CompositeELResolver) defaultResolver).add(new ArrayELResolver());
+            ((CompositeELResolver) defaultResolver).add(new BeanELResolver());
+            return defaultResolver;
+        } else {
+            return DefaultResolver;
+        }
+    }
 }
