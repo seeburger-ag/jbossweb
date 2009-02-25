@@ -330,6 +330,12 @@ public class JDBCRealm
      */
     public synchronized Principal authenticate(String username, String credentials) {
 
+        // No user or no credentials
+        // Can't possibly authenticate, don't bother the database then
+        if (username == null || credentials == null) {
+            return null;
+        }
+
         // Number of tries is the numebr of attempts to connect to the database
         // during this login attempt (if we need to open the database)
         // This needs rewritten wuth better pooling support, the existing code
@@ -388,14 +394,9 @@ public class JDBCRealm
      * @param credentials Password or other credentials to use in
      *  authenticating this username
      */
-    public synchronized Principal authenticate(Connection dbConnection,
+    protected synchronized Principal authenticate(Connection dbConnection,
                                                String username,
                                                String credentials) {
-
-        // No user - can't possibly authenticate
-        if (username == null) {
-            return (null);
-        }
 
         // Look up the user's credentials
         String dbCredentials = getPassword(username);
