@@ -381,7 +381,7 @@ public class ContextConfig
         synchronized (webDigester) {
             try {
                 if (altDDName != null) {
-                    url = new File(altDDName).toURL();
+                    url = new File(altDDName).toURI().toURL();
                 } else {
                     url = servletContext.getResource(
                                                 Constants.ApplicationWebXml);
@@ -958,8 +958,7 @@ public class ContextConfig
     }
     
     
-    protected void antiLocking()
-        throws IOException {
+    protected void antiLocking() {
 
         if ((context instanceof StandardContext) 
             && ((StandardContext) context).getAntiResourceLocking()) {
@@ -1057,13 +1056,7 @@ public class ContextConfig
      * Process a "before start" event for this Context.
      */
     protected synchronized void beforeStart() {
-        
-        try {
-            antiLocking();
-        } catch (IOException e) {
-            log.error(sm.getString("contextConfig.antiLocking"), e);
-        }
-        
+        antiLocking();
     }
     
     
