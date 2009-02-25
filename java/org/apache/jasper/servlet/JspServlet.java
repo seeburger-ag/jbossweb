@@ -19,7 +19,6 @@ package org.apache.jasper.servlet;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Enumeration;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -73,29 +72,34 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
         this.config = config;
         this.context = config.getServletContext();
         
-        // Initialize the JSP Runtime Context
-        // Check for a custom Options implementation
-        String engineOptionsName = 
-            config.getInitParameter("engineOptionsClass");
-        if (engineOptionsName != null) {
-            // Instantiate the indicated Options implementation
-            try {
-                ClassLoader loader = Thread.currentThread()
-                        .getContextClassLoader();
-                Class engineOptionsClass = loader.loadClass(engineOptionsName);
-                Class[] ctorSig = { ServletConfig.class, ServletContext.class };
-                Constructor ctor = engineOptionsClass.getConstructor(ctorSig);
-                Object[] args = { config, context };
-                options = (Options) ctor.newInstance(args);
-            } catch (Throwable e) {
-                // Need to localize this.
-                log.warn("Failed to load engineOptionsClass", e);
+        Object optionsObject = context.getAttribute(Constants.SERVLET_OPTIONS);
+        if (optionsObject != null && (optionsObject instanceof Options)) {
+            options = (Options) optionsObject;
+        } else {
+            // Initialize the JSP Runtime Context
+            // Check for a custom Options implementation
+            String engineOptionsName = 
+                config.getInitParameter("engineOptionsClass");
+            if (engineOptionsName != null) {
+                // Instantiate the indicated Options implementation
+                try {
+                    ClassLoader loader = Thread.currentThread()
+                    .getContextClassLoader();
+                    Class engineOptionsClass = loader.loadClass(engineOptionsName);
+                    Class[] ctorSig = { ServletConfig.class, ServletContext.class };
+                    Constructor ctor = engineOptionsClass.getConstructor(ctorSig);
+                    Object[] args = { config, context };
+                    options = (Options) ctor.newInstance(args);
+                } catch (Throwable e) {
+                    // Need to localize this.
+                    log.warn("Failed to load engineOptionsClass", e);
+                    // Use the default Options implementation
+                    options = new EmbeddedServletOptions(config, context);
+                }
+            } else {
                 // Use the default Options implementation
                 options = new EmbeddedServletOptions(config, context);
             }
-        } else {
-            // Use the default Options implementation
-            options = new EmbeddedServletOptions(config, context);
         }
         rctxt = new JspRuntimeContext(context, options);
         
