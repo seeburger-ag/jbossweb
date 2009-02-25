@@ -50,6 +50,9 @@
   </subsection>
   <subsection name="Catalina">
     <changelog>
+      <fix>
+        NPE in various realms. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
