@@ -21,42 +21,18 @@
 package javax.servlet;
 
 /**
- * @version $Rev: 675701 $ $Date: 2008-07-10 21:49:52 +0200 (Thu, 10 Jul 2008) $
+ * @version $Rev: 751589 $ $Date: 2009-03-09 06:35:08 +0100 (Mon, 09 Mar 2009) $
  * @since 3.0
  */
-public class SessionCookieConfig {
+public interface SessionCookieConfig {
 
-    private final String domain;
-    private final String path;
-    private final String comment;
-    private final boolean httpOnly;
-    private final boolean secure;
+    String getDomain();
 
-    public SessionCookieConfig(String domain, String path, String comment, boolean httpOnly, boolean secure) {
-        this.domain = domain;
-        this.path = path;
-        this.comment = comment;
-        this.httpOnly = httpOnly;
-        this.secure = secure;
-    }
+    String getPath();
 
-    public String getDomain() {
-        return domain;
-    }
+    String getComment();
 
-    public String getPath() {
-        return path;
-    }
+    boolean isHttpOnly();
 
-    public String getComment() {
-        return comment;
-    }
-
-    public boolean isHttpOnly() {
-        return httpOnly;
-    }
-
-    public boolean isSecure() {
-        return secure;
-    }
+    boolean isSecure();
 }
