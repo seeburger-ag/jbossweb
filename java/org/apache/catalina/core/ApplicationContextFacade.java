@@ -394,6 +394,28 @@ public final class ApplicationContextFacade
     }
 
 
+    public ServletRegistration addServlet(String servletName,
+            Class<? extends Servlet> clazz) throws IllegalArgumentException,
+            IllegalStateException {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (ServletRegistration) doPrivileged("addServlet",
+                    new Object[]{servletName, clazz});
+        } else {
+            return context.addServlet(servletName, clazz);
+        }
+    }
+
+
+    public boolean setInitParameter(String name, String value) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (Boolean) doPrivileged("setInitParameter",
+                    new Object[]{name, value});
+        } else {
+            return context.setInitParameter(name, value);
+        }
+    }
+
+
     public FilterRegistration findFilterRegistration(String filterName) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
             return (FilterRegistration) doPrivileged("findFilterRegistration",

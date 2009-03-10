@@ -154,12 +154,6 @@ public class ApplicationContext
         new ThreadLocal<DispatchData>();
 
 
-    /**
-     * Effective session cookie config.
-     */
-    private SessionCookieConfig sessionCookieConfig = null;
-    
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -950,19 +944,31 @@ public class ApplicationContext
 
 
     public SessionCookieConfig getSessionCookieConfig() {
-        if (sessionCookieConfig != null) {
-            return sessionCookieConfig;
-        }
-        SessionCookie sessionCookie = context.getSessionCookie();
-        sessionCookieConfig = new SessionCookieConfig(sessionCookie.getDomain(), sessionCookie.getPath(),
-                sessionCookie.getComment(), sessionCookie.isHttpOnly(), sessionCookie.isSecure());
-        return sessionCookieConfig;
+        return context.getSessionCookie();
     }
 
 
     public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
-        // FIXME: do something ...
-        this.sessionCookieConfig = sessionCookieConfig;
+        SessionCookie sessionCookie = new SessionCookie();
+        sessionCookie.setComment(sessionCookieConfig.getComment());
+        sessionCookie.setDomain(sessionCookieConfig.getDomain());
+        sessionCookie.setHttpOnly(sessionCookieConfig.isHttpOnly());
+        sessionCookie.setSecure(sessionCookieConfig.isSecure());
+        context.setSessionCookie(sessionCookie);
+    }
+
+
+    public ServletRegistration addServlet(String servletName,
+            Class<? extends Servlet> clazz) throws IllegalArgumentException,
+            IllegalStateException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public boolean setInitParameter(String name, String value) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 

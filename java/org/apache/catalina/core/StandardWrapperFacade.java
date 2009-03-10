@@ -35,8 +35,7 @@ import javax.servlet.ServletRegistration;
  */
 
 public final class StandardWrapperFacade
-    extends ServletRegistration
-    implements ServletConfig {
+    implements ServletRegistration, ServletConfig {
 
 
     // ----------------------------------------------------------- Constructors
@@ -96,45 +95,36 @@ public final class StandardWrapperFacade
     }
 
 
-    @Override
     public void addMapping(String... urlPatterns) {
         // TODO Auto-generated method stub
         
     }
 
 
-    @Override
     public void setAsyncSupported(boolean asyncSupported) {
         // TODO Auto-generated method stub
-        super.setAsyncSupported(asyncSupported);
     }
 
 
-    @Override
     public void setDescription(String description) {
         // TODO Auto-generated method stub
-        super.setDescription(description);
     }
 
 
-    @Override
-    public void setInitParameter(String name, String value) {
+    public boolean setInitParameter(String name, String value) {
         // TODO Auto-generated method stub
-        
+        return false;
     }
 
 
-    @Override
     public void setInitParameters(Map<String, String> initParameters) {
         // TODO Auto-generated method stub
         
     }
 
 
-    @Override
     public void setLoadOnStartup(int loadOnStartup) {
         // TODO Auto-generated method stub
-        super.setLoadOnStartup(loadOnStartup);
     }
 
 

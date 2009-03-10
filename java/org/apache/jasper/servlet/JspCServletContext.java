@@ -454,6 +454,18 @@ public class JspCServletContext implements ServletContext {
     }
 
 
+    public ServletRegistration addServlet(String servletName,
+            Class<? extends Servlet> clazz) throws IllegalArgumentException,
+            IllegalStateException {
+        return null;
+    }
+
+
+    public boolean setInitParameter(String name, String value) {
+        return false;
+    }
+
+
     public FilterRegistration findFilterRegistration(String filterName) {
         return null;
     }

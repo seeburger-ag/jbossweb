@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public interface ServletRegistration {
 
-    boolean setDescription(String description);
+    void setDescription(String description);
 
     void setAsyncSupported(boolean asyncSupported);
 

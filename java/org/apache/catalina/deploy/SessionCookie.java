@@ -19,7 +19,9 @@ package org.apache.catalina.deploy;
 
 import java.io.Serializable;
 
-public class SessionCookie implements Serializable {
+import javax.servlet.SessionCookieConfig;
+
+public class SessionCookie implements SessionCookieConfig, Serializable {
 
     protected String domain = null;
     protected String path = null;
