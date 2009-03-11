@@ -101,15 +101,11 @@ public class ClassLoaderLogManager extends LogManager {
             }
         }
 
-        // If any parent loggers have levels definied, make sure they are
-        // instantiated
+        // Instantiate all parent loggers
         int dotIndex = loggerName.lastIndexOf('.');
         while (dotIndex >= 0) {
             final String parentName = loggerName.substring(0, dotIndex);
-            if (getProperty(parentName + ".level") != null) {
-                Logger.getLogger(parentName);
-                break;
-            }
+            Logger.getLogger(parentName);
             dotIndex = loggerName.lastIndexOf('.', dotIndex - 1);
         }
 
