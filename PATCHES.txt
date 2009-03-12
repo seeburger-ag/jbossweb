@@ -53,4 +53,6 @@ Deprecate some wrapper methods in Servlet API (not accepted yet)
 751502
 Per context validation (incomplete, and looks a bit useless anyway)
 
+752651
+XmlBase configuration
 
