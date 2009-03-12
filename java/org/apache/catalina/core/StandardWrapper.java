@@ -43,6 +43,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.SingleThreadModel;
 import javax.servlet.UnavailableException;
 
+import org.apache.InstanceManager;
 import org.apache.PeriodicEventListener;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
@@ -52,7 +53,6 @@ import org.apache.catalina.InstanceEvent;
 import org.apache.catalina.InstanceListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
-import org.apache.InstanceManager;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
@@ -96,7 +96,13 @@ public class StandardWrapper
 
     // ----------------------------------------------------- Instance Variables
 
-
+    
+    /**
+     * Async supported flag.
+     */
+    protected boolean asyncSupported = false;
+    
+    
     /**
      * The date and time at which this servlet will become available (in
      * milliseconds since the epoch), or zero if the servlet is available.
@@ -115,6 +121,12 @@ public class StandardWrapper
      */
     protected int countAllocated = 0;
 
+    
+    /**
+     * Description.
+     */
+    protected String description = null;
+    
 
     /**
      * The facade associated with this wrapper.
@@ -267,6 +279,44 @@ public class StandardWrapper
     
 
     // ------------------------------------------------------------- Properties
+
+
+    /**
+     * Return the async supported value.
+     */
+    public boolean getAsyncSupported() {
+        return asyncSupported;
+    }
+
+
+    /**
+     * Return the Servlet description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+
+    /**
+     * Set the async supported value.
+     *
+     * @param value New async supported value
+     */
+    public void setAsyncSupported(boolean value) {
+        boolean oldAsyncSupported = this.asyncSupported;
+        this.asyncSupported = value;
+        support.firePropertyChange("asyncSupported", oldAsyncSupported, asyncSupported);
+    }
+
+
+    /**
+     * Set the description.
+     */
+    public void setDescription(String description) {
+        String oldDescription = this.description;
+        this.description = description;
+        support.firePropertyChange("description", oldDescription, description);
+    }
 
 
     /**

@@ -54,6 +54,20 @@ public interface Wrapper extends Container {
 
 
     /**
+     * Return the async supported value.
+     */
+    public boolean getAsyncSupported();
+
+
+    /**
+     * Set the async supported value.
+     *
+     * @param value New async supported value
+     */
+    public void setAsyncSupported(boolean asyncSupported);
+
+
+    /**
      * Return the available date/time for this servlet, in milliseconds since
      * the epoch.  If this date/time is in the future, any request for this
      * servlet will return an SC_SERVICE_UNAVAILABLE error.  If it is zero,
@@ -72,6 +86,18 @@ public interface Wrapper extends Container {
      * @param available The new available date/time
      */
     public void setAvailable(long available);
+
+
+    /**
+     * Return the Servlet description.
+     */
+    public String getDescription();
+
+
+    /**
+     * Set the description.
+     */
+    public void setDescription(String description);
 
 
     /**

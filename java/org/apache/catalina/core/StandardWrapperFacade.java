@@ -20,11 +20,15 @@ package org.apache.catalina.core;
 
 
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
+
+import org.apache.catalina.Context;
+import org.apache.catalina.util.StringManager;
 
 
 /**
@@ -36,6 +40,13 @@ import javax.servlet.ServletRegistration;
 
 public final class StandardWrapperFacade
     implements ServletRegistration, ServletConfig {
+
+
+    /**
+     * The string manager for this package.
+     */
+    private static final StringManager sm =
+        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------------- Constructors
@@ -96,35 +107,47 @@ public final class StandardWrapperFacade
 
 
     public void addMapping(String... urlPatterns) {
-        // TODO Auto-generated method stub
-        
+        if (((Context) wrapper.getParent()).isInitialized()) {
+            throw new IllegalStateException(sm.getString
+                    ("servletRegistration.addServletMapping.ise", ((Context) wrapper.getParent()).getPath()));
+        }
+        if (urlPatterns == null) {
+            return;
+        }
+        for (int i = 0; i < urlPatterns.length; i++) {
+            ((Context) wrapper.getParent()).addServletMapping(urlPatterns[i], wrapper.getName());
+        }
     }
 
 
     public void setAsyncSupported(boolean asyncSupported) {
-        // TODO Auto-generated method stub
+        wrapper.setAsyncSupported(asyncSupported);
     }
 
 
     public void setDescription(String description) {
-        // TODO Auto-generated method stub
+        wrapper.setDescription(description);
     }
 
 
     public boolean setInitParameter(String name, String value) {
-        // TODO Auto-generated method stub
-        return false;
+        wrapper.addInitParameter(name, value);
+        // FIXME: return value
+        return true;
     }
 
 
     public void setInitParameters(Map<String, String> initParameters) {
-        // TODO Auto-generated method stub
-        
+        Iterator<String> parameterNames = initParameters.keySet().iterator();
+        while (parameterNames.hasNext()) {
+            String parameterName = parameterNames.next();
+            wrapper.addInitParameter(parameterName, initParameters.get(parameterName));
+        }
     }
 
 
     public void setLoadOnStartup(int loadOnStartup) {
-        // TODO Auto-generated method stub
+        wrapper.setLoadOnStartup(loadOnStartup);
     }
 
 
