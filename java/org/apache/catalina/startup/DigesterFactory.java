@@ -94,11 +94,9 @@ public class DigesterFactory {
                  Constants.J2eeSchemaPublicId_14,
                  schemaResolver);
 
-        /* FIXME: Add javaee_5.xsd
         register(Constants.JavaeeSchemaResourcePath_5,
                 Constants.JavaeeSchemaPublicId_5,
                 schemaResolver);
-                */
 
         // W3C
         register(Constants.W3cSchemaResourcePath_10,
@@ -165,7 +163,6 @@ public class DigesterFactory {
                  Constants.J2eeWebServiceClientSchemaPublicId_11,
                  schemaResolver);
 
-        /* FIXME
         register(Constants.JavaeeWebServiceSchemaResourcePath_12,
                 Constants.JavaeeWebServiceSchemaPublicId_12,
                 schemaResolver);
@@ -173,7 +170,6 @@ public class DigesterFactory {
         register(Constants.JavaeeWebServiceClientSchemaResourcePath_12,
                 Constants.JavaeeWebServiceClientSchemaPublicId_12,
                 schemaResolver);
-                */
 
     }
 
