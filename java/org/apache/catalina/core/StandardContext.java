@@ -5533,6 +5533,12 @@ public class StandardContext
         
     }
 
+
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+
     public ObjectName getParentName() throws MalformedObjectNameException {
         // "Life" update
         String path=oname.getKeyProperty("name");

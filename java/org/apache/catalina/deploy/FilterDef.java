@@ -35,7 +35,24 @@ import java.io.Serializable;
 public class FilterDef implements Serializable {
 
 
+    private static final long serialVersionUID = 8703643991210305617L;
+
+
     // ------------------------------------------------------------- Properties
+
+
+    /**
+     * Async supported.
+     */
+    private boolean asyncSupported = false;
+
+    public boolean getAsyncSupported() {
+        return (this.asyncSupported);
+    }
+
+    public void setAsyncSupported(boolean asyncSupported) {
+        this.asyncSupported = asyncSupported;
+    }
 
 
     /**

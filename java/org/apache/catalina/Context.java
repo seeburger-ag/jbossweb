@@ -499,6 +499,14 @@ public interface Context extends Container {
 
 
     /**
+     * Add a filter mapping to this Context before current mappings.
+     *
+     * @param filterMap The filter mapping to be added
+     */
+    public void addFilterMapBefore(FilterMap filterMap);
+
+
+    /**
      * Add the classname of an InstanceListener to be added to each
      * Wrapper appended to this Context.
      *
@@ -1010,6 +1018,16 @@ public interface Context extends Container {
      *
      */
     public boolean getXmlValidation();
+
+
+    /**
+     * Return true if the Context has been initialized. This is lifecycle-ish, but
+     * needed by more and more Servlet API operations which are only permitted until
+     * the Context is initialized.
+     * @return true if the context is initialized.
+     *
+     */
+    public boolean isInitialized();
 
 
     /**

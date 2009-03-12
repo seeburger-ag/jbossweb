@@ -811,78 +811,6 @@ public class ApplicationContext
 
 
     // FIXME: removed
-    public void addFilter(String filterName, String description,
-            String className, Map<String, String> initParameters,
-            boolean isAsyncSupported) {
-
-        if (context.initialized) {
-            //TODO Spec breaking enhancement to ignore this restriction
-            throw new IllegalStateException(
-                    sm.getString("applicationContext.addFilter.ise",
-                            getContextPath()));
-        }
-        FilterDef filterDef = new FilterDef();
-        filterDef.setFilterName(filterName);
-        filterDef.setDescription(description);
-        filterDef.setFilterClass(className);
-        filterDef.getParameterMap().putAll(initParameters);
-        context.addFilterDef(filterDef);
-        // TODO SERVLET3 - ASync support
-    }
-
-
-    // FIXME: removed
-    public void addFilterMappingForServletNames(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... servletNames) {
-        if (context.initialized) {
-            //TODO Spec breaking enhancement to ignore this restriction
-            throw new IllegalStateException(sm.getString(
-                    "applicationContext.addFilterMapping", getContextPath()));
-        }
-        FilterMap filterMap = new FilterMap(); 
-        for (String servletName : servletNames) {
-            filterMap.addServletName(servletName);
-        }
-        filterMap.setFilterName(filterName);
-        for (DispatcherType dispatcherType: dispatcherTypes) {
-            filterMap.setDispatcher(dispatcherType.name());
-        }
-        if (isMatchAfter) {
-            context.addFilterMap(filterMap);
-        } else {
-            context.addFilterMapBefore(filterMap);
-        }
-    }
-
-
-    // FIXME: removed
-    public void addFilterMappingForUrlPatterns(String filterName,
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... urlPatterns) {
-        
-        if (context.initialized) {
-            //TODO Spec breaking enhancement to ignore this restriction
-            throw new IllegalStateException(sm.getString(
-                    "applicationContext.addFilterMapping", getContextPath()));
-        }
-        FilterMap filterMap = new FilterMap(); 
-        for (String urlPattern : urlPatterns) {
-            filterMap.addURLPattern(urlPattern);
-        }
-        filterMap.setFilterName(filterName);
-        for (DispatcherType dispatcherType: dispatcherTypes) {
-            filterMap.setDispatcher(dispatcherType.name());
-        }
-        if (isMatchAfter) {
-            context.addFilterMap(filterMap);
-        } else {
-            context.addFilterMapBefore(filterMap);
-        }
-    }
-
-
-    // FIXME: removed
     public void addServletMapping(String servletName, String[] urlPatterns) {
         if (context.initialized) {
             //TODO Spec breaking enhancement to ignore this restriction
@@ -898,8 +826,15 @@ public class ApplicationContext
 
     public FilterRegistration addFilter(String filterName, String className)
             throws IllegalArgumentException, IllegalStateException {
-        // TODO Auto-generated method stub
-        return null;
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.addFilter.ise",
+                            getContextPath()));
+        }
+        FilterDef filterDef = new FilterDef();
+        filterDef.setFilterName(filterName);
+        filterDef.setFilterClass(className);
+        context.addFilterDef(filterDef);
+        return new StandardFilterFacade(context, filterDef);
     }
 
 
@@ -911,8 +846,12 @@ public class ApplicationContext
 
 
     public FilterRegistration findFilterRegistration(String filterName) {
-        // TODO Auto-generated method stub
-        return null;
+        FilterDef filterDef = context.findFilterDef(filterName);
+        if (filterDef == null) {
+            return null;
+        } else {
+            return new StandardFilterFacade(context, filterDef);
+        }
     }
 
 
