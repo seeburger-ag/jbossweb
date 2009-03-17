@@ -71,6 +71,11 @@ public class MemoryProtocolHandler
     }
 
 
+    public boolean hasIoEvents() {
+        return false;
+    }
+
+
     // ------------------------------------------------ ProtocolHandler Methods
 
 
