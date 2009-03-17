@@ -629,19 +629,21 @@ public abstract class AuthenticatorBase
     protected synchronized Random getRandom() {
 
         if (this.random == null) {
+            // Calculate the new random number generator seed
+            long seed = System.nanoTime();
+            char entropy[] = getEntropy().toCharArray();
+            for (int i = 0; i < entropy.length; i++) {
+                long update = ((byte) entropy[i]) << ((i % 8) * 8);
+                seed ^= update;
+            }
+            // Construct and seed a new random number generator
             try {
                 Class clazz = Class.forName(randomClass);
                 this.random = (Random) clazz.newInstance();
-                long seed = System.currentTimeMillis();
-                char entropy[] = getEntropy().toCharArray();
-                for (int i = 0; i < entropy.length; i++) {
-                    long update = ((byte) entropy[i]) << ((i % 8) * 8);
-                    seed ^= update;
-                }
-                this.random.setSeed(seed);
             } catch (Exception e) {
                 this.random = new java.util.Random();
             }
+            this.random.setSeed(seed);
         }
 
         return (this.random);

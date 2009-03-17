@@ -543,30 +543,21 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public Random getRandom() {
         if (this.random == null) {
             // Calculate the new random number generator seed
-            long seed = System.currentTimeMillis();
-            long t1 = seed;
+            long seed = System.nanoTime();
             char entropy[] = getEntropy().toCharArray();
             for (int i = 0; i < entropy.length; i++) {
                 long update = ((byte) entropy[i]) << ((i % 8) * 8);
                 seed ^= update;
             }
+            // Construct and seed a new random number generator
             try {
-                // Construct and seed a new random number generator
                 Class clazz = Class.forName(randomClass);
                 this.random = (Random) clazz.newInstance();
-                this.random.setSeed(seed);
             } catch (Exception e) {
-                // Fall back to the simple case
-                log.error(sm.getString("managerBase.random", randomClass),
-                        e);
+                log.warn(sm.getString("managerBase.random", randomClass), e);
                 this.random = new java.util.Random();
-                this.random.setSeed(seed);
             }
-            if(log.isDebugEnabled()) {
-                long t2=System.currentTimeMillis();
-                if( (t2-t1) > 100 )
-                    log.debug(sm.getString("managerBase.seeding", randomClass) + " " + (t2-t1));
-            }
+            this.random.setSeed(seed);
         }
         
         return (this.random);

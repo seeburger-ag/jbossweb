@@ -32,6 +32,15 @@
       <update>
         Cookie tracking and Servlet 3.0 cookie configuration. (markt, remm)
       </update>
+      <update>
+        ServletRegistration and FilterRegistration implementation. (remm)
+      </update>
+      <fix>
+        XML validation fix. (markt)
+      </fix>
+      <fix>
+        <bug>46866</bug>: Use nanoTime rather that a weaker init for the Random fallback. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
