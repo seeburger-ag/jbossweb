@@ -315,7 +315,7 @@ public class CoyoteAdapter
         }
 
         if (connector.getXpoweredBy()) {
-            response.addHeader("X-Powered-By", "Servlet/2.5");
+            response.addHeader("X-Powered-By", "Servlet/3.0");
         }
 
         boolean comet = false;

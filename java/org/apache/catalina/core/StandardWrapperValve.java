@@ -157,10 +157,11 @@ final class StandardWrapperValve
             servlet = null;
         }
 
-        // Identify if the request is Comet related now that the servlet has been allocated
+        // Identify if the request should be switched to event mode now that 
+        // the servlet has been allocated
         boolean comet = false;
         if (servlet instanceof HttpEventServlet 
-                && request.getAttribute("org.apache.tomcat.comet.support") == Boolean.TRUE) {
+                && request.getConnector().hasIoEvents()) {
             comet = true;
             request.setComet(true);
         }

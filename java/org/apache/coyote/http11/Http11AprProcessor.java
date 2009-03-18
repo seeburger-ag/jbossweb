@@ -1475,8 +1475,6 @@ public class Http11AprProcessor implements ActionHook {
         if (endpoint.getUseSendfile()) {
             request.setAttribute("org.apache.tomcat.sendfile.support", Boolean.TRUE);
         }
-        // Advertise comet support through a request attribute
-        request.setAttribute("org.apache.tomcat.comet.support", Boolean.TRUE);
         
     }
 

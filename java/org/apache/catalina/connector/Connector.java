@@ -879,6 +879,16 @@ public class Connector
 
 
     /**
+     * Indicates if the protocol handler support IO events.
+     *
+     * @return true if IO events are supported
+     */
+    public boolean hasIoEvents() {
+        return protocolHandler.hasIoEvents();
+    }
+
+
+    /**
      * Enables or disables the generation of an X-Powered-By header (with value
      * Servlet/2.4) for all servlet-generated responses returned by this
      * Connector.
