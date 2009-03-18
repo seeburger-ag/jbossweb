@@ -29,6 +29,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executor;
 
+import org.apache.tomcat.util.net.AprEndpoint.SocketInfo;
 import org.apache.tomcat.util.res.StringManager;
 import org.jboss.logging.Logger;
 
@@ -268,6 +269,15 @@ public class JIoEndpoint {
     public ServerSocketFactory getServerSocketFactory() { return serverSocketFactory; }
 
 
+    /**
+     * The socket poller.
+     */
+    protected Poller poller = null;
+    public Poller getPoller() {
+        return poller;
+    }
+
+
     public boolean isRunning() {
         return running;
     }
@@ -297,7 +307,7 @@ public class JIoEndpoint {
         public enum SocketState {
             OPEN, CLOSED, LONG
         }
-        public boolean process(Socket socket);
+        public SocketState process(Socket socket);
         public SocketState event(Socket socket, SocketStatus status);
     }
 
@@ -361,26 +371,11 @@ public class JIoEndpoint {
      * with very little actual use.
      */
     public static class SocketInfo {
+        public static final int RESUME = 4;
+        public static final int WAKEUP = 8;
         public Socket socket;
         public int timeout;
-        public boolean wakeup;
-        public boolean wakeup() {
-            return wakeup;
-        }
-        public static boolean merge(boolean flag1, boolean flag2) {
-            return (flag1 || flag2);
-        }
-        /*public static final int READ = 1;
-        public static final int WRITE = 2;
-        public static final int RESUME = 4;
-        public static final int WAKEUP = 8;*/
-        //public int flags;
-        /*public boolean read() {
-            return (flags & READ) == READ;
-        }
-        public boolean write() {
-            return (flags & WRITE) == WRITE;
-        }
+        public int flags;
         public boolean resume() {
             return (flags & RESUME) == RESUME;
         }
@@ -388,11 +383,9 @@ public class JIoEndpoint {
             return (flags & WAKEUP) == WAKEUP;
         }
         public static int merge(int flag1, int flag2) {
-            return ((flag1 & READ) | (flag2 & READ))
-                | ((flag1 & WRITE) | (flag2 & WRITE)) 
-                | ((flag1 & RESUME) | (flag2 & RESUME)) 
+            return ((flag1 & RESUME) | (flag2 & RESUME)) 
                 | ((flag1 & WAKEUP) & (flag2 & WAKEUP));
-        }*/
+        }
     }
     
     
@@ -465,7 +458,7 @@ public class JIoEndpoint {
 
         protected Socket[] sockets;
         protected int[] timeouts;
-        protected boolean[] wakeups;
+        protected int[] flags;
         
         protected SocketInfo info = new SocketInfo();
         
@@ -474,7 +467,7 @@ public class JIoEndpoint {
             pos = 0;
             sockets = new Socket[size];
             timeouts = new int[size];
-            wakeups = new boolean[size];
+            flags = new int[size];
         }
         
         public int size() {
@@ -487,7 +480,7 @@ public class JIoEndpoint {
             } else {
                 info.socket = sockets[pos];
                 info.timeout = timeouts[pos];
-                info.wakeup = wakeups[pos];
+                info.flags = flags[pos];
                 pos++;
                 return info;
             }
@@ -498,19 +491,19 @@ public class JIoEndpoint {
             pos = 0;
         }
         
-        public boolean add(Socket socket, int timeout, boolean wakeup) {
+        public boolean add(Socket socket, int timeout, int flag) {
             if (size == sockets.length) {
                 return false;
             } else {
                 for (int i = 0; i < size; i++) {
                     if (sockets[i] == socket) {
-                        wakeups[i] = SocketInfo.merge(wakeups[i], wakeup);
+                        flags[i] = SocketInfo.merge(flags[i], flag);
                         return true;
                     }
                 }
                 sockets[size] = socket;
                 timeouts[size] = timeout;
-                wakeups[size] = wakeup;
+                flags[size] = flag;
                 size++;
                 return true;
             }
@@ -521,7 +514,7 @@ public class JIoEndpoint {
             copy.pos = pos;
             System.arraycopy(sockets, 0, copy.sockets, 0, size);
             System.arraycopy(timeouts, 0, copy.timeouts, 0, size);
-            System.arraycopy(wakeups, 0, copy.wakeups, 0, size);
+            System.arraycopy(flags, 0, copy.flags, 0, size);
         }
         
     }
@@ -545,7 +538,7 @@ public class JIoEndpoint {
         public void run() {
 
             // Process the request from this socket
-            if (!setSocketOptions(socket) || !handler.process(socket)) {
+            if (!setSocketOptions(socket) || (handler.process(socket) == Handler.SocketState.CLOSED)) {
                 // Close socket
                 try { socket.close(); } catch (IOException e) { }
             }
@@ -665,8 +658,14 @@ public class JIoEndpoint {
             }
             addList.clear();
             // Close all sockets still in the poller
-            // FIXME: close all waiting for timeout
-
+            long future = System.currentTimeMillis() + Integer.MAX_VALUE;
+            Socket socket = timeouts.check(future);
+            while (socket != null) {
+                if (!processSocket(socket, SocketStatus.TIMEOUT)) {
+                    try { socket.close(); } catch (IOException e) { }
+                }
+                socket = timeouts.check(future);
+            }
             connectionCount = 0;
         }
 
@@ -678,16 +677,19 @@ public class JIoEndpoint {
          *
          * @param socket to add to the poller
          */
-        public void add(Socket socket, int timeout, boolean wakeup) {
-            /*int timeout = keepAliveTimeout;
+        public void add(Socket socket, int timeout, boolean resume, boolean wakeup) {
+            if (timeout < 0) {
+                timeout = keepAliveTimeout;
+            }
             if (timeout < 0) {
                 timeout = soTimeout;
-            }*/
+            }
             boolean ok = false;
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
                 // at most for pollTime before being polled
-                if (addList.add(socket, timeout, wakeup)) {
+                if (addList.add(socket, timeout, (resume ? SocketInfo.RESUME : 0)
+                        | (wakeup ? SocketInfo.WAKEUP : 0))) {
                     ok = true;
                     this.notify();
                 }
@@ -721,24 +723,6 @@ public class JIoEndpoint {
             }
 
         }
-        
-        /**
-         * Displays the list of sockets in the pollers.
-         *
-        public String toString() {
-            StringBuffer buf = new StringBuffer();
-            buf.append("Poller comet=[").append(comet).append("]");
-            long[] res = new long[actualPollerSize * 2];
-            for (int i = 0; i < pollers.length; i++) {
-                int count = Poll.pollset(pollers[i], res);
-                buf.append(" [ ");
-                for (int j = 0; j < count; j++) {
-                    buf.append(desc[2*j+1]).append(" ");
-                }
-                buf.append("]");
-            }
-            return buf.toString();
-        }*/
         
         /**
          * The background thread that listens for incoming TCP/IP connections and
@@ -789,12 +773,22 @@ public class JIoEndpoint {
                             if (info.wakeup()) {
                                 // Resume event if socket is present in the poller
                                 if (timeouts.remove(info.socket)) {
-                                    if (!processSocket(info.socket, SocketStatus.OPEN_CALLBACK)) {
-                                        try { info.socket.close(); } catch (IOException e) { }
+                                    if (info.resume()) {
+                                        if (!processSocket(info.socket, SocketStatus.OPEN_CALLBACK)) {
+                                            try { info.socket.close(); } catch (IOException e) { }
+                                        }
+                                    } else {
+                                        timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
                                     }
                                 }
                             } else {
-                                timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
+                                if (info.resume()) {
+                                    if (!processSocket(info.socket, SocketStatus.OPEN_CALLBACK)) {
+                                        try { info.socket.close(); } catch (IOException e) { }
+                                    }
+                                } else {
+                                    timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
+                                }
                             }
                             info = localAddList.get();
                         }
@@ -932,9 +926,10 @@ public class JIoEndpoint {
 
                 // Process the request from this socket
                 if ((status != null) && (handler.event(socket, status) == Handler.SocketState.CLOSED)) {
+                    // FIXME: If handler.event returns Handler.SocketState.OPEN, then likely should process without socketOptions
                     // Close socket
                     try { socket.close(); } catch (IOException e) { }
-                } else if ((status == null) && (!setSocketOptions(socket) || !handler.process(socket))) {
+                } else if ((status == null) && (!setSocketOptions(socket) || (handler.process(socket) == Handler.SocketState.CLOSED))) {
                     // Close socket
                     try { socket.close(); } catch (IOException e) { }
                 }
@@ -1014,6 +1009,14 @@ public class JIoEndpoint {
                 workers = new WorkerStack(maxThreads);
             }
 
+            // Start poller thread
+            poller = new Poller();
+            poller.init();
+            Thread pollerThread = new Thread(poller, getName() + "-Poller");
+            pollerThread.setPriority(threadPriority);
+            pollerThread.setDaemon(true);
+            pollerThread.start();
+
             // Start acceptor threads
             for (int i = 0; i < acceptorThreadCount; i++) {
                 Thread acceptorThread = new Thread(new Acceptor(), getName() + "-Acceptor-" + i);
@@ -1041,6 +1044,8 @@ public class JIoEndpoint {
         if (running) {
             running = false;
             unlockAccept();
+            poller.destroy();
+            poller = null;
         }
     }
 

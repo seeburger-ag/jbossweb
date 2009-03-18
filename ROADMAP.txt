@@ -2,14 +2,11 @@ Roadmap for JBoss Web 3.0
 
 Main development:
 - Setup standalone TCK environment for testing compliance with the new features
-- Implement Servlet 3.0 async for APR HTTP connector
+- Implement Servlet 3.0 async over current IO events
 - Update digester XML parsing rules for web.xml updates
 - Implement new APIs for programmatic deployment descriptor access
 - Implement annotation scanning for JBoss Web standalone (likely disabled by default using conf/web.xml)
 - Implement any other Servlet 3.0 changes (web.xml fragments, security, etc)
-- Implement Servlet 3.0 async for APR AJP connector
-- Implement Servlet 3.0 async for java.io HTTP connector
-- Implement Servlet 3.0 async for java.io AJP connector
 - Implement JSP 2.2 changes
 - Implement EL 1.1 changes
 - Coordinate with AS 6 to implement new web.xml parsing (out of tree)

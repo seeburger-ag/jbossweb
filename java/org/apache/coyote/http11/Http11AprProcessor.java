@@ -259,12 +259,6 @@ public class Http11AprProcessor implements ActionHook {
 
 
     /**
-     * Maximum timeout on uploads. 5 minutes as in Apache HTTPD server.
-     */
-    protected int timeout = 300000;
-
-
-    /**
      * Flag to disable setting a different time-out on uploads.
      */
     protected boolean disableUploadTimeout = false;
@@ -324,7 +318,6 @@ public class Http11AprProcessor implements ActionHook {
     protected String server = null;
 
     
-    protected int cometTimeout = -1;
     protected boolean readNotifications = true;
     protected boolean writeNotification = false;
     protected boolean resumeNotification = false;
@@ -356,11 +349,6 @@ public class Http11AprProcessor implements ActionHook {
 
     public boolean getReadNotifications() {
         return readNotifications;
-    }
-    
-
-    public int getCometTimeout() {
-        return cometTimeout;
     }
     
 
@@ -506,6 +494,13 @@ public class Http11AprProcessor implements ActionHook {
         return (compressableMimeTypes);
     }
 
+
+    /**
+     * Timeout.
+     */
+    protected int timeout = -1;
+    public void setTimeout(int timeout) { this.timeout = timeout; }
+    public int getTimeout() { return timeout; }
 
 
     // --------------------------------------------------------- Public Methods
@@ -714,19 +709,6 @@ public class Http11AprProcessor implements ActionHook {
         return socketBuffer;
     }
 
-    /**
-     * Set the upload timeout.
-     */
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-
-    /**
-     * Get the upload timeout.
-     */
-    public int getTimeout() {
-        return timeout;
-    }
 
     /**
      * Set the server header name.
@@ -804,6 +786,7 @@ public class Http11AprProcessor implements ActionHook {
             recycle();
             return SocketState.CLOSED;
         } else if (!comet) {
+            endRequest();
             boolean pipelined = inputBuffer.nextRequest();
             outputBuffer.nextRequest();
             recycle();
@@ -1008,7 +991,7 @@ public class Http11AprProcessor implements ActionHook {
         inputBuffer.recycle();
         outputBuffer.recycle();
         this.socket = 0;
-        cometTimeout = -1;
+        timeout = -1;
         readNotifications = true;
         writeNotification = false;
         resumeNotification = false;
@@ -1274,18 +1257,18 @@ public class Http11AprProcessor implements ActionHook {
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
             if (!cometProcessing && !resumeNotification) {
-                endpoint.getCometPoller().add(socket, cometTimeout, false, false, true, true);
+                endpoint.getCometPoller().add(socket, timeout, false, false, true, true);
             }
             resumeNotification = true;
         } else if (actionCode == ActionCode.ACTION_COMET_WRITE) {
             // An event is being processed already: adding for write will be done
             // when the socket gets back to the poller
             if (!cometProcessing && !writeNotification) {
-                endpoint.getCometPoller().add(socket, cometTimeout, false, true, false, true);
+                endpoint.getCometPoller().add(socket, timeout, false, true, false, true);
             }
             writeNotification = true;
         } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
-            cometTimeout = ((Integer) param).intValue();
+            timeout = ((Integer) param).intValue();
         }
 
     }

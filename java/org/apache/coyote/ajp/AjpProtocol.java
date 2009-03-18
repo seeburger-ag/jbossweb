@@ -27,6 +27,7 @@ import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,8 +37,6 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.coyote.ActionCode;
-import org.apache.coyote.ActionHook;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
@@ -340,6 +339,8 @@ public class AjpProtocol
         protected AtomicLong registerCount = new AtomicLong(0);
         protected RequestGroupInfo global = new RequestGroupInfo();
 
+        protected ConcurrentHashMap<Socket, AjpProcessor> connections =
+            new ConcurrentHashMap<Socket, AjpProcessor>();
         protected ConcurrentLinkedQueue<AjpProcessor> recycledProcessors = 
             new ConcurrentLinkedQueue<AjpProcessor>() {
             protected AtomicInteger size = new AtomicInteger(0);
@@ -380,12 +381,57 @@ public class AjpProtocol
             this.proto = proto;
         }
 
-        // FIXME: Support async
         public SocketState event(Socket socket, SocketStatus status) {
-            return SocketState.CLOSED;
+            AjpProcessor result = connections.get(socket);
+            SocketState state = SocketState.CLOSED; 
+            if (result != null) {
+                result.startProcessing();
+                // Call the appropriate event
+                try {
+                    state = result.event(status);
+                } catch (java.net.SocketException e) {
+                    // SocketExceptions are normal
+                    AjpProcessor.log.debug
+                        (sm.getString
+                            ("ajpprotocol.proto.socketexception.debug"), e);
+                } catch (java.io.IOException e) {
+                    // IOExceptions are normal
+                    AjpProcessor.log.debug
+                        (sm.getString
+                            ("ajpprotocol.proto.ioexception.debug"), e);
+                }
+                // Future developers: if you discover any other
+                // rare-but-nonfatal exceptions, catch them here, and log as
+                // above.
+                catch (Throwable e) {
+                    // any other exception or error is odd. Here we log it
+                    // with "ERROR" level, so it will show up even on
+                    // less-than-verbose logs.
+                    AjpProcessor.log.error
+                        (sm.getString("ajpprotocol.proto.error"), e);
+                } finally {
+                    if (state != SocketState.LONG) {
+                        connections.remove(socket);
+                        recycledProcessors.offer(result);
+                        // FIXME: if the socket is still open, we should send it back to reprocess it
+                        // as if it was an initial request, or the simple solution is to close after
+                        // an async request; will see
+                        if (proto.endpoint.isRunning() && state == SocketState.OPEN) {
+                            //proto.endpoint.getPoller().add(socket);
+                        }
+                    } else {
+                        if (proto.endpoint.isRunning()) {
+                            proto.endpoint.getPoller().add(socket, result.getTimeout(), 
+                                    result.getResumeNotification(), false);
+                        }
+                    }
+                    result.endProcessing();
+                }
+            }
+            return state;
         }
         
-        public boolean process(Socket socket) {
+        public SocketState process(Socket socket) {
             AjpProcessor processor = recycledProcessors.poll();
             try {
 
@@ -393,12 +439,18 @@ public class AjpProtocol
                     processor = createProcessor();
                 }
 
-                if (processor instanceof ActionHook) {
-                    ((ActionHook) processor).action(ActionCode.ACTION_START, null);
+                SocketState state = processor.process(socket);
+                if (state == SocketState.LONG) {
+                    // Associate the connection with the processor. The next request 
+                    // processed by this thread will use either a new or a recycled
+                    // processor.
+                    connections.put(socket, processor);
+                    proto.endpoint.getPoller().add(socket, processor.getTimeout(), 
+                            processor.getResumeNotification(), false);
+                } else {
+                    recycledProcessors.offer(processor);
                 }
-
-                processor.process(socket);
-                return false;
+                return state;
 
             } catch(java.net.SocketException e) {
                 // SocketExceptions are normal
@@ -420,13 +472,9 @@ public class AjpProtocol
                 // less-than-verbose logs.
                 AjpProtocol.log.error
                     (sm.getString("ajpprotocol.proto.error"), e);
-            } finally {
-                if (processor instanceof ActionHook) {
-                    ((ActionHook) processor).action(ActionCode.ACTION_STOP, null);
-                }
-                recycledProcessors.offer(processor);
             }
-            return false;
+            recycledProcessors.offer(processor);
+            return SocketState.CLOSED;
         }
 
         protected AjpProcessor createProcessor() {

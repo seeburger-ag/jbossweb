@@ -27,6 +27,7 @@ import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,7 +37,6 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
@@ -549,6 +549,8 @@ public class Http11Protocol
         protected AtomicLong registerCount = new AtomicLong(0);
         protected RequestGroupInfo global = new RequestGroupInfo();
 
+        protected ConcurrentHashMap<Socket, Http11Processor> connections =
+            new ConcurrentHashMap<Socket, Http11Processor>();
         protected ConcurrentLinkedQueue<Http11Processor> recycledProcessors = 
             new ConcurrentLinkedQueue<Http11Processor>() {
             protected AtomicInteger size = new AtomicInteger(0);
@@ -589,20 +591,63 @@ public class Http11Protocol
             this.proto = proto;
         }
 
-        // FIXME: Support async
         public SocketState event(Socket socket, SocketStatus status) {
-            return SocketState.CLOSED;
+            Http11Processor result = connections.get(socket);
+            SocketState state = SocketState.CLOSED; 
+            if (result != null) {
+                result.startProcessing();
+                // Call the appropriate event
+                try {
+                    state = result.event(status);
+                } catch (java.net.SocketException e) {
+                    // SocketExceptions are normal
+                    Http11Protocol.log.debug
+                        (sm.getString
+                            ("http11protocol.proto.socketexception.debug"), e);
+                } catch (java.io.IOException e) {
+                    // IOExceptions are normal
+                    Http11Protocol.log.debug
+                        (sm.getString
+                            ("http11protocol.proto.ioexception.debug"), e);
+                }
+                // Future developers: if you discover any other
+                // rare-but-nonfatal exceptions, catch them here, and log as
+                // above.
+                catch (Throwable e) {
+                    // any other exception or error is odd. Here we log it
+                    // with "ERROR" level, so it will show up even on
+                    // less-than-verbose logs.
+                    Http11Protocol.log.error
+                        (sm.getString("http11protocol.proto.error"), e);
+                } finally {
+                    if (state != SocketState.LONG) {
+                        connections.remove(socket);
+                        recycledProcessors.offer(result);
+                        // FIXME: if the socket is still open, we should send it back to reprocess it
+                        // as if it was an initial request, or the simple solution is to close after
+                        // an async request; will see
+                        if (proto.endpoint.isRunning() && state == SocketState.OPEN) {
+                            //proto.endpoint.getPoller().add(socket);
+                        }
+                    } else {
+                        if (proto.endpoint.isRunning()) {
+                            proto.endpoint.getPoller().add(socket, result.getTimeout(), 
+                                    result.getResumeNotification(), false);
+                        }
+                    }
+                    result.endProcessing();
+                }
+            }
+            return state;
         }
         
-        public boolean process(Socket socket) {
+        public SocketState process(Socket socket) {
             Http11Processor processor = recycledProcessors.poll();
             try {
 
                 if (processor == null) {
                     processor = createProcessor();
                 }
-
-                processor.action(ActionCode.ACTION_START, null);
 
                 if (proto.secure && (proto.sslImplementation != null)) {
                     processor.setSSLSupport
@@ -611,8 +656,18 @@ public class Http11Protocol
                     processor.setSSLSupport(null);
                 }
                 
-                processor.process(socket);
-                return false;
+                SocketState state = processor.process(socket);
+                if (state == SocketState.LONG) {
+                    // Associate the connection with the processor. The next request 
+                    // processed by this thread will use either a new or a recycled
+                    // processor.
+                    connections.put(socket, processor);
+                    proto.endpoint.getPoller().add(socket, processor.getTimeout(), 
+                            processor.getResumeNotification(), false);
+                } else {
+                    recycledProcessors.offer(processor);
+                }
+                return state;
 
             } catch(java.net.SocketException e) {
                 // SocketExceptions are normal
@@ -634,14 +689,9 @@ public class Http11Protocol
                 // less-than-verbose logs.
                 Http11Protocol.log.error
                     (sm.getString("http11protocol.proto.error"), e);
-            } finally {
-                //       if(proto.adapter != null) proto.adapter.recycle();
-                //                processor.recycle();
-
-                processor.action(ActionCode.ACTION_STOP, null);
-                recycledProcessors.offer(processor);
             }
-            return false;
+            recycledProcessors.offer(processor);
+            return SocketState.CLOSED;
         }
         
         protected Http11Processor createProcessor() {

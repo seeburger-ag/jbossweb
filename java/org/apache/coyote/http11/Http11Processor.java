@@ -1,18 +1,23 @@
 /*
- *  Licensed to the Apache Software Foundation (ASF) under one or more
- *  contributor license agreements.  See the NOTICE file distributed with
- *  this work for additional information regarding copyright ownership.
- *  The ASF licenses this file to You under the Apache License, Version 2.0
- *  (the "License"); you may not use this file except in compliance with
- *  the License.  You may obtain a copy of the License at
+ * JBoss, Home of Professional Open Source
+ * Copyright 2009, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.apache.coyote.http11;
@@ -48,6 +53,8 @@ import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.net.JIoEndpoint;
 import org.apache.tomcat.util.net.SSLSupport;
+import org.apache.tomcat.util.net.SocketStatus;
+import org.apache.tomcat.util.net.JIoEndpoint.Handler.SocketState;
 import org.apache.tomcat.util.res.StringManager;
 
 
@@ -131,12 +138,6 @@ public class Http11Processor implements ActionHook {
      * Output.
      */
     protected InternalOutputBuffer outputBuffer = null;
-
-
-    /**
-     * State flag.
-     */
-    protected boolean started = false;
 
 
     /**
@@ -244,12 +245,6 @@ public class Http11Processor implements ActionHook {
 
 
     /**
-     * Maximum timeout on uploads. 5 minutes as in Apache HTTPD server.
-     */
-    protected int timeout = 300000;
-
-
-    /**
      * Flag to disable setting a different time-out on uploads.
      */
     protected boolean disableUploadTimeout = false;
@@ -307,6 +302,26 @@ public class Http11Processor implements ActionHook {
      * Allow a customized the server header for the tin-foil hat folks.
      */
     protected String server = null;
+
+    
+    /**
+     * Comet used.
+     */
+    protected boolean comet = false;
+
+
+    /**
+     * True if a resume has been requested.
+     */
+    protected boolean resumeNotification = false;
+
+
+    /**
+     * Comet processing.
+     */
+    protected boolean cometProcessing = true;
+    public void startProcessing() { cometProcessing = true; }
+    public void endProcessing() { cometProcessing = false; }
 
 
     // ------------------------------------------------------------- Properties
@@ -449,6 +464,13 @@ public class Http11Processor implements ActionHook {
         return (compressableMimeTypes);
     }
 
+
+    /**
+     * Timeout.
+     */
+    protected int timeout = -1;
+    public void setTimeout(int timeout) { this.timeout = timeout; }
+    public int getTimeout() { return timeout; }
 
 
     // --------------------------------------------------------- Public Methods
@@ -666,6 +688,11 @@ public class Http11Processor implements ActionHook {
         return disableUploadTimeout;
     }
 
+    public boolean getResumeNotification() {
+        return resumeNotification;
+    }
+    
+
     /**
      * Set the socket buffer flag.
      */
@@ -679,20 +706,6 @@ public class Http11Processor implements ActionHook {
      */
     public int getSocketBuffer() {
         return socketBuffer;
-    }
-
-    /**
-     * Set the upload timeout.
-     */
-    public void setTimeout( int timeouts ) {
-        timeout = timeouts ;
-    }
-
-    /**
-     * Get the upload timeout.
-     */
-    public int getTimeout() {
-        return timeout;
     }
 
 
@@ -723,6 +736,47 @@ public class Http11Processor implements ActionHook {
         return request;
     }
 
+    public SocketState event(SocketStatus status)
+    throws IOException {
+
+        RequestInfo rp = request.getRequestProcessor();
+        try {
+            if (status == SocketStatus.OPEN_CALLBACK) {
+                // The resume notification is now done
+                resumeNotification = false;
+            } else if (status == SocketStatus.ERROR) {
+                // Set error flag right away
+                error = true;
+            }
+            rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
+            error = !adapter.event(request, response, status);
+        } catch (InterruptedIOException e) {
+            error = true;
+        } catch (Throwable t) {
+            log.error(sm.getString("http11processor.request.process"), t);
+            // 500 - Internal Server Error
+            response.setStatus(500);
+            error = true;
+        }
+
+        rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
+
+        if (error) {
+            inputBuffer.nextRequest();
+            outputBuffer.nextRequest();
+            recycle();
+            return SocketState.CLOSED;
+        } else if (!comet) {
+            endRequest();
+            boolean pipelined = inputBuffer.nextRequest();
+            outputBuffer.nextRequest();
+            recycle();
+            return (pipelined) ? SocketState.CLOSED : SocketState.OPEN;
+        } else {
+            return SocketState.LONG;
+        }
+    }
+
     /**
      * Process pipelined HTTP requests using the specified input and output
      * streams.
@@ -732,7 +786,7 @@ public class Http11Processor implements ActionHook {
      * responses
      * @throws IOException error during an I/O operation
      */
-    public void process(Socket socket)
+    public SocketState process(Socket socket)
         throws IOException {
         RequestInfo rp = request.getRequestProcessor();
         rp.setStage(org.apache.coyote.Constants.STAGE_PARSE);
@@ -775,7 +829,7 @@ public class Http11Processor implements ActionHook {
 
         boolean keptAlive = false;
 
-        while (started && !error && keepAlive) {
+        while (!error && keepAlive && !comet) {
 
             // Parsing the request header
             try {
@@ -852,25 +906,8 @@ public class Http11Processor implements ActionHook {
                 // If there is an unspecified error, the connection will be closed
                 inputBuffer.setSwallowInput(false);
             }
-            try {
-                rp.setStage(org.apache.coyote.Constants.STAGE_ENDINPUT);
-                inputBuffer.endRequest();
-            } catch (IOException e) {
-                error = true;
-            } catch (Throwable t) {
-                log.error(sm.getString("http11processor.request.finish"), t);
-                // 500 - Internal Server Error
-                response.setStatus(500);
-                error = true;
-            }
-            try {
-                rp.setStage(org.apache.coyote.Constants.STAGE_ENDOUTPUT);
-                outputBuffer.endRequest();
-            } catch (IOException e) {
-                error = true;
-            } catch (Throwable t) {
-                log.error(sm.getString("http11processor.response.finish"), t);
-                error = true;
+            if (!comet) {
+                endRequest();
             }
 
             // If there was an error, make sure the request is counted as
@@ -880,23 +917,69 @@ public class Http11Processor implements ActionHook {
             }
             request.updateCounters();
 
-            rp.setStage(org.apache.coyote.Constants.STAGE_KEEPALIVE);
+            if (!comet) {
+                // Next request
+                inputBuffer.nextRequest();
+                outputBuffer.nextRequest();
+            }
 
-            // Next request
-            inputBuffer.nextRequest();
-            outputBuffer.nextRequest();
+            rp.setStage(org.apache.coyote.Constants.STAGE_KEEPALIVE);
 
         }
 
         rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
 
-        // Recycle
+        if (comet) {
+            if (error) {
+                inputBuffer.nextRequest();
+                outputBuffer.nextRequest();
+                recycle();
+                return SocketState.CLOSED;
+            } else {
+                cometProcessing = false;
+                return SocketState.LONG;
+            }
+        } else {
+            recycle();
+            return SocketState.CLOSED;
+        }
+
+    }
+
+
+    public void endRequest() {
+        
+        // Finish the handling of the request
+        try {
+            inputBuffer.endRequest();
+        } catch (IOException e) {
+            error = true;
+        } catch (Throwable t) {
+            log.error(sm.getString("http11processor.request.finish"), t);
+            // 500 - Internal Server Error
+            response.setStatus(500);
+            error = true;
+        }
+        try {
+            outputBuffer.endRequest();
+        } catch (IOException e) {
+            error = true;
+        } catch (Throwable t) {
+            log.error(sm.getString("http11processor.response.finish"), t);
+            error = true;
+        }
+
+    }
+    
+    
+    public void recycle() {
         inputBuffer.recycle();
         outputBuffer.recycle();
-
-        // Recycle socket
         this.socket = null;
         sslSupport = null;
+        timeout = -1;
+        resumeNotification = false;
+        cometProcessing = true;
     }
 
 
@@ -970,14 +1053,6 @@ public class Http11Processor implements ActionHook {
         } else if (actionCode == ActionCode.ACTION_CUSTOM) {
 
             // Do nothing
-
-        } else if (actionCode == ActionCode.ACTION_START) {
-
-            started = true;
-
-        } else if (actionCode == ActionCode.ACTION_STOP) {
-
-            started = false;
 
         } else if (actionCode == ActionCode.ACTION_REQ_SSL_ATTRIBUTE ) {
 
@@ -1090,6 +1165,21 @@ public class Http11Processor implements ActionHook {
             InternalInputBuffer internalBuffer = (InternalInputBuffer)
                 request.getInputBuffer();
             internalBuffer.addActiveFilter(savedBody);
+        } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
+            comet = true;
+        } else if (actionCode == ActionCode.ACTION_COMET_END) {
+            comet = false;
+        } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
+            // No action needed
+        } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
+            // An event is being processed already: adding for resume will be done
+            // when the socket gets back to the poller
+            if (!cometProcessing && !resumeNotification) {
+                endpoint.getPoller().add(socket, timeout, true, true);
+            }
+            resumeNotification = true;
+        } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
+            timeout = ((Integer) param).intValue();
         }
 
     }

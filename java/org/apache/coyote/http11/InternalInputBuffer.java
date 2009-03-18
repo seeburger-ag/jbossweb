@@ -292,7 +292,7 @@ public class InternalInputBuffer implements InputBuffer {
      * consumed. This method only resets all the pointers so that we are ready
      * to parse the next HTTP request.
      */
-    public void nextRequest() {
+    public boolean nextRequest() {
 
         // Recycle Request object
         request.recycle();
@@ -321,6 +321,8 @@ public class InternalInputBuffer implements InputBuffer {
         parsingHeader = true;
         swallowInput = true;
 
+        return (lastValid > 0);
+        
     }
 
 

@@ -36,7 +36,6 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
@@ -580,7 +579,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         }
                     } else {
                         if (proto.endpoint.isRunning()) {
-                            proto.endpoint.getCometPoller().add(socket, result.getCometTimeout(), 
+                            proto.endpoint.getCometPoller().add(socket, result.getTimeout(), 
                                     result.getReadNotifications(), result.getWriteNotification(), result.getResumeNotification(), false);
                         }
                     }
@@ -597,8 +596,6 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     processor = createProcessor();
                 }
 
-                processor.action(ActionCode.ACTION_START, null);
-
                 SocketState state = processor.process(socket);
                 if (state == SocketState.LONG) {
                     // Associate the connection with the processor. The next request 
@@ -609,8 +606,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         // Call a read event right away
                         state = event(socket, SocketStatus.OPEN_READ);
                     } else {
-                        proto.endpoint.getCometPoller().add(socket, processor.getCometTimeout(), 
-                                processor.getReadNotifications(), false, false, false);
+                        proto.endpoint.getCometPoller().add(socket, processor.getTimeout(), 
+                                processor.getReadNotifications(), false, processor.getResumeNotification(), false);
                     }
                 } else {
                     recycledProcessors.offer(processor);
