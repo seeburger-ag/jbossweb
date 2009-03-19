@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -51,7 +50,6 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.deploy.FilterDef;
-import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
@@ -810,20 +808,6 @@ public class ApplicationContext
     }
 
 
-    // FIXME: removed
-    public void addServletMapping(String servletName, String[] urlPatterns) {
-        if (context.initialized) {
-            //TODO Spec breaking enhancement to ignore this restriction
-            throw new IllegalStateException(sm.getString(
-                    "applicationContext.addServletMapping", getContextPath()));
-        }
-        for (String urlPattern : urlPatterns) {
-            boolean jspWildCard = ("*.jsp".equals(urlPattern));
-            context.addServletMapping(servletName, urlPattern, jspWildCard);
-        }
-    }
-
-
     public FilterRegistration addFilter(String filterName, String className)
             throws IllegalArgumentException, IllegalStateException {
         if (context.isInitialized()) {
@@ -840,8 +824,11 @@ public class ApplicationContext
 
     public ServletRegistration addServlet(String servletName, String className)
             throws IllegalArgumentException, IllegalStateException {
-        // TODO Auto-generated method stub
-        return null;
+        Wrapper wrapper = context.createWrapper();
+        wrapper.setName(servletName);
+        wrapper.setServletClass(className);
+        context.addChild(wrapper);
+        return wrapper.getFacade();
     }
 
 
@@ -856,8 +843,12 @@ public class ApplicationContext
 
 
     public ServletRegistration findServletRegistration(String servletName) {
-        // TODO Auto-generated method stub
-        return null;
+        Wrapper wrapper = (Wrapper) context.findChild(servletName);
+        if (wrapper != null) {
+            return wrapper.getFacade();
+        } else {
+            return null;
+        }
     }
 
 

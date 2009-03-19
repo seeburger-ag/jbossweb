@@ -21,6 +21,7 @@ package org.apache.catalina;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.UnavailableException;
 
 
@@ -243,6 +244,12 @@ public interface Wrapper extends Container {
     public void deallocate(Servlet servlet) throws ServletException;
 
 
+    /**
+     * Get the facade ServletRegistration.
+     */
+    public ServletRegistration getFacade();
+    
+    
     /**
      * Return the associated servlet instance.
      */

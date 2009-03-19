@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.annotation.FilterMapping;
 import javax.servlet.http.annotation.InitParam;
@@ -307,27 +308,72 @@ public class ContextConfig
             if (clazz.isAnnotationPresent(InitParam.class)) {
                 InitParam annotation = clazz.getAnnotation(InitParam.class);
                 // Add init param
-                // FIXME
+                context.addParameter(annotation.name(), annotation.value());
             }
+            String filterName = null;
             if (clazz.isAnnotationPresent(ServletFilter.class)) {
                 ServletFilter annotation = clazz.getAnnotation(ServletFilter.class);
                 // Add servlet filter
-                // FIXME
+                filterName = annotation.filterName();
+                FilterDef filterDef = new FilterDef();
+                filterDef.setFilterName(annotation.filterName());
+                filterDef.setFilterClass(clazz.getName());
+                InitParam[] params = annotation.initParams();
+                for (int i = 0; i < params.length; i++) {
+                    filterDef.addInitParameter(params[i].name(), params[i].value());
+                }
+                context.addFilterDef(filterDef);
             }
             if (clazz.isAnnotationPresent(FilterMapping.class)) {
                 FilterMapping annotation = clazz.getAnnotation(FilterMapping.class);
                 // Add filter mapping
-                // FIXME
+                if (filterName != null) {
+                    FilterMap filterMap = new FilterMap();
+                    filterMap.setFilterName(filterName);
+                    String[] urlPatterns = annotation.urlPattern();
+                    if (urlPatterns != null) {
+                        for (int i = 0; i < urlPatterns.length; i++) {
+                            filterMap.addURLPattern(urlPatterns[i]);
+                        }
+                    }
+                    String[] servletNames = annotation.servletNames();
+                    if (servletNames != null) {
+                        for (int i = 0; i < servletNames.length; i++) {
+                            filterMap.addServletName(servletNames[i]);
+                        }
+                    }
+                    DispatcherType[] dispatcherTypes = annotation.dispatcherTypes();
+                    if (dispatcherTypes != null) {
+                        for (int i = 0; i < dispatcherTypes.length; i++) {
+                            filterMap.setDispatcher(dispatcherTypes[i].toString());
+                        }
+                    }
+                    context.addFilterMap(filterMap);
+                }
             }
             if (clazz.isAnnotationPresent(Servlet.class)) {
                 Servlet annotation = clazz.getAnnotation(Servlet.class);
                 // Add servlet
-                // FIXME
+                Wrapper wrapper = context.createWrapper();
+                wrapper.setName(annotation.name());
+                wrapper.setServletClass(clazz.getName());
+                wrapper.setLoadOnStartup(annotation.loadOnStartup());
+                InitParam[] params = annotation.initParams();
+                for (int i = 0; i < params.length; i++) {
+                    wrapper.addInitParameter(params[i].name(), params[i].value());
+                }
+                context.addChild(wrapper);
+                String[] urlMappings = annotation.urlMappings();
+                if (urlMappings != null) {
+                    for (int i = 0; i < urlMappings.length; i++) {
+                        context.addServletMapping(urlMappings[i], annotation.name());
+                    }
+                }
             }
             if (clazz.isAnnotationPresent(ServletContextListener.class)) {
                 ServletContextListener annotation = clazz.getAnnotation(ServletContextListener.class);
                 // Add listener
-                // FIXME
+                context.addApplicationListener(clazz.getName());
             }
         }
         

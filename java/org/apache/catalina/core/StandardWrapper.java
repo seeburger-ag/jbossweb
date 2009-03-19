@@ -38,6 +38,7 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.SingleThreadModel;
@@ -626,6 +627,14 @@ public class StandardWrapper
 
     }
 
+    
+    /**
+     * Get the facade ServletRegistration.
+     */
+    public ServletRegistration getFacade() {
+        return facade;
+    }
+    
 
     /**
      * Gets the names of the methods supported by the underlying servlet.
