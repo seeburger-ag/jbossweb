@@ -66,6 +66,9 @@
       <fix>
         NPE in various realms. (markt)
       </fix>
+      <fix>
+        <bug>46875</bug>: ISE on session access in Comet valve. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
