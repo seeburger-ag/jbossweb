@@ -123,7 +123,7 @@ public final class ApplicationFilterFactory {
         ApplicationFilterChain filterChain = null;
         if (request instanceof Request) {
             Request req = (Request) request;
-            comet = req.isComet();
+            comet = req.isEventMode();
             if (Globals.IS_SECURITY_ENABLED) {
                 // Security: Do not recycle
                 filterChain = new ApplicationFilterChain();

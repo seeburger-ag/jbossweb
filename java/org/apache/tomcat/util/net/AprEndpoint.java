@@ -43,16 +43,13 @@ import org.apache.tomcat.util.res.StringManager;
 import org.jboss.logging.Logger;
 
 /**
- * APR tailored thread pool, providing the following services:
+ * APR endpoint, providing the following services:
  * <ul>
  * <li>Socket acceptor thread</li>
  * <li>Socket poller thread</li>
  * <li>Sendfile thread</li>
- * <li>Worker threads pool</li>
+ * <li>Simple Worker thread pool, with possible use of executors</li>
  * </ul>
- *
- * When switching to Java 5, there's an opportunity to use the virtual
- * machine's thread pool.
  *
  * @author Mladen Turk
  * @author Remy Maucherat
@@ -321,11 +318,11 @@ public class AprEndpoint {
 
 
     /**
-     * The socket poller used for Comet support.
+     * The socket poller used for event support.
      */
-    protected Poller cometPoller = null;
-    public Poller getCometPoller() {
-        return cometPoller;
+    protected Poller eventPoller = null;
+    public Poller getEventPoller() {
+        return eventPoller;
     }
 
 
@@ -695,13 +692,13 @@ public class AprEndpoint {
             pollerThread.setDaemon(true);
             pollerThread.start();
 
-            // Start comet poller thread
-            cometPoller = new Poller(true);
-            cometPoller.init();
-            Thread cometPollerThread = new Thread(cometPoller, getName() + "-CometPoller");
-            cometPollerThread.setPriority(threadPriority);
-            cometPollerThread.setDaemon(true);
-            cometPollerThread.start();
+            // Start event poller thread
+            eventPoller = new Poller(true);
+            eventPoller.init();
+            Thread eventPollerThread = new Thread(eventPoller, getName() + "-EventPoller");
+            eventPollerThread.setPriority(threadPriority);
+            eventPollerThread.setDaemon(true);
+            eventPollerThread.start();
 
             // Start sendfile thread
             if (useSendfile) {
@@ -754,8 +751,8 @@ public class AprEndpoint {
             unlockAccept();
             poller.destroy();
             poller = null;
-            cometPoller.destroy();
-            cometPoller = null;
+            eventPoller.destroy();
+            eventPoller = null;
             if (useSendfile) {
                 sendfile.destroy();
                 sendfile = null;
@@ -1358,9 +1355,9 @@ public class AprEndpoint {
         protected SocketList localAddList = null;
 
         /**
-         * Comet mode flag.
+         * Event mode flag.
          */
-        protected boolean comet = true;
+        protected boolean event = true;
 
         /**
          * Structure used for storing timeouts.
@@ -1380,8 +1377,8 @@ public class AprEndpoint {
         protected int connectionCount = 0;
         public int getConnectionCount() { return connectionCount; }
 
-        public Poller(boolean comet) {
-            this.comet = comet;
+        public Poller(boolean event) {
+            this.event = event;
         }
         
         /**
@@ -1455,7 +1452,7 @@ public class AprEndpoint {
             // Close all sockets in the add queue
             SocketInfo info = addList.get();
             while (info != null) {
-                if (!comet || (comet && !processSocket(info.socket, SocketStatus.STOP))) {
+                if (!event || (event && !processSocket(info.socket, SocketStatus.STOP))) {
                     Socket.destroy(info.socket);
                 }
                 info = addList.get();
@@ -1466,7 +1463,7 @@ public class AprEndpoint {
                 int rv = Poll.pollset(pollers[i], desc);
                 if (rv > 0) {
                     for (int n = 0; n < rv; n++) {
-                        if (!comet || (comet && !processSocket(desc[n*2+1], SocketStatus.STOP))) {
+                        if (!event || (event && !processSocket(desc[n*2+1], SocketStatus.STOP))) {
                             Socket.destroy(desc[n*2+1]);
                         }
                     }
@@ -1500,7 +1497,7 @@ public class AprEndpoint {
             }
             if (!ok) {
                 // Can't do anything: close the socket right away
-                if (!comet || (comet && !processSocket(socket, SocketStatus.ERROR))) {
+                if (!event || (event && !processSocket(socket, SocketStatus.ERROR))) {
                     Socket.destroy(socket);
                 }
             }
@@ -1538,7 +1535,7 @@ public class AprEndpoint {
             }
             if (!ok) {
                 // Can't do anything: close the socket right away
-                if (!comet || (comet && !processSocket(socket, SocketStatus.ERROR))) {
+                if (!event || (event && !processSocket(socket, SocketStatus.ERROR))) {
                     Socket.destroy(socket);
                 }
             }
@@ -1595,7 +1592,7 @@ public class AprEndpoint {
             long socket = timeouts.check(date);
             while (socket != 0) {
                 removeFromPoller(socket);
-                if (!comet || (comet && !processSocket(socket, SocketStatus.TIMEOUT))) {
+                if (!event || (event && !processSocket(socket, SocketStatus.TIMEOUT))) {
                     Socket.destroy(socket);
                 }
                 socket = timeouts.check(date);
@@ -1608,7 +1605,7 @@ public class AprEndpoint {
          */
         public String toString() {
             StringBuffer buf = new StringBuffer();
-            buf.append("Poller comet=[").append(comet).append("]");
+            buf.append("Poller event=[").append(event).append("]");
             long[] res = new long[actualPollerSize * 2];
             for (int i = 0; i < pollers.length; i++) {
                 int count = Poll.pollset(pollers[i], res);
@@ -1679,7 +1676,7 @@ public class AprEndpoint {
                                             | ((info.write()) ? Poll.APR_POLLOUT : 0);
                                         if (!addToPoller(info.socket, events)) {
                                             // Can't do anything: close the socket right away
-                                            if (!comet || (comet && !processSocket(info.socket, SocketStatus.ERROR))) {
+                                            if (!event || (event && !processSocket(info.socket, SocketStatus.ERROR))) {
                                                 Socket.destroy(info.socket);
                                             }
                                         } else {
@@ -1697,14 +1694,14 @@ public class AprEndpoint {
                                     }
                                 } else {
                                     // Store timeout
-                                    if (comet) {
+                                    if (event) {
                                         removeFromPoller(info.socket);
                                     }
                                     int events = ((info.read()) ? Poll.APR_POLLIN : 0)
                                         | ((info.write()) ? Poll.APR_POLLOUT : 0);
                                     if (!addToPoller(info.socket, events)) {
                                         // Can't do anything: close the socket right away
-                                        if (!comet || (comet && !processSocket(info.socket, SocketStatus.ERROR))) {
+                                        if (!event || (event && !processSocket(info.socket, SocketStatus.ERROR))) {
                                             Socket.destroy(info.socket);
                                         }
                                     } else {
@@ -1713,7 +1710,7 @@ public class AprEndpoint {
                                 }
                             } else {
                                 // This is either a resume or a suspend.
-                                if (comet) {
+                                if (event) {
                                     if (info.resume()) {
                                         // Resume event
                                         timeouts.remove(info.socket);
@@ -1726,7 +1723,7 @@ public class AprEndpoint {
                                         timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
                                     }
                                 } else {
-                                    // Should never happen, if not Comet, the socket is always put in
+                                    // Should never happen, if not event, the socket is always put in
                                     // the list with the read flag.
                                     timeouts.remove(info.socket);
                                     Socket.destroy(info.socket);
@@ -1742,7 +1739,7 @@ public class AprEndpoint {
                         
                         // Flags to ask to reallocate the pool
                         boolean reset = false;
-                        ArrayList<Long> skip = null;
+                        //ArrayList<Long> skip = null;
                         
                         int rv = 0;
                         // Iterate on each pollers, but no need to poll empty pollers
@@ -1755,8 +1752,8 @@ public class AprEndpoint {
                             for (int n = 0; n < rv; n++) {
                                 timeouts.remove(desc[n*2+1]);
                                 // Check for failed sockets and hand this socket off to a worker
-                                if (comet) {
-                                    // Comet processes either a read or a write depending on what the poller returns
+                                if (event) {
+                                    // Event processes either a read or a write depending on what the poller returns
                                     if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
                                             || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
                                         if (!processSocket(desc[n*2+1], SocketStatus.ERROR)) {
@@ -1844,7 +1841,7 @@ public class AprEndpoint {
                     // Process socket timeouts
                     if (soTimeout > 0 && maintain++ > 1000 && running) {
                         // This works and uses only one timeout mechanism for everything, but the
-                        // non Comet poller might be a bit faster by using the old maintain.
+                        // non event poller might be a bit faster by using the old maintain.
                         maintain = 0;
                         maintain();
                     }

@@ -159,11 +159,11 @@ final class StandardWrapperValve
 
         // Identify if the request should be switched to event mode now that 
         // the servlet has been allocated
-        boolean comet = false;
+        boolean event = false;
         if (servlet instanceof HttpEventServlet 
                 && request.getConnector().hasIoEvents()) {
-            comet = true;
-            request.setComet(true);
+            event = true;
+            request.setEventMode(true);
         }
         
         // Acknowledge the request
@@ -197,8 +197,8 @@ final class StandardWrapperValve
             ApplicationFilterFactory.getInstance();
         ApplicationFilterChain filterChain =
             factory.createFilterChain(request, wrapper, servlet);
-        // Reset comet flag value after creating the filter chain
-        request.setComet(false);
+        // Reset event flag value after creating the filter chain
+        request.setEventMode(false);
 
         // Call the filter chain for this request
         // NOTE: This also calls the servlet's service() method
@@ -213,8 +213,8 @@ final class StandardWrapperValve
                 if (context.getSwallowOutput()) {
                     try {
                         SystemLogHandler.startCapture();
-                        if (comet) {
-                            request.setComet(true);
+                        if (event) {
+                            request.setEventMode(true);
                             request.getSession(true);
                             filterChain.doFilterEvent(request.getEvent());
                         } else {
@@ -228,8 +228,8 @@ final class StandardWrapperValve
                         }
                     }
                 } else {
-                    if (comet) {
-                        request.setComet(true);
+                    if (event) {
+                        request.setEventMode(true);
                         request.getSession(true);
                         filterChain.doFilterEvent(request.getEvent());
                     } else {
@@ -289,8 +289,8 @@ final class StandardWrapperValve
 
         // Release the filter chain (if any) for this request
         if (filterChain != null) {
-            if (request.isComet()) {
-                // If this is a Comet request, then the same chain will be used for the
+            if (request.isEventMode()) {
+                // If this is a event request, then the same chain will be used for the
                 // processing of all subsequent events.
                 filterChain.reuse();
             } else {
@@ -338,7 +338,7 @@ final class StandardWrapperValve
 
 
     /**
-     * Process a Comet event. The main differences here are to not use sendError
+     * Process an event. The main differences here are to not use sendError
      * (the response is committed), to avoid creating a new filter chain
      * (which would work but be pointless), and a few very minor tweaks. 
      *

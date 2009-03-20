@@ -179,9 +179,9 @@ public class Http11AprProcessor implements ActionHook {
 
 
     /**
-     * Comet used.
+     * Event used.
      */
-    protected boolean comet = false;
+    protected boolean event = false;
 
 
     /**
@@ -321,19 +321,19 @@ public class Http11AprProcessor implements ActionHook {
     protected boolean readNotifications = true;
     protected boolean writeNotification = false;
     protected boolean resumeNotification = false;
-    protected boolean cometProcessing = true;
+    protected boolean eventProcessing = true;
     
 
     // ------------------------------------------------------------- Properties
 
     
     public void startProcessing() {
-        cometProcessing = true;
+        eventProcessing = true;
     }
     
 
     public void endProcessing() {
-        cometProcessing = false;
+        eventProcessing = false;
     }
     
 
@@ -785,7 +785,7 @@ public class Http11AprProcessor implements ActionHook {
             outputBuffer.nextRequest();
             recycle();
             return SocketState.CLOSED;
-        } else if (!comet) {
+        } else if (!event) {
             endRequest();
             boolean pipelined = inputBuffer.nextRequest();
             outputBuffer.nextRequest();
@@ -822,7 +822,7 @@ public class Http11AprProcessor implements ActionHook {
 
         // Error flag
         error = false;
-        comet = false;
+        event = false;
         keepAlive = true;
 
         int keepAliveLeft = maxKeepAliveRequests;
@@ -831,7 +831,7 @@ public class Http11AprProcessor implements ActionHook {
         boolean keptAlive = false;
         boolean openSocket = false;
 
-        while (!error && keepAlive && !comet) {
+        while (!error && keepAlive && !event) {
 
             // Parsing the request header
             try {
@@ -910,7 +910,7 @@ public class Http11AprProcessor implements ActionHook {
                 // If there is an unspecified error, the connection will be closed
                 inputBuffer.setSwallowInput(false);
             }
-            if (!comet) {
+            if (!event) {
                 endRequest();
             }
 
@@ -922,7 +922,7 @@ public class Http11AprProcessor implements ActionHook {
             request.updateCounters();
 
             boolean pipelined = false;
-            if (!comet) {
+            if (!event) {
                 // Next request
                 pipelined = inputBuffer.nextRequest();
                 outputBuffer.nextRequest();
@@ -944,14 +944,14 @@ public class Http11AprProcessor implements ActionHook {
 
         rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
 
-        if (comet) {
+        if (event) {
             if (error) {
                 inputBuffer.nextRequest();
                 outputBuffer.nextRequest();
                 recycle();
                 return SocketState.CLOSED;
             } else {
-                cometProcessing = false;
+                eventProcessing = false;
                 return SocketState.LONG;
             }
         } else {
@@ -995,7 +995,7 @@ public class Http11AprProcessor implements ActionHook {
         readNotifications = true;
         writeNotification = false;
         resumeNotification = false;
-        cometProcessing = true;
+        eventProcessing = true;
     }
     
 
@@ -1059,7 +1059,7 @@ public class Http11AprProcessor implements ActionHook {
             // End the processing of the current request, and stop any further
             // transactions with the client
 
-            comet = false;
+            event = false;
             try {
                 outputBuffer.endRequest();
             } catch (IOException e) {
@@ -1236,38 +1236,38 @@ public class Http11AprProcessor implements ActionHook {
             
         } else if (actionCode == ActionCode.ACTION_AVAILABLE) {
             inputBuffer.useAvailable();
-        } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
-            comet = true;
+        } else if (actionCode == ActionCode.ACTION_EVENT_BEGIN) {
+            event = true;
             // Set socket to non blocking mode
             Socket.timeoutSet(socket, 0);
             outputBuffer.setNonBlocking(true);
             inputBuffer.setNonBlocking(true);
-        } else if (actionCode == ActionCode.ACTION_COMET_END) {
-            comet = false;
+        } else if (actionCode == ActionCode.ACTION_EVENT_END) {
+            event = false;
             // End non blocking mode
             outputBuffer.setNonBlocking(false);
             inputBuffer.setNonBlocking(false);
             if (!error) {
                 Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
             }
-        } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_SUSPEND) {
             readNotifications = false;
-        } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
             readNotifications = true;
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
-            if (!cometProcessing && !resumeNotification) {
-                endpoint.getCometPoller().add(socket, timeout, false, false, true, true);
+            if (!eventProcessing && !resumeNotification) {
+                endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
             }
             resumeNotification = true;
-        } else if (actionCode == ActionCode.ACTION_COMET_WRITE) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
             // An event is being processed already: adding for write will be done
             // when the socket gets back to the poller
-            if (!cometProcessing && !writeNotification) {
-                endpoint.getCometPoller().add(socket, timeout, false, true, false, true);
+            if (!eventProcessing && !writeNotification) {
+                endpoint.getEventPoller().add(socket, timeout, false, true, false, true);
             }
             writeNotification = true;
-        } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
             timeout = ((Integer) param).intValue();
         }
 

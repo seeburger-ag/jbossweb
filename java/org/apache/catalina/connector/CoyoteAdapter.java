@@ -148,12 +148,12 @@ public class CoyoteAdapter
                     // The response IO has been closed asynchronously, so call end 
                     // in most cases
                     request.getEvent().setType(HttpEvent.EventType.END);
-                    request.setComet(false);
+                    request.setEventMode(false);
                     close = true;
                 }
                 switch (status) {
                 case OPEN_READ:
-                    if (!request.isComet()) {
+                    if (!request.isEventMode()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
                         request.getEvent().setType(HttpEvent.EventType.END);
@@ -184,7 +184,7 @@ public class CoyoteAdapter
                     }
                     break;
                 case OPEN_WRITE:
-                    if (!request.isComet()) {
+                    if (!request.isEventMode()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
                         request.getEvent().setType(HttpEvent.EventType.END);
@@ -194,7 +194,7 @@ public class CoyoteAdapter
                     }
                     break;
                 case OPEN_CALLBACK:
-                    if (!request.isComet()) {
+                    if (!request.isEventMode()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
                         // In nearly all cases, the close does a resume which will end up
@@ -215,7 +215,7 @@ public class CoyoteAdapter
                     close = true;
                     break;
                 case TIMEOUT:
-                    if (!request.isComet()) {
+                    if (!request.isEventMode()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
                         request.getEvent().setType(HttpEvent.EventType.END);
@@ -272,7 +272,7 @@ public class CoyoteAdapter
                     request.recycle();
                     request.setFilterChain(null);
                     response.recycle();
-                    res.action(ActionCode.ACTION_COMET_END, null);
+                    res.action(ActionCode.ACTION_EVENT_END, null);
                 }
             }
             
@@ -318,7 +318,7 @@ public class CoyoteAdapter
             response.addHeader("X-Powered-By", "Servlet/3.0");
         }
 
-        boolean comet = false;
+        boolean event = false;
         try {
 
             // Parse and set Catalina and configuration specific 
@@ -329,20 +329,20 @@ public class CoyoteAdapter
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().invoke(request, response);
 
-                if (request.isComet()) {
+                if (request.isEventMode()) {
                     if (!response.isClosed() && !response.isError()) {
-                        res.action(ActionCode.ACTION_COMET_BEGIN, null);
-                        comet = true;
+                        res.action(ActionCode.ACTION_EVENT_BEGIN, null);
+                        event = true;
                     } else {
                         // Clear the filter chain, as otherwise it will not be reset elsewhere
-                        // since this is a Comet request
+                        // since this is an event driven request
                         request.setFilterChain(null);
                     }
                 }
 
             }
 
-            if (!comet) {
+            if (!event) {
                 response.finishResponse();
                 req.action(ActionCode.ACTION_POST_REQUEST , null);
             }
@@ -354,7 +354,7 @@ public class CoyoteAdapter
         } finally {
             req.getRequestProcessor().setWorkerThreadName(null);
             // Recycle the wrapper request and response
-            if (!comet) {
+            if (!event) {
                 request.recycle();
                 response.recycle();
             } else {

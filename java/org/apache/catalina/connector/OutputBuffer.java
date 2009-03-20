@@ -359,7 +359,7 @@ public class OutputBuffer extends Writer
     protected int lastWrite() {
         int res = coyoteResponse.getLastWrite();
         if (res == 0) {
-            coyoteResponse.action(ActionCode.ACTION_COMET_WRITE, null);
+            coyoteResponse.action(ActionCode.ACTION_EVENT_WRITE, null);
         }
         return res;
     }

@@ -77,7 +77,7 @@ public class HttpEventImpl implements HttpEvent {
     }
     
     public void close() throws IOException {
-        request.setComet(false);
+        request.setEventMode(false);
         request.resume();
     }
 

@@ -41,10 +41,6 @@
       <fix>
         <bug>46866</bug>: Use nanoTime rather that a weaker init for the Random fallback. (remm)
       </fix>
-      <update>
-        Add support for events to all connectors (IO events are only available on
-        the APR HTTP connector, of course). (remm)
-      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -52,6 +48,9 @@
       <fix>
         Remove useless instanceof in the HTTP protocol. (markt)
       </fix>
+      <update>
+        Add support for non IO events in all connectors. (remm)
+      </update>
     </changelog>
   </subsection>
 </section>

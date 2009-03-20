@@ -280,7 +280,7 @@ public class InputBuffer extends Reader
         int available = 0;
         if (state != CHAR_STATE) {
             available = bb.getLength();
-            if (request.isComet() && available == 0) {
+            if (request.isEventMode() && available == 0) {
                 try {
                     coyoteRequest.action(ActionCode.ACTION_AVAILABLE, null);
                     available = realReadBytes(null, 0, 0);
@@ -291,7 +291,7 @@ public class InputBuffer extends Reader
             }
         } else {
             available = cb.getLength();
-            if (request.isComet() && available == 0) {
+            if (request.isEventMode() && available == 0) {
                 try {
                     coyoteRequest.action(ActionCode.ACTION_AVAILABLE, null);
                     available = realReadChars(null, 0, cb.getBuffer().length);

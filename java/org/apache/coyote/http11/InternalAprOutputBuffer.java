@@ -534,7 +534,7 @@ public class InternalAprOutputBuffer
 
         }
 
-        // If non blocking (comet) and there are leftover bytes, 
+        // If non blocking (event) and there are leftover bytes, 
         // and lastWrite was 0 -> error
         if (leftover.getLength() > 0 && !(Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
             throw new IOException(sm.getString("oob.backlog"));
@@ -835,7 +835,7 @@ public class InternalAprOutputBuffer
                         // Call for a write event because it is possible that no further write
                         // operations are made
                         if (!response.getFlushLeftovers()) {
-                            response.action(ActionCode.ACTION_COMET_WRITE, null);
+                            response.action(ActionCode.ACTION_EVENT_WRITE, null);
                         }
                     }
                 }
@@ -869,7 +869,7 @@ public class InternalAprOutputBuffer
         public int doWrite(ByteChunk chunk, Response res) 
             throws IOException {
 
-            // If non blocking (comet) and there are leftover bytes, 
+            // If non blocking (event) and there are leftover bytes, 
             // put all remaining bytes in the leftover buffer (they are
             // part of the same write operation)
             if (leftover.getLength() > 0) {
@@ -885,7 +885,7 @@ public class InternalAprOutputBuffer
                 if (bbuf.position() == bbuf.capacity()) {
                     flushBuffer();
                     if (leftover.getLength() > 0) {
-                        // If non blocking (comet) and there are leftover bytes, 
+                        // If non blocking (event) and there are leftover bytes, 
                         // put all remaining bytes in the leftover buffer (they are
                         // part of the same write operation)
                         int oldStart = chunk.getOffset();

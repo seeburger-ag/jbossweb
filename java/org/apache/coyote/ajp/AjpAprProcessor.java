@@ -271,17 +271,17 @@ public class AjpAprProcessor implements ActionHook {
 
 
     /**
-     * Comet used.
+     * Event used.
      */
-    protected boolean comet = false;
+    protected boolean event = false;
     
     
     /**
-     * Comet processing.
+     * Event processing.
      */
-    protected boolean cometProcessing = true;
-    public void startProcessing() { cometProcessing = true; }
-    public void endProcessing() { cometProcessing = false; }
+    protected boolean eventProcessing = true;
+    public void startProcessing() { eventProcessing = true; }
+    public void endProcessing() { eventProcessing = false; }
 
 
     // ----------------------------------------------------- Static Initializer
@@ -396,7 +396,7 @@ public class AjpAprProcessor implements ActionHook {
         if (error) {
             recycle();
             return SocketState.CLOSED;
-        } else if (!comet) {
+        } else if (!event) {
             finish();
             recycle();
             return SocketState.OPEN;
@@ -428,7 +428,7 @@ public class AjpAprProcessor implements ActionHook {
         boolean openSocket = true;
         boolean keptAlive = false;
 
-        while (!error && !comet) {
+        while (!error && !event) {
 
             // Parsing the request header
             try {
@@ -498,7 +498,7 @@ public class AjpAprProcessor implements ActionHook {
             }
 
             // Finish the response if not done yet
-            if (!comet && !finished) {
+            if (!event && !finished) {
                 try {
                     finish();
                 } catch (Throwable t) {
@@ -513,7 +513,7 @@ public class AjpAprProcessor implements ActionHook {
             }
             request.updateCounters();
 
-            if (!comet) {
+            if (!event) {
                 recycle();
             }
 
@@ -523,12 +523,12 @@ public class AjpAprProcessor implements ActionHook {
 
         rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
 
-        if (comet) {
+        if (event) {
             if (error) {
                 recycle();
                 return SocketState.CLOSED;
             } else {
-                cometProcessing = false;
+                eventProcessing = false;
                 return SocketState.LONG;
             }
         } else {
@@ -661,20 +661,20 @@ public class AjpAprProcessor implements ActionHook {
             empty = false;
             replay = true;
 
-        } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
-            comet = true;
-        } else if (actionCode == ActionCode.ACTION_COMET_END) {
-            comet = false;
-        } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_BEGIN) {
+            event = true;
+        } else if (actionCode == ActionCode.ACTION_EVENT_END) {
+            event = false;
+        } else if (actionCode == ActionCode.ACTION_EVENT_SUSPEND) {
             // No action needed
-        } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
-            if (!cometProcessing && !resumeNotification) {
-                endpoint.getCometPoller().add(socket, timeout, false, false, true, true);
+            if (!eventProcessing && !resumeNotification) {
+                endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
             }
             resumeNotification = true;
-        } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
             timeout = ((Integer) param).intValue();
         }
 
@@ -1273,7 +1273,7 @@ public class AjpAprProcessor implements ActionHook {
         finished = false;
         timeout = -1;
         resumeNotification = false;
-        cometProcessing = true;
+        eventProcessing = true;
         request.recycle();
         response.recycle();
         certificates.recycle();

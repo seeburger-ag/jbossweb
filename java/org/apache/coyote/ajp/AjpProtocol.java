@@ -413,15 +413,9 @@ public class AjpProtocol
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
                         recycledProcessors.offer(result);
-                        // FIXME: if the socket is still open, we should send it back to reprocess it
-                        // as if it was an initial request, or the simple solution is to close after
-                        // an async request; will see
-                        if (proto.endpoint.isRunning() && state == SocketState.OPEN) {
-                            //proto.endpoint.getPoller().add(socket);
-                        }
                     } else {
                         if (proto.endpoint.isRunning()) {
-                            proto.endpoint.getPoller().add(socket, result.getTimeout(), 
+                            proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
                                     result.getResumeNotification(), false);
                         }
                     }
@@ -445,7 +439,7 @@ public class AjpProtocol
                     // processed by this thread will use either a new or a recycled
                     // processor.
                     connections.put(socket, processor);
-                    proto.endpoint.getPoller().add(socket, processor.getTimeout(), 
+                    proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), 
                             processor.getResumeNotification(), false);
                 } else {
                     recycledProcessors.offer(processor);

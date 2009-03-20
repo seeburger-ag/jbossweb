@@ -29,7 +29,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executor;
 
-import org.apache.tomcat.util.net.AprEndpoint.SocketInfo;
 import org.apache.tomcat.util.res.StringManager;
 import org.jboss.logging.Logger;
 
@@ -270,11 +269,11 @@ public class JIoEndpoint {
 
 
     /**
-     * The socket poller.
+     * The socket poller used for event support.
      */
-    protected Poller poller = null;
-    public Poller getPoller() {
-        return poller;
+    protected Poller eventPoller = null;
+    public Poller getEventPoller() {
+        return eventPoller;
     }
 
 
@@ -570,10 +569,18 @@ public class JIoEndpoint {
 
         public void run() {
 
-            // Process the request from this socket
-            if (handler.event(socket, status) == Handler.SocketState.CLOSED) {
+            Handler.SocketState socketState = handler.event(socket, status);
+            if (socketState == Handler.SocketState.CLOSED) {
                 // Close socket
                 try { socket.close(); } catch (IOException e) { }
+            } else if (socketState == Handler.SocketState.OPEN) {
+                // Process the keepalive after the event processing
+                // This is the main behavior difference with endpoint with pollers, which
+                // will add the socket to the poller
+                if (handler.process(socket) == Handler.SocketState.CLOSED) {
+                    // Close socket
+                    try { socket.close(); } catch (IOException e) { }
+                }
             }
             socket = null;
 
@@ -802,8 +809,6 @@ public class JIoEndpoint {
 
                     // Process socket timeouts
                     if (soTimeout > 0 && maintain++ > 1000 && running) {
-                        // This works and uses only one timeout mechanism for everything, but the
-                        // non Comet poller might be a bit faster by using the old maintain.
                         maintain = 0;
                         maintain();
                     }
@@ -925,10 +930,20 @@ public class JIoEndpoint {
                     continue;
 
                 // Process the request from this socket
-                if ((status != null) && (handler.event(socket, status) == Handler.SocketState.CLOSED)) {
-                    // FIXME: If handler.event returns Handler.SocketState.OPEN, then likely should process without socketOptions
-                    // Close socket
-                    try { socket.close(); } catch (IOException e) { }
+                if (status != null){
+                    Handler.SocketState socketState = handler.event(socket, status);
+                    if (socketState == Handler.SocketState.CLOSED) {
+                        // Close socket
+                        try { socket.close(); } catch (IOException e) { }
+                    } else if (socketState == Handler.SocketState.OPEN) {
+                        // Process the keepalive after the event processing
+                        // This is the main behavior difference with endpoint with pollers, which
+                        // will add the socket to the poller
+                        if (handler.process(socket) == Handler.SocketState.CLOSED) {
+                            // Close socket
+                            try { socket.close(); } catch (IOException e) { }
+                        }
+                    }
                 } else if ((status == null) && (!setSocketOptions(socket) || (handler.process(socket) == Handler.SocketState.CLOSED))) {
                     // Close socket
                     try { socket.close(); } catch (IOException e) { }
@@ -1009,10 +1024,10 @@ public class JIoEndpoint {
                 workers = new WorkerStack(maxThreads);
             }
 
-            // Start poller thread
-            poller = new Poller();
-            poller.init();
-            Thread pollerThread = new Thread(poller, getName() + "-Poller");
+            // Start event poller thread
+            eventPoller = new Poller();
+            eventPoller.init();
+            Thread pollerThread = new Thread(eventPoller, getName() + "-Poller");
             pollerThread.setPriority(threadPriority);
             pollerThread.setDaemon(true);
             pollerThread.start();
@@ -1044,8 +1059,8 @@ public class JIoEndpoint {
         if (running) {
             running = false;
             unlockAccept();
-            poller.destroy();
-            poller = null;
+            eventPoller.destroy();
+            eventPoller = null;
         }
     }
 

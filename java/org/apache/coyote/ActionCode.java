@@ -135,15 +135,15 @@ public final class ActionCode {
 
 
     /**
-     * Callback for begin Comet processing
+     * Callback for begin event processing
      */
-    public static final ActionCode ACTION_COMET_BEGIN = new ActionCode(21);
+    public static final ActionCode ACTION_EVENT_BEGIN = new ActionCode(21);
 
 
     /**
-     * Callback for begin Comet processing
+     * Callback for begin event processing
      */
-    public static final ActionCode ACTION_COMET_END = new ActionCode(22);
+    public static final ActionCode ACTION_EVENT_END = new ActionCode(22);
 
 
     /**
@@ -152,24 +152,24 @@ public final class ActionCode {
     public static final ActionCode ACTION_AVAILABLE = new ActionCode(23);
 
     /**
-     * Set a Comet connection timeout
+     * Set a event connection timeout
      */
-    public static final ActionCode ACTION_COMET_TIMEOUT = new ActionCode(24);
+    public static final ActionCode ACTION_EVENT_TIMEOUT = new ActionCode(24);
     
     /**
-     * Ask for a callback
+     * Ask for a callback event
      */
-    public static final ActionCode ACTION_COMET_RESUME = new ActionCode(25);
+    public static final ActionCode ACTION_EVENT_RESUME = new ActionCode(25);
     
     /**
      * Put this request to sleep (no read notifications)
      */
-    public static final ActionCode ACTION_COMET_SUSPEND = new ActionCode(26);
+    public static final ActionCode ACTION_EVENT_SUSPEND = new ActionCode(26);
     
     /**
      * Ask for a write callback
      */
-    public static final ActionCode ACTION_COMET_WRITE = new ActionCode(27);
+    public static final ActionCode ACTION_EVENT_WRITE = new ActionCode(27);
     
     // ----------------------------------------------------------- Constructors
     int code;

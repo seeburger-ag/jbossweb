@@ -430,7 +430,7 @@ public class AjpAprProtocol
                         }
                     } else {
                         if (proto.endpoint.isRunning()) {
-                            proto.endpoint.getCometPoller().add(socket, result.getTimeout(), 
+                            proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
                                     false, false, result.getResumeNotification(), false);
                         }
                     }
@@ -454,7 +454,7 @@ public class AjpAprProtocol
                     // processed by this thread will use either a new or a recycled
                     // processor.
                     connections.put(socket, processor);
-                    proto.endpoint.getCometPoller().add(socket, processor.getTimeout(), false, 
+                    proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), false, 
                             false, processor.getResumeNotification(), false);
                 } else {
                     recycledProcessors.offer(processor);

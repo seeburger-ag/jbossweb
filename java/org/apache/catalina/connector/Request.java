@@ -199,6 +199,12 @@ public class Request
 
 
     /**
+     * Servlet 3.0 asynchronous mode flag
+     */
+    protected boolean asyncMode = false;
+    
+    
+    /**
      * Authentication type.
      */
     protected String authType = null;
@@ -211,9 +217,9 @@ public class Request
     
 
     /**
-     * Comet state
+     * Event mode flag
      */
-    protected boolean comet = false;
+    protected boolean eventMode = false;
     
     
     /**
@@ -393,7 +399,7 @@ public class Request
         dispatcherType = null;
         requestDispatcherPath = null;
 
-        comet = false;
+        eventMode = false;
         if (event != null) {
             event.clear();
             event = null;
@@ -458,7 +464,7 @@ public class Request
 
 
     /**
-     * Clear cached encoders (to save memory for Comet requests).
+     * Clear cached encoders (to save memory for event or async requests).
      */
     public void clearEncoders() {
         inputBuffer.clearEncoders();
@@ -2264,18 +2270,18 @@ public class Request
     
     
     /**
-     * Return true if the current request is handling Comet traffic.
+     * Return true if the current request is using event mode.
      */
-    public boolean isComet() {
-        return comet;
+    public boolean isEventMode() {
+        return eventMode;
     }
 
     
     /**
-     * Set comet state.
+     * Set event mode.
      */
-    public void setComet(boolean comet) {
-        this.comet = comet;
+    public void setEventMode(boolean eventMode) {
+        this.eventMode = eventMode;
     }
 
     
@@ -2291,17 +2297,17 @@ public class Request
      * Set connection timeout.
      */
     public void setTimeout(int timeout) {
-        coyoteRequest.action(ActionCode.ACTION_COMET_TIMEOUT, new Integer(timeout));
+        coyoteRequest.action(ActionCode.ACTION_EVENT_TIMEOUT, timeout);
     }
     
     
     public void resume() {
-        coyoteRequest.action(ActionCode.ACTION_COMET_RESUME, null);
+        coyoteRequest.action(ActionCode.ACTION_EVENT_RESUME, null);
     }
     
     
     public void suspend() {
-        coyoteRequest.action(ActionCode.ACTION_COMET_SUSPEND, null);
+        coyoteRequest.action(ActionCode.ACTION_EVENT_SUSPEND, null);
     }
     
     
