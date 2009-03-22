@@ -210,7 +210,27 @@
     the HttpEventFiler interface.
   </p>
   
-  </subsection>
+  <subsection name="Servlet 3.0 Async">
+  
+  <p>
+    Servlet 3.0 introduces async support to regular Servlets, roughly equivalent to this event API
+    excluding the events generated from actual IO (READ and WRITE). Internally, async support is
+    implemented using the event functionality, and presented to the user through the Servlet API.
+  </p>
+  
+  <!--subsection name="Tracking session and webapp lifecycle">
+  
+  <p>
+    Since the duration of the request processing is much longer when using event based connections,
+    sessions might expire and webapps might be reloaded. The EventOrAsyncConnectionManagerValve valve
+    can be used to generate END events when this occurs. It is configured using a regular valve element,
+    using the <code>org.apache.catalina.valves.EventOrAsyncConnectionManagerValve</code> className, and
+    it does not have any configuration parameters. As events are asynchronous while webapp and session
+    lifecycle are not, no guarantee is given that an END event will be sent when redeploying a webapp, or
+    that the session will be still valid during processing of the END event.
+  </p>
+  
+  </subsection-->
 
   <subsection name="Example code">
   

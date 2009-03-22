@@ -1047,7 +1047,7 @@ public class RequestFacade implements HttpServletRequest {
                             sm.getString("requestFacade.nullRequest"));
         }
 
-        return request.getServletResponse();
+        return request.getResponse().getResponse();
     }
 
 }

@@ -392,7 +392,7 @@ final class StandardWrapperValve
         }
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-             ApplicationFilterFactory.REQUEST_INTEGER);
+             ApplicationFilterFactory.ASYNC_INTEGER);
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
              requestPathMB);

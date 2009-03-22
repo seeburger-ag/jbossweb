@@ -399,6 +399,7 @@ public class Request
         dispatcherType = null;
         requestDispatcherPath = null;
 
+        asyncMode = false;
         eventMode = false;
         if (event != null) {
             event.clear();
@@ -2757,10 +2758,8 @@ public class Request
         return null;
     }
 
-    @Override
     public boolean isAsyncStarted() {
-        // TODO Auto-generated method stub
-        return false;
+        return asyncMode;
     }
 
     @Override
@@ -2769,10 +2768,8 @@ public class Request
         return false;
     }
 
-    @Override
     public void setAsyncTimeout(long timeout) {
-        // TODO Auto-generated method stub
-        
+        setTimeout((timeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) timeout);
     }
 
     @Override
@@ -2788,16 +2785,26 @@ public class Request
         return null;
     }
 
-    @Override
     public DispatcherType getDispatcherType() {
-        // TODO Auto-generated method stub
-        return null;
+        if (dispatcherType == null) {
+            return DispatcherType.REQUEST;
+        } else if (dispatcherType == ApplicationFilterFactory.REQUEST_INTEGER) {
+            return DispatcherType.REQUEST;
+        } else if (dispatcherType == ApplicationFilterFactory.ASYNC_INTEGER) {
+            return DispatcherType.ASYNC;
+        } else if (dispatcherType == ApplicationFilterFactory.ERROR_INTEGER) {
+            return DispatcherType.ERROR;
+        } else if (dispatcherType == ApplicationFilterFactory.FORWARD_INTEGER) {
+            return DispatcherType.FORWARD;
+        } else if (dispatcherType == ApplicationFilterFactory.INCLUDE_INTEGER) {
+            return DispatcherType.INCLUDE;
+        }
+        // Never happens
+        throw new IllegalStateException();
     }
 
-    @Override
     public ServletResponse getServletResponse() {
-        // TODO Auto-generated method stub
-        return null;
+        return response;
     }
     
 }

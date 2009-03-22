@@ -191,6 +191,7 @@ public class EventOrAsyncConnectionManagerValve
     
     public void lifecycleEvent(LifecycleEvent event) {
         if (event.getType() == Lifecycle.BEFORE_STOP_EVENT) {
+            // FIXME: in that case, it could be useful to wait until end events are processed. Mmmm.
             // The container is getting stopped, close all current connections 
             Iterator<Request> iterator = cometRequests.iterator();
             while (iterator.hasNext()) {

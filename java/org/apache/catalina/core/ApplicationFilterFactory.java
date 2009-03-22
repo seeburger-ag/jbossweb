@@ -52,6 +52,8 @@ public final class ApplicationFilterFactory {
     public static final Integer INCLUDE_INTEGER = new Integer(INCLUDE);
     public static final int REQUEST = 8;
     public static final Integer REQUEST_INTEGER = new Integer(REQUEST);
+    public static final int ASYNC = 16;
+    public static final Integer ASYNC_INTEGER = new Integer(ASYNC);
 
     public static final String DISPATCHER_TYPE_ATTR = 
         Globals.DISPATCHER_TYPE_ATTR;
@@ -346,6 +348,7 @@ public final class ApplicationFilterFactory {
      * matches the dispatcher types specified in the FilterMap
      */
     private boolean matchDispatcher(FilterMap filterMap, int dispatcher) {
+        // FIXME: add async
         switch (dispatcher) {
             case FORWARD : {
                 if (filterMap.getDispatcherMapping() == FilterMap.FORWARD ||
@@ -355,7 +358,15 @@ public final class ApplicationFilterFactory {
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE) {
+                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
                         return true;
                 }
                 break;
@@ -368,7 +379,15 @@ public final class ApplicationFilterFactory {
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_INCLUDE ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE) {
+                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
                         return true;
                 }
                 break;
@@ -381,7 +400,15 @@ public final class ApplicationFilterFactory {
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE) {
+                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE) {
                         return true;
                 }
                 break;
@@ -394,7 +421,36 @@ public final class ApplicationFilterFactory {
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE) {
+                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_ERROR ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE) {
+                        return true;
+                }
+                break;
+            }
+            case ASYNC : {
+                if (filterMap.getDispatcherMapping() == FilterMap.ASYNC ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_ERROR || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE || 
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
+                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
                         return true;
                 }
                 break;
