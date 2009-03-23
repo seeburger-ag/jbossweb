@@ -35,13 +35,11 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.connector.HttpEventImpl;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.jboss.servlet.http.HttpEvent;
-import org.jboss.servlet.http.HttpEventServlet;
 
 
 /**
@@ -201,14 +199,15 @@ public class CometConnectionManagerValve
                 // serializable or required.
                 HttpSession session = request.getSession(false);
                 if (session != null) {
-                    session.removeAttribute(cometRequestsAttribute);
+                    try {
+                        session.removeAttribute(cometRequestsAttribute);
+                    } catch (IllegalStateException e) {
+                        // Ignore
+                    }
                 }
                 // Close the comet connection
                 try {
-                    HttpEventImpl cometEvent = request.getEvent();
-                    cometEvent.setType(HttpEvent.EventType.END);
-                    getNext().event(request, request.getResponse(), cometEvent);
-                    cometEvent.close();
+                    request.getEvent().close();
                 } catch (Exception e) {
                     container.getLogger().warn(
                             sm.getString("cometConnectionManagerValve.event"),
@@ -328,8 +327,12 @@ public class CometConnectionManagerValve
                                     session.setAttribute(cometRequestsAttribute,
                                             newConnectionInfos);
                                 } else {
-                                    session.removeAttribute(
-                                            cometRequestsAttribute);
+                                    try {
+                                        session.removeAttribute(
+                                                cometRequestsAttribute);
+                                    } catch (IllegalStateException e) {
+                                        // Ignore
+                                    }
                                 }
                             }
                         }
@@ -353,10 +356,7 @@ public class CometConnectionManagerValve
             for (int i = 0; i < reqs.length; i++) {
                 Request req = reqs[i];
                 try {
-                    HttpEventImpl event = req.getEvent();
-                    event.setType(HttpEvent.EventType.END);
-                    ((HttpEventServlet) req.getWrapper().getServlet()).event(event);
-                    event.close();
+                    req.getEvent().close();
                 } catch (Exception e) {
                     req.getWrapper().getParent().getLogger().warn(sm.getString(
                             "cometConnectionManagerValve.listenerEvent"), e);
