@@ -18,14 +18,14 @@
  */
 
 
-package org.apache;
+package org.apache.tomcat;
 
 import java.lang.reflect.InvocationTargetException;
 
 import javax.naming.NamingException;
 
 /**
- * @version $Rev:$ $Date:$
+ * @version $Rev$ $Date$
  */
 public interface InstanceManager {
 

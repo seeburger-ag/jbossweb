@@ -22,10 +22,10 @@ package org.apache.jasper.runtime;
 
 import javax.servlet.ServletConfig;
 
-import org.apache.InstanceManager;
+import org.apache.tomcat.InstanceManager;
 
 /**
- * @version $Rev:$ $Date:$
+ * @version $Rev$ $Date$
  */
 public class InstanceManagerFactory {
 

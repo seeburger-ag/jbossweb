@@ -44,6 +44,9 @@
       <fix>
         <bug>45332</bug>: Encoding fix for tomcat-users file. (markt)
       </fix>
+      <update>
+        Move InstanceManager and PeriodicEventListener to org.apache.tomcat. (markt)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">

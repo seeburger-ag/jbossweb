@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -64,8 +62,6 @@ import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
-import org.apache.AnnotationProcessor;
-import org.apache.InstanceManager;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Context;
@@ -106,6 +102,7 @@ import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.WARDirContext;
+import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 
@@ -192,12 +189,6 @@ public class StandardContext
     private String hostName;
 
     
-    /**
-     * Dummy annotation processor.
-     */
-    private AnnotationProcessor annotationProcessor = new DummyAnnotationProcessor();
-    
-
     /**
      * The antiJARLocking flag for this Context.
      */
@@ -4461,7 +4452,6 @@ public class StandardContext
             } else {
                 getServletContext().setAttribute(InstanceManager.class.getName(), instanceManager);
             }
-            getServletContext().setAttribute(AnnotationProcessor.class.getName(), annotationProcessor);
         }
 
         try {
@@ -5855,28 +5845,4 @@ public class StandardContext
     }
 
     
-    // ----------------------------------------------- DummyAnnotationProcessor Inner Class
-    
-    
-    protected class DummyAnnotationProcessor implements AnnotationProcessor {
-
-        public void postConstruct(Object instance)
-                throws IllegalAccessException, InvocationTargetException {
-            // Do nothing
-        }
-
-        public void preDestroy(Object instance) throws IllegalAccessException,
-                InvocationTargetException {
-            getInstanceManager().destroyInstance(instance);
-        }
-
-        public void processAnnotations(Object instance)
-                throws IllegalAccessException, InvocationTargetException,
-                NamingException {
-            getInstanceManager().newInstance(instance);
-        }
-        
-    }
-
-
 }
