@@ -333,6 +333,14 @@ public abstract class Compiler {
             String[] smap = generateJava();
             if (compileClass) {
                 generateClass(smap);
+                // Set JspServletWrapper.servletClassLastModifiedTime after successful compile
+                String targetFileName = ctxt.getClassFileName();
+                if (targetFileName != null) {
+                    File targetFile = new File(targetFileName);
+                    if (targetFile.exists() && jsw != null) {
+                        jsw.setServletClassLastModifiedTime(targetFile.lastModified());
+                    }
+                }
             }
         } finally {
             if (tfp != null) {

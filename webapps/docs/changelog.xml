@@ -41,6 +41,9 @@
       <fix>
         <bug>46866</bug>: Use nanoTime rather that a weaker init for the Random fallback. (remm)
       </fix>
+      <fix>
+        <bug>45332</bug>: Encoding fix for tomcat-users file. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -51,6 +54,13 @@
       <update>
         Add support for non IO events in all connectors. (remm)
       </update>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <bug>46915</bug>: JSTL issues resolving resource bundle keys. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
@@ -78,6 +88,9 @@
     <changelog>
       <fix>
         EL resolver improvements when using a security manager. (markt)
+      </fix>
+      <fix>
+        <bug>41606</bug>: Fix jspInit called twice. (markt)
       </fix>
     </changelog>
   </subsection>
