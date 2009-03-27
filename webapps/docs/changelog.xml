@@ -43,6 +43,9 @@
       <fix>
         EL resolver improvements when using a security manager. (markt)
       </fix>
+      <fix>
+        <bug>41606</bug>: Fix jspInit called twice. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
