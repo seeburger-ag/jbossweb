@@ -13,9 +13,9 @@
 
   <!-- Project Properties -->
   <property name="name"                  value="JBoss Web" />
-  <property name="year"                  value="2008" />
-  <property name="version.major"         value="2" />
-  <property name="version.minor"         value="1" />
+  <property name="year"                  value="2009" />
+  <property name="version.major"         value="3" />
+  <property name="version.minor"         value="0" />
   <property name="version.build"         value="0" />
   <property name="version.patch"         value="0" />
   <property name="version.tag"           value="SNAPSHOT" />
@@ -170,6 +170,7 @@
           <include name="org/apache/catalina/startup/DigesterFactory.class" />
           <include name="org/apache/catalina/util/SchemaResolver.class" />
           <include name="org/apache/catalina/util/StringManager.class" />
+          <include name="org/apache/tomcat/*" />
           <include name="org/apache/tomcat/util/*" />
           <include name="org/apache/tomcat/util/digester/*" />
           <exclude name="**/package.html" />
