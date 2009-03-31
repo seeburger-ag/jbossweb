@@ -396,6 +396,10 @@ final class StandardWrapperValve
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
              requestPathMB);
+        
+        // FIXME: Implement async mode, which means invoking listeners or the Servlet
+        // FIXME: Some async mode need creating a new filter chain
+        
         // Get the current (unchanged) filter chain for this request
         ApplicationFilterChain filterChain = 
             (ApplicationFilterChain) request.getFilterChain();

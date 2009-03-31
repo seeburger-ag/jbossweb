@@ -2772,16 +2772,15 @@ public class Request
         setTimeout((timeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) timeout);
     }
 
-    @Override
     public AsyncContext startAsync() throws IllegalStateException {
-        // TODO Auto-generated method stub
-        return null;
+        return startAsync(getRequest(), response.getResponse());
     }
 
-    @Override
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
         // TODO Auto-generated method stub
+        asyncMode = true;
+        eventMode = true;
         return null;
     }
 

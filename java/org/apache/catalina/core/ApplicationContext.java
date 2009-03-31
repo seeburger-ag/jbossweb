@@ -891,13 +891,13 @@ public class ApplicationContext
     public ServletRegistration addServlet(String servletName,
             Class<? extends Servlet> clazz) throws IllegalArgumentException,
             IllegalStateException {
-        // TODO Auto-generated method stub
-        return null;
+        return addServlet(servletName, clazz.getName());
     }
 
 
     public boolean setInitParameter(String name, String value) {
-        // TODO Auto-generated method stub
+        context.addParameter(name, value);
+        // FIXME: return value ?
         return false;
     }
 
