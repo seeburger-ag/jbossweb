@@ -2840,20 +2840,17 @@ public class Request
         
         public void complete() {
             setEventMode(false);
-            // FIXME: Probably needs to set the context as the "current" one
             resume();
         }
 
         public void dispatch() {
-            // FIXME: the SWrapperValve will invoke the current Servlet again if it supports async
             resume();
         }
 
         public void dispatch(ServletContext servletContext, String path) {
             this.servletContext = servletContext;
             this.path = path;
-            // FIXME: No idea what the servletContext means right now ;)
-            // FIXME: the SWrapperValve will map the path and run the Servlet if it supports async
+            // FIXME: No idea what the servletContext means right now
             resume();
         }
 
@@ -2871,8 +2868,19 @@ public class Request
 
         public void start(Runnable runnable) {
             this.runnable = runnable;
-            // FIXME: the SWrapperValve will run the runnable rather than a Servlet
             resume();
+        }
+
+        public ServletContext getServletContext() {
+            return servletContext;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public Runnable getRunnable() {
+            return runnable;
         }
 
     }
