@@ -1,18 +1,23 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2009, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 
@@ -48,6 +53,7 @@ import javax.servlet.ServletRequestAttributeListener;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Container;
@@ -199,9 +205,10 @@ public class Request
 
 
     /**
-     * Servlet 3.0 asynchronous mode flag
+     * Servlet 3.0 asynchronous mode context (also used as a flag - when not null, 
+     * we're in asynchronous mode).
      */
-    protected boolean asyncMode = false;
+    protected AsyncContextImpl asyncContext = null;
     
     
     /**
@@ -399,13 +406,13 @@ public class Request
         dispatcherType = null;
         requestDispatcherPath = null;
 
-        asyncMode = false;
         eventMode = false;
         if (event != null) {
             event.clear();
             event = null;
         }
         
+        asyncContext = null;
         authType = null;
         inputBuffer.recycle();
         usingInputStream = false;
@@ -641,6 +648,13 @@ public class Request
 
 
     /**
+     * Alias for AsyncContext inner class.
+     */
+    public HttpServletRequest getRequestFacade() {
+        return getRequest();
+    }
+
+    /**
      * The response with which this request is associated.
      */
     protected org.apache.catalina.connector.Response response = null;
@@ -659,6 +673,13 @@ public class Request
      */
     public void setResponse(org.apache.catalina.connector.Response response) {
         this.response = response;
+    }
+
+    /**
+     * Alias for AsyncContext inner class.
+     */
+    public HttpServletResponse getResponseFacade() {
+        return getResponse().getResponse();
     }
 
     /**
@@ -2739,32 +2760,26 @@ public class Request
         return true;
     }
 
-    @Override
     public void addAsyncListener(AsyncListener listener,
             ServletRequest servletRequest, ServletResponse servletResponse) {
-        // TODO Auto-generated method stub
-        
+        // FIXME: Maybe add to the asyncContext ?
     }
 
-    @Override
     public void addAsyncListener(AsyncListener listener) {
-        // TODO Auto-generated method stub
-        
+        addAsyncListener(listener, getRequest(), response.getResponse());
     }
 
-    @Override
     public AsyncContext getAsyncContext() {
-        // TODO Auto-generated method stub
-        return null;
+        return asyncContext;
     }
 
     public boolean isAsyncStarted() {
-        return asyncMode;
+        return (asyncContext != null);
     }
 
-    @Override
     public boolean isAsyncSupported() {
-        // TODO Auto-generated method stub
+        // FIXME: Normally, this should be about checking that the Servlet has
+        // async supported, and that all filters in the chain do too ?
         return false;
     }
 
@@ -2778,10 +2793,9 @@ public class Request
 
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
-        // TODO Auto-generated method stub
-        asyncMode = true;
+        asyncContext = new AsyncContextImpl(servletRequest, servletResponse);
         eventMode = true;
-        return null;
+        return asyncContext;
     }
 
     public DispatcherType getDispatcherType() {
@@ -2806,4 +2820,61 @@ public class Request
         return response;
     }
     
+    
+    // ------------------------------------------ AsyncContextImpl Inner Class
+
+
+    protected class AsyncContextImpl implements AsyncContext {
+
+        protected ServletRequest request = null;
+        protected ServletResponse response = null;
+        
+        protected ServletContext servletContext = null;
+        protected String path = null;
+        protected Runnable runnable = null;
+
+        public AsyncContextImpl(ServletRequest request, ServletResponse response) {
+            this.request = request;
+            this.response = response;
+        }
+        
+        public void complete() {
+            setEventMode(false);
+            // FIXME: Probably needs to set the context as the "current" one
+            resume();
+        }
+
+        public void dispatch() {
+            // FIXME: the SWrapperValve will invoke the current Servlet again if it supports async
+            resume();
+        }
+
+        public void dispatch(ServletContext servletContext, String path) {
+            this.servletContext = servletContext;
+            this.path = path;
+            // FIXME: No idea what the servletContext means right now ;)
+            // FIXME: the SWrapperValve will map the path and run the Servlet if it supports async
+            resume();
+        }
+
+        public ServletRequest getRequest() {
+            return request;
+        }
+
+        public ServletResponse getResponse() {
+            return response;
+        }
+
+        public boolean hasOriginalRequestAndResonse() {
+            return (request == getRequestFacade() && response == getResponseFacade());
+        }
+
+        public void start(Runnable runnable) {
+            this.runnable = runnable;
+            // FIXME: the SWrapperValve will run the runnable rather than a Servlet
+            resume();
+        }
+
+    }
+
 }
