@@ -28,7 +28,6 @@ import java.io.IOException;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.servlet.AsyncContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
@@ -45,6 +44,7 @@ import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.log.SystemLogHandler;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
+import org.jboss.servlet.http.HttpEvent.EventType;
 
 /**
  * Valve that implements the default basic behavior for the
@@ -305,7 +305,7 @@ final class StandardWrapperValve
 
         // Release the filter chain (if any) for this request
         if (filterChain != null) {
-            if (request.isEventMode()) {
+            if (request.isEventMode() && !request.isAsyncStarted()) {
                 // If this is a event request, then the same chain will be used for the
                 // processing of all subsequent events.
                 filterChain.reuse();
@@ -421,18 +421,29 @@ final class StandardWrapperValve
             (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
              requestPathMB);
         
-        // FIXME: Implement async mode, which means invoking listeners or the Servlet
-        // FIXME: Some async mode need creating a new filter chain
-        
-        /* FIXME:
-         * - If async context has path: remap and invoke Servlet
-         * - If async context has runnable, invoke runnable
-         * - If no path, reinvoke servlet with current filters
-         * - If no event mode (and end event) invoke listeners
-         * - If timeout, invoke listeners
-         * - If error ?
-         */
-        AsyncContext asyncContext = request.getAsyncContext();
+        // FIXME: Implement async mode, which means invoking listeners or the Servlet, etc
+        Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
+        if (asyncContext != null) {
+            if (event.getType() == EventType.END || event.getType() == EventType.ERROR) {
+                // Invoke the listeners with onComplete
+                // FIXME
+            } else if (event.getType() == EventType.TIMEOUT) {
+                // Invoke the listeners with onTimeout
+                // FIXME
+            } else if (asyncContext.getRunnable() != null) {
+                // Execute the runnable
+                // FIXME
+            } else if (asyncContext.getPath() != null) {
+                // Remap the request, set the dispatch attributes, create the filter chain
+                // and invoke the Servlet
+                // FIXME: Also check how cross context works, but it is be ok to do from here
+                // (or do another distpatcher object similar to the current request dispatcher)
+            } else {
+                // Create the filter chain and reinvoke the same Servlet
+                // FIXME
+            }
+            return; // FIXME
+        }
         
         // Get the current (unchanged) filter chain for this request
         ApplicationFilterChain filterChain = 
@@ -500,7 +511,11 @@ final class StandardWrapperValve
 
         // Release the filter chain (if any) for this request
         if (filterChain != null) {
-            filterChain.reuse();
+            if (asyncContext != null) {
+                filterChain.release();
+            } else {
+                filterChain.reuse();
+            }
         }
 
         // Deallocate the allocated servlet instance

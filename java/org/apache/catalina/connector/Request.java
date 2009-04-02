@@ -2824,7 +2824,7 @@ public class Request
     // ------------------------------------------ AsyncContextImpl Inner Class
 
 
-    protected class AsyncContextImpl implements AsyncContext {
+    public class AsyncContextImpl implements AsyncContext {
 
         protected ServletRequest request = null;
         protected ServletResponse response = null;
