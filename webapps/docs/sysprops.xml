@@ -99,6 +99,7 @@
       <p>The size of the cache to use parsed and formatted date value. If not
       specified, the default value of <code>1000</code> will be used.</p>
     </property>
+
     <property name="org.apache.catalina.core. StandardService.DELAY_CONNECTOR_STARTUP">
       <p>If <code>true</code>, the connector startup will not be done automatically. Useful
       in embedded mode.</p>
@@ -302,6 +303,14 @@
       </li>
       </ul>
       </p>
+    </property>
+
+    <property name="org.apache.catalina.core. StandardWrapperValve.SERVLET_STATS">
+      <p>If <code>true</code> or if
+      <code>org.apache.catalina.STRICT_SERVLET_COMPLIANCE</code> is
+      <code>true</code>, the wrapper will collect the JSR-77 statistics for
+      individual servlets. If not specified, the
+      default value of <code>false</code> will be used.</p>
     </property>
 
     <property

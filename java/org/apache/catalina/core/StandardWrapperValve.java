@@ -28,6 +28,7 @@ import java.io.IOException;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.servlet.AsyncContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
@@ -56,6 +57,12 @@ import org.jboss.servlet.http.HttpEventServlet;
 final class StandardWrapperValve
     extends ValveBase {
 
+    
+    protected static final boolean SERVLET_STATS = 
+        Globals.STRICT_SERVLET_COMPLIANCE
+        || Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardWrapperValve.SERVLET_STATS", "false")).booleanValue();
+
+
     // ----------------------------------------------------- Instance Variables
 
 
@@ -65,6 +72,7 @@ final class StandardWrapperValve
     private volatile long processingTime;
     private volatile long maxTime;
     private volatile long minTime = Long.MAX_VALUE;
+    private volatile int eventCount;
     private volatile int requestCount;
     private volatile int errorCount;
 
@@ -97,8 +105,11 @@ final class StandardWrapperValve
         boolean unavailable = false;
         Throwable throwable = null;
         // This should be a Request attribute...
-        long t1=System.currentTimeMillis();
-        requestCount++;
+        long t1 = 0;
+        if (SERVLET_STATS) {
+            t1 = System.currentTimeMillis();
+            requestCount++;
+        }
         StandardWrapper wrapper = (StandardWrapper) getContainer();
         Servlet servlet = null;
         Context context = (Context) wrapper.getParent();
@@ -332,12 +343,17 @@ final class StandardWrapperValve
                 exception(request, response, e);
             }
         }
-        long t2=System.currentTimeMillis();
 
-        long time=t2-t1;
-        processingTime += time;
-        if( time > maxTime) maxTime=time;
-        if( time < minTime) minTime=time;
+        if (SERVLET_STATS) {
+            long time = System.currentTimeMillis() - t1;
+            processingTime += time;
+            if (time > maxTime) {
+                maxTime = time;
+            }
+            if (time < minTime) {
+                minTime = time;
+            }
+        }
 
     }
 
@@ -361,8 +377,11 @@ final class StandardWrapperValve
         // Initialize local variables we may need
         Throwable throwable = null;
         // This should be a Request attribute...
-        long t1=System.currentTimeMillis();
-        // FIXME: Add a flag to count the total amount of events processed ? requestCount++;
+        long t1 = 0;
+        if (SERVLET_STATS) {
+            t1 = System.currentTimeMillis();
+            eventCount++;
+        }
         StandardWrapper wrapper = (StandardWrapper) getContainer();
         Servlet servlet = null;
         Context context = (Context) wrapper.getParent();
@@ -413,6 +432,7 @@ final class StandardWrapperValve
          * - If timeout, invoke listeners
          * - If error ?
          */
+        AsyncContext asyncContext = request.getAsyncContext();
         
         // Get the current (unchanged) filter chain for this request
         ApplicationFilterChain filterChain = 
@@ -513,12 +533,16 @@ final class StandardWrapperValve
             }
         }
 
-        long t2=System.currentTimeMillis();
-
-        long time=t2-t1;
-        processingTime += time;
-        if( time > maxTime) maxTime=time;
-        if( time < minTime) minTime=time;
+        if (SERVLET_STATS) {
+            long time = System.currentTimeMillis() - t1;
+            processingTime += time;
+            if (time > maxTime) {
+                maxTime = time;
+            }
+            if (time < minTime) {
+                minTime = time;
+            }
+        }
 
     }
 
@@ -582,6 +606,14 @@ final class StandardWrapperValve
 
     public void setErrorCount(int errorCount) {
         this.errorCount = errorCount;
+    }
+
+    public int getEventCount() {
+        return eventCount;
+    }
+
+    public void setEventCount(int eventCount) {
+        this.eventCount = eventCount;
     }
 
     // Don't register in JMX
