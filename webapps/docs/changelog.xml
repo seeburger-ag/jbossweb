@@ -47,6 +47,9 @@
       <update>
         Move InstanceManager and PeriodicEventListener to org.apache.tomcat. (markt)
       </update>
+      <fix>
+        Wrong MKCOL status code for errors. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
