@@ -1396,10 +1396,6 @@ public class AprEndpoint {
                 // Adjust poller size so that it won't reach the limit
                 actualPollerSize = 1024;
             }
-            int timeout = keepAliveTimeout;
-            if (timeout < 0) {
-                timeout = soTimeout;
-            }
             
             // At the moment, setting the timeout is useless, but it could get used
             // again as the normal poller could be faster using maintain. It might not
@@ -1486,6 +1482,10 @@ public class AprEndpoint {
             if (timeout < 0) {
                 timeout = soTimeout;
             }
+            if (timeout <= 0) {
+                // Always put a timeout in
+                timeout = Integer.MAX_VALUE;
+            }
             boolean ok = false;
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
@@ -1521,6 +1521,10 @@ public class AprEndpoint {
         public void add(long socket, int timeout, boolean read, boolean write, boolean resume, boolean wakeup) {
             if (timeout < 0) {
                 timeout = soTimeout;
+            }
+            if (timeout <= 0) {
+                // Always put a timeout in
+                timeout = Integer.MAX_VALUE;
             }
             boolean ok = false;
             synchronized (this) {

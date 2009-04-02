@@ -691,6 +691,10 @@ public class JIoEndpoint {
             if (timeout < 0) {
                 timeout = soTimeout;
             }
+            if (timeout <= 0) {
+                // Always put a timeout in
+                timeout = Integer.MAX_VALUE;
+            }
             boolean ok = false;
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
