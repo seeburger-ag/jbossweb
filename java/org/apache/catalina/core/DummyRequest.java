@@ -36,11 +36,13 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Context;
@@ -282,6 +284,10 @@ public class DummyRequest
             ServletResponse servletResponse) throws IllegalStateException { return null; }
     public DispatcherType getDispatcherType() { return null; }
     public ServletResponse getServletResponse() { return null; }
+    public boolean login(HttpServletResponse response) throws IOException,
+            ServletException { return false; }
+    public void login(String username, String password) throws ServletException {}
+    public void logout() throws ServletException {}
     
 }
 

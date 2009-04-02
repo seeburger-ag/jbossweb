@@ -866,22 +866,6 @@ public class Response
     }
 
 
-    public void disable() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void enable() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public boolean isDisabled() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-
     // --------------------------------------------------- HttpResponse Methods
 
 
@@ -911,7 +895,25 @@ public class Response
      * Return an array of all the header names set for this response, or
      * a zero-length array if no headers have been set.
      */
-    public String[] getHeaderNames() {
+    public Iterable<String> getHeaderNames() {
+
+        MimeHeaders headers = coyoteResponse.getMimeHeaders();
+        int n = headers.size();
+        String[] result = new String[n];
+        for (int i = 0; i < n; i++) {
+            result[i] = headers.getName(i).toString();
+        }
+        // FIXME
+        return null;
+
+    }
+
+
+    /**
+     * Return an array of all the header names set for this response, or
+     * a zero-length array if no headers have been set.
+     */
+    public String[] getHeaderNamesArray() {
 
         MimeHeaders headers = coyoteResponse.getMimeHeaders();
         int n = headers.size();
@@ -924,6 +926,19 @@ public class Response
     }
 
 
+    /**
+     * Return an array of all the header values associated with the
+     * specified header name, or an zero-length array if there are no such
+     * header values.
+     *
+     * @param name Header name to look up
+     */
+    public Iterable<String> getHeaders(String name) {
+        // FIXME
+        return null;
+    }
+    
+    
     /**
      * Return an array of all the header values associated with the
      * specified header name, or an zero-length array if there are no such

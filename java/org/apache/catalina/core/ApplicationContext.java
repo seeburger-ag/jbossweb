@@ -34,12 +34,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
+import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
@@ -860,7 +862,7 @@ public class ApplicationContext
      * used by this context has the attribute <code>secure</code> set to
      * <code>true</code>.
      */
-    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
+    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
         return context.getDefaultSessionTrackingModes();
     }
 
@@ -868,7 +870,7 @@ public class ApplicationContext
      * Return the supplied value if one was previously set, else return the
      * defaults.
      */
-    public EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
         return context.getSessionTrackingModes();
     }
 
@@ -877,7 +879,7 @@ public class ApplicationContext
         return context.getSessionCookie();
     }
 
-
+/* FIXME gone ?
     public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
         SessionCookie sessionCookie = new SessionCookie();
         sessionCookie.setComment(sessionCookieConfig.getComment());
@@ -885,13 +887,46 @@ public class ApplicationContext
         sessionCookie.setHttpOnly(sessionCookieConfig.isHttpOnly());
         sessionCookie.setSecure(sessionCookieConfig.isSecure());
         context.setSessionCookie(sessionCookie);
-    }
+    }*/
 
 
     public ServletRegistration addServlet(String servletName,
             Class<? extends Servlet> clazz) throws IllegalArgumentException,
             IllegalStateException {
         return addServlet(servletName, clazz.getName());
+    }
+
+
+    public FilterRegistration addFilter(String filterName, Filter filter) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public FilterRegistration addFilter(String filterName,
+            Class<? extends Filter> filterClass) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public ServletRegistration addServlet(String servletName, Servlet servlet) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public <T extends Filter> T createFilter(Class<T> c)
+            throws ServletException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public <T extends Servlet> T createServlet(Class<T> c)
+            throws ServletException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 
@@ -909,7 +944,7 @@ public class ApplicationContext
      *                                  If an unsupported tracking mode is
      *                                  requested
      */
-    public void setSessionTrackingModes(EnumSet<SessionTrackingMode> sessionTrackingModes) {
+    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
 
         if (context.getAvailable()) {
             throw new IllegalStateException(

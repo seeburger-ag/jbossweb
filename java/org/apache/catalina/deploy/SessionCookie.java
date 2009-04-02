@@ -28,6 +28,8 @@ public class SessionCookie implements SessionCookieConfig, Serializable {
     protected String comment = null;
     protected boolean httpOnly = false;
     protected boolean secure = false;
+    protected int maxAge = -1;
+    protected String name = null;
 
     public SessionCookie() {
     }
@@ -71,4 +73,21 @@ public class SessionCookie implements SessionCookieConfig, Serializable {
     public void setSecure(boolean secure) {
         this.secure = secure;
     }
+
+    public int getMaxAge() {
+        return maxAge;
+    }
+
+    public void setMaxAge(int maxAge) {
+        this.maxAge = maxAge;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }

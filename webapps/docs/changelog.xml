@@ -61,7 +61,7 @@
         Add support for non IO events in all connectors. (remm)
       </update>
       <fix>
-        Fix handling of timeout values <= 0 with the poller refactoring. (remm)
+        Fix handling of timeout values &lt;= 0 with the poller refactoring. (remm)
       </fix>
     </changelog>
   </subsection>

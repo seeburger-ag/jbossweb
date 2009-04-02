@@ -69,6 +69,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestAttributeEvent;
@@ -2433,8 +2434,11 @@ public class Request
         if ( (session != null) && (getContext() != null)
                && getContext().getCookies()
                && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(getRequestedSessionId()))) ) {
-            Cookie cookie = new Cookie(Globals.SESSION_COOKIE_NAME,
-                    session.getIdInternal());
+            String cookieName = context.getSessionCookie().getName();
+            if (cookieName == null) {
+                cookieName = Globals.SESSION_COOKIE_NAME;
+            }
+            Cookie cookie = new Cookie(cookieName, session.getIdInternal());
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
         }
@@ -2454,7 +2458,7 @@ public class Request
      * @param cookie The JSESSIONID cookie to be configured
      */
     protected void configureSessionCookie(Cookie cookie) {
-        cookie.setMaxAge(-1);
+        cookie.setMaxAge(context.getSessionCookie().getMaxAge());
         if (context.getSessionCookie().getPath() != null) {
             cookie.setPath(context.getSessionCookie().getPath());
         } else {
@@ -2821,6 +2825,22 @@ public class Request
         return asyncContext;
     }
 
+    public boolean login(HttpServletResponse response) throws IOException,
+            ServletException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public void login(String username, String password) throws ServletException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void logout() throws ServletException {
+        // TODO Auto-generated method stub
+        
+    }
+
     public DispatcherType getDispatcherType() {
         if (dispatcherType == null) {
             return DispatcherType.REQUEST;
@@ -2870,10 +2890,14 @@ public class Request
             resume();
         }
 
+        public void dispatch(String path) {
+            this.path = path;
+            resume();
+        }
+
         public void dispatch(ServletContext servletContext, String path) {
             this.servletContext = servletContext;
             this.path = path;
-            // FIXME: No idea what the servletContext means right now
             resume();
         }
 
@@ -2885,7 +2909,7 @@ public class Request
             return response;
         }
 
-        public boolean hasOriginalRequestAndResonse() {
+        public boolean hasOriginalRequestAndResponse() {
             return (request == getRequestFacade() && response == getResponseFacade());
         }
 

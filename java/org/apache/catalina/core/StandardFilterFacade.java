@@ -85,7 +85,7 @@ public final class StandardFilterFacade
    // --------------------------------------------- FilterRegistration Methods
 
 
-    public void addMappingForServletNames(EnumSet<DispatcherType> dispatcherTypes, 
+    public boolean addMappingForServletNames(EnumSet<DispatcherType> dispatcherTypes, 
             boolean isMatchAfter, String... servletNames) {
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("filterRegistration.addFilterMapping.ise", context.getPath()));
@@ -103,10 +103,11 @@ public final class StandardFilterFacade
         } else {
             context.addFilterMapBefore(filterMap);
         }
+        return true;
     }
 
 
-    public void addMappingForUrlPatterns(
+    public boolean addMappingForUrlPatterns(
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... urlPatterns) {
         if (context.isInitialized()) {
@@ -125,19 +126,20 @@ public final class StandardFilterFacade
         } else {
             context.addFilterMapBefore(filterMap);
         }
+        return true;
     }
 
 
-    public void setAsyncSupported(boolean asyncSupported) {
+    public boolean setAsyncSupported(boolean asyncSupported) {
         filterDef.setAsyncSupported(asyncSupported);
         context.addFilterDef(filterDef);
+        return true;
     }
 
 
     public boolean setDescription(String description) {
         filterDef.setDescription(description);
         context.addFilterDef(filterDef);
-        // FIXME: return value ???
         return true;
     }
 
@@ -145,17 +147,17 @@ public final class StandardFilterFacade
     public boolean setInitParameter(String name, String value) {
         filterDef.addInitParameter(name, value);
         context.addFilterDef(filterDef);
-        // FIXME: return value ???
         return true;
     }
 
 
-    public void setInitParameters(Map<String, String> initParameters) {
+    public boolean setInitParameters(Map<String, String> initParameters) {
         Iterator<String> parameterNames = initParameters.keySet().iterator();
         while (parameterNames.hasNext()) {
             String parameterName = parameterNames.next();
             filterDef.addInitParameter(parameterName, initParameters.get(parameterName));
         }
+        return true;
     }
 
 

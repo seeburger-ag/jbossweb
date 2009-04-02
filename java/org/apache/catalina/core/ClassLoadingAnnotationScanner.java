@@ -21,11 +21,11 @@ package org.apache.catalina.core;
 import java.io.File;
 import java.util.jar.JarEntry;
 
-import javax.servlet.http.annotation.FilterMapping;
-import javax.servlet.http.annotation.InitParam;
-import javax.servlet.http.annotation.Servlet;
-import javax.servlet.http.annotation.ServletContextListener;
-import javax.servlet.http.annotation.ServletFilter;
+import javax.servlet.annotation.HandlesTypes;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.annotation.WebInitParam;
+import javax.servlet.annotation.WebListener;
+import javax.servlet.annotation.WebServlet;
 
 import org.apache.catalina.Context;
 
@@ -39,11 +39,11 @@ public class ClassLoadingAnnotationScanner
         // Load the class using the classloader, and see if it implements one of the web annotations
         try {
             Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
-            if (clazz.isAnnotationPresent(InitParam.class)
-                    || clazz.isAnnotationPresent(ServletFilter.class)
-                    || clazz.isAnnotationPresent(FilterMapping.class)
-                    || clazz.isAnnotationPresent(Servlet.class)
-                    || clazz.isAnnotationPresent(ServletContextListener.class)) {
+            if (clazz.isAnnotationPresent(HandlesTypes.class)
+                    || clazz.isAnnotationPresent(WebFilter.class)
+                    || clazz.isAnnotationPresent(WebInitParam.class)
+                    || clazz.isAnnotationPresent(WebListener.class)
+                    || clazz.isAnnotationPresent(WebServlet.class)) {
                 return clazz;
             }
         } catch (Throwable t) {

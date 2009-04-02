@@ -29,13 +29,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.jws.soap.InitParam;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
-import javax.servlet.http.annotation.FilterMapping;
-import javax.servlet.http.annotation.InitParam;
-import javax.servlet.http.annotation.Servlet;
-import javax.servlet.http.annotation.ServletContextListener;
-import javax.servlet.http.annotation.ServletFilter;
+import javax.servlet.annotation.HandlesTypes;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.annotation.WebInitParam;
+import javax.servlet.annotation.WebListener;
+import javax.servlet.annotation.WebServlet;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
@@ -305,73 +306,70 @@ public class ContextConfig
         Iterator<Class<?>> annotatedClasses = (new ClassLoadingAnnotationScanner()).scan(context).iterator();
         while (annotatedClasses.hasNext()) {
             Class<?> clazz = annotatedClasses.next();
-            if (clazz.isAnnotationPresent(InitParam.class)) {
-                InitParam annotation = clazz.getAnnotation(InitParam.class);
+            if (clazz.isAnnotationPresent(WebInitParam.class)) {
+                WebInitParam annotation = clazz.getAnnotation(WebInitParam.class);
                 // Add init param
                 context.addParameter(annotation.name(), annotation.value());
             }
-            String filterName = null;
-            if (clazz.isAnnotationPresent(ServletFilter.class)) {
-                ServletFilter annotation = clazz.getAnnotation(ServletFilter.class);
+            if (clazz.isAnnotationPresent(HandlesTypes.class)) {
+                HandlesTypes annotation = clazz.getAnnotation(HandlesTypes.class);
+                // FIXME: Ok, this is complex ....
+            }
+            if (clazz.isAnnotationPresent(WebFilter.class)) {
+                WebFilter annotation = clazz.getAnnotation(WebFilter.class);
                 // Add servlet filter
-                filterName = annotation.filterName();
+                String filterName = annotation.filterName();
                 FilterDef filterDef = new FilterDef();
                 filterDef.setFilterName(annotation.filterName());
                 filterDef.setFilterClass(clazz.getName());
-                InitParam[] params = annotation.initParams();
+                WebInitParam[] params = annotation.initParams();
                 for (int i = 0; i < params.length; i++) {
                     filterDef.addInitParameter(params[i].name(), params[i].value());
                 }
                 context.addFilterDef(filterDef);
-            }
-            if (clazz.isAnnotationPresent(FilterMapping.class)) {
-                FilterMapping annotation = clazz.getAnnotation(FilterMapping.class);
-                // Add filter mapping
-                if (filterName != null) {
-                    FilterMap filterMap = new FilterMap();
-                    filterMap.setFilterName(filterName);
-                    String[] urlPatterns = annotation.urlPattern();
-                    if (urlPatterns != null) {
-                        for (int i = 0; i < urlPatterns.length; i++) {
-                            filterMap.addURLPattern(urlPatterns[i]);
-                        }
+                FilterMap filterMap = new FilterMap();
+                filterMap.setFilterName(filterName);
+                String[] urlPatterns = annotation.urlPatterns();
+                if (urlPatterns != null) {
+                    for (int i = 0; i < urlPatterns.length; i++) {
+                        filterMap.addURLPattern(urlPatterns[i]);
                     }
-                    String[] servletNames = annotation.servletNames();
-                    if (servletNames != null) {
-                        for (int i = 0; i < servletNames.length; i++) {
-                            filterMap.addServletName(servletNames[i]);
-                        }
-                    }
-                    DispatcherType[] dispatcherTypes = annotation.dispatcherTypes();
-                    if (dispatcherTypes != null) {
-                        for (int i = 0; i < dispatcherTypes.length; i++) {
-                            filterMap.setDispatcher(dispatcherTypes[i].toString());
-                        }
-                    }
-                    context.addFilterMap(filterMap);
                 }
+                String[] servletNames = annotation.servletNames();
+                if (servletNames != null) {
+                    for (int i = 0; i < servletNames.length; i++) {
+                        filterMap.addServletName(servletNames[i]);
+                    }
+                }
+                DispatcherType[] dispatcherTypes = annotation.dispatcherTypes();
+                if (dispatcherTypes != null) {
+                    for (int i = 0; i < dispatcherTypes.length; i++) {
+                        filterMap.setDispatcher(dispatcherTypes[i].toString());
+                    }
+                }
+                context.addFilterMap(filterMap);
             }
-            if (clazz.isAnnotationPresent(Servlet.class)) {
-                Servlet annotation = clazz.getAnnotation(Servlet.class);
+            if (clazz.isAnnotationPresent(WebServlet.class)) {
+                WebServlet annotation = clazz.getAnnotation(WebServlet.class);
                 // Add servlet
                 Wrapper wrapper = context.createWrapper();
                 wrapper.setName(annotation.name());
                 wrapper.setServletClass(clazz.getName());
                 wrapper.setLoadOnStartup(annotation.loadOnStartup());
-                InitParam[] params = annotation.initParams();
+                WebInitParam[] params = annotation.initParams();
                 for (int i = 0; i < params.length; i++) {
                     wrapper.addInitParameter(params[i].name(), params[i].value());
                 }
                 context.addChild(wrapper);
-                String[] urlMappings = annotation.urlMappings();
-                if (urlMappings != null) {
-                    for (int i = 0; i < urlMappings.length; i++) {
-                        context.addServletMapping(urlMappings[i], annotation.name());
+                String[] urlPatterns = annotation.urlPatterns();
+                if (urlPatterns != null) {
+                    for (int i = 0; i < urlPatterns.length; i++) {
+                        context.addServletMapping(urlPatterns[i], annotation.name());
                     }
                 }
             }
-            if (clazz.isAnnotationPresent(ServletContextListener.class)) {
-                ServletContextListener annotation = clazz.getAnnotation(ServletContextListener.class);
+            if (clazz.isAnnotationPresent(WebListener.class)) {
+                WebListener annotation = clazz.getAnnotation(WebListener.class);
                 // Add listener
                 context.addApplicationListener(clazz.getName());
             }

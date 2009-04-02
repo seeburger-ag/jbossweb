@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -383,6 +384,27 @@ public final class ApplicationContextFacade
     }
 
 
+    public FilterRegistration addFilter(String filterName, Filter filter) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (FilterRegistration) doPrivileged("addFilter",
+                    new Object[]{filterName, filter});
+        } else {
+            return context.addFilter(filterName, filter);
+        }
+    }
+
+
+    public FilterRegistration addFilter(String filterName,
+            Class<? extends Filter> filterClass) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (FilterRegistration) doPrivileged("addFilter",
+                    new Object[]{filterName, filterClass});
+        } else {
+            return context.addFilter(filterName, filterClass);
+        }
+    }
+
+
     public ServletRegistration addServlet(String servletName, String className)
             throws IllegalArgumentException, IllegalStateException {
         if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -402,6 +424,36 @@ public final class ApplicationContextFacade
                     new Object[]{servletName, clazz});
         } else {
             return context.addServlet(servletName, clazz);
+        }
+    }
+
+
+    public ServletRegistration addServlet(String servletName, Servlet servlet) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (ServletRegistration) doPrivileged("addServlet",
+                    new Object[]{servletName, servlet});
+        } else {
+            return context.addServlet(servletName, servlet);
+        }
+    }
+
+
+    public <T extends Filter> T createFilter(Class<T> c)
+            throws ServletException {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (T) doPrivileged("createFilter", new Object[]{c});
+        } else {
+            return context.createFilter(c);
+        }
+    }
+
+
+    public <T extends Servlet> T createServlet(Class<T> c)
+            throws ServletException {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (T) doPrivileged("createServlet", new Object[]{c});
+        } else {
+            return context.createServlet(c);
         }
     }
 
@@ -436,7 +488,7 @@ public final class ApplicationContextFacade
     }
 
 
-    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
+    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
         if (SecurityUtil.isPackageProtectionEnabled()) {
             return (EnumSet<SessionTrackingMode>)
                 doPrivileged("getDefaultSessionTrackingModes", null);
@@ -446,7 +498,7 @@ public final class ApplicationContextFacade
     }
 
 
-    public EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
         if (SecurityUtil.isPackageProtectionEnabled()) {
             return (EnumSet<SessionTrackingMode>)
                 doPrivileged("getEffectiveSessionTrackingModes", null);
@@ -465,7 +517,7 @@ public final class ApplicationContextFacade
         }
     }
 
-
+/*
     public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
             doPrivileged("setSessionCookieConfig",
@@ -473,11 +525,10 @@ public final class ApplicationContextFacade
         } else {
             context.setSessionCookieConfig(sessionCookieConfig);
         }
-    }
+    }*/
 
 
-    public void setSessionTrackingModes(
-            EnumSet<SessionTrackingMode> sessionTrackingModes) {
+    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
             doPrivileged("setSessionTrackingModes",
                     new Object[]{sessionTrackingModes});

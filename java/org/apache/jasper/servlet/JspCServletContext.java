@@ -30,6 +30,7 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -499,6 +500,39 @@ public class JspCServletContext implements ServletContext {
     public void setSessionTrackingModes(
             EnumSet<SessionTrackingMode> sessionTrackingModes) {
         // Do nothing
+    }
+
+
+    public FilterRegistration addFilter(String filterName, Filter filter) {
+        return null;
+    }
+
+
+    public FilterRegistration addFilter(String filterName,
+            Class<? extends Filter> filterClass) {
+        return null;
+    }
+
+
+    public ServletRegistration addServlet(String servletName, Servlet servlet) {
+        return null;
+    }
+
+
+    public <T extends Filter> T createFilter(Class<T> c)
+            throws ServletException {
+        return null;
+    }
+
+
+    public <T extends Servlet> T createServlet(Class<T> c)
+            throws ServletException {
+        return null;
+    }
+
+
+    public void setSessionTrackingModes(
+            Set<SessionTrackingMode> sessionTrackingModes) {
     }
 
 

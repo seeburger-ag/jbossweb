@@ -31,18 +31,18 @@ import javax.servlet.AsyncListener;
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Globals;
-import org.apache.catalina.util.StringManager;
-
-
 import org.apache.catalina.security.SecurityUtil;
+import org.apache.catalina.util.StringManager;
 
 /**
  * Facade class that wraps a Coyote request object.  
@@ -1048,6 +1048,37 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return request.getResponse().getResponse();
+    }
+
+
+    public boolean login(HttpServletResponse response) throws IOException,
+            ServletException {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.login(response);
+    }
+
+
+    public void login(String username, String password) throws ServletException {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        request.login(username, password);
+    }
+
+
+    public void logout() throws ServletException {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        request.logout();
     }
 
 }

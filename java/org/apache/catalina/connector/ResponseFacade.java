@@ -31,8 +31,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Globals;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.security.SecurityUtil;
+import org.apache.catalina.util.StringManager;
 
 /**
  * Facade class that wraps a Coyote response object. 
@@ -553,33 +553,43 @@ public class ResponseFacade
     }
 
 
-    public void disable() {
+    public String getHeader(String name) {
         if (response == null) {
             throw new IllegalStateException(
                             sm.getString("responseFacade.nullResponse"));
         }
 
-        response.disable();
+        return response.getHeader(name);
     }
 
 
-    public void enable() {
+    public Iterable<String> getHeaderNames() {
         if (response == null) {
             throw new IllegalStateException(
                             sm.getString("responseFacade.nullResponse"));
         }
 
-        response.enable();
+        return response.getHeaderNames();
     }
 
 
-    public boolean isDisabled() {
+    public Iterable<String> getHeaders(String name) {
         if (response == null) {
             throw new IllegalStateException(
                             sm.getString("responseFacade.nullResponse"));
         }
 
-        return response.isDisabled();
+        return response.getHeaders(name);
+    }
+
+
+    public int getStatus() {
+        if (response == null) {
+            throw new IllegalStateException(
+                            sm.getString("responseFacade.nullResponse"));
+        }
+
+        return response.getStatus();
     }
 
 }

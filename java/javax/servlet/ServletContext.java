@@ -1,20 +1,55 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License. You can obtain
+ * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
+ * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code.  If applicable, add the following below the License
+ * Header, with the fields enclosed by brackets [] replaced by your own
+ * identifying information: "Portions Copyrighted [year]
+ * [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ *
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 2004 The Apache Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package javax.servlet;
@@ -23,13 +58,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Set;
-import java.util.Map;
 import java.util.EnumSet;
-
+import java.util.Map;
+import java.util.Set;
 
 /**
- * 
  * Defines a set of methods that a servlet uses to communicate with its
  * servlet container, for example, to get the MIME type of a file, dispatch
  * requests, or write to a log file.
@@ -51,14 +84,45 @@ import java.util.EnumSet;
  * servlet when the servlet is initialized.
  *
  * @author 	Various
- * @version 	$Version$
  *
  * @see 	Servlet#getServletConfig
  * @see 	ServletConfig#getServletContext
- *
  */
 
 public interface ServletContext {
+
+    /**
+     * The name of the <tt>ServletContext</tt> attribute which stores
+     * the private temporary directory (of type <tt>java.io.File</tt>)
+     * provided by the servlet container for the <tt>ServletContext</tt>
+     */
+    public static final String TEMPDIR = "javax.servlet.context.tempdir";
+
+    /**
+     * Returns the context path of the web application.
+     *
+     * <p>The context path is the portion of the request URI that is used
+     * to select the context of the request. The context path always comes
+     * first in a request URI. The path starts with a "/" character but does
+     * not end with a "/" character. For servlets in the default (root)
+     * context, this method returns "".
+     *
+     * <p>It is possible that a servlet container may match a context by
+     * more than one context path. In such cases the
+     * {@link javax.servlet.http.HttpServletRequest#getContextPath()}
+     * will return the actual context path used by the request and it may
+     * differ from the path returned by this method.
+     * The context path returned by this method should be considered as the
+     * prime or preferred context path of the application.
+     *
+     * @return The context path of the web application, or "" for the
+     * default (root) context
+     *
+     * @see javax.servlet.http.HttpServletRequest#getContextPath()
+     *
+     * @since 2.5
+     */
+    public String getContextPath();
 
 
     /**
@@ -69,8 +133,8 @@ public interface ServletContext {
      * access to the context for various parts of the server, and as
      * needed obtain {@link RequestDispatcher} objects from the context.
      * The given path must be begin with "/", is interpreted relative 
-     * to the server's document root and is matched against the context roots of
-     * other web applications hosted on this container.
+     * to the server's document root and is matched against the context
+     * roots of other web applications hosted on this container.
      * 
      * <p>In a security conscious environment, the servlet container may
      * return <code>null</code> for a given URL.
@@ -83,43 +147,30 @@ public interface ServletContext {
      * 			this access.
      *
      * @see 		RequestDispatcher
-     *
      */
-
     public ServletContext getContext(String uripath);
     
-
-    public String getContextPath();
-
 
     /**
      * Returns the major version of the Java Servlet API that this
      * servlet container supports. All implementations that comply
-     * with Version 2.4 must have this method
-     * return the integer 2.
+     * with Version 3.0 must have this method return the integer 3.
      *
-     * @return 		2
-     *
+     * @return 3
      */
-    
     public int getMajorVersion();
     
     
-
     /**
      * Returns the minor version of the Servlet API that this
      * servlet container supports. All implementations that comply
-     * with Version 2.4 must have this method
-     * return the integer 4.
+     * with Version 3.0 must have this method return the integer 0.
      *
-     * @return 		4
-     *
+     * @return 0
      */
-
     public int getMinorVersion();
     
-    
-
+   
     /**
      * Returns the MIME type of the specified file, or <code>null</code> if 
      * the MIME type is not known. The MIME type is determined
@@ -128,45 +179,48 @@ public interface ServletContext {
      * types are <code>"text/html"</code> and <code>"image/gif"</code>.
      *
      *
-     * @param   file    a <code>String</code> specifying the name
-     *			of a file
+     * @param file a <code>String</code> specifying the name of a file
      *
-     * @return 		a <code>String</code> specifying the file's MIME type
-     *
+     * @return a <code>String</code> specifying the file's MIME type
      */
-
     public String getMimeType(String file);
     
+
     /**
-    * Returns a directory-like listing of all the paths to resources within the web application whose longest sub-path
-    * matches the supplied path argument. Paths indicating subdirectory paths end with a '/'. The returned paths are all 
-    * relative to the root of the web application and have a leading '/'. For example, for a web application 
-    * containing<br><br>
-
-    * /welcome.html<br>
-    * /catalog/index.html<br>
-    * /catalog/products.html<br>
-    * /catalog/offers/books.html<br>
-    * /catalog/offers/music.html<br>
-    * /customer/login.jsp<br>
-    * /WEB-INF/web.xml<br>
-    * /WEB-INF/classes/com.acme.OrderServlet.class,<br><br>
-    *
-    * getResourcePaths("/") returns {"/welcome.html", "/catalog/", "/customer/", "/WEB-INF/"}<br>
-    * getResourcePaths("/catalog/") returns {"/catalog/index.html", "/catalog/products.html", "/catalog/offers/"}.<br>
-	   
-
-
-    *@param path		the partial path used to match the resources,
-    *				which must start with a /
-    *@return a Set containing the directory listing, or null if there are no resources in the web application whose path
-	* begins with the supplied path.
-
-    * @since Servlet 2.3
-    */
-    
-    public Set getResourcePaths(String path);
-    
+     * Returns a directory-like listing of all the paths to resources
+     * within the web application whose longest sub-path matches the
+     * supplied path argument.
+     *
+     * Paths indicating subdirectory paths end with a '/'.
+     *
+     * The returned paths are all relative to the root of the web application
+     * and have a leading '/'.
+     *
+     * For example, for a web application containing<br><br>
+     *
+     * /welcome.html<br>
+     * /catalog/index.html<br>
+     * /catalog/products.html<br>
+     * /catalog/offers/books.html<br>
+     * /catalog/offers/music.html<br>
+     * /customer/login.jsp<br>
+     * /WEB-INF/web.xml<br>
+     * /WEB-INF/classes/com.acme.OrderServlet.class,<br><br>
+     *
+     * getResourcePaths("/") returns {"/welcome.html", "/catalog/",
+     * "/customer/", "/WEB-INF/"}<br>
+     * getResourcePaths("/catalog/") returns {"/catalog/index.html",
+     * "/catalog/products.html", "/catalog/offers/"}.<br>
+     * 
+     * @param path		the partial path used to match the resources,
+     *				which must start with a /
+     * @return a Set containing the directory listing, or null if there
+     * are no resources in the web application whose path
+     * begins with the supplied path.
+     * 
+     * @since 2.3
+     */    
+    public Set<String> getResourcePaths(String path);
     
 
     /**
@@ -199,20 +253,16 @@ public interface ServletContext {
      * which looks up resources based on a class loader. This
      * method does not use class loaders.
      * 
-     * @param path 				a <code>String</code> specifying
-     *						the path to the resource
+     * @param path a <code>String</code> specifying
+     * the path to the resource
      *
-     * @return 					the resource located at the named path,
-     * 						or <code>null</code> if there is no resource
-     *						at that path
+     * @return the resource located at the named path,
+     * or <code>null</code> if there is no resource at that path
      *
-     * @exception MalformedURLException 	if the pathname is not given in 
-     * 						the correct form
-     *
-     */
-    
+     * @exception MalformedURLException if the pathname is not given in 
+     * the correct form
+     */    
     public URL getResource(String path) throws MalformedURLException;
-    
     
 
     /**
@@ -246,14 +296,9 @@ public interface ServletContext {
      * @return 		the <code>InputStream</code> returned to the 
      *			servlet, or <code>null</code> if no resource
      *			exists at the specified path 
-     *
-     *
      */
-
     public InputStream getResourceAsStream(String path);
     
-
-
 
     /**
      * 
@@ -280,11 +325,8 @@ public interface ServletContext {
      *
      * @see 		RequestDispatcher
      * @see 		ServletContext#getContext
-     *
      */
-
     public RequestDispatcher getRequestDispatcher(String path);
-
 
 
     /**
@@ -311,16 +353,11 @@ public interface ServletContext {
      * @see 		RequestDispatcher
      * @see 		ServletContext#getContext
      * @see 		ServletConfig#getServletName
-     *
      */
-
     public RequestDispatcher getNamedDispatcher(String name);
     
     
-    
-    
     /**
-     *
      * @deprecated	As of Java Servlet API 2.1, with no direct replacement.
      *
      * <p>This method was originally defined to retrieve a servlet
@@ -332,34 +369,22 @@ public interface ServletContext {
      * <p>In lieu of this method, servlets can share information using the 
      * <code>ServletContext</code> class and can perform shared business logic
      * by invoking methods on common non-servlet classes.
-     *
      */
-
     public Servlet getServlet(String name) throws ServletException;
-    
-  
-  
-  
     
 
     /**
-     *
      * @deprecated	As of Java Servlet API 2.0, with no replacement.
      *
-     * <p>This method was originally defined to return an <code>Enumeration</code>
-     * of all the servlets known to this servlet context. In this
-     * version, this method always returns an empty enumeration and
+     * <p>This method was originally defined to return an
+     * <code>Enumeration</code> of all the servlets known to this servlet
+     * context.
+     * In this version, this method always returns an empty enumeration and
      * remains only to preserve binary compatibility. This method
      * will be permanently removed in a future version of the Java
      * Servlet API.
-     *
      */
-    
-    public Enumeration getServlets();
-    
-    
-    
-    
+    public Enumeration<Servlet> getServlets();
     
 
     /**
@@ -371,31 +396,20 @@ public interface ServletContext {
      * this method always returns an empty <code>Enumeration</code> and 
      * remains only to preserve binary compatibility. This method will 
      * be permanently removed in a future version of the Java Servlet API.
-     *
      */
- 
-    public Enumeration getServletNames();
+    public Enumeration<String> getServletNames();
     
-  
-  
-    
-    
+
     /**
      *
      * Writes the specified message to a servlet log file, usually
      * an event log. The name and type of the servlet log file is 
      * specific to the servlet container.
      *
-     *
      * @param msg 	a <code>String</code> specifying the 
      *			message to be written to the log file
-     *
      */
-     
     public void log(String msg);
-    
-    
-    
     
 
     /**
@@ -406,13 +420,8 @@ public interface ServletContext {
      * <p>This method was originally defined to write an 
      * exception's stack trace and an explanatory error message
      * to the servlet log file.
-     *
      */
-
     public void log(Exception exception, String msg);
-    
-    
-    
     
 
     /**
@@ -421,19 +430,13 @@ public interface ServletContext {
      * to the servlet log file. The name and type of the servlet log 
      * file is specific to the servlet container, usually an event log.
      *
-     *
      * @param message 		a <code>String</code> that 
      *				describes the error or exception
      *
      * @param throwable 	the <code>Throwable</code> error 
      *				or exception
-     *
      */
-    
     public void log(String message, Throwable throwable);
-    
-    
-    
     
     
     /**
@@ -457,14 +460,9 @@ public interface ServletContext {
      *
      * @return 		a <code>String</code> specifying the real path,
      *                  or null if the translation cannot be performed
-     *			
-     *
      */
-
     public String getRealPath(String path);
     
-    
-
 
     /**
      * Returns the name and version of the servlet container on which
@@ -482,13 +480,9 @@ public interface ServletContext {
      *
      * @return 		a <code>String</code> containing at least the 
      *			servlet container name and version number
-     *
      */
-
     public String getServerInfo();
     
-    
-
 
     /**
      * Returns a <code>String</code> containing the value of the named
@@ -508,10 +502,7 @@ public interface ServletContext {
      *
      * @see ServletConfig#getInitParameter
      */
-
     public String getInitParameter(String name);
-    
-    
 
 
     /**
@@ -526,10 +517,27 @@ public interface ServletContext {
      *
      * @see ServletConfig#getInitParameter
      */
+    public Enumeration<String> getInitParameterNames();
+    
 
-    public Enumeration getInitParameterNames();
-    
-    
+    /**
+     * Sets the context initialization parameter with the given name and
+     * value on this ServletContext.
+     *
+     * @param name the name of the context initialization parameter to set
+     * @param value the value of the context initialization parameter to set
+     *
+     * @return true if the context initialization parameter with the given
+     * name and value was set successfully on this ServletContext, and false
+     * if it was not set because this ServletContext already contains a
+     * context initialization parameter with a matching name
+     * @throws IllegalStateException if this ServletContext has already
+     * been initialized
+     *
+     * @since 3.0
+     */
+    public boolean setInitParameter(String name, String value);
+
 
     /**
      * Returns the servlet container attribute with the given name, 
@@ -558,36 +566,27 @@ public interface ServletContext {
      *			name
      *
      * @see 		ServletContext#getAttributeNames
-     *
      */
-  
     public Object getAttribute(String name);
-    
-    
     
 
     /**
      * Returns an <code>Enumeration</code> containing the 
-     * attribute names available
-     * within this servlet context. Use the
-     * {@link #getAttribute} method with an attribute name
+     * attribute names available within this ServletContext.
+     *
+     * <p>Use the {@link #getAttribute} method with an attribute name
      * to get the value of an attribute.
      *
      * @return 		an <code>Enumeration</code> of attribute 
      *			names
      *
      * @see		#getAttribute
-     *
      */
-
-    public Enumeration getAttributeNames();
-    
-    
+    public Enumeration<String> getAttributeNames();
     
     
     /**
-     *
-     * Binds an object to a given attribute name in this servlet context. If
+     * Binds an object to a given attribute name in this ServletContext. If
      * the name specified is already used for an attribute, this
      * method will replace the attribute with the new to the new attribute.
      * <p>If listeners are configured on the <code>ServletContext</code> the  
@@ -607,151 +606,330 @@ public interface ServletContext {
      *
      * @param object 	an <code>Object</code> representing the
      *			attribute to be bound
-     *
-     *
-     *
      */
-    
     public void setAttribute(String name, Object object);
     
-    
-
-
 
     /**
      * Removes the attribute with the given name from 
-     * the servlet context. After removal, subsequent calls to
+     * this ServletContext. After removal, subsequent calls to
      * {@link #getAttribute} to retrieve the attribute's value
      * will return <code>null</code>.
-
+     *
      * <p>If listeners are configured on the <code>ServletContext</code> the 
      * container notifies them accordingly.
-
+     *
      *
      *
      * @param name	a <code>String</code> specifying the name 
      * 			of the attribute to be removed
-     *
      */
-
     public void removeAttribute(String name);
+
     
     /**
-     * Returns the name of this web application corresponding to this ServletContext as specified in the deployment
-     * descriptor for this web application by the display-name element.
+     * Returns the name of this web application corresponding to this
+     * ServletContext as specified in the deployment descriptor for this
+     * web application by the display-name element.
      *
      *
-     * @return	    The name of the web application or null if no name has been declared in the deployment descriptor.
-     * @since Servlet 2.3
+     * @return The name of the web application or null if no name has been
+     * declared in the deployment descriptor.
+     * 
+     * @since 2.3
      */
-    
     public String getServletContextName();
 
-    /**
-     * Add the specified servlet to the context
-     * @param servletName servlet's name
-     * @param className class name of servlet
-     * @throws IllegalArgumentException duplicate servletName
-     * @throws IllegalStateException this method called after #initialize
-     * @return ServletRegistration allowing configuration of the servlet
+
+    /*
+     * Adds the servlet with the given name and class name to this servlet
+     * context.
+     *
+     * <p>The registered servlet may be further configured via the returned
+     * {@link ServletRegistration} object.
+     *
+     * <p>The specified <tt>className</tt> will be loaded using the 
+     * classloader associated with the application represented by this
+     * ServletContext.
+     *
+     * @param servletName the name of the servlet
+     * @param className the fully qualified class name of the servlet
+     *
+     * @return a ServletRegistration object that may be used to further
+     * configure the registered servlet, or <tt>null</tt> if this
+     * ServletContext already contains a servlet with a matching name
+     * @throws IllegalStateException if this ServletContext has already
+     * been initialized
      *
      * @since 3.0
      */
-    ServletRegistration addServlet(String servletName,
-                    String className) throws IllegalArgumentException, IllegalStateException;
+    public ServletRegistration addServlet(String servletName,
+                                          String className);
+
+
+    /*
+     * Registers the given servlet instance with this ServletContext
+     * under the given <tt>servletName</tt>.
+     *
+     * <p>The registered servlet may be further configured via the returned
+     * {@link ServletRegistration} object.
+     *
+     * @param servletName the name of the servlet
+     * @param servlet the servlet instance to register
+     *
+     * @return a ServletRegistration object that may be used to further
+     * configure the given servlet, or <tt>null</tt> if this
+     * ServletContext already contains a servlet with a matching name,
+     * or if the same servlet instance has already been registered with
+     * this or another ServletContext that is part of the same servlet
+     * container
+     * @throws IllegalStateException if this ServletContext has already
+     * been initialized
+     * @throws IllegalArgumentException if the given servlet instance 
+     * implements {@link SingleThreadModel}
+     *
+     * @since 3.0
+     */
+    public ServletRegistration addServlet(String servletName,
+                                          Servlet servlet);
+
+
+    /*
+     * Adds the servlet with the given name and class type to this servlet
+     * context.
+     *
+     * <p>The registered servlet may be further configured via the returned
+     * {@link ServletRegistration} object.
+     *
+     * @param servletName the name of the servlet
+     * @param servletClass the class object from which the servlet will be
+     * instantiated
+     *
+     * @return a ServletRegistration object that may be used to further
+     * configure the registered servlet, or <tt>null</tt> if this
+     * ServletContext already contains a servlet with a matching name
+     * @throws IllegalStateException if this ServletContext has already
+     * been initialized
+     *
+     * @since 3.0
+     */
+    public ServletRegistration addServlet(String servletName,
+        Class <? extends Servlet> servletClass);
+
 
     /**
-     * Add the specified servlet to the context
-     * @param servletName servlet's name
-     * @param clazz class of the servlet
-     * @throws IllegalArgumentException duplicate servletName
-     * @throws IllegalStateException this method called after #initialize
-     * @return ServletRegistration allowing configuration of the servlet
+     * Instantiates the given Servlet class and performs any required
+     * resource injection into the new Servlet instance before returning
+     * it.
+     *
+     * <p>The returned Servlet instance may be further customized before it
+     * is registered with this ServletContext via a call to 
+     * {@link #addServlet(String,Servlet)}.
+     *
+     * @param c the Servlet class to instantiate
+     *
+     * @return the new Servlet instance
+     *
+     * @throws ServletException if an error occurs during the instantiation
+     * of, or resource injection into the new Servlet
      *
      * @since 3.0
      */
-    ServletRegistration addServlet(String servletName,
-                    Class<? extends Servlet> clazz) throws IllegalArgumentException, IllegalStateException;
+    public <T extends Servlet> T createServlet(Class<T> c)
+        throws ServletException;
+
 
     /**
-     * Fish out the servlet registration for a named servlet
-     * @param servletName name of the servlet you want to configure
-     * @return ServletRegistration for servlet you want
+     * Gets the ServletRegistration corresponding to the servlet with the
+     * given <tt>servletName</tt>.
+     *
+     * @return the ServletRegistration corresponding to the servlet with the
+     * given <tt>servletName</tt>, or null if no ServletRegistration exists
+     * under that name in this ServletContext
      *
      * @since 3.0
      */
-    ServletRegistration findServletRegistration(String servletName);
+    public ServletRegistration findServletRegistration(String servletName);
+
 
     /**
-     * Add a filter to this context
-     * @param filterName name of filter
-     * @param className class name of filter
-     * @throws IllegalArgumentException duplicate filter name
-     * @throws IllegalStateException if called after #initialise
-     * @return  FilterRegistration allowing configuration of filter
+     * Adds the filter with the given name and class name to this servlet
+     * context.
+     *
+     * <p>The registered filter may be further configured via the returned
+     * {@link FilterRegistration} object.
+     *
+     * <p>The specified <tt>className</tt> will be loaded using the 
+     * classloader associated with the application represented by this
+     * ServletContext.
+     *
+     * @param filterName the name of the filter
+     * @param className the fully qualified class name of the filter
+     *
+     * @return a FilterRegistration object that may be used to further
+     * configure the registered filter, or <tt>null</tt> if this
+     * ServletContext already contains a filter with a matching name
+     * @throws IllegalStateException if this ServletContext has already
+     * been initialized
      *
      * @since 3.0
      */
-    FilterRegistration addFilter(String filterName,
-                   String className) throws IllegalArgumentException, IllegalStateException;
+    public FilterRegistration addFilter(String filterName, String className);
+         
+
+    /*
+     * Registers the given filter instance with this ServletContext
+     * under the given <tt>filterName</tt>.
+     *
+     * <p>The registered filter may be further configured via the returned
+     * {@link FilterRegistration} object.
+     *
+     * @param filterName the name of the filter
+     * @param filter the filter instance to register
+     *
+     * @return a FilterRegistration object that may be used to further
+     * configure the given filter, or <tt>null</tt> if this
+     * ServletContext already contains a filter with a matching name,
+     * or if the same filter instance has already been registered with
+     * this or another ServletContext that is part of the same servlet
+     * container
+     * @throws IllegalStateException if this ServletContext has already
+     * been initialized
+     *
+     * @since 3.0
+     */
+    public FilterRegistration addFilter(String filterName, Filter filter);
+
 
     /**
+     * Adds the filter with the given name and class type to this servlet
+     * context.
      *
-     * @param filterName Name of filter you want to configure
-     * @return FilterRegistration allowing configuration of filter
+     * <p>The registered filter may be further configured via the returned
+     * {@link FilterRegistration} object.
+     *
+     * @param filterName the name of the filter
+     * @param filterClass the class object from which the filter will be
+     * instantiated
+     *
+     * @return a FilterRegistration object that may be used to further
+     * configure the registered filter, or <tt>null</tt> if this
+     * ServletContext already contains a filter with a matching name
+     * @throws IllegalStateException if this ServletContext has already
+     * been initialized
      *
      * @since 3.0
      */
-    FilterRegistration findFilterRegistration(String filterName);
+    public FilterRegistration addFilter(String filterName,
+        Class <? extends Filter> filterClass);
+
 
     /**
+     * Instantiates the given Filter class and performs any required
+     * resource injection into the new Filter instance before returning
+     * it.
      *
-     * @param sessionCookieConfig configuration of session cookie
+     * <p>The returned Filter instance may be further customized before it
+     * is registered with this ServletContext via a call to 
+     * {@link #addFilter(String,Filter)}.
+     *
+     * @param c the Filter class to instantiate
+     *
+     * @return the new Filter instance
+     *
+     * @throws ServletException if an error occurs during the instantiation
+     * of, or resource injection into the new Filter
      *
      * @since 3.0
      */
-    void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig);
+    public <T extends Filter> T createFilter(Class<T> c)
+        throws ServletException;
+
 
     /**
+     * Gets the FilterRegistration corresponding to the filter with the
+     * given <tt>filterName</tt>.
      *
-     * @return configuration of session cookie
+     * @return the FilterRegistration corresponding to the filter with the
+     * given <tt>filterName</tt>, or null if no FilterRegistration exists
+     * under that name in this ServletContext
      *
      * @since 3.0
      */
-    SessionCookieConfig getSessionCookieConfig();
+    public FilterRegistration findFilterRegistration(String filterName);
+
 
     /**
+     * Gets the {@link SessionCookieConfig} object through which various
+     * properties of the session tracking cookies created on behalf of this
+     * <tt>ServletContext</tt> may be configured.
      *
-     * @param sessionTrackingModes set of SessionTrackingModes for this web app
+     * <p>Repeated invocations of this method will return the same
+     * <tt>SessionCookieConfig</tt> instance.
+     *
+     * @return the <tt>SessionCookieConfig</tt> object through which
+     * various properties of the session tracking cookies created on
+     * behalf of this <tt>ServletContext</tt> may be configured
      *
      * @since 3.0
      */
-    void setSessionTrackingModes(EnumSet<SessionTrackingMode> sessionTrackingModes);
+    public SessionCookieConfig getSessionCookieConfig();
+
+
 
     /**
+     * Sets the session tracking modes that are to become effective for this
+     * <tt>ServletContext</tt>.
      *
-     * @return the default session tracking modes
+     * <p>The given <tt>sessionTrackingModes</tt> replaces any
+     * session tracking modes set by a previous invocation of this
+     * method on this <tt>ServletContext</tt>.
+     *
+     * @param sessionTrackingModes the set of session tracking modes to
+     * become effective for this <tt>ServletContext</tt>
+     *
+     * @throws IllegalStateException if this <tt>ServletContext</tt> has
+     * already been initialized
+     * @throws IllegalArgumentException if <tt>sessionTrackingModes</tt>
+     * specifies a combination of <tt>SessionTrackingMode.SSL</tt> with a
+     * session tracking mode other than <tt>SessionTrackingMode.SSL</tt>,
+     * or if <tt>sessionTrackingModes</tt> specifies a session tracking mode
+     * that is not supported by the servlet container
      *
      * @since 3.0
      */
-    EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes();
+    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes);
+
 
     /**
+     * Gets the session tracking modes that are supported by default for this
+     * <tt>ServletContext</tt>.
      *
-     * @return the actual session tracking modes.  These will be the default ones unless they've been explicitly set.
+     * @return set of the session tracking modes supported by default for
+     * this <tt>ServletContext</tt>
      *
      * @since 3.0
      */
-    EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes();
+    public Set<SessionTrackingMode> getDefaultSessionTrackingModes();
+
 
     /**
+     * Gets the session tracking modes that are in effect for this
+     * <tt>ServletContext</tt>.
      *
-     * @param name of the init parameter to set
-     * @param value new value
-     * @return whether it was set??
+     * <p>The session tracking modes in effect are those provided to
+     * {@link #setSessionTrackingModes setSessionTrackingModes}.
+     *
+     * <p>By default, the session tracking modes returned by
+     * {@link #getDefaultSessionTrackingModes getDefaultSessionTrackingModes}
+     * are in effect.
+     *
+     * @return set of the session tracking modes in effect for this
+     * <tt>ServletContext</tt>
+     *
      * @since 3.0
      */
-    boolean setInitParameter(String name, String value);
+    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes();
 
 }
 

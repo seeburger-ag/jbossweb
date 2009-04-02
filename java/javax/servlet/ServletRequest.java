@@ -1,21 +1,58 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License. You can obtain
+ * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
+ * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code.  If applicable, add the following below the License
+ * Header, with the fields enclosed by brackets [] replaced by your own
+ * identifying information: "Portions Copyrighted [year]
+ * [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ *
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 2004 The Apache Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+
 
 package javax.servlet;
 
@@ -39,13 +76,15 @@ import java.util.Map;
  * provided by {@link javax.servlet.http.HttpServletRequest}.
  * 
  * @author 	Various
- * @version 	$Version$
  *
  * @see 	javax.servlet.http.HttpServletRequest
  *
  */
 
 public interface ServletRequest {
+
+
+
 
     /**
      *
@@ -91,7 +130,7 @@ public interface ServletRequest {
      *
      */
 
-    public Enumeration getAttributeNames();
+    public Enumeration<String> getAttributeNames();
     
     
     
@@ -110,17 +149,19 @@ public interface ServletRequest {
 
     public String getCharacterEncoding();
 
- /**
+
+    /**
      * Overrides the name of the character encoding used in the body of this
      * request. This method must be called prior to reading request parameters
-     * or reading input using getReader().
+     * or reading input using getReader(). Otherwise, it has no effect.
      * 
-     *
-     * @param env	a <code>String</code> containing the name of 
-     *			the character encoding.
-     * @throws		java.io.UnsupportedEncodingException if this is not a valid encoding
+     * @param env      <code>String</code> containing the name of
+     *                 the character encoding.
+     * @throws         java.io.UnsupportedEncodingException if this
+     *                 ServletRequest is still in a state where a
+     *                 character encoding may be set, but the specified
+     *                 encoding is invalid
      */
-
     public void setCharacterEncoding(String env) throws java.io.UnsupportedEncodingException;
 
     
@@ -157,8 +198,6 @@ public interface ServletRequest {
     public String getContentType();
     
     
-    
-
     /**
      * Retrieves the body of the request as binary data using
      * a {@link ServletInputStream}.  Either this method or 
@@ -167,17 +206,13 @@ public interface ServletRequest {
      * @return			a {@link ServletInputStream} object containing
      * 				the body of the request
      *
-     * @exception IllegalStateException  if the {@link #getReader} method
-     * 					 has already been called for this request
+     * @exception IllegalStateException if the {@link #getReader} method
+     * has already been called for this request
      *
-     * @exception IOException    	if an input or output exception occurred
-     *
+     * @exception IOException if an input or output exception occurred
      */
-
     public ServletInputStream getInputStream() throws IOException; 
      
-    
-    
 
     /**
      * Returns the value of a request parameter as a <code>String</code>,
@@ -205,14 +240,10 @@ public interface ServletRequest {
      *			single value of the parameter
      *
      * @see 		#getParameterValues
-     *
      */
-
     public String getParameter(String name);
     
     
-    
-
     /**
      *
      * Returns an <code>Enumeration</code> of <code>String</code>
@@ -226,13 +257,9 @@ public interface ServletRequest {
      * 			the name of a request parameter; or an 
      *			empty <code>Enumeration</code> if the
      *			request has no parameters
-     *
      */
-     
-    public Enumeration getParameterNames();
-    
-    
-    
+    public Enumeration<String> getParameterNames();
+        
 
     /**
      * Returns an array of <code>String</code> objects containing 
@@ -249,25 +276,23 @@ public interface ServletRequest {
      *			containing the parameter's values
      *
      * @see		#getParameter
-     *
      */
-
     public String[] getParameterValues(String name);
  
-    /** Returns a java.util.Map of the parameters of this request.
-     * Request parameters
-     * are extra information sent with the request.  For HTTP servlets,
-     * parameters are contained in the query string or posted form data.
+
+    /**
+     * Returns a java.util.Map of the parameters of this request.
+     * 
+     * <p>Request parameters are extra information sent with the request.
+     * For HTTP servlets, parameters are contained in the query string or
+     * posted form data.
      *
      * @return an immutable java.util.Map containing parameter names as 
      * keys and parameter values as map values. The keys in the parameter
      * map are of type String. The values in the parameter map are of type
      * String array.
-     *
      */
-
-    public Map getParameterMap();
-    
+    public Map<String, String[]> getParameterMap();
     
 
     /**
@@ -279,12 +304,8 @@ public interface ServletRequest {
      *
      * @return		a <code>String</code> containing the protocol 
      *			name and version number
-     *
-     */
-    
+     */    
     public String getProtocol();
-    
-    
     
 
     /**
@@ -296,18 +317,15 @@ public interface ServletRequest {
      *
      * @return		a <code>String</code> containing the name 
      *			of the scheme used to make this request
-     *
      */
-
     public String getScheme();
-    
-    
     
 
     /**
      * Returns the host name of the server to which the request was sent.
      * It is the value of the part before ":" in the <code>Host</code>
-     * header value, if any, or the resolved server name, or the server IP address.
+     * header value, if any, or the resolved server name, or the server IP
+     * address.
      *
      * @return		a <code>String</code> containing the name 
      *			of the server
@@ -343,7 +361,7 @@ public interface ServletRequest {
      * @return					a <code>BufferedReader</code>
      *						containing the body of the request	
      *
-     * @exception java.io.UnsupportedEncodingException         if the character set encoding
+     * @exception UnsupportedEncodingException 	if the character set encoding
      * 						used is not supported and the 
      *						text cannot be decoded
      *
@@ -448,7 +466,6 @@ public interface ServletRequest {
     
 
     /**
-     *
      * Returns the preferred <code>Locale</code> that the client will 
      * accept content in, based on the Accept-Language header.
      * If the client request doesn't provide an Accept-Language header,
@@ -456,16 +473,11 @@ public interface ServletRequest {
      *
      *
      * @return		the preferred <code>Locale</code> for the client
-     *
      */
-
     public Locale getLocale();
-    
-    
     
 
     /**
-     *
      * Returns an <code>Enumeration</code> of <code>Locale</code> objects
      * indicating, in decreasing order starting with the preferred locale, the
      * locales that are acceptable to the client based on the Accept-Language
@@ -474,13 +486,10 @@ public interface ServletRequest {
      * this method returns an <code>Enumeration</code> containing one 
      * <code>Locale</code>, the default locale for the server.
      *
-     *
      * @return		an <code>Enumeration</code> of preferred 
      *                  <code>Locale</code> objects for the client
-     *
      */
-
-    public Enumeration getLocales();
+    public Enumeration<Locale> getLocales();
     
     
     
@@ -531,21 +540,14 @@ public interface ServletRequest {
      *
      * @see             RequestDispatcher
      * @see             ServletContext#getRequestDispatcher
-     *
      */
-
     public RequestDispatcher getRequestDispatcher(String path);
-    
-    
     
 
     /**
-     * 
      * @deprecated 	As of Version 2.1 of the Java Servlet API,
      * 			use {@link ServletContext#getRealPath} instead.
-     *
      */
-
     public String getRealPath(String path);
     
     
@@ -571,6 +573,7 @@ public interface ServletRequest {
      */
     public String getLocalName();
 
+
     /**
      * Returns the Internet Protocol (IP) address of the interface on
      * which the request  was received.
@@ -594,99 +597,317 @@ public interface ServletRequest {
      */
     public int getLocalPort();
 
-    /**
-     * Get the servlet context the request-response pair was last dispatched through.
-     * @return the latest ServletContext on the dispatch chain.
-     * @since 3.0
-     */
-    ServletContext getServletContext();
 
     /**
-     * Gets the associated servlet response.
-     * @return the ServletResponse associated with this request.
+     * Gets the servlet context to which this servlet request was last
+     * dispatched.
+     *
+     * @return the servlet context to which this servlet request was last
+     * dispatched
+     *
      * @since 3.0
      */
-    ServletResponse getServletResponse();
+    public ServletContext getServletContext();
 
-    void addAsyncListener(AsyncListener listener);
+
+    /**
+     * Puts this request into asynchronous mode, and initializes its
+     * {@link AsyncContext} with the original (unwrapped) ServletRequest
+     * and ServletResponse objects and the timeout derived according
+     * to the rules laid out in {@link #setAsyncTimeout}.
+     *
+     * <p>This will delay committal of the associated response until
+     * {@link AsyncContext#complete} is called on the returned
+     * {@link AsyncContext}, or the AsyncContext times out.
+     *
+     * <p>The timer for async timeouts will not start until this request
+     * and its associated response have returned from the container.
+     *
+     * <p>If a timeout occurs and none of the
+     * {@link AsyncListener#onTimeout(AsyncEvent)} handlers call
+     * {@link AsyncContext#complete} or one of the
+     * {@link AsyncContext#dispatch} methods, the container must call
+     * {@link AsyncContext#complete}.
+     *
+     * <p>Calling {@link AsyncContext#hasOriginalRequestAndResponse()} on
+     * the returned AsyncContext will return <code>true</code>. Any filters
+     * invoked in the <i>outbound</i> direction after this request was put
+     * into asynchronous mode may use this as an indication that any request
+     * and/or response wrappers that they added during their <i>inbound</i>
+     * invocation need not stay around for the duration of the asynchronous
+     * operation, and therefore any of their associated resources may be
+     * released.
+     *
+     * <p>Subsequent invocations of this method, or its overloaded 
+     * variant, will return the same AsyncContext instance, reinitialized
+     * as appropriate.
+     *
+     * @return the (re)initialized AsyncContext
+     * 
+     * @throws IllegalStateException if this request is within the scope of
+     * a filter or servlet that does not support asynchronous operation,
+     * that is, if {@link #isAsyncSupported} returns false, or if this method
+     * is called again outside the scope of a dispatch resulting from an
+     * {@link AsyncContext#dispatch}, or if the response has already been
+     * closed
+     *
+     * @since 3.0
+     */
+    public AsyncContext startAsync() throws IllegalStateException;
     
-    void addAsyncListener(AsyncListener listener, ServletRequest request, ServletResponse response);
 
-    AsyncContext getAsyncContext();
+    /**
+     * Puts this request into asynchronous mode, and initializes its
+     * {@link AsyncContext} with the given request and response objects
+     * and the timeout derived according to the rules laid out in
+     * {@link #setAsyncTimeout}.
+     *
+     * <p>The ServletRequest and ServletResponse parameters must be either
+     * the same objects as were passed to the calling servlet's service
+     * (or calling filter's doFilter) method, or be subclasses of the
+     * {@link ServletRequestWrapper} or {@link ServletResponseWrapper}
+     * classes that wrap them.
+     *
+     * <p>This will delay committal of the response until
+     * {@link AsyncContext#complete} is called on the returned
+     * {@link AsyncContext}, or the AsyncContext times out.
+     *
+     * <p>The timer for async timeouts will not start until this request
+     * and its associated response have returned from the container.
+     *
+     * <p>If a timeout occurs and none of the
+     * {@link AsyncListener#onTimeout(AsyncEvent)} handlers call
+     * {@link AsyncContext#complete} or one of the
+     * {@link AsyncContext#dispatch} methods, the container must call
+     * {@link AsyncContext#complete}.
+     *
+     * <p>Calling {@link AsyncContext#hasOriginalRequestAndResponse()} on
+     * the returned AsyncContext will return <code>false</code>
+     * (unless the passed in ServletRequest and ServletResponse arguments
+     * are the original ones).
+     * Any filters invoked in the <i>outbound</i> direction after this
+     * request was put into asynchronous mode may use this as an indication
+     * that some of the request and/or response wrappers that they added
+     * during their <i>inbound</i> invocation may need to stay in place for
+     * the duration of the asynchronous operation, and their associated
+     * resources may not be released.
+     * A ServletRequestWrapper applied during the <i>inbound</i>
+     * invocation of a filter may be released by the <i>outbound</i>
+     * invocation of the filter only if the given <code>servletRequest</code>,
+     * which is used to initialize the AsyncContext and will be returned by
+     * a call to {@link AsyncContext#getRequest()}, does not contain said
+     * ServletRequestWrapper. The same holds true for ServletResponseWrapper
+     * instances. 
+     *
+     * <p>Subsequent invocations of this method, or its zero-argument
+     * variant, will return the same AsyncContext instance, reinitialized
+     * as appropriate. If a call to this method is followed by a call to its
+     * zero-argument variant, the specified (and possibly wrapped) request
+     * and response objects will remain <i>locked in</i> on the returned
+     * AsyncContext.
+     *
+     * @param servletRequest the ServletRequest used to initialize the
+     * AsyncContext
+     * @param servletResponse the ServletResponse used to initialize the
+     * AsyncContext
+     *
+     * @return the (re)initialized AsyncContext
+     * 
+     * @throws IllegalStateException if this request is within the scope of
+     * a filter or servlet that does not support asynchronous operation,
+     * that is, if {@link #isAsyncSupported} returns false, or if this method
+     * is called again outside the scope of a dispatch resulting from an
+     * {@link AsyncContext#dispatch}, or if the response has already been
+     * closed
+     *
+     * @since 3.0
+     */
+    public AsyncContext startAsync(ServletRequest servletRequest,
+                                   ServletResponse servletResponse)
+            throws IllegalStateException;
 
-    boolean isAsyncStarted();
 
-    boolean isAsyncSupported();
+    /**
+     * Checks if this request has been put into asynchronous mode.
+     *
+     * <p>A ServletRequest is put into asynchronous mode by calling
+     * {@link #startAsync} or
+     * {@link #startAsync(ServletRequest,ServletResponse)} on it.
+     * 
+     * <p>If this request has been dispatched using one of the
+     * {@link AsyncContext#dispatch} methods since it was put into
+     * asynchronous mode, this method returns <tt>false</tt>.
+     *
+     * @return true if this request has been put into asynchronous mode,
+     * false otherwise
+     *
+     * @since 3.0
+     */
+    public boolean isAsyncStarted();
 
-    void setAsyncTimeout(long timeout);
 
-    AsyncContext startAsync();
+    /**
+     * Checks if this request supports asynchronous operation.
+     *
+     * <p>Asynchronous operation is disabled for this request if this request
+     * is within the scope of a filter or servlet that has not been annotated
+     * or flagged in the deployment descriptor as being able to support
+     * asynchronous handling.
+     *
+     * @return true if this request supports asynchronous operation, false
+     * otherwise
+     *
+     * @since 3.0
+     */
+    public boolean isAsyncSupported();
 
-    AsyncContext startAsync(ServletRequest request, ServletResponse response);
 
-    DispatcherType getDispatcherType();
+    /**
+     * Gets the AsyncContext that was created or reinitialized by the
+     * most recent invocation of {@link #startAsync} or
+     * {@link #startAsync(ServletRequest,ServletResponse)} on this request.
+     *
+     * @return the AsyncContext that was created or reinitialized by the
+     * most recent invocation of {@link #startAsync} or
+     * {@link #startAsync(ServletRequest,ServletResponse)} on
+     * this request 
+     *
+     * @throws IllegalStateException if this request has not been put 
+     * into asynchronous mode, i.e., if neither {@link #startAsync} nor
+     * {@link #startAsync(ServletRequest,ServletResponse)} has been called
+     *
+     * @since 3.0
+     */
+    public AsyncContext getAsyncContext();
 
 
-//    /**
-//      * complete a suspended request.
-//      * @throws IllegalStateException
-//      * @since 3.0
-//      */
-//    void complete() throws IllegalStateException;
-//
-//    /**
-//     * Suspend request processing.  Must be called by a thread that is processing this request.
-//     * @param timeoutMilliseconds new timeout period, in milliseconds
-//     * @throws IllegalStateException if called by a thread not processing this request or after error dispatch
-//     * @since 3.0
-//     * @see #complete
-//     * @see #resume
-//     */
-//    void suspend(long timeoutMilliseconds) throws IllegalStateException;
-//
-//    /**
-//     * Similar to suspend(timeoutMilliseconds) but with a container supplied timeout period.
-//     * @throws IllegalStateException
-//     * @since 3.0
-//     * @see #complete
-//     * @see #resume
-//     */
-//    void suspend() throws IllegalStateException;
-//
-//    /**
-//     * Resume a suspended request
-//     * @throws IllegalStateException if the request is not suspended
-//     * @since 3.0
-//     * @see #suspend
-//     */
-//    void resume() throws IllegalStateException;
-//
-//    /**
-//     *
-//     * @return if the request is suspended
-//     * @since 3.0
-//     */
-//    boolean isSuspended();
-//
-//    /**
-//     *
-//     * @return if the request is resumed
-//     * @since 3.0
-//     */
-//    boolean isResumed();
-//
-//    /**
-//     *
-//     * @return if the request is timed out
-//     * @since 3.0
-//     */
-//    boolean isTimeout();
-//
-//    /**
-//     *
-//     * @return if the request has never been suspended (or resumed)
-//     * @since 3.0
-//     */
-//    boolean isInitial();
+    /**
+     * Registers the given {@link AsyncListener} with this request for
+     * asynchronous complete and timeout events.
+     *
+     * <p>If {@link #startAsync} or
+     * {@link #startAsync(ServletRequest,ServletResponse)} is called on this
+     * request, an {@link AsyncEvent} will be sent to this AsyncListener as
+     * soon as the asynchronous operation has completed or timed out.
+     * The AsyncEvent will contain the ServletRequest and ServletResponse
+     * objects that were used to initialize the {@link AsyncContext}
+     * returned by the call to startAsync.
+     *
+     * <p>AsyncListener instances will be notified in the order
+     * in which they were added to this request.
+     *
+     * @param listener the AsyncListener to be registered
+     *
+     * @since 3.0
+     */
+    public void addAsyncListener(AsyncListener listener);
+
+
+    /**
+     * Registers the given {@link AsyncListener} with this request for 
+     * asynchronous complete and timeout events.
+     *
+     * <p>If {@link #startAsync} or
+     * {@link #startAsync(ServletRequest,ServletResponse)} is called on this
+     * request, an {@link AsyncEvent} will be sent to this AsyncListener as
+     * soon as the asynchronous operation has completed or timed out.
+     * The AsyncEvent will contain the given ServletRequest and
+     * ServletResponse objects.
+     *
+     * <p>AsyncListener instances will be notified in the order
+     * in which they were added to this request.
+     *
+     * <p>The specified request and response objects, which will be included
+     * in the AsyncEvent that will be delivered to the given AsyncListener,
+     * should not be read from or written to, respectively, at the time
+     * when the AsyncEvent is delivered, because additional wrapping may have
+     * occurred after this method was called. One of the main reasons for
+     * allowing request and response objects to be passed to this method is
+     * to allow the AsyncListener to release any resources associated with
+     * them when the AsyncEvent is delivered.
+     *
+     * @param listener the AsyncListener to be registered
+     * @param servletRequest the ServletRequest that will be included
+     * in the AsyncEvent
+     * @param servletResponse the ServletResponse that will be included
+     * in the AsyncEvent 
+     *
+     * @since 3.0
+     */
+    public void addAsyncListener(AsyncListener listener,
+                                 ServletRequest servletRequest,
+                                 ServletResponse servletResponse);
+
+
+    /**
+     * Sets the timeout (in milliseconds) for any asynchronous operations
+     * started on this request by a call to {@link #startAsync} or
+     * {@link #startAsync(ServletRequest, ServletResponse)}.
+     *
+     * <p>By default, the timeout specified via the
+     * <code>async-timeout</code> deployment descriptor element or the
+     * <code>asyncTimeout</code> annotation of the servlet or filter that
+     * started the asynchronous operation will be used.
+     *
+     * <p>If neither {@link AsyncContext#complete} nor
+     * {@link AsyncContext#dispatch} is called within the
+     * specified timeout, any listeners of type {@link AsyncListener} that
+     * were added to this request via a call to
+     * {@link #addAsyncListener(AsyncListener)}
+     * or {@link #addAsyncListener(AsyncListener, ServletRequest,
+     * ServletResponse)} will have their
+     * {@link AsyncListener#onTimeout(AsyncEvent)} method invoked.
+     *
+     * <p>This method raises an <code>IllegalStateException</code> if
+     * called after {@link #startAsync}, unless it is called within the
+     * scope of an {@link AsyncContext#dispatch}, in which case the specified
+     * timeout will be used to initialize the AsyncContext created by a new
+     * call to {@link #startAsync}, or will be ignored if {@link #startAsync}
+     * is not called again. 
+     *
+     * @param timeout the timeout in milliseconds for any asynchronous
+     * operations started on this request
+     *
+     * @throws IllegalStateException if called after {@link #startAsync},
+     * unless within the scope of a dispatch resulting from an
+     * {@link AsyncContext#dispatch}
+     * 
+     * @since 3.0
+     */
+    public void setAsyncTimeout(long timeout);
+
+
+    /**
+     * Gets the dispatcher type of this request.
+     *
+     * <p>The dispatcher type of a request is used by the container
+     * to select the filters that need to be applied to the request:
+     * Only filters with matching dispatcher type and url patterns will
+     * be applied.
+     * 
+     * <p>Allowing a filter that has been configured for multiple 
+     * dispatcher types to query a request for its dispatcher type
+     * allows the filter to process the request differently depending on
+     * its dispatcher type.
+     *
+     * <p>The initial dispatcher type of a request is defined as
+     * <code>DispatcherType.REQUEST</code>. The dispatcher type of a request
+     * dispatched via {@link RequestDispatcher#forward(ServletRequest,
+     * ServletResponse)} or {@link RequestDispatcher#include(ServletRequest,
+     * ServletResponse)} is given as <code>DispatcherType.FORWARD</code> or
+     * <code>DispatcherType.INCLUDE</code>, respectively, while the
+     * dispatcher type of an asynchronous request dispatched via
+     * one of the {@link AsyncContext#dispatch} methods is given as
+     * <code>DispatcherType.ASYNC</code>. Finally, the dispatcher type of a
+     * request dispatched to an error page by the container's error handling
+     * mechanism is given as <code>DispatcherType.ERROR</code>.
+     *
+     * @return the dispatcher type of this request
+     * 
+     * @see DispatcherType
+     *
+     * @since 3.0
+     */
+    public DispatcherType getDispatcherType();
 }
 

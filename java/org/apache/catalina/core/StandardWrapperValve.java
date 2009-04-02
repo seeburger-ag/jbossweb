@@ -461,6 +461,10 @@ final class StandardWrapperValve
                 // and invoke the Servlet
                 // FIXME: Also check how cross context works, but it is be ok to do from here
                 // (or do another distpatcher object similar to the current request dispatcher)
+                if (asyncContext.getServletContext() != null) {
+                    // Cross context
+                    // FIXME
+                }
             } else {
                 // Create the filter chain and reinvoke the same Servlet
                 // FIXME

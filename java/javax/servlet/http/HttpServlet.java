@@ -1,21 +1,59 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License. You can obtain
+ * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
+ * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code.  If applicable, add the following below the License
+ * Header, with the fields enclosed by brackets [] replaced by your own
+ * identifying information: "Portions Copyrighted [year]
+ * [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ *
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 2004 The Apache Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+
+
 
 package javax.servlet.http;
 
@@ -76,8 +114,6 @@ import javax.servlet.ServletResponse;
  * information on handling multiple threads in a Java program.
  *
  * @author	Various
- * @version	$Version$
- *
  */
 
 
@@ -272,7 +308,7 @@ public abstract class HttpServlet extends GenericServlet
 	NoBodyResponse response = new NoBodyResponse(resp);
 	
 	doGet(req, response);
-	response.setContentLength();
+        response.setContentLength();
     }
     
 
@@ -469,7 +505,10 @@ public abstract class HttpServlet extends GenericServlet
     }
     
 
-    private static Method[] getAllDeclaredMethods(Class c) {
+
+
+
+    private Method[] getAllDeclaredMethods(Class<?> c) {
 
         if (c.equals(javax.servlet.http.HttpServlet.class)) {
             return null;
@@ -491,6 +530,10 @@ public abstract class HttpServlet extends GenericServlet
 
 	return thisMethods;
     }
+
+
+
+
 
 
     /**
@@ -559,7 +602,7 @@ public abstract class HttpServlet extends GenericServlet
 	
 	String allow = null;
 	if (ALLOW_GET)
-	    if (allow==null) allow=METHOD_GET;
+	    allow=METHOD_GET;
 	if (ALLOW_HEAD)
 	    if (allow==null) allow=METHOD_HEAD;
 	    else allow += ", " + METHOD_HEAD;
@@ -624,10 +667,10 @@ public abstract class HttpServlet extends GenericServlet
 	String responseString = "TRACE "+ req.getRequestURI()+
 	    " " + req.getProtocol();
 	
-	Enumeration reqHeaderEnum = req.getHeaderNames();
+	Enumeration<String> reqHeaderEnum = req.getHeaderNames();
 	
 	while( reqHeaderEnum.hasMoreElements() ) {
-	    String headerName = (String)reqHeaderEnum.nextElement();
+	    String headerName = reqHeaderEnum.nextElement();
 	    responseString += CRLF + headerName + ": " +
 		req.getHeader(headerName); 
 	}
@@ -640,8 +683,6 @@ public abstract class HttpServlet extends GenericServlet
 	resp.setContentLength(responseLength);
 	ServletOutputStream out = resp.getOutputStream();
 	out.print(responseString);	
-	out.close();
-	return;
     }		
 
 
@@ -814,54 +855,67 @@ public abstract class HttpServlet extends GenericServlet
  * A response that includes no body, for use in (dumb) "HEAD" support.
  * This just swallows that body, counting the bytes in order to set
  * the content length appropriately.  All other methods delegate directly
- * to the HTTP Servlet Response object used to construct this one.
+ * to the wrapped HTTP Servlet Response object.
  */
 // file private
 class NoBodyResponse extends HttpServletResponseWrapper {
+
+    private static final ResourceBundle lStrings
+        = ResourceBundle.getBundle("javax.servlet.http.LocalStrings");
+
     private NoBodyOutputStream		noBody;
     private PrintWriter			writer;
     private boolean			didSetContentLength;
+    private boolean usingOutputStream;
 
     // file private
     NoBodyResponse(HttpServletResponse r) {
-        super(r);
+	super(r);
 	noBody = new NoBodyOutputStream();
     }
 
     // file private
     void setContentLength() {
-	if (!didSetContentLength)
-	  super.setContentLength(noBody.getContentLength());
+        if (!didSetContentLength) {
+            if (writer != null) {
+                writer.flush();
+            }
+            setContentLength(noBody.getContentLength());
+        }
     }
-
-
-    // SERVLET RESPONSE interface methods
 
     public void setContentLength(int len) {
-	super.setContentLength(len);
-	didSetContentLength = true;
+        super.setContentLength(len);
+        didSetContentLength = true;
     }
 
-    public ServletOutputStream getOutputStream() throws IOException
-      { return noBody; }
+    public ServletOutputStream getOutputStream() throws IOException {
 
-    public PrintWriter getWriter() throws UnsupportedEncodingException
-    {
-	if (writer == null) {
-	    OutputStreamWriter	w;
+        if (writer != null) {
+            throw new IllegalStateException(
+                lStrings.getString("err.ise.getOutputStream"));
+        }
+        usingOutputStream = true;
 
-	    w = new OutputStreamWriter(noBody, getCharacterEncoding());
-	    writer = new PrintWriter(w);
-	}
-	return writer;
+        return noBody;
     }
 
+    public PrintWriter getWriter() throws UnsupportedEncodingException {
+
+        if (usingOutputStream) {
+            throw new IllegalStateException(
+                lStrings.getString("err.ise.getWriter"));
+        }
+
+        if (writer == null) {
+            OutputStreamWriter w = new OutputStreamWriter(
+                noBody, getCharacterEncoding());
+            writer = new PrintWriter(w);
+        }
+
+        return writer;
+    }
 }
-
-
-
-
-
 
 
 /*
@@ -896,11 +950,9 @@ class NoBodyOutputStream extends ServletOutputStream {
 	if (len >= 0) {
 	    contentLength += len;
 	} else {
-	    // XXX
-	    // isn't this really an IllegalArgumentException?
-	    
-	    String msg = lStrings.getString("err.io.negativelength");
-	    throw new IOException("negative length");
+            // This should have thrown an IllegalArgumentException, but
+            // changing this would break backwards compatibility
+            throw new IOException(lStrings.getString("err.io.negativelength"));
 	}
     }
 }

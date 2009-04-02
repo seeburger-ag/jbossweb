@@ -106,48 +106,51 @@ public final class StandardWrapperFacade
     }
 
 
-    public void addMapping(String... urlPatterns) {
+    public boolean addMapping(String... urlPatterns) {
         if (((Context) wrapper.getParent()).isInitialized()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.addServletMapping.ise", ((Context) wrapper.getParent()).getPath()));
         }
-        if (urlPatterns == null) {
-            return;
+        if (urlPatterns != null) {
+            for (int i = 0; i < urlPatterns.length; i++) {
+                ((Context) wrapper.getParent()).addServletMapping(urlPatterns[i], wrapper.getName());
+            }
         }
-        for (int i = 0; i < urlPatterns.length; i++) {
-            ((Context) wrapper.getParent()).addServletMapping(urlPatterns[i], wrapper.getName());
-        }
+        return true;
     }
 
 
-    public void setAsyncSupported(boolean asyncSupported) {
+    public boolean setAsyncSupported(boolean asyncSupported) {
         wrapper.setAsyncSupported(asyncSupported);
+        return true;
     }
 
 
-    public void setDescription(String description) {
+    public boolean setDescription(String description) {
         wrapper.setDescription(description);
+        return true;
     }
 
 
     public boolean setInitParameter(String name, String value) {
         wrapper.addInitParameter(name, value);
-        // FIXME: return value
         return true;
     }
 
 
-    public void setInitParameters(Map<String, String> initParameters) {
+    public boolean setInitParameters(Map<String, String> initParameters) {
         Iterator<String> parameterNames = initParameters.keySet().iterator();
         while (parameterNames.hasNext()) {
             String parameterName = parameterNames.next();
             wrapper.addInitParameter(parameterName, initParameters.get(parameterName));
         }
+        return true;
     }
 
 
-    public void setLoadOnStartup(int loadOnStartup) {
+    public boolean setLoadOnStartup(int loadOnStartup) {
         wrapper.setLoadOnStartup(loadOnStartup);
+        return true;
     }
 
 

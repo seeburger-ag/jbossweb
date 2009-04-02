@@ -33,6 +33,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 
@@ -292,14 +293,14 @@ public class StandardContext
      * Session tracking modes.
      */
     // FIXME: see about SSL tracking mode
-    private EnumSet<SessionTrackingMode> defaultSessionTrackingModes = 
+    private Set<SessionTrackingMode> defaultSessionTrackingModes = 
         EnumSet.of(SessionTrackingMode.URL, SessionTrackingMode.COOKIE /*, SessionTrackingMode.SSL*/);
     
 
     /**
      * Session tracking modes.
      */
-    private EnumSet<SessionTrackingMode> sessionTrackingModes = defaultSessionTrackingModes;
+    private Set<SessionTrackingMode> sessionTrackingModes = defaultSessionTrackingModes;
     
 
    /**
@@ -1732,18 +1733,18 @@ public class StandardContext
     }
 
 
-    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
+    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
         return defaultSessionTrackingModes;
     }
 
 
-    public EnumSet<SessionTrackingMode> getSessionTrackingModes() {
+    public Set<SessionTrackingMode> getSessionTrackingModes() {
         return sessionTrackingModes;
     }
 
 
     public void setSessionTrackingModes(
-            EnumSet<SessionTrackingMode> sessionTrackingModes) {
+            Set<SessionTrackingMode> sessionTrackingModes) {
         this.sessionTrackingModes = sessionTrackingModes;
     }
     
