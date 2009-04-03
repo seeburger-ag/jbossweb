@@ -2837,8 +2837,13 @@ public class Request
     }
 
     public void logout() throws ServletException {
-        // TODO Auto-generated method stub
-        
+        userPrincipal = null;
+        authType = null;
+        Session session = getSessionInternal(false);
+        if (session != null) {
+            session.setPrincipal(null);
+            session.setAuthType(null);
+        }
     }
 
     public DispatcherType getDispatcherType() {

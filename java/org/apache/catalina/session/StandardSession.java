@@ -19,7 +19,6 @@
 package org.apache.catalina.session;
 
 
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -54,10 +53,9 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.SessionEvent;
 import org.apache.catalina.SessionListener;
+import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.StringManager;
-
-import org.apache.catalina.security.SecurityUtil;
 
 /**
  * Standard implementation of the <b>Session</b> interface.  This object is
@@ -269,14 +267,6 @@ public class StandardSession
 
 
     /**
-     * The property change support for this component.  NOTE:  This value
-     * is not included in the serialized version of this object.
-     */
-    protected transient PropertyChangeSupport support =
-        new PropertyChangeSupport(this);
-
-
-    /**
      * The current accessed time for this session.
      */
     protected int thisAccessedTime = 0;
@@ -310,9 +300,7 @@ public class StandardSession
      */
     public void setAuthType(String authType) {
 
-        String oldAuthType = this.authType;
         this.authType = authType;
-        support.firePropertyChange("authType", oldAuthType, this.authType);
 
     }
 
@@ -538,9 +526,7 @@ public class StandardSession
      */
     public void setPrincipal(Principal principal) {
 
-        Principal oldPrincipal = this.principal;
         this.principal = principal;
-        support.firePropertyChange("principal", oldPrincipal, this.principal);
 
     }
 
