@@ -80,6 +80,21 @@ public interface Context extends Container {
 
 
     /**
+     * Return the authenticator that is configured for this context, or
+     * null if no authenticator has been configured.
+     */
+    public Authenticator getAuthenticator();
+
+
+    /**
+     * Set the authenticator for this context.
+     * 
+     * @param authenticator the new Authenticator for this context
+     */
+    public void setAuthenticator(Authenticator authenticator);
+
+
+    /**
      * Store the set of initialized application event listener objects,
      * in the order they were specified in the web application deployment
      * descriptor, for this application.

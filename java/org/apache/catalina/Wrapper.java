@@ -24,6 +24,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.UnavailableException;
 
+import org.apache.catalina.util.InstanceSupport;
+
 
 /**
  * A <b>Wrapper</b> is a Container that represents an individual servlet
@@ -101,6 +103,12 @@ public interface Wrapper extends Container {
     public void setDescription(String description);
 
 
+    /**
+     * Return the InstanceSupport object for this Wrapper instance.
+     */
+    public InstanceSupport getInstanceSupport();
+    
+    
     /**
      * Return the context-relative URI of the JSP file for this servlet.
      */

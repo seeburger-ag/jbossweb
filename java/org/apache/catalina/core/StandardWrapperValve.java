@@ -235,7 +235,7 @@ final class StandardWrapperValve
         ApplicationFilterFactory factory =
             ApplicationFilterFactory.getInstance();
         ApplicationFilterChain filterChain =
-            factory.createFilterChain(request, wrapper, servlet);
+            factory.createFilterChain(request, wrapper);
         // Reset event flag value after creating the filter chain
         request.setEventMode(false);
 

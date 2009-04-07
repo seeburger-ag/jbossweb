@@ -123,10 +123,9 @@ public final class ApplicationFilterFactory {
      * a filter chain at all, return <code>null</code>.
      *
      * @param request The servlet request we are processing
-     * @param servlet The servlet instance to be wrapped
+     * @param wrapper The servlet instance to be wrapped
      */
-    public ApplicationFilterChain createFilterChain
-        (ServletRequest request, Wrapper wrapper, Servlet servlet) {
+    public ApplicationFilterChain createFilterChain(ServletRequest request, Wrapper wrapper) {
 
         // get the dispatcher type
         int dispatcher = -1; 
@@ -146,7 +145,7 @@ public final class ApplicationFilterFactory {
         if (request instanceof HttpServletRequest) 
             hreq = (HttpServletRequest)request;
         // If there is no servlet to execute, return null
-        if (servlet == null)
+        if (wrapper.getServlet() == null)
             return (null);
 
         boolean event = false;
@@ -187,14 +186,9 @@ public final class ApplicationFilterFactory {
                     requestFacade.setFilterChain(filterChain);
                 }
             }
-            // FIXME: Set the request field in the chain so that the chain removes itself when it recycles
+            filterChain.setRequestFacade(requestFacade);
         }
-        
-        
-        filterChain.setServlet(servlet);
-
-        filterChain.setSupport
-            (((StandardWrapper)wrapper).getInstanceSupport());
+        filterChain.setWrapper(wrapper);
 
         // Acquire the filter mappings for this Context
         StandardContext context = (StandardContext) wrapper.getParent();

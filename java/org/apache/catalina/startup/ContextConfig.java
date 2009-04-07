@@ -579,6 +579,9 @@ public class ContextConfig
             }
         }
 
+        if (authenticator instanceof Authenticator) {
+            context.setAuthenticator((Authenticator) authenticator);
+        }
         if (authenticator != null && context instanceof ContainerBase) {
             Pipeline pipeline = ((ContainerBase) context).getPipeline();
             if (pipeline != null) {

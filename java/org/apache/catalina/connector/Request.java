@@ -2851,9 +2851,8 @@ public class Request
     }
 
     public boolean isAsyncSupported() {
-        // FIXME: Normally, this should be about checking that the Servlet has
-        // async supported, and that all filters in the chain do too ?
-        return false;
+        // FIXME: Check all the filter chain
+        return true;
     }
 
     public void setAsyncTimeout(long timeout) {
@@ -2876,22 +2875,23 @@ public class Request
 
     public boolean login(HttpServletResponse response) throws IOException,
             ServletException {
-        // FIXME: wrapped response is super evil :(
-        if (response instanceof ResponseFacade) {
-            
+        // FIXME: Ignoring the response param, which will hopefully go away
+        if (context.getAuthenticator() != null) {
+            return context.getAuthenticator().login(this, this.response);
+        } else {
+            // FIXME: error message for no available authenticator
+            throw new ServletException();
         }
-        return false;
     }
 
     public void login(String username, String password) throws ServletException {
         Realm realm = context.getRealm();
         userPrincipal = realm.authenticate(username, password);
-        // FIXME: not sure how the login should be completed: set in the session, SSO, etc etc ?
-        // (apparently, no according to the javadoc)
         if (userPrincipal == null) {
             throw new ServletException();
         }
-        authType = "?";
+        // FIXME: authType value
+        authType = "LOGIN";
     }
 
     public void logout() throws ServletException {

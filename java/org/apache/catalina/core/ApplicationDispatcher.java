@@ -622,21 +622,21 @@ final class ApplicationDispatcher
                 
         // Get the FilterChain Here
         ApplicationFilterFactory factory = ApplicationFilterFactory.getInstance();
-        ApplicationFilterChain filterChain = factory.createFilterChain(request,
-                                                                wrapper,servlet);
+        ApplicationFilterChain filterChain = factory.createFilterChain(request, wrapper);
         // Call the service() method for the allocated servlet instance
         try {
             String jspFile = wrapper.getJspFile();
-            if (jspFile != null)
+            if (jspFile != null) {
                 request.setAttribute(Globals.JSP_FILE_ATTR, jspFile);
-            else
+            } else {
                 request.removeAttribute(Globals.JSP_FILE_ATTR);
+            }
             support.fireInstanceEvent(InstanceEvent.BEFORE_DISPATCH_EVENT,
                                       servlet, request, response);
             // for includes/forwards
             if ((servlet != null) && (filterChain != null)) {
-               filterChain.doFilter(request, response);
-             }
+                filterChain.doFilter(request, response);
+            }
             // Servlet Service Method is called by the FilterChain
             request.removeAttribute(Globals.JSP_FILE_ATTR);
             support.fireInstanceEvent(InstanceEvent.AFTER_DISPATCH_EVENT,

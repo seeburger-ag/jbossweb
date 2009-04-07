@@ -63,6 +63,7 @@ import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
+import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Context;
@@ -230,6 +231,12 @@ public class StandardContext
         new ApplicationParameter[0];
 
 
+    /**
+     * The application authenticator for this Context. This is simply a reference
+     * and the authenticator should still be set as a valve.
+     */
+    private Authenticator authenticator = null;
+    
     /**
      * The application available flag for this Context.
      */
@@ -1004,6 +1011,31 @@ public class StandardContext
         support.firePropertyChange("antiResourceLocking",
                                    new Boolean(oldAntiResourceLocking),
                                    new Boolean(this.antiResourceLocking));
+
+    }
+
+
+    /**
+     * Return the application authenticator for this Context.
+     */
+    public Authenticator getAuthenticator() {
+
+        return (this.authenticator);
+
+    }
+
+
+    /**
+     * Set the application authenticator for this Context.
+     *
+     * @param authenticator The new application authenticator
+     */
+    public void setAuthenticator(Authenticator authenticator) {
+
+        Authenticator oldAuthenticator = this.authenticator;
+        this.authenticator = authenticator;
+        support.firePropertyChange("authenticator", oldAuthenticator, 
+                this.authenticator);
 
     }
 
@@ -4805,6 +4837,8 @@ public class StandardContext
         applicationEventListenersObjects = new Object[0];
         applicationLifecycleListenersObjects = new Object[0];
         instanceManager = null;
+        
+        authenticator = null;
         
         if(log.isDebugEnabled())
             log.debug("resetContext " + oname);
