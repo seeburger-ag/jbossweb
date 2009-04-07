@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -64,9 +65,9 @@ import java.util.TreeMap;
 
 import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
+import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.DispatcherType;
-import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -246,6 +247,13 @@ public class Request
      * Async timeout.
      */
     protected long asyncTimeout = 300000L;
+    
+    
+    /**
+     * Async listeners.
+     */
+    protected LinkedHashMap<AsyncEvent, AsyncListener> asyncListeners = 
+        new LinkedHashMap<AsyncEvent, AsyncListener>();
     
     
     /**
@@ -445,6 +453,7 @@ public class Request
         
         asyncContext = null;
         asyncTimeout = 300000;
+        asyncListeners.clear();
         authType = null;
         inputBuffer.recycle();
         usingInputStream = false;
@@ -2825,7 +2834,8 @@ public class Request
 
     public void addAsyncListener(AsyncListener listener,
             ServletRequest servletRequest, ServletResponse servletResponse) {
-        // FIXME: Maybe add to the asyncContext ?
+        AsyncEvent event = new AsyncEvent(servletRequest, servletResponse);
+        asyncListeners.put(event, listener);
     }
 
     public void addAsyncListener(AsyncListener listener) {
@@ -2856,7 +2866,7 @@ public class Request
 
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
-        // FIXME: check is supported
+        // FIXME: check isAsyncSupported
         // FIXME: get async timeout according to what was configured in the filter chains
         setTimeout((asyncTimeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) asyncTimeout);
         asyncContext = new AsyncContextImpl(servletRequest, servletResponse);
@@ -2981,6 +2991,10 @@ public class Request
 
         public Runnable getRunnable() {
             return runnable;
+        }
+        
+        public Map<AsyncEvent, AsyncListener> getAsyncListeners() {
+            return asyncListeners;
         }
 
     }
