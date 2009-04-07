@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.core.ApplicationFilterChain;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.StringManager;
 
@@ -1038,6 +1039,44 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return request.getDispatcherType();
+    }
+
+
+    /**
+     * Get filter chain associated with the request.
+     */
+    public ApplicationFilterChain getFilterChain() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+        return request.getFilterChain();
+    }
+
+
+    /**
+     * Set filter chain associated with the request.
+     * 
+     * @param filterChain new filter chain
+     */
+    public void setFilterChain(ApplicationFilterChain filterChain) {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+        request.setFilterChain(filterChain);
+    }
+
+
+    /**
+     * Release the current filter chain.
+     */
+    public void releaseFilterChain() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+        request.releaseFilterChain();
     }
 
 

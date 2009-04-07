@@ -88,6 +88,7 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
+import org.apache.catalina.core.ApplicationFilterChain;
 import org.apache.catalina.core.ApplicationFilterFactory;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.util.Enumerator;
@@ -240,6 +241,12 @@ public class Request
      */
     protected String authType = null;
 
+    
+    /**
+     * Async timeout.
+     */
+    protected long asyncTimeout = 300000L;
+    
     
     /**
      * Associated event.
@@ -437,6 +444,7 @@ public class Request
         }
         
         asyncContext = null;
+        asyncTimeout = 300000;
         authType = null;
         inputBuffer.recycle();
         usingInputStream = false;
@@ -455,6 +463,7 @@ public class Request
         localPort = -1;
         localAddr = null;
         localName = null;
+        currentFilterChain = 0;
 
         attributes.clear();
         notes.clear();
@@ -581,24 +590,51 @@ public class Request
 
 
     /**
-     * Filter chain associated with the request.
+     * Filter chains associated with the request.
      */
-    protected FilterChain filterChain = null;
-
+    protected ArrayList<ApplicationFilterChain> filterChains = new ArrayList<ApplicationFilterChain>();
+    
+    
+    /**
+     * Number of filter chains used.
+     */
+    protected int currentFilterChain = 0;
+    
+    
     /**
      * Get filter chain associated with the request.
      */
-    public FilterChain getFilterChain() {
-        return (this.filterChain);
+    public ApplicationFilterChain getFilterChain() {
+        if (currentFilterChain < filterChains.size()) {
+            return filterChains.get(currentFilterChain++);
+        } else {
+            return null;
+        }
     }
+
 
     /**
      * Set filter chain associated with the request.
      * 
      * @param filterChain new filter chain
      */
-    public void setFilterChain(FilterChain filterChain) {
-        this.filterChain = filterChain;
+    public void setFilterChain(ApplicationFilterChain filterChain) {
+        if (currentFilterChain < filterChains.size()) {
+            filterChains.set(currentFilterChain++, filterChain);
+        } else {
+            filterChains.add(filterChain);
+            currentFilterChain++;
+        }
+    }
+
+
+    /**
+     * Set filter chain associated with the request.
+     * 
+     * @param filterChain new filter chain
+     */
+    public void releaseFilterChain() {
+        currentFilterChain--;
     }
 
 
@@ -2811,7 +2847,7 @@ public class Request
     }
 
     public void setAsyncTimeout(long timeout) {
-        setTimeout((timeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) timeout);
+        this.asyncTimeout = timeout;
     }
 
     public AsyncContext startAsync() throws IllegalStateException {
@@ -2820,6 +2856,9 @@ public class Request
 
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
+        // FIXME: check is supported
+        // FIXME: get async timeout according to what was configured in the filter chains
+        setTimeout((asyncTimeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) asyncTimeout);
         asyncContext = new AsyncContextImpl(servletRequest, servletResponse);
         eventMode = true;
         return asyncContext;
@@ -2827,13 +2866,22 @@ public class Request
 
     public boolean login(HttpServletResponse response) throws IOException,
             ServletException {
-        // TODO Auto-generated method stub
+        // FIXME: wrapped response is super evil :(
+        if (response instanceof ResponseFacade) {
+            
+        }
         return false;
     }
 
     public void login(String username, String password) throws ServletException {
-        // TODO Auto-generated method stub
-        
+        Realm realm = context.getRealm();
+        userPrincipal = realm.authenticate(username, password);
+        // FIXME: not sure how the login should be completed: set in the session, SSO, etc etc ?
+        // (apparently, no according to the javadoc)
+        if (userPrincipal == null) {
+            throw new ServletException();
+        }
+        authType = "?";
     }
 
     public void logout() throws ServletException {

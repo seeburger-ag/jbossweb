@@ -18,6 +18,14 @@
 
 package org.apache.catalina;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+
 
 /**
  * An <b>Authenticator</b> is a component (usually a Valve or Container) that
@@ -31,6 +39,8 @@ package org.apache.catalina;
  */
 
 public interface Authenticator {
-
-
+    public boolean login(Request request, Response response)
+        throws IOException, ServletException;
+    public boolean login(Request request, HttpServletResponse response)
+        throws IOException, ServletException;
 }

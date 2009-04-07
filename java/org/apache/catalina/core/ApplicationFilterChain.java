@@ -53,7 +53,7 @@ import org.jboss.servlet.http.HttpEventServlet;
  * @version $Revision$ $Date$
  */
 
-final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain {
+public final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain {
 
     // Used to enforce requirements of SRV.8.2 / SRV.14.2.5.1
     private final static ThreadLocal lastServicedRequest;
@@ -69,6 +69,7 @@ final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain 
         }
     }
 
+    
     // -------------------------------------------------------------- Constants
 
 
@@ -90,7 +91,11 @@ final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain 
 
     // ----------------------------------------------------- Instance Variables
 
-
+    // FIXME: Add a requestFacade field to be able to call release when done
+    // FIXME: Add accessors for the internal structures
+    // FIXME: Keep the wrapper, to be able to access the servlet registration
+    // FIXME: Add an exec pointer field to know which element of the chain we are running
+    
     /**
      * Filters.
      */
@@ -572,5 +577,13 @@ final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain 
 
     }
 
+    
+    // -------------------------------------------- AsyncProterties Inner Class
+    
+    
+    protected class AsyncProperties {
+        public boolean asyncSupported = true;
+        public long timeout = -1;
+    }
 
 }

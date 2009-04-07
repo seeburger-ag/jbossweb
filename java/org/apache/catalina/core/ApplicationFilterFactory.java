@@ -21,11 +21,13 @@ package org.apache.catalina.core;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
+import javax.servlet.ServletRequestWrapper;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.deploy.FilterMap;
 import org.jboss.servlet.http.HttpEventFilter;
 
@@ -119,31 +121,48 @@ public final class ApplicationFilterFactory {
         if (servlet == null)
             return (null);
 
-        boolean comet = false;
+        boolean event = false;
+        
+        // Get the request facade object
+        RequestFacade requestFacade = null;
+        if (request instanceof Request) {
+            Request coreRequest = (Request) request;
+            event = coreRequest.isEventMode();
+            requestFacade = (RequestFacade) coreRequest.getRequest();
+        } else {
+            ServletRequest current = request;
+            while (current != null) {
+                // If we run into the container request we are done
+                if (current instanceof RequestFacade) {
+                    requestFacade = (RequestFacade) current;
+                    break;
+                }
+                // Advance to the next request in the chain
+                current = ((ServletRequestWrapper) current).getRequest();
+            }
+        }
         
         // Create and initialize a filter chain object
         ApplicationFilterChain filterChain = null;
-        if (request instanceof Request) {
-            Request req = (Request) request;
-            comet = req.isEventMode();
+        if (requestFacade == null) {
+            // Not normal: some async functions and tracing will be disabled
+            filterChain = new ApplicationFilterChain();
+        } else {
+            // Add this filter chain to the request facade
             if (Globals.IS_SECURITY_ENABLED) {
-                // Security: Do not recycle
                 filterChain = new ApplicationFilterChain();
-                if (comet) {
-                    req.setFilterChain(filterChain);
-                }
+                requestFacade.setFilterChain(filterChain);
             } else {
-                filterChain = (ApplicationFilterChain) req.getFilterChain();
+                filterChain = requestFacade.getFilterChain();
                 if (filterChain == null) {
                     filterChain = new ApplicationFilterChain();
-                    req.setFilterChain(filterChain);
+                    requestFacade.setFilterChain(filterChain);
                 }
             }
-        } else {
-            // Request dispatcher in use
-            filterChain = new ApplicationFilterChain();
+            // FIXME: Set the request field in the chain so that the chain removes itself when it recycles
         }
-
+        
+        
         filterChain.setServlet(servlet);
 
         filterChain.setSupport
@@ -173,16 +192,16 @@ public final class ApplicationFilterFactory {
                 ;       // FIXME - log configuration problem
                 continue;
             }
-            boolean isCometFilter = false;
-            if (comet) {
+            boolean isEventFilter = false;
+            if (event) {
                 try {
-                    isCometFilter = filterConfig.getFilter() instanceof HttpEventFilter;
+                    isEventFilter = filterConfig.getFilter() instanceof HttpEventFilter;
                 } catch (Exception e) {
                     // Note: The try catch is there because getFilter has a lot of 
                     // declared exceptions. However, the filter is allocated much
                     // earlier
                 }
-                if (isCometFilter) {
+                if (isEventFilter) {
                     filterChain.addFilter(filterConfig);
                 }
             } else {
@@ -203,16 +222,16 @@ public final class ApplicationFilterFactory {
                 ;       // FIXME - log configuration problem
                 continue;
             }
-            boolean isCometFilter = false;
-            if (comet) {
+            boolean isEventFilter = false;
+            if (event) {
                 try {
-                    isCometFilter = filterConfig.getFilter() instanceof HttpEventFilter;
+                    isEventFilter = filterConfig.getFilter() instanceof HttpEventFilter;
                 } catch (Exception e) {
                     // Note: The try catch is there because getFilter has a lot of 
                     // declared exceptions. However, the filter is allocated much
                     // earlier
                 }
-                if (isCometFilter) {
+                if (isEventFilter) {
                     filterChain.addFilter(filterConfig);
                 }
             } else {
