@@ -397,8 +397,8 @@ public abstract class AuthenticatorBase
      */
     public boolean login(Request request, HttpServletResponse response)
         throws IOException, ServletException {
-        // FIXME
-        return false;
+        // FIXME: use the wrapper
+        return login(request, request.getResponse());
     }
 
 

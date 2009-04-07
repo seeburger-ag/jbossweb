@@ -123,6 +123,11 @@ public class Request
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SESSION_ID_CHECK", "false")).booleanValue();
 
 
+    protected static final boolean WRAPPED_RESPONSE_IN_LOGIN = 
+        Globals.STRICT_SERVLET_COMPLIANCE
+        || Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.WRAPPED_RESPONSE_IN_LOGIN", "false")).booleanValue();
+
+    
     // ----------------------------------------------------------- Constructors
 
 
@@ -2855,8 +2860,12 @@ public class Request
         return true;
     }
 
-    public void setAsyncTimeout(long timeout) {
-        this.asyncTimeout = timeout;
+    public long getAsyncTimeout() {
+        return this.asyncTimeout;
+    }
+
+    public void setAsyncTimeout(long asyncTimeout) {
+        this.asyncTimeout = asyncTimeout;
     }
 
     public AsyncContext startAsync() throws IllegalStateException {
@@ -2865,9 +2874,11 @@ public class Request
 
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
-        // FIXME: check isAsyncSupported
-        // FIXME: get async timeout according to what was configured in the filter chains
-        setTimeout((asyncTimeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) asyncTimeout);
+        int timeout = (asyncTimeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) asyncTimeout;
+        if (timeout <= 0) {
+            timeout = Integer.MAX_VALUE;
+        }
+        setTimeout(timeout);
         asyncContext = new AsyncContextImpl(servletRequest, servletResponse);
         eventMode = true;
         return asyncContext;
@@ -2875,9 +2886,12 @@ public class Request
 
     public boolean login(HttpServletResponse response) throws IOException,
             ServletException {
-        // FIXME: Ignoring the response param, which will hopefully go away
         if (context.getAuthenticator() != null) {
-            return context.getAuthenticator().login(this, this.response);
+            if (!WRAPPED_RESPONSE_IN_LOGIN || response instanceof ResponseFacade) {
+                return context.getAuthenticator().login(this, this.response);
+            } else {
+                return context.getAuthenticator().login(this, response);
+            }
         } else {
             // FIXME: error message for no available authenticator
             throw new ServletException();
@@ -2890,8 +2904,7 @@ public class Request
         if (userPrincipal == null) {
             throw new ServletException();
         }
-        // FIXME: authType value
-        authType = "LOGIN";
+        authType = context.getLoginConfig().getAuthMethod();
     }
 
     public void logout() throws ServletException {
@@ -2922,10 +2935,6 @@ public class Request
         throw new IllegalStateException();
     }
 
-    public ServletResponse getServletResponse() {
-        return response;
-    }
-    
     
     // ------------------------------------------ AsyncContextImpl Inner Class
 

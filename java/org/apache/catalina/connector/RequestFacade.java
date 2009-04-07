@@ -1001,13 +1001,23 @@ public class RequestFacade implements HttpServletRequest {
     }
 
 
-     public void setAsyncTimeout(long timeout) {
+    public void setAsyncTimeout(long timeout) {
         if (request == null) {
             throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+                    sm.getString("requestFacade.nullRequest"));
         }
 
         request.setAsyncTimeout(timeout);
+    }
+
+
+    public long getAsyncTimeout() {
+        if (request == null) {
+            throw new IllegalStateException(
+                    sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.getAsyncTimeout();
     }
 
 
@@ -1077,16 +1087,6 @@ public class RequestFacade implements HttpServletRequest {
                             sm.getString("requestFacade.nullRequest"));
         }
         request.releaseFilterChain();
-    }
-
-
-    public ServletResponse getServletResponse() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.getResponse().getResponse();
     }
 
 
