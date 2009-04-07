@@ -51,7 +51,7 @@ import org.apache.tomcat.util.log.SystemLogHandler;
  * @version $Revision$ $Date$
  */
 
-final class ApplicationFilterConfig implements FilterConfig, Serializable {
+public final class ApplicationFilterConfig implements FilterConfig, Serializable {
 
 
     protected static StringManager sm =
@@ -242,7 +242,7 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
     /**
      * Return the filter definition we are configured for.
      */
-    FilterDef getFilterDef() {
+    public FilterDef getFilterDef() {
 
         return (this.filterDef);
 

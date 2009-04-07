@@ -90,7 +90,9 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ApplicationFilterChain;
+import org.apache.catalina.core.ApplicationFilterConfig;
 import org.apache.catalina.core.ApplicationFilterFactory;
+import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.ParameterMap;
@@ -251,7 +253,7 @@ public class Request
     /**
      * Async timeout.
      */
-    protected long asyncTimeout = 300000L;
+    protected long asyncTimeout = 600000L;
     
     
     /**
@@ -2878,6 +2880,11 @@ public class Request
         if (timeout <= 0) {
             timeout = Integer.MAX_VALUE;
         }
+        if (!isAsyncSupported()) {
+            throw new IllegalStateException(sm.getString("coyoteRequest.noAsync"));
+        }
+        // FIXME: if (asyncContext != null && !processing) { throw ISE }
+        // FIXME: if (response.isClosed()) { throw ISE }
         setTimeout(timeout);
         asyncContext = new AsyncContextImpl(servletRequest, servletResponse);
         eventMode = true;
@@ -2893,8 +2900,7 @@ public class Request
                 return context.getAuthenticator().login(this, response);
             }
         } else {
-            // FIXME: error message for no available authenticator
-            throw new ServletException();
+            throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
         }
     }
 
@@ -2902,9 +2908,9 @@ public class Request
         Realm realm = context.getRealm();
         userPrincipal = realm.authenticate(username, password);
         if (userPrincipal == null) {
-            throw new ServletException();
+            throw new ServletException(sm.getString("coyoteRequest.authFailed"));
         }
-        authType = context.getLoginConfig().getAuthMethod();
+        authType = "LOGIN";
     }
 
     public void logout() throws ServletException {
@@ -2935,6 +2941,47 @@ public class Request
         throw new IllegalStateException();
     }
 
+    
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append(sm.getString("coyoteRequest.servletStack", Thread.currentThread().getName()));
+        if (eventMode) {
+            buf.append(" [event]");
+        }
+        if (asyncContext != null) {
+            buf.append(" [async]");
+        }
+        buf.append("\r\n");
+        int filterChainCount = currentFilterChain;
+        for (int i = 0; i < filterChainCount; i++) {
+            ApplicationFilterChain filterChain = filterChains.get(i);
+            ApplicationFilterConfig[] filterConfigs = filterChain.getFilters();
+            int n = filterChain.getFilterCount();
+            int pos = filterChain.getPointer();
+            for (int j = 0; j < n; j++) {
+                FilterDef filterDef = filterConfigs[j].getFilterDef();
+                if (pos == j) {
+                    buf.append("-> ");
+                } else {
+                    buf.append("   ");
+                }
+                buf.append("[F] ").append(filterDef.getFilterName()).append(" [")
+                    .append(filterDef.getFilterClass()).append("] ").append(filterDef.getAsyncSupported() ? "[A]" : "")
+                    .append("\r\n");
+            }
+            if (pos == n) {
+                buf.append("-> ");
+            } else {
+                buf.append("   ");
+            }
+            Wrapper wrapper = filterChain.getWrapper();
+            buf.append("[S] ").append(wrapper.getName()).append(" [")
+                .append(wrapper.getServletClass()).append("] ").append(wrapper.getAsyncSupported() ? "[A]" : "")
+                .append("\r\n");
+        }
+        return buf.toString();
+    }
+    
     
     // ------------------------------------------ AsyncContextImpl Inner Class
 
