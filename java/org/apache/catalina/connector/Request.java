@@ -2994,6 +2994,7 @@ public class Request
         protected ServletContext servletContext = null;
         protected String path = null;
         protected Runnable runnable = null;
+        protected boolean useAttributes = false;
 
         public AsyncContextImpl(ServletRequest request, ServletResponse response) {
             this.request = request;
@@ -3006,11 +3007,24 @@ public class Request
         }
 
         public void dispatch() {
+            if (request == getRequestFacade()) {
+                // Get the path directly
+                path = getRequestPathMB().toString();
+            } else if (request instanceof HttpServletRequest) {
+                // Rebuild the path
+                path = ((HttpServletRequest) request).getRequestURI();
+                if (servletContext != null) {
+                    path = path.substring(servletContext.getContextPath().length());
+                } else {
+                    path = path.substring(context.getName().length());
+                }
+            }
             resume();
         }
 
         public void dispatch(String path) {
             this.path = path;
+            useAttributes = true;
             resume();
         }
 
@@ -3043,6 +3057,10 @@ public class Request
 
         public String getPath() {
             return path;
+        }
+
+        public boolean getUseAttributes() {
+            return useAttributes;
         }
 
         public Runnable getRunnable() {

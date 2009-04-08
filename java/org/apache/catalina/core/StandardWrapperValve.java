@@ -48,10 +48,14 @@ package org.apache.catalina.core;
 
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletResponse;
@@ -63,7 +67,6 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.log.SystemLogHandler;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
@@ -221,16 +224,12 @@ final class StandardWrapperValve
             exception(request, response, e);
             servlet = null;
         }
-        MessageBytes requestPathMB = null;
-        if (request != null) {
-            requestPathMB = request.getRequestPathMB();
-        }
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
              ApplicationFilterFactory.REQUEST_INTEGER);
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-             requestPathMB);
+                    request.getRequestPathMB());
         // Create the filter chain for this request
         ApplicationFilterFactory factory =
             ApplicationFilterFactory.getInstance();
@@ -397,6 +396,58 @@ final class StandardWrapperValve
     public void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
         
+        // Async processing
+        Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
+        if (asyncContext != null) {
+            if (event.getType() == EventType.END || event.getType() == EventType.ERROR
+                    || event.getType() == EventType.TIMEOUT) {
+                // Invoke the listeners with onComplete or onTimeout
+                boolean timeout = (event.getType() == EventType.TIMEOUT) ? true : false;
+                Iterator<AsyncEvent> asyncEvents = asyncContext.getAsyncListeners().keySet().iterator();
+                while (asyncEvents.hasNext()) {
+                    AsyncEvent asyncEvent = asyncEvents.next();
+                    AsyncListener asyncListener = asyncContext.getAsyncListeners().get(asyncEvent);
+                    try {
+                        if (timeout) {
+                            asyncListener.onTimeout(asyncEvent);
+                        } else {
+                            asyncListener.onComplete(asyncEvent);
+                        }
+                    } catch (Throwable e) {
+                        container.getLogger().error(sm.getString("standardWrapper.async.listenerError",
+                                getContainer().getName()), e);
+                        exception(request, response, e);
+                    }
+                }
+            } else if (asyncContext.getRunnable() != null) {
+                // Execute the runnable
+                try {
+                    asyncContext.getRunnable().run();
+                } catch (Throwable e) {
+                    container.getLogger().error(sm.getString("standardWrapper.async.runnableError",
+                            getContainer().getName()), e);
+                    exception(request, response, e);
+                }
+            } else if (asyncContext.getPath() != null) {
+                // Remap the request, set the dispatch attributes, create the filter chain
+                // and invoke the Servlet
+                Context context = (Context) getContainer().getParent();
+                ServletContext servletContext = context.getServletContext();
+                if (asyncContext.getServletContext() != null) {
+                    // Cross context
+                    servletContext = asyncContext.getServletContext();
+                }
+                ApplicationDispatcher dispatcher = 
+                    (ApplicationDispatcher) servletContext.getRequestDispatcher(asyncContext.getPath());
+                // FIXME: Add an async method to Application dispatcher
+                // Invoke the dispatcher
+                asyncContext.getUseAttributes();
+            } else {
+                // FIXME: should not happen
+            }
+            return;
+        }
+        
         // Initialize local variables we may need
         Throwable throwable = null;
         // This should be a Request attribute...
@@ -433,44 +484,12 @@ final class StandardWrapperValve
             servlet = null;
         }
 
-        MessageBytes requestPathMB = null;
-        if (request != null) {
-            requestPathMB = request.getRequestPathMB();
-        }
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
              ApplicationFilterFactory.ASYNC_INTEGER);
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-             requestPathMB);
-        
-        // FIXME: Implement async mode, which means invoking listeners or the Servlet, etc
-        Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
-        if (asyncContext != null) {
-            if (event.getType() == EventType.END || event.getType() == EventType.ERROR) {
-                // Invoke the listeners with onComplete
-                // FIXME
-            } else if (event.getType() == EventType.TIMEOUT) {
-                // Invoke the listeners with onTimeout
-                // FIXME
-            } else if (asyncContext.getRunnable() != null) {
-                // Execute the runnable
-                // FIXME
-            } else if (asyncContext.getPath() != null) {
-                // Remap the request, set the dispatch attributes, create the filter chain
-                // and invoke the Servlet
-                // FIXME: Also check how cross context works, but it is be ok to do from here
-                // (or do another distpatcher object similar to the current request dispatcher)
-                if (asyncContext.getServletContext() != null) {
-                    // Cross context
-                    // FIXME
-                }
-            } else {
-                // Create the filter chain and reinvoke the same Servlet
-                // FIXME
-            }
-            return; // FIXME
-        }
+                    request.getRequestPathMB());
         
         // Get the current (unchanged) filter chain for this request
         ApplicationFilterChain filterChain = 
