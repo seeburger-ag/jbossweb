@@ -24,6 +24,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -99,12 +100,31 @@ final class ApplicationDispatcher
     }
 
     
+    protected class PrivilegedAsync implements PrivilegedExceptionAction {
+        private ServletRequest request;
+        private ServletResponse response;
+        private boolean attributes;
+
+        PrivilegedAsync(ServletRequest request, ServletResponse response, boolean attributes)
+        {
+            this.request = request;
+            this.response = response;
+            this.attributes = attributes;
+        }
+
+        public Object run() throws ServletException, IOException {
+            doAsync(request, response, attributes);
+            return null;
+        }
+    }
+
+    
     /**
      * Used to pass state when the request dispatcher is used. Using instance
      * variables causes threading issues and state is too complex to pass and
      * return single ServletRequest or ServletResponse objects.
      */
-    private class State {
+    private static class State {
         State(ServletRequest request, ServletResponse response,
                 boolean including) {
             this.outerRequest = request;
@@ -280,6 +300,86 @@ final class ApplicationDispatcher
 
 
     /**
+     * Async forward this request and response to another resource for processing.
+     * Any runtime exception, IOException, or ServletException thrown by the
+     * called servlet will be propogated to the caller.
+     *
+     * @param request The servlet request to be forwarded
+     * @param response The servlet response to be forwarded
+     *
+     * @exception IOException if an input/output error occurs
+     * @exception ServletException if a servlet exception occurs
+     */
+    public void async(ServletRequest request, ServletResponse response, boolean attributes)
+        throws ServletException, IOException
+    {
+        if (Globals.IS_SECURITY_ENABLED) {
+            try {
+                AccessController.doPrivileged(new PrivilegedAsync(request, response, attributes));
+            } catch (PrivilegedActionException pe) {
+                Exception e = pe.getException();
+                if (e instanceof ServletException)
+                    throw (ServletException) e;
+                throw (IOException) e;
+            }
+        } else {
+            doAsync(request,response, attributes);
+        }
+    }
+
+    private void doAsync(ServletRequest request, ServletResponse response, boolean attributes)
+        throws ServletException, IOException
+    {
+
+        // Set up to handle the specified request and response
+        State state = new State(request, response, false);
+
+        if (Globals.STRICT_SERVLET_COMPLIANCE) {
+            // Check SRV.8.2 / SRV.14.2.5.1 compliance
+            checkSameObjects(request, response);
+        }
+
+        if (attributes) {
+            wrapResponse(state);
+            ApplicationHttpRequest wrequest =
+                (ApplicationHttpRequest) wrapRequest(state);
+            String contextPath = context.getPath();
+            HttpServletRequest hrequest = state.hrequest;
+            if (hrequest.getAttribute(AsyncContext.ASYNC_REQUEST_URI) == null) {
+                wrequest.setAttribute(AsyncContext.ASYNC_REQUEST_URI,
+                        hrequest.getRequestURI());
+                wrequest.setAttribute(AsyncContext.ASYNC_CONTEXT_PATH,
+                        hrequest.getContextPath());
+                wrequest.setAttribute(AsyncContext.ASYNC_SERVLET_PATH,
+                        hrequest.getServletPath());
+                wrequest.setAttribute(AsyncContext.ASYNC_PATH_INFO,
+                        hrequest.getPathInfo());
+                wrequest.setAttribute(AsyncContext.ASYNC_QUERY_STRING,
+                        hrequest.getQueryString());
+            }
+
+            wrequest.setContextPath(contextPath);
+            wrequest.setRequestURI(requestURI);
+            wrequest.setServletPath(servletPath);
+            wrequest.setPathInfo(pathInfo);
+            if (queryString != null) {
+                wrequest.setQueryString(queryString);
+                wrequest.setQueryParams(queryString);
+            }
+        }
+
+        state.outerRequest.setAttribute
+            (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
+                requestPath);
+        state.outerRequest.setAttribute
+            (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
+                Integer.valueOf(ApplicationFilterFactory.ASYNC_INTEGER));
+        invoke(state.outerRequest, response, state);
+
+    }
+
+
+    /**
      * Forward this request and response to another resource for processing.
      * Any runtime exception, IOException, or ServletException thrown by the
      * called servlet will be propogated to the caller.
@@ -445,7 +545,6 @@ final class ApplicationDispatcher
         }
 
     }
-    
     
     
     /**
@@ -828,14 +927,11 @@ final class ApplicationDispatcher
         // Instantiate a new wrapper at this point and insert it in the chain
         ServletRequest wrapper = null;
         if ((current instanceof ApplicationHttpRequest) ||
-            (current instanceof Request) ||
             (current instanceof HttpServletRequest)) {
             // Compute a crossContext flag
             HttpServletRequest hcurrent = (HttpServletRequest) current;
             boolean crossContext = false;
-            if ((state.outerRequest instanceof ApplicationHttpRequest) ||
-                (state.outerRequest instanceof Request) ||
-                (state.outerRequest instanceof HttpServletRequest)) {
+            if (state.outerRequest instanceof HttpServletRequest) {
                 HttpServletRequest houterRequest = 
                     (HttpServletRequest) state.outerRequest;
                 Object contextPath = houterRequest.getAttribute
@@ -888,14 +984,13 @@ final class ApplicationDispatcher
 
         // Instantiate a new wrapper at this point and insert it in the chain
         ServletResponse wrapper = null;
-        if ((current instanceof ApplicationHttpResponse) ||
-            (current instanceof Response) ||
-            (current instanceof HttpServletResponse))
+        if (current instanceof HttpServletResponse) {
             wrapper =
                 new ApplicationHttpResponse((HttpServletResponse) current,
                         state.including);
-        else
+        } else {
             wrapper = new ApplicationResponse(current, state.including);
+        }
         if (previous == null)
             state.outerResponse = wrapper;
         else

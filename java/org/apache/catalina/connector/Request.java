@@ -130,6 +130,11 @@ public class Request
         || Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.WRAPPED_RESPONSE_IN_LOGIN", "false")).booleanValue();
 
     
+    protected static final boolean CHECK_ASYNC = 
+        Globals.STRICT_SERVLET_COMPLIANCE
+        || Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.CHECK_ASYNC", "true")).booleanValue();
+
+    
     // ----------------------------------------------------------- Constructors
 
 
@@ -2871,7 +2876,7 @@ public class Request
     }
 
     public AsyncContext startAsync() throws IllegalStateException {
-        return startAsync(getRequest(), response.getResponse());
+        return startAsync(null, null);
     }
 
     public AsyncContext startAsync(ServletRequest servletRequest,
@@ -2880,14 +2885,26 @@ public class Request
         if (timeout <= 0) {
             timeout = Integer.MAX_VALUE;
         }
-        if (!isAsyncSupported()) {
+        if (CHECK_ASYNC && !isAsyncSupported()) {
             throw new IllegalStateException(sm.getString("coyoteRequest.noAsync"));
         }
         // FIXME: if (asyncContext != null && !processing) { throw ISE }
         // FIXME: if (response.isClosed()) { throw ISE }
         setTimeout(timeout);
-        asyncContext = new AsyncContextImpl(servletRequest, servletResponse);
-        eventMode = true;
+        if (asyncContext == null) {
+            asyncContext = new AsyncContextImpl
+                ((servletRequest == null) ? getRequest() : servletRequest, 
+                 (servletResponse == null) ? response.getResponse() : servletResponse);
+            eventMode = true;
+        } else {
+            if (servletRequest != null) {
+                asyncContext.setRequest(servletRequest);
+            }
+            if (servletResponse != null) {
+                asyncContext.setResponse(servletResponse);
+            }
+            asyncContext.reset();
+        }
         return asyncContext;
     }
 
@@ -2995,6 +3012,7 @@ public class Request
         protected String path = null;
         protected Runnable runnable = null;
         protected boolean useAttributes = false;
+        protected boolean ready = true;
 
         public AsyncContextImpl(ServletRequest request, ServletResponse response) {
             this.request = request;
@@ -3051,6 +3069,18 @@ public class Request
             resume();
         }
 
+        public boolean isReady() {
+            return ready;
+        }
+
+        public void setRequest(ServletRequest request) {
+            this.request = request;
+        }
+
+        public void setResponse(ServletResponse response) {
+            this.response = response;
+        }
+
         public ServletContext getServletContext() {
             return servletContext;
         }
@@ -3065,6 +3095,14 @@ public class Request
 
         public Runnable getRunnable() {
             return runnable;
+        }
+        
+        public void reset() {
+            servletContext = null;
+            path = null;
+            runnable = null;
+            useAttributes = false;
+            ready = true;
         }
         
         public Map<AsyncEvent, AsyncListener> getAsyncListeners() {

@@ -48,6 +48,7 @@ package org.apache.catalina.core;
 
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 
 import javax.management.MalformedObjectNameException;
@@ -57,6 +58,7 @@ import javax.servlet.AsyncListener;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -65,6 +67,7 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.log.SystemLogHandler;
@@ -439,11 +442,41 @@ final class StandardWrapperValve
                 }
                 ApplicationDispatcher dispatcher = 
                     (ApplicationDispatcher) servletContext.getRequestDispatcher(asyncContext.getPath());
-                // FIXME: Add an async method to Application dispatcher
                 // Invoke the dispatcher async method with the attributes flag
-                asyncContext.getUseAttributes();
+                try {
+                    dispatcher.async(asyncContext.getRequest(), asyncContext.getResponse(), 
+                            asyncContext.getUseAttributes());
+                } catch (Throwable e) {
+                    container.getLogger().error(sm.getString("standardWrapper.async.dispatchError",
+                            getContainer().getName()), e);
+                    exception(request, response, e);
+                }
+                // If there is no new startAsync, then close the response
+                if (!asyncContext.isReady()) {
+                    if  (asyncContext.getResponse() instanceof ResponseFacade) {
+                        response.setSuspended(true);
+                    } else {
+                        // Close anyway
+                        try {
+                            PrintWriter writer = response.getWriter();
+                            writer.close();
+                        } catch (IllegalStateException e) {
+                            try {
+                                ServletOutputStream stream = response.getOutputStream();
+                                stream.close();
+                            } catch (IllegalStateException f) {
+                                ;
+                            } catch (IOException f) {
+                                ;
+                            }
+                        } catch (IOException e) {
+                            ;
+                        }
+                    }
+                    event.close();
+                }
             } else {
-                // FIXME: should not happen
+                throw new IllegalStateException(sm.getString("standardWrapper.async.invalidContext"));
             }
             return;
         }

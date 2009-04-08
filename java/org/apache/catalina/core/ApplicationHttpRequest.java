@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -72,7 +73,10 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
       Globals.INCLUDE_SERVLET_PATH_ATTR, Globals.INCLUDE_PATH_INFO_ATTR,
       Globals.INCLUDE_QUERY_STRING_ATTR, Globals.FORWARD_REQUEST_URI_ATTR, 
       Globals.FORWARD_CONTEXT_PATH_ATTR, Globals.FORWARD_SERVLET_PATH_ATTR, 
-      Globals.FORWARD_PATH_INFO_ATTR, Globals.FORWARD_QUERY_STRING_ATTR };
+      Globals.FORWARD_PATH_INFO_ATTR, Globals.FORWARD_QUERY_STRING_ATTR, 
+      AsyncContext.ASYNC_REQUEST_URI, AsyncContext.ASYNC_CONTEXT_PATH, 
+      AsyncContext.ASYNC_SERVLET_PATH, AsyncContext.ASYNC_PATH_INFO, 
+      AsyncContext.ASYNC_QUERY_STRING };
 
 
     /**
