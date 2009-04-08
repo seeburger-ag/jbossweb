@@ -810,7 +810,6 @@ public class Http11Processor implements ActionHook {
 
         int keepAliveLeft = maxKeepAliveRequests;
         int soTimeout = socket.getSoTimeout();
-        int oldSoTimeout = soTimeout;
 
         int threadRatio = (endpoint.getCurrentThreadsBusy() * 100)
                 / endpoint.getMaxThreads();
@@ -818,15 +817,6 @@ public class Http11Processor implements ActionHook {
             keepAliveLeft = 1;
         }
         
-        if (soTimeout != oldSoTimeout) {
-            try {
-                socket.setSoTimeout(soTimeout);
-            } catch (Throwable t) {
-                log.debug(sm.getString("http11processor.socket.timeout"), t);
-                error = true;
-            }
-        }
-
         boolean keptAlive = false;
 
         while (!error && keepAlive && !event) {

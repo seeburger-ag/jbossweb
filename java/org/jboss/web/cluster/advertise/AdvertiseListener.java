@@ -175,9 +175,9 @@ public class AdvertiseListener
     /** Remove the AdvertisedServer from the collection.
      * @param server Server to remove.
      */
-    public void removeServer(AdvertisedServer server)
+    public void removeServer(String name)
     {
-        servers.remove(server);
+        servers.remove(name);
     }
 
     private void init()
