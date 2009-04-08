@@ -2904,7 +2904,9 @@ public class Request
             throw new IllegalStateException(sm.getString("coyoteRequest.noAsync"));
         }
         // FIXME: if (asyncContext != null && !processing) { throw ISE }
-        // FIXME: if (response.isClosed()) { throw ISE }
+        if (response.isClosed()) {
+            throw new IllegalStateException(sm.getString("coyoteRequest.closed"));
+        }
         setTimeout(timeout);
         if (asyncContext == null) {
             asyncContext = new AsyncContextImpl
