@@ -48,7 +48,13 @@
         Move InstanceManager and PeriodicEventListener to org.apache.tomcat. (markt)
       </update>
       <fix>
-        Wrong MKCOL status code for errors. (markt)
+        <bug>46982</bug>: Use DST offset not current offset in the access log valve. (markt)
+      </fix>
+      <fix>
+        Various WebDAV test suite failures. (markt)
+      </fix>
+      <fix>
+        <bug>46933</bug>: Simplify StringManager using Java 5 features. Based on a patch by Jens Kapitza. (markt)
       </fix>
     </changelog>
   </subsection>

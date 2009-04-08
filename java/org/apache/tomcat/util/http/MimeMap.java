@@ -32,9 +32,10 @@ public class MimeMap implements FileNameMap {
     // Defaults - all of them are "well-known" types,
     // you can add using normal web.xml.
     
-    public static Hashtable defaultMap=new Hashtable(101);
+    public static Hashtable<String,String> defaultMap=new Hashtable<String,String>(101);
     static {
         defaultMap.put("txt", "text/plain");
+        defaultMap.put("css", "text/css");
         defaultMap.put("html","text/html");
         defaultMap.put("htm", "text/html");
         defaultMap.put("gif", "image/gif");
@@ -143,6 +144,10 @@ public class MimeMap implements FileNameMap {
         return map.keys();
     }
 
+    public String getMimeType(String ext) {
+        return getContentTypeFor(ext);
+    }
+    
     public String getContentType(String extn) {
         String type = (String)map.get(extn.toLowerCase());
 	if( type == null ) type=(String)defaultMap.get( extn );

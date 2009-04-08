@@ -389,7 +389,6 @@ public final class ApplicationFilterFactory {
      * matches the dispatcher types specified in the FilterMap
      */
     private boolean matchDispatcher(FilterMap filterMap, int dispatcher) {
-        // FIXME: add async
         switch (dispatcher) {
             case FORWARD : {
                 if (filterMap.getDispatcherMapping() == FilterMap.FORWARD ||

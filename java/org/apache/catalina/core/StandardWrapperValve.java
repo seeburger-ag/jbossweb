@@ -440,7 +440,7 @@ final class StandardWrapperValve
                 ApplicationDispatcher dispatcher = 
                     (ApplicationDispatcher) servletContext.getRequestDispatcher(asyncContext.getPath());
                 // FIXME: Add an async method to Application dispatcher
-                // Invoke the dispatcher
+                // Invoke the dispatcher async method with the attributes flag
                 asyncContext.getUseAttributes();
             } else {
                 // FIXME: should not happen
