@@ -2863,7 +2863,22 @@ public class Request
     }
 
     public boolean isAsyncSupported() {
-        // FIXME: Check all the filter chain
+        int filterChainCount = currentFilterChain;
+        for (int i = 0; i < filterChainCount; i++) {
+            ApplicationFilterChain filterChain = filterChains.get(i);
+            int n = filterChain.getFilterCount();
+            int pos = filterChain.getPointer();
+            for (int j = 0; j < pos; j++) {
+                if (!filterChain.getFilters()[j].getFilterDef().getAsyncSupported()) {
+                    return false;
+                }
+            }
+            if (pos == n) {
+                if (!filterChain.getWrapper().getAsyncSupported()) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
