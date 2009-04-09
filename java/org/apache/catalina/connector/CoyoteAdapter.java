@@ -20,6 +20,8 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 
+import javax.servlet.SessionTrackingMode;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
@@ -543,6 +545,10 @@ public class CoyoteAdapter
             return false;
         }
 
+        // FIXME: Session Id processing according to 
+        // FIXME: request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.URL);
+        // FIXME: request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.COOKIE);
+
         // Parse session Id
         parseSessionCookiesId(req, request);
 
@@ -559,7 +565,7 @@ public class CoyoteAdapter
         int semicolon = uriBC.indexOf(match, 0, match.length(), 0);
 
         if (semicolon > 0) {
-
+            
             // Parse session ID, and extract it from the decoded request URI
             int start = uriBC.getStart();
             int end = uriBC.getEnd();

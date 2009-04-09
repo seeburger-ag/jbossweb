@@ -985,11 +985,12 @@ public class ApplicationContext
 
 
     public boolean setInitParameter(String name, String value) {
-        try {
-            context.addParameter(name, value);
-            return true;
-        } catch (IllegalStateException e) {
+        mergeParameters();
+        if (parameters.get(name) != null) {
             return false;
+        } else {
+            parameters.put(name, value);
+            return true;
         }
     }
 
