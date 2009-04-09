@@ -27,13 +27,10 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
-
 import org.apache.catalina.Realm;
 import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.util.MD5Encoder;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -127,7 +124,7 @@ public class DigestAuthenticator
      * @exception IOException if an input/output error occurs
      */
     public boolean authenticate(Request request,
-                                Response response,
+                                HttpServletResponse response,
                                 LoginConfig config)
         throws IOException {
 
@@ -399,7 +396,7 @@ public class DigestAuthenticator
      * @param nOnce nonce token
      */
     protected void setAuthenticateHeader(Request request,
-                                         Response response,
+                                         HttpServletResponse response,
                                          LoginConfig config,
                                          String nOnce) {
 

@@ -2928,11 +2928,7 @@ public class Request
     public boolean login(HttpServletResponse response) throws IOException,
             ServletException {
         if (context.getAuthenticator() != null) {
-            if (!WRAPPED_RESPONSE_IN_LOGIN || response instanceof ResponseFacade) {
-                return context.getAuthenticator().login(this, this.response);
-            } else {
-                return context.getAuthenticator().login(this, response);
-            }
+            return context.getAuthenticator().login(this, response);
         } else {
             throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
         }

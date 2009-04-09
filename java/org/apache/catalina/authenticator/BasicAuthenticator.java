@@ -25,13 +25,11 @@ import java.security.Principal;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.util.Base64;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -114,7 +112,7 @@ public class BasicAuthenticator
      * @exception IOException if an input/output error occurs
      */
     public boolean authenticate(Request request,
-                                Response response,
+                                HttpServletResponse response,
                                 LoginConfig config)
         throws IOException {
 
@@ -189,7 +187,7 @@ public class BasicAuthenticator
 
         // Send an "unauthorized" response and an appropriate challenge
         MessageBytes authenticate = 
-            response.getCoyoteResponse().getMimeHeaders()
+            request.getResponse().getCoyoteResponse().getMimeHeaders()
             .addValue(AUTHENTICATE_BYTES, 0, AUTHENTICATE_BYTES.length);
         CharChunk authenticateCC = authenticate.getCharChunk();
         authenticateCC.append("Basic realm=\"");

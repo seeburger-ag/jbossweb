@@ -38,7 +38,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
@@ -155,26 +154,6 @@ public class Response
      */
     public org.apache.coyote.Response getCoyoteResponse() {
         return (coyoteResponse);
-    }
-
-
-    /**
-     * Return the Context within which this Request is being processed.
-     */
-    public Context getContext() {
-        return (request.getContext());
-    }
-
-    /**
-     * Set the Context within which this Request is being processed.  This
-     * must be called as soon as the appropriate Context is identified, because
-     * it identifies the value to be returned by <code>getContextPath()</code>,
-     * and thus enables parsing of the request URI.
-     *
-     * @param context The newly associated Context
-     */
-    public void setContext(Context context) {
-        request.setContext(context);
     }
 
 
@@ -857,7 +836,7 @@ public class Response
             return;
         }
 
-        CharsetMapper cm = getContext().getCharsetMapper();
+        CharsetMapper cm = request.getContext().getCharsetMapper();
         String charset = cm.getCharset( locale );
         if ( charset != null ){
             coyoteResponse.setCharacterEncoding(charset);
@@ -1503,7 +1482,7 @@ public class Response
         if (serverPort != urlPort)
             return (false);
 
-        String contextPath = getContext().getPath();
+        String contextPath = request.getContext().getPath();
         if (contextPath != null) {
             String file = url.getFile();
             if ((file == null) || !file.startsWith(contextPath))

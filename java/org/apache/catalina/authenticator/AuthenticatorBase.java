@@ -370,23 +370,7 @@ public abstract class AuthenticatorBase
 
 
     /**
-     * Login.
-     *
-     * @param request Request we are processing
-     * @param response Response we are creating
-     * @param config    Login configuration describing how authentication
-     *              should be performed
-     *
-     * @exception IOException if an input/output error occurs
-     */
-    public boolean login(Request request, Response response)
-        throws IOException, ServletException {
-        return authenticate(request, response, this.context.getLoginConfig());
-    }
-
-
-    /**
-     * Login.
+     * API login.
      *
      * @param request Request we are processing
      * @param response Response we are creating
@@ -397,8 +381,7 @@ public abstract class AuthenticatorBase
      */
     public boolean login(Request request, HttpServletResponse response)
         throws IOException, ServletException {
-        // FIXME: use the wrapper
-        return login(request, request.getResponse());
+        return authenticate(request, response, this.context.getLoginConfig());
     }
 
 
@@ -595,7 +578,7 @@ public abstract class AuthenticatorBase
      * @exception IOException if an input/output error occurs
      */
     protected abstract boolean authenticate(Request request,
-                                            Response response,
+                                            HttpServletResponse response,
                                             LoginConfig config)
         throws IOException;
 
@@ -734,7 +717,7 @@ public abstract class AuthenticatorBase
      * @param username Username used to authenticate (if any)
      * @param password Password used to authenticate (if any)
      */
-    protected void register(Request request, Response response,
+    protected void register(Request request, HttpServletResponse response,
                             Principal principal, String authType,
                             String username, String password) {
 

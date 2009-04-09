@@ -25,12 +25,11 @@ import java.security.cert.X509Certificate;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.coyote.ActionCode;
 import org.apache.catalina.Globals;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
+import org.apache.coyote.ActionCode;
 
 
 
@@ -82,7 +81,7 @@ public class SSLAuthenticator
      * @exception IOException if an input/output error occurs
      */
     public boolean authenticate(Request request,
-                                Response response,
+                                HttpServletResponse response,
                                 LoginConfig config)
         throws IOException {
 
