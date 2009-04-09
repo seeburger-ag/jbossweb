@@ -288,6 +288,7 @@ public class DummyRequest
             ServletException { return false; }
     public void login(String username, String password) throws ServletException {}
     public void logout() throws ServletException {}
+    public long getAsyncTimeout() { return 0; }
     
 }
 

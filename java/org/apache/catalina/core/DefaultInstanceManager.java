@@ -123,6 +123,10 @@ public class DefaultInstanceManager implements InstanceManager {
         return newInstance(clazz.newInstance(), clazz);
     }
 
+    public Object newInstance(Class<?> c) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException {
+        return newInstance(c.newInstance(), c);
+    }
+
     public void newInstance(Object o) 
         throws IllegalAccessException, InvocationTargetException, NamingException {
         newInstance(o, o.getClass());

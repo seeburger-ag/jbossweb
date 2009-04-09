@@ -2297,6 +2297,19 @@ public class StandardContext
      *
      * @param filterDef The filter definition to be added
      */
+    public void addApplicationFilterConfig(ApplicationFilterConfig filterConfig) {
+
+        filterConfigs.put(filterConfig.getFilterName(), filterConfig);
+        fireContainerEvent("addApplicationFilterConfig", filterConfig);
+
+    }
+
+
+    /**
+     * Add a filter definition to this Context.
+     *
+     * @param filterDef The filter definition to be added
+     */
     public void addFilterDef(FilterDef filterDef) {
 
         synchronized (filterDefs) {
@@ -2784,6 +2797,16 @@ public class StandardContext
         }
 
         return (wrapper);
+
+    }
+
+
+    /**
+     * Return the application filter for the given name.
+     */
+    public ApplicationFilterConfig findApplicationFilterConfig(String name) {
+
+        return (ApplicationFilterConfig) filterConfigs.get(name);
 
     }
 
@@ -3884,7 +3907,18 @@ public class StandardContext
         // Instantiate and record a FilterConfig for each defined filter
         boolean ok = true;
         synchronized (filterConfigs) {
-            filterConfigs.clear();
+            Iterator filterConfigsIterator = filterConfigs.values().iterator();
+            while (filterConfigsIterator.hasNext()) {
+                ApplicationFilterConfig filterConfig = 
+                    (ApplicationFilterConfig) filterConfigsIterator.next();
+                try {
+                    filterConfig.getFilter();
+                } catch (Throwable t) {
+                    getLogger().error
+                        (sm.getString("standardContext.filterStart", name), t);
+                    ok = false;
+                }
+            }
             Iterator names = filterDefs.keySet().iterator();
             while (names.hasNext()) {
                 String name = (String) names.next();
@@ -3894,6 +3928,7 @@ public class StandardContext
                 try {
                     filterConfig = new ApplicationFilterConfig
                       (this, (FilterDef) filterDefs.get(name));
+                    filterConfig.getFilter();
                     filterConfigs.put(name, filterConfig);
                 } catch (Throwable t) {
                     getLogger().error

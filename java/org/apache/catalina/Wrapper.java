@@ -104,6 +104,21 @@ public interface Wrapper extends Container {
 
 
     /**
+     * Get the flag that indicates if the wrapper was added programmatically.
+     * The flag value defaults to false.
+     */
+    public boolean isDynamic();
+
+
+    /**
+     * Set a flag that indicates if the wrapper was added programmatically.
+     *
+     * @param value New async supported value
+     */
+    public void setDynamic(boolean dynamic);
+
+
+    /**
      * Return the InstanceSupport object for this Wrapper instance.
      */
     public InstanceSupport getInstanceSupport();
@@ -262,6 +277,13 @@ public interface Wrapper extends Container {
      * Return the associated servlet instance.
      */
     public Servlet getServlet();
+    
+    
+    /**
+     * Set the associated servlet instance. This will only do something
+     * meaningful for non STM servlets.
+     */
+    public void setServlet(Servlet servlet);
     
     
     /**

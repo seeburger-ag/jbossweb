@@ -2,7 +2,6 @@ Roadmap for JBoss Web 3.0
 
 Main development:
 - Setup standalone TCK environment for testing compliance with the new features
-- Servlet 3.0 async API using event API
 - Update digester XML parsing rules for web.xml updates
 - web.xml fragments scanning
 - Annotation scanning for JBoss Web standalone (likely disabled by default using conf/web.xml)

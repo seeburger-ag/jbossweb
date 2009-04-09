@@ -37,6 +37,10 @@ public interface InstanceManager {
     	throws IllegalAccessException, InvocationTargetException, NamingException, 
     		InstantiationException, ClassNotFoundException;
 
+    public Object newInstance(Class<?> c)
+        throws IllegalAccessException, InvocationTargetException, NamingException, 
+            InstantiationException;
+
     public void newInstance(Object o) 
 		throws IllegalAccessException, InvocationTargetException, NamingException;
 

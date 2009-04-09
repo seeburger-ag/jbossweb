@@ -443,19 +443,19 @@ public class JspCServletContext implements ServletContext {
     }
 
 
-    public FilterRegistration addFilter(String filterName, String className)
+    public FilterRegistration.Dynamic addFilter(String filterName, String className)
             throws IllegalArgumentException, IllegalStateException {
         return null;
     }
 
 
-    public ServletRegistration addServlet(String servletName, String className)
+    public ServletRegistration.Dynamic addServlet(String servletName, String className)
             throws IllegalArgumentException, IllegalStateException {
         return null;
     }
 
 
-    public ServletRegistration addServlet(String servletName,
+    public ServletRegistration.Dynamic addServlet(String servletName,
             Class<? extends Servlet> clazz) throws IllegalArgumentException,
             IllegalStateException {
         return null;
@@ -492,29 +492,18 @@ public class JspCServletContext implements ServletContext {
     }
 
 
-    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
-        // Do nothing
-    }
-
-
-    public void setSessionTrackingModes(
-            EnumSet<SessionTrackingMode> sessionTrackingModes) {
-        // Do nothing
-    }
-
-
-    public FilterRegistration addFilter(String filterName, Filter filter) {
+    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
         return null;
     }
 
 
-    public FilterRegistration addFilter(String filterName,
+    public FilterRegistration.Dynamic addFilter(String filterName,
             Class<? extends Filter> filterClass) {
         return null;
     }
 
 
-    public ServletRegistration addServlet(String servletName, Servlet servlet) {
+    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
         return null;
     }
 

@@ -1,18 +1,46 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * JBoss, Home of Professional Open Source
+ * Copyright 2009, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  * 
- *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 1999-2009 The Apache Software Foundation
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 
@@ -808,37 +836,93 @@ public class ApplicationContext
     }
 
 
-    public FilterRegistration addFilter(String filterName, String className)
+    public FilterRegistration.Dynamic addFilter(String filterName, String className)
             throws IllegalArgumentException, IllegalStateException {
         if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.addFilter.ise",
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
         FilterDef filterDef = new FilterDef();
         filterDef.setFilterName(filterName);
         filterDef.setFilterClass(className);
-        context.addFilterDef(filterDef);
-        return new StandardFilterFacade(context, filterDef);
+        ApplicationFilterConfig filterConfig = new ApplicationFilterConfig(context, filterDef);
+        filterConfig.setDynamic(true);
+        context.addApplicationFilterConfig(filterConfig);
+        return (FilterRegistration.Dynamic) filterConfig.getFacade();
     }
 
 
-    public ServletRegistration addServlet(String servletName, String className)
+    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
+        FilterDef filterDef = new FilterDef();
+        filterDef.setFilterName(filterName);
+        filterDef.setFilterClass(filter.getClass().getName());
+        ApplicationFilterConfig filterConfig = new ApplicationFilterConfig(context, filterDef);
+        filterConfig.setDynamic(true);
+        filterConfig.setFilter(filter);
+        context.addApplicationFilterConfig(filterConfig);
+        return (FilterRegistration.Dynamic) filterConfig.getFacade();
+    }
+
+
+    public FilterRegistration.Dynamic addFilter(String filterName,
+            Class<? extends Filter> filterClass) {
+        return addFilter(filterName, filterClass.getName());
+    }
+
+
+    public ServletRegistration.Dynamic addServlet(String servletName, String className)
             throws IllegalArgumentException, IllegalStateException {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
         Wrapper wrapper = context.createWrapper();
+        wrapper.setDynamic(true);
         wrapper.setName(servletName);
         wrapper.setServletClass(className);
         context.addChild(wrapper);
-        return wrapper.getFacade();
+        return (ServletRegistration.Dynamic) wrapper.getFacade();
+    }
+
+
+    public ServletRegistration.Dynamic addServlet(String servletName,
+            Class<? extends Servlet> clazz) throws IllegalArgumentException,
+            IllegalStateException {
+        return addServlet(servletName, clazz.getName());
+    }
+
+
+    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
+        Wrapper wrapper = context.createWrapper();
+        wrapper.setDynamic(true);
+        wrapper.setName(servletName);
+        wrapper.setServletClass(servlet.getClass().getName());
+        wrapper.setServlet(servlet);
+        context.addChild(wrapper);
+        return (ServletRegistration.Dynamic) wrapper.getFacade();
     }
 
 
     public FilterRegistration findFilterRegistration(String filterName) {
-        FilterDef filterDef = context.findFilterDef(filterName);
-        if (filterDef == null) {
-            return null;
-        } else {
-            return new StandardFilterFacade(context, filterDef);
+        ApplicationFilterConfig filterConfig = context.findApplicationFilterConfig(filterName);
+        if (filterConfig == null) {
+            FilterDef filterDef = context.findFilterDef(filterName);
+            if (filterDef == null) {
+                return null;
+            } else {
+                filterConfig = new ApplicationFilterConfig(context, filterDef);
+                context.addApplicationFilterConfig(filterConfig);
+            }
         }
+        return filterConfig.getFacade();
     }
 
 
@@ -877,61 +961,36 @@ public class ApplicationContext
         return context.getSessionCookie();
     }
 
-/* FIXME gone ?
-    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
-        SessionCookie sessionCookie = new SessionCookie();
-        sessionCookie.setComment(sessionCookieConfig.getComment());
-        sessionCookie.setDomain(sessionCookieConfig.getDomain());
-        sessionCookie.setHttpOnly(sessionCookieConfig.isHttpOnly());
-        sessionCookie.setSecure(sessionCookieConfig.isSecure());
-        context.setSessionCookie(sessionCookie);
-    }*/
-
-
-    public ServletRegistration addServlet(String servletName,
-            Class<? extends Servlet> clazz) throws IllegalArgumentException,
-            IllegalStateException {
-        return addServlet(servletName, clazz.getName());
-    }
-
-
-    public FilterRegistration addFilter(String filterName, Filter filter) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    public FilterRegistration addFilter(String filterName,
-            Class<? extends Filter> filterClass) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    public ServletRegistration addServlet(String servletName, Servlet servlet) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 
     public <T extends Filter> T createFilter(Class<T> c)
             throws ServletException {
-        // TODO Auto-generated method stub
-        return null;
+        try {
+            return (T) context.getInstanceManager().newInstance(c);
+        } catch (Throwable e) {
+            throw new ServletException
+                (sm.getString("applicationContext.create"), e);
+        }
     }
 
 
     public <T extends Servlet> T createServlet(Class<T> c)
             throws ServletException {
-        // TODO Auto-generated method stub
-        return null;
+        try {
+            return (T) context.getInstanceManager().newInstance(c);
+        } catch (Throwable e) {
+            throw new ServletException
+                (sm.getString("applicationContext.create"), e);
+        }
     }
 
 
     public boolean setInitParameter(String name, String value) {
-        context.addParameter(name, value);
-        // FIXME: return value ?
-        return false;
+        try {
+            context.addParameter(name, value);
+            return true;
+        } catch (IllegalStateException e) {
+            return false;
+        }
     }
 
 

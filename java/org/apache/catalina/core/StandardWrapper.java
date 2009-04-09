@@ -105,6 +105,12 @@ public class StandardWrapper
     
     
     /**
+     * Dynamic flag.
+     */
+    protected boolean dynamic = false;
+    
+    
+    /**
      * The date and time at which this servlet will become available (in
      * milliseconds since the epoch), or zero if the servlet is available.
      * If this value equals Long.MAX_VALUE, the unavailability of this
@@ -147,6 +153,12 @@ public class StandardWrapper
      * The (single) initialized instance of this servlet.
      */
     protected Servlet instance = null;
+
+
+    /**
+     * The (single) initialized instance of this servlet.
+     */
+    protected Servlet servletInstance = null;
 
 
     /**
@@ -317,6 +329,20 @@ public class StandardWrapper
         String oldDescription = this.description;
         this.description = description;
         support.firePropertyChange("description", oldDescription, description);
+    }
+
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
+        if (dynamic) {
+            // Change the facade (normally, this happens when the Wrapper is created)
+            facade = new StandardWrapperFacade.Dynamic(this);
+        }
     }
 
 
@@ -803,6 +829,14 @@ public class StandardWrapper
     
     
     /**
+     * Set the associated servlet instance.
+     */
+    public void setServlet(Servlet servlet) {
+        servletInstance = servlet;
+    }
+    
+    
+    /**
      * Allocate an initialized instance of this Servlet that is ready to have
      * its <code>service()</code> method called.  If the servlet class does
      * not implement <code>SingleThreadModel</code>, the (only) initialized
@@ -1060,26 +1094,31 @@ public class StandardWrapper
                     (sm.getString("standardWrapper.notClass", getName()));
             }
 
-            InstanceManager instanceManager = ((StandardContext)getParent()).getInstanceManager();
-            try {
-                servlet = (Servlet) instanceManager.newInstance(actualClass);
-            } catch (ClassCastException e) {
-                unavailable(null);
-                // Restore the context ClassLoader
-                throw new ServletException
+            if (servletInstance == null) {
+                InstanceManager instanceManager = ((StandardContext)getParent()).getInstanceManager();
+                try {
+                    servlet = (Servlet) instanceManager.newInstance(actualClass);
+                } catch (ClassCastException e) {
+                    unavailable(null);
+                    // Restore the context ClassLoader
+                    throw new ServletException
                     (sm.getString("standardWrapper.notServlet", actualClass), e);
-            } catch (Throwable e) {
-                unavailable(null);
+                } catch (Throwable e) {
+                    unavailable(null);
 
-                // Added extra log statement for Bugzilla 36630:
-                // http://issues.apache.org/bugzilla/show_bug.cgi?id=36630
-                if(log.isDebugEnabled()) {
-                    log.debug(sm.getString("standardWrapper.instantiate", actualClass), e);
-                }
+                    // Added extra log statement for Bugzilla 36630:
+                    // http://issues.apache.org/bugzilla/show_bug.cgi?id=36630
+                    if(log.isDebugEnabled()) {
+                        log.debug(sm.getString("standardWrapper.instantiate", actualClass), e);
+                    }
 
-                // Restore the context ClassLoader
-                throw new ServletException
+                    // Restore the context ClassLoader
+                    throw new ServletException
                     (sm.getString("standardWrapper.instantiate", actualClass), e);
+                }
+            } else {
+                servlet = servletInstance;
+                servletInstance = null;
             }
 
             // Special handling for ContainerServlet instances
