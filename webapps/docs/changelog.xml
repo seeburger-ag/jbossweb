@@ -56,6 +56,18 @@
       <fix>
         <bug>46933</bug>: Simplify StringManager using Java 5 features. Based on a patch by Jens Kapitza. (markt)
       </fix>
+      <fix>
+        <bug>46961</bug>: Prefer Class.forName for Java 6 compatibility with array fake types. (markt)
+      </fix>
+      <fix>
+        <bug>42579</bug>: Handle both relative and absolute search results in JNDI realm. Patch provided by Brandon DuRette. (markt)
+      </fix>
+      <fix>
+        <bug>46967</bug>: Secure random security manager fix. Based on a patch provided by Kirk Wolf. (markt)
+      </fix>
+      <fix>
+        <bug>46562</bug>: In SSI, close the reader when done. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -75,6 +87,13 @@
     <changelog>
       <fix>
         <bug>46915</bug>: JSTL issues resolving resource bundle keys. (markt)
+      </fix>
+      <fix>
+        <bug>46909</bug>: The ';' should really only be used if there is a following parameter. (markt)
+      </fix>
+      <fix>
+        <bug>42390</bug>: Correct JSP compilation error with nested tagfile tags with variables with "AT_BEGIN" scope.
+        Patch provided by Konstantin Kolinko. (markt)
       </fix>
     </changelog>
   </subsection>

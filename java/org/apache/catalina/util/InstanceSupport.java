@@ -93,16 +93,14 @@ public final class InstanceSupport {
      *
      * @param listener The listener to add
      */
-    public void addInstanceListener(InstanceListener listener) {
+    public synchronized void addInstanceListener(InstanceListener listener) {
 
-      synchronized (listeners) {
-          InstanceListener results[] =
+        InstanceListener results[] =
             new InstanceListener[listeners.length + 1];
-          for (int i = 0; i < listeners.length; i++)
-              results[i] = listeners[i];
-          results[listeners.length] = listener;
-          listeners = results;
-      }
+        for (int i = 0; i < listeners.length; i++)
+            results[i] = listeners[i];
+        results[listeners.length] = listener;
+        listeners = results;
 
     }
 
@@ -310,27 +308,25 @@ public final class InstanceSupport {
      *
      * @param listener The listener to remove
      */
-    public void removeInstanceListener(InstanceListener listener) {
+    public synchronized void removeInstanceListener(InstanceListener listener) {
 
-        synchronized (listeners) {
-            int n = -1;
-            for (int i = 0; i < listeners.length; i++) {
-                if (listeners[i] == listener) {
-                    n = i;
-                    break;
-                }
+        int n = -1;
+        for (int i = 0; i < listeners.length; i++) {
+            if (listeners[i] == listener) {
+                n = i;
+                break;
             }
-            if (n < 0)
-                return;
-            InstanceListener results[] =
-              new InstanceListener[listeners.length - 1];
-            int j = 0;
-            for (int i = 0; i < listeners.length; i++) {
-                if (i != n)
-                    results[j++] = listeners[i];
-            }
-            listeners = results;
         }
+        if (n < 0)
+            return;
+        InstanceListener results[] =
+            new InstanceListener[listeners.length - 1];
+        int j = 0;
+        for (int i = 0; i < listeners.length; i++) {
+            if (i != n)
+                results[j++] = listeners[i];
+        }
+        listeners = results;
 
     }
 

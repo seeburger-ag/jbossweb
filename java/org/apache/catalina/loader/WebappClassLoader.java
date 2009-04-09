@@ -1276,7 +1276,7 @@ public class WebappClassLoader
         //       the webapp from overriding J2SE classes
         if (SYSTEM_CL_DELEGATION) {
             try {
-                clazz = system.loadClass(name);
+                clazz = Class.forName(name, false, system);
                 if (clazz != null) {
                     if (resolve)
                         resolveClass(clazz);
@@ -1312,7 +1312,7 @@ public class WebappClassLoader
             if (loader == null)
                 loader = system;
             try {
-                clazz = loader.loadClass(name);
+                clazz = Class.forName(name, false, loader);
                 if (clazz != null) {
                     if (log.isDebugEnabled())
                         log.debug("  Loading class from parent");
@@ -1349,7 +1349,7 @@ public class WebappClassLoader
             if (loader == null)
                 loader = system;
             try {
-                clazz = loader.loadClass(name);
+                clazz = Class.forName(name, false, loader);
                 if (clazz != null) {
                     if (log.isDebugEnabled())
                         log.debug("  Loading class from parent");

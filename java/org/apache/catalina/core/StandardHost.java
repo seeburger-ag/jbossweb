@@ -607,29 +607,25 @@ public class StandardHost
 
         alias = alias.toLowerCase();
 
-        synchronized (aliases) {
-
-            // Make sure this alias is currently present
-            int n = -1;
-            for (int i = 0; i < aliases.length; i++) {
-                if (aliases[i].equals(alias)) {
-                    n = i;
-                    break;
-                }
+        // Make sure this alias is currently present
+        int n = -1;
+        for (int i = 0; i < aliases.length; i++) {
+            if (aliases[i].equals(alias)) {
+                n = i;
+                break;
             }
-            if (n < 0)
-                return;
-
-            // Remove the specified alias
-            int j = 0;
-            String results[] = new String[aliases.length - 1];
-            for (int i = 0; i < aliases.length; i++) {
-                if (i != n)
-                    results[j++] = aliases[i];
-            }
-            aliases = results;
-
         }
+        if (n < 0)
+            return;
+
+        // Remove the specified alias
+        int j = 0;
+        String results[] = new String[aliases.length - 1];
+        for (int i = 0; i < aliases.length; i++) {
+            if (i != n)
+                results[j++] = aliases[i];
+        }
+        aliases = results;
 
         // Inform interested listeners
         fireContainerEvent(REMOVE_ALIAS_EVENT, alias);
@@ -747,7 +743,7 @@ public class StandardHost
 
     private boolean initialized=false;
     
-    public void init() {
+    public synchronized void init() {
         if( initialized ) return;
         initialized=true;
         
@@ -790,7 +786,7 @@ public class StandardHost
         }
     }
 
-    public void destroy() throws Exception {
+    public synchronized void destroy() throws Exception {
         // destroy our child containers, if any
         Container children[] = findChildren();
         super.destroy();
