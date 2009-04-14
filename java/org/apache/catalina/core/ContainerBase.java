@@ -24,10 +24,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
@@ -125,6 +127,18 @@ public abstract class ContainerBase
         org.jboss.logging.Logger.getLogger( ContainerBase.class );
 
     /**
+     * Container array type.
+     */
+    protected static final Container[] CONTAINER_ARRAY = new Container[0];
+    
+
+    /**
+     * Listener array type.
+     */
+    protected static final ContainerListener[] LISTENER_ARRAY = new ContainerListener[0];
+    
+
+    /**
      * Perform addChild with the permissions of this class.
      * addChild can be called with the XML parser on the stack,
      * this allows the XML parser to have fewer privileges than
@@ -153,9 +167,9 @@ public abstract class ContainerBase
     /**
      * The child Containers belonging to this Container, keyed by name.
      */
-    protected HashMap children = new HashMap();
+    protected Map<String, Container> children = new ConcurrentHashMap<String, Container>();
 
-
+    
     /**
      * The processor delay for this component.
      */
@@ -171,7 +185,7 @@ public abstract class ContainerBase
     /**
      * The container event listeners for this Container.
      */
-    protected ArrayList listeners = new ArrayList();
+    protected List<ContainerListener> listeners = new CopyOnWriteArrayList<ContainerListener>();
 
 
     /**
@@ -779,37 +793,36 @@ public abstract class ContainerBase
         }
     }
 
-    private void addChildInternal(Container child) {
+    private synchronized void addChildInternal(Container child) {
 
         if( log.isDebugEnabled() )
             log.debug("Add child " + child + " " + this);
-        synchronized(children) {
-            if (children.get(child.getName()) != null)
-                throw new IllegalArgumentException("addChild:  Child name '" +
-                                                   child.getName() +
-                                                   "' is not unique");
-            child.setParent(this);  // May throw IAE
-            children.put(child.getName(), child);
 
-            // Start child
-            if (started && startChildren && (child instanceof Lifecycle)) {
-                boolean success = false;
-                try {
-                    ((Lifecycle) child).start();
-                    success = true;
-                } catch (LifecycleException e) {
-                    log.error("ContainerBase.addChild: start: ", e);
-                    throw new IllegalStateException
-                        ("ContainerBase.addChild: start: " + e);
-                } finally {
-                    if (!success) {
-                        children.remove(child.getName());
-                    }
+        if (children.get(child.getName()) != null)
+            throw new IllegalArgumentException("addChild:  Child name '" +
+                    child.getName() + "' is not unique");
+
+        child.setParent(this);  // May throw IAE
+        children.put(child.getName(), child);
+
+        // Start child
+        if (started && startChildren && (child instanceof Lifecycle)) {
+            boolean success = false;
+            try {
+                ((Lifecycle) child).start();
+                success = true;
+            } catch (LifecycleException e) {
+                log.error("ContainerBase.addChild: start: ", e);
+                throw new IllegalStateException
+                ("ContainerBase.addChild: start: " + e);
+            } finally {
+                if (!success) {
+                    children.remove(child.getName());
                 }
             }
-
-            fireContainerEvent(ADD_CHILD_EVENT, child);
         }
+
+        fireContainerEvent(ADD_CHILD_EVENT, child);
 
     }
 
@@ -821,9 +834,7 @@ public abstract class ContainerBase
      */
     public void addContainerListener(ContainerListener listener) {
 
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
 
     }
 
@@ -847,13 +858,9 @@ public abstract class ContainerBase
      * @param name Name of the child Container to be retrieved
      */
     public Container findChild(String name) {
-
         if (name == null)
             return (null);
-        synchronized (children) {       // Required by post-start changes
-            return ((Container) children.get(name));
-        }
-
+        return children.get(name);
     }
 
 
@@ -862,12 +869,7 @@ public abstract class ContainerBase
      * If this Container has no children, a zero-length array is returned.
      */
     public Container[] findChildren() {
-
-        synchronized (children) {
-            Container results[] = new Container[children.size()];
-            return ((Container[]) children.values().toArray(results));
-        }
-
+        return children.values().toArray(CONTAINER_ARRAY);
     }
 
 
@@ -877,13 +879,7 @@ public abstract class ContainerBase
      * array is returned.
      */
     public ContainerListener[] findContainerListeners() {
-
-        synchronized (listeners) {
-            ContainerListener[] results = 
-                new ContainerListener[listeners.size()];
-            return ((ContainerListener[]) listeners.toArray(results));
-        }
-
+        return listeners.toArray(LISTENER_ARRAY);
     }
 
 
@@ -916,15 +912,13 @@ public abstract class ContainerBase
      *
      * @param child Existing child Container to be removed
      */
-    public void removeChild(Container child) {
+    public synchronized void removeChild(Container child) {
 
-        synchronized(children) {
-            if (children.get(child.getName()) == null)
-                return;
-            if (children.get(child.getName()) != child)
-                return;
-            children.remove(child.getName());
-        }
+        if (children.get(child.getName()) == null)
+            return;
+        if (children.get(child.getName()) != child)
+            return;
+        children.remove(child.getName());
         
         if (started && (child instanceof Lifecycle)) {
             try {
@@ -953,11 +947,7 @@ public abstract class ContainerBase
      * @param listener The listener to remove
      */
     public void removeContainerListener(ContainerListener listener) {
-
-        synchronized (listeners) {
-            listeners.remove(listener);
-        }
-
+        listeners.remove(listener);
     }
 
 
