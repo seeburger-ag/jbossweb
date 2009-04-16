@@ -95,6 +95,9 @@
         <bug>42390</bug>: Correct JSP compilation error with nested tagfile tags with variables with "AT_BEGIN" scope.
         Patch provided by Konstantin Kolinko. (markt)
       </fix>
+      <fix>
+        <bug>37929</bug>: Fix session access to an invalidated session. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
