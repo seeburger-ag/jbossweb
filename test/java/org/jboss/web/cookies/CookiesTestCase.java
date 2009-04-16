@@ -147,7 +147,7 @@ public class CookiesTestCase extends TestCase {
         writer.write("User-Agent: CookiesTestCase/1.0\r\n");
         writer.write("Connection: Keep-Alive\r\n");
         writer.write("TEST: " + test + "\r\n");
-        writer.write("ACTION: CREATE\r\n");
+        writer.write("ACTION: READ\r\n");
         writer.write("Cookie: " + cookie + "\r\n");
         writer.write("\r\n");
         writer.flush();

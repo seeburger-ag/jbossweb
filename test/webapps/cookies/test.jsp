@@ -16,7 +16,7 @@
 
   response.setContentType("text/html; charset=UTF-8");
 
-  if (action.compareTo("CREATE") == 0) {
+  if (action.compareTo("READ") == 0) {
     switch (ntest) {
       case 1: test(response, request, out, "foo", "bar", "a", "b"); break;
       case 2: test(response, request, out, "foo", "bar", "a", "b"); break;
@@ -75,7 +75,7 @@
 
       default: response.sendError(500, "Unknown test");break;
     }
-  } else if (action.compareTo("READ") == 0) {
+  } else if (action.compareTo("CREATE") == 0) {
     switch (ntest) {
       case 1: out.println("OK");break;
       default: response.sendError(500, "Unknown test");break;
