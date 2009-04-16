@@ -485,7 +485,7 @@ public class ContextConfig
      * Set up an Authenticator automatically if required, and one has not
      * already been configured.
      */
-    protected synchronized void authenticatorConfig() {
+    protected void authenticatorConfig() {
 
         // Does this Context require an Authenticator?
         SecurityConstraint constraints[] = context.findConstraints();
@@ -795,6 +795,41 @@ public class ContextConfig
         }
     }
 
+    
+    /**
+     * Process additional descriptors: TLDs, web fragments, and map overlays.
+     */
+    // FIXME: Processing of web fragments
+    // FIXME: Map overlays
+    protected void applicationExtraDescriptorsConfig() {
+        TldConfig tldConfig = new TldConfig();
+        tldConfig.setContext(context);
+
+        // (1)  check if the attribute has been defined
+        //      on the context element.
+        tldConfig.setTldValidation(context.getTldValidation());
+        tldConfig.setTldNamespaceAware(context.getTldNamespaceAware());
+
+        // (2) if the attribute wasn't defined on the context
+        //     try the host.
+        if (!context.getTldValidation()) {
+            tldConfig.setTldValidation
+            (((StandardHost) context.getParent()).getXmlValidation());
+        }
+
+        if (!context.getTldNamespaceAware()) {
+            tldConfig.setTldNamespaceAware
+            (((StandardHost) context.getParent()).getXmlNamespaceAware());
+        }
+
+        try {
+            tldConfig.execute();
+        } catch (Exception ex) {
+            log.error("Error reading tld listeners " 
+                    + ex.toString(), ex); 
+        }
+    }
+    
 
     /**
      * Process the default configuration file, if it exists.
@@ -1102,7 +1137,7 @@ public class ContextConfig
     /**
      * Process a "before start" event for this Context.
      */
-    protected synchronized void beforeStart() {
+    protected void beforeStart() {
         antiLocking();
     }
     
@@ -1110,7 +1145,7 @@ public class ContextConfig
     /**
      * Process a "start" event for this Context.
      */
-    protected synchronized void start() {
+    protected void start() {
         // Called from StandardContext.start()
 
         if (log.isDebugEnabled())
@@ -1138,8 +1173,9 @@ public class ContextConfig
         }
 
         // Process the default and application web.xml files
-        // FIXME: Processing of web fragments
         defaultWebConfig();
+        // FIXME: look where to place it according to the merging rules
+        applicationExtraDescriptorsConfig();
         applicationWebConfig();
         if (!context.getIgnoreAnnotations()) {
             applicationAnnotationsConfig();
@@ -1181,7 +1217,7 @@ public class ContextConfig
     /**
      * Process a "stop" event for this Context.
      */
-    protected synchronized void stop() {
+    protected void stop() {
 
         if (log.isDebugEnabled())
             log.debug(sm.getString("contextConfig.stop"));
@@ -1347,7 +1383,7 @@ public class ContextConfig
     /**
      * Process a "destroy" event for this Context.
      */
-    protected synchronized void destroy() {
+    protected void destroy() {
         // Called from StandardContext.destroy()
         if (log.isDebugEnabled())
             log.debug(sm.getString("contextConfig.destroy"));

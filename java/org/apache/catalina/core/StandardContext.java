@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.EventListener;
@@ -94,7 +93,6 @@ import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.startup.ContextConfig;
-import org.apache.catalina.startup.TldConfig;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.ExtensionValidator;
 import org.apache.catalina.util.RequestUtil;
@@ -4030,10 +4028,6 @@ public class StandardContext
                     ((Lifecycle) pipeline).start();
                 }
                 
-                if(getProcessTlds()) {
-                    processTlds();
-                }
-                
                 // Notify our interested LifecycleListeners
                 lifecycle.fireLifecycleEvent(START_EVENT, null);
                 
@@ -4234,41 +4228,6 @@ public class StandardContext
             }
         }
     }
-
-    /**
-     * Processes TLDs.
-     *
-     * @throws LifecycleException If an error occurs
-     */
-     protected void processTlds() throws LifecycleException {
-       TldConfig tldConfig = new TldConfig();
-       tldConfig.setContext(this);
-
-       // (1)  check if the attribute has been defined
-       //      on the context element.
-       tldConfig.setTldValidation(tldValidation);
-       tldConfig.setTldNamespaceAware(tldNamespaceAware);
-
-       // (2) if the attribute wasn't defined on the context
-       //     try the host.
-       if (!tldValidation) {
-         tldConfig.setTldValidation
-           (((StandardHost) getParent()).getXmlValidation());
-       }
-
-       if (!tldNamespaceAware) {
-         tldConfig.setTldNamespaceAware
-           (((StandardHost) getParent()).getXmlNamespaceAware());
-       }
-                    
-       try {
-         tldConfig.execute();
-       } catch (Exception ex) {
-         log.error("Error reading tld listeners " 
-                    + ex.toString(), ex); 
-       }
-     }
-
 
     /**
      * Stop this Context component.
@@ -5369,21 +5328,6 @@ public class StandardContext
         return tldValidation;
     }
 
-    /**
-     * Sets the process TLDs attribute.
-     *
-     * @param newProcessTlds The new value
-     */
-    public void setProcessTlds(boolean newProcessTlds) {
-	processTlds = newProcessTlds;
-    }
-
-    /**
-     * Returns the processTlds attribute value.
-     */
-    public boolean getProcessTlds() {
-	return processTlds;
-    }
 
     /**
      * Get the server.xml <host> attribute's xmlNamespaceAware.
