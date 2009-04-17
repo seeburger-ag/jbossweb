@@ -12,11 +12,13 @@
    */
   String test = request.getHeader("TEST");
   String action = request.getHeader("ACTION");
-  int ntest = Integer.parseInt(test);
+  int ntest = 0;
+  if (test != null)
+    ntest = Integer.parseInt(test);
 
   response.setContentType("text/html; charset=UTF-8");
 
-  if (action.compareTo("READ") == 0) {
+  if (action !=null && action.compareTo("READ") == 0) {
     switch (ntest) {
       case 1: test(response, request, out, "foo", "bar", "a", "b"); break;
       case 2: test(response, request, out, "foo", "bar", "a", "b"); break;
@@ -73,15 +75,27 @@
       case 36: test(response, request, out, 1); break;
       case 37: test(response, request, out, 0); break;
 
-      default: response.sendError(500, "Unknown test");break;
+      /* JBAS-6766...
+      case 38: test(response, request, out, "a", "=:", "foo", "b=:ar"); break;
+      case 39: test(response, request, out, "a", ":", "foo", "b:ar"); break;
+      case 40: test(response, request, out, "a", "=", "foo", "b=ar"); break;
+       */
+      case 38: test(response, request, out, "foo", "b"); break;
+      case 39: test(response, request, out, "foo", "b"); break;
+      case 40: test(response, request, out, "foo", "b"); break;
+
+      default: sendError(response, "Unknown test");break;
     }
-  } else if (action.compareTo("CREATE") == 0) {
+  } else if (action != null && action.compareTo("CREATE") == 0) {
     switch (ntest) {
-      case 1: out.println("OK");break;
-      default: response.sendError(500, "Unknown test");break;
+      // case 1: out.println("OK");break;
+      case 38: test(response, out, "a", "=:", "foo", "b=:ar"); break;
+      case 39: test(response, out, "a", ":", "foo", "b:ar"); break;
+      case 40: test(response, out, "a", "=", "foo", "b=ar"); break;
+      default: sendError(response, "Unknown test");break;
     }
   } else {
-    response.sendError(500, "Unknown command");
+    sendError(response, "Unknown command");
   }
 %>
 </BODY>
@@ -91,7 +105,7 @@ void test(HttpServletResponse response, HttpServletRequest request, JspWriter ou
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             if (cookies.length != 3) {
-                response.sendError(500, "Wrong number of cookies");
+                sendError(response, "Wrong number of cookies (3:" + cookies.length + ")");
                 return;
             }
             if (name1.compareTo(cookies[0].getName()) == 0 &&
@@ -102,18 +116,18 @@ void test(HttpServletResponse response, HttpServletRequest request, JspWriter ou
                 val3.compareTo(cookies[2].getValue()) == 0 )
                 out.println("OK");
             else {
-                response.sendError(500, "Value or name don't match");
+                sendError(response, "Value or name don't match");
                 return;
             }
         } else {
-        response.sendError(500, "No cookies");
+        sendError(response, "No cookies");
         }
    }
 void test(HttpServletResponse response, HttpServletRequest request, JspWriter out, String name1, String val1, String name2, String val2) throws Exception {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             if (cookies.length != 2) {
-                response.sendError(500, "Wrong number of cookies");
+                sendError(response, "Wrong number of cookies (2:" + cookies.length + ")");
                 return;
             }
             if (name1.compareTo(cookies[0].getName()) == 0 &&
@@ -122,18 +136,36 @@ void test(HttpServletResponse response, HttpServletRequest request, JspWriter ou
                 val2.compareTo(cookies[1].getValue()) == 0)
                 out.println("OK");
             else {
-                response.sendError(500, "Value or name don't match");
+                sendError(response, "Value or name don't match");
                 return;
             }
         } else {
-        response.sendError(500, "No cookies");
+        sendError(response, "No cookies");
+        }
+   }
+void test(HttpServletResponse response, HttpServletRequest request, JspWriter out, String name1, String val1) throws Exception {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            if (cookies.length != 1) {
+                sendError(response, "Wrong number of cookies (1:" + cookies.length + ")");
+                return;
+            }
+            if (name1.compareTo(cookies[0].getName()) == 0 &&
+                val1.compareTo(cookies[0].getValue()) == 0 )
+                out.println("OK");
+            else {
+                sendError(response, "Value or name don't match (got " + cookies[0].getName() + ":" + cookies[0].getValue());
+                return;
+            }
+        } else {
+        sendError(response, "No cookies");
         }
    }
 void test(HttpServletResponse response, HttpServletRequest request, JspWriter out) throws Exception {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             if (cookies.length != 0) {
-                response.sendError(500, "Wrong number of cookies");
+                sendError(response, "Wrong number of cookies (0:" + cookies.length + ")");
                 return;
             }
         }
@@ -149,5 +181,16 @@ void test(HttpServletResponse response, HttpServletRequest request, JspWriter ou
                 }
             }
         }
-        response.sendError(500, "Wrong number of cookies");
+        sendError(response, "Wrong number of cookies");
+   }
+void sendError(HttpServletResponse response, String mess) throws Exception {
+        response.setHeader("ERROR", mess);
+        response.sendError(500, mess);
+   }
+void test(HttpServletResponse response, JspWriter out, String name1, String val1, String name2, String val2) throws Exception {
+        Cookie cookie = new Cookie(name1, val1);
+        response.addCookie(cookie);
+        cookie = new Cookie(name2, val2); 
+        response.addCookie(cookie);
+        out.println("OK");
    }%>
