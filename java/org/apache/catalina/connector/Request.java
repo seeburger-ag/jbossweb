@@ -58,6 +58,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -108,6 +109,7 @@ import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.Parameters;
 import org.apache.tomcat.util.http.ServerCookie;
 import org.apache.tomcat.util.http.fileupload.DiskFileUpload;
+import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.mapper.MappingData;
 
 
@@ -361,6 +363,12 @@ public class Request
     protected static int CACHED_POST_LEN = 8192;
     protected byte[] postData = null;
 
+    
+    /**
+     * Parts associated with the request.
+     */
+    protected Map<String, Part> parts = null;
+    
 
     /**
      * Hash map used in the getParametersMap method.
@@ -491,6 +499,7 @@ public class Request
         attributes.clear();
         notes.clear();
         cookies = null;
+        parts = null;
 
         if (session != null) {
             session.endAccess();
@@ -2689,6 +2698,39 @@ public class Request
 
     }
 
+    
+    /**
+     * Parse multipart.
+     */
+    protected void parseMultipart() {
+        
+        // FIXME: Stub configuration from the example
+        DiskFileUpload fu = new DiskFileUpload();
+        // maximum size before a FileUploadException will be thrown
+        fu.setSizeMax(1000000);
+        // maximum size that will be stored in memory
+        fu.setSizeThreshold(4096);
+        // the location for saving data that is larger than getSizeThreshold()
+        fu.setRepositoryPath("/tmp");
+
+        parts = new HashMap<String, Part>();
+        try {
+            Iterator<FileItem> items = fu.parseRequest(getRequest()).iterator();
+            while (items.hasNext()) {
+                FileItem fileItem = items.next();
+                parts.put(fileItem.getName(), fileItem);
+            }
+        } catch (IOException e) {
+            // Client disconnect
+            if (context.getLogger().isDebugEnabled()) {
+                context.getLogger().debug(
+                        sm.getString("coyoteRequest.parseMultipart"), e);
+            }
+            return;
+        }
+
+    }
+
 
     /**
      * Read post body in an array.
@@ -2975,24 +3017,23 @@ public class Request
 
 
     public Part getPart(String name) throws IllegalArgumentException {
-        // FIXME: get the config from somewhere
-        // TODO Auto-generated method stub
-        return null;
+        if (parts == null) {
+            parseMultipart();
+        }
+        Part result = parts.get(name);
+        if (result == null) {
+            throw new IllegalArgumentException();
+        } else {
+            return result;
+        }
     }
 
 
     public Iterable<Part> getParts() {
-        // FIXME: Stub from the example
-        DiskFileUpload fu = new DiskFileUpload();
-        // maximum size before a FileUploadException will be thrown
-        fu.setSizeMax(1000000);
-        // maximum size that will be stored in memory
-        fu.setSizeThreshold(4096);
-        // the location for saving data that is larger than getSizeThreshold()
-        fu.setRepositoryPath("/tmp");
-
-        // FIXME: Store the list in a field locally
-        return fu.parseRequest(getRequest());
+        if (parts == null) {
+            parseMultipart();
+        }
+        return parts.values();
     }
 
 
