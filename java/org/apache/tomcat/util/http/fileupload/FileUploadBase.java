@@ -239,7 +239,7 @@ public abstract class FileUploadBase
      * @exception FileUploadException if there are problems reading/parsing
      *                                the request or storing files.
      */
-    public List /* FileItem */ parseRequest(HttpServletRequest req)
+    public List<FileItem> parseRequest(HttpServletRequest req)
         throws FileUploadException
     {
         if (null == req)
@@ -247,7 +247,7 @@ public abstract class FileUploadBase
             throw new NullPointerException("req parameter");
         }
 
-        ArrayList items = new ArrayList();
+        ArrayList<FileItem> items = new ArrayList<FileItem>();
         String contentType = req.getHeader(CONTENT_TYPE);
 
         if ((null == contentType) || (!contentType.startsWith(MULTIPART)))
@@ -295,7 +295,7 @@ public abstract class FileUploadBase
             boolean nextPart = multi.skipPreamble();
             while (nextPart)
             {
-                Map headers = parseHeaders(multi.readHeaders());
+                Map<String, String> headers = parseHeaders(multi.readHeaders());
                 String fieldName = getFieldName(headers);
                 if (fieldName != null)
                 {
@@ -456,14 +456,15 @@ public abstract class FileUploadBase
      *
      * @exception FileUploadException if an error occurs.
      */
-    protected FileItem createItem(Map /* String, String */ headers,
+    protected FileItem createItem(Map<String, String> headers,
                                   boolean isFormField)
         throws FileUploadException
     {
         return getFileItemFactory().createItem(getFieldName(headers),
                 getHeader(headers, CONTENT_TYPE),
                 isFormField,
-                getFileName(headers));
+                getFileName(headers),
+                headers);
     }
 
 
@@ -479,9 +480,9 @@ public abstract class FileUploadBase
      *
      * @return A <code>Map</code> containing the parsed HTTP request headers.
      */
-    protected Map /* String, String */ parseHeaders(String headerPart)
+    protected Map<String, String> parseHeaders(String headerPart)
     {
-        Map headers = new HashMap();
+        Map<String, String> headers = new HashMap<String, String>();
         char buffer[] = new char[MAX_HEADER_SIZE];
         boolean done = false;
         int j = 0;

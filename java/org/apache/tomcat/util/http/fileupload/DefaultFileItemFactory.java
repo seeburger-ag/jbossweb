@@ -19,6 +19,7 @@
 package org.apache.tomcat.util.http.fileupload;
 
 import java.io.File;
+import java.util.Map;
 
 
 /**
@@ -180,11 +181,12 @@ public class DefaultFileItemFactory implements FileItemFactory
             String fieldName,
             String contentType,
             boolean isFormField,
-            String fileName
+            String fileName,
+            Map<String, String> headers
             )
     {
         return new DefaultFileItem(fieldName, contentType,
-                isFormField, fileName, sizeThreshold, repository);
+                isFormField, fileName, headers, sizeThreshold, repository);
     }
 
 }

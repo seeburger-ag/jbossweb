@@ -44,6 +44,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
@@ -289,6 +290,8 @@ public class DummyRequest
     public void login(String username, String password) throws ServletException {}
     public void logout() throws ServletException {}
     public long getAsyncTimeout() { return 0; }
+    public Part getPart(String name) throws IllegalArgumentException { return null; }
+    public Iterable<Part> getParts() { return null; }
     
 }
 

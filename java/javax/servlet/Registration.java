@@ -37,12 +37,13 @@
 package javax.servlet;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Interface through which a {@link Servlet} or {@link Filter} may be
  * further configured.
  *
- * @since 3.0
+ * @since Servlet 3.0
  */
 public interface Registration {
 
@@ -80,14 +81,15 @@ public interface Registration {
      *
      * @param initParameters the initialization parameters
      *
-     * @return true if the update was successful, false otherwise
+     * @return the (possibly empty) Set of initialization parameter names
+     * that are in conflict
      *
      * @throws IllegalStateException if the ServletContext from which this
      * Registration was obtained has already been initialized
      * @throws IllegalArgumentException if the given map contains an
      * initialization parameter with a <tt>null</tt> name or value
      */ 
-    public boolean setInitParameters(Map<String, String> initParameters);
+    public Set<String> setInitParameters(Map<String, String> initParameters);
 
     /**
      * Interface through which a {@link Servlet} or {@link Filter} registered

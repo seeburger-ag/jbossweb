@@ -33,6 +33,7 @@ import javax.jws.soap.InitParam;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
 import javax.servlet.annotation.HandlesTypes;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebListener;
@@ -314,6 +315,10 @@ public class ContextConfig
             if (clazz.isAnnotationPresent(HandlesTypes.class)) {
                 HandlesTypes annotation = clazz.getAnnotation(HandlesTypes.class);
                 // FIXME: Ok, this is complex ....
+            }
+            if (clazz.isAnnotationPresent(MultipartConfig.class)) {
+                MultipartConfig annotation = clazz.getAnnotation(MultipartConfig.class);
+                // FIXME: Do something ....
             }
             if (clazz.isAnnotationPresent(WebFilter.class)) {
                 WebFilter annotation = clazz.getAnnotation(WebFilter.class);

@@ -18,6 +18,8 @@
 
 package org.apache.tomcat.util.http.fileupload;
 
+import java.util.Map;
+
 
 /**
  * <p>A factory interface for creating {@link FileItem} instances. Factories
@@ -48,6 +50,7 @@ public interface FileItemFactory
             String fieldName,
             String contentType,
             boolean isFormField,
-            String fileName
+            String fileName,
+            Map<String, String> headers
             );
 }

@@ -60,16 +60,15 @@ import javax.servlet.ServletRequestWrapper;
 import java.util.Enumeration;
 
 /**
- * 
- * Provides a convenient implementation of the HttpServletRequest interface that
- * can be subclassed by developers wishing to adapt the request to a Servlet.
- * This class implements the Wrapper or Decorator pattern. Methods default to
- * calling through to the wrapped request object.
- * 
+ * Provides a convenient implementation of the HttpServletRequest interface
+ * that can be subclassed by developers wishing to adapt the request to a
+ * Servlet.
  *
- * @see 	javax.servlet.http.HttpServletRequest
-  * @since	v 2.3
- *
+ * <p>This class implements the Wrapper or Decorator pattern. Methods default
+ * to calling through to the wrapped request object.
+ * 
+ * @see javax.servlet.http.HttpServletRequest
+ * @since Servlet 2.3
  */
 
 
@@ -328,4 +327,28 @@ public class HttpServletRequestWrapper extends ServletRequestWrapper implements 
     public void logout() throws ServletException {
         this._getHttpServletRequest().logout();
     }
+
+    /**
+     * Retrieves all the parts of the multi-part/form-data http message
+     *
+     * @return An <code>Iterable</code> for all the parts of the multi-part/form-data request
+     */
+    public Iterable<Part> getParts() {
+        return this._getHttpServletRequest().getParts(); 
+    }
+
+    /**
+     * Returns the part specified by the name.
+     *
+     * @param name the name of the part
+     * @return The part being requested for by name.
+     * @exception IllegalArgumentException If the name specified does not exist
+     *
+     */
+    public Part getPart(String name) throws IllegalArgumentException {
+        return this._getHttpServletRequest().getPart(name); 
+    
+    }
+
+
 }

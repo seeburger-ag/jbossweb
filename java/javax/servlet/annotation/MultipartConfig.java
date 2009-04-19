@@ -32,53 +32,40 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
  */
 
-package javax.servlet;
+package javax.servlet.annotation;
 
-/**
- * Event that gets fired when a ServletRequest on which asynchronous
- * processing was started has finished processing through a call to
- * {@link AsyncContext#complete} or has timed out.
- *
- * @since Servlet 3.0
- */
-public class AsyncEvent { 
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-    private ServletRequest request;
-    private ServletResponse response;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MultipartConfig {
+    /**
+     * The directory location where files will be stored
+     * 
+     */
+    String location() default "";
 
     /**
-     * Constructs an AsyncEvent from the given request and response objects.
+     * the maximum size allowed for files uploaded
      *
-     * @param request the ServletRequest
-     * @param response the ServletResponse
      */
-    public AsyncEvent(ServletRequest request, ServletResponse response) {
-        this.request = request;
-        this.response = response;
-    }
-
+    int maxFileSize() default 0;
 
     /**
-     * Gets the ServletRequest from this event
+     * The maximum size of a multi-part/form-data request allowed
      *
-     * @return the ServletRequest
      */
-    public ServletRequest getRequest() {
-        return request;
-    }
-
+    int maxRequestSize() default 0;
 
     /**
-     * Gets the ServletResponse from this event
+     * The size threshold after which the file will be written to disk
      *
-     * @return the ServletResponse
      */
-    public ServletResponse getResponse() {
-        return response;
-    }
-
+    int fileSizeThreshold() default 0;
 }
-

@@ -64,60 +64,58 @@ import org.xml.sax.InputSource;
 public final class TldConfig  {
 
     // Names of JARs that are known not to contain any TLDs
-    private static HashSet<String> noTldJars;
+    private static HashSet<String> noDescriptorsJars;
 
     private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( TldConfig.class );
+        org.jboss.logging.Logger.getLogger(TldConfig.class);
 
     /*
-     * Initializes the set of JARs that are known not to contain any TLDs
+     * Initializes the set of JARs that are known not to contain any descriptors.
      */
     static {
-        noTldJars = new HashSet<String>();
+        noDescriptorsJars = new HashSet<String>();
         // Bootstrap JARs
-        noTldJars.add("bootstrap.jar");
-        noTldJars.add("commons-daemon.jar");
-        noTldJars.add("tomcat-juli.jar");
+        noDescriptorsJars.add("bootstrap.jar");
+        noDescriptorsJars.add("commons-daemon.jar");
+        noDescriptorsJars.add("tomcat-juli.jar");
         // Main JARs
-        noTldJars.add("annotations-api.jar");
-        noTldJars.add("catalina.jar");
-        noTldJars.add("catalina-ant.jar");
-        noTldJars.add("catalina-ha.jar");
-        noTldJars.add("catalina-tribes.jar");
-        noTldJars.add("el-api.jar");
-        noTldJars.add("jasper.jar");
-        noTldJars.add("jasper-el.jar");
-        noTldJars.add("jasper-jdt.jar");
-        noTldJars.add("jsp-api.jar");
-        noTldJars.add("servlet-api.jar");
-        noTldJars.add("tomcat-coyote.jar");
-        noTldJars.add("tomcat-dbcp.jar");
+        noDescriptorsJars.add("annotations-api.jar");
+        noDescriptorsJars.add("catalina.jar");
+        noDescriptorsJars.add("catalina-ant.jar");
+        noDescriptorsJars.add("el-api.jar");
+        noDescriptorsJars.add("jasper.jar");
+        noDescriptorsJars.add("jasper-el.jar");
+        noDescriptorsJars.add("jasper-jdt.jar");
+        noDescriptorsJars.add("jsp-api.jar");
+        noDescriptorsJars.add("servlet-api.jar");
+        noDescriptorsJars.add("tomcat-coyote.jar");
+        noDescriptorsJars.add("tomcat-dbcp.jar");
         // i18n JARs
-        noTldJars.add("tomcat-i18n-en.jar");
-        noTldJars.add("tomcat-i18n-es.jar");
-        noTldJars.add("tomcat-i18n-fr.jar");
-        noTldJars.add("tomcat-i18n-ja.jar");
+        noDescriptorsJars.add("tomcat-i18n-en.jar");
+        noDescriptorsJars.add("tomcat-i18n-es.jar");
+        noDescriptorsJars.add("tomcat-i18n-fr.jar");
+        noDescriptorsJars.add("tomcat-i18n-ja.jar");
         // Misc JARs not included with Tomcat
-        noTldJars.add("ant.jar");
-        noTldJars.add("commons-dbcp.jar");
-        noTldJars.add("commons-beanutils.jar");
-        noTldJars.add("commons-fileupload-1.0.jar");
-        noTldJars.add("commons-pool.jar");
-        noTldJars.add("commons-digester.jar");
-        noTldJars.add("commons-logging.jar");
-        noTldJars.add("commons-collections.jar");
-        noTldJars.add("jmx.jar");
-        noTldJars.add("jmx-tools.jar");
-        noTldJars.add("xercesImpl.jar");
-        noTldJars.add("xmlParserAPIs.jar");
-        noTldJars.add("xml-apis.jar");
+        noDescriptorsJars.add("ant.jar");
+        noDescriptorsJars.add("commons-dbcp.jar");
+        noDescriptorsJars.add("commons-beanutils.jar");
+        noDescriptorsJars.add("commons-fileupload-1.0.jar");
+        noDescriptorsJars.add("commons-pool.jar");
+        noDescriptorsJars.add("commons-digester.jar");
+        noDescriptorsJars.add("commons-logging.jar");
+        noDescriptorsJars.add("commons-collections.jar");
+        noDescriptorsJars.add("jmx.jar");
+        noDescriptorsJars.add("jmx-tools.jar");
+        noDescriptorsJars.add("xercesImpl.jar");
+        noDescriptorsJars.add("xmlParserAPIs.jar");
+        noDescriptorsJars.add("xml-apis.jar");
         // JARs from J2SE runtime
-        noTldJars.add("sunjce_provider.jar");
-        noTldJars.add("ldapsec.jar");
-        noTldJars.add("localedata.jar");
-        noTldJars.add("dnsns.jar");
-        noTldJars.add("tools.jar");
-        noTldJars.add("sunpkcs11.jar");
+        noDescriptorsJars.add("sunjce_provider.jar");
+        noDescriptorsJars.add("ldapsec.jar");
+        noDescriptorsJars.add("localedata.jar");
+        noDescriptorsJars.add("dnsns.jar");
+        noDescriptorsJars.add("tools.jar");
+        noDescriptorsJars.add("sunpkcs11.jar");
     }
 
 
@@ -167,10 +165,10 @@ public final class TldConfig  {
      */
     public static void setNoTldJars(String jarNames) {
         if (jarNames != null) {
-            noTldJars.clear();
+            noDescriptorsJars.clear();
             StringTokenizer tokenizer = new StringTokenizer(jarNames, ",");
             while (tokenizer.hasMoreElements()) {
-                noTldJars.add(tokenizer.nextToken());
+                noDescriptorsJars.add(tokenizer.nextToken());
             }
         }
     }
@@ -251,39 +249,12 @@ public final class TldConfig  {
     public void execute() throws Exception {
         long t1=System.currentTimeMillis();
 
-        File tldCache=null;
-
-        if (context instanceof StandardContext) {
-            File workDir= (File)
-                ((StandardContext)context).getServletContext().getAttribute(Globals.WORK_DIR_ATTR);
-            //tldCache=new File( workDir, "tldCache.ser");
-        }
-
-        // Option to not rescan
-        if( ! rescan ) {
-            // find the cache
-            if( tldCache!= null && tldCache.exists()) {
-                // just read it...
-                processCache(tldCache);
-                return;
-            }
-        }
-
         /*
          * Acquire the list of TLD resource paths, possibly embedded in JAR
          * files, to be processed
          */
         Set resourcePaths = tldScanResourcePaths();
-        Map jarPaths = getJarPaths();
-
-        // Check to see if we can use cached listeners
-        if (tldCache != null && tldCache.exists()) {
-            long lastModified = getLastModified(resourcePaths, jarPaths);
-            if (lastModified < tldCache.lastModified()) {
-                processCache(tldCache);
-                return;
-            }
-        }
+        Map<String, File> jarPaths = getJarPaths();
 
         // Scan each accumulated resource path for TLDs to be processed
         Iterator paths = resourcePaths.iterator();
@@ -303,18 +274,6 @@ public final class TldConfig  {
         }
 
         String list[] = getTldListeners();
-
-        if( tldCache!= null ) {
-            log.debug( "Saving tld cache: " + tldCache + " " + list.length);
-            try {
-                FileOutputStream out=new FileOutputStream(tldCache);
-                ObjectOutputStream oos=new ObjectOutputStream( out );
-                oos.writeObject( list );
-                oos.close();
-            } catch( IOException ex ) {
-                ex.printStackTrace();
-            }
-        }
 
         if( log.isDebugEnabled() )
             log.debug( "Adding tld listeners:" + list.length);
@@ -572,11 +531,11 @@ public final class TldConfig  {
      * @exception IOException if an input/output error occurs while
      *  accumulating the list of resource paths
      */
-    private Set tldScanResourcePaths() throws IOException {
+    private Set<String> tldScanResourcePaths() throws IOException {
         if (log.isDebugEnabled()) {
             log.debug(" Accumulating TLD resource paths");
         }
-        Set resourcePaths = new HashSet();
+        Set<String> resourcePaths = new HashSet<String>();
 
         // Accumulate resource paths explicitly listed in the web application
         // deployment descriptor
@@ -675,9 +634,9 @@ public final class TldConfig  {
      *
      * @return Map of JAR file paths
      */
-    private Map getJarPaths() {
+    private Map<String, File> getJarPaths() {
 
-        HashMap jarPathMap = null;
+        HashMap<String, File> jarPathMap = null;
 
         ClassLoader webappLoader = Thread.currentThread().getContextClassLoader();
         ClassLoader loader = webappLoader;
@@ -715,8 +674,8 @@ public final class TldConfig  {
                      * that are not known not to contain any TLDs
                      */
                     if (loader == webappLoader
-                            || noTldJars == null
-                            || !noTldJars.contains(file.getName())) {
+                            || noDescriptorsJars == null
+                            || !noDescriptorsJars.contains(file.getName())) {
                         if (jarPathMap == null) {
                             jarPathMap = new HashMap();
                             jarPathMap.put(path, file);

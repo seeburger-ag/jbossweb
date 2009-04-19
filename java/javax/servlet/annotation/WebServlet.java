@@ -52,7 +52,7 @@ import java.lang.annotation.Documented;
  * 
  * @see javax.servlet.Servlet
  *
- * @since 3.0
+ * @since Servlet 3.0
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -92,14 +92,6 @@ public @interface WebServlet {
      * ServletResponse)
      */
     boolean asyncSupported() default false;
-    
-    /**
-     * The timeout for asynchronous operations initiated by the
-     * servlet.
-     *
-     * @see javax.servlet.ServletRequest#setAsyncTimeout
-     */
-    long asyncTimeout() default 60000;
     
     /**
      * The small-icon of the servlet

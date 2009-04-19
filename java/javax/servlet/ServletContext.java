@@ -103,9 +103,9 @@ public interface ServletContext {
      *
      * <p>The context path is the portion of the request URI that is used
      * to select the context of the request. The context path always comes
-     * first in a request URI. The path starts with a "/" character but does
-     * not end with a "/" character. For servlets in the default (root)
-     * context, this method returns "".
+     * first in a request URI. The path starts with a <tt>/</tt> character
+     * but does not end with a <tt>/</tt> character. For servlets in the
+     * default (root) context, this method returns "".
      *
      * <p>It is possible that a servlet container may match a context by
      * more than one context path. In such cases the
@@ -120,7 +120,7 @@ public interface ServletContext {
      *
      * @see javax.servlet.http.HttpServletRequest#getContextPath()
      *
-     * @since 2.5
+     * @since Servlet 2.5
      */
     public String getContextPath();
 
@@ -132,7 +132,7 @@ public interface ServletContext {
      * <p>This method allows servlets to gain
      * access to the context for various parts of the server, and as
      * needed obtain {@link RequestDispatcher} objects from the context.
-     * The given path must be begin with "/", is interpreted relative 
+     * The given path must be begin with <tt>/</tt>, is interpreted relative 
      * to the server's document root and is matched against the context
      * roots of other web applications hosted on this container.
      * 
@@ -176,8 +176,7 @@ public interface ServletContext {
      * the MIME type is not known. The MIME type is determined
      * by the configuration of the servlet container, and may be specified
      * in a web application deployment descriptor. Common MIME
-     * types are <code>"text/html"</code> and <code>"image/gif"</code>.
-     *
+     * types include <code>text/html</code> and <code>image/gif</code>.
      *
      * @param file a <code>String</code> specifying the name of a file
      *
@@ -191,42 +190,57 @@ public interface ServletContext {
      * within the web application whose longest sub-path matches the
      * supplied path argument.
      *
-     * Paths indicating subdirectory paths end with a '/'.
+     * <p>Paths indicating subdirectory paths end with a <tt>/</tt>.
      *
-     * The returned paths are all relative to the root of the web application
-     * and have a leading '/'.
+     * <p>The returned paths are all relative to the root of the web
+     * application, or relative to the <tt>/META-INF/resources</tt>
+     * directory of a JAR file inside the web application's
+     * <tt>/WEB-INF/lib</tt> directory, and have a leading <tt>/</tt>.
      *
-     * For example, for a web application containing<br><br>
+     * <p>For example, for a web application containing:
      *
-     * /welcome.html<br>
-     * /catalog/index.html<br>
-     * /catalog/products.html<br>
-     * /catalog/offers/books.html<br>
-     * /catalog/offers/music.html<br>
-     * /customer/login.jsp<br>
-     * /WEB-INF/web.xml<br>
-     * /WEB-INF/classes/com.acme.OrderServlet.class,<br><br>
-     *
-     * getResourcePaths("/") returns {"/welcome.html", "/catalog/",
-     * "/customer/", "/WEB-INF/"}<br>
-     * getResourcePaths("/catalog/") returns {"/catalog/index.html",
-     * "/catalog/products.html", "/catalog/offers/"}.<br>
+     * <code><pre>
+     *   /welcome.html
+     *   /catalog/index.html
+     *   /catalog/products.html
+     *   /catalog/offers/books.html
+     *   /catalog/offers/music.html
+     *   /customer/login.jsp
+     *   /WEB-INF/web.xml
+     *   /WEB-INF/classes/com.acme.OrderServlet.class
+     *   /WEB-INF/lib/catalog.jar!/META-INF/resources/catalog/moreOffers/books.html
+     * </pre></code>
      * 
-     * @param path		the partial path used to match the resources,
-     *				which must start with a /
+     * <tt>getResourcePaths("/")</tt> would return
+     * <tt>{"/welcome.html", "/catalog/", "/customer/", "/WEB-INF/"}</tt>,
+     * and <tt>getResourcePaths("/catalog/")</tt> would return
+     * <tt>{"/catalog/index.html", "/catalog/products.html",
+     * "/catalog/offers/", "/catalog/moreOffers/"}</tt>.
+     * 
+     * @param path the partial path used to match the resources,
+     * which must start with a <tt>/</tt>
      * @return a Set containing the directory listing, or null if there
      * are no resources in the web application whose path
      * begins with the supplied path.
      * 
-     * @since 2.3
+     * @since Servlet 2.3
      */    
     public Set<String> getResourcePaths(String path);
     
 
     /**
-     * Returns a URL to the resource that is mapped to a specified
-     * path. The path must begin with a "/" and is interpreted
-     * as relative to the current context root.
+     * Returns a URL to the resource that is mapped to the given path.
+     *
+     * <p>The path must begin with a <tt>/</tt> and is interpreted
+     * as relative to the current context root,
+     * or relative to the <tt>/META-INF/resources</tt> directory
+     * of a JAR file inside the web application's <tt>/WEB-INF/lib</tt>
+     * directory.
+     * This method will first search the document root of the
+     * web application for the requested resource, before searching
+     * any of the JAR files inside <tt>/WEB-INF/lib</tt>.
+     * The order in which the JAR files inside <tt>/WEB-INF/lib</tt>
+     * are searched is undefined.
      *
      * <p>This method allows the servlet container to make a resource 
      * available to servlets from any source. Resources 
@@ -308,11 +322,14 @@ public interface ServletContext {
      * a request to the resource or to include the resource in a response.
      * The resource can be dynamic or static.
      *
-     * <p>The pathname must begin with a "/" and is interpreted as relative
-     * to the current context root.  Use <code>getContext</code> to obtain
-     * a <code>RequestDispatcher</code> for resources in foreign contexts.
-     * This method returns <code>null</code> if the <code>ServletContext</code>
-     * cannot return a <code>RequestDispatcher</code>.
+     * <p>The pathname must begin with a <tt>/</tt> and is interpreted as
+     * relative to the current context root.  Use <code>getContext</code>
+     * to obtain a <code>RequestDispatcher</code> for resources in foreign
+     * contexts.
+     *
+     * <p>This method returns <code>null</code> if the
+     * <code>ServletContext</code> cannot return a
+     * <code>RequestDispatcher</code>.
      *
      * @param path 	a <code>String</code> specifying the pathname
      *			to the resource
@@ -440,26 +457,36 @@ public interface ServletContext {
     
     
     /**
-     * Returns a <code>String</code> containing the real path 
-     * for a given virtual path. For example, the path "/index.html"
-     * returns the absolute file path on the server's filesystem would be
-     * served by a request for "http://host/contextPath/index.html",
-     * where contextPath is the context path of this ServletContext..
+     * Gets the <i>real</i> path corresponding to the given
+     * <i>virtual</i> path.
+     *
+     * <p>For example, if <tt>path</tt> is equal to <tt>/index.html</tt>,
+     * this method will return the absolute file path on the server's
+     * filesystem to which a request of the form
+     * <tt>http://&lt;host&gt;:&lt;port&gt;/&lt;contextPath&gt;/index.html</tt>
+     * would be mapped, where <tt>&lt;contextPath&gt;</tt> corresponds to the
+     * context path of this ServletContext.
      *
      * <p>The real path returned will be in a form
      * appropriate to the computer and operating system on
      * which the servlet container is running, including the
-     * proper path separators. This method returns <code>null</code>
-     * if the servlet container cannot translate the virtual path
-     * to a real path for any reason (such as when the content is
-     * being made available from a <code>.war</code> archive).
+     * proper path separators.
+     * Paths to resources located inside the <tt>/META-INF/resources</tt>
+     * directory of a JAR file inside the application's <tt>/WEB-INF/lib</tt>
+     * directory are returned using this format:
+     * <tt>&lt;absolute-file-path-on-disk&gt;/WEB-INF/lib/&lt;name-of-jar&gt;!/META-INF/resources/&lt;path&gt;</tt>,
+     * where <tt>&lt;path&gt;</tt> corresponds to the <tt>path</tt>
+     * argument passed to this method.
      *
+     * <p>This method returns <code>null</code> if the servlet container
+     * is unable to translate the given <i>virtual</i> path to a
+     * <i>real</i> path.
      *
-     * @param path 	a <code>String</code> specifying a virtual path
+     * @param path the <i>virtual</i> path to be translated to a
+     * <i>real</i> path
      *
-     *
-     * @return 		a <code>String</code> specifying the real path,
-     *                  or null if the translation cannot be performed
+     * @return the <i>real</i> path, or <tt>null</tt> if the
+     * translation cannot be performed
      */
     public String getRealPath(String path);
     
@@ -490,7 +517,7 @@ public interface ServletContext {
      * parameter does not exist.
      *
      * <p>This method can make available configuration information useful
-     * to an entire "web application".  For example, it can provide a 
+     * to an entire web application.  For example, it can provide a 
      * webmaster's email address or the name of a system that holds 
      * critical data.
      *
@@ -534,7 +561,7 @@ public interface ServletContext {
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public boolean setInitParameter(String name, String value);
 
@@ -542,7 +569,8 @@ public interface ServletContext {
     /**
      * Returns the servlet container attribute with the given name, 
      * or <code>null</code> if there is no attribute by that name.
-     * An attribute allows a servlet container to give the
+     *
+     * <p>An attribute allows a servlet container to give the
      * servlet additional information not
      * already provided by this interface. See your
      * server documentation for information about its attributes.
@@ -551,11 +579,11 @@ public interface ServletContext {
      *
      * <p>The attribute is returned as a <code>java.lang.Object</code>
      * or some subclass.
-     * Attribute names should follow the same convention as package
+     *
+     * <p>Attribute names should follow the same convention as package
      * names. The Java Servlet API specification reserves names
      * matching <code>java.*</code>, <code>javax.*</code>,
      * and <code>sun.*</code>.
-     *
      *
      * @param name 	a <code>String</code> specifying the name 
      *			of the attribute
@@ -600,7 +628,6 @@ public interface ServletContext {
      * matching <code>java.*</code>, <code>javax.*</code>, and
      * <code>sun.*</code>.
      *
-     *
      * @param name 	a <code>String</code> specifying the name 
      *			of the attribute
      *
@@ -619,8 +646,6 @@ public interface ServletContext {
      * <p>If listeners are configured on the <code>ServletContext</code> the 
      * container notifies them accordingly.
      *
-     *
-     *
      * @param name	a <code>String</code> specifying the name 
      * 			of the attribute to be removed
      */
@@ -632,11 +657,10 @@ public interface ServletContext {
      * ServletContext as specified in the deployment descriptor for this
      * web application by the display-name element.
      *
-     *
      * @return The name of the web application or null if no name has been
      * declared in the deployment descriptor.
      * 
-     * @since 2.3
+     * @since Servlet 2.3
      */
     public String getServletContextName();
 
@@ -661,7 +685,7 @@ public interface ServletContext {
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public ServletRegistration.Dynamic addServlet(
         String servletName, String className);
@@ -688,7 +712,7 @@ public interface ServletContext {
      * @throws IllegalArgumentException if the given servlet instance 
      * implements {@link SingleThreadModel}
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public ServletRegistration.Dynamic addServlet(
         String servletName, Servlet servlet);
@@ -711,7 +735,7 @@ public interface ServletContext {
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public ServletRegistration.Dynamic addServlet(String servletName,
         Class <? extends Servlet> servletClass);
@@ -733,7 +757,7 @@ public interface ServletContext {
      * @throws ServletException if an error occurs during the instantiation
      * of, or resource injection into the new Servlet
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public <T extends Servlet> T createServlet(Class<T> c)
         throws ServletException;
@@ -747,7 +771,7 @@ public interface ServletContext {
      * given <tt>servletName</tt>, or null if no ServletRegistration exists
      * under that name in this ServletContext
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public ServletRegistration findServletRegistration(String servletName);
 
@@ -772,7 +796,7 @@ public interface ServletContext {
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public FilterRegistration.Dynamic addFilter(
         String filterName, String className);
@@ -797,7 +821,7 @@ public interface ServletContext {
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public FilterRegistration.Dynamic addFilter(
         String filterName, Filter filter);
@@ -820,7 +844,7 @@ public interface ServletContext {
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public FilterRegistration.Dynamic addFilter(String filterName,
         Class <? extends Filter> filterClass);
@@ -842,7 +866,7 @@ public interface ServletContext {
      * @throws ServletException if an error occurs during the instantiation
      * of, or resource injection into the new Filter
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public <T extends Filter> T createFilter(Class<T> c)
         throws ServletException;
@@ -856,7 +880,7 @@ public interface ServletContext {
      * given <tt>filterName</tt>, or null if no FilterRegistration exists
      * under that name in this ServletContext
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public FilterRegistration findFilterRegistration(String filterName);
 
@@ -873,7 +897,7 @@ public interface ServletContext {
      * various properties of the session tracking cookies created on
      * behalf of this <tt>ServletContext</tt> may be configured
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public SessionCookieConfig getSessionCookieConfig();
 
@@ -898,7 +922,7 @@ public interface ServletContext {
      * or if <tt>sessionTrackingModes</tt> specifies a session tracking mode
      * that is not supported by the servlet container
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes);
 
@@ -910,7 +934,7 @@ public interface ServletContext {
      * @return set of the session tracking modes supported by default for
      * this <tt>ServletContext</tt>
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes();
 
@@ -929,7 +953,7 @@ public interface ServletContext {
      * @return set of the session tracking modes in effect for this
      * <tt>ServletContext</tt>
      *
-     * @since 3.0
+     * @since Servlet 3.0
      */
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes();
 

@@ -80,6 +80,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -106,6 +107,7 @@ import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.Parameters;
 import org.apache.tomcat.util.http.ServerCookie;
+import org.apache.tomcat.util.http.fileupload.DiskFileUpload;
 import org.apache.tomcat.util.http.mapper.MappingData;
 
 
@@ -2971,7 +2973,29 @@ public class Request
         throw new IllegalStateException();
     }
 
-    
+
+    public Part getPart(String name) throws IllegalArgumentException {
+        // FIXME: get the config from somewhere
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public Iterable<Part> getParts() {
+        // FIXME: Stub from the example
+        DiskFileUpload fu = new DiskFileUpload();
+        // maximum size before a FileUploadException will be thrown
+        fu.setSizeMax(1000000);
+        // maximum size that will be stored in memory
+        fu.setSizeThreshold(4096);
+        // the location for saving data that is larger than getSizeThreshold()
+        fu.setRepositoryPath("/tmp");
+
+        // FIXME: Store the list in a field locally
+        return fu.parseRequest(getRequest());
+    }
+
+
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append(sm.getString("coyoteRequest.servletStack", Thread.currentThread().getName()));
@@ -3123,5 +3147,6 @@ public class Request
         }
 
     }
+
 
 }

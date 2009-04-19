@@ -39,6 +39,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.ApplicationFilterChain;
@@ -1118,6 +1119,26 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         request.logout();
+    }
+
+
+    public Part getPart(String name) throws IllegalArgumentException {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.getPart(name);
+    }
+
+
+    public Iterable<Part> getParts() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.getParts();
     }
 
 }

@@ -52,7 +52,7 @@ import javax.servlet.DispatcherType;
  * 
  * @see javax.servlet.Filter
  *
- * @since 3.0
+ * @since Servlet 3.0
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -118,11 +118,4 @@ public @interface WebFilter {
      */
     boolean asyncSupported() default false;
 
-    /**
-     * The timeout for asynchronous operations initiated by the
-     * filter.
-     *
-     * @see javax.servlet.ServletRequest#setAsyncTimeout
-     */
-    long asyncTimeout() default 60000;
 }

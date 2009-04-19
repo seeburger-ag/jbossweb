@@ -16,7 +16,7 @@ Main development:
 
 Other:
 - Diagnostic and monitoring features (provided by the jopr/JON agent, as JBoss Web standalone seems too
-  lightweight for embeddede jopr/JON to make sense)
+  lightweight for embedded jopr/JON to make sense)
 - .net support like the php support (looks ok, but PHP is hard to use, how would this be different ?)
 - fastcgi servlet (sounds useless)
 - Java proxy (probably too many components needed to compete with mod_cluster, but a very basic HTTP proxy could be useful

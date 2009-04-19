@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 
 /**
@@ -112,8 +113,14 @@ public class DefaultFileItem
     /**
      * Output stream for this item.
      */
-    private DeferredFileOutputStream dfos;
+    private transient DeferredFileOutputStream dfos;
 
+    
+    /**
+     * Headers associated with the file item.
+     */
+    private Map<String, String> headers;
+    
 
     // ----------------------------------------------------------- Constructors
 
@@ -136,12 +143,14 @@ public class DefaultFileItem
      *                      exceed the threshold.
      */
     DefaultFileItem(String fieldName, String contentType, boolean isFormField,
-                    String fileName, int sizeThreshold, File repository)
+                    String fileName, Map<String, String> headers, int sizeThreshold, 
+                    File repository)
     {
         this.fieldName = fieldName;
         this.contentType = contentType;
         this.isFormField = isFormField;
         this.fileName = fileName;
+        this.headers = headers;
         this.sizeThreshold = sizeThreshold;
         this.repository = repository;
     }
@@ -338,7 +347,7 @@ public class DefaultFileItem
      *
      * @exception Exception if an error occurs.
      */
-    public void write(File file) throws Exception
+    public void write(File file) throws IOException
     {
         if (isInMemory())
         {
@@ -517,6 +526,26 @@ public class DefaultFileItem
     }
 
 
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
+
+    public Iterable<String> getHeaderNames() {
+        return headers.keySet();
+    }
+
+
+    public Iterable<String> getHeaders(String name) {
+        // FIXME: Create a Set out of the comma separated values
+        return null;
+    }
+
+
+    public void write(String fileName) throws IOException {
+        write(new File(fileName));
+    }
+
     // --------------------------------------------------------- Public methods
 
 
@@ -604,5 +633,6 @@ public class DefaultFileItem
         }
         return id;
     }
+
 
 }
