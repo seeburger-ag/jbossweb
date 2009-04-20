@@ -136,7 +136,18 @@ public class CookiesTestCase extends TestCase {
     public void testTestW39() { writeTest(39); }
     public void testTestW40() { writeTest(40); }
 
+    // Bugzilla 45272
+    public void testTestW41() { writeTest(41, "a", "Path=/"); }
+    public void testTestW42() { writeTest(42, "a", "Version=1; Path=/"); }
+
+
+    // Store the received cookies.
+    private String cookies [] = null;
+
     public void writeTest(int test) {
+        writeTest(test, null, null);
+    }
+    public void writeTest(int test, String name, String token) {
         try {
         String result = Mytest(test, null, false);
         if (result != null)
@@ -144,6 +155,21 @@ public class CookiesTestCase extends TestCase {
         } catch (Exception ex) {
             ex.printStackTrace();
             fail("Test failed because of " + ex);
+            return;
+        }
+        /* Tests the cookies */
+        if (name == null)
+            return; // nothing to do...
+        if (cookies != null) {
+            String sname = name + "=";
+            for (int i=0; i<cookies.length; i++) {
+                if (cookies[i].startsWith(sname)) {
+                    if (cookies[i].indexOf(token)==-1) {
+                        fail("Can't find token in " + cookies[i]);
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -186,6 +212,7 @@ public class CookiesTestCase extends TestCase {
         String header = reader.readLine();
         int contentLength = 0;
         String error = "Unknown";
+        cookies = null;
         while (!"".equals(header)) {
             int colon = header.indexOf(':');
             String headerName = header.substring(0, colon).trim();
@@ -195,6 +222,19 @@ public class CookiesTestCase extends TestCase {
             }
             if ("ERROR".equalsIgnoreCase(headerName)) {
                 error = headerValue;
+            }
+            if ("set-cookie".equalsIgnoreCase(headerName)) {
+                if (cookies == null) {
+                    cookies = new String [1];
+                    cookies[0] = headerValue;
+                } else {
+                    String [] oldcookies = cookies;
+                    cookies = new String [oldcookies.length + 1];
+                    for (int i=0; i<oldcookies.length; i++) {
+                        cookies[i] = oldcookies[i];
+                    }
+                    cookies[oldcookies.length] = headerValue;
+                }
             }
             header = reader.readLine();
         }

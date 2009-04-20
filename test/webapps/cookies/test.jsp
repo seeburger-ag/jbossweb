@@ -92,6 +92,10 @@
       case 38: test(response, out, "a", "=:", "foo", "b=:ar"); break;
       case 39: test(response, out, "a", ":", "foo", "b:ar"); break;
       case 40: test(response, out, "a", "=", "foo", "b=ar"); break;
+
+      case 41: test(response, out, "/", 0); break;
+      case 42: test(response, out, "/", 1); break;
+
       default: sendError(response, "Unknown test");break;
     }
   } else {
@@ -191,6 +195,13 @@ void test(HttpServletResponse response, JspWriter out, String name1, String val1
         Cookie cookie = new Cookie(name1, val1);
         response.addCookie(cookie);
         cookie = new Cookie(name2, val2); 
+        response.addCookie(cookie);
+        out.println("OK");
+   }
+void test(HttpServletResponse response, JspWriter out, String path, int version) throws Exception {
+        Cookie cookie = new Cookie("a", "b");
+        cookie.setVersion(version);
+        cookie.setPath(path);
         response.addCookie(cookie);
         out.println("OK");
    }%>
