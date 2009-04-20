@@ -53,6 +53,7 @@ import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.servlet.DispatcherType;
@@ -160,17 +161,17 @@ public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegist
     }
 
 
-    public boolean addMappingForServletNames(
+    public void addMappingForServletNames(
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... servletNames) {
-        return config.addMappingForServletNames(dispatcherTypes, isMatchAfter, servletNames);
+        config.addMappingForServletNames(dispatcherTypes, isMatchAfter, servletNames);
     }
 
 
-    public boolean addMappingForUrlPatterns(
+    public void addMappingForUrlPatterns(
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... urlPatterns) {
-        return config.addMappingForUrlPatterns(dispatcherTypes, isMatchAfter, urlPatterns);
+        config.addMappingForUrlPatterns(dispatcherTypes, isMatchAfter, urlPatterns);
     }
 
 
@@ -179,7 +180,7 @@ public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegist
     }
 
 
-    public boolean setInitParameters(Map<String, String> initParameters) {
+    public Set<String> setInitParameters(Map<String, String> initParameters) {
         return config.setInitParameters(initParameters);
     }
 

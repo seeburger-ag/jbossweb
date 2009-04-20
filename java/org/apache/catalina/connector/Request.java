@@ -58,7 +58,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -77,6 +76,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestAttributeEvent;
 import javax.servlet.ServletRequestAttributeListener;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -2660,8 +2660,13 @@ public class Request
         } else {
             contentType = contentType.trim();
         }
-        if (!("application/x-www-form-urlencoded".equals(contentType)))
+        if (!("application/x-www-form-urlencoded".equals(contentType))) {
+            // Check for multipart as an alternate way to send parameters
+            if (parts == null) {
+                parseMultipart();
+            }
             return;
+        }
 
         int len = getContentLength();
 
@@ -2704,21 +2709,49 @@ public class Request
      */
     protected void parseMultipart() {
         
-        // FIXME: Stub configuration from the example
+        MultipartConfig config = wrapper.getMultipartConfig();
+        if (config == null) {
+            return;
+        }
+        
+        if (usingInputStream || usingReader)
+            return;
+
+        if (!getMethod().equalsIgnoreCase("POST"))
+            return;
+
+        String contentType = getContentType();
+        if (contentType == null)
+            contentType = "";
+        int semicolon = contentType.indexOf(';');
+        if (semicolon >= 0) {
+            contentType = contentType.substring(0, semicolon).trim();
+        } else {
+            contentType = contentType.trim();
+        }
+        if (!("multipart/form-data".equals(contentType)))
+            return;
+
         DiskFileUpload fu = new DiskFileUpload();
-        // maximum size before a FileUploadException will be thrown
-        fu.setSizeMax(1000000);
-        // maximum size that will be stored in memory
-        fu.setSizeThreshold(4096);
-        // the location for saving data that is larger than getSizeThreshold()
-        fu.setRepositoryPath("/tmp");
+        // FIXME: set default values
+        fu.setRepositoryPath(config.location());
+        if (config.fileSizeThreshold() > 0) {
+            fu.setSizeThreshold(config.fileSizeThreshold());
+        }
+        if (config.maxRequestSize() > 0) {
+            fu.setSizeMax(config.maxRequestSize());
+        }
+        // FIXME: Unimplemented per file max size: fu.setSizeFileMax(config.maxFileSize());
 
         parts = new HashMap<String, Part>();
         try {
             Iterator<FileItem> items = fu.parseRequest(getRequest()).iterator();
             while (items.hasNext()) {
                 FileItem fileItem = items.next();
-                parts.put(fileItem.getName(), fileItem);
+                if (fileItem.getFileName() == null) {
+                    coyoteRequest.getParameters().addParameterValues(fileItem.getName(), new String[] {fileItem.getString()});
+                }
+                parts.put(fileItem.getFieldName(), fileItem);
             }
         } catch (IOException e) {
             // Client disconnect
@@ -2953,19 +2986,12 @@ public class Request
         }
         setTimeout(timeout);
         if (asyncContext == null) {
-            asyncContext = new AsyncContextImpl
-                ((servletRequest == null) ? getRequest() : servletRequest, 
-                 (servletResponse == null) ? response.getResponse() : servletResponse);
+            asyncContext = new AsyncContextImpl();
             eventMode = true;
         } else {
-            if (servletRequest != null) {
-                asyncContext.setRequest(servletRequest);
-            }
-            if (servletResponse != null) {
-                asyncContext.setResponse(servletResponse);
-            }
             asyncContext.reset();
         }
+        asyncContext.setRequestAndResponse(servletRequest, servletResponse);
         return asyncContext;
     }
 
@@ -3090,13 +3116,9 @@ public class Request
         protected String path = null;
         protected Runnable runnable = null;
         protected boolean useAttributes = false;
+        protected boolean original = true;
         protected boolean ready = true;
 
-        public AsyncContextImpl(ServletRequest request, ServletResponse response) {
-            this.request = request;
-            this.response = response;
-        }
-        
         public void complete() {
             setEventMode(false);
             resume();
@@ -3131,11 +3153,19 @@ public class Request
         }
 
         public ServletRequest getRequest() {
-            return request;
+            if (request != null) {
+                return request;
+            } else {
+                return getRequestFacade();
+            }
         }
 
         public ServletResponse getResponse() {
-            return response;
+            if (response != null) {
+                return response;
+            } else {
+                return getResponseFacade();
+            }
         }
 
         public boolean hasOriginalRequestAndResponse() {
@@ -3151,11 +3181,15 @@ public class Request
             return ready;
         }
 
-        public void setRequest(ServletRequest request) {
-            this.request = request;
+        public void done() {
+            ready = false;
         }
 
-        public void setResponse(ServletResponse response) {
+        public void setRequestAndResponse(ServletRequest request, ServletResponse response) {
+            if (request == null && response == null) {
+                
+            }
+            this.request = request;
             this.response = response;
         }
 

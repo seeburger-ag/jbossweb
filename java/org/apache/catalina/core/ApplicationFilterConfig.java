@@ -53,8 +53,10 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.servlet.DispatcherType;
@@ -304,19 +306,28 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     public boolean setInitParameter(String name, String value) {
+        if (filterDef.getInitParameter(name) != null) {
+            return false;
+        }
         filterDef.addInitParameter(name, value);
         context.addFilterDef(filterDef);
         return true;
     }
 
 
-    public boolean setInitParameters(Map<String, String> initParameters) {
+    public Set<String> setInitParameters(Map<String, String> initParameters) {
+        Set<String> conflicts = new HashSet<String>();
         Iterator<String> parameterNames = initParameters.keySet().iterator();
         while (parameterNames.hasNext()) {
             String parameterName = parameterNames.next();
-            filterDef.addInitParameter(parameterName, initParameters.get(parameterName));
+            if (filterDef.getInitParameter(parameterName) != null) {
+                conflicts.add(parameterName);
+            } else {
+                filterDef.addInitParameter(parameterName, initParameters.get(parameterName));
+            }
         }
-        return true;
+        context.addFilterDef(filterDef);
+        return conflicts;
     }
 
 

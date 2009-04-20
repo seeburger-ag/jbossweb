@@ -130,12 +130,10 @@ public class FilterDef implements Serializable {
      * The set of initialization parameters for this filter, keyed by
      * parameter name.
      */
-    private Map parameters = new HashMap();
+    private Map<String, String> parameters = new HashMap<String, String>();
 
-    public Map getParameterMap() {
-
+    public Map<String, String> getParameterMap() {
         return (this.parameters);
-
     }
 
 
@@ -164,9 +162,18 @@ public class FilterDef implements Serializable {
      * @param value The initialization parameter value
      */
     public void addInitParameter(String name, String value) {
-
         parameters.put(name, value);
+    }
 
+
+    /**
+     * Add an initialization parameter to the set of parameters associated
+     * with this filter.
+     *
+     * @param name The initialization parameter name
+     */
+    public String getInitParameter(String name) {
+        return parameters.get(name);
     }
 
 

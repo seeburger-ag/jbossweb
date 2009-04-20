@@ -43,6 +43,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.SingleThreadModel;
 import javax.servlet.UnavailableException;
+import javax.servlet.annotation.MultipartConfig;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
@@ -178,6 +179,12 @@ public class StandardWrapper
      * first call) for this servlet.
      */
     protected int loadOnStartup = -1;
+
+
+    /**
+     * The multipart config annotation configured on this servlet.
+     */
+    protected MultipartConfig multipartConfig = null;
 
 
     /**
@@ -507,6 +514,22 @@ public class StandardWrapper
         return Integer.toString( getLoadOnStartup());
     }
 
+
+    /**
+     * Multipart configuration for this Servlet.
+     */
+    public MultipartConfig getMultipartConfig() {
+        return multipartConfig;
+    }
+    
+
+    /**
+     * Set the multipart configuration for this Servlet.
+     */
+    public void setMultipartConfig(MultipartConfig multipartConfig) {
+        this.multipartConfig = multipartConfig;
+    }
+    
 
     /**
      * Return maximum number of instances that will be allocated when a single

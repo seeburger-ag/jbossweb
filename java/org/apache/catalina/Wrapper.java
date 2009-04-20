@@ -23,6 +23,7 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.UnavailableException;
+import javax.servlet.annotation.MultipartConfig;
 
 import org.apache.catalina.util.InstanceSupport;
 
@@ -153,6 +154,18 @@ public interface Wrapper extends Container {
      */
     public void setLoadOnStartup(int value);
 
+    
+    /**
+     * Multipart configuration for this Servlet.
+     */
+    public MultipartConfig getMultipartConfig();
+    
+
+    /**
+     * Set the multipart configuration for this Servlet.
+     */
+    public void setMultipartConfig(MultipartConfig multipartConfig);
+    
 
     /**
      * Return the run-as identity for this servlet.

@@ -202,7 +202,7 @@ public class DefaultFileItem
      *
      * @return The original filename in the client's filesystem.
      */
-    public String getName()
+    public String getFileName()
     {
         return fileName;
     }
@@ -454,6 +454,12 @@ public class DefaultFileItem
      *
      */
     public String getFieldName()
+    {
+        return fieldName;
+    }
+
+
+    public String getName()
     {
         return fieldName;
     }

@@ -127,6 +127,14 @@ public interface FileItem
 
 
     /**
+     * Returns the original filename in the client's filesystem.
+     *
+     * @return The original filename in the client's filesystem.
+     */
+    String getFileName();
+
+
+    /**
      * Returns the name of the field in the multipart form corresponding to
      * this file item.
      *

@@ -48,8 +48,10 @@ package org.apache.catalina.core;
 
 
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -144,17 +146,22 @@ public class StandardWrapperFacade
     }
 
 
-    public boolean addMapping(String... urlPatterns) {
+    public Set<String> addMapping(String... urlPatterns) {
+        Set<String> conflicts = new HashSet<String>();
         if (((Context) wrapper.getParent()).isInitialized()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.addServletMapping.ise", ((Context) wrapper.getParent()).getPath()));
         }
         if (urlPatterns != null) {
             for (int i = 0; i < urlPatterns.length; i++) {
-                ((Context) wrapper.getParent()).addServletMapping(urlPatterns[i], wrapper.getName());
+                if (((Context) wrapper.getParent()).findServletMapping(urlPatterns[i]) != null) {
+                    conflicts.add(urlPatterns[i]);
+                } else {
+                    ((Context) wrapper.getParent()).addServletMapping(urlPatterns[i], wrapper.getName());
+                }
             }
         }
-        return true;
+        return conflicts;
     }
 
 
@@ -174,13 +181,18 @@ public class StandardWrapperFacade
     }
 
 
-    public boolean setInitParameters(Map<String, String> initParameters) {
+    public Set<String> setInitParameters(Map<String, String> initParameters) {
+        Set<String> conflicts = new HashSet<String>();
         Iterator<String> parameterNames = initParameters.keySet().iterator();
         while (parameterNames.hasNext()) {
             String parameterName = parameterNames.next();
-            wrapper.addInitParameter(parameterName, initParameters.get(parameterName));
+            if (wrapper.findInitParameter(parameterName) != null) {
+                conflicts.add(parameterName);
+            } else {
+                wrapper.addInitParameter(parameterName, initParameters.get(parameterName));
+            }
         }
-        return true;
+        return conflicts;
     }
 
 

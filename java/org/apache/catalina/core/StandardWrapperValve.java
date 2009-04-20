@@ -407,6 +407,9 @@ final class StandardWrapperValve
                 // Invoke the listeners with onComplete or onTimeout
                 boolean timeout = (event.getType() == EventType.TIMEOUT) ? true : false;
                 Iterator<AsyncEvent> asyncEvents = asyncContext.getAsyncListeners().keySet().iterator();
+                if (timeout && !asyncEvents.hasNext()) {
+                    // FIXME: MUST do an ERROR dispatch to the original URI and MUST set the response code to 500
+                }
                 while (asyncEvents.hasNext()) {
                     AsyncEvent asyncEvent = asyncEvents.next();
                     AsyncListener asyncListener = asyncContext.getAsyncListeners().get(asyncEvent);
@@ -432,6 +435,8 @@ final class StandardWrapperValve
                     exception(request, response, e);
                 }
             } else if (asyncContext.getPath() != null) {
+                // We executed the dispatch
+                asyncContext.done();
                 // Remap the request, set the dispatch attributes, create the filter chain
                 // and invoke the Servlet
                 Context context = (Context) getContainer().getParent();
@@ -453,6 +458,9 @@ final class StandardWrapperValve
                 }
                 // If there is no new startAsync, then close the response
                 if (!asyncContext.isReady()) {
+                    // FIXME: see which one is the right one to close the response
+                    asyncContext.complete();
+                    /*
                     if  (asyncContext.getResponse() instanceof ResponseFacade) {
                         response.setSuspended(true);
                     } else {
@@ -474,6 +482,7 @@ final class StandardWrapperValve
                         }
                     }
                     event.close();
+                    */
                 }
             } else {
                 throw new IllegalStateException(sm.getString("standardWrapper.async.invalidContext"));
