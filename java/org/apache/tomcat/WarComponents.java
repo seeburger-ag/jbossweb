@@ -24,8 +24,8 @@
 package org.apache.tomcat;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface WarComponents {
 
@@ -50,6 +50,6 @@ public interface WarComponents {
     /**
      * Find TLDs.
      */
-    public Map<String, List<String>> getTLDs();
+    public Map<String, Set<String>> getTLDs();
     
 }

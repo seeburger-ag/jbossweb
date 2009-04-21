@@ -720,8 +720,6 @@ public class MBeanFactory extends BaseModelMBean {
         host.setDeployOnStartup(deployOnStartup);
         host.setDeployXML(deployXML);
         host.setUnpackWARs(unpackWARs);
-        host.setXmlNamespaceAware(xmlNamespaceAware);
-        host.setXmlValidation(xmlValidation);
 	
         // add HostConfig for active reloading
         HostConfig hostConfig = new HostConfig();

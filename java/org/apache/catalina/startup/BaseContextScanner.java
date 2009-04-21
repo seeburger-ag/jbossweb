@@ -32,8 +32,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -108,7 +108,7 @@ public abstract class BaseContextScanner
     protected ArrayList<Class<?>> annotatedClasses = new ArrayList<Class<?>>();
     protected ArrayList<String> overlays = new ArrayList<String>();
     protected ArrayList<String> webFragments = new ArrayList<String>();
-    protected Map<String, List<String>> TLDs = new HashMap<String, List<String>>();
+    protected Map<String, Set<String>> TLDs = new HashMap<String, Set<String>>();
 
 
     public Iterator<Class<?>> getAnnotatedClasses() {
@@ -126,7 +126,7 @@ public abstract class BaseContextScanner
     }
 
 
-    public Map<String, List<String>> getTLDs() {
+    public Map<String, Set<String>> getTLDs() {
         return TLDs;
     }
     
@@ -199,26 +199,14 @@ public abstract class BaseContextScanner
             loader = loader.getParent();
         }
 
-        ArrayList<String> warTLDs = new ArrayList<String>();
+        HashSet<String> warTLDs = new HashSet<String>();
 
-        // Find taglibs from web.xml
-        // FIXME: move this elsewhere, this should be done last when parsing TLDs
-        String taglibs[] = context.findTaglibs();
-        for (int i = 0; i < taglibs.length; i++) {
-            String resourcePath = context.findTaglib(taglibs[i]);
-            if (!resourcePath.startsWith("/")) {
-                resourcePath = "/WEB-INF/" + resourcePath;
-            }
-            warTLDs.add(resourcePath);
-        }
         // Find any TLD file in /WEB-INF
         DirContext resources = context.getResources();
         if (resources != null) {
             tldScanResourcePathsWebInf(resources, "/WEB-INF", warTLDs);
         }
-        if (warTLDs.size() > 0) {
-            TLDs.put("", warTLDs);
-        }
+        TLDs.put("", warTLDs);
 
         /*
         DirContext resources = context.getResources();
@@ -261,7 +249,7 @@ public abstract class BaseContextScanner
      */
     protected void tldScanResourcePathsWebInf(DirContext resources,
                                             String rootPath,
-                                            ArrayList<String> tldPaths) {
+                                            HashSet<String> tldPaths) {
         try {
             NamingEnumeration items = resources.list(rootPath);
             while (items.hasMoreElements()) {
@@ -386,7 +374,7 @@ public abstract class BaseContextScanner
         if (file.getEntry(Globals.OVERLAY_PATH) != null) {
             overlays.add(file.getName());
         }
-        ArrayList<String> jarTLDs = new ArrayList<String>();
+        HashSet<String> jarTLDs = new HashSet<String>();
         Enumeration<JarEntry> entries = file.entries();
         while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();

@@ -86,6 +86,7 @@ import org.xml.sax.InputSource;
  * @author Jean-Francois Arcand
  * @author Costin Manolache
  * @author Remy Maucherat
+ * @deprecated No longer used
  */
 public final class WarScanner  {
 

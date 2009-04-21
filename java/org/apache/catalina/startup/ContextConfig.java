@@ -53,12 +53,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebFilter;
@@ -182,6 +188,13 @@ public class ContextConfig
      * deployment descriptor files.
      */
     protected static Digester webDigester = null;
+    
+    
+    /**
+     * The <code>Digester</code> we will use to process tag library
+     * descriptor files.
+     */
+    protected static Digester tldDigester = null;
     
     
     /**
@@ -417,6 +430,9 @@ public class ContextConfig
      */
     protected void applicationWebConfig() {
 
+        // FIXME: Parse web fragments here
+        // FIXME: Parse according to the configured order
+        
         String altDDName = null;
 
         // Open the application web.xml file, if it exists
@@ -489,6 +505,7 @@ public class ContextConfig
                 ok = false;
             } finally {
                 webDigester.reset();
+                webRuleSet.recycle();
                 parseException = null;
                 try {
                     if (stream != null) {
@@ -499,14 +516,104 @@ public class ContextConfig
                 }
             }
         }
-        webRuleSet.recycle();
+
+        // Add all TLDs from explicit web config
+        Map<String, Set<String>> TLDs = scanner.getTLDs();
+        Set<String> warTLDs = TLDs.get("");
+        String taglibs[] = context.findTaglibs();
+        for (int i = 0; i < taglibs.length; i++) {
+            String resourcePath = context.findTaglib(taglibs[i]);
+            if (!resourcePath.startsWith("/")) {
+                resourcePath = "/WEB-INF/" + resourcePath;
+            }
+            warTLDs.add(resourcePath);
+        }
+
+        // Parse all TLDs from the WAR
+        Iterator<String> warTLDsIterator = warTLDs.iterator();
+        while (warTLDsIterator.hasNext()) {
+            String tldPath = warTLDsIterator.next();
+            try {
+                stream = context.getServletContext().getResourceAsStream(tldPath);
+                if (stream == null) {
+                    log.error(sm.getString("contextConfig.tldResourcePath", tldPath));
+                    ok = false;
+                } else {
+                    synchronized (tldDigester) {
+                        try {
+                            tldDigester.push(context);
+                            tldDigester.parse(new InputSource(stream));
+                        } finally {
+                            tldDigester.reset();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error(sm.getString("contextConfig.tldFileException", tldPath,
+                        context.getPath()), e);
+                ok = false;
+            } finally {
+                if (stream != null) {
+                    try {
+                        stream.close();
+                    } catch (Throwable t) {
+                        // Ignore
+                    }
+                }
+            }
+
+        }
+
+        // Parse all TLDs from JARs
+        Iterator<String> jarPaths = TLDs.keySet().iterator();
+        while (jarPaths.hasNext()) {
+            String jarPath = jarPaths.next();
+            if (jarPath.equals("")) {
+                continue;
+            }
+            JarFile jarFile = null;
+            try {
+                jarFile = new JarFile(jarPath);
+                Iterator<String> jarTLDsIterator =  TLDs.get(jarPath).iterator();
+                while (jarTLDsIterator.hasNext()) {
+                    stream = jarFile.getInputStream(jarFile.getEntry(jarTLDsIterator.next()));
+                    synchronized (tldDigester) {
+                        try {
+                            tldDigester.push(context);
+                            tldDigester.parse(new InputSource(stream));
+                        } finally {
+                            tldDigester.reset();
+                            if (stream != null) {
+                                try {
+                                    stream.close();
+                                } catch (Throwable t) {
+                                    // Ignore
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error(sm.getString("contextConfig.tldJarException",
+                        jarPath, context.getPath()), e);
+                ok = false;
+            } finally {
+                if (jarFile != null) {
+                    try {
+                        jarFile.close();
+                    } catch (Throwable t) {
+                        // Ignore
+                    }
+                }
+            }
+        }
 
         long t2=System.currentTimeMillis();
         if (context instanceof StandardContext) {
             ((StandardContext) context).setStartupTime(t2-t1);
         }
     }
-
+    
 
     /**
      * Set up an Authenticator automatically if required, and one has not
@@ -629,25 +736,24 @@ public class ContextConfig
      * web application deployment descriptor (web.xml).
      */
     protected static Digester createWebDigester() {
-        return createWebXmlDigester(Globals.XML_NAMESPACE_AWARE, Globals.XML_VALIDATION);
+        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, Globals.XML_VALIDATION, webRuleSet);
     }
 
 
     /**
-     * Create (if necessary) and return a Digester configured to process the
-     * web application deployment descriptor (web.xml).
+     * Create (if necessary) and return a Digester configured to process tag 
+     * library descriptors.
      */
-    public static Digester createWebXmlDigester(boolean namespaceAware,
-                                                boolean validation) {
-        return DigesterFactory.newDigester(validation, namespaceAware, webRuleSet);
+    protected static Digester createTldDigester() {
+        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, Globals.XML_VALIDATION, new TldRuleSet());
     }
 
-    
+
     /**
      * Create (if necessary) and return a Digester configured to process the
      * context configuration descriptor for an application.
      */
-    protected Digester createContextDigester() {
+    protected static Digester createContextDigester() {
         Digester digester = new Digester();
         digester.setValidating(false);
         RuleSet contextRuleSet = new ContextRuleSet("", false);
@@ -820,36 +926,13 @@ public class ContextConfig
     /**
      * Process additional descriptors: TLDs, web fragments, and map overlays.
      */
-    // FIXME: Processing of web fragments
-    // FIXME: Map overlays
     protected void applicationExtraDescriptorsConfig() {
-        WarScanner tldConfig = new WarScanner();
-        tldConfig.setContext(context);
+        // FIXME: Read order from web.xml and fragments (note: if no fragments, skip)
         
-        /*
-        // (1)  check if the attribute has been defined
-        //      on the context element.
-        tldConfig.setTldValidation(context.getTldValidation());
-        tldConfig.setTldNamespaceAware(context.getTldNamespaceAware());
-
-        // (2) if the attribute wasn't defined on the context
-        //     try the host.
-        if (!context.getTldValidation()) {
-            tldConfig.setTldValidation
-            (((StandardHost) context.getParent()).getXmlValidation());
-        }
-
-        if (!context.getTldNamespaceAware()) {
-            tldConfig.setTldNamespaceAware
-            (((StandardHost) context.getParent()).getXmlNamespaceAware());
-        }*/
-
-        try {
-            tldConfig.execute();
-        } catch (Exception ex) {
-            log.error("Error reading tld listeners " 
-                    + ex.toString(), ex); 
-        }
+        // FIXME: Generate final web descriptor order
+        
+        // FIXME: Add overlays
+        
     }
     
 
@@ -1135,6 +1218,11 @@ public class ContextConfig
             webDigester.getParser();
         }
 
+        if (tldDigester == null){
+            tldDigester = createTldDigester();
+            tldDigester.getParser();
+        }
+
         if (contextDigester == null){
             contextDigester = createContextDigester();
             contextDigester.getParser();
@@ -1173,14 +1261,14 @@ public class ContextConfig
         if (log.isDebugEnabled())
             log.debug(sm.getString("contextConfig.start"));
 
-        ContextScanner scanner = new ClassLoadingContextScanner();
+        scanner = new ClassLoadingContextScanner();
 
         // Process the default and application web.xml files
         defaultWebConfig();
-        // FIXME: look where to place it according to the merging rules
-        applicationExtraDescriptorsConfig();
         applicationWebConfig();
         scanner.scan(context);
+        // FIXME: look where to place it according to the merging rules
+        applicationExtraDescriptorsConfig();
         if (!context.getIgnoreAnnotations()) {
             applicationAnnotationsConfig();
         }
