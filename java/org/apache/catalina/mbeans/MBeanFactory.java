@@ -604,10 +604,6 @@ public class MBeanFactory extends BaseModelMBean {
         path = getPathStr(path);
         context.setPath(path);
         context.setDocBase(docBase);
-        context.setXmlValidation(xmlValidation);
-        context.setXmlNamespaceAware(xmlNamespaceAware);
-        context.setTldValidation(tldValidation);
-        context.setTldNamespaceAware(tldNamespaceAware);
         
         ContextConfig contextConfig = new ContextConfig();
         context.addLifecycleListener(contextConfig);

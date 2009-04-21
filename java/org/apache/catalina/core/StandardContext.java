@@ -692,40 +692,6 @@ public class StandardContext
     protected String j2EEServer="none";
 
 
-    /**
-     * Attribute value used to turn on/off XML validation
-     */
-     protected boolean webXmlValidation = false;
-
-
-    /**
-     * Attribute value used to turn on/off XML namespace validation
-     */
-     protected boolean webXmlNamespaceAware = false;
-
-    /**
-     * Attribute value used to turn on/off TLD processing
-     */
-    protected boolean processTlds = true;
-
-    /**
-     * Attribute value used to turn on/off XML validation
-     */
-     protected boolean tldValidation = false;
-
-
-    /**
-     * Attribute value used to turn on/off TLD XML namespace validation
-     */
-     protected boolean tldNamespaceAware = false;
-
-
-    /**
-     * Should we save the configuration.
-     */
-    protected boolean saveConfig = true;
-
-
     // ----------------------------------------------------- Context Properties
 
 
@@ -1919,22 +1885,6 @@ public class StandardContext
         if (started) {
             postWorkDirectory();
         }
-    }
-
-
-    /**
-     * Save config ?
-     */
-    public boolean isSaveConfig() {
-        return saveConfig;
-    }
-
-
-    /**
-     * Set save config flag.
-     */
-    public void setSaveConfig(boolean saveConfig) {
-        this.saveConfig = saveConfig;
     }
 
 
@@ -4613,9 +4563,7 @@ public class StandardContext
         if (host != null) {
             configBase = new File(configBase, host.getName());
         }
-        if (saveConfig) {
-            configBase.mkdirs();
-        }
+        configBase.mkdirs();
         return configBase;
     }
 
@@ -5267,86 +5215,6 @@ public class StandardContext
         return findWelcomeFiles();
 
     }
-
-     /**
-     * Set the validation feature of the XML parser used when
-     * parsing xml instances.
-     * @param webXmlValidation true to enable xml instance validation
-     */
-    public void setXmlValidation(boolean webXmlValidation){
-        
-        this.webXmlValidation = webXmlValidation;
-
-    }
-
-    /**
-     * Get the server.xml <context> attribute's xmlValidation.
-     * @return true if validation is enabled.
-     *
-     */
-    public boolean getXmlValidation(){
-        return webXmlValidation;
-    }
-
-
-    /**
-     * Get the server.xml <context> attribute's xmlNamespaceAware.
-     * @return true if namespace awarenes is enabled.
-     */
-    public boolean getXmlNamespaceAware(){
-        return webXmlNamespaceAware;
-    }
-
-
-    /**
-     * Set the namespace aware feature of the XML parser used when
-     * parsing xml instances.
-     * @param webXmlNamespaceAware true to enable namespace awareness
-     */
-    public void setXmlNamespaceAware(boolean webXmlNamespaceAware){
-        this.webXmlNamespaceAware= webXmlNamespaceAware;
-    }    
-
-
-    /**
-     * Set the validation feature of the XML parser used when
-     * parsing tlds files. 
-     * @param tldValidation true to enable xml instance validation
-     */
-    public void setTldValidation(boolean tldValidation){
-        
-        this.tldValidation = tldValidation;
-
-    }
-
-    /**
-     * Get the server.xml <context> attribute's webXmlValidation.
-     * @return true if validation is enabled.
-     *
-     */
-    public boolean getTldValidation(){
-        return tldValidation;
-    }
-
-
-    /**
-     * Get the server.xml <host> attribute's xmlNamespaceAware.
-     * @return true if namespace awarenes is enabled.
-     */
-    public boolean getTldNamespaceAware(){
-        return tldNamespaceAware;
-    }
-
-
-    /**
-     * Set the namespace aware feature of the XML parser used when
-     * parsing xml instances.
-     * @param tldNamespaceAware true to enable namespace awareness
-     */
-    public void setTldNamespaceAware(boolean tldNamespaceAware){
-        this.tldNamespaceAware= tldNamespaceAware;
-    }    
-
 
     /** 
      * Support for "stateManageable" JSR77 

@@ -2733,7 +2733,6 @@ public class Request
             return;
 
         DiskFileUpload fu = new DiskFileUpload();
-        // FIXME: set default values
         fu.setRepositoryPath(config.location());
         if (config.fileSizeThreshold() > 0) {
             fu.setSizeThreshold(config.fileSizeThreshold());

@@ -68,6 +68,12 @@
       <fix>
         <bug>46562</bug>: In SSI, close the reader when done. (markt)
       </fix>
+      <add>
+        AsyncContext implementation. (remm)
+      </add>
+      <add>
+        Multipart implementation. (remm)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Coyote">

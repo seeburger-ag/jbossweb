@@ -1,18 +1,46 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * JBoss, Home of Professional Open Source
+ * Copyright 2009, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  * 
- *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 1999-2009 The Apache Software Foundation
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 
@@ -29,7 +57,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.jws.soap.InitParam;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
 import javax.servlet.annotation.HandlesTypes;
@@ -42,6 +69,7 @@ import javax.servlet.annotation.WebServlet;
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
+import org.apache.catalina.ContextScanner;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
@@ -51,7 +79,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.ClassLoadingAnnotationScanner;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
@@ -162,17 +189,12 @@ public class ContextConfig
      */
     protected static WebRuleSet webRuleSet = new WebRuleSet();
 
-    /**
-     * Attribute value used to turn on/off XML validation
-     */
-     protected static boolean xmlValidation = false;
-
 
     /**
-     * Attribute value used to turn on/off XML namespace awarenes.
+     * Scanner for annotations, etc.
      */
-    protected static boolean xmlNamespaceAware = false;
-
+    protected ContextScanner scanner = null;
+    
     
     /**
      * Deployment count.
@@ -304,7 +326,7 @@ public class ContextConfig
         
         long t1=System.currentTimeMillis();
         
-        Iterator<Class<?>> annotatedClasses = (new ClassLoadingAnnotationScanner()).scan(context).iterator();
+        Iterator<Class<?>> annotatedClasses = scanner.getAnnotatedClasses();
         while (annotatedClasses.hasNext()) {
             Class<?> clazz = annotatedClasses.next();
             if (clazz.isAnnotationPresent(WebInitParam.class)) {
@@ -607,9 +629,7 @@ public class ContextConfig
      * web application deployment descriptor (web.xml).
      */
     protected static Digester createWebDigester() {
-        Digester webDigester =
-            createWebXmlDigester(xmlNamespaceAware, xmlValidation);
-        return webDigester;
+        return createWebXmlDigester(Globals.XML_NAMESPACE_AWARE, Globals.XML_VALIDATION);
     }
 
 
@@ -619,11 +639,7 @@ public class ContextConfig
      */
     public static Digester createWebXmlDigester(boolean namespaceAware,
                                                 boolean validation) {
-        
-        Digester webDigester =  DigesterFactory.newDigester(xmlValidation,
-                                                            xmlNamespaceAware,
-                                                            webRuleSet);
-        return webDigester;
+        return DigesterFactory.newDigester(validation, namespaceAware, webRuleSet);
     }
 
     
@@ -807,9 +823,10 @@ public class ContextConfig
     // FIXME: Processing of web fragments
     // FIXME: Map overlays
     protected void applicationExtraDescriptorsConfig() {
-        TldConfig tldConfig = new TldConfig();
+        WarScanner tldConfig = new WarScanner();
         tldConfig.setContext(context);
-
+        
+        /*
         // (1)  check if the attribute has been defined
         //      on the context element.
         tldConfig.setTldValidation(context.getTldValidation());
@@ -825,7 +842,7 @@ public class ContextConfig
         if (!context.getTldNamespaceAware()) {
             tldConfig.setTldNamespaceAware
             (((StandardHost) context.getParent()).getXmlNamespaceAware());
-        }
+        }*/
 
         try {
             tldConfig.execute();
@@ -1156,32 +1173,14 @@ public class ContextConfig
         if (log.isDebugEnabled())
             log.debug(sm.getString("contextConfig.start"));
 
-        // Set properties based on DefaultContext
-        Container container = context.getParent();
-        if( !context.getOverride() ) {
-            if( container instanceof Host ) {
-                // Reset the value only if the attribute wasn't
-                // set on the context.
-                xmlValidation = context.getXmlValidation();
-                if (!xmlValidation) {
-                    xmlValidation = ((Host)container).getXmlValidation();
-                }
-                
-                xmlNamespaceAware = context.getXmlNamespaceAware();
-                if (!xmlNamespaceAware){
-                    xmlNamespaceAware 
-                                = ((Host)container).getXmlNamespaceAware();
-                }
-
-                container = container.getParent();
-            }
-        }
+        ContextScanner scanner = new ClassLoadingContextScanner();
 
         // Process the default and application web.xml files
         defaultWebConfig();
         // FIXME: look where to place it according to the merging rules
         applicationExtraDescriptorsConfig();
         applicationWebConfig();
+        scanner.scan(context);
         if (!context.getIgnoreAnnotations()) {
             applicationAnnotationsConfig();
         }
@@ -1226,6 +1225,8 @@ public class ContextConfig
 
         if (log.isDebugEnabled())
             log.debug(sm.getString("contextConfig.stop"));
+
+        scanner = null;
 
         int i;
 

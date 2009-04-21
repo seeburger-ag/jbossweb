@@ -1020,22 +1020,6 @@ public interface Context extends Container {
 
 
     /**
-     * Get the server.xml <context> attribute's xmlNamespaceAware.
-     * @return true if namespace awarenes is enabled.
-     *
-     */
-    public boolean getXmlNamespaceAware();
-
-
-    /**
-     * Get the server.xml <context> attribute's xmlValidation.
-     * @return true if validation is enabled.
-     *
-     */
-    public boolean getXmlValidation();
-
-
-    /**
      * Return true if the Context has been initialized. This is lifecycle-ish, but
      * needed by more and more Servlet API operations which are only permitted until
      * the Context is initialized.
@@ -1043,57 +1027,6 @@ public interface Context extends Container {
      *
      */
     public boolean isInitialized();
-
-
-    /**
-     * Set the validation feature of the XML parser used when
-     * parsing xml instances.
-     * @param xmlValidation true to enable xml instance validation
-     */
-    public void setXmlValidation(boolean xmlValidation);
-
-
-   /**
-     * Set the namespace aware feature of the XML parser used when
-     * parsing xml instances.
-     * @param xmlNamespaceAware true to enable namespace awareness
-     */
-    public void setXmlNamespaceAware(boolean xmlNamespaceAware);
-    /**
-     * Get the server.xml <context> attribute's xmlValidation.
-     * @return true if validation is enabled.
-     */
-     
-
-    /**
-     * Set the validation feature of the XML parser used when
-     * parsing tlds files. 
-     * @param tldValidation true to enable xml instance validation
-     */
-    public void setTldValidation(boolean tldValidation);
-
-
-    /**
-     * Get the server.xml <context> attribute's webXmlValidation.
-     * @return true if validation is enabled.
-     *
-     */
-    public boolean getTldValidation();
-
-
-    /**
-     * Get the server.xml <host> attribute's xmlNamespaceAware.
-     * @return true if namespace awarenes is enabled.
-     */
-    public boolean getTldNamespaceAware();
-
-
-    /**
-     * Set the namespace aware feature of the XML parser used when
-     * parsing xml instances.
-     * @param tldNamespaceAware true to enable namespace awareness
-     */
-    public void setTldNamespaceAware(boolean tldNamespaceAware);
 
 
 }

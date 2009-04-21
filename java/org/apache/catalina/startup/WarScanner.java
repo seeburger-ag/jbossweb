@@ -1,18 +1,46 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * JBoss, Home of Professional Open Source
+ * Copyright 2009, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  * 
- *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 1999-2009 The Apache Software Foundation
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 
@@ -21,11 +49,9 @@ package org.apache.catalina.startup;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -47,7 +73,6 @@ import javax.naming.directory.DirContext;
 import javax.servlet.ServletException;
 
 import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.digester.Digester;
@@ -60,16 +85,19 @@ import org.xml.sax.InputSource;
  * @author Craig R. McClanahan
  * @author Jean-Francois Arcand
  * @author Costin Manolache
+ * @author Remy Maucherat
  */
-public final class TldConfig  {
-
-    // Names of JARs that are known not to contain any TLDs
-    private static HashSet<String> noDescriptorsJars;
+public final class WarScanner  {
 
     private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger(TldConfig.class);
+        org.jboss.logging.Logger.getLogger(WarScanner.class);
 
-    /*
+    /**
+     * Names of JARs that are known not to contain any descriptors.
+     */
+    private static HashSet<String> noDescriptorsJars;
+
+    /**
      * Initializes the set of JARs that are known not to contain any descriptors.
      */
     static {
@@ -179,7 +207,7 @@ public final class TldConfig  {
      * @param tldValidation true to enable xml instance validation
      */
     public void setTldValidation(boolean tldValidation){
-        TldConfig.tldValidation = tldValidation;
+        WarScanner.tldValidation = tldValidation;
     }
 
     /**
@@ -207,7 +235,7 @@ public final class TldConfig  {
      * @param tldNamespaceAware true to enable namespace awareness
      */
     public void setTldNamespaceAware(boolean tldNamespaceAware){
-        TldConfig.tldNamespaceAware = tldNamespaceAware;
+        WarScanner.tldNamespaceAware = tldNamespaceAware;
     }    
 
 

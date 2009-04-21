@@ -16,7 +16,7 @@
  */
 
 
-package org.apache.catalina.core;
+package org.apache.catalina.startup;
 
 import java.io.File;
 import java.util.jar.JarEntry;
@@ -30,8 +30,8 @@ import javax.servlet.annotation.WebServlet;
 
 import org.apache.catalina.Context;
 
-public class ClassLoadingAnnotationScanner
-    extends BaseAnnotationScanner {
+public class ClassLoadingContextScanner
+    extends BaseContextScanner {
 
     /**
      * Scan class for interesting annotations.

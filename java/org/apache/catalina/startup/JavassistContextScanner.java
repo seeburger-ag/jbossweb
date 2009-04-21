@@ -16,15 +16,15 @@
  */
 
 
-package org.apache.catalina.core;
+package org.apache.catalina.startup;
 
 import java.io.File;
 import java.util.jar.JarEntry;
 
 import org.apache.catalina.Context;
 
-public class JavassistAnnotationScanner
-    extends BaseAnnotationScanner {
+public class JavassistContextScanner
+    extends BaseContextScanner {
 
     /**
      * Scan class for interesting annotations.
