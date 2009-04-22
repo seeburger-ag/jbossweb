@@ -125,6 +125,12 @@
   </subsection>
   <subsection name="Coyote">
     <changelog>
+      <fix>
+        Remove useless instanceof in the HTTP protocol. (markt)
+      </fix>
+      <fix>
+        <jboss-jira>JBAS-6814</jboss-jira>: Fix looping when parsing bad end chunk, caused by the non blocking changes. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
