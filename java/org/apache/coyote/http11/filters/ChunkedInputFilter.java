@@ -19,13 +19,12 @@ package org.apache.coyote.http11.filters;
 
 import java.io.IOException;
 
-import org.apache.tomcat.util.buf.ByteChunk;
-import org.apache.tomcat.util.buf.HexUtils;
-
 import org.apache.coyote.InputBuffer;
 import org.apache.coyote.Request;
 import org.apache.coyote.http11.Constants;
 import org.apache.coyote.http11.InputFilter;
+import org.apache.tomcat.util.buf.ByteChunk;
+import org.apache.tomcat.util.buf.HexUtils;
 
 /**
  * Chunked input filter. Parses chunked data according to
@@ -188,7 +187,7 @@ public class ChunkedInputFilter implements InputFilter {
         throws IOException {
 
         // Consume extra bytes : parse the stream until the end chunk is found
-        while (doRead(readChunk, null) >= 0) {
+        while (doRead(readChunk, null) > 0) {
         }
 
         // Return the number of extra bytes which were consumed
@@ -274,8 +273,12 @@ public class ChunkedInputFilter implements InputFilter {
 
             if (pos >= lastValid) {
                 // In non blocking mode, no new chunk follows, even if data was present
-                if (readBytes() <= 0)
+                int n = readBytes();
+                if (n < 0) {
+                    throw new IOException("Invalid chunk header");
+                } else if (n == 0) {
                     return false;
+                }
             }
 
             if (buf[pos] == Constants.CR) {
