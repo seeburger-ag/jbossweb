@@ -1265,10 +1265,10 @@ public class ContextConfig
 
         // Process the default and application web.xml files
         defaultWebConfig();
-        applicationWebConfig();
         scanner.scan(context);
         // FIXME: look where to place it according to the merging rules
         applicationExtraDescriptorsConfig();
+        applicationWebConfig();
         if (!context.getIgnoreAnnotations()) {
             applicationAnnotationsConfig();
         }
