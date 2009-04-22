@@ -379,7 +379,7 @@ public abstract class AuthenticatorBase
      *
      * @exception IOException if an input/output error occurs
      */
-    public boolean login(Request request, HttpServletResponse response)
+    public boolean authenticate(Request request, HttpServletResponse response)
         throws IOException, ServletException {
         return authenticate(request, response, this.context.getLoginConfig());
     }

@@ -285,7 +285,7 @@ public class DummyRequest
             ServletResponse servletResponse) throws IllegalStateException { return null; }
     public DispatcherType getDispatcherType() { return null; }
     public ServletResponse getServletResponse() { return null; }
-    public boolean login(HttpServletResponse response) throws IOException,
+    public boolean authenticate(HttpServletResponse response) throws IOException,
             ServletException { return false; }
     public void login(String username, String password) throws ServletException {}
     public void logout() throws ServletException {}

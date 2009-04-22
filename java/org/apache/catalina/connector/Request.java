@@ -2994,10 +2994,10 @@ public class Request
         return asyncContext;
     }
 
-    public boolean login(HttpServletResponse response) throws IOException,
+    public boolean authenticate(HttpServletResponse response) throws IOException,
             ServletException {
         if (context.getAuthenticator() != null) {
-            return context.getAuthenticator().login(this, response);
+            return context.getAuthenticator().authenticate(this, response);
         } else {
             throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
         }

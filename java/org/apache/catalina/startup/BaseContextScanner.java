@@ -251,9 +251,9 @@ public abstract class BaseContextScanner
                                             String rootPath,
                                             HashSet<String> tldPaths) {
         try {
-            NamingEnumeration items = resources.list(rootPath);
+            NamingEnumeration<NameClassPair> items = resources.list(rootPath);
             while (items.hasMoreElements()) {
-                NameClassPair item = (NameClassPair) items.nextElement();
+                NameClassPair item = items.nextElement();
                 String resourcePath = rootPath + "/" + item.getName();
                 if (!resourcePath.endsWith(".tld")
                         && (resourcePath.startsWith("/WEB-INF/classes")

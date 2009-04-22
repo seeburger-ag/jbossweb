@@ -1091,14 +1091,14 @@ public class RequestFacade implements HttpServletRequest {
     }
 
 
-    public boolean login(HttpServletResponse response) throws IOException,
+    public boolean authenticate(HttpServletResponse response) throws IOException,
             ServletException {
         if (request == null) {
             throw new IllegalStateException(
                             sm.getString("requestFacade.nullRequest"));
         }
 
-        return request.login(response);
+        return request.authenticate(response);
     }
 
 
