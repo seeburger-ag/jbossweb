@@ -10,6 +10,7 @@ Main development:
 - ServletContainerInitializer support
 - JSP 2.2 changes
 - EL 1.1 changes
+- Jasper plugin for TLD metadata
 - Setup standalone TCK environment for testing compliance with the new features
 - Javassist annotation scanning impl for JBoss Web standalone
 - Coordinate with AS 6 to implement new web.xml parsing (out of tree)

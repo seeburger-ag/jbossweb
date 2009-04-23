@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -191,6 +192,18 @@ public class ContextConfig
      * descriptor files.
      */
     protected static Digester tldDigester = null;
+    
+    
+    /**
+     * The <code>Digester</code> we will use to parse fragment ordering.
+     */
+    protected static Digester fragmentOrderingDigester = null;
+    
+    
+    /**
+     * The <code>Digester</code> we will use to parse absolute ordering in web.xml.
+     */
+    protected static Digester orderingDigester = null;
     
     
     /**
@@ -746,6 +759,25 @@ public class ContextConfig
 
 
     /**
+     * Create (if necessary) and return a Digester configured to process web fragments ordering.
+     */
+    protected static Digester createFragmentOrderingDigester() {
+        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, 
+                Globals.XML_VALIDATION, new WebOrderingRuleSet());
+    }
+
+
+    /**
+     * Create (if necessary) and return a Digester configured to process web.xml
+     * absolute ordering.
+     */
+    protected static Digester createOrderingDigester() {
+        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, 
+                Globals.XML_VALIDATION, new WebAbsoluteOrderingRuleSet());
+    }
+
+
+    /**
      * Create (if necessary) and return a Digester configured to process the
      * context configuration descriptor for an application.
      */
@@ -924,11 +956,12 @@ public class ContextConfig
      */
     protected void applicationExtraDescriptorsConfig() {
         // FIXME: Read order from web.xml and fragments (note: if no fragments, skip)
+        Iterator<String> jarsWithWebFragments = scanner.getWebFragments();
         
         // FIXME: Generate final web descriptor order
         
         // FIXME: Add overlays
-        
+        scanner.getOverlays();
     }
     
 
@@ -1217,6 +1250,16 @@ public class ContextConfig
         if (tldDigester == null){
             tldDigester = createTldDigester();
             tldDigester.getParser();
+        }
+
+        if (fragmentOrderingDigester == null){
+            fragmentOrderingDigester = createFragmentOrderingDigester();
+            fragmentOrderingDigester.getParser();
+        }
+
+        if (orderingDigester == null){
+            orderingDigester = createOrderingDigester();
+            orderingDigester.getParser();
         }
 
         if (contextDigester == null){
