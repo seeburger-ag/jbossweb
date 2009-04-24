@@ -335,6 +335,23 @@ public interface Container {
     public void setResources(DirContext resources);
 
 
+    /**
+     * Return the JarRepository with which this Container is associated.  
+     * If there is no associated JarRepository, return the JarRepository 
+     * associated with our parent Container (if any); 
+     * otherwise return <code>null</code>.
+     */
+    public JarRepository getJarRepository();
+
+
+    /**
+     * Set the JarRepository with which this Container is associated.
+     *
+     * @param jarRepository The newly associated JarRepository
+     */
+    public void setJarRepository(JarRepository jarRepository);
+
+
     // --------------------------------------------------------- Public Methods
 
 

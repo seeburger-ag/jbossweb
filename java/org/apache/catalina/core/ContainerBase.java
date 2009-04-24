@@ -43,6 +43,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Globals;
+import org.apache.catalina.JarRepository;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
@@ -252,6 +253,12 @@ public abstract class ContainerBase
      * The resources DirContext object with which this Container is associated.
      */
     protected DirContext resources = null;
+
+
+    /**
+     * The JarRepository with which this Container is associated.
+     */
+    protected JarRepository jarRepository = null;
 
 
     /**
@@ -722,6 +729,63 @@ public abstract class ContainerBase
 
 
     /**
+     * Return the JarRepository with which this Container is associated.  If there is
+     * no associated JarRepository, return the JarRepository associated with our parent
+     * Container (if any); otherwise return <code>null</code>.
+     */
+    public JarRepository getJarRepository() {
+
+        if (jarRepository != null)
+            return (jarRepository);
+        if (parent != null)
+            return (parent.getJarRepository());
+        return (null);
+
+    }
+
+
+    /**
+     * Set the JarRepository with which this Container is associated.
+     *
+     * @param jarRepository The newly associated JarRepository
+     */
+    public synchronized void setJarRepository(JarRepository jarRepository) {
+
+        // Change components if necessary
+        JarRepository oldJarRepository = this.jarRepository;
+        if (oldJarRepository == jarRepository)
+            return;
+        this.jarRepository = jarRepository;
+
+        // Stop the old component if necessary
+        if (started && (oldJarRepository != null) &&
+            (oldJarRepository instanceof Lifecycle)) {
+            try {
+                ((Lifecycle) oldJarRepository).stop();
+            } catch (LifecycleException e) {
+                log.error("ContainerBase.setJarRepository: stop: ", e);
+            }
+        }
+
+        // Start the new component if necessary
+        if (jarRepository != null)
+            jarRepository.setContainer(this);
+        if (started && (jarRepository != null) &&
+            (jarRepository instanceof Lifecycle)) {
+            try {
+                ((Lifecycle) jarRepository).start();
+            } catch (LifecycleException e) {
+                log.error("ContainerBase.setJarRepository: start: ", e);
+            }
+        }
+
+        // Report this property change to interested listeners
+        support.firePropertyChange("jarRepository", oldJarRepository, this.jarRepository);
+
+    }
+
+
+    /**
       * Return the resources DirContext object with which this Container is
       * associated.  If there is no associated resources object, return the
       * resources associated with our parent Container (if any); otherwise
@@ -1022,6 +1086,8 @@ public abstract class ContainerBase
         started = true;
 
         // Start our subordinate components, if any
+        if ((jarRepository != null) && (jarRepository instanceof Lifecycle))
+            ((Lifecycle) jarRepository).start();
         if ((loader != null) && (loader instanceof Lifecycle))
             ((Lifecycle) loader).start();
         logger = null;
@@ -1120,6 +1186,9 @@ public abstract class ContainerBase
         }
         if ((loader != null) && (loader instanceof Lifecycle)) {
             ((Lifecycle) loader).stop();
+        }
+        if ((jarRepository != null) && (jarRepository instanceof Lifecycle)) {
+            ((Lifecycle) jarRepository).stop();
         }
 
         // Notify our interested LifecycleListeners
@@ -1322,6 +1391,13 @@ public abstract class ContainerBase
                 realm.backgroundProcess();
             } catch (Exception e) {
                 log.warn(sm.getString("containerBase.backgroundProcess.realm", realm), e);                
+            }
+        }
+        if (jarRepository != null) {
+            try {
+                jarRepository.backgroundProcess();
+            } catch (Exception e) {
+                log.warn(sm.getString("containerBase.backgroundProcess.jarRepository", jarRepository), e);                
             }
         }
         Valve current = pipeline.getFirst();

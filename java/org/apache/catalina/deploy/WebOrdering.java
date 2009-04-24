@@ -28,6 +28,7 @@ import java.util.List;
 
 public class WebOrdering implements Serializable {
 
+    protected String jar = null;
     protected String name = null;
     protected List<String> after = new ArrayList<String>();
     protected List<String> before = new ArrayList<String>();
@@ -53,6 +54,12 @@ public class WebOrdering implements Serializable {
 
     public void addBefore(String name) {
         before.add(name);
+    }
+    public String getJar() {
+        return jar;
+    }
+    public void setJar(String jar) {
+        this.jar = jar;
     }
 
 }

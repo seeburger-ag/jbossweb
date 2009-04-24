@@ -53,12 +53,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
@@ -83,6 +85,7 @@ import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ContainerBase;
+import org.apache.catalina.core.ContextJarRepository;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardHost;
@@ -91,6 +94,8 @@ import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.deploy.WebAbsoluteOrdering;
+import org.apache.catalina.deploy.WebOrdering;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
@@ -955,10 +960,130 @@ public class ContextConfig
      * Process additional descriptors: TLDs, web fragments, and map overlays.
      */
     protected void applicationExtraDescriptorsConfig() {
-        // FIXME: Read order from web.xml and fragments (note: if no fragments, skip)
+        // Read order from web.xml and fragments (note: if no fragments, skip)
+        WebAbsoluteOrdering absoluteOrdering = null;
+        List<WebOrdering> orderings = new ArrayList<WebOrdering>();
         Iterator<String> jarsWithWebFragments = scanner.getWebFragments();
-        
-        // FIXME: Generate final web descriptor order
+
+        /*
+            String altDDName = null;
+
+            // Open the application web.xml file, if it exists
+            InputStream stream = null;
+            ServletContext servletContext = context.getServletContext();
+            if (servletContext != null) {
+                altDDName = (String)servletContext.getAttribute(
+                                                            Globals.ALT_DD_ATTR);
+                if (altDDName != null) {
+                    try {
+                        stream = new FileInputStream(altDDName);
+                    } catch (FileNotFoundException e) {
+                        log.error(sm.getString("contextConfig.altDDNotFound",
+                                               altDDName));
+                    }
+                }
+                else {
+                    stream = servletContext.getResourceAsStream
+                        (Constants.ApplicationWebXml);
+                }
+            }
+            if (stream == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug(sm.getString("contextConfig.applicationMissing") + " " + context);
+                }
+                return;
+            }
+
+            URL url = null;
+
+            // Process the application web.xml file
+            synchronized (orderingDigester) {
+                try {
+                    if (altDDName != null) {
+                        url = new File(altDDName).toURI().toURL();
+                    } else {
+                        url = servletContext.getResource(Constants.ApplicationWebXml);
+                    }
+                    if (url != null) {
+                        InputSource is = new InputSource(url.toExternalForm());
+                        is.setByteStream(stream);
+                        orderingDigester.parse(is);
+                        absoluteOrdering = (WebAbsoluteOrdering) orderingDigester.peek();
+                    }
+                } catch (SAXParseException e) {
+                    log.error(sm.getString("contextConfig.applicationParse", url.toExternalForm()), e);
+                    log.error(sm.getString("contextConfig.applicationPosition",
+                                     "" + e.getLineNumber(),
+                                     "" + e.getColumnNumber()));
+                    ok = false;
+                } catch (Exception e) {
+                    log.error(sm.getString("contextConfig.applicationParse", url.toExternalForm()), e);
+                    ok = false;
+                } finally {
+                    orderingDigester.reset();
+                    try {
+                        if (stream != null) {
+                            stream.close();
+                        }
+                    } catch (IOException e) {
+                        log.error(sm.getString("contextConfig.applicationClose"), e);
+                    }
+                }
+            }
+         */
+
+        // Process the web fragments
+        // FIXME: Do only if no absolute ordering
+        while (jarsWithWebFragments.hasNext()) {
+            String jar = jarsWithWebFragments.next();
+            JarFile jarFile = null;
+            InputStream is = null;
+            try {
+                jarFile = new JarFile(jar);
+                ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
+                if (entry != null) {
+                    is = jarFile.getInputStream(entry);
+                    InputSource input = new InputSource((new File(jar)).toURI().toURL().toExternalForm());
+                    input.setByteStream(is);
+                    synchronized (fragmentOrderingDigester) {
+                        try {
+                            fragmentOrderingDigester.parse(input);
+                            WebOrdering ordering = (WebOrdering) fragmentOrderingDigester.peek();
+                            if (ordering != null) {
+                                ordering.setJar(jar);
+                                orderings.add(ordering);
+                            }
+                        } finally {
+                            fragmentOrderingDigester.reset();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // FIXME: error message
+                log.error(sm.getString("contextConfig.applicationParse", jar), e);
+                ok = false;
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+                try {
+                    if (jarFile != null) {
+                        jarFile.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
+
+        // FIXME: Generate final web fragments order
+        if (absoluteOrdering != null || (orderings.size() > 0)) {
+            
+        }
         
         // FIXME: Add overlays
         scanner.getOverlays();
@@ -984,6 +1109,10 @@ public class ContextConfig
         if (context.getConfigFile() != null)
             processContextConfig(new File(context.getConfigFile()), null);
         
+        if (context.getJarRepository() == null) {
+            context.setJarRepository(new ContextJarRepository());
+        }
+
     }
 
     
@@ -1306,8 +1435,8 @@ public class ContextConfig
         defaultWebConfig();
         scanner.scan(context);
         // FIXME: look where to place it according to the merging rules
-        applicationExtraDescriptorsConfig();
         applicationWebConfig();
+        applicationExtraDescriptorsConfig();
         if (!context.getIgnoreAnnotations()) {
             applicationAnnotationsConfig();
         }
