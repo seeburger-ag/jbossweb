@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -50,30 +22,23 @@ package org.apache.catalina.core;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import javax.naming.NamingException;
-import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
-import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.apache.InstanceManager;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.deploy.FilterDef;
-import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.log.SystemLogHandler;
 
 
@@ -86,7 +51,7 @@ import org.apache.tomcat.util.log.SystemLogHandler;
  * @version $Revision$ $Date$
  */
 
-public final class ApplicationFilterConfig implements FilterConfig, Serializable {
+final class ApplicationFilterConfig implements FilterConfig, Serializable {
 
 
     protected static StringManager sm =
@@ -102,21 +67,32 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      * @param context The context with which we are associated
      * @param filterDef Filter definition for which a FilterConfig is to be
      *  constructed
+     *
+     * @exception ClassCastException if the specified class does not implement
+     *  the <code>javax.servlet.Filter</code> interface
+     * @exception ClassNotFoundException if the filter class cannot be found
+     * @exception IllegalAccessException if the filter class cannot be
+     *  publicly instantiated
+     * @exception InstantiationException if an exception occurs while
+     *  instantiating the filter object
+     * @exception ServletException if thrown by the filter's init() method
+     * @throws NamingException
+     * @throws InvocationTargetException
      */
-    public ApplicationFilterConfig(Context context, FilterDef filterDef) {
+    public ApplicationFilterConfig(Context context, FilterDef filterDef)
+        throws ClassCastException, ClassNotFoundException,
+               IllegalAccessException, InstantiationException,
+               ServletException, InvocationTargetException, NamingException {
+
+        super();
+
         this.context = context;
-        this.filterDef = filterDef;
+        setFilterDef(filterDef);
+
     }
 
 
     // ----------------------------------------------------- Instance Variables
-
-
-    /**
-     * The facade associated with this wrapper.
-     */
-    protected ApplicationFilterConfigFacade facade =
-        new ApplicationFilterConfigFacade(this);
 
 
     /**
@@ -126,21 +102,9 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     /**
-     * Dynamic flag.
-     */
-    protected boolean dynamic = false;
-    
-    
-    /**
      * The application Filter we are configured for.
      */
     private transient Filter filter = null;
-
-
-    /**
-     * The application Filter we are configured for.
-     */
-    private transient Filter filterInstance = null;
 
 
     /**
@@ -211,28 +175,6 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     /**
-     * Get the facade FilterRegistration.
-     */
-    public FilterRegistration getFacade() {
-        return facade;
-    }
-    
-
-    public boolean isDynamic() {
-        return dynamic;
-    }
-
-
-    public void setDynamic(boolean dynamic) {
-        this.dynamic = dynamic;
-        if (dynamic) {
-            // Change the facade (normally, this happens when the Wrapper is created)
-            facade = new ApplicationFilterConfigFacade.Dynamic(this);
-        }
-    }
-
-
-    /**
      * Return a String representation of this object.
      */
     public String toString() {
@@ -245,89 +187,6 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
         sb.append("]");
         return (sb.toString());
 
-    }
-
-
-    public boolean addMappingForServletNames(EnumSet<DispatcherType> dispatcherTypes, 
-            boolean isMatchAfter, String... servletNames) {
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.addFilterMapping.ise", context.getPath()));
-        }
-        FilterMap filterMap = new FilterMap(); 
-        for (String servletName : servletNames) {
-            filterMap.addServletName(servletName);
-        }
-        filterMap.setFilterName(filterDef.getFilterName());
-        for (DispatcherType dispatcherType: dispatcherTypes) {
-            filterMap.setDispatcher(dispatcherType.name());
-        }
-        if (isMatchAfter) {
-            context.addFilterMap(filterMap);
-        } else {
-            context.addFilterMapBefore(filterMap);
-        }
-        return true;
-    }
-
-
-    public boolean addMappingForUrlPatterns(
-            EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
-            String... urlPatterns) {
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.addFilterMapping.ise", context.getPath()));
-        }
-        FilterMap filterMap = new FilterMap(); 
-        for (String urlPattern : urlPatterns) {
-            filterMap.addURLPattern(urlPattern);
-        }
-        filterMap.setFilterName(filterDef.getFilterName());
-        for (DispatcherType dispatcherType: dispatcherTypes) {
-            filterMap.setDispatcher(dispatcherType.name());
-        }
-        if (isMatchAfter) {
-            context.addFilterMap(filterMap);
-        } else {
-            context.addFilterMapBefore(filterMap);
-        }
-        return true;
-    }
-
-
-    public void setAsyncSupported(boolean asyncSupported) {
-        filterDef.setAsyncSupported(asyncSupported);
-        context.addFilterDef(filterDef);
-    }
-
-
-    public void setDescription(String description) {
-        filterDef.setDescription(description);
-        context.addFilterDef(filterDef);
-    }
-
-
-    public boolean setInitParameter(String name, String value) {
-        if (filterDef.getInitParameter(name) != null) {
-            return false;
-        }
-        filterDef.addInitParameter(name, value);
-        context.addFilterDef(filterDef);
-        return true;
-    }
-
-
-    public Set<String> setInitParameters(Map<String, String> initParameters) {
-        Set<String> conflicts = new HashSet<String>();
-        Iterator<String> parameterNames = initParameters.keySet().iterator();
-        while (parameterNames.hasNext()) {
-            String parameterName = parameterNames.next();
-            if (filterDef.getInitParameter(parameterName) != null) {
-                conflicts.add(parameterName);
-            } else {
-                filterDef.addInitParameter(parameterName, initParameters.get(parameterName));
-            }
-        }
-        context.addFilterDef(filterDef);
-        return conflicts;
     }
 
 
@@ -357,13 +216,8 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             return (this.filter);
 
         // Identify the class loader we will be using
-        if (filterInstance == null) {
-            String filterClass = filterDef.getFilterClass();
-            this.filter = (Filter) getInstanceManager().newInstance(filterClass);
-        } else {
-            this.filter = filterInstance;
-            filterInstance = null;
-        }
+        String filterClass = filterDef.getFilterClass();
+        this.filter = (Filter) getInstanceManager().newInstance(filterClass);
 
         if (context instanceof StandardContext &&
                 context.getSwallowOutput()) {
@@ -384,19 +238,11 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
     }
 
-    
-    /**
-     * Set the filter instance programmatically.
-     */
-    public void setFilter(Filter filter) {
-        filterInstance = filter;
-    }
-    
 
     /**
      * Return the filter definition we are configured for.
      */
-    public FilterDef getFilterDef() {
+    FilterDef getFilterDef() {
 
         return (this.filterDef);
 
@@ -433,8 +279,64 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      }
 
 
-    // -------------------------------------------------------- Private Methods
+    /**
+     * Set the filter definition we are configured for.  This has the side
+     * effect of instantiating an instance of the corresponding filter class.
+     *
+     * @param filterDef The new filter definition
+     *
+     * @exception ClassCastException if the specified class does not implement
+     *  the <code>javax.servlet.Filter</code> interface
+     * @exception ClassNotFoundException if the filter class cannot be found
+     * @exception IllegalAccessException if the filter class cannot be
+     *  publicly instantiated
+     * @exception InstantiationException if an exception occurs while
+     *  instantiating the filter object
+     * @exception ServletException if thrown by the filter's init() method
+     * @throws NamingException
+     * @throws InvocationTargetException
+     */
+    void setFilterDef(FilterDef filterDef)
+        throws ClassCastException, ClassNotFoundException,
+               IllegalAccessException, InstantiationException,
+               ServletException, InvocationTargetException, NamingException {
 
+        this.filterDef = filterDef;
+        if (filterDef == null) {
+
+            // Release any previously allocated filter instance
+            if (this.filter != null){
+                if( Globals.IS_SECURITY_ENABLED) {
+                    try{
+                        SecurityUtil.doAsPrivilege("destroy", filter);
+                    } catch(java.lang.Exception ex){
+                        context.getLogger().error("ApplicationFilterConfig.doAsPrivilege", ex);
+                    }
+                    SecurityUtil.remove(filter);
+                } else {
+                    filter.destroy();
+                }
+                if (!context.getIgnoreAnnotations()) {
+                    try {
+                        ((StandardContext) context).getInstanceManager().destroyInstance(this.filter);
+                    } catch (Exception e) {
+                        context.getLogger().error("ApplicationFilterConfig.preDestroy", e);
+                    }
+                }
+            }
+            this.filter = null;
+
+        } else {
+
+            // Allocate a new filter instance
+            Filter filter = getFilter();
+
+        }
+
+    }
+
+
+    // -------------------------------------------------------- Private Methods
 
     private InstanceManager getInstanceManager() {
         if (instanceManager == null) {

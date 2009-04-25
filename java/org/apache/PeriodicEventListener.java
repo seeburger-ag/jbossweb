@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.tomcat;
+package org.apache;
 
 public interface PeriodicEventListener {
     /**

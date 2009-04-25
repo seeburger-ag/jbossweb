@@ -264,9 +264,6 @@ public class WebRuleSet extends RuleSetBase {
                             "addChild",
                             "org.apache.catalina.Container");
 
-        digester.addCallMethod(prefix + "web-app/servlet/description",
-                "setDescription", 0);
-
         digester.addCallMethod(prefix + "web-app/servlet/init-param",
                                "addInitParameter", 2);
         digester.addCallParam(prefix + "web-app/servlet/init-param/param-name",

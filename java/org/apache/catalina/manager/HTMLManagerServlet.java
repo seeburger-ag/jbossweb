@@ -207,7 +207,7 @@ public final class HTMLManagerServlet extends ManagerServlet {
                         ("htmlManagerServlet.deployUploadNoFile");
                     break;
                 }
-                war = warUpload.getFileName();
+                war = warUpload.getName();
                 if (!war.toLowerCase().endsWith(".war")) {
                     message = sm.getString
                         ("htmlManagerServlet.deployUploadNotWar",war);

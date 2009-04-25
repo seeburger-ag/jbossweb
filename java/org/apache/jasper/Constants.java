@@ -58,12 +58,6 @@ public class Constants {
     };
 
     /**
-     * ServletContext attribute for the JSP Servlet options.
-     */
-    public static final String SERVLET_OPTIONS = 
-        System.getProperty("org.apache.jasper.Constants.SERVLET_OPTIONS", "org.apache.catalina.jsp_options");
-
-    /**
      * ServletContext attribute for classpath. This is tomcat specific. 
      * Other servlet engines may choose to support this attribute if they 
      * want to have this JSP engine running on them. 

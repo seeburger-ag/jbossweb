@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -48,17 +20,11 @@ package org.apache.catalina.core;
 
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Iterator;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
 import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -67,13 +33,12 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
+import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.log.SystemLogHandler;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
-import org.jboss.servlet.http.HttpEvent.EventType;
 
 /**
  * Valve that implements the default basic behavior for the
@@ -86,12 +51,6 @@ import org.jboss.servlet.http.HttpEvent.EventType;
 final class StandardWrapperValve
     extends ValveBase {
 
-    
-    protected static final boolean SERVLET_STATS = 
-        Globals.STRICT_SERVLET_COMPLIANCE
-        || Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardWrapperValve.SERVLET_STATS", "false")).booleanValue();
-
-
     // ----------------------------------------------------- Instance Variables
 
 
@@ -101,7 +60,6 @@ final class StandardWrapperValve
     private volatile long processingTime;
     private volatile long maxTime;
     private volatile long minTime = Long.MAX_VALUE;
-    private volatile int eventCount;
     private volatile int requestCount;
     private volatile int errorCount;
 
@@ -134,11 +92,8 @@ final class StandardWrapperValve
         boolean unavailable = false;
         Throwable throwable = null;
         // This should be a Request attribute...
-        long t1 = 0;
-        if (SERVLET_STATS) {
-            t1 = System.currentTimeMillis();
-            requestCount++;
-        }
+        long t1=System.currentTimeMillis();
+        requestCount++;
         StandardWrapper wrapper = (StandardWrapper) getContainer();
         Servlet servlet = null;
         Context context = (Context) wrapper.getParent();
@@ -202,13 +157,12 @@ final class StandardWrapperValve
             servlet = null;
         }
 
-        // Identify if the request should be switched to event mode now that 
-        // the servlet has been allocated
-        boolean event = false;
+        // Identify if the request is Comet related now that the servlet has been allocated
+        boolean comet = false;
         if (servlet instanceof HttpEventServlet 
-                && request.getConnector().hasIoEvents()) {
-            event = true;
-            request.setEventMode(true);
+                && request.getAttribute("org.apache.tomcat.comet.support") == Boolean.TRUE) {
+            comet = true;
+            request.setComet(true);
         }
         
         // Acknowledge the request
@@ -227,19 +181,23 @@ final class StandardWrapperValve
             exception(request, response, e);
             servlet = null;
         }
+        MessageBytes requestPathMB = null;
+        if (request != null) {
+            requestPathMB = request.getRequestPathMB();
+        }
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
              ApplicationFilterFactory.REQUEST_INTEGER);
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-                    request.getRequestPathMB());
+             requestPathMB);
         // Create the filter chain for this request
         ApplicationFilterFactory factory =
             ApplicationFilterFactory.getInstance();
         ApplicationFilterChain filterChain =
-            factory.createFilterChain(request, wrapper);
-        // Reset event flag value after creating the filter chain
-        request.setEventMode(false);
+            factory.createFilterChain(request, wrapper, servlet);
+        // Reset comet flag value after creating the filter chain
+        request.setComet(false);
 
         // Call the filter chain for this request
         // NOTE: This also calls the servlet's service() method
@@ -254,8 +212,8 @@ final class StandardWrapperValve
                 if (context.getSwallowOutput()) {
                     try {
                         SystemLogHandler.startCapture();
-                        if (event) {
-                            request.setEventMode(true);
+                        if (comet) {
+                            request.setComet(true);
                             request.getSession(true);
                             filterChain.doFilterEvent(request.getEvent());
                         } else {
@@ -269,8 +227,8 @@ final class StandardWrapperValve
                         }
                     }
                 } else {
-                    if (event) {
-                        request.setEventMode(true);
+                    if (comet) {
+                        request.setComet(true);
                         request.getSession(true);
                         filterChain.doFilterEvent(request.getEvent());
                     } else {
@@ -330,8 +288,8 @@ final class StandardWrapperValve
 
         // Release the filter chain (if any) for this request
         if (filterChain != null) {
-            if (request.isEventMode() && !request.isAsyncStarted()) {
-                // If this is a event request, then the same chain will be used for the
+            if (request.isComet()) {
+                // If this is a Comet request, then the same chain will be used for the
                 // processing of all subsequent events.
                 filterChain.reuse();
             } else {
@@ -368,23 +326,18 @@ final class StandardWrapperValve
                 exception(request, response, e);
             }
         }
+        long t2=System.currentTimeMillis();
 
-        if (SERVLET_STATS) {
-            long time = System.currentTimeMillis() - t1;
-            processingTime += time;
-            if (time > maxTime) {
-                maxTime = time;
-            }
-            if (time < minTime) {
-                minTime = time;
-            }
-        }
+        long time=t2-t1;
+        processingTime += time;
+        if( time > maxTime) maxTime=time;
+        if( time < minTime) minTime=time;
 
     }
 
 
     /**
-     * Process an event. The main differences here are to not use sendError
+     * Process a Comet event. The main differences here are to not use sendError
      * (the response is committed), to avoid creating a new filter chain
      * (which would work but be pointless), and a few very minor tweaks. 
      *
@@ -399,105 +352,11 @@ final class StandardWrapperValve
     public void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
         
-        // Async processing
-        Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
-        if (asyncContext != null) {
-            if (event.getType() == EventType.END || event.getType() == EventType.ERROR
-                    || event.getType() == EventType.TIMEOUT) {
-                // Invoke the listeners with onComplete or onTimeout
-                boolean timeout = (event.getType() == EventType.TIMEOUT) ? true : false;
-                Iterator<AsyncEvent> asyncEvents = asyncContext.getAsyncListeners().keySet().iterator();
-                if (timeout && !asyncEvents.hasNext()) {
-                    // FIXME: MUST do an ERROR dispatch to the original URI and MUST set the response code to 500
-                }
-                while (asyncEvents.hasNext()) {
-                    AsyncEvent asyncEvent = asyncEvents.next();
-                    AsyncListener asyncListener = asyncContext.getAsyncListeners().get(asyncEvent);
-                    try {
-                        if (timeout) {
-                            asyncListener.onTimeout(asyncEvent);
-                        } else {
-                            asyncListener.onComplete(asyncEvent);
-                        }
-                    } catch (Throwable e) {
-                        container.getLogger().error(sm.getString("standardWrapper.async.listenerError",
-                                getContainer().getName()), e);
-                        exception(request, response, e);
-                    }
-                }
-            } else if (asyncContext.getRunnable() != null) {
-                // Execute the runnable
-                try {
-                    asyncContext.getRunnable().run();
-                } catch (Throwable e) {
-                    container.getLogger().error(sm.getString("standardWrapper.async.runnableError",
-                            getContainer().getName()), e);
-                    exception(request, response, e);
-                }
-            } else if (asyncContext.getPath() != null) {
-                // We executed the dispatch
-                asyncContext.done();
-                // Remap the request, set the dispatch attributes, create the filter chain
-                // and invoke the Servlet
-                Context context = (Context) getContainer().getParent();
-                ServletContext servletContext = context.getServletContext();
-                if (asyncContext.getServletContext() != null) {
-                    // Cross context
-                    servletContext = asyncContext.getServletContext();
-                }
-                ApplicationDispatcher dispatcher = 
-                    (ApplicationDispatcher) servletContext.getRequestDispatcher(asyncContext.getPath());
-                // Invoke the dispatcher async method with the attributes flag
-                try {
-                    dispatcher.async(asyncContext.getRequest(), asyncContext.getResponse(), 
-                            asyncContext.getUseAttributes());
-                } catch (Throwable e) {
-                    container.getLogger().error(sm.getString("standardWrapper.async.dispatchError",
-                            getContainer().getName()), e);
-                    exception(request, response, e);
-                }
-                // If there is no new startAsync, then close the response
-                if (!asyncContext.isReady()) {
-                    // FIXME: see which one is the right one to close the response
-                    asyncContext.complete();
-                    /*
-                    if  (asyncContext.getResponse() instanceof ResponseFacade) {
-                        response.setSuspended(true);
-                    } else {
-                        // Close anyway
-                        try {
-                            PrintWriter writer = response.getWriter();
-                            writer.close();
-                        } catch (IllegalStateException e) {
-                            try {
-                                ServletOutputStream stream = response.getOutputStream();
-                                stream.close();
-                            } catch (IllegalStateException f) {
-                                ;
-                            } catch (IOException f) {
-                                ;
-                            }
-                        } catch (IOException e) {
-                            ;
-                        }
-                    }
-                    event.close();
-                    */
-                }
-            } else {
-                throw new IllegalStateException(sm.getString("standardWrapper.async.invalidContext"));
-            }
-            return;
-        }
-        
         // Initialize local variables we may need
         Throwable throwable = null;
         // This should be a Request attribute...
-        long t1 = 0;
-        if (SERVLET_STATS) {
-            t1 = System.currentTimeMillis();
-            eventCount++;
-        }
+        long t1=System.currentTimeMillis();
+        // FIXME: Add a flag to count the total amount of events processed ? requestCount++;
         StandardWrapper wrapper = (StandardWrapper) getContainer();
         Servlet servlet = null;
         Context context = (Context) wrapper.getParent();
@@ -526,13 +385,16 @@ final class StandardWrapperValve
             servlet = null;
         }
 
+        MessageBytes requestPathMB = null;
+        if (request != null) {
+            requestPathMB = request.getRequestPathMB();
+        }
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-             ApplicationFilterFactory.ASYNC_INTEGER);
+             ApplicationFilterFactory.REQUEST_INTEGER);
         request.setAttribute
             (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-                    request.getRequestPathMB());
-        
+             requestPathMB);
         // Get the current (unchanged) filter chain for this request
         ApplicationFilterChain filterChain = 
             (ApplicationFilterChain) request.getFilterChain();
@@ -599,11 +461,7 @@ final class StandardWrapperValve
 
         // Release the filter chain (if any) for this request
         if (filterChain != null) {
-            if (asyncContext != null) {
-                filterChain.release();
-            } else {
-                filterChain.reuse();
-            }
+            filterChain.reuse();
         }
 
         // Deallocate the allocated servlet instance
@@ -636,16 +494,12 @@ final class StandardWrapperValve
             }
         }
 
-        if (SERVLET_STATS) {
-            long time = System.currentTimeMillis() - t1;
-            processingTime += time;
-            if (time > maxTime) {
-                maxTime = time;
-            }
-            if (time < minTime) {
-                minTime = time;
-            }
-        }
+        long t2=System.currentTimeMillis();
+
+        long time=t2-t1;
+        processingTime += time;
+        if( time > maxTime) maxTime=time;
+        if( time < minTime) minTime=time;
 
     }
 
@@ -709,14 +563,6 @@ final class StandardWrapperValve
 
     public void setErrorCount(int errorCount) {
         this.errorCount = errorCount;
-    }
-
-    public int getEventCount() {
-        return eventCount;
-    }
-
-    public void setEventCount(int eventCount) {
-        this.eventCount = eventCount;
     }
 
     // Don't register in JMX

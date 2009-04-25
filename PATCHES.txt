@@ -43,24 +43,3 @@ New JDBC pool module
 
 733748
 SSL session tracking (may not be practical at all)
-
-733768 733769 733775
-Generics in Servlet API (not accepted yet)
-
-733771
-Deprecate some wrapper methods in Servlet API (not accepted yet)
-
-751502
-Per context validation (incomplete, and looks a bit useless anyway)
-
-752651, 752936
-XmlBase configuration
-
-757223
-AJP hack to pass remote port (the protocol does not do it, well, too bad)
-
-763654
-Specific hack to address some error condition in HTTP method
-
-765727
-ETag should be identical regardless of how the entity is encoded, this patch "fixes" apparently broken proxies

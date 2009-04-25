@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -55,20 +27,14 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Set;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.security.SecurityUtil;
@@ -134,9 +100,6 @@ public final class ApplicationContextFacade
         classCache.put("getRealPath", clazz);
         classCache.put("getAttribute", clazz);
         classCache.put("log", clazz);
-        classCache.put("setSessionTrackingModes", new Class[]{EnumSet.class} );
-        classCache.put("setSessionCookieConfig",
-                new Class[]{SessionCookieConfig.class});
     }
 
 
@@ -401,171 +364,6 @@ public final class ApplicationContextFacade
     }
 
        
-    public FilterRegistration.Dynamic addFilter(String filterName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (FilterRegistration.Dynamic) doPrivileged("addFilter",
-                    new Object[]{filterName, className});
-        } else {
-            return context.addFilter(filterName, className);
-        }
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (FilterRegistration.Dynamic) doPrivileged("addFilter",
-                    new Object[]{filterName, filter});
-        } else {
-            return context.addFilter(filterName, filter);
-        }
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName,
-            Class<? extends Filter> filterClass) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (FilterRegistration.Dynamic) doPrivileged("addFilter",
-                    new Object[]{filterName, filterClass});
-        } else {
-            return context.addFilter(filterName, filterClass);
-        }
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (ServletRegistration.Dynamic) doPrivileged("addServlet",
-                    new Object[]{servletName, className});
-        } else {
-            return context.addServlet(servletName, className);
-        }
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName,
-            Class<? extends Servlet> clazz) throws IllegalArgumentException,
-            IllegalStateException {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (ServletRegistration.Dynamic) doPrivileged("addServlet",
-                    new Object[]{servletName, clazz});
-        } else {
-            return context.addServlet(servletName, clazz);
-        }
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (ServletRegistration.Dynamic) doPrivileged("addServlet",
-                    new Object[]{servletName, servlet});
-        } else {
-            return context.addServlet(servletName, servlet);
-        }
-    }
-
-
-    public <T extends Filter> T createFilter(Class<T> c)
-            throws ServletException {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (T) doPrivileged("createFilter", new Object[]{c});
-        } else {
-            return context.createFilter(c);
-        }
-    }
-
-
-    public <T extends Servlet> T createServlet(Class<T> c)
-            throws ServletException {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (T) doPrivileged("createServlet", new Object[]{c});
-        } else {
-            return context.createServlet(c);
-        }
-    }
-
-
-    public boolean setInitParameter(String name, String value) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (Boolean) doPrivileged("setInitParameter",
-                    new Object[]{name, value});
-        } else {
-            return context.setInitParameter(name, value);
-        }
-    }
-
-
-    public FilterRegistration findFilterRegistration(String filterName) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (FilterRegistration) doPrivileged("findFilterRegistration",
-                    new Object[]{filterName});
-        } else {
-            return context.findFilterRegistration(filterName);
-        }
-    }
-
-
-    public ServletRegistration findServletRegistration(String servletName) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (ServletRegistration) doPrivileged("findServletRegistration",
-                    new Object[]{servletName});
-        } else {
-            return context.findServletRegistration(servletName);
-        }
-    }
-
-
-    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (EnumSet<SessionTrackingMode>)
-                doPrivileged("getDefaultSessionTrackingModes", null);
-        } else {
-            return context.getDefaultSessionTrackingModes();
-        }
-    }
-
-
-    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (EnumSet<SessionTrackingMode>)
-                doPrivileged("getEffectiveSessionTrackingModes", null);
-        } else {
-            return context.getEffectiveSessionTrackingModes();
-        }
-    }
-
-
-    public SessionCookieConfig getSessionCookieConfig() {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (SessionCookieConfig)
-                doPrivileged("getSessionCookieConfig", null);
-        } else {
-            return context.getSessionCookieConfig();
-        }
-    }
-
-/*
-    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("setSessionCookieConfig",
-                    new Object[]{sessionCookieConfig});
-        } else {
-            context.setSessionCookieConfig(sessionCookieConfig);
-        }
-    }*/
-
-
-    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("setSessionTrackingModes",
-                    new Object[]{sessionTrackingModes});
-        } else {
-            context.setSessionTrackingModes(sessionTrackingModes);
-        }
-    }
-
-
     /**
      * Use reflection to invoke the requested method. Cache the method object 
      * to speed up the process
@@ -709,6 +507,4 @@ public final class ApplicationContextFacade
         
         throw realException;
     }
-
-
 }

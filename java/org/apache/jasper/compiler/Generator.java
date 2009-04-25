@@ -531,7 +531,7 @@ class Generator {
         out.printin("private javax.el.ExpressionFactory ");
         out.print(VAR_EXPRESSIONFACTORY);
         out.println(";");
-        out.printin("private org.apache.tomcat.InstanceManager ");
+        out.printin("private org.apache.InstanceManager ");
         out.print(VAR_INSTANCEMANAGER);
         out.println(";");
         out.println();
@@ -1591,7 +1591,8 @@ class Generator {
             s0 = "<param name=\"type\""
                     + makeAttr("value", "application/x-java-"
                             + type
-                            + ((jreversion == null) ? "" : ";version="
+                            + ";"
+                            + ((jreversion == null) ? "" : "version="
                                     + jreversion)) + '>';
             out.printil("out.write(" + quote(s0) + ");");
             out.printil("out.write(\"\\n\");");
@@ -1610,7 +1611,8 @@ class Generator {
             s0 = "<EMBED"
                     + makeAttr("type", "application/x-java-"
                             + type
-                            + ((jreversion == null) ? "" : ";version="
+                            + ";"
+                            + ((jreversion == null) ? "" : "version="
                                     + jreversion)) + makeAttr("name", name);
 
             // s1 and s2 are the same as before.

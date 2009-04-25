@@ -18,8 +18,6 @@
 
 package org.apache.tomcat.util.http.fileupload;
 
-import java.io.IOException;
-
 
 /**
  * Exception for errors encountered while processing the request.
@@ -28,7 +26,7 @@ import java.io.IOException;
  * @version $Id$
  */
 public class FileUploadException
-    extends IOException
+    extends Exception
 {
 
     /**

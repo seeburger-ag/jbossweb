@@ -21,8 +21,8 @@ import javax.servlet.ServletConfig;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.Tag;
 
+import org.apache.InstanceManager;
 import org.apache.jasper.Constants;
-import org.apache.tomcat.InstanceManager;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 

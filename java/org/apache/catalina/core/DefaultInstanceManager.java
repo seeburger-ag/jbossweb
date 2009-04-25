@@ -44,12 +44,12 @@ import javax.xml.ws.WebServiceRef;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 
+import org.apache.InstanceManager;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.ContainerServlet;
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.Constants;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.InstanceManager;
 
 /**
  * @version $Rev$ $Date$
@@ -121,10 +121,6 @@ public class DefaultInstanceManager implements InstanceManager {
     public Object newInstance(final String className, final ClassLoader classLoader) throws IllegalAccessException, NamingException, InvocationTargetException, InstantiationException, ClassNotFoundException {
         Class<?> clazz = classLoader.loadClass(className);
         return newInstance(clazz.newInstance(), clazz);
-    }
-
-    public Object newInstance(Class<?> c) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException {
-        return newInstance(c.newInstance(), c);
     }
 
     public void newInstance(Object o) 

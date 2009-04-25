@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -49,9 +21,11 @@ package org.apache.catalina.startup;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -73,6 +47,7 @@ import javax.naming.directory.DirContext;
 import javax.servlet.ServletException;
 
 import org.apache.catalina.Context;
+import org.apache.catalina.Globals;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.digester.Digester;
@@ -85,66 +60,64 @@ import org.xml.sax.InputSource;
  * @author Craig R. McClanahan
  * @author Jean-Francois Arcand
  * @author Costin Manolache
- * @author Remy Maucherat
- * @deprecated No longer used
  */
-public final class WarScanner  {
+public final class TldConfig  {
+
+    // Names of JARs that are known not to contain any TLDs
+    private static HashSet<String> noTldJars;
 
     private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger(WarScanner.class);
+        org.jboss.logging.Logger.getLogger( TldConfig.class );
 
-    /**
-     * Names of JARs that are known not to contain any descriptors.
-     */
-    private static HashSet<String> noDescriptorsJars;
-
-    /**
-     * Initializes the set of JARs that are known not to contain any descriptors.
+    /*
+     * Initializes the set of JARs that are known not to contain any TLDs
      */
     static {
-        noDescriptorsJars = new HashSet<String>();
+        noTldJars = new HashSet<String>();
         // Bootstrap JARs
-        noDescriptorsJars.add("bootstrap.jar");
-        noDescriptorsJars.add("commons-daemon.jar");
-        noDescriptorsJars.add("tomcat-juli.jar");
+        noTldJars.add("bootstrap.jar");
+        noTldJars.add("commons-daemon.jar");
+        noTldJars.add("tomcat-juli.jar");
         // Main JARs
-        noDescriptorsJars.add("annotations-api.jar");
-        noDescriptorsJars.add("catalina.jar");
-        noDescriptorsJars.add("catalina-ant.jar");
-        noDescriptorsJars.add("el-api.jar");
-        noDescriptorsJars.add("jasper.jar");
-        noDescriptorsJars.add("jasper-el.jar");
-        noDescriptorsJars.add("jasper-jdt.jar");
-        noDescriptorsJars.add("jsp-api.jar");
-        noDescriptorsJars.add("servlet-api.jar");
-        noDescriptorsJars.add("tomcat-coyote.jar");
-        noDescriptorsJars.add("tomcat-dbcp.jar");
+        noTldJars.add("annotations-api.jar");
+        noTldJars.add("catalina.jar");
+        noTldJars.add("catalina-ant.jar");
+        noTldJars.add("catalina-ha.jar");
+        noTldJars.add("catalina-tribes.jar");
+        noTldJars.add("el-api.jar");
+        noTldJars.add("jasper.jar");
+        noTldJars.add("jasper-el.jar");
+        noTldJars.add("jasper-jdt.jar");
+        noTldJars.add("jsp-api.jar");
+        noTldJars.add("servlet-api.jar");
+        noTldJars.add("tomcat-coyote.jar");
+        noTldJars.add("tomcat-dbcp.jar");
         // i18n JARs
-        noDescriptorsJars.add("tomcat-i18n-en.jar");
-        noDescriptorsJars.add("tomcat-i18n-es.jar");
-        noDescriptorsJars.add("tomcat-i18n-fr.jar");
-        noDescriptorsJars.add("tomcat-i18n-ja.jar");
+        noTldJars.add("tomcat-i18n-en.jar");
+        noTldJars.add("tomcat-i18n-es.jar");
+        noTldJars.add("tomcat-i18n-fr.jar");
+        noTldJars.add("tomcat-i18n-ja.jar");
         // Misc JARs not included with Tomcat
-        noDescriptorsJars.add("ant.jar");
-        noDescriptorsJars.add("commons-dbcp.jar");
-        noDescriptorsJars.add("commons-beanutils.jar");
-        noDescriptorsJars.add("commons-fileupload-1.0.jar");
-        noDescriptorsJars.add("commons-pool.jar");
-        noDescriptorsJars.add("commons-digester.jar");
-        noDescriptorsJars.add("commons-logging.jar");
-        noDescriptorsJars.add("commons-collections.jar");
-        noDescriptorsJars.add("jmx.jar");
-        noDescriptorsJars.add("jmx-tools.jar");
-        noDescriptorsJars.add("xercesImpl.jar");
-        noDescriptorsJars.add("xmlParserAPIs.jar");
-        noDescriptorsJars.add("xml-apis.jar");
+        noTldJars.add("ant.jar");
+        noTldJars.add("commons-dbcp.jar");
+        noTldJars.add("commons-beanutils.jar");
+        noTldJars.add("commons-fileupload-1.0.jar");
+        noTldJars.add("commons-pool.jar");
+        noTldJars.add("commons-digester.jar");
+        noTldJars.add("commons-logging.jar");
+        noTldJars.add("commons-collections.jar");
+        noTldJars.add("jmx.jar");
+        noTldJars.add("jmx-tools.jar");
+        noTldJars.add("xercesImpl.jar");
+        noTldJars.add("xmlParserAPIs.jar");
+        noTldJars.add("xml-apis.jar");
         // JARs from J2SE runtime
-        noDescriptorsJars.add("sunjce_provider.jar");
-        noDescriptorsJars.add("ldapsec.jar");
-        noDescriptorsJars.add("localedata.jar");
-        noDescriptorsJars.add("dnsns.jar");
-        noDescriptorsJars.add("tools.jar");
-        noDescriptorsJars.add("sunpkcs11.jar");
+        noTldJars.add("sunjce_provider.jar");
+        noTldJars.add("ldapsec.jar");
+        noTldJars.add("localedata.jar");
+        noTldJars.add("dnsns.jar");
+        noTldJars.add("tools.jar");
+        noTldJars.add("sunpkcs11.jar");
     }
 
 
@@ -194,10 +167,10 @@ public final class WarScanner  {
      */
     public static void setNoTldJars(String jarNames) {
         if (jarNames != null) {
-            noDescriptorsJars.clear();
+            noTldJars.clear();
             StringTokenizer tokenizer = new StringTokenizer(jarNames, ",");
             while (tokenizer.hasMoreElements()) {
-                noDescriptorsJars.add(tokenizer.nextToken());
+                noTldJars.add(tokenizer.nextToken());
             }
         }
     }
@@ -208,7 +181,7 @@ public final class WarScanner  {
      * @param tldValidation true to enable xml instance validation
      */
     public void setTldValidation(boolean tldValidation){
-        WarScanner.tldValidation = tldValidation;
+        TldConfig.tldValidation = tldValidation;
     }
 
     /**
@@ -236,7 +209,7 @@ public final class WarScanner  {
      * @param tldNamespaceAware true to enable namespace awareness
      */
     public void setTldNamespaceAware(boolean tldNamespaceAware){
-        WarScanner.tldNamespaceAware = tldNamespaceAware;
+        TldConfig.tldNamespaceAware = tldNamespaceAware;
     }    
 
 
@@ -278,12 +251,39 @@ public final class WarScanner  {
     public void execute() throws Exception {
         long t1=System.currentTimeMillis();
 
+        File tldCache=null;
+
+        if (context instanceof StandardContext) {
+            File workDir= (File)
+                ((StandardContext)context).getServletContext().getAttribute(Globals.WORK_DIR_ATTR);
+            //tldCache=new File( workDir, "tldCache.ser");
+        }
+
+        // Option to not rescan
+        if( ! rescan ) {
+            // find the cache
+            if( tldCache!= null && tldCache.exists()) {
+                // just read it...
+                processCache(tldCache);
+                return;
+            }
+        }
+
         /*
          * Acquire the list of TLD resource paths, possibly embedded in JAR
          * files, to be processed
          */
         Set resourcePaths = tldScanResourcePaths();
-        Map<String, File> jarPaths = getJarPaths();
+        Map jarPaths = getJarPaths();
+
+        // Check to see if we can use cached listeners
+        if (tldCache != null && tldCache.exists()) {
+            long lastModified = getLastModified(resourcePaths, jarPaths);
+            if (lastModified < tldCache.lastModified()) {
+                processCache(tldCache);
+                return;
+            }
+        }
 
         // Scan each accumulated resource path for TLDs to be processed
         Iterator paths = resourcePaths.iterator();
@@ -303,6 +303,18 @@ public final class WarScanner  {
         }
 
         String list[] = getTldListeners();
+
+        if( tldCache!= null ) {
+            log.debug( "Saving tld cache: " + tldCache + " " + list.length);
+            try {
+                FileOutputStream out=new FileOutputStream(tldCache);
+                ObjectOutputStream oos=new ObjectOutputStream( out );
+                oos.writeObject( list );
+                oos.close();
+            } catch( IOException ex ) {
+                ex.printStackTrace();
+            }
+        }
 
         if( log.isDebugEnabled() )
             log.debug( "Adding tld listeners:" + list.length);
@@ -560,11 +572,11 @@ public final class WarScanner  {
      * @exception IOException if an input/output error occurs while
      *  accumulating the list of resource paths
      */
-    private Set<String> tldScanResourcePaths() throws IOException {
+    private Set tldScanResourcePaths() throws IOException {
         if (log.isDebugEnabled()) {
             log.debug(" Accumulating TLD resource paths");
         }
-        Set<String> resourcePaths = new HashSet<String>();
+        Set resourcePaths = new HashSet();
 
         // Accumulate resource paths explicitly listed in the web application
         // deployment descriptor
@@ -663,9 +675,9 @@ public final class WarScanner  {
      *
      * @return Map of JAR file paths
      */
-    private Map<String, File> getJarPaths() {
+    private Map getJarPaths() {
 
-        HashMap<String, File> jarPathMap = null;
+        HashMap jarPathMap = null;
 
         ClassLoader webappLoader = Thread.currentThread().getContextClassLoader();
         ClassLoader loader = webappLoader;
@@ -703,8 +715,8 @@ public final class WarScanner  {
                      * that are not known not to contain any TLDs
                      */
                     if (loader == webappLoader
-                            || noDescriptorsJars == null
-                            || !noDescriptorsJars.contains(file.getName())) {
+                            || noTldJars == null
+                            || !noTldJars.contains(file.getName())) {
                         if (jarPathMap == null) {
                             jarPathMap = new HashMap();
                             jarPathMap.put(path, file);

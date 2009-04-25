@@ -150,6 +150,18 @@ public class StandardHost
     private String workDir = null;
 
 
+    /**
+     * Attribute value used to turn on/off XML validation
+     */
+     private boolean xmlValidation = false;
+
+
+    /**
+     * Attribute value used to turn on/off XML namespace awarenes.
+     */
+     private boolean xmlNamespaceAware = false;
+
+
     // ------------------------------------------------------------- Properties
 
 
@@ -409,6 +421,45 @@ public class StandardHost
 
     }
 
+     /**
+     * Set the validation feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlValidation true to enable xml instance validation
+     */
+    public void setXmlValidation(boolean xmlValidation){
+        
+        this.xmlValidation = xmlValidation;
+
+    }
+
+    /**
+     * Get the server.xml <host> attribute's xmlValidation.
+     * @return true if validation is enabled.
+     *
+     */
+    public boolean getXmlValidation(){
+        return xmlValidation;
+    }
+
+    /**
+     * Get the server.xml <host> attribute's xmlNamespaceAware.
+     * @return true if namespace awarenes is enabled.
+     *
+     */
+    public boolean getXmlNamespaceAware(){
+        return xmlNamespaceAware;
+    }
+
+
+    /**
+     * Set the namespace aware feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlNamespaceAware true to enable namespace awareness
+     */
+    public void setXmlNamespaceAware(boolean xmlNamespaceAware){
+        this.xmlNamespaceAware=xmlNamespaceAware;
+    }    
+    
     /**
      * Host work directory base.
      */
@@ -556,25 +607,29 @@ public class StandardHost
 
         alias = alias.toLowerCase();
 
-        // Make sure this alias is currently present
-        int n = -1;
-        for (int i = 0; i < aliases.length; i++) {
-            if (aliases[i].equals(alias)) {
-                n = i;
-                break;
-            }
-        }
-        if (n < 0)
-            return;
+        synchronized (aliases) {
 
-        // Remove the specified alias
-        int j = 0;
-        String results[] = new String[aliases.length - 1];
-        for (int i = 0; i < aliases.length; i++) {
-            if (i != n)
-                results[j++] = aliases[i];
+            // Make sure this alias is currently present
+            int n = -1;
+            for (int i = 0; i < aliases.length; i++) {
+                if (aliases[i].equals(alias)) {
+                    n = i;
+                    break;
+                }
+            }
+            if (n < 0)
+                return;
+
+            // Remove the specified alias
+            int j = 0;
+            String results[] = new String[aliases.length - 1];
+            for (int i = 0; i < aliases.length; i++) {
+                if (i != n)
+                    results[j++] = aliases[i];
+            }
+            aliases = results;
+
         }
-        aliases = results;
 
         // Inform interested listeners
         fireContainerEvent(REMOVE_ALIAS_EVENT, alias);
@@ -654,7 +709,12 @@ public class StandardHost
                      errorReportValveClass), t);
             }
         }
-
+        if(log.isDebugEnabled()) {
+            if (xmlValidation)
+                log.debug(sm.getString("standardHost.validationEnabled"));
+            else
+                log.debug(sm.getString("standardHost.validationDisabled"));
+        }
         super.start();
 
     }
@@ -687,7 +747,7 @@ public class StandardHost
 
     private boolean initialized=false;
     
-    public synchronized void init() {
+    public void init() {
         if( initialized ) return;
         initialized=true;
         
@@ -730,7 +790,7 @@ public class StandardHost
         }
     }
 
-    public synchronized void destroy() throws Exception {
+    public void destroy() throws Exception {
         // destroy our child containers, if any
         Container children[] = findChildren();
         super.destroy();

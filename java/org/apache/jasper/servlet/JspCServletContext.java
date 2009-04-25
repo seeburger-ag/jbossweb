@@ -23,22 +23,16 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
 
 
 /**
@@ -442,87 +436,6 @@ public class JspCServletContext implements ServletContext {
 
     }
 
-
-    public FilterRegistration.Dynamic addFilter(String filterName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        return null;
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        return null;
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName,
-            Class<? extends Servlet> clazz) throws IllegalArgumentException,
-            IllegalStateException {
-        return null;
-    }
-
-
-    public boolean setInitParameter(String name, String value) {
-        return false;
-    }
-
-
-    public FilterRegistration findFilterRegistration(String filterName) {
-        return null;
-    }
-
-
-    public ServletRegistration findServletRegistration(String servletName) {
-        return null;
-    }
-
-
-    public EnumSet<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        return EnumSet.noneOf(SessionTrackingMode.class);
-    }
-
-
-    public EnumSet<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        return EnumSet.noneOf(SessionTrackingMode.class);
-    }
-
-
-    public SessionCookieConfig getSessionCookieConfig() {
-        return null;
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
-        return null;
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName,
-            Class<? extends Filter> filterClass) {
-        return null;
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
-        return null;
-    }
-
-
-    public <T extends Filter> T createFilter(Class<T> c)
-            throws ServletException {
-        return null;
-    }
-
-
-    public <T extends Servlet> T createServlet(Class<T> c)
-            throws ServletException {
-        return null;
-    }
-
-
-    public void setSessionTrackingModes(
-            Set<SessionTrackingMode> sessionTrackingModes) {
-    }
 
 
 }

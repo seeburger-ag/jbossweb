@@ -15,58 +15,24 @@
  *  limitations under the License.
  */
 
-package org.apache.catalina.deploy;
+package org.apache.tomcat.util.http;
 
-import java.io.Serializable;
+import javax.servlet.http.Cookie;
 
-public class SessionCookie implements Serializable {
+public class TomcatCookie extends Cookie {
 
-    protected String domain = null;
-    protected String path = null;
-    protected String comment = null;
-    protected boolean httpOnly = false;
-    protected boolean secure = false;
-
-    public SessionCookie() {
+    boolean httpOnly = false;
+    
+    public TomcatCookie(String name, String value) {
+        super(name, value);
     }
 
-    public String getDomain() {
-        return domain;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public boolean isHttpOnly() {
+    public boolean getHttpOnly() {
         return httpOnly;
-    }
-
-    public boolean isSecure() {
-        return secure;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 
     public void setHttpOnly(boolean httpOnly) {
         this.httpOnly = httpOnly;
     }
 
-    public void setSecure(boolean secure) {
-        this.secure = secure;
-    }
 }

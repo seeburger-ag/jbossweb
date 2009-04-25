@@ -76,8 +76,8 @@ public class ServerCookie implements Serializable {
     /**
      * If set to true, we parse cookies according to the servlet spec,
      */
-    public static final boolean VERSION_SWITCH =
-        Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.ServerCookie.VERSION_SWITCH", "true")).booleanValue();
+    public static final boolean STRICT_SERVLET_COMPLIANCE =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "false")).booleanValue();
 
 
     // Note: Servlet Spec =< 2.5 only refers to Netscape and RFC2109,
@@ -391,7 +391,7 @@ public class ServerCookie implements Serializable {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,1,value.length()-1));
             buf.append('"');
-        } else if (allowVersionSwitch && VERSION_SWITCH && version==0 && !isToken2(value, literals)) {
+        } else if (allowVersionSwitch && (!STRICT_SERVLET_COMPLIANCE) && version==0 && !isToken2(value, literals)) {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,0,value.length()));
             buf.append('"');

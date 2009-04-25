@@ -30,7 +30,6 @@ import java.util.Random;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
@@ -50,6 +49,7 @@ import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -370,22 +370,6 @@ public abstract class AuthenticatorBase
 
 
     /**
-     * API login.
-     *
-     * @param request Request we are processing
-     * @param response Response we are creating
-     * @param config    Login configuration describing how authentication
-     *              should be performed
-     *
-     * @exception IOException if an input/output error occurs
-     */
-    public boolean authenticate(Request request, HttpServletResponse response)
-        throws IOException, ServletException {
-        return authenticate(request, response, this.context.getLoginConfig());
-    }
-
-
-    /**
      * Enforce the security restrictions in the web application deployment
      * descriptor of our associated Context.
      *
@@ -578,7 +562,7 @@ public abstract class AuthenticatorBase
      * @exception IOException if an input/output error occurs
      */
     protected abstract boolean authenticate(Request request,
-                                            HttpServletResponse response,
+                                            Response response,
                                             LoginConfig config)
         throws IOException;
 
@@ -645,21 +629,19 @@ public abstract class AuthenticatorBase
     protected synchronized Random getRandom() {
 
         if (this.random == null) {
-            // Calculate the new random number generator seed
-            long seed = System.nanoTime();
-            char entropy[] = getEntropy().toCharArray();
-            for (int i = 0; i < entropy.length; i++) {
-                long update = ((byte) entropy[i]) << ((i % 8) * 8);
-                seed ^= update;
-            }
-            // Construct and seed a new random number generator
             try {
                 Class clazz = Class.forName(randomClass);
                 this.random = (Random) clazz.newInstance();
+                long seed = System.currentTimeMillis();
+                char entropy[] = getEntropy().toCharArray();
+                for (int i = 0; i < entropy.length; i++) {
+                    long update = ((byte) entropy[i]) << ((i % 8) * 8);
+                    seed ^= update;
+                }
+                this.random.setSeed(seed);
             } catch (Exception e) {
                 this.random = new java.util.Random();
             }
-            this.random.setSeed(seed);
         }
 
         return (this.random);
@@ -717,7 +699,7 @@ public abstract class AuthenticatorBase
      * @param username Username used to authenticate (if any)
      * @param password Password used to authenticate (if any)
      */
-    protected void register(Request request, HttpServletResponse response,
+    protected void register(Request request, Response response,
                             Principal principal, String authType,
                             String username, String password) {
 

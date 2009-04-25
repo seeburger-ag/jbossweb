@@ -80,21 +80,6 @@ public interface Context extends Container {
 
 
     /**
-     * Return the authenticator that is configured for this context, or
-     * null if no authenticator has been configured.
-     */
-    public Authenticator getAuthenticator();
-
-
-    /**
-     * Set the authenticator for this context.
-     * 
-     * @param authenticator the new Authenticator for this context
-     */
-    public void setAuthenticator(Authenticator authenticator);
-
-
-    /**
      * Store the set of initialized application event listener objects,
      * in the order they were specified in the web application deployment
      * descriptor, for this application.
@@ -511,14 +496,6 @@ public interface Context extends Container {
      * @param filterMap The filter mapping to be added
      */
     public void addFilterMap(FilterMap filterMap);
-
-
-    /**
-     * Add a filter mapping to this Context before current mappings.
-     *
-     * @param filterMap The filter mapping to be added
-     */
-    public void addFilterMapBefore(FilterMap filterMap);
 
 
     /**
@@ -1020,13 +997,70 @@ public interface Context extends Container {
 
 
     /**
-     * Return true if the Context has been initialized. This is lifecycle-ish, but
-     * needed by more and more Servlet API operations which are only permitted until
-     * the Context is initialized.
-     * @return true if the context is initialized.
+     * Get the server.xml <context> attribute's xmlNamespaceAware.
+     * @return true if namespace awarenes is enabled.
      *
      */
-    public boolean isInitialized();
+    public boolean getXmlNamespaceAware();
+
+
+    /**
+     * Get the server.xml <context> attribute's xmlValidation.
+     * @return true if validation is enabled.
+     *
+     */
+    public boolean getXmlValidation();
+
+
+    /**
+     * Set the validation feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlValidation true to enable xml instance validation
+     */
+    public void setXmlValidation(boolean xmlValidation);
+
+
+   /**
+     * Set the namespace aware feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlNamespaceAware true to enable namespace awareness
+     */
+    public void setXmlNamespaceAware(boolean xmlNamespaceAware);
+    /**
+     * Get the server.xml <context> attribute's xmlValidation.
+     * @return true if validation is enabled.
+     */
+     
+
+    /**
+     * Set the validation feature of the XML parser used when
+     * parsing tlds files. 
+     * @param tldValidation true to enable xml instance validation
+     */
+    public void setTldValidation(boolean tldValidation);
+
+
+    /**
+     * Get the server.xml <context> attribute's webXmlValidation.
+     * @return true if validation is enabled.
+     *
+     */
+    public boolean getTldValidation();
+
+
+    /**
+     * Get the server.xml <host> attribute's xmlNamespaceAware.
+     * @return true if namespace awarenes is enabled.
+     */
+    public boolean getTldNamespaceAware();
+
+
+    /**
+     * Set the namespace aware feature of the XML parser used when
+     * parsing xml instances.
+     * @param tldNamespaceAware true to enable namespace awareness
+     */
+    public void setTldNamespaceAware(boolean tldNamespaceAware);
 
 
 }

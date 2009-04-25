@@ -18,14 +18,14 @@
  */
 
 
-package org.apache.tomcat;
+package org.apache;
 
 import java.lang.reflect.InvocationTargetException;
 
 import javax.naming.NamingException;
 
 /**
- * @version $Rev$ $Date$
+ * @version $Rev:$ $Date:$
  */
 public interface InstanceManager {
 
@@ -36,10 +36,6 @@ public interface InstanceManager {
     public Object newInstance(String fqcn, ClassLoader classLoader) 
     	throws IllegalAccessException, InvocationTargetException, NamingException, 
     		InstantiationException, ClassNotFoundException;
-
-    public Object newInstance(Class<?> c)
-        throws IllegalAccessException, InvocationTargetException, NamingException, 
-            InstantiationException;
 
     public void newInstance(Object o) 
 		throws IllegalAccessException, InvocationTargetException, NamingException;

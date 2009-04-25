@@ -13,9 +13,9 @@
 
   <!-- Project Properties -->
   <property name="name"                  value="JBoss Web" />
-  <property name="year"                  value="2009" />
-  <property name="version.major"         value="3" />
-  <property name="version.minor"         value="0" />
+  <property name="year"                  value="2008" />
+  <property name="version.major"         value="2" />
+  <property name="version.minor"         value="1" />
   <property name="version.build"         value="0" />
   <property name="version.patch"         value="0" />
   <property name="version.tag"           value="SNAPSHOT" />
@@ -82,7 +82,6 @@
     <mkdir dir="${tomcat.build}/bin"/>
     <mkdir dir="${tomcat.build}/conf"/>
     <mkdir dir="${tomcat.build}/lib"/>
-    <mkdir dir="${tomcat.build}/logs"/>
     <mkdir dir="${tomcat.build}/temp"/>
     <mkdir dir="${tomcat.build}/webapps"/>
 
@@ -111,7 +110,7 @@
     <filter token="VERSION" value="${version}"/>
     <filter token="VERSION_NUMBER" value="${version.number}"/>
     <filter token="VERSION_BUILT" value="${TODAY} ${TSTAMP}"/>
-    <copy todir="${tomcat.classes}" filtering="true" encoding="ISO-8859-1">
+    <copy todir="${tomcat.classes}" filtering="true">
       <fileset dir="java">
         <include name="**/*.properties"/>
         <include name="**/*.dtd"/>
@@ -145,7 +144,6 @@
     <jar  jarfile="${servlet-api.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="javax/servlet/*" />
-        <include name="javax/servlet/annotation/*" />
         <include name="javax/servlet/http/*" />
         <include name="javax/servlet/resources/*" />
         <!-- Javadoc and i18n exclusions -->
@@ -209,6 +207,7 @@
     <!-- Catalina Main JAR File -->
     <jar jarfile="${catalina.jar}">
       <fileset dir="${tomcat.classes}">
+        <include name="org/apache/*" />
         <include name="org/apache/catalina/**" />
         <include name="org/apache/naming/**" />
         <include name="org/jboss/servlet/http/**" />
@@ -243,7 +242,6 @@
     <jar jarfile="${tomcat-coyote.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="org/apache/coyote/**" />
-        <include name="org/apache/tomcat/*" />
         <include name="org/apache/tomcat/jni/**" />
         <include name="org/apache/tomcat/util/**" />
         <!-- Javadoc and i18n exclusions -->
@@ -266,6 +264,7 @@
     <!-- Jasper Implementation JAR File -->
     <jar  jarfile="${jasper.jar}">
       <fileset dir="${tomcat.classes}">
+        <include name="org/apache/*" />
         <include name="org/apache/jasper/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
@@ -581,12 +580,15 @@
     <!-- JBoss Web Main JAR File -->
     <jar jarfile="${tomcat.jars}/jbossweb.jar" index="true">
       <fileset dir="${tomcat.classes}">
+        <include name="org/apache/*" />
         <include name="org/apache/catalina/**" />
         <exclude name="org/apache/catalina/startup/catalina.properties" />
         <include name="org/apache/naming/**" />
         <include name="org/apache/comet/**" />
         <include name="org/apache/coyote/**" />
-        <include name="org/apache/tomcat/**" />
+        <include name="org/apache/tomcat/bayeux/**" />
+        <include name="org/apache/tomcat/jni/**" />
+        <include name="org/apache/tomcat/util/**" />
         <include name="org/apache/jasper/**" />
         <include name="org/apache/cometd/bayeux/**" />
         <include name="org/apache/el/**" />

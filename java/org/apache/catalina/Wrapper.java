@@ -21,11 +21,7 @@ package org.apache.catalina;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 import javax.servlet.UnavailableException;
-import javax.servlet.annotation.MultipartConfig;
-
-import org.apache.catalina.util.InstanceSupport;
 
 
 /**
@@ -58,20 +54,6 @@ public interface Wrapper extends Container {
 
 
     /**
-     * Return the async supported value.
-     */
-    public boolean getAsyncSupported();
-
-
-    /**
-     * Set the async supported value.
-     *
-     * @param value New async supported value
-     */
-    public void setAsyncSupported(boolean asyncSupported);
-
-
-    /**
      * Return the available date/time for this servlet, in milliseconds since
      * the epoch.  If this date/time is in the future, any request for this
      * servlet will return an SC_SERVICE_UNAVAILABLE error.  If it is zero,
@@ -92,39 +74,6 @@ public interface Wrapper extends Container {
     public void setAvailable(long available);
 
 
-    /**
-     * Return the Servlet description.
-     */
-    public String getDescription();
-
-
-    /**
-     * Set the description.
-     */
-    public void setDescription(String description);
-
-
-    /**
-     * Get the flag that indicates if the wrapper was added programmatically.
-     * The flag value defaults to false.
-     */
-    public boolean isDynamic();
-
-
-    /**
-     * Set a flag that indicates if the wrapper was added programmatically.
-     *
-     * @param value New async supported value
-     */
-    public void setDynamic(boolean dynamic);
-
-
-    /**
-     * Return the InstanceSupport object for this Wrapper instance.
-     */
-    public InstanceSupport getInstanceSupport();
-    
-    
     /**
      * Return the context-relative URI of the JSP file for this servlet.
      */
@@ -154,18 +103,6 @@ public interface Wrapper extends Container {
      */
     public void setLoadOnStartup(int value);
 
-    
-    /**
-     * Multipart configuration for this Servlet.
-     */
-    public MultipartConfig getMultipartConfig();
-    
-
-    /**
-     * Set the multipart configuration for this Servlet.
-     */
-    public void setMultipartConfig(MultipartConfig multipartConfig);
-    
 
     /**
      * Return the run-as identity for this servlet.
@@ -281,22 +218,9 @@ public interface Wrapper extends Container {
 
 
     /**
-     * Get the facade ServletRegistration.
-     */
-    public ServletRegistration getFacade();
-    
-    
-    /**
      * Return the associated servlet instance.
      */
     public Servlet getServlet();
-    
-    
-    /**
-     * Set the associated servlet instance. This will only do something
-     * meaningful for non STM servlets.
-     */
-    public void setServlet(Servlet servlet);
     
     
     /**

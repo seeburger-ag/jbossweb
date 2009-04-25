@@ -822,12 +822,11 @@ public class ClusterListener
                         localAddress = connection.getLocalAddress();
                         if (localAddress != null) {
                             IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", localAddress.getHostAddress());
-                            log.info(sm.getString("clusterListener.address", localAddress.getHostAddress()));
                         } else {
                             // Should not happen
                             IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", "127.0.0.1");
-                            log.info(sm.getString("clusterListener.address", "127.0.0.1"));
                         }
+                        log.info(sm.getString("clusterListener.address", localAddress.getHostAddress()));
                     }
                     if (engine.getJvmRoute() == null) {
                         String hostName = null;
@@ -1533,10 +1532,6 @@ public class ClusterListener
     	    } else {
     	        return address.getHostAddress() + ":" + port;
     	    }
-    	}
-    	
-    	public int hashCode() {
-    	    return (address + ":" + port + "-" + state).hashCode(); 
     	}
     	
     	public boolean equals(Object o) {

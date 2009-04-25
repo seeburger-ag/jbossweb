@@ -15,22 +15,24 @@
  * limitations under the License.
  */
 
+package org.apache;
 
-package org.apache.catalina;
+import java.lang.reflect.InvocationTargetException;
 
+import javax.naming.NamingException;
 
 /**
- * An <b>Authenticator</b> is a component (usually a Valve or Container) that
- * provides some sort of authentication service.  The interface itself has no
- * functional significance,  but is used as a tagging mechanism so that other
- * components can detect the presence (via an "instanceof Authenticator" test)
- * of an already configured authentication service.
+ * Comment
  *
- * @author Craig R. McClanahan
- * @version $Revision$ $Date$
+ * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
+ * @version $Revision$
+ * @deprecated Replaced by InstanceManager which provides a subset of the capabilities
  */
-
-public interface Authenticator {
-
-
+public interface AnnotationProcessor {
+    public void postConstruct(Object instance)
+        throws IllegalAccessException, InvocationTargetException;
+    public void preDestroy(Object instance)
+        throws IllegalAccessException, InvocationTargetException;
+    public void processAnnotations(Object instance)
+        throws IllegalAccessException, InvocationTargetException, NamingException;
 }

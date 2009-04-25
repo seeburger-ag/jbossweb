@@ -604,6 +604,10 @@ public class MBeanFactory extends BaseModelMBean {
         path = getPathStr(path);
         context.setPath(path);
         context.setDocBase(docBase);
+        context.setXmlValidation(xmlValidation);
+        context.setXmlNamespaceAware(xmlNamespaceAware);
+        context.setTldValidation(tldValidation);
+        context.setTldNamespaceAware(tldNamespaceAware);
         
         ContextConfig contextConfig = new ContextConfig();
         context.addLifecycleListener(contextConfig);
@@ -720,6 +724,8 @@ public class MBeanFactory extends BaseModelMBean {
         host.setDeployOnStartup(deployOnStartup);
         host.setDeployXML(deployXML);
         host.setUnpackWARs(unpackWARs);
+        host.setXmlNamespaceAware(xmlNamespaceAware);
+        host.setXmlValidation(xmlValidation);
 	
         // add HostConfig for active reloading
         HostConfig hostConfig = new HostConfig();

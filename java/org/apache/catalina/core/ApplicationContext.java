@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -61,24 +33,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ApplicationParameter;
-import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResourceSet;
@@ -833,194 +798,6 @@ public class ApplicationContext
             }
         }
 
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        FilterDef filterDef = new FilterDef();
-        filterDef.setFilterName(filterName);
-        filterDef.setFilterClass(className);
-        ApplicationFilterConfig filterConfig = new ApplicationFilterConfig(context, filterDef);
-        filterConfig.setDynamic(true);
-        context.addApplicationFilterConfig(filterConfig);
-        return (FilterRegistration.Dynamic) filterConfig.getFacade();
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        FilterDef filterDef = new FilterDef();
-        filterDef.setFilterName(filterName);
-        filterDef.setFilterClass(filter.getClass().getName());
-        ApplicationFilterConfig filterConfig = new ApplicationFilterConfig(context, filterDef);
-        filterConfig.setDynamic(true);
-        filterConfig.setFilter(filter);
-        context.addApplicationFilterConfig(filterConfig);
-        return (FilterRegistration.Dynamic) filterConfig.getFacade();
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName,
-            Class<? extends Filter> filterClass) {
-        return addFilter(filterName, filterClass.getName());
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        Wrapper wrapper = context.createWrapper();
-        wrapper.setDynamic(true);
-        wrapper.setName(servletName);
-        wrapper.setServletClass(className);
-        context.addChild(wrapper);
-        return (ServletRegistration.Dynamic) wrapper.getFacade();
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName,
-            Class<? extends Servlet> clazz) throws IllegalArgumentException,
-            IllegalStateException {
-        return addServlet(servletName, clazz.getName());
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        Wrapper wrapper = context.createWrapper();
-        wrapper.setDynamic(true);
-        wrapper.setName(servletName);
-        wrapper.setServletClass(servlet.getClass().getName());
-        wrapper.setServlet(servlet);
-        context.addChild(wrapper);
-        return (ServletRegistration.Dynamic) wrapper.getFacade();
-    }
-
-
-    public FilterRegistration findFilterRegistration(String filterName) {
-        ApplicationFilterConfig filterConfig = context.findApplicationFilterConfig(filterName);
-        if (filterConfig == null) {
-            FilterDef filterDef = context.findFilterDef(filterName);
-            if (filterDef == null) {
-                return null;
-            } else {
-                filterConfig = new ApplicationFilterConfig(context, filterDef);
-                context.addApplicationFilterConfig(filterConfig);
-            }
-        }
-        return filterConfig.getFacade();
-    }
-
-
-    public ServletRegistration findServletRegistration(String servletName) {
-        Wrapper wrapper = (Wrapper) context.findChild(servletName);
-        if (wrapper != null) {
-            return wrapper.getFacade();
-        } else {
-            return null;
-        }
-    }
-
-
-    /**
-     * By default {@link SessionTrackingMode#URL} is always supported, {@link
-     * SessionTrackingMode#COOKIE} is supported unless the <code>cookies</code>
-     * attribute has been set to <code>false</code> for the context and {@link
-     * SessionTrackingMode#SSL} is supported if at least one of the connectors
-     * used by this context has the attribute <code>secure</code> set to
-     * <code>true</code>.
-     */
-    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        return context.getDefaultSessionTrackingModes();
-    }
-
-    /**
-     * Return the supplied value if one was previously set, else return the
-     * defaults.
-     */
-    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        return context.getSessionTrackingModes();
-    }
-
-
-    public SessionCookieConfig getSessionCookieConfig() {
-        return context.getSessionCookie();
-    }
-
-
-    public <T extends Filter> T createFilter(Class<T> c)
-            throws ServletException {
-        try {
-            return (T) context.getInstanceManager().newInstance(c);
-        } catch (Throwable e) {
-            throw new ServletException
-                (sm.getString("applicationContext.create"), e);
-        }
-    }
-
-
-    public <T extends Servlet> T createServlet(Class<T> c)
-            throws ServletException {
-        try {
-            return (T) context.getInstanceManager().newInstance(c);
-        } catch (Throwable e) {
-            throw new ServletException
-                (sm.getString("applicationContext.create"), e);
-        }
-    }
-
-
-    public boolean setInitParameter(String name, String value) {
-        mergeParameters();
-        if (parameters.get(name) != null) {
-            return false;
-        } else {
-            parameters.put(name, value);
-            return true;
-        }
-    }
-
-
-    /**
-     * @throws IllegalStateException if the context has already been initialised
-     * @throws IllegalArgumentException TODO SERVLET3 Something to do with SSL
-     *                                  but the spec language is not clear
-     *                                  If an unsupported tracking mode is
-     *                                  requested
-     */
-    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
-
-        if (context.getAvailable()) {
-            throw new IllegalStateException(
-                    sm.getString("applicationContext.setSessionTracking.ise",
-                            getContextPath()));
-        }
-        
-        // Check that only supported tracking modes have been requested
-        for (SessionTrackingMode sessionTrackingMode : sessionTrackingModes) {
-            if (!getDefaultSessionTrackingModes().contains(sessionTrackingMode)) {
-                throw new IllegalArgumentException(sm.getString(
-                        "applicationContext.setSessionTracking.iae",
-                        sessionTrackingMode.toString(), getContextPath()));
-            }
-        }
-        // TODO SERVLET3 - The SSL test
-        
-        context.setSessionTrackingModes(sessionTrackingModes);
     }
 
 

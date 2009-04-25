@@ -38,13 +38,12 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.SingleThreadModel;
 import javax.servlet.UnavailableException;
-import javax.servlet.annotation.MultipartConfig;
 
+import org.apache.PeriodicEventListener;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
 import org.apache.catalina.Context;
@@ -53,11 +52,10 @@ import org.apache.catalina.InstanceEvent;
 import org.apache.catalina.InstanceListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
+import org.apache.InstanceManager;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
-import org.apache.tomcat.InstanceManager;
-import org.apache.tomcat.PeriodicEventListener;
 import org.apache.tomcat.util.log.SystemLogHandler;
 import org.apache.tomcat.util.modeler.Registry;
 
@@ -98,19 +96,7 @@ public class StandardWrapper
 
     // ----------------------------------------------------- Instance Variables
 
-    
-    /**
-     * Async supported flag.
-     */
-    protected boolean asyncSupported = false;
-    
-    
-    /**
-     * Dynamic flag.
-     */
-    protected boolean dynamic = false;
-    
-    
+
     /**
      * The date and time at which this servlet will become available (in
      * milliseconds since the epoch), or zero if the servlet is available.
@@ -129,12 +115,6 @@ public class StandardWrapper
      */
     protected int countAllocated = 0;
 
-    
-    /**
-     * Description.
-     */
-    protected String description = null;
-    
 
     /**
      * The facade associated with this wrapper.
@@ -157,12 +137,6 @@ public class StandardWrapper
 
 
     /**
-     * The (single) initialized instance of this servlet.
-     */
-    protected Servlet servletInstance = null;
-
-
-    /**
      * The support object for our instance listeners.
      */
     protected InstanceSupport instanceSupport = new InstanceSupport(this);
@@ -179,12 +153,6 @@ public class StandardWrapper
      * first call) for this servlet.
      */
     protected int loadOnStartup = -1;
-
-
-    /**
-     * The multipart config annotation configured on this servlet.
-     */
-    protected MultipartConfig multipartConfig = null;
 
 
     /**
@@ -299,58 +267,6 @@ public class StandardWrapper
     
 
     // ------------------------------------------------------------- Properties
-
-
-    /**
-     * Return the async supported value.
-     */
-    public boolean getAsyncSupported() {
-        return asyncSupported;
-    }
-
-
-    /**
-     * Return the Servlet description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-
-    /**
-     * Set the async supported value.
-     *
-     * @param value New async supported value
-     */
-    public void setAsyncSupported(boolean value) {
-        boolean oldAsyncSupported = this.asyncSupported;
-        this.asyncSupported = value;
-        support.firePropertyChange("asyncSupported", oldAsyncSupported, asyncSupported);
-    }
-
-
-    /**
-     * Set the description.
-     */
-    public void setDescription(String description) {
-        String oldDescription = this.description;
-        this.description = description;
-        support.firePropertyChange("description", oldDescription, description);
-    }
-
-
-    public boolean isDynamic() {
-        return dynamic;
-    }
-
-
-    public void setDynamic(boolean dynamic) {
-        this.dynamic = dynamic;
-        if (dynamic) {
-            // Change the facade (normally, this happens when the Wrapper is created)
-            facade = new StandardWrapperFacade.Dynamic(this);
-        }
-    }
 
 
     /**
@@ -516,22 +432,6 @@ public class StandardWrapper
 
 
     /**
-     * Multipart configuration for this Servlet.
-     */
-    public MultipartConfig getMultipartConfig() {
-        return multipartConfig;
-    }
-    
-
-    /**
-     * Set the multipart configuration for this Servlet.
-     */
-    public void setMultipartConfig(MultipartConfig multipartConfig) {
-        this.multipartConfig = multipartConfig;
-    }
-    
-
-    /**
      * Return maximum number of instances that will be allocated when a single
      * thread model servlet is used.
      */
@@ -676,14 +576,6 @@ public class StandardWrapper
 
     }
 
-    
-    /**
-     * Get the facade ServletRegistration.
-     */
-    public ServletRegistration getFacade() {
-        return facade;
-    }
-    
 
     /**
      * Gets the names of the methods supported by the underlying servlet.
@@ -848,14 +740,6 @@ public class StandardWrapper
      */
     public Servlet getServlet() {
         return instance;
-    }
-    
-    
-    /**
-     * Set the associated servlet instance.
-     */
-    public void setServlet(Servlet servlet) {
-        servletInstance = servlet;
     }
     
     
@@ -1117,31 +1001,26 @@ public class StandardWrapper
                     (sm.getString("standardWrapper.notClass", getName()));
             }
 
-            if (servletInstance == null) {
-                InstanceManager instanceManager = ((StandardContext)getParent()).getInstanceManager();
-                try {
-                    servlet = (Servlet) instanceManager.newInstance(actualClass);
-                } catch (ClassCastException e) {
-                    unavailable(null);
-                    // Restore the context ClassLoader
-                    throw new ServletException
+            InstanceManager instanceManager = ((StandardContext)getParent()).getInstanceManager();
+            try {
+                servlet = (Servlet) instanceManager.newInstance(actualClass);
+            } catch (ClassCastException e) {
+                unavailable(null);
+                // Restore the context ClassLoader
+                throw new ServletException
                     (sm.getString("standardWrapper.notServlet", actualClass), e);
-                } catch (Throwable e) {
-                    unavailable(null);
+            } catch (Throwable e) {
+                unavailable(null);
 
-                    // Added extra log statement for Bugzilla 36630:
-                    // http://issues.apache.org/bugzilla/show_bug.cgi?id=36630
-                    if(log.isDebugEnabled()) {
-                        log.debug(sm.getString("standardWrapper.instantiate", actualClass), e);
-                    }
-
-                    // Restore the context ClassLoader
-                    throw new ServletException
-                    (sm.getString("standardWrapper.instantiate", actualClass), e);
+                // Added extra log statement for Bugzilla 36630:
+                // http://issues.apache.org/bugzilla/show_bug.cgi?id=36630
+                if(log.isDebugEnabled()) {
+                    log.debug(sm.getString("standardWrapper.instantiate", actualClass), e);
                 }
-            } else {
-                servlet = servletInstance;
-                servletInstance = null;
+
+                // Restore the context ClassLoader
+                throw new ServletException
+                    (sm.getString("standardWrapper.instantiate", actualClass), e);
             }
 
             // Special handling for ContainerServlet instances
