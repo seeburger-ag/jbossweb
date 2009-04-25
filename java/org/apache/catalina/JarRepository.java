@@ -23,11 +23,13 @@
 
 package org.apache.catalina;
 
+import java.io.File;
+import java.util.Map;
 import java.util.jar.JarFile;
 
 
 /**
- * A JARRepository manages a set of JARs associated with a Context, and
+ * A JarRepository manages a set of Jars associated with a Context, and
  * allows efficient access to them.
  * 
  * @author Remy Maucherat
@@ -73,12 +75,19 @@ public interface JarRepository {
 
 
     /**
-     * Get a JarFile with the specified name.
+     * Get the JarFile map.
      * 
-     * @param name
-     * @return
+     * @return the JarFile map, associating logical name with JarFile
      */
-    public JarFile getJar(String name);
+    public Map<String, JarFile> getJars();
+
+
+    /**
+     * Find the JarFile corresponding to the path.
+     * 
+     * @return the JarFile, or null if not found
+     */
+    public JarFile findJar(String path);
 
 
     /**
@@ -87,6 +96,22 @@ public interface JarRepository {
      * @return All JarFile
      */
     public JarFile[] findJars();
+
+
+    /**
+     * Find all exploded Jars managed by the JARRepository.
+     * 
+     * @return All exploded File
+     */
+    public File[] findExplodedJars();
+
+
+    /**
+     * Get the exploded Jar map.
+     * 
+     * @return the Jar map, associating logical name with File
+     */
+    public Map<String, File> getExplodedJars();
 
 
 }

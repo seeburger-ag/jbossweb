@@ -53,11 +53,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.jar.JarFile;
 
 import javax.naming.Binding;
+import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
@@ -151,6 +151,12 @@ public class ContextJarRepository
 
     
     /**
+     * Classes path, which is essentially an exploded Jar.
+     */
+    protected String classesPath = "/WEB-INF/classes";
+    
+    
+    /**
      * Library path.
      */
     protected String libPath = "/WEB-INF/lib";
@@ -166,6 +172,30 @@ public class ContextJarRepository
      * Array of the JarFiles, as convenience.
      */
     protected JarFile[] jarFilesArray = new JarFile[0];
+    
+
+    /**
+     * Map for the File instances.
+     */
+    protected Map<String, File> explodedJars = new HashMap<String, File>();
+    
+    
+    /**
+     * Array of the exploded Jars, as convenience.
+     */
+    protected File[] explodedJarsArray = new File[0];
+    
+    
+    /**
+     * Delete temp Jars.
+     */
+    protected boolean tempJars = false;
+    
+
+    /**
+     * Delete temp exploded Jars.
+     */
+    protected boolean tempExplodedJars = false;
     
 
     // --------------------------------------------------------- Public Methods
@@ -270,37 +300,34 @@ public class ContextJarRepository
         if (servletContext == null)
             return;
         
-        // Check JARs from Context
-        File workDir =
-            (File) servletContext.getAttribute(Globals.WORK_DIR_ATTR);
+        // Access work directory
+        File workDir = (File) servletContext.getAttribute(Globals.WORK_DIR_ATTR);
         if (workDir == null) {
+            // FIXME: this is actually an error
             log.info("No work dir for " + servletContext);
         }
 
-        NamingEnumeration<Binding> libPathListing = null;
         // Looking up directory /WEB-INF/lib in the context
+        NamingEnumeration<Binding> libPathListing = null;
         try {
             libPathListing = resources.listBindings(libPath);
         } catch (NamingException e) {
-            // Silent catch: it's valid that no /WEB-INF/lib collection
-            // exists
+            // Silent catch: it's valid that no /WEB-INF/lib collection exists
         }
-
         if (libPathListing != null) {
-            boolean copyJars = false;
             String absoluteLibPath = servletContext.getRealPath(libPath);
             File destDir = null;
             if (absoluteLibPath != null) {
                 destDir = new File(absoluteLibPath);
             } else {
-                copyJars = true;
+                tempJars = true;
                 destDir = new File(workDir, libPath);
                 destDir.mkdirs();
             }
             while (libPathListing.hasMoreElements()) {
                 Binding binding = libPathListing.nextElement();
-                String filename = libPath + "/" + binding.getName();
-                if (!filename.endsWith(".jar"))
+                String logicalName = libPath + "/" + binding.getName();
+                if (!logicalName.endsWith(".jar"))
                     continue;
                 // Copy JAR in the work directory, always (the JAR file
                 // would get locked otherwise, which would make it
@@ -311,7 +338,7 @@ public class ContextJarRepository
                     continue;
                 Resource jarResource = (Resource) obj;
                 try {
-                    if (copyJars) {
+                    if (tempJars) {
                         InputStream is = null;
                         OutputStream os = null;
                         try {
@@ -333,16 +360,53 @@ public class ContextJarRepository
                         }
                     }
                     JarFile jarFile = new JarFile(destFile);
-                    jarFiles.put(destFile.getAbsolutePath(), jarFile);
+                    jarFiles.put(logicalName, jarFile);
                 } catch (IOException ex) {
                     // Catch the exception if there is an empty jar file,
                     // or if the JAR cannot be copied to temp
-                    // FIXME: throw an error, as webapp will not run
+                    // FIXME: throw an error, as the webapp will not run
                 }
             }
 
         }
         jarFilesArray = jarFiles.values().toArray(jarFilesArray);
+
+        // Setting up the class repository (/WEB-INF/classes), if it exists
+        DirContext classes = null;
+        try {
+            Object object = resources.lookup(classesPath);
+            if (object instanceof DirContext) {
+                classes = (DirContext) object;
+            }
+        } catch(NamingException e) {
+            // Silent catch: it's valid that no /WEB-INF/classes collection
+            // exists
+        }
+        if (classes != null) {
+            File classRepository = null;
+            String absoluteClassesPath = servletContext.getRealPath(classesPath);
+            if (absoluteClassesPath != null) {
+                classRepository = new File(absoluteClassesPath);
+            } else {
+                classRepository = new File(workDir, classesPath);
+                classRepository.mkdirs();
+                tempExplodedJars = true;
+                try {
+                    copyDirContext(classes, classRepository);
+                } catch (NamingException ex) {
+                    // Catch the exception if there is an empty jar file,
+                    // or if the JAR cannot be copied to temp
+                    // FIXME: throw an error, as the webapp will not run
+                } catch (IOException ex) {
+                    // Catch the exception if there is an empty jar file,
+                    // or if the JAR cannot be copied to temp
+                    // FIXME: throw an error, as the webapp will not run
+                }
+            }
+            // Adding the repository to the class loader
+            explodedJarsArray = new File[] { classRepository };
+            explodedJars.put(classesPath + "/", classRepository);
+        }
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(START_EVENT, null);
@@ -364,7 +428,7 @@ public class ContextJarRepository
         // Validate and update our current component state
         if (!started) {
             if(log.isDebugEnabled())
-                log.debug(sm.getString("standardPipeline.notStarted"));
+                log.debug(sm.getString("contextJarRepository.notStarted"));
             return;
         }
 
@@ -379,11 +443,9 @@ public class ContextJarRepository
         try {
             for (int i = 0; i < jarFilesArray.length; i++) {
                 jarFilesArray[i].close();
-            }
-            Iterator<String> jarFilesNames = jarFiles.keySet().iterator();
-            while (jarFilesNames.hasNext()) {
-                File jarFile = new File(jarFilesNames.next());
-                jarFile.delete();
+                if (tempJars) {
+                    (new File(jarFilesArray[i].getName())).delete();
+                }
             }
         } catch (IOException ex) {
             // Catch the exception if there is an empty jar file,
@@ -392,6 +454,11 @@ public class ContextJarRepository
         }
         jarFiles.clear();
         jarFilesArray = new JarFile[0];
+        tempJars = false;
+        explodedJars.clear();
+        explodedJarsArray = new File[0];
+        // FIXME: delete exploded copy
+        tempExplodedJars = false;
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
@@ -412,13 +479,27 @@ public class ContextJarRepository
 
 
     /**
-     * Get a JarFile with the specified name.
+     * Get the JarFile map.
      * 
-     * @param name
-     * @return
+     * @return the JarFile map, associating logical name with JarFile
      */
-    public JarFile getJar(String name) {
-        return jarFiles.get(name);
+    public Map<String, JarFile> getJars() {
+        return jarFiles;
+    }
+
+
+    /**
+     * Find the JarFile corresponding to the path.
+     * 
+     * @return the JarFile, or null if not found
+     */
+    public JarFile findJar(String path) {
+        for (int i = 0; i < jarFilesArray.length; i++) {
+            if (jarFilesArray[i].getName().equals(path)) {
+                return jarFilesArray[i];
+            }
+        }
+        return null;
     }
 
 
@@ -432,4 +513,81 @@ public class ContextJarRepository
     }
 
     
+    /**
+     * Get the exploded Jar map.
+     * 
+     * @return the Jar map, associating logical name with File
+     */
+    public Map<String, File> getExplodedJars() {
+        return explodedJars;
+    }
+
+    
+    /**
+     * Find all exploded Jars managed by the JARRepository.
+     * 
+     * @return All exploded File
+     */
+    public File[] findExplodedJars() {
+        return explodedJarsArray;
+    }
+
+
+    /**
+     * Copy directory.
+     */
+    protected void copyDirContext(DirContext srcDir, File destDir)
+        throws IOException, NamingException {
+        InputStream is = null;
+        OutputStream os = null;
+        NamingEnumeration<NameClassPair> enumeration = srcDir.list("");
+        while (enumeration.hasMoreElements()) {
+            NameClassPair ncPair = enumeration.nextElement();
+            String name = ncPair.getName();
+            Object object = srcDir.lookup(name);
+            File currentFile = new File(destDir, name);
+            if (object instanceof Resource) {
+                try {
+                    is = ((Resource) object).streamContent();
+                    os = new FileOutputStream(currentFile);
+                    IOTools.flow(is, os);
+                    // Don't catch IOE - let the outer try/catch handle it
+                } finally {
+                    try {
+                        if (is != null) is.close();
+                    } catch (IOException e){
+                        // Ignore
+                    }
+                    try {
+                        if (os != null) os.close();
+                    } catch (IOException e){
+                        // Ignore
+                    }
+                }
+            } else if (object instanceof InputStream) {
+                try {
+                    is = (InputStream) object;
+                    os = new FileOutputStream(currentFile);
+                    IOTools.flow(is, os);
+                    // Don't catch IOE - let the outer try/catch handle it
+                } finally {
+                    try {
+                        if (is != null) is.close();
+                    } catch (IOException e){
+                        // Ignore
+                    }
+                    try {
+                        if (os != null) os.close();
+                    } catch (IOException e){
+                        // Ignore
+                    }
+                }
+            } else if (object instanceof DirContext) {
+                currentFile.mkdir();
+                copyDirContext((DirContext) object, currentFile);
+            }
+        }
+    }
+
+
 }

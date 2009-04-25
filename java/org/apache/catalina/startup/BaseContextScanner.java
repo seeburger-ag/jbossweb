@@ -24,9 +24,6 @@
 package org.apache.catalina.startup;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -45,6 +42,7 @@ import javax.naming.directory.DirContext;
 import org.apache.catalina.Context;
 import org.apache.catalina.ContextScanner;
 import org.apache.catalina.Globals;
+import org.apache.catalina.JarRepository;
 
 public abstract class BaseContextScanner
     implements ContextScanner {
@@ -137,21 +135,30 @@ public abstract class BaseContextScanner
      * @param context
      */
     public void scan(Context context) {
-        
-        if (context.getLoader().findLoaderRepositories() != null) {
-            String[] repositories = context.getLoader().findLoaderRepositories();
-            for (int i = 0; i < repositories.length; i++) {
-                if (repositories[i].endsWith(".jar")) {
-                    try {
-                        scanJar(context, new JarFile(repositories[i]));
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                } else {
-                    scanClasses(context, new File(repositories[i]), "");
-                }
+        JarRepository jarRepository = context.getJarRepository();
+        if (jarRepository != null) {
+            JarFile[] jars = jarRepository.findJars();
+            for (int i = 0; i < jars.length; i++) {
+                scanJar(context, jars[i]);
+            }
+            File[] explodedJars = jarRepository.findExplodedJars();
+            for (int i = 0; i < explodedJars.length; i++) {
+                scanClasses(context, explodedJars[i], "");
             }
         }
+        // Do the same for the context parent
+        jarRepository = context.getParent().getJarRepository();
+        if (jarRepository != null) {
+            JarFile[] jars = jarRepository.findJars();
+            for (int i = 0; i < jars.length; i++) {
+                scanJar(context, jars[i]);
+            }
+            File[] explodedJars = jarRepository.findExplodedJars();
+            for (int i = 0; i < explodedJars.length; i++) {
+                scanClasses(context, explodedJars[i], "");
+            }
+        }
+        /*
         ClassLoader loader = context.getLoader().getClassLoader().getParent();
         while (loader != null) {
             if (loader instanceof URLClassLoader) {
@@ -182,10 +189,8 @@ public abstract class BaseContextScanner
                     if (!path.endsWith(".jar")) {
                         continue;
                     }
-                    /*
-                     * Scan all JARs from WEB-INF/lib, plus any shared JARs
-                     * that are not known not to contain any TLDs
-                     */
+                    // Scan all JARs from WEB-INF/lib, plus any shared JARs
+                    // that are not known not to contain any TLDs
                     if (skipJars == null
                         || !skipJars.contains(file.getName())) {
                         try {
@@ -198,6 +203,7 @@ public abstract class BaseContextScanner
             }
             loader = loader.getParent();
         }
+        */
 
         HashSet<String> warTLDs = new HashSet<String>();
 
@@ -390,11 +396,6 @@ public abstract class BaseContextScanner
         }
         if (jarTLDs.size() > 0) {
             TLDs.put(file.getName(), jarTLDs);
-        }
-        try {
-            file.close();
-        } catch (IOException e) {
-            // Ignore
         }
     }
     
