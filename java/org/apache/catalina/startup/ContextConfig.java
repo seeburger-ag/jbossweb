@@ -78,6 +78,7 @@ import org.apache.catalina.ContextScanner;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
+import org.apache.catalina.JarRepository;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
@@ -193,6 +194,13 @@ public class ContextConfig
     
     
     /**
+     * The <code>Digester</code> we will use to process web application
+     * fragment descriptor files.
+     */
+    protected static Digester webFragmentDigester = null;
+    
+    
+    /**
      * The <code>Digester</code> we will use to process tag library
      * descriptor files.
      */
@@ -212,9 +220,15 @@ public class ContextConfig
     
     
     /**
-     * The <code>Rule</code> used to parse the web.xml
+     * The <code>Rule</code> used to parse the web.xml.
      */
     protected static WebRuleSet webRuleSet = new WebRuleSet();
+
+
+    /**
+     * The <code>Rule</code> used to parse web-fragment.xml files.
+     */
+    protected static WebRuleSet webFragmentRuleSet = new WebRuleSet("", true);
 
 
     /**
@@ -755,6 +769,15 @@ public class ContextConfig
 
 
     /**
+     * Create (if necessary) and return a Digester configured to process the
+     * web application fragment descriptors (web-fragment.xml).
+     */
+    protected static Digester createWebFragmentDigester() {
+        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, Globals.XML_VALIDATION, webFragmentRuleSet);
+    }
+
+
+    /**
      * Create (if necessary) and return a Digester configured to process tag 
      * library descriptors.
      */
@@ -769,16 +792,6 @@ public class ContextConfig
     protected static Digester createFragmentOrderingDigester() {
         return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, 
                 Globals.XML_VALIDATION, new WebOrderingRuleSet());
-    }
-
-
-    /**
-     * Create (if necessary) and return a Digester configured to process web.xml
-     * absolute ordering.
-     */
-    protected static Digester createOrderingDigester() {
-        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, 
-                Globals.XML_VALIDATION, new WebAbsoluteOrderingRuleSet());
     }
 
 
@@ -960,86 +973,20 @@ public class ContextConfig
      * Process additional descriptors: TLDs, web fragments, and map overlays.
      */
     protected void applicationExtraDescriptorsConfig() {
+        JarRepository jarRepository = context.getJarRepository();
+        
         // Read order from web.xml and fragments (note: if no fragments, skip)
-        WebAbsoluteOrdering absoluteOrdering = null;
+        WebAbsoluteOrdering absoluteOrdering = context.getWebAbsoluteOrdering();
         List<WebOrdering> orderings = new ArrayList<WebOrdering>();
         Iterator<String> jarsWithWebFragments = scanner.getWebFragments();
 
-        /*
-            String altDDName = null;
-
-            // Open the application web.xml file, if it exists
-            InputStream stream = null;
-            ServletContext servletContext = context.getServletContext();
-            if (servletContext != null) {
-                altDDName = (String)servletContext.getAttribute(
-                                                            Globals.ALT_DD_ATTR);
-                if (altDDName != null) {
-                    try {
-                        stream = new FileInputStream(altDDName);
-                    } catch (FileNotFoundException e) {
-                        log.error(sm.getString("contextConfig.altDDNotFound",
-                                               altDDName));
-                    }
-                }
-                else {
-                    stream = servletContext.getResourceAsStream
-                        (Constants.ApplicationWebXml);
-                }
-            }
-            if (stream == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug(sm.getString("contextConfig.applicationMissing") + " " + context);
-                }
-                return;
-            }
-
-            URL url = null;
-
-            // Process the application web.xml file
-            synchronized (orderingDigester) {
-                try {
-                    if (altDDName != null) {
-                        url = new File(altDDName).toURI().toURL();
-                    } else {
-                        url = servletContext.getResource(Constants.ApplicationWebXml);
-                    }
-                    if (url != null) {
-                        InputSource is = new InputSource(url.toExternalForm());
-                        is.setByteStream(stream);
-                        orderingDigester.parse(is);
-                        absoluteOrdering = (WebAbsoluteOrdering) orderingDigester.peek();
-                    }
-                } catch (SAXParseException e) {
-                    log.error(sm.getString("contextConfig.applicationParse", url.toExternalForm()), e);
-                    log.error(sm.getString("contextConfig.applicationPosition",
-                                     "" + e.getLineNumber(),
-                                     "" + e.getColumnNumber()));
-                    ok = false;
-                } catch (Exception e) {
-                    log.error(sm.getString("contextConfig.applicationParse", url.toExternalForm()), e);
-                    ok = false;
-                } finally {
-                    orderingDigester.reset();
-                    try {
-                        if (stream != null) {
-                            stream.close();
-                        }
-                    } catch (IOException e) {
-                        log.error(sm.getString("contextConfig.applicationClose"), e);
-                    }
-                }
-            }
-         */
-
-        // Process the web fragments
-        // FIXME: Do only if no absolute ordering
-        while (jarsWithWebFragments.hasNext()) {
+        // Parse the ordering defined in web fragments
+        while ((absoluteOrdering == null) && jarsWithWebFragments.hasNext()) {
             String jar = jarsWithWebFragments.next();
             JarFile jarFile = null;
             InputStream is = null;
             try {
-                jarFile = new JarFile(jar);
+                jarFile = jarRepository.findJar(jar);
                 ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
                 if (entry != null) {
                     is = jarFile.getInputStream(entry);
@@ -1070,20 +1017,18 @@ public class ContextConfig
                 } catch (IOException e) {
                     // Ignore
                 }
-                try {
-                    if (jarFile != null) {
-                        jarFile.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
-                }
             }
         }
 
-        // FIXME: Generate final web fragments order
-        if (absoluteOrdering != null || (orderings.size() > 0)) {
+        // FIXME: Generate web fragments parsing order
+        if (absoluteOrdering != null) {
+            
+        } else if (orderings.size() > 0) {
             
         }
+        
+        // FIXME: Parse fragments according to order
+        
         
         // FIXME: Add overlays
         scanner.getOverlays();
@@ -1376,6 +1321,11 @@ public class ContextConfig
             webDigester.getParser();
         }
 
+        if (webFragmentDigester == null){
+            webFragmentDigester = createWebFragmentDigester();
+            webFragmentDigester.getParser();
+        }
+
         if (tldDigester == null){
             tldDigester = createTldDigester();
             tldDigester.getParser();
@@ -1384,11 +1334,6 @@ public class ContextConfig
         if (fragmentOrderingDigester == null){
             fragmentOrderingDigester = createFragmentOrderingDigester();
             fragmentOrderingDigester.getParser();
-        }
-
-        if (orderingDigester == null){
-            orderingDigester = createOrderingDigester();
-            orderingDigester.getParser();
         }
 
         if (contextDigester == null){

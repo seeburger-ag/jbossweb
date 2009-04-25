@@ -29,6 +29,7 @@ import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
+import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.tomcat.util.http.mapper.Mapper;
 
@@ -69,14 +70,18 @@ public interface Context extends Container {
 
 
     /**
-     * Return the set of initialized application event listener objects,
-     * in the order they were specified in the web application deployment
-     * descriptor, for this application.
-     *
-     * @exception IllegalStateException if this method is called before
-     *  this application has started, or after it has been stopped
+     * Return the absolute ordering that is configured for this context, or
+     * null if no absolute ordering has been defined.
      */
-    public Object[] getApplicationEventListeners();
+    public WebAbsoluteOrdering getWebAbsoluteOrdering();
+
+
+    /**
+     * Set the absolute ordering for this context.
+     * 
+     * @param webAbsoluteOrdering the new absolute ordering for this context
+     */
+    public void setWebAbsoluteOrdering(WebAbsoluteOrdering webAbsoluteOrdering);
 
 
     /**
@@ -92,6 +97,17 @@ public interface Context extends Container {
      * @param authenticator the new Authenticator for this context
      */
     public void setAuthenticator(Authenticator authenticator);
+
+
+    /**
+     * Return the set of initialized application event listener objects,
+     * in the order they were specified in the web application deployment
+     * descriptor, for this application.
+     *
+     * @exception IllegalStateException if this method is called before
+     *  this application has started, or after it has been stopped
+     */
+    public Object[] getApplicationEventListeners();
 
 
     /**
@@ -303,6 +319,20 @@ public interface Context extends Container {
     public void setIgnoreAnnotations(boolean ignoreAnnotations);
     
     
+    /**
+     * Return the logical name for this web application.
+     */
+    public String getLogicalName();
+
+
+    /**
+     * Set the logical name for this web application.
+     *
+     * @param logicalName The new logical name
+     */
+    public void setLogicalName(String logicalName);
+
+
     /**
      * Return the login configuration descriptor for this web application.
      */

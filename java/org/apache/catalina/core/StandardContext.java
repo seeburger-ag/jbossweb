@@ -90,6 +90,7 @@ import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
+import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.startup.ContextConfig;
@@ -235,6 +236,11 @@ public class StandardContext
      * and the authenticator should still be set as a valve.
      */
     protected Authenticator authenticator = null;
+    
+    /**
+     * The absolute ordering used for this Context.
+     */
+    protected WebAbsoluteOrdering webAbsoluteOrdering = null;
     
     /**
      * The application available flag for this Context.
@@ -412,6 +418,12 @@ public class StandardContext
      * to each newly created Wrapper by <code>createWrapper()</code>.
      */
     protected String instanceListeners[] = new String[0];
+
+
+    /**
+     * The logical name of the webapp, if any which may be used in other descriptors.
+     */
+    protected String logicalName = null;
 
 
     /**
@@ -958,6 +970,28 @@ public class StandardContext
 
 
     /**
+     * Return the absolute ordering that is configured for this context, or
+     * null if no absolute ordering has been defined.
+     */
+    public WebAbsoluteOrdering getWebAbsoluteOrdering() {
+        return webAbsoluteOrdering;
+    }
+
+
+    /**
+     * Set the absolute ordering for this context.
+     * 
+     * @param webAbsoluteOrdering the new absolute ordering for this context
+     */
+    public void setWebAbsoluteOrdering(WebAbsoluteOrdering webAbsoluteOrdering) {
+        WebAbsoluteOrdering oldWebAbsoluteOrdering = this.webAbsoluteOrdering;
+        this.webAbsoluteOrdering = webAbsoluteOrdering;
+        support.firePropertyChange("webAbsoluteOrdering", oldWebAbsoluteOrdering, 
+                this.webAbsoluteOrdering);
+    }
+    
+    
+    /**
      * Return the application authenticator for this Context.
      */
     public Authenticator getAuthenticator() {
@@ -1378,6 +1412,26 @@ public class StandardContext
      */
     public SessionCookie getSessionCookie() {
         return this.sessionCookie;
+    }
+
+
+    /**
+     * Return the logical name for this web application.
+     */
+    public String getLogicalName() {
+        return logicalName;
+    }
+
+
+    /**
+     * Set the logical name for this web application.
+     *
+     * @param logicalName The new logical name
+     */
+    public void setLogicalName(String logicalName) {
+        String oldLogicalName = this.logicalName;
+        this.logicalName = logicalName;
+        support.firePropertyChange("logicalName", oldLogicalName, logicalName);
     }
 
 

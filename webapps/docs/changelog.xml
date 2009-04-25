@@ -74,6 +74,9 @@
       <add>
         Multipart implementation. (remm)
       </add>
+      <add>
+        New JarRepository component to handle better management of JarFiles following the Servlet 3.0 update. (remm)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Coyote">
