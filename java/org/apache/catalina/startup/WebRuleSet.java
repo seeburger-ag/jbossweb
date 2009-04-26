@@ -940,7 +940,7 @@ final class AddOthersRule extends Rule {
     public void begin(String namespace, String name, Attributes attributes)
         throws Exception {
         WebAbsoluteOrdering ordering = (WebAbsoluteOrdering) digester.peek();
-        ordering.addName("");
+        ordering.addName("*");
     }
 
 }

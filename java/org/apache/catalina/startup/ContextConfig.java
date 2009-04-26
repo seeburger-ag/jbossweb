@@ -54,7 +54,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -374,10 +376,6 @@ public class ContextConfig
                 WebInitParam annotation = clazz.getAnnotation(WebInitParam.class);
                 // Add init param
                 context.addParameter(annotation.name(), annotation.value());
-            }
-            if (clazz.isAnnotationPresent(HandlesTypes.class)) {
-                HandlesTypes annotation = clazz.getAnnotation(HandlesTypes.class);
-                // FIXME: Ok, this is complex ....
             }
             if (clazz.isAnnotationPresent(MultipartConfig.class)) {
                 MultipartConfig annotation = clazz.getAnnotation(MultipartConfig.class);
@@ -979,10 +977,12 @@ public class ContextConfig
         WebAbsoluteOrdering absoluteOrdering = context.getWebAbsoluteOrdering();
         List<WebOrdering> orderings = new ArrayList<WebOrdering>();
         Iterator<String> jarsWithWebFragments = scanner.getWebFragments();
+        HashSet<String> jarsSet = new HashSet<String>();
 
         // Parse the ordering defined in web fragments
-        while ((absoluteOrdering == null) && jarsWithWebFragments.hasNext()) {
+        while (jarsWithWebFragments.hasNext()) {
             String jar = jarsWithWebFragments.next();
+            jarsSet.add(jar);
             JarFile jarFile = null;
             InputStream is = null;
             try {
@@ -1020,18 +1020,86 @@ public class ContextConfig
             }
         }
 
-        // FIXME: Generate web fragments parsing order
+        // Generate web fragments parsing order
+        LinkedList<String> order = new LinkedList<String>();
         if (absoluteOrdering != null) {
-            
+            // Absolute ordering has been declared in web.xml, 
+            // any ordering from the fragments is ignored
+            List<String> fragmentNames = absoluteOrdering.getOrder();
+            int otherPos = -1;
+            for (int i = 0; i < fragmentNames.size(); i++) {
+                String fragmentName = fragmentNames.get(i);
+                if (fragmentName.equals("*")) {
+                    if (otherPos >= 0) {
+                        // FIXME: error message
+                        log.error(sm.getString("contextConfig.applicationParse"));
+                        ok = false;
+                    }
+                    otherPos = i;
+                } else {
+                    Iterator<WebOrdering> orderingsIterator = orderings.iterator();
+                    while (orderingsIterator.hasNext()) {
+                        WebOrdering ordering = orderingsIterator.next();
+                        if (fragmentName.equals(ordering.getName())) {
+                            order.add(ordering.getJar());
+                            jarsSet.remove(ordering.getJar());
+                            break;
+                        }
+                    }
+                }
+            }
+            if (otherPos >= 0) {
+                order.addAll(otherPos, jarsSet);
+            }
         } else if (orderings.size() > 0) {
+            // FIXME: Will use the ordering specified by the fragments, if any
             
         }
         
-        // FIXME: Parse fragments according to order
+        // Parse fragments according to order
+        // FIXME: Merging rules
+        Iterator<String> orderIterator = order.iterator();
+        while (orderIterator.hasNext()) {
+            String jar = orderIterator.next();
+            JarFile jarFile = null;
+            InputStream is = null;
+            try {
+                jarFile = jarRepository.findJar(jar);
+                ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
+                if (entry != null) {
+                    is = jarFile.getInputStream(entry);
+                    InputSource input = new InputSource((new File(jar)).toURI().toURL().toExternalForm());
+                    input.setByteStream(is);
+                    synchronized (webFragmentDigester) {
+                        try {
+                            webFragmentDigester.push(context);
+                            webFragmentDigester.setErrorHandler(new ContextErrorHandler());
+                            webFragmentDigester.parse(input);
+                            if (parseException != null) {
+                                ok = false;
+                            }
+                        } finally {
+                            webFragmentDigester.reset();
+                            webFragmentRuleSet.recycle();
+                            parseException = null;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // FIXME: error message
+                log.error(sm.getString("contextConfig.applicationParse", jar), e);
+                ok = false;
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
         
-        
-        // FIXME: Add overlays
-        scanner.getOverlays();
     }
     
 
@@ -1381,8 +1449,10 @@ public class ContextConfig
         scanner.scan(context);
         // FIXME: look where to place it according to the merging rules
         applicationWebConfig();
-        applicationExtraDescriptorsConfig();
+        // FIXME: Add overlays
+        scanner.getOverlays();
         if (!context.getIgnoreAnnotations()) {
+            applicationExtraDescriptorsConfig();
             applicationAnnotationsConfig();
         }
         if (ok) {

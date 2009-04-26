@@ -2,7 +2,7 @@ Roadmap for JBoss Web 3.0
 
 Main development:
 - Update digester XML parsing rules for web.xml updates
-- web.xml fragments scanning and merging rules
+- web.xml fragments merging rules
 - web.xml fragments ordering
 - Resources overlay
 - Session tracking configuration

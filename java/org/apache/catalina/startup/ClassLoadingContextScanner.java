@@ -21,7 +21,6 @@ package org.apache.catalina.startup;
 import java.io.File;
 import java.util.jar.JarEntry;
 
-import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
@@ -40,8 +39,7 @@ public class ClassLoadingContextScanner
         // Load the class using the classloader, and see if it implements one of the web annotations
         try {
             Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
-            if (clazz.isAnnotationPresent(HandlesTypes.class)
-                    || clazz.isAnnotationPresent(MultipartConfig.class)
+            if (clazz.isAnnotationPresent(MultipartConfig.class)
                     || clazz.isAnnotationPresent(WebFilter.class)
                     || clazz.isAnnotationPresent(WebInitParam.class)
                     || clazz.isAnnotationPresent(WebListener.class)
