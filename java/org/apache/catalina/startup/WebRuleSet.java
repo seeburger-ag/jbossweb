@@ -272,7 +272,7 @@ public class WebRuleSet extends RuleSetBase {
 
         digester.addRule(prefix + elementName + "/servlet",
                          new WrapperCreateRule());
-        digester.addSetNext(prefix + "/servlet",
+        digester.addSetNext(prefix + elementName + "/servlet",
                             "addChild",
                             "org.apache.catalina.Container");
 
