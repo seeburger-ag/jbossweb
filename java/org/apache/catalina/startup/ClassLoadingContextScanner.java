@@ -44,7 +44,7 @@ public class ClassLoadingContextScanner
                     if (handlesTypesArray[i].isAssignableFrom(clazz)) {
                         JarServletContainerInitializerServiceImpl jarServletContainerInitializerService = 
                             handlesTypes.get(handlesTypesArray[i]);
-                        jarServletContainerInitializerService.addInterestClassName(clazz.getName());
+                        jarServletContainerInitializerService.addStartupNotifySetSet(clazz);
                     }
                 }
             }

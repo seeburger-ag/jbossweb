@@ -7,7 +7,6 @@ Main development:
 - Resources overlay
 - Session tracking configuration
 - Access control annotations
-- ServletContainerInitializer support
 - Jasper plugin for TLD metadata
 - Lazy webapp startup valve
 - JSP 2.2 changes

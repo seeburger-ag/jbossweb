@@ -170,59 +170,15 @@ public abstract class BaseContextScanner
         if (jarRepository != null) {
             JarFile[] jars = jarRepository.findJars();
             for (int i = 0; i < jars.length; i++) {
-                scanJar(context, jars[i]);
+                // FIXME: maybe add an option to do the full scan
+                scanSharedJar(context, jars[i]);
             }
             File[] explodedJars = jarRepository.findExplodedJars();
             for (int i = 0; i < explodedJars.length; i++) {
-                scanClasses(context, explodedJars[i], "");
+                // FIXME: maybe add an option to do the full scan
+                // scanClasses(context, explodedJars[i], "");
             }
         }
-        /*
-        ClassLoader loader = context.getLoader().getClassLoader().getParent();
-        while (loader != null) {
-            if (loader instanceof URLClassLoader) {
-                URL[] urls = ((URLClassLoader) loader).getURLs();
-                for (int i=0; i<urls.length; i++) {
-                    // Expect file URLs, these are %xx encoded or not depending on
-                    // the class loader
-                    // This is definitely not as clean as using JAR URLs either
-                    // over file or the custom jndi handler, but a lot less
-                    // buggy overall
-                    File file = null;
-                    try {
-                        file = new File(urls[i].toURI());
-                    } catch (Exception e) {
-                        // Ignore, probably an unencoded char or non file URL,
-                        // attempt direct access
-                        file = new File(urls[i].getFile());
-                    }
-                    try {
-                        file = file.getCanonicalFile();
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                    if (!file.exists()) {
-                        continue;
-                    }
-                    String path = file.getAbsolutePath();
-                    if (!path.endsWith(".jar")) {
-                        continue;
-                    }
-                    // Scan all JARs from WEB-INF/lib, plus any shared JARs
-                    // that are not known not to contain any TLDs
-                    if (skipJars == null
-                        || !skipJars.contains(file.getName())) {
-                        try {
-                            scanJar(context, new JarFile(path));
-                        } catch (IOException e) {
-                            // Ignore
-                        }
-                    }
-                }
-            }
-            loader = loader.getParent();
-        }
-        */
 
         HashSet<String> warTLDs = new HashSet<String>();
 
@@ -233,29 +189,6 @@ public abstract class BaseContextScanner
         }
         TLDs.put("", warTLDs);
 
-        /*
-        DirContext resources = context.getResources();
-        DirContext webInfClasses = null;
-        DirContext webInfLib = null;
-
-        try {
-            webInfClasses = (DirContext) resources.lookup("/WEB-INF/classes");
-        } catch (Exception e) {
-            // Ignore, /WEB-INF/classes not found, or not a folder
-        }
-        if (webInfClasses != null) {
-            scanClasses(context, webInfClasses, "");
-        }
-        
-        try {
-            webInfLib = (DirContext) resources.lookup("/WEB-INF/lib");
-        } catch (Exception e) {
-            // Ignore, /WEB-INF/classes not found, or not a folder
-        }
-        if (webInfLib != null) {
-            scanJars(context, webInfLib);
-        }*/
-        
     }
     
     
@@ -319,88 +252,10 @@ public abstract class BaseContextScanner
     
     
     /**
-     * Scan folder containing class files.
+     * Scan all class files in the given shared JAR (shared JARs are not scanned for annotations, overlays,
+     * etc, as this would be a serious security risk).
      */
-    /*
-    public static void scanClasses(Context context, DirContext folder, String path) {
-        try {
-            NamingEnumeration<Binding> enumeration = folder.listBindings(path);
-            while (enumeration.hasMore()) {
-                Binding binding = enumeration.next();
-                Object object = binding.getObject();
-                
-                if (object instanceof Resource) {
-                    // This is a class, so we should load it
-                    String className = getClassName(path + "/" + binding.getName());
-                    scanClass(context, className, (Resource) object, null, null);
-                } else if (object instanceof DirContext) {
-                    scanClasses(context, folder, path + "/" + binding.getName());
-                }
-                
-            }            
-        } catch (NamingException e) {
-            // Ignore for now
-            e.printStackTrace();
-        }
-    }*/
-    
-    
-    /**
-     * Scan folder containing JAR files.
-     */
-    //public void scanJars(Context context, DirContext folder) {
-        /*if (context.getLoader().findLoaderRepositories() != null) {
-            String[] repositories = context.getLoader().findLoaderRepositories();
-            for (int i = 0; i < repositories.length; i++) {
-                if (repositories[i].endsWith(".jar")) {
-                    try {
-                        scanJar(context, new JarFile(repositories[i]));
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                }
-            }
-        }*/
-        /*else {
-            try {
-                NamingEnumeration<Binding> enumeration = folder.listBindings("");
-                while (enumeration.hasMore()) {
-                    Binding binding = enumeration.next();
-                    Object object = binding.getObject();
-
-                    if (object instanceof Resource && binding.getName().endsWith(".jar")) {
-                        // This is normally a JAR, put it in the work folder
-                        File destDir = null;
-                        File workDir =
-                            (File) context.getServletContext().getAttribute(Globals.WORK_DIR_ATTR);
-                        destDir = new File(workDir, "WEB-INF/lib");
-                        destDir.mkdirs();
-                        File destFile = new File(destDir, binding.getName());
-                        
-                        scanJar(context, (Resource) object);
-                    }
-
-                }            
-            } catch (NamingException e) {
-                // Ignore for now
-                e.printStackTrace();
-            }
-        }*/
-    //}
-    
-    
-    /**
-     * Scan all class files in the given JAR.
-     */
-    public void scanJar(Context context, JarFile file) {
-        // Find webapp descriptor fragments
-        if (file.getEntry(Globals.WEB_FRAGMENT_PATH) != null) {
-            webFragments.add(file.getName());
-        }
-        // Find webapp overlays
-        if (file.getEntry(Globals.OVERLAY_PATH) != null) {
-            overlays.add(file.getName());
-        }
+    public void scanSharedJar(Context context, JarFile file) {
         // Find ServletContainerInitializer services
         JarEntry servletContainerInitializerEntry = file.getJarEntry(Globals.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH);
         String servletContainerInitializerClassName = null;
@@ -460,6 +315,23 @@ public abstract class BaseContextScanner
                 handlesTypesArray = handlesTypesList.toArray(handlesTypesArray);
             }
         }
+    }
+    
+    
+    /**
+     * Scan all class files in the given JAR.
+     */
+    public void scanJar(Context context, JarFile file) {
+        // Find webapp descriptor fragments
+        if (file.getEntry(Globals.WEB_FRAGMENT_PATH) != null) {
+            webFragments.add(file.getName());
+        }
+        // Find webapp overlays
+        if (file.getEntry(Globals.OVERLAY_PATH) != null) {
+            overlays.add(file.getName());
+        }
+        // Find ServletContainerInitializer services
+        scanSharedJar(context, file);
         // Find tag library descriptors
         HashSet<String> jarTLDs = new HashSet<String>();
         Enumeration<JarEntry> entries = file.entries();
@@ -505,7 +377,7 @@ public abstract class BaseContextScanner
     protected class JarServletContainerInitializerServiceImpl implements JarServletContainerInitializerService {
         protected Class<?> servletContainerInitializer = null;
         protected Class<?>[] interestClasses = null;
-        protected HashSet<String> interestClassNames = new HashSet<String>();
+        protected HashSet<Class<?>> startupNotifySetSet = new HashSet<Class<?>>();
         protected JarServletContainerInitializerServiceImpl(Class<?> servletContainerInitializer, Class<?>[] interestClasses) {
             this.servletContainerInitializer = servletContainerInitializer;
             this.interestClasses = interestClasses;
@@ -516,11 +388,11 @@ public abstract class BaseContextScanner
         public Class<?>[] getInterestClasses() {
             return interestClasses;
         }
-        protected void addInterestClassName(String className) {
-            interestClassNames.add(className);
+        protected void addStartupNotifySetSet(Class<?> clazz) {
+            startupNotifySetSet.add(clazz);
         }
-        public String[] getInterestClassesArray() {
-            return interestClassNames.toArray(new String[0]);
+        public Set<Class<?>> getStartupNotifySet() {
+            return startupNotifySetSet;
         }
     }
     

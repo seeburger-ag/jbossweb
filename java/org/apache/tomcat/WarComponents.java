@@ -30,7 +30,7 @@ import java.util.Set;
 public interface WarComponents {
 
     public interface JarServletContainerInitializerService {
-        public String[] getInterestClassesArray();
+        public Set<Class<?>> getStartupNotifySet();
         public Class<?>[] getInterestClasses();
         public Class<?> getServletContainerInitializer();
     }

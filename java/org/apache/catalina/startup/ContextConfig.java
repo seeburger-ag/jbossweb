@@ -1459,7 +1459,7 @@ public class ContextConfig
             validateSecurityRoles();
         }
 
-        // FIXME: Invoke Servlet container initializer
+        // FIXME: Invoke Servlet container initializer: instantiate and call onStartup
         
         // Configure an authenticator if we need one
         if (ok)
