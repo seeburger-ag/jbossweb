@@ -39,6 +39,15 @@ public class ClassLoadingContextScanner
         // Load the class using the classloader, and see if it implements one of the web annotations
         try {
             Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
+            if (handlesTypesArray != null) {
+                for (int i = 0; i < handlesTypesArray.length; i++) {
+                    if (handlesTypesArray[i].isAssignableFrom(clazz)) {
+                        JarServletContainerInitializerServiceImpl jarServletContainerInitializerService = 
+                            handlesTypes.get(handlesTypesArray[i]);
+                        jarServletContainerInitializerService.addInterestClassName(clazz.getName());
+                    }
+                }
+            }
             if (clazz.isAnnotationPresent(MultipartConfig.class)
                     || clazz.isAnnotationPresent(WebFilter.class)
                     || clazz.isAnnotationPresent(WebInitParam.class)

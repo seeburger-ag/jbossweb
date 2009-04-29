@@ -23,7 +23,11 @@
 
 package org.apache.catalina.startup;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -38,12 +42,12 @@ import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
+import javax.servlet.annotation.HandlesTypes;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.ContextScanner;
 import org.apache.catalina.Globals;
 import org.apache.catalina.JarRepository;
-import org.apache.tomcat.WarComponents.JarServletContainerInitializerService;
 
 public abstract class BaseContextScanner
     implements ContextScanner {
@@ -108,15 +112,15 @@ public abstract class BaseContextScanner
     protected ArrayList<String> overlays = new ArrayList<String>();
     protected ArrayList<String> webFragments = new ArrayList<String>();
     protected Map<String, Set<String>> TLDs = new HashMap<String, Set<String>>();
-    protected Map<String, JarServletContainerInitializerService> jarServletContainerInitializerService = 
+    protected Map<String, JarServletContainerInitializerService> jarServletContainerInitializerServices = 
         new HashMap<String, JarServletContainerInitializerService>();
 
     /**
      * Used to speed up scanning for the services interest classes.
      */
     protected Class<?>[] handlesTypesArray = null;
-    protected Map<Class<?>, JarServletContainerInitializerService> handlesTypes = 
-        new HashMap<Class<?>, JarServletContainerInitializerService>();
+    protected Map<Class<?>, JarServletContainerInitializerServiceImpl> handlesTypes = 
+        new HashMap<Class<?>, JarServletContainerInitializerServiceImpl>();
 
 
     public Iterator<Class<?>> getAnnotatedClasses() {
@@ -140,7 +144,7 @@ public abstract class BaseContextScanner
     
     
     public Map<String, JarServletContainerInitializerService> getJarServletContainerInitializerServices() {
-        return jarServletContainerInitializerService;
+        return jarServletContainerInitializerServices;
     }
     
     
@@ -389,20 +393,74 @@ public abstract class BaseContextScanner
      * Scan all class files in the given JAR.
      */
     public void scanJar(Context context, JarFile file) {
+        // Find webapp descriptor fragments
         if (file.getEntry(Globals.WEB_FRAGMENT_PATH) != null) {
             webFragments.add(file.getName());
         }
+        // Find webapp overlays
         if (file.getEntry(Globals.OVERLAY_PATH) != null) {
             overlays.add(file.getName());
         }
-        if (file.getEntry(Globals.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH) != null) {
-            // FIXME: Read Servlet container initializer service file
-            
-            // FIXME: Load Servlet container initializer class and read HandlesTypes annotation
-            
-            // FIXME: Add in jarService map, and add in the local map used to speed up lookups 
-            
+        // Find ServletContainerInitializer services
+        JarEntry servletContainerInitializerEntry = file.getJarEntry(Globals.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH);
+        String servletContainerInitializerClassName = null;
+        if (servletContainerInitializerEntry != null) {
+            // Read Servlet container initializer service file
+            InputStream is = null;
+            try {
+                is = file.getInputStream(servletContainerInitializerEntry);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                servletContainerInitializerClassName = reader.readLine();
+                int pos = servletContainerInitializerClassName.indexOf('#');
+                if (pos > 0) {
+                    servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
+                }
+                servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
+            } catch (Exception e) {
+                // FIXME: error message or exception
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            // Load Servlet container initializer class and read HandlesTypes annotation
+            Class<?> servletContainerInitializerClass = null;
+            Class<?>[] typesArray = null;
+            if (servletContainerInitializerClassName != null) {
+                try {
+                    servletContainerInitializerClass = context.getLoader().getClassLoader()
+                        .loadClass(servletContainerInitializerClassName);
+                    if (servletContainerInitializerClass.isAnnotationPresent(HandlesTypes.class)) {
+                        HandlesTypes handlesTypes = servletContainerInitializerClass.getAnnotation(HandlesTypes.class);
+                        typesArray = handlesTypes.value();
+                    }
+                } catch (Throwable t) {
+                    // FIXME: error message or exception
+                }
+            }
+            // Add in jarService map, and add in the local map used to speed up lookups
+            JarServletContainerInitializerServiceImpl jarServletContainerInitializerService = 
+                new JarServletContainerInitializerServiceImpl(servletContainerInitializerClass, handlesTypesArray);
+            jarServletContainerInitializerServices.put(file.getName(), jarServletContainerInitializerService);
+            if (typesArray != null) {
+                ArrayList<Class<?>> handlesTypesList = new ArrayList<Class<?>>();
+                if (handlesTypesArray != null) {
+                    for (int i = 0; i < handlesTypesArray.length; i++) {
+                        handlesTypesList.add(handlesTypesArray[i]);
+                    }
+                }
+                for (int i = 0; i < typesArray.length; i++) {
+                    handlesTypesList.add(typesArray[i]);
+                    handlesTypes.put(typesArray[i], jarServletContainerInitializerService);
+                }
+                handlesTypesArray = handlesTypesList.toArray(handlesTypesArray);
+            }
         }
+        // Find tag library descriptors
         HashSet<String> jarTLDs = new HashSet<String>();
         Enumeration<JarEntry> entries = file.entries();
         while (entries.hasMoreElements()) {
@@ -442,6 +500,29 @@ public abstract class BaseContextScanner
      * Scan class for interesting annotations.
      */
     public abstract Class<?> scanClass(Context context, String className, File file, JarEntry entry);
+    
+    
+    protected class JarServletContainerInitializerServiceImpl implements JarServletContainerInitializerService {
+        protected Class<?> servletContainerInitializer = null;
+        protected Class<?>[] interestClasses = null;
+        protected HashSet<String> interestClassNames = new HashSet<String>();
+        protected JarServletContainerInitializerServiceImpl(Class<?> servletContainerInitializer, Class<?>[] interestClasses) {
+            this.servletContainerInitializer = servletContainerInitializer;
+            this.interestClasses = interestClasses;
+        }
+        public Class<?> getServletContainerInitializer() {
+            return servletContainerInitializer;
+        }
+        public Class<?>[] getInterestClasses() {
+            return interestClasses;
+        }
+        protected void addInterestClassName(String className) {
+            interestClassNames.add(className);
+        }
+        public String[] getInterestClassesArray() {
+            return interestClassNames.toArray(new String[0]);
+        }
+    }
     
     
 }
