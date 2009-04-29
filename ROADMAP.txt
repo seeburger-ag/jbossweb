@@ -14,6 +14,7 @@ Main development:
 - EL 1.1 changes
 - Setup standalone TCK environment for testing compliance with the new features
 - Javassist annotation scanning impl for JBoss Web standalone
+- Abstract JMX in custom modeler better
 - Coordinate with AS 6 to implement new web.xml parsing (out of tree)
 - JBoss Metadata parsing of .tld files (out of tree)
 - Coordinate with AS 6 for annotation updates (out of tree)

@@ -29,27 +29,35 @@ import java.util.Set;
 
 public interface WarComponents {
 
+    public interface JarServletContainerInitializerService {
+        public String[] getInterestClasseNames();
+        public Class<?>[] getInterestClasses();
+        public Class<?> getServletContainerInitializer();
+    }
+    
     /**
      * Find annotated classes for this context.
      */
     public Iterator<Class<?>> getAnnotatedClasses();
-    
     
     /**
      * Find JAR files containing an overlay.
      */
     public Iterator<String> getOverlays();
     
-    
     /**
      * Find JAR files containing a web fragment.
      */
     public Iterator<String> getWebFragments();
     
-    
     /**
      * Find TLDs.
      */
     public Map<String, Set<String>> getTLDs();
+    
+    /**
+     * Find Jar services.
+     */
+    public Map<String, JarServletContainerInitializerService> getJarServletContainerInitializerServices();
     
 }

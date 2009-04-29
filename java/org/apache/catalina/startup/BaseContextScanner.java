@@ -43,6 +43,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.ContextScanner;
 import org.apache.catalina.Globals;
 import org.apache.catalina.JarRepository;
+import org.apache.tomcat.WarComponents.JarServletContainerInitializerService;
 
 public abstract class BaseContextScanner
     implements ContextScanner {
@@ -107,6 +108,15 @@ public abstract class BaseContextScanner
     protected ArrayList<String> overlays = new ArrayList<String>();
     protected ArrayList<String> webFragments = new ArrayList<String>();
     protected Map<String, Set<String>> TLDs = new HashMap<String, Set<String>>();
+    protected Map<String, JarServletContainerInitializerService> jarServletContainerInitializerService = 
+        new HashMap<String, JarServletContainerInitializerService>();
+
+    /**
+     * Used to speed up scanning for the services interest classes.
+     */
+    protected Class<?>[] handlesTypesArray = null;
+    protected Map<Class<?>, JarServletContainerInitializerService> handlesTypes = 
+        new HashMap<Class<?>, JarServletContainerInitializerService>();
 
 
     public Iterator<Class<?>> getAnnotatedClasses() {
@@ -126,6 +136,11 @@ public abstract class BaseContextScanner
 
     public Map<String, Set<String>> getTLDs() {
         return TLDs;
+    }
+    
+    
+    public Map<String, JarServletContainerInitializerService> getJarServletContainerInitializerServices() {
+        return jarServletContainerInitializerService;
     }
     
     
@@ -379,6 +394,14 @@ public abstract class BaseContextScanner
         }
         if (file.getEntry(Globals.OVERLAY_PATH) != null) {
             overlays.add(file.getName());
+        }
+        if (file.getEntry(Globals.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH) != null) {
+            // FIXME: Read Servlet container initializer service file
+            
+            // FIXME: Load Servlet container initializer class and read HandlesTypes annotation
+            
+            // FIXME: Add in jarService map, and add in the local map used to speed up lookups 
+            
         }
         HashSet<String> jarTLDs = new HashSet<String>();
         Enumeration<JarEntry> entries = file.entries();

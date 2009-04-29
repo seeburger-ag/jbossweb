@@ -354,6 +354,14 @@ public final class Globals {
 
 
     /**
+     * The path used for the ServletContainerInitializer service.
+     */
+    public static final String SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH =
+        System.getProperty("org.apache.catalina.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH", 
+                "/META-INF/services/javax.servlet.ServletContainerInitializer");
+
+
+    /**
      * The master flag which controls XML validation.
      */
     public static final boolean XML_VALIDATION =
