@@ -117,6 +117,8 @@ public class WebAnnotationSet {
                 }
                 
                 loadClassAnnotation(context, wrapper.getServletClass());
+                
+                // FIXME: Parse the other access control annotations
                 /* Process RunAs annotation which can be only on servlets.
                  * Ref JSR 250, equivalent to the run-as element in
                  * the deployment descriptor

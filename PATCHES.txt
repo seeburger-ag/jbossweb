@@ -64,3 +64,6 @@ Specific hack to address some error condition in HTTP method
 
 765727
 ETag should be identical regardless of how the entity is encoded, this patch "fixes" apparently broken proxies
+
+769979
+Does not hurt to unregister properly, but a JMX cleanup is redundant, so will see about it later

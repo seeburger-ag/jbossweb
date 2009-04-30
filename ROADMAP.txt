@@ -6,7 +6,7 @@ Standalone:
 - Jasper plugin for TLD metadata
 - Access control annotations
 - Update digester XML parsing rules for web.xml updates (session tracking-mode, cookie-config, servlet enabled,
-  servlets and filters async-supported)
+  servlets and filters async-supported, http-method-omission)
 - Enforce web.xml fragments merging rules
 - Lazy webapp startup valve
 - Abstract JMX in custom modeler better

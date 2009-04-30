@@ -442,6 +442,8 @@ public class ContextConfig
             }
         }
         
+        // FIXME: It is likely this should be moved to after running all listeners,
+        // as they can add servlets or filters
         WebAnnotationSet.loadApplicationAnnotations(context);
         
         long t2=System.currentTimeMillis();
@@ -457,9 +459,6 @@ public class ContextConfig
      */
     protected void applicationWebConfig() {
 
-        // FIXME: Parse web fragments here
-        // FIXME: Parse according to the configured order
-        
         String altDDName = null;
 
         // Open the application web.xml file, if it exists
@@ -1007,8 +1006,7 @@ public class ContextConfig
                     }
                 }
             } catch (Exception e) {
-                // FIXME: error message
-                log.error(sm.getString("contextConfig.applicationParse", jar), e);
+                log.error(sm.getString("contextConfig.fragmentOrderingParse", jar), e);
                 ok = false;
             } finally {
                 try {
@@ -1024,16 +1022,14 @@ public class ContextConfig
         // Generate web fragments parsing order
         LinkedList<String> order = new LinkedList<String>();
         if (absoluteOrdering != null) {
-            // Absolute ordering has been declared in web.xml, 
-            // any ordering from the fragments is ignored
+            // Absolute ordering from web.xml, any fragment ordering is ignored
             List<String> fragmentNames = absoluteOrdering.getOrder();
             int otherPos = -1;
             for (int i = 0; i < fragmentNames.size(); i++) {
                 String fragmentName = fragmentNames.get(i);
                 if (fragmentName.equals("*")) {
                     if (otherPos >= 0) {
-                        // FIXME: error message
-                        log.error(sm.getString("contextConfig.applicationParse"));
+                        log.error(sm.getString("contextConfig.invalidAbsoluteOrder"));
                         ok = false;
                     }
                     otherPos = i;
@@ -1053,8 +1049,11 @@ public class ContextConfig
                 order.addAll(otherPos, jarsSet);
             }
         } else if (orderings.size() > 0) {
-            // FIXME: Will use the ordering specified by the fragments, if any
+            // FIXME: Use the ordering specified by the fragments
             
+        } else {
+            // No order specified
+            order.addAll(jarsSet);
         }
         
         // Parse fragments according to order
@@ -1087,7 +1086,6 @@ public class ContextConfig
                     }
                 }
             } catch (Exception e) {
-                // FIXME: error message
                 log.error(sm.getString("contextConfig.applicationParse", jar), e);
                 ok = false;
             } finally {
@@ -1450,21 +1448,25 @@ public class ContextConfig
         try {
             scanner.scan(context);
         } catch (Throwable t) {
-            // FIXME: error message
             log.error(sm.getString("contextConfig.scan"), t);
             ok = false;
         }
-        // FIXME: look where to place it according to the merging rules
+        // Scan the main descriptors
         applicationWebConfig();
-        // FIXME: Add overlays
-        scanner.getOverlays();
+        // Parse fragments
         if (!context.getIgnoreAnnotations()) {
             applicationExtraDescriptorsConfig();
+        }
+        // Scan all Servlet API related annotations
+        if (!context.getIgnoreAnnotations()) {
             applicationAnnotationsConfig();
         }
         if (ok) {
             validateSecurityRoles();
         }
+
+        // FIXME: Add overlays, and see about order
+        scanner.getOverlays();
 
         // Invoke Servlet container initializer: instantiate and call onStartup
         if (ok) {
