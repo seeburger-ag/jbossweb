@@ -112,15 +112,15 @@ public abstract class BaseContextScanner
     protected ArrayList<String> overlays = new ArrayList<String>();
     protected ArrayList<String> webFragments = new ArrayList<String>();
     protected Map<String, Set<String>> TLDs = new HashMap<String, Set<String>>();
-    protected Map<String, JarServletContainerInitializerService> jarServletContainerInitializerServices = 
-        new HashMap<String, JarServletContainerInitializerService>();
+    protected Map<String, ServletContainerInitializerInfo> servletContainerInitializerInfos = 
+        new HashMap<String, ServletContainerInitializerInfo>();
 
     /**
      * Used to speed up scanning for the services interest classes.
      */
     protected Class<?>[] handlesTypesArray = null;
-    protected Map<Class<?>, JarServletContainerInitializerServiceImpl> handlesTypes = 
-        new HashMap<Class<?>, JarServletContainerInitializerServiceImpl>();
+    protected Map<Class<?>, ServletContainerInitializerInfoImpl> handlesTypes = 
+        new HashMap<Class<?>, ServletContainerInitializerInfoImpl>();
 
 
     public Iterator<Class<?>> getAnnotatedClasses() {
@@ -143,8 +143,8 @@ public abstract class BaseContextScanner
     }
     
     
-    public Map<String, JarServletContainerInitializerService> getJarServletContainerInitializerServices() {
-        return jarServletContainerInitializerServices;
+    public Map<String, ServletContainerInitializerInfo> getServletContainerInitializerInfo() {
+        return servletContainerInitializerInfos;
     }
     
     
@@ -298,9 +298,9 @@ public abstract class BaseContextScanner
                 }
             }
             // Add in jarService map, and add in the local map used to speed up lookups
-            JarServletContainerInitializerServiceImpl jarServletContainerInitializerService = 
-                new JarServletContainerInitializerServiceImpl(servletContainerInitializerClass, handlesTypesArray);
-            jarServletContainerInitializerServices.put(file.getName(), jarServletContainerInitializerService);
+            ServletContainerInitializerInfoImpl jarServletContainerInitializerService = 
+                new ServletContainerInitializerInfoImpl(servletContainerInitializerClass, handlesTypesArray);
+            servletContainerInitializerInfos.put(file.getName(), jarServletContainerInitializerService);
             if (typesArray != null) {
                 ArrayList<Class<?>> handlesTypesList = new ArrayList<Class<?>>();
                 if (handlesTypesArray != null) {
@@ -374,11 +374,11 @@ public abstract class BaseContextScanner
     public abstract Class<?> scanClass(Context context, String className, File file, JarEntry entry);
     
     
-    protected class JarServletContainerInitializerServiceImpl implements JarServletContainerInitializerService {
+    protected class ServletContainerInitializerInfoImpl implements ServletContainerInitializerInfo {
         protected Class<?> servletContainerInitializer = null;
         protected Class<?>[] interestClasses = null;
-        protected HashSet<Class<?>> startupNotifySetSet = new HashSet<Class<?>>();
-        protected JarServletContainerInitializerServiceImpl(Class<?> servletContainerInitializer, Class<?>[] interestClasses) {
+        protected HashSet<Class<?>> startupNotifySet = new HashSet<Class<?>>();
+        protected ServletContainerInitializerInfoImpl(Class<?> servletContainerInitializer, Class<?>[] interestClasses) {
             this.servletContainerInitializer = servletContainerInitializer;
             this.interestClasses = interestClasses;
         }
@@ -389,10 +389,10 @@ public abstract class BaseContextScanner
             return interestClasses;
         }
         protected void addStartupNotifySetSet(Class<?> clazz) {
-            startupNotifySetSet.add(clazz);
+            startupNotifySet.add(clazz);
         }
         public Set<Class<?>> getStartupNotifySet() {
-            return startupNotifySetSet;
+            return startupNotifySet;
         }
     }
     

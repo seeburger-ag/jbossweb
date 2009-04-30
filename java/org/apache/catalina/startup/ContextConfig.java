@@ -65,8 +65,8 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
@@ -100,6 +100,7 @@ import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.WebOrdering;
 import org.apache.catalina.util.StringManager;
+import org.apache.tomcat.WarComponents.ServletContainerInitializerInfo;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
 import org.xml.sax.ErrorHandler;
@@ -1446,7 +1447,13 @@ public class ContextConfig
 
         // Process the default and application web.xml files
         defaultWebConfig();
-        scanner.scan(context);
+        try {
+            scanner.scan(context);
+        } catch (Throwable t) {
+            // FIXME: error message
+            log.error(sm.getString("contextConfig.scan"), t);
+            ok = false;
+        }
         // FIXME: look where to place it according to the merging rules
         applicationWebConfig();
         // FIXME: Add overlays
@@ -1459,7 +1466,24 @@ public class ContextConfig
             validateSecurityRoles();
         }
 
-        // FIXME: Invoke Servlet container initializer: instantiate and call onStartup
+        // Invoke Servlet container initializer: instantiate and call onStartup
+        if (ok) {
+            Iterator<ServletContainerInitializerInfo> initializers = 
+                scanner.getServletContainerInitializerInfo().values().iterator();
+            while (initializers.hasNext()) {
+                ServletContainerInitializerInfo service = initializers.next();
+                try {
+                    ServletContainerInitializer servletContainerInitializer = 
+                        (ServletContainerInitializer) service.getServletContainerInitializer().newInstance();
+                    servletContainerInitializer.onStartup(service.getStartupNotifySet(), context.getServletContext());
+                } catch (Throwable t) {
+                    // FIXME: error message
+                    log.error(sm.getString("contextConfig.servletContainerInitializer", 
+                            service.getServletContainerInitializer()), t);
+                    ok = false;
+                }
+            }
+        }
         
         // Configure an authenticator if we need one
         if (ok)

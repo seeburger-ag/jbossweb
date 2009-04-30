@@ -29,7 +29,7 @@ import java.util.Set;
 
 public interface WarComponents {
 
-    public interface JarServletContainerInitializerService {
+    public interface ServletContainerInitializerInfo {
         public Set<Class<?>> getStartupNotifySet();
         public Class<?>[] getInterestClasses();
         public Class<?> getServletContainerInitializer();
@@ -58,6 +58,6 @@ public interface WarComponents {
     /**
      * Find Jar services.
      */
-    public Map<String, JarServletContainerInitializerService> getJarServletContainerInitializerServices();
+    public Map<String, ServletContainerInitializerInfo> getServletContainerInitializerInfo();
     
 }
