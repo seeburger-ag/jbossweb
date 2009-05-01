@@ -77,6 +77,13 @@
       <add>
         New JarRepository component to handle better management of JarFiles following the Servlet 3.0 update. (remm)
       </add>
+      <fix>
+        <bug>47050</bug>: Remove unnecessary filtering in StandardHostValve. (markt)
+      </fix>
+      <fix>
+        <bug>46925</bug>: Improve search for nested roles in JNDIRealm by replacing recursive search with
+        iterative search. Patch provided by Stefan Zoerner. (rjung)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
