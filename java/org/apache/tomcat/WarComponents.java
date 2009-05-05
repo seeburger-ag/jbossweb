@@ -36,11 +36,6 @@ public interface WarComponents {
     }
     
     /**
-     * Find annotated classes for this context.
-     */
-    public Iterator<Class<?>> getAnnotatedClasses();
-    
-    /**
      * Find JAR files containing an overlay.
      */
     public Iterator<String> getOverlays();

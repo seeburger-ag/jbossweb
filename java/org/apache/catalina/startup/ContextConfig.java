@@ -47,13 +47,17 @@
 package org.apache.catalina.startup;
 
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -61,12 +65,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
+import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
@@ -76,7 +86,6 @@ import javax.servlet.annotation.WebServlet;
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.ContextScanner;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
@@ -99,7 +108,9 @@ import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.WebOrdering;
+import org.apache.catalina.startup.BaseContextScanner.ServletContainerInitializerInfoImpl;
 import org.apache.catalina.util.StringManager;
+import org.apache.tomcat.WarComponents;
 import org.apache.tomcat.WarComponents.ServletContainerInitializerInfo;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
@@ -117,7 +128,7 @@ import org.xml.sax.SAXParseException;
  */
 
 public class ContextConfig
-    implements LifecycleListener {
+    implements LifecycleListener, WarComponents {
 
     protected static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger( ContextConfig.class );
@@ -235,12 +246,6 @@ public class ContextConfig
 
 
     /**
-     * Scanner for annotations, etc.
-     */
-    protected ContextScanner scanner = null;
-    
-    
-    /**
      * Deployment count.
      */
     protected static long deploymentCount = 0L;
@@ -248,6 +253,21 @@ public class ContextConfig
     
     protected static final LoginConfig DUMMY_LOGIN_CONFIG =
                                 new LoginConfig("NONE", null, null, null);
+
+
+    protected ArrayList<String> overlays = new ArrayList<String>();
+    protected ArrayList<String> webFragments = new ArrayList<String>();
+    protected Map<String, Set<String>> TLDs = new HashMap<String, Set<String>>();
+    protected Map<String, ServletContainerInitializerInfo> servletContainerInitializerInfos = 
+        new HashMap<String, ServletContainerInitializerInfo>();
+    protected LinkedList<String> order = new LinkedList<String>();
+    
+    /**
+     * Used to speed up scanning for the services interest classes.
+     */
+    protected Class<?>[] handlesTypesArray = null;
+    protected Map<Class<?>, ServletContainerInitializerInfoImpl> handlesTypes = 
+        new HashMap<Class<?>, ServletContainerInitializerInfoImpl>();
 
 
     // ------------------------------------------------------------- Properties
@@ -314,6 +334,29 @@ public class ContextConfig
     }
 
 
+    // -------------------------------------------------- WarComponents Methods
+
+
+    public Iterator<String> getOverlays() {
+        return overlays.iterator();
+    }
+
+
+    public Iterator<String> getWebFragments() {
+        return webFragments.iterator();
+    }
+
+
+    public Map<String, Set<String>> getTLDs() {
+        return TLDs;
+    }
+    
+    
+    public Map<String, ServletContainerInitializerInfo> getServletContainerInitializerInfo() {
+        return servletContainerInitializerInfos;
+    }
+    
+    
     // --------------------------------------------------------- Public Methods
 
 
@@ -360,97 +403,82 @@ public class ContextConfig
     }
 
 
-    // -------------------------------------------------------- protected Methods
+    // -------------------------------------------------------- Protected Methods
 
 
     /**
      * Process the application classes annotations, if it exists.
      */
-    protected void applicationAnnotationsConfig() {
-        
-        long t1=System.currentTimeMillis();
-        
-        Iterator<Class<?>> annotatedClasses = scanner.getAnnotatedClasses();
-        while (annotatedClasses.hasNext()) {
-            Class<?> clazz = annotatedClasses.next();
-            if (clazz.isAnnotationPresent(WebInitParam.class)) {
-                WebInitParam annotation = clazz.getAnnotation(WebInitParam.class);
-                // Add init param
-                context.addParameter(annotation.name(), annotation.value());
+    protected void processConfigAnnotations(Class<?> clazz) {
+
+        if (clazz.isAnnotationPresent(WebInitParam.class)) {
+            WebInitParam annotation = clazz.getAnnotation(WebInitParam.class);
+            // Add init param
+            context.addParameter(annotation.name(), annotation.value());
+        }
+        if (clazz.isAnnotationPresent(MultipartConfig.class)) {
+            MultipartConfig annotation = clazz.getAnnotation(MultipartConfig.class);
+            // FIXME: Do something ....
+        }
+        if (clazz.isAnnotationPresent(WebFilter.class)) {
+            WebFilter annotation = clazz.getAnnotation(WebFilter.class);
+            // Add servlet filter
+            String filterName = annotation.filterName();
+            FilterDef filterDef = new FilterDef();
+            filterDef.setFilterName(annotation.filterName());
+            filterDef.setFilterClass(clazz.getName());
+            WebInitParam[] params = annotation.initParams();
+            for (int i = 0; i < params.length; i++) {
+                filterDef.addInitParameter(params[i].name(), params[i].value());
             }
-            if (clazz.isAnnotationPresent(MultipartConfig.class)) {
-                MultipartConfig annotation = clazz.getAnnotation(MultipartConfig.class);
-                // FIXME: Do something ....
-            }
-            if (clazz.isAnnotationPresent(WebFilter.class)) {
-                WebFilter annotation = clazz.getAnnotation(WebFilter.class);
-                // Add servlet filter
-                String filterName = annotation.filterName();
-                FilterDef filterDef = new FilterDef();
-                filterDef.setFilterName(annotation.filterName());
-                filterDef.setFilterClass(clazz.getName());
-                WebInitParam[] params = annotation.initParams();
-                for (int i = 0; i < params.length; i++) {
-                    filterDef.addInitParameter(params[i].name(), params[i].value());
-                }
-                context.addFilterDef(filterDef);
-                FilterMap filterMap = new FilterMap();
-                filterMap.setFilterName(filterName);
-                String[] urlPatterns = annotation.urlPatterns();
-                if (urlPatterns != null) {
-                    for (int i = 0; i < urlPatterns.length; i++) {
-                        filterMap.addURLPattern(urlPatterns[i]);
-                    }
-                }
-                String[] servletNames = annotation.servletNames();
-                if (servletNames != null) {
-                    for (int i = 0; i < servletNames.length; i++) {
-                        filterMap.addServletName(servletNames[i]);
-                    }
-                }
-                DispatcherType[] dispatcherTypes = annotation.dispatcherTypes();
-                if (dispatcherTypes != null) {
-                    for (int i = 0; i < dispatcherTypes.length; i++) {
-                        filterMap.setDispatcher(dispatcherTypes[i].toString());
-                    }
-                }
-                context.addFilterMap(filterMap);
-            }
-            if (clazz.isAnnotationPresent(WebServlet.class)) {
-                WebServlet annotation = clazz.getAnnotation(WebServlet.class);
-                // Add servlet
-                Wrapper wrapper = context.createWrapper();
-                wrapper.setName(annotation.name());
-                wrapper.setServletClass(clazz.getName());
-                wrapper.setLoadOnStartup(annotation.loadOnStartup());
-                WebInitParam[] params = annotation.initParams();
-                for (int i = 0; i < params.length; i++) {
-                    wrapper.addInitParameter(params[i].name(), params[i].value());
-                }
-                context.addChild(wrapper);
-                String[] urlPatterns = annotation.urlPatterns();
-                if (urlPatterns != null) {
-                    for (int i = 0; i < urlPatterns.length; i++) {
-                        context.addServletMapping(urlPatterns[i], annotation.name());
-                    }
+            context.addFilterDef(filterDef);
+            FilterMap filterMap = new FilterMap();
+            filterMap.setFilterName(filterName);
+            String[] urlPatterns = annotation.urlPatterns();
+            if (urlPatterns != null) {
+                for (int i = 0; i < urlPatterns.length; i++) {
+                    filterMap.addURLPattern(urlPatterns[i]);
                 }
             }
-            if (clazz.isAnnotationPresent(WebListener.class)) {
-                WebListener annotation = clazz.getAnnotation(WebListener.class);
-                // Add listener
-                context.addApplicationListener(clazz.getName());
+            String[] servletNames = annotation.servletNames();
+            if (servletNames != null) {
+                for (int i = 0; i < servletNames.length; i++) {
+                    filterMap.addServletName(servletNames[i]);
+                }
+            }
+            DispatcherType[] dispatcherTypes = annotation.dispatcherTypes();
+            if (dispatcherTypes != null) {
+                for (int i = 0; i < dispatcherTypes.length; i++) {
+                    filterMap.setDispatcher(dispatcherTypes[i].toString());
+                }
+            }
+            context.addFilterMap(filterMap);
+        }
+        if (clazz.isAnnotationPresent(WebServlet.class)) {
+            WebServlet annotation = clazz.getAnnotation(WebServlet.class);
+            // Add servlet
+            Wrapper wrapper = context.createWrapper();
+            wrapper.setName(annotation.name());
+            wrapper.setServletClass(clazz.getName());
+            wrapper.setLoadOnStartup(annotation.loadOnStartup());
+            WebInitParam[] params = annotation.initParams();
+            for (int i = 0; i < params.length; i++) {
+                wrapper.addInitParameter(params[i].name(), params[i].value());
+            }
+            context.addChild(wrapper);
+            String[] urlPatterns = annotation.urlPatterns();
+            if (urlPatterns != null) {
+                for (int i = 0; i < urlPatterns.length; i++) {
+                    context.addServletMapping(urlPatterns[i], annotation.name());
+                }
             }
         }
-        
-        // FIXME: It is likely this should be moved to after running all listeners,
-        // as they can add servlets or filters
-        WebAnnotationSet.loadApplicationAnnotations(context);
-        
-        long t2=System.currentTimeMillis();
-        if (context instanceof StandardContext) {
-            ((StandardContext) context).setStartupTime(t2-t1+
-                    ((StandardContext) context).getStartupTime());
+        if (clazz.isAnnotationPresent(WebListener.class)) {
+            WebListener annotation = clazz.getAnnotation(WebListener.class);
+            // Add listener
+            context.addApplicationListener(clazz.getName());
         }
+
     }
 
 
@@ -487,8 +515,6 @@ public class ContextConfig
             return;
         }
         
-        long t1=System.currentTimeMillis();
-
         URL url=null;
         // Process the application web.xml file
         synchronized (webDigester) {
@@ -543,8 +569,13 @@ public class ContextConfig
             }
         }
 
+    }
+    
+    // FIXME: Do TLD parsing when found
+    protected void applicationTldConfig() {
+        
         // Add all TLDs from explicit web config
-        Map<String, Set<String>> TLDs = scanner.getTLDs();
+        Map<String, Set<String>> TLDs = getTLDs();
         Set<String> warTLDs = TLDs.get("");
         String taglibs[] = context.findTaglibs();
         for (int i = 0; i < taglibs.length; i++) {
@@ -557,6 +588,7 @@ public class ContextConfig
 
         // Parse all TLDs from the WAR
         Iterator<String> warTLDsIterator = warTLDs.iterator();
+        InputStream stream = null;
         while (warTLDsIterator.hasNext()) {
             String tldPath = warTLDsIterator.next();
             try {
@@ -634,10 +666,6 @@ public class ContextConfig
             }
         }
 
-        long t2=System.currentTimeMillis();
-        if (context instanceof StandardContext) {
-            ((StandardContext) context).setStartupTime(t2-t1);
-        }
     }
     
 
@@ -968,15 +996,23 @@ public class ContextConfig
 
     
     /**
-     * Process additional descriptors: TLDs, web fragments, and map overlays.
+     * Parse fragments order.
      */
-    protected void applicationExtraDescriptorsConfig() {
+    protected void createFragmentsOrder() {
+        
         JarRepository jarRepository = context.getJarRepository();
+        JarFile[] jars = jarRepository.findJars();
+        for (int i = 0; i < jars.length; i++) {
+            // Find webapp descriptor fragments
+            if (jars[i].getEntry(Globals.WEB_FRAGMENT_PATH) != null) {
+                webFragments.add(jars[i].getName());
+            }
+        }
         
         // Read order from web.xml and fragments (note: if no fragments, skip)
         WebAbsoluteOrdering absoluteOrdering = context.getWebAbsoluteOrdering();
         List<WebOrdering> orderings = new ArrayList<WebOrdering>();
-        Iterator<String> jarsWithWebFragments = scanner.getWebFragments();
+        Iterator<String> jarsWithWebFragments = getWebFragments();
         HashSet<String> jarsSet = new HashSet<String>();
 
         // Parse the ordering defined in web fragments
@@ -1020,7 +1056,6 @@ public class ContextConfig
         }
 
         // Generate web fragments parsing order
-        LinkedList<String> order = new LinkedList<String>();
         if (absoluteOrdering != null) {
             // Absolute ordering from web.xml, any fragment ordering is ignored
             List<String> fragmentNames = absoluteOrdering.getOrder();
@@ -1056,15 +1091,39 @@ public class ContextConfig
             order.addAll(jarsSet);
         }
         
-        // Parse fragments according to order
-        // FIXME: Merging rules
+    }
+    
+    
+    /**
+     * Process additional descriptors: TLDs, web fragments, and map overlays.
+     */
+    protected void applicationExtraDescriptorsConfig() {
+        
+        JarRepository jarRepository = context.getJarRepository();
+
+        HashSet<String> warTLDs = new HashSet<String>();
+
+        // Find any TLD file in /WEB-INF
+        DirContext resources = context.getResources();
+        if (resources != null) {
+            tldScanResourcePathsWebInf(resources, "/WEB-INF", warTLDs);
+        }
+        TLDs.put("", warTLDs);
+        
+        File[] explodedJars = jarRepository.findExplodedJars();
+        for (int i = 0; i < explodedJars.length; i++) {
+            scanClasses(explodedJars[i], "", !context.getIgnoreAnnotations());
+        }
+        
         Iterator<String> orderIterator = order.iterator();
         while (orderIterator.hasNext()) {
             String jar = orderIterator.next();
-            JarFile jarFile = null;
+            JarFile jarFile = jarRepository.findJar(jar);
+            
+            // Parse web fragment according to order
+            // FIXME: Merging rules
             InputStream is = null;
             try {
-                jarFile = jarRepository.findJar(jar);
                 ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
                 if (entry != null) {
                     is = jarFile.getInputStream(entry);
@@ -1097,11 +1156,231 @@ public class ContextConfig
                     // Ignore
                 }
             }
+
+            scanJar(jarFile, true);
+        }
+        
+        // Process any Jar not in the order, without annotations
+        JarFile[] jarFiles = jarRepository.findJars();
+        for (int i = 0; i < jarFiles.length; i++) {
+            if (!order.contains(jarFiles[i].getName())) {
+                scanJar(jarFiles[i], false);
+            }
         }
         
     }
     
+    
+    protected void scanJar(JarFile jarFile, boolean annotations) {
+        
+        // Scan Jar for annotations and TLDs
+        HashSet<String> jarTLDs = new HashSet<String>();
+        Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            String name = entry.getName();
+            if (name.endsWith(".class")) {
+                String className = getClassName(entry.getName());
+                scanClass(className, annotations);
+            } else if (name.startsWith("META-INF/") && name.endsWith(".tld")) {
+                jarTLDs.add(name);
+            }
+        }
+        if (jarTLDs.size() > 0) {
+            TLDs.put(jarFile.getName(), jarTLDs);
+        }
 
+    }
+    
+
+    /**
+     * Scans the web application's subdirectory identified by rootPath,
+     * along with its subdirectories, for TLDs.
+     *
+     * Initially, rootPath equals /WEB-INF. The /WEB-INF/classes and
+     * /WEB-INF/lib subdirectories are excluded from the search, as per the
+     * JSP 2.0 spec.
+     *
+     * @param resources The web application's resources
+     * @param rootPath The path whose subdirectories are to be searched for
+     * TLDs
+     * @param tldPaths The set of TLD resource paths to add to
+     */
+    protected void tldScanResourcePathsWebInf(DirContext resources,
+                                            String rootPath,
+                                            HashSet<String> tldPaths) {
+        try {
+            NamingEnumeration<NameClassPair> items = resources.list(rootPath);
+            while (items.hasMoreElements()) {
+                NameClassPair item = items.nextElement();
+                String resourcePath = rootPath + "/" + item.getName();
+                if (!resourcePath.endsWith(".tld")
+                        && (resourcePath.startsWith("/WEB-INF/classes")
+                            || resourcePath.startsWith("/WEB-INF/lib"))) {
+                    continue;
+                }
+                if (resourcePath.endsWith(".tld")) {
+                    tldPaths.add(resourcePath);
+                } else {
+                    tldScanResourcePathsWebInf(resources, resourcePath,
+                                               tldPaths);
+                }
+            }
+        } catch (NamingException e) {
+            ; // Silent catch: it's valid that no /WEB-INF directory exists
+        }
+    }
+
+
+    /**
+     * Scan folder containing class files.
+     */
+    protected void scanClasses(File folder, String path, boolean annotations) {
+        String[] files = folder.list();
+        for (int i = 0; i < files.length; i++) {
+            File file = new File(folder, files[i]);
+            if (file.isDirectory()) {
+                scanClasses(file, path + "/" + files[i], annotations);
+            } else if (files[i].endsWith(".class")) {
+                String className = getClassName(path + "/" + files[i]);
+                scanClass(className, annotations);
+            }
+        }
+    }
+    
+    
+    protected void scanClass(String className, boolean annotations) {
+        if (!annotations && (handlesTypesArray == null)) {
+            return;
+        }
+        try {
+            Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
+            if (handlesTypesArray != null) {
+                for (int i = 0; i < handlesTypesArray.length; i++) {
+                    if (handlesTypesArray[i].isAssignableFrom(clazz)) {
+                        ServletContainerInitializerInfoImpl jarServletContainerInitializerService = 
+                            handlesTypes.get(handlesTypesArray[i]);
+                        jarServletContainerInitializerService.addStartupNotifyClass(clazz);
+                    }
+                }
+            }
+            if (annotations &&
+                    (clazz.isAnnotationPresent(MultipartConfig.class)
+                    || clazz.isAnnotationPresent(WebFilter.class)
+                    || clazz.isAnnotationPresent(WebInitParam.class)
+                    || clazz.isAnnotationPresent(WebListener.class)
+                    || clazz.isAnnotationPresent(WebServlet.class))) {
+                processConfigAnnotations(clazz);
+            }
+        } catch (Throwable t) {
+            // Ignore classloading errors here
+        }
+    }
+    
+    
+    /**
+     * Get class name given a path to a classfile.
+     * /my/class/MyClass.class -> my.class.MyClass
+     */
+    protected String getClassName(String filePath) {
+        if (filePath.startsWith("/")) {
+            filePath = filePath.substring(1);
+        }
+        if (filePath.endsWith(".class")) {
+            filePath = filePath.substring(0, filePath.length() - ".class".length());
+        }
+        return filePath.replace('/', '.');
+    }
+    
+    
+    /**
+     * Find and parse ServletContainerInitializer service in specified JAR.
+     */
+    public void applicationServletContainerInitializerConfig() {
+        JarRepository jarRepository = context.getJarRepository();
+        if (jarRepository != null) {
+            JarFile[] jars = jarRepository.findJars();
+            for (int i = 0; i < jars.length; i++) {
+                scanJarForServletContainerInitializer(jars[i]);
+            }
+        }
+        // Do the same for the context parent
+        jarRepository = context.getParent().getJarRepository();
+        if (jarRepository != null) {
+            JarFile[] jars = jarRepository.findJars();
+            for (int i = 0; i < jars.length; i++) {
+                scanJarForServletContainerInitializer(jars[i]);
+            }
+        }
+    }
+    
+    
+    /**
+     * Find and parse ServletContainerInitializer service in specified JAR.
+     */
+    public void scanJarForServletContainerInitializer(JarFile file) {
+        // Find ServletContainerInitializer services
+        JarEntry servletContainerInitializerEntry = file.getJarEntry(Globals.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH);
+        String servletContainerInitializerClassName = null;
+        if (servletContainerInitializerEntry != null) {
+            // Read Servlet container initializer service file
+            InputStream is = null;
+            try {
+                is = file.getInputStream(servletContainerInitializerEntry);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                servletContainerInitializerClassName = reader.readLine();
+                int pos = servletContainerInitializerClassName.indexOf('#');
+                if (pos > 0) {
+                    servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
+                }
+                servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
+            } catch (Exception e) {
+                // FIXME: error message or exception
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            // Load Servlet container initializer class and read HandlesTypes annotation
+            Class<?> servletContainerInitializerClass = null;
+            Class<?>[] typesArray = null;
+            if (servletContainerInitializerClassName != null) {
+                try {
+                    servletContainerInitializerClass = context.getLoader().getClassLoader()
+                        .loadClass(servletContainerInitializerClassName);
+                    if (servletContainerInitializerClass.isAnnotationPresent(HandlesTypes.class)) {
+                        HandlesTypes handlesTypes = servletContainerInitializerClass.getAnnotation(HandlesTypes.class);
+                        typesArray = handlesTypes.value();
+                    }
+                } catch (Throwable t) {
+                    // FIXME: error message or exception
+                }
+            }
+            // Add in jarService map, and add in the local map used to speed up lookups
+            ServletContainerInitializerInfoImpl jarServletContainerInitializerService = 
+                new ServletContainerInitializerInfoImpl(servletContainerInitializerClass, handlesTypesArray);
+            servletContainerInitializerInfos.put(file.getName(), jarServletContainerInitializerService);
+            if (typesArray != null) {
+                ArrayList<Class<?>> handlesTypesList = new ArrayList<Class<?>>();
+                if (handlesTypesArray != null) {
+                    for (int i = 0; i < handlesTypesArray.length; i++) {
+                        handlesTypesList.add(handlesTypesArray[i]);
+                    }
+                }
+                for (int i = 0; i < typesArray.length; i++) {
+                    handlesTypesList.add(typesArray[i]);
+                    handlesTypes.put(typesArray[i], jarServletContainerInitializerService);
+                }
+                handlesTypesArray = handlesTypesList.toArray(handlesTypesArray);
+            }
+        }
+    }
+    
+    
     /**
      * Process the default configuration file, if it exists.
      */
@@ -1441,37 +1720,56 @@ public class ContextConfig
         if (log.isDebugEnabled())
             log.debug(sm.getString("contextConfig.start"));
 
-        scanner = new ClassLoadingContextScanner();
-
         // Process the default and application web.xml files
-        defaultWebConfig();
-        try {
-            scanner.scan(context);
-        } catch (Throwable t) {
-            log.error(sm.getString("contextConfig.scan"), t);
-            ok = false;
+        if (ok) {
+            defaultWebConfig();
         }
         // Scan the main descriptors
-        applicationWebConfig();
-        // Parse fragments
-        if (!context.getIgnoreAnnotations()) {
+        if (ok) {
+            applicationWebConfig();
+        }
+        // Parse any Servlet context initializer defined in a Jar
+        if (ok) {
+            applicationServletContainerInitializerConfig();
+        }
+        // Parse fragment order
+        if (ok && !context.getIgnoreAnnotations()) {
+            createFragmentsOrder();
+        }
+        // Scan fragments, TLDs and annotations
+        if (ok) {
             applicationExtraDescriptorsConfig();
         }
+        // Parse any TLDs found for listeners
+        if (ok) {
+            applicationTldConfig();
+        }
         // Scan all Servlet API related annotations
-        if (!context.getIgnoreAnnotations()) {
-            applicationAnnotationsConfig();
+        if (ok && !context.getIgnoreAnnotations()) {
+            // FIXME: It is likely this should be moved to after running all listeners,
+            // as they can add servlets or filters
+            WebAnnotationSet.loadApplicationAnnotations(context);
         }
         if (ok) {
             validateSecurityRoles();
         }
 
-        // FIXME: Add overlays, and see about order
-        scanner.getOverlays();
+        // FIXME: See about order
+        // Find webapp overlays
+        if (ok) {
+            JarRepository jarRepository = context.getJarRepository();
+            JarFile[] jars = jarRepository.findJars();
+            for (int i = 0; i < jars.length; i++) {
+                if (jars[i].getEntry(Globals.OVERLAY_PATH) != null) {
+                    overlays.add(jars[i].getName());
+                }
+            }
+        }
 
         // Invoke Servlet container initializer: instantiate and call onStartup
         if (ok) {
             Iterator<ServletContainerInitializerInfo> initializers = 
-                scanner.getServletContainerInitializerInfo().values().iterator();
+                getServletContainerInitializerInfo().values().iterator();
             while (initializers.hasNext()) {
                 ServletContainerInitializerInfo service = initializers.next();
                 try {
@@ -1488,8 +1786,9 @@ public class ContextConfig
         }
         
         // Configure an authenticator if we need one
-        if (ok)
+        if (ok) {
             authenticatorConfig();
+        }
 
         // Dump the contents of this pipeline if requested
         if ((log.isDebugEnabled()) && (context instanceof ContainerBase)) {
@@ -1507,9 +1806,9 @@ public class ContextConfig
         }
 
         // Make our application available if no problems were encountered
-        if (ok)
+        if (ok) {
             context.setConfigured(true);
-        else {
+        } else {
             log.error(sm.getString("contextConfig.unavailable"));
             context.setConfigured(false);
         }
@@ -1524,8 +1823,6 @@ public class ContextConfig
 
         if (log.isDebugEnabled())
             log.debug(sm.getString("contextConfig.stop"));
-
-        scanner = null;
 
         int i;
 
@@ -1680,6 +1977,14 @@ public class ContextConfig
             ExpandWar.delete(docBaseFile);
         }
         
+        overlays.clear();
+        webFragments.clear();
+        TLDs.clear();
+        servletContainerInitializerInfos.clear();
+        order.clear();
+        handlesTypesArray = null;
+        handlesTypes.clear();
+        
         ok = true;
 
     }
@@ -1799,4 +2104,27 @@ public class ContextConfig
     }
 
 
+    protected class ServletContainerInitializerInfoImpl implements ServletContainerInitializerInfo {
+        protected Class<?> servletContainerInitializer = null;
+        protected Class<?>[] interestClasses = null;
+        protected HashSet<Class<?>> startupNotifySet = new HashSet<Class<?>>();
+        protected ServletContainerInitializerInfoImpl(Class<?> servletContainerInitializer, Class<?>[] interestClasses) {
+            this.servletContainerInitializer = servletContainerInitializer;
+            this.interestClasses = interestClasses;
+        }
+        public Class<?> getServletContainerInitializer() {
+            return servletContainerInitializer;
+        }
+        public Class<?>[] getInterestClasses() {
+            return interestClasses;
+        }
+        protected void addStartupNotifyClass(Class<?> clazz) {
+            startupNotifySet.add(clazz);
+        }
+        public Set<Class<?>> getStartupNotifySet() {
+            return startupNotifySet;
+        }
+    }
+    
+    
 }

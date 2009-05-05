@@ -388,7 +388,7 @@ public abstract class BaseContextScanner
         public Class<?>[] getInterestClasses() {
             return interestClasses;
         }
-        protected void addStartupNotifySetSet(Class<?> clazz) {
+        protected void addStartupNotifyClass(Class<?> clazz) {
             startupNotifySet.add(clazz);
         }
         public Set<Class<?>> getStartupNotifySet() {
