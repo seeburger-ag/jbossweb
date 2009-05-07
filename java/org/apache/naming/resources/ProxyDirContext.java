@@ -1,19 +1,47 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * JBoss, Home of Professional Open Source
+ * Copyright 2009, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  * 
- *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 1999-2009 The Apache Software Foundation
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 
 package org.apache.naming.resources;
@@ -23,8 +51,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Hashtable;
 
+import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
@@ -33,11 +63,14 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 
 import org.apache.naming.StringManager;
 
 /**
- * Proxy Directory Context implementation.
+ * Proxy Directory Context implementation. This implementation looks up the
+ * resources from a main DirContext, with secondary DirContext allowed 
+ * to provide overlays for the main one, when caching is enabled.
  *
  * @author Remy Maucherat
  * @version $Revision$ $Date$
@@ -59,7 +92,7 @@ public class ProxyDirContext implements DirContext {
     /**
      * Builds a proxy directory context using the given environment.
      */
-    public ProxyDirContext(Hashtable env, DirContext dirContext) {
+    public ProxyDirContext(Hashtable<String, Object> env, DirContext dirContext) {
         this.env = env;
         this.dirContext = dirContext;
         if (dirContext instanceof BaseDirContext) {
@@ -67,12 +100,15 @@ public class ProxyDirContext implements DirContext {
             // the caching policy.
             BaseDirContext baseDirContext = (BaseDirContext) dirContext;
             if (baseDirContext.isCached()) {
-                try {
-                    cache = (ResourceCache) 
+                if (cacheClassName != null) {
+                    try {
+                        cache = (ResourceCache) 
                         Class.forName(cacheClassName).newInstance();
-                } catch (Exception e) {
-                    //FIXME
-                    e.printStackTrace();
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(e);
+                    }
+                } else {
+                    cache = new ResourceCache();
                 }
                 cache.setCacheMaxSize(baseDirContext.getCacheMaxSize());
                 cacheTTL = baseDirContext.getCacheTTL();
@@ -89,42 +125,13 @@ public class ProxyDirContext implements DirContext {
     }
 
 
-    /**
-     * Builds a clone of this proxy dir context, wrapping the given directory
-     * context, and sharing the same cache.
-     */
-    // TODO: Refactor using the proxy field
-    /*
-    protected ProxyDirContext(ProxyDirContext proxyDirContext, 
-                              DirContext dirContext, String vPath) {
-        this.env = proxyDirContext.env;
-        this.dirContext = dirContext;
-        this.vPath = vPath;
-        this.cache = proxyDirContext.cache;
-        this.cacheMaxSize = proxyDirContext.cacheMaxSize;
-        this.cacheSize = proxyDirContext.cacheSize;
-        this.cacheTTL = proxyDirContext.cacheTTL;
-        this.cacheObjectMaxSize = proxyDirContext.cacheObjectMaxSize;
-        this.notFoundCache = proxyDirContext.notFoundCache;
-        this.hostName = proxyDirContext.hostName;
-        this.contextName = proxyDirContext.contextName;
-    }
-    */
-
-
     // ----------------------------------------------------- Instance Variables
-
-
-    /**
-     * Proxy DirContext (either this or the real proxy).
-     */
-    protected ProxyDirContext proxy = this;
 
 
     /**
      * Environment.
      */
-    protected Hashtable env;
+    protected Hashtable<String, Object> env;
 
 
     /**
@@ -140,9 +147,9 @@ public class ProxyDirContext implements DirContext {
 
 
     /**
-     * Virtual path.
+     * Overlay DirContexts.
      */
-    protected String vPath = null;
+    protected DirContext[] overlayDirContexts;
 
 
     /**
@@ -467,7 +474,8 @@ public class ProxyDirContext implements DirContext {
      * this context. Each element of the enumeration is of type NameClassPair.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration list(Name name)
+    // FIXME: Should use overlays
+    public NamingEnumeration<NameClassPair> list(Name name)
         throws NamingException {
         return dirContext.list(parseName(name));
     }
@@ -482,7 +490,8 @@ public class ProxyDirContext implements DirContext {
      * this context. Each element of the enumeration is of type NameClassPair.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration list(String name)
+    // FIXME: Should use overlays
+    public NamingEnumeration<NameClassPair> list(String name)
         throws NamingException {
         return dirContext.list(parseName(name));
     }
@@ -501,7 +510,8 @@ public class ProxyDirContext implements DirContext {
      * Each element of the enumeration is of type Binding.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration listBindings(Name name)
+    // FIXME: Should use overlays
+    public NamingEnumeration<Binding> listBindings(Name name)
         throws NamingException {
         return dirContext.listBindings(parseName(name));
     }
@@ -516,7 +526,8 @@ public class ProxyDirContext implements DirContext {
      * Each element of the enumeration is of type Binding.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration listBindings(String name)
+    // FIXME: Should use overlays
+    public NamingEnumeration<Binding> listBindings(String name)
         throws NamingException {
         return dirContext.listBindings(parseName(name));
     }
@@ -748,7 +759,7 @@ public class ProxyDirContext implements DirContext {
      * @return the environment of this context; never null
      * @exception NamingException if a naming exception is encountered
      */
-    public Hashtable getEnvironment()
+    public Hashtable<?,?> getEnvironment()
         throws NamingException {
         return dirContext.getEnvironment();
     }
@@ -1181,7 +1192,7 @@ public class ProxyDirContext implements DirContext {
      * context named by name.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration search(Name name, Attributes matchingAttributes,
+    public NamingEnumeration<SearchResult> search(Name name, Attributes matchingAttributes,
                                     String[] attributesToReturn)
         throws NamingException {
         return dirContext.search(parseName(name), matchingAttributes, 
@@ -1205,7 +1216,7 @@ public class ProxyDirContext implements DirContext {
      * context named by name.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration search(String name, Attributes matchingAttributes,
+    public NamingEnumeration<SearchResult> search(String name, Attributes matchingAttributes,
                                     String[] attributesToReturn)
         throws NamingException {
         return dirContext.search(parseName(name), matchingAttributes, 
@@ -1228,7 +1239,7 @@ public class ProxyDirContext implements DirContext {
      * context named by name.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration search(Name name, Attributes matchingAttributes)
+    public NamingEnumeration<SearchResult> search(Name name, Attributes matchingAttributes)
         throws NamingException {
         return dirContext.search(parseName(name), matchingAttributes);
     }
@@ -1247,7 +1258,7 @@ public class ProxyDirContext implements DirContext {
      * context named by name.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration search(String name, Attributes matchingAttributes)
+    public NamingEnumeration<SearchResult> search(String name, Attributes matchingAttributes)
         throws NamingException {
         return dirContext.search(parseName(name), matchingAttributes);
     }
@@ -1272,7 +1283,7 @@ public class ProxyDirContext implements DirContext {
      * contain invalid settings
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration search(Name name, String filter, 
+    public NamingEnumeration<SearchResult> search(Name name, String filter, 
                                     SearchControls cons)
         throws NamingException {
         return dirContext.search(parseName(name), filter, cons);
@@ -1298,7 +1309,7 @@ public class ProxyDirContext implements DirContext {
      * contain invalid settings
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration search(String name, String filter, 
+    public NamingEnumeration<SearchResult> search(String name, String filter, 
                                     SearchControls cons)
         throws NamingException {
         return dirContext.search(parseName(name), filter, cons);
@@ -1329,7 +1340,7 @@ public class ProxyDirContext implements DirContext {
      * represents an invalid search filter
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration search(Name name, String filterExpr,
+    public NamingEnumeration<SearchResult> search(Name name, String filterExpr,
                                     Object[] filterArgs, SearchControls cons)
         throws NamingException {
         return dirContext.search(parseName(name), filterExpr, filterArgs, 
@@ -1361,7 +1372,7 @@ public class ProxyDirContext implements DirContext {
      * represents an invalid search filter
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration search(String name, String filterExpr,
+    public NamingEnumeration<SearchResult> search(String name, String filterExpr,
                                     Object[] filterArgs, SearchControls cons)
         throws NamingException {
         return dirContext.search(parseName(name), filterExpr, filterArgs, 
@@ -1518,6 +1529,7 @@ public class ProxyDirContext implements DirContext {
     /**
      * Load entry into cache.
      */
+    // FIXME: Should use overlays
     protected void cacheLoad(CacheEntry entry) {
 
         String name = entry.name;
