@@ -47,7 +47,9 @@
 package org.apache.catalina.core;
 
 
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -198,6 +200,36 @@ public class StandardWrapperFacade
 
     public void setLoadOnStartup(int loadOnStartup) {
         wrapper.setLoadOnStartup(loadOnStartup);
+    }
+
+
+    public Iterable<String> getMappings() {
+        HashSet<String> result = new HashSet<String>();
+        String[] mappings = wrapper.findMappings();
+        for (int i = 0; i < mappings.length; i++) {
+            result.add(mappings[i]);
+        }
+        return Collections.unmodifiableSet(result);
+    }
+
+
+    public String getClassName() {
+        return wrapper.getServletClass();
+    }
+
+
+    public Map<String, String> getInitParameters() {
+        HashMap<String, String> result = new HashMap<String, String>();
+        String[] names = wrapper.findInitParameters();
+        for (int i = 0; i < names.length; i++) {
+            result.put(names[i], wrapper.getInitParameter(names[i]));
+        }
+        return Collections.unmodifiableMap(result);
+    }
+
+
+    public String getName() {
+        return wrapper.getName();
     }
 
 

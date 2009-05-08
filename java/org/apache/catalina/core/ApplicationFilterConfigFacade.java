@@ -47,30 +47,16 @@
 package org.apache.catalina.core;
 
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.naming.NamingException;
 import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
-import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
-import org.apache.catalina.deploy.FilterDef;
-import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.InstanceManager;
-import org.apache.tomcat.util.log.SystemLogHandler;
 
 
 /**
@@ -82,9 +68,6 @@ import org.apache.tomcat.util.log.SystemLogHandler;
 
 public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegistration {
 
-
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     public static class Dynamic extends ApplicationFilterConfigFacade
     implements FilterRegistration.Dynamic {
@@ -120,9 +103,7 @@ public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegist
      * Return the name of the filter we are configuring.
      */
     public String getFilterName() {
-
         return config.getFilterName();
-
     }
 
 
@@ -134,9 +115,7 @@ public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegist
      * @param name Name of the requested initialization parameter
      */
     public String getInitParameter(String name) {
-
         return config.getInitParameter(name);
-
     }
 
 
@@ -144,10 +123,8 @@ public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegist
      * Return an <code>Enumeration</code> of the names of the initialization
      * parameters for this Filter.
      */
-    public Enumeration getInitParameterNames() {
-
+    public Enumeration<String> getInitParameterNames() {
         return config.getInitParameterNames();
-
     }
 
 
@@ -155,9 +132,7 @@ public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegist
      * Return the ServletContext of our associated web application.
      */
     public ServletContext getServletContext() {
-
         return config.getServletContext();
-
     }
 
 
@@ -191,6 +166,31 @@ public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegist
 
     public void setDescription(String description) {
         config.setDescription(description);
+    }
+
+
+    public Iterable<String> getServletNameMappings() {
+        return config.getServletNameMappings();
+    }
+
+
+    public Iterable<String> getUrlPatternMappings() {
+        return config.getUrlPatternMappings();
+    }
+
+
+    public String getClassName() {
+        return config.getFilterDef().getFilterClass();
+    }
+
+
+    public Map<String, String> getInitParameters() {
+        return Collections.unmodifiableMap(config.getFilterDef().getParameterMap());
+    }
+
+
+    public String getName() {
+        return config.getFilterName();
     }
 
 }

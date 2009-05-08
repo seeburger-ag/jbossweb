@@ -2575,6 +2575,14 @@ public class StandardContext
 
 
     /**
+     * Return the application filter for the given name.
+     */
+    public ApplicationFilterConfig[] findApplicationFilterConfigs() {
+        return filterConfigs.values().toArray(new ApplicationFilterConfig[0]);
+    }
+
+
+    /**
      * Return the set of application listener class names configured
      * for this application.
      */

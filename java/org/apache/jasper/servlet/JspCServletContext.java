@@ -27,6 +27,7 @@ import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -522,6 +523,26 @@ public class JspCServletContext implements ServletContext {
 
     public void setSessionTrackingModes(
             Set<SessionTrackingMode> sessionTrackingModes) {
+    }
+
+
+    public FilterRegistration getFilterRegistration(String filterName) {
+        return null;
+    }
+
+
+    public Map<String, FilterRegistration> getFilterRegistrations() {
+        return null;
+    }
+
+
+    public ServletRegistration getServletRegistration(String servletName) {
+        return null;
+    }
+
+
+    public Map<String, ServletRegistration> getServletRegistrations() {
+        return null;
     }
 
 

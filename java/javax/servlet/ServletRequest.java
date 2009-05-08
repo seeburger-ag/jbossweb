@@ -599,10 +599,10 @@ public interface ServletRequest {
 
 
     /**
-     * Gets the servlet context to which this servlet request was last
+     * Gets the servlet context to which this ServletRequest was last
      * dispatched.
      *
-     * @return the servlet context to which this servlet request was last
+     * @return the servlet context to which this ServletRequest was last
      * dispatched
      *
      * @since Servlet 3.0

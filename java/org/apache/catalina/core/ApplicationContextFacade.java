@@ -58,6 +58,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.Filter;
@@ -496,22 +497,42 @@ public final class ApplicationContextFacade
     }
 
 
-    public FilterRegistration findFilterRegistration(String filterName) {
+    public FilterRegistration getFilterRegistration(String filterName) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (FilterRegistration) doPrivileged("findFilterRegistration",
+            return (FilterRegistration) doPrivileged("getFilterRegistration",
                     new Object[]{filterName});
         } else {
-            return context.findFilterRegistration(filterName);
+            return context.getFilterRegistration(filterName);
         }
     }
 
 
-    public ServletRegistration findServletRegistration(String servletName) {
+    public ServletRegistration getServletRegistration(String servletName) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
-            return (ServletRegistration) doPrivileged("findServletRegistration",
+            return (ServletRegistration) doPrivileged("getServletRegistration",
                     new Object[]{servletName});
         } else {
-            return context.findServletRegistration(servletName);
+            return context.getServletRegistration(servletName);
+        }
+    }
+    
+    
+    public Map<String, ServletRegistration> getServletRegistrations() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (Map<String, ServletRegistration>) doPrivileged("getServletRegistrations",
+                    new Object[]{});
+        } else {
+            return context.getServletRegistrations();
+        }
+    }
+
+
+    public Map<String, FilterRegistration> getFilterRegistrations() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (Map<String, FilterRegistration>) doPrivileged("getFilterRegistrations",
+                    new Object[]{});
+        } else {
+            return context.getFilterRegistrations();
         }
     }
 

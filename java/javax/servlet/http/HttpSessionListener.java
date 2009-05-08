@@ -52,34 +52,38 @@
  * limitations under the License.
  */
 
-
-
 package javax.servlet.http;
 
 import java.util.EventListener;
 
-	/** 
-	* Implementations of this interface are notified of changes to the 
-	* list of active sessions in a web application.
-	* To receive notification events, the implementation class
-	* must be configured in the deployment descriptor for the web application.
-	* @see HttpSessionEvent
-	 * @since Servlet 2.3
-	*/
-
+/** 
+ * Interface for receiving notification events about HttpSession
+ * lifecycle changes.
+ *
+ * <p>In order to receive these notification events, the implementation
+ * class must be either declared in the deployment descriptor of the web
+ * application or annotated with
+ * {@link javax.servlet.annotation.WebListener}.
+ *
+ * @see HttpSessionEvent
+ *
+ * @since Servlet 2.3
+ */
 public interface HttpSessionListener extends EventListener {
     
-	/** 
-	* Notification that a session was created.
-	* @param se the notification event
-	*/
-    public void sessionCreated ( HttpSessionEvent se );
+    /** 
+     * Receives notification that a session has been created.
+     *
+     * @param se the HttpSessionEvent containing the session
+     */
+    public void sessionCreated(HttpSessionEvent se);
     
-	/** 
-	* Notification that a session is about to be invalidated.
-	* @param se the notification event
-	*/
-    public void sessionDestroyed ( HttpSessionEvent se );
+    /** 
+     * Receives notification that a session is about to be invalidated.
+     *
+     * @param se the HttpSessionEvent containing the session
+     */
+    public void sessionDestroyed(HttpSessionEvent se);
     
 }
 

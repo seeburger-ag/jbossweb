@@ -50,6 +50,7 @@ package org.apache.catalina.core;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -122,7 +123,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     /**
      * The Context with which we are associated.
      */
-    private Context context = null;
+    private transient Context context = null;
 
 
     /**
@@ -161,9 +162,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      * Return the name of the filter we are configuring.
      */
     public String getFilterName() {
-
         return (filterDef.getFilterName());
-
     }
 
 
@@ -175,13 +174,12 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      * @param name Name of the requested initialization parameter
      */
     public String getInitParameter(String name) {
-
-        Map map = filterDef.getParameterMap();
-        if (map == null)
+        Map<String, String> map = filterDef.getParameterMap();
+        if (map == null) {
             return (null);
-        else
-            return ((String) map.get(name));
-
+        } else {
+            return map.get(name);
+        }
     }
 
 
@@ -189,14 +187,13 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      * Return an <code>Enumeration</code> of the names of the initialization
      * parameters for this Filter.
      */
-    public Enumeration getInitParameterNames() {
-
-        Map map = filterDef.getParameterMap();
-        if (map == null)
-            return (new Enumerator(new ArrayList()));
-        else
+    public Enumeration<String> getInitParameterNames() {
+        Map<String, String> map = filterDef.getParameterMap();
+        if (map == null) {
+            return (new Enumerator(new ArrayList<String>()));
+        } else {
             return (new Enumerator(map.keySet()));
-
+        }
     }
 
 
@@ -204,9 +201,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      * Return the ServletContext of our associated web application.
      */
     public ServletContext getServletContext() {
-
         return (this.context.getServletContext());
-
     }
 
 
@@ -290,6 +285,44 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             context.addFilterMapBefore(filterMap);
         }
         return true;
+    }
+
+
+    public Iterable<String> getServletNameMappings() {
+        HashSet<String> result = new HashSet<String>();
+        FilterMap[] filterMaps = context.findFilterMaps();
+        for (int i = 0; i < filterMaps.length; i++) {
+            if (filterDef.getFilterName().equals(filterMaps[i].getFilterName())) {
+                FilterMap filterMap = filterMaps[i];
+                String[] maps = filterMap.getServletNames();
+                for (int j = 0; j < maps.length; j++) {
+                    result.add(maps[j]);
+                }
+                if (filterMap.getMatchAllServletNames()) {
+                    result.add("*");
+                }
+            }
+        }
+        return Collections.unmodifiableSet(result);
+    }
+
+
+    public Iterable<String> getUrlPatternMappings() {
+        HashSet<String> result = new HashSet<String>();
+        FilterMap[] filterMaps = context.findFilterMaps();
+        for (int i = 0; i < filterMaps.length; i++) {
+            if (filterDef.getFilterName().equals(filterMaps[i].getFilterName())) {
+                FilterMap filterMap = filterMaps[i];
+                String[] maps = filterMap.getURLPatterns();
+                for (int j = 0; j < maps.length; j++) {
+                    result.add(maps[j]);
+                }
+                if (filterMap.getMatchAllUrlPatterns()) {
+                    result.add("*");
+                }
+            }
+        }
+        return Collections.unmodifiableSet(result);
     }
 
 

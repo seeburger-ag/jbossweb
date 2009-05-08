@@ -52,7 +52,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -73,6 +75,7 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
@@ -911,7 +914,7 @@ public class ApplicationContext
     }
 
 
-    public FilterRegistration findFilterRegistration(String filterName) {
+    public FilterRegistration getFilterRegistration(String filterName) {
         ApplicationFilterConfig filterConfig = context.findApplicationFilterConfig(filterName);
         if (filterConfig == null) {
             FilterDef filterDef = context.findFilterDef(filterName);
@@ -926,13 +929,36 @@ public class ApplicationContext
     }
 
 
-    public ServletRegistration findServletRegistration(String servletName) {
+    public ServletRegistration getServletRegistration(String servletName) {
         Wrapper wrapper = (Wrapper) context.findChild(servletName);
         if (wrapper != null) {
             return wrapper.getFacade();
         } else {
             return null;
         }
+    }
+
+
+    public Map<String, FilterRegistration> getFilterRegistrations() {
+        HashMap<String, FilterRegistration> result = 
+            new HashMap<String, FilterRegistration>();
+        ApplicationFilterConfig[] filterConfigs = context.findApplicationFilterConfigs();
+        for (int i = 0; i < filterConfigs.length; i++) {
+            result.put(filterConfigs[i].getFilterName(), filterConfigs[i].getFacade());
+        }
+        return Collections.unmodifiableMap(result);
+    }
+
+
+    public Map<String, ServletRegistration> getServletRegistrations() {
+        HashMap<String, ServletRegistration> result = 
+            new HashMap<String, ServletRegistration>();
+        Container[] wrappers = context.findChildren();
+        for (int i = 0; i < wrappers.length; i++) {
+            Wrapper wrapper = (Wrapper) wrappers[i];
+            result.put(wrapper.getName(), wrapper.getFacade());
+        }
+        return Collections.unmodifiableMap(result);
     }
 
 
