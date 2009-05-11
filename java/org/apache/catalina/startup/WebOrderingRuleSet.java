@@ -99,24 +99,24 @@ public class WebOrderingRuleSet extends RuleSetBase {
         digester.addCallMethod(prefix + "web-app/ordering/before/name",
                 "addBefore", 0);
         digester.addRule(prefix + "web-app/ordering/after/others",
-                new AddOthersAfterRule());
+                new SetAfterOthersRule());
         digester.addRule(prefix + "web-app/ordering/before/others",
-                new AddOthersBeforeRule());
+                new SetBeforeOthersRule());
 
     }
 
-    final class AddOthersAfterRule extends Rule {
+    final class SetAfterOthersRule extends Rule {
         public void begin(String namespace, String name, Attributes attributes)
             throws Exception {
             WebOrdering ordering = (WebOrdering) digester.peek();
-            ordering.addAfter("*");
+            ordering.setAfterOthers(true);
         }
     }
-    final class AddOthersBeforeRule extends Rule {
+    final class SetBeforeOthersRule extends Rule {
         public void begin(String namespace, String name, Attributes attributes)
             throws Exception {
             WebOrdering ordering = (WebOrdering) digester.peek();
-            ordering.addBefore("*");
+            ordering.setBeforeOthers(true);
         }
     }
 }

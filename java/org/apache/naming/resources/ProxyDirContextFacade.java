@@ -46,44 +46,40 @@
 
 package org.apache.naming.resources;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Hashtable;
 
 import javax.naming.Binding;
+import javax.naming.CompositeName;
 import javax.naming.Context;
+import javax.naming.InvalidNameException;
 import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.NotContextException;
+import javax.naming.OperationNotSupportedException;
+import javax.naming.directory.AttributeModificationException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.InvalidAttributesException;
+import javax.naming.directory.InvalidSearchControlsException;
+import javax.naming.directory.InvalidSearchFilterException;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.apache.naming.StringManager;
-
 /**
- * Proxy Directory Context implementation. This implementation looks up the
- * resources from a main DirContext, with secondary DirContext allowed 
- * to provide overlays for the main one, when caching is enabled.
+ * Proxy Directory Context facade implementation. Used to cache nested contexts
+ * access.
  *
  * @author Remy Maucherat
- * @version $Revision$ $Date$
+ * @version $Revision: 793 $ $Date: 2008-09-27 19:44:11 +0200 (Sat, 27 Sep 2008) $
  */
 
-public class ProxyDirContext implements DirContext {
-
-
-    // -------------------------------------------------------------- Constants
-
-
-    public static final String CONTEXT = "context";
-    public static final String HOST = "host";
+public class ProxyDirContextFacade implements DirContext {
 
 
     // ----------------------------------------------------------- Constructors
@@ -92,36 +88,14 @@ public class ProxyDirContext implements DirContext {
     /**
      * Builds a proxy directory context using the given environment.
      */
-    public ProxyDirContext(Hashtable<String, Object> env, DirContext dirContext) {
-        this.env = env;
+    public ProxyDirContextFacade(ProxyDirContext dirContext, String path) {
         this.dirContext = dirContext;
-        if (dirContext instanceof BaseDirContext) {
-            // Initialize parameters based on the associated dir context, like
-            // the caching policy.
-            BaseDirContext baseDirContext = (BaseDirContext) dirContext;
-            if (baseDirContext.isCached()) {
-                if (cacheClassName != null) {
-                    try {
-                        cache = (ResourceCache) 
-                        Class.forName(cacheClassName).newInstance();
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException(e);
-                    }
-                } else {
-                    cache = new ResourceCache();
-                }
-                cache.setCacheMaxSize(baseDirContext.getCacheMaxSize());
-                cacheTTL = baseDirContext.getCacheTTL();
-                cacheObjectMaxSize = baseDirContext.getCacheObjectMaxSize();
-                // cacheObjectMaxSize must be less than cacheMaxSize
-                // Set a sensible limit
-                if (cacheObjectMaxSize > baseDirContext.getCacheMaxSize()/32) {
-                    cacheObjectMaxSize = baseDirContext.getCacheMaxSize()/32;
-                }
-            }
+        this.path = path;
+        try {
+            pathName = new CompositeName(path);
+        } catch (InvalidNameException e) {
+            throw new IllegalArgumentException(e);
         }
-        hostName = (String) env.get(HOST);
-        contextName = (String) env.get(CONTEXT);
     }
 
 
@@ -129,122 +103,31 @@ public class ProxyDirContext implements DirContext {
 
 
     /**
-     * Environment.
-     */
-    protected Hashtable<String, Object> env;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm = StringManager.getManager(Constants.Package);
-
-
-    /**
      * Associated DirContext.
      */
-    protected DirContext dirContext;
+    protected ProxyDirContext dirContext;
 
 
     /**
-     * Overlay DirContexts.
+     * Path.
      */
-    protected DirContext[] overlayDirContexts;
-
-
+    protected String path;
+    
+    
     /**
-     * Host name.
+     * Path as name.
      */
-    protected String hostName;
-
-
-    /**
-     * Context name.
-     */
-    protected String contextName;
-
-
-    /**
-     * Cache class.
-     */
-    protected String cacheClassName = 
-        "org.apache.naming.resources.ResourceCache";
-
-
-    /**
-     * Cache.
-     */
-    protected ResourceCache cache = null;
-
-
-    /**
-     * Cache TTL.
-     */
-    protected int cacheTTL = 5000; // 5s
-
-
-    /**
-     * Max size of resources which will have their content cached.
-     */
-    protected int cacheObjectMaxSize = 512; // 512 KB
-
-
-    /**
-     * Immutable name not found exception.
-     */
-    protected NameNotFoundException notFoundException =
-        new ImmutableNameNotFoundException();
-
-
-    /**
-     * Non cacheable resources.
-     */
-    protected String[] nonCacheable = { "/WEB-INF/lib/", "/WEB-INF/classes/" };
+    protected Name pathName;
 
 
     // --------------------------------------------------------- Public Methods
 
 
     /**
-     * Get the cache used for this context.
-     */
-    public ResourceCache getCache() {
-        return cache;
-    }
-
-
-    /**
      * Return the actual directory context we are wrapping.
      */
-    public DirContext getDirContext() {
+    public ProxyDirContext getDirContext() {
         return this.dirContext;
-    }
-
-
-    /**
-     * Return the document root for this component.
-     */
-    public String getDocBase() {
-        if (dirContext instanceof BaseDirContext)
-            return ((BaseDirContext) dirContext).getDocBase();
-        else
-            return "";
-    }
-
-
-    /**
-     * Return the host name.
-     */
-    public String getHostName() {
-        return this.hostName;
-    }
-
-
-    /**
-     * Return the context name.
-     */
-    public String getContextName() {
-        return this.contextName;
     }
 
 
@@ -263,23 +146,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Object lookup(Name name)
         throws NamingException {
-        CacheEntry entry = cacheLookup(name.toString());
-        if (entry != null) {
-            if (!entry.exists) {
-                throw notFoundException;
-            }
-            if (entry.resource != null) {
-                // Check content caching.
-                return entry.resource;
-            } else {
-                return entry.context;
-            }
-        }
-        Object object = dirContext.lookup(parseName(name));
-        if (object instanceof InputStream)
-            return new Resource((InputStream) object);
-        else
-            return object;
+        return dirContext.lookup(composeName(name, pathName));
     }
 
 
@@ -292,28 +159,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Object lookup(String name)
         throws NamingException {
-        CacheEntry entry = cacheLookup(name);
-        if (entry != null) {
-            if (!entry.exists) {
-                throw notFoundException;
-            }
-            if (entry.resource != null) {
-                return entry.resource;
-            } else {
-                return entry.context;
-            }
-        }
-        Object object = dirContext.lookup(parseName(name));
-        if (object instanceof InputStream) {
-            return new Resource((InputStream) object);
-        } else if (object instanceof DirContext) {
-            return object;
-        } else if (object instanceof Resource) {
-            return object;
-        } else {
-            return new Resource(new ByteArrayInputStream
-                (object.toString().getBytes()));
-        }
+        return dirContext.lookup(composeName(name, path));
     }
 
 
@@ -331,8 +177,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void bind(Name name, Object obj)
         throws NamingException {
-        dirContext.bind(parseName(name), obj);
-        cacheUnload(name.toString());
+        dirContext.bind(composeName(name, pathName), obj);
     }
 
 
@@ -348,8 +193,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void bind(String name, Object obj)
         throws NamingException {
-        dirContext.bind(parseName(name), obj);
-        cacheUnload(name);
+        dirContext.bind(composeName(name, path), obj);
     }
 
 
@@ -370,8 +214,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void rebind(Name name, Object obj)
         throws NamingException {
-        dirContext.rebind(parseName(name), obj);
-        cacheUnload(name.toString());
+        dirContext.rebind(composeName(name, pathName), obj);
     }
 
 
@@ -386,8 +229,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void rebind(String name, Object obj)
         throws NamingException {
-        dirContext.rebind(parseName(name), obj);
-        cacheUnload(name);
+        dirContext.rebind(composeName(name, path), obj);
     }
 
 
@@ -407,8 +249,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void unbind(Name name)
         throws NamingException {
-        dirContext.unbind(parseName(name));
-        cacheUnload(name.toString());
+        dirContext.unbind(composeName(name, pathName));
     }
 
 
@@ -422,8 +263,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void unbind(String name)
         throws NamingException {
-        dirContext.unbind(parseName(name));
-        cacheUnload(name);
+        dirContext.unbind(composeName(name, path));
     }
 
 
@@ -440,8 +280,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void rename(Name oldName, Name newName)
         throws NamingException {
-        dirContext.rename(parseName(oldName), parseName(newName));
-        cacheUnload(oldName.toString());
+        dirContext.rename(composeName(oldName, pathName), composeName(newName, pathName));
     }
 
 
@@ -456,8 +295,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void rename(String oldName, String newName)
         throws NamingException {
-        dirContext.rename(parseName(oldName), parseName(newName));
-        cacheUnload(oldName);
+        dirContext.rename(composeName(oldName, path), composeName(newName, path));
     }
 
 
@@ -474,10 +312,9 @@ public class ProxyDirContext implements DirContext {
      * this context. Each element of the enumeration is of type NameClassPair.
      * @exception NamingException if a naming exception is encountered
      */
-    // FIXME: Should use overlays
     public NamingEnumeration<NameClassPair> list(Name name)
         throws NamingException {
-        return dirContext.list(parseName(name));
+        return dirContext.list(composeName(name, pathName));
     }
 
 
@@ -490,10 +327,9 @@ public class ProxyDirContext implements DirContext {
      * this context. Each element of the enumeration is of type NameClassPair.
      * @exception NamingException if a naming exception is encountered
      */
-    // FIXME: Should use overlays
     public NamingEnumeration<NameClassPair> list(String name)
         throws NamingException {
-        return dirContext.list(parseName(name));
+        return dirContext.list(composeName(name, path));
     }
 
 
@@ -510,10 +346,9 @@ public class ProxyDirContext implements DirContext {
      * Each element of the enumeration is of type Binding.
      * @exception NamingException if a naming exception is encountered
      */
-    // FIXME: Should use overlays
     public NamingEnumeration<Binding> listBindings(Name name)
         throws NamingException {
-        return dirContext.listBindings(parseName(name));
+        return dirContext.listBindings(composeName(name, pathName));
     }
 
 
@@ -526,10 +361,9 @@ public class ProxyDirContext implements DirContext {
      * Each element of the enumeration is of type Binding.
      * @exception NamingException if a naming exception is encountered
      */
-    // FIXME: Should use overlays
     public NamingEnumeration<Binding> listBindings(String name)
         throws NamingException {
-        return dirContext.listBindings(parseName(name));
+        return dirContext.listBindings(composeName(name, path));
     }
 
 
@@ -560,8 +394,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void destroySubcontext(Name name)
         throws NamingException {
-        dirContext.destroySubcontext(parseName(name));
-        cacheUnload(name.toString());
+        dirContext.destroySubcontext(composeName(name, pathName));
     }
 
 
@@ -576,8 +409,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void destroySubcontext(String name)
         throws NamingException {
-        dirContext.destroySubcontext(parseName(name));
-        cacheUnload(name);
+        dirContext.destroySubcontext(composeName(name, path));
     }
 
 
@@ -596,9 +428,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Context createSubcontext(Name name)
         throws NamingException {
-        Context context = dirContext.createSubcontext(parseName(name));
-        cacheUnload(name.toString());
-        return context;
+        return dirContext.createSubcontext(composeName(name, pathName));
     }
 
 
@@ -614,9 +444,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Context createSubcontext(String name)
         throws NamingException {
-        Context context = dirContext.createSubcontext(parseName(name));
-        cacheUnload(name);
-        return context;
+        return dirContext.createSubcontext(composeName(name, path));
     }
 
 
@@ -632,7 +460,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Object lookupLink(Name name)
         throws NamingException {
-        return dirContext.lookupLink(parseName(name));
+        return dirContext.lookupLink(composeName(name, pathName));
     }
 
 
@@ -647,7 +475,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Object lookupLink(String name)
         throws NamingException {
-        return dirContext.lookupLink(parseName(name));
+        return dirContext.lookupLink(composeName(name, path));
     }
 
 
@@ -667,7 +495,7 @@ public class ProxyDirContext implements DirContext {
      */
     public NameParser getNameParser(Name name)
         throws NamingException {
-        return dirContext.getNameParser(parseName(name));
+        return dirContext.getNameParser(composeName(name, pathName));
     }
 
 
@@ -681,7 +509,7 @@ public class ProxyDirContext implements DirContext {
      */
     public NameParser getNameParser(String name)
         throws NamingException {
-        return dirContext.getNameParser(parseName(name));
+        return dirContext.getNameParser(composeName(name, path));
     }
 
 
@@ -777,7 +605,6 @@ public class ProxyDirContext implements DirContext {
      */
     public void close()
         throws NamingException {
-        dirContext.close();
     }
 
 
@@ -817,18 +644,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Attributes getAttributes(Name name)
         throws NamingException {
-        CacheEntry entry = cacheLookup(name.toString());
-        if (entry != null) {
-            if (!entry.exists) {
-                throw notFoundException;
-            }
-            return entry.attributes;
-        }
-        Attributes attributes = dirContext.getAttributes(parseName(name));
-        if (!(attributes instanceof ResourceAttributes)) {
-            attributes = new ResourceAttributes(attributes);
-        }
-        return attributes;
+        return dirContext.getAttributes(composeName(name, pathName));
     }
 
 
@@ -841,18 +657,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Attributes getAttributes(String name)
         throws NamingException {
-        CacheEntry entry = cacheLookup(name);
-        if (entry != null) {
-            if (!entry.exists) {
-                throw notFoundException;
-            }
-            return entry.attributes;
-        }
-        Attributes attributes = dirContext.getAttributes(parseName(name));
-        if (!(attributes instanceof ResourceAttributes)) {
-            attributes = new ResourceAttributes(attributes);
-        }
-        return attributes;
+        return dirContext.getAttributes(composeName(name, path));
     }
 
 
@@ -870,12 +675,7 @@ public class ProxyDirContext implements DirContext {
      */
     public Attributes getAttributes(Name name, String[] attrIds)
         throws NamingException {
-        Attributes attributes = 
-            dirContext.getAttributes(parseName(name), attrIds);
-        if (!(attributes instanceof ResourceAttributes)) {
-            attributes = new ResourceAttributes(attributes);
-        }
-        return attributes;
+        return dirContext.getAttributes(composeName(name, pathName), attrIds);
     }
 
 
@@ -891,12 +691,7 @@ public class ProxyDirContext implements DirContext {
      */
      public Attributes getAttributes(String name, String[] attrIds)
          throws NamingException {
-        Attributes attributes = 
-            dirContext.getAttributes(parseName(name), attrIds);
-        if (!(attributes instanceof ResourceAttributes)) {
-            attributes = new ResourceAttributes(attributes);
-        }
-        return attributes;
+         return dirContext.getAttributes(composeName(name, path), attrIds);
      }
 
 
@@ -916,8 +711,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void modifyAttributes(Name name, int mod_op, Attributes attrs)
         throws NamingException {
-        dirContext.modifyAttributes(parseName(name), mod_op, attrs);
-        cacheUnload(name.toString());
+        dirContext.modifyAttributes(composeName(name, pathName), mod_op, attrs);
     }
 
 
@@ -935,8 +729,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void modifyAttributes(String name, int mod_op, Attributes attrs)
         throws NamingException {
-        dirContext.modifyAttributes(parseName(name), mod_op, attrs);
-        cacheUnload(name);
+        dirContext.modifyAttributes(composeName(name, path), mod_op, attrs);
     }
 
 
@@ -956,8 +749,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void modifyAttributes(Name name, ModificationItem[] mods)
         throws NamingException {
-        dirContext.modifyAttributes(parseName(name), mods);
-        cacheUnload(name.toString());
+        dirContext.modifyAttributes(composeName(name, pathName), mods);
     }
 
 
@@ -974,8 +766,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void modifyAttributes(String name, ModificationItem[] mods)
         throws NamingException {
-        dirContext.modifyAttributes(parseName(name), mods);
-        cacheUnload(name);
+        dirContext.modifyAttributes(composeName(name, path), mods);
     }
 
 
@@ -996,8 +787,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void bind(Name name, Object obj, Attributes attrs)
         throws NamingException {
-        dirContext.bind(parseName(name), obj, attrs);
-        cacheUnload(name.toString());
+        dirContext.bind(composeName(name, pathName), obj, attrs);
     }
 
 
@@ -1014,8 +804,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void bind(String name, Object obj, Attributes attrs)
         throws NamingException {
-        dirContext.bind(parseName(name), obj, attrs);
-        cacheUnload(name);
+        dirContext.bind(composeName(name, path), obj, attrs);
     }
 
 
@@ -1039,8 +828,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void rebind(Name name, Object obj, Attributes attrs)
         throws NamingException {
-        dirContext.rebind(parseName(name), obj, attrs);
-        cacheUnload(name.toString());
+        dirContext.rebind(composeName(name, pathName), obj, attrs);
     }
 
 
@@ -1057,8 +845,7 @@ public class ProxyDirContext implements DirContext {
      */
     public void rebind(String name, Object obj, Attributes attrs)
         throws NamingException {
-        dirContext.rebind(parseName(name), obj, attrs);
-        cacheUnload(name);
+        dirContext.rebind(composeName(name, path), obj, attrs);
     }
 
 
@@ -1081,10 +868,7 @@ public class ProxyDirContext implements DirContext {
      */
     public DirContext createSubcontext(Name name, Attributes attrs)
         throws NamingException {
-        DirContext context = 
-            dirContext.createSubcontext(parseName(name), attrs);
-        cacheUnload(name.toString());
-        return context;
+        return dirContext.createSubcontext(composeName(name, pathName), attrs);
     }
 
 
@@ -1101,10 +885,7 @@ public class ProxyDirContext implements DirContext {
      */
     public DirContext createSubcontext(String name, Attributes attrs)
         throws NamingException {
-        DirContext context = 
-            dirContext.createSubcontext(parseName(name), attrs);
-        cacheUnload(name);
-        return context;
+        return dirContext.createSubcontext(composeName(name, path), attrs);
     }
 
 
@@ -1123,7 +904,7 @@ public class ProxyDirContext implements DirContext {
      */
     public DirContext getSchema(Name name)
         throws NamingException {
-        return dirContext.getSchema(parseName(name));
+        return dirContext.getSchema(composeName(name, pathName));
     }
 
 
@@ -1137,7 +918,7 @@ public class ProxyDirContext implements DirContext {
      */
     public DirContext getSchema(String name)
         throws NamingException {
-        return dirContext.getSchema(parseName(name));
+        return dirContext.getSchema(composeName(name, path));
     }
 
 
@@ -1154,7 +935,7 @@ public class ProxyDirContext implements DirContext {
      */
     public DirContext getSchemaClassDefinition(Name name)
         throws NamingException {
-        return dirContext.getSchemaClassDefinition(parseName(name));
+        return dirContext.getSchemaClassDefinition(composeName(name, pathName));
     }
 
 
@@ -1171,7 +952,7 @@ public class ProxyDirContext implements DirContext {
      */
     public DirContext getSchemaClassDefinition(String name)
         throws NamingException {
-        return dirContext.getSchemaClassDefinition(parseName(name));
+        return dirContext.getSchemaClassDefinition(composeName(name, path));
     }
 
 
@@ -1195,7 +976,7 @@ public class ProxyDirContext implements DirContext {
     public NamingEnumeration<SearchResult> search(Name name, Attributes matchingAttributes,
                                     String[] attributesToReturn)
         throws NamingException {
-        return dirContext.search(parseName(name), matchingAttributes, 
+        return dirContext.search(composeName(name, pathName), matchingAttributes, 
                                  attributesToReturn);
     }
 
@@ -1219,7 +1000,7 @@ public class ProxyDirContext implements DirContext {
     public NamingEnumeration<SearchResult> search(String name, Attributes matchingAttributes,
                                     String[] attributesToReturn)
         throws NamingException {
-        return dirContext.search(parseName(name), matchingAttributes, 
+        return dirContext.search(composeName(name, path), matchingAttributes, 
                                  attributesToReturn);
     }
 
@@ -1241,7 +1022,7 @@ public class ProxyDirContext implements DirContext {
      */
     public NamingEnumeration<SearchResult> search(Name name, Attributes matchingAttributes)
         throws NamingException {
-        return dirContext.search(parseName(name), matchingAttributes);
+        return dirContext.search(composeName(name, pathName), matchingAttributes);
     }
 
 
@@ -1260,7 +1041,7 @@ public class ProxyDirContext implements DirContext {
      */
     public NamingEnumeration<SearchResult> search(String name, Attributes matchingAttributes)
         throws NamingException {
-        return dirContext.search(parseName(name), matchingAttributes);
+        return dirContext.search(composeName(name, path), matchingAttributes);
     }
 
 
@@ -1286,7 +1067,7 @@ public class ProxyDirContext implements DirContext {
     public NamingEnumeration<SearchResult> search(Name name, String filter, 
                                     SearchControls cons)
         throws NamingException {
-        return dirContext.search(parseName(name), filter, cons);
+        return dirContext.search(composeName(name, pathName), filter, cons);
     }
 
 
@@ -1312,7 +1093,7 @@ public class ProxyDirContext implements DirContext {
     public NamingEnumeration<SearchResult> search(String name, String filter, 
                                     SearchControls cons)
         throws NamingException {
-        return dirContext.search(parseName(name), filter, cons);
+        return dirContext.search(composeName(name, path), filter, cons);
     }
 
 
@@ -1343,7 +1124,7 @@ public class ProxyDirContext implements DirContext {
     public NamingEnumeration<SearchResult> search(Name name, String filterExpr,
                                     Object[] filterArgs, SearchControls cons)
         throws NamingException {
-        return dirContext.search(parseName(name), filterExpr, filterArgs, 
+        return dirContext.search(composeName(name, pathName), filterExpr, filterArgs, 
                                  cons);
     }
 
@@ -1375,263 +1156,8 @@ public class ProxyDirContext implements DirContext {
     public NamingEnumeration<SearchResult> search(String name, String filterExpr,
                                     Object[] filterArgs, SearchControls cons)
         throws NamingException {
-        return dirContext.search(parseName(name), filterExpr, filterArgs, 
+        return dirContext.search(composeName(name, path), filterExpr, filterArgs, 
                                  cons);
-    }
-
-
-    // --------------------------------------------------------- Public Methods
-
-
-    /**
-     * Retrieves the named object as a cache entry, without any exception.
-     * 
-     * @param name the name of the object to look up
-     * @return the cache entry bound to name
-     */
-    public CacheEntry lookupCache(String name) {
-        CacheEntry entry = cacheLookup(name);
-        if (entry == null) {
-            entry = new CacheEntry();
-            entry.name = name;
-            try {
-                Object object = dirContext.lookup(parseName(name));
-                if (object instanceof InputStream) {
-                    entry.resource = new Resource((InputStream) object);
-                } else if (object instanceof DirContext) {
-                    entry.context = (DirContext) object;
-                } else if (object instanceof Resource) {
-                    entry.resource = (Resource) object;
-                } else {
-                    entry.resource = new Resource(new ByteArrayInputStream
-                        (object.toString().getBytes()));
-                }
-                Attributes attributes = dirContext.getAttributes(parseName(name));
-                if (!(attributes instanceof ResourceAttributes)) {
-                    attributes = new ResourceAttributes(attributes);
-                }
-                entry.attributes = (ResourceAttributes) attributes;
-            } catch (NamingException e) {
-                entry.exists = false;
-            }
-        }
-        return entry;
-    }
-
-
-    // ------------------------------------------------------ Protected Methods
-
-
-    /**
-     * Parses a name.
-     * 
-     * @return the parsed name
-     */
-    protected String parseName(String name) 
-        throws NamingException {
-        return name;
-    }
-
-
-    /**
-     * Parses a name.
-     * 
-     * @return the parsed name
-     */
-    protected Name parseName(Name name) 
-        throws NamingException {
-        return name;
-    }
-
-
-    /**
-     * Lookup in cache.
-     */
-    protected CacheEntry cacheLookup(String name) {
-        if (cache == null)
-            return (null);
-        if (name == null)
-            name = "";
-        for (int i = 0; i < nonCacheable.length; i++) {
-            if (name.startsWith(nonCacheable[i])) {
-                return (null);
-            }
-        }
-        CacheEntry cacheEntry = cache.lookup(name);
-        if (cacheEntry == null) {
-            cacheEntry = new CacheEntry();
-            cacheEntry.name = name;
-            // Load entry
-            cacheLoad(cacheEntry);
-        } else {
-            if (!validate(cacheEntry)) {
-                if (!revalidate(cacheEntry)) {
-                    cacheUnload(cacheEntry.name);
-                    return (null);
-                } else {
-                    cacheEntry.timestamp = 
-                        System.currentTimeMillis() + cacheTTL;
-                }
-            }
-            cacheEntry.accessCount++;
-        }
-        return (cacheEntry);
-    }
-
-
-    /**
-     * Validate entry.
-     */
-    protected boolean validate(CacheEntry entry) {
-        if (((!entry.exists)
-             || (entry.context != null)
-             || ((entry.resource != null) 
-                 && (entry.resource.getContent() != null)))
-            && (System.currentTimeMillis() < entry.timestamp)) {
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
-     * Revalidate entry.
-     */
-    protected boolean revalidate(CacheEntry entry) {
-        // Get the attributes at the given path, and check the last 
-        // modification date
-        if (!entry.exists)
-            return false;
-        if (entry.attributes == null)
-            return false;
-        long lastModified = entry.attributes.getLastModified();
-        long contentLength = entry.attributes.getContentLength();
-        if (lastModified <= 0)
-            return false;
-        try {
-            Attributes tempAttributes = dirContext.getAttributes(entry.name);
-            ResourceAttributes attributes = null;
-            if (!(tempAttributes instanceof ResourceAttributes)) {
-                attributes = new ResourceAttributes(tempAttributes);
-            } else {
-                attributes = (ResourceAttributes) tempAttributes;
-            }
-            long lastModified2 = attributes.getLastModified();
-            long contentLength2 = attributes.getContentLength();
-            return (lastModified == lastModified2) 
-                && (contentLength == contentLength2);
-        } catch (NamingException e) {
-            return false;
-        }
-    }
-
-
-    /**
-     * Load entry into cache.
-     */
-    // FIXME: Should use overlays
-    protected void cacheLoad(CacheEntry entry) {
-
-        String name = entry.name;
-
-        // Retrieve missing info
-        boolean exists = true;
-
-        // Retrieving attributes
-        if (entry.attributes == null) {
-            try {
-                Attributes attributes = dirContext.getAttributes(entry.name);
-                if (!(attributes instanceof ResourceAttributes)) {
-                    entry.attributes = 
-                        new ResourceAttributes(attributes);
-                } else {
-                    entry.attributes = (ResourceAttributes) attributes;
-                }
-            } catch (NamingException e) {
-                exists = false;
-            }
-        }
-
-        // Retriving object
-        if ((exists) && (entry.resource == null) && (entry.context == null)) {
-            try {
-                Object object = dirContext.lookup(name);
-                if (object instanceof InputStream) {
-                    entry.resource = new Resource((InputStream) object);
-                } else if (object instanceof DirContext) {
-                    //entry.context = new ProxyDirContextFacade(this, name);
-                    entry.context = (DirContext) object;
-                } else if (object instanceof Resource) {
-                    entry.resource = (Resource) object;
-                } else {
-                    entry.resource = new Resource(new ByteArrayInputStream
-                        (object.toString().getBytes()));
-                }
-            } catch (NamingException e) {
-                exists = false;
-            }
-        }
-
-        // Load object content
-        if ((exists) && (entry.resource != null) 
-            && (entry.resource.getContent() == null) 
-            && (entry.attributes.getContentLength() >= 0)
-            && (entry.attributes.getContentLength() < 
-                (cacheObjectMaxSize * 1024))) {
-            int length = (int) entry.attributes.getContentLength();
-            // The entry size is 1 + the resource size in KB, if it will be 
-            // cached
-            entry.size += (entry.attributes.getContentLength() / 1024);
-            InputStream is = null;
-            try {
-                is = entry.resource.streamContent();
-                int pos = 0;
-                byte[] b = new byte[length];
-                while (pos < length) {
-                    int n = is.read(b, pos, length - pos);
-                    if (n < 0)
-                        break;
-                    pos = pos + n;
-                }
-                entry.resource.setContent(b);
-            } catch (IOException e) {
-                ; // Ignore
-            } finally {
-                try {
-                    if (is != null)
-                        is.close();
-                } catch (IOException e) {
-                    ; // Ignore
-                }
-            }
-        }
-
-        // Set existence flag
-        entry.exists = exists;
-
-        // Set timestamp
-        entry.timestamp = System.currentTimeMillis() + cacheTTL;
-
-        // Add new entry to cache
-        synchronized (cache) {
-            // Check cache size, and remove elements if too big
-            if ((cache.lookup(name) == null) && cache.allocate(entry.size)) {
-                cache.load(entry);
-            }
-        }
-
-    }
-
-
-    /**
-     * Remove entry from cache.
-     */
-    protected boolean cacheUnload(String name) {
-        if (cache == null)
-            return false;
-        synchronized (cache) {
-            return cache.unload(name);
-        }
     }
 
 

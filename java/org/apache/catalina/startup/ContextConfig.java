@@ -108,10 +108,8 @@ import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.WebOrdering;
-import org.apache.catalina.startup.BaseContextScanner.ServletContainerInitializerInfoImpl;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.WarComponents;
-import org.apache.tomcat.WarComponents.ServletContainerInitializerInfo;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
 import org.xml.sax.ErrorHandler;
@@ -1084,13 +1082,28 @@ public class ContextConfig
                 order.addAll(otherPos, jarsSet);
             }
         } else if (orderings.size() > 0) {
-            // FIXME: Use the ordering specified by the fragments
-            
+            // Resolve relative ordering
+            OrderingResolver.resolveOrder(orderings, order);
         } else {
             // No order specified
             order.addAll(jarsSet);
         }
         
+    }
+    
+    
+    /**
+     * Get the jar name corresponding to the ordering name.
+     */
+    protected String getJarName(List<WebOrdering> orderings, String name) {
+        Iterator<WebOrdering> orderingsIterator = orderings.iterator();
+        while (orderingsIterator.hasNext()) {
+            WebOrdering ordering = orderingsIterator.next();
+            if (name.equals(ordering.getName())) {
+                return ordering.getJar();
+            }
+        }
+        return null;
     }
     
     
@@ -1746,15 +1759,13 @@ public class ContextConfig
         }
         // Scan all Servlet API related annotations
         if (ok && !context.getIgnoreAnnotations()) {
-            // FIXME: It is likely this should be moved to after running all listeners,
-            // as they can add servlets or filters
+            // FIXME: Moved to after running all listeners, as they can add servlets or filters
             WebAnnotationSet.loadApplicationAnnotations(context);
         }
         if (ok) {
             validateSecurityRoles();
         }
 
-        // FIXME: See about order
         // Find webapp overlays
         if (ok) {
             JarRepository jarRepository = context.getJarRepository();
@@ -1777,7 +1788,6 @@ public class ContextConfig
                         (ServletContainerInitializer) service.getServletContainerInitializer().newInstance();
                     servletContainerInitializer.onStartup(service.getStartupNotifySet(), context.getServletContext());
                 } catch (Throwable t) {
-                    // FIXME: error message
                     log.error(sm.getString("contextConfig.servletContainerInitializer", 
                             service.getServletContainerInitializer()), t);
                     ok = false;

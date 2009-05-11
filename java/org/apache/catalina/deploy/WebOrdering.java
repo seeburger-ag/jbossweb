@@ -28,14 +28,19 @@ import java.util.List;
 
 public class WebOrdering implements Serializable {
 
+    private static final long serialVersionUID = 5603203103871892211L;
+
     protected String jar = null;
     protected String name = null;
     protected List<String> after = new ArrayList<String>();
     protected List<String> before = new ArrayList<String>();
-
+    protected boolean afterOthers = false;
+    protected boolean beforeOthers = false;
+    
     public String getName() {
         return name;
     }
+    
     public void setName(String name) {
         this.name = name;
     }
@@ -55,11 +60,29 @@ public class WebOrdering implements Serializable {
     public void addBefore(String name) {
         before.add(name);
     }
+
     public String getJar() {
         return jar;
     }
+    
     public void setJar(String jar) {
         this.jar = jar;
+    }
+    
+    public boolean isAfterOthers() {
+        return afterOthers;
+    }
+    
+    public void setAfterOthers(boolean afterOthers) {
+        this.afterOthers = afterOthers;
+    }
+    
+    public boolean isBeforeOthers() {
+        return beforeOthers;
+    }
+    
+    public void setBeforeOthers(boolean beforeOthers) {
+        this.beforeOthers = beforeOthers;
     }
 
 }

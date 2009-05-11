@@ -741,7 +741,7 @@ public class WebappClassLoader
         if (getJarPath() != null) {
 
             try {
-                NamingEnumeration enumeration = resources.listBindings(getJarPath());
+                NamingEnumeration enumeration = resources.list(getJarPath());
                 int i = 0;
                 while (enumeration.hasMoreElements() && (i < length)) {
                     NameClassPair ncPair = (NameClassPair) enumeration.nextElement();

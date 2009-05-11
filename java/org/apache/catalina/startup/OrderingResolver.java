@@ -21,19 +21,38 @@
  */
 
 
-package org.apache.catalina;
+package org.apache.catalina.startup;
 
-import org.apache.tomcat.WarComponents;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-public interface ContextScanner extends WarComponents {
+import org.apache.catalina.deploy.WebOrdering;
+
+/**
+ * Resolves the relative ordering of web fragments. This is in a separate class
+ * because of the relative complexity.
+ * 
+ * @author Remy Maucherat
+ */
+public class OrderingResolver {
+
+    protected class Ordering {
+        protected WebOrdering ordering;
+        protected List<WebOrdering> after = new ArrayList<WebOrdering>();
+        protected List<WebOrdering> before = new ArrayList<WebOrdering>();
+        protected boolean afterOthers = false;
+        protected boolean beforeOthers = false;
+    }
 
     /**
-     * Scan the given context's default locations for annotations, overlays 
-     * and web.xml fragments.
+     * Generate the Jar processing order.
      * 
-     * @param context
+     * @param webOrderings The list of orderings, as parsed from the fragments
+     * @param order The generated order list
      */
-    public void scan(Context context);
-    
+    public static void resolveOrder(List<WebOrdering> webOrderings, List<String> order) {
+        
+    }
     
 }
