@@ -341,7 +341,7 @@ public class ContextConfig
 
 
     public Iterator<String> getWebFragments() {
-        return webFragments.iterator();
+        return order.iterator();
     }
 
 
@@ -1010,7 +1010,7 @@ public class ContextConfig
         // Read order from web.xml and fragments (note: if no fragments, skip)
         WebAbsoluteOrdering absoluteOrdering = context.getWebAbsoluteOrdering();
         List<WebOrdering> orderings = new ArrayList<WebOrdering>();
-        Iterator<String> jarsWithWebFragments = getWebFragments();
+        Iterator<String> jarsWithWebFragments = webFragments.iterator();
         HashSet<String> jarsSet = new HashSet<String>();
 
         // Parse the ordering defined in web fragments
