@@ -651,6 +651,9 @@ public class Response
 
         coyoteResponse.reset();
         outputBuffer.reset();
+        usingOutputStream = false;
+        usingWriter = false;
+        isCharacterEncodingSet = false;
     }
 
 
