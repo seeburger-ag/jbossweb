@@ -1083,7 +1083,12 @@ public class ContextConfig
             }
         } else if (orderings.size() > 0) {
             // Resolve relative ordering
-            OrderingResolver.resolveOrder(orderings, order);
+            try {
+                OrderingResolver.resolveOrder(orderings, order);
+            } catch (IllegalStateException e) {
+                log.error(e.getMessage(), e);
+                ok = false;
+            }
         } else {
             // No order specified
             order.addAll(jarsSet);
