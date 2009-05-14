@@ -2,7 +2,7 @@ Roadmap for JBoss Web 3.0
 
 Standalone:
 - Resources overlay implementation
-- Jasper plugin for TLD metadata
+- Jasper plugins for TLD metadata and web.xml metadata
 - Access control annotations
 - Update digester XML parsing rules for web.xml updates (session tracking-mode, cookie-config, servlet enabled,
   servlets and filters async-supported, http-method-omission)

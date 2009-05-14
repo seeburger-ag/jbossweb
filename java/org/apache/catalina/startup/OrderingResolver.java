@@ -330,12 +330,12 @@ public class OrderingResolver {
         ArrayList<WebOrdering> webOrderings = new ArrayList<WebOrdering>();
         resolveOrder(webOrderings, order);
         
-        main1(args);
-        main2(args);
-        main3(args);
+        test1();
+        test2();
+        test3();
     }
 
-    public static void main1(String args[]) {
+    public static void test1() {
 
         ArrayList<String> order = new ArrayList<String>();
         ArrayList<WebOrdering> webOrderings = new ArrayList<WebOrdering>();
@@ -389,7 +389,7 @@ public class OrderingResolver {
         
     }
     
-    public static void main2(String args[]) {
+    public static void test2() {
 
         ArrayList<String> order = new ArrayList<String>();
         ArrayList<WebOrdering> webOrderings = new ArrayList<WebOrdering>();
@@ -441,7 +441,7 @@ public class OrderingResolver {
         
     }
     
-    public static void main3(String args[]) {
+    public static void test3() {
 
         ArrayList<String> order = new ArrayList<String>();
         ArrayList<WebOrdering> webOrderings = new ArrayList<WebOrdering>();
