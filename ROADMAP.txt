@@ -1,7 +1,6 @@
 Roadmap for JBoss Web 3.0
 
 Standalone:
-- Web fragments ordering
 - Resources overlay implementation
 - Jasper plugin for TLD metadata
 - Access control annotations

@@ -56,19 +56,27 @@ public class OrderingResolver {
         protected boolean afterOthers = false;
         protected boolean beforeOthers = false;
         
-        public boolean validate() {
-            try {
-                isBefore(new Ordering());
-                isAfter(new Ordering());
-            } catch (IllegalStateException e) {
-                return false;
-            }
-            return true;
+        public boolean addAfter(Ordering ordering) {
+            return after.add(ordering);
         }
         
+        public boolean addBefore(Ordering ordering) {
+            return before.add(ordering);
+        }
+        
+        public void validate() {
+            isBefore(new Ordering());
+            isAfter(new Ordering());
+        }
+        
+        /**
+         * Check (recursively) if a fragment is before the specified fragment.
+         * 
+         * @param ordering
+         * @return
+         */
         public boolean isBefore(Ordering ordering) {
-            Set<Ordering> checked = new HashSet<Ordering>();
-            return isBeforeInternal(ordering, checked);
+            return isBeforeInternal(ordering, new HashSet<Ordering>());
         }
         
         protected boolean isBeforeInternal(Ordering ordering, Set<Ordering> checked) {
@@ -80,7 +88,7 @@ public class OrderingResolver {
             while (beforeIterator.hasNext()) {
                 Ordering check = beforeIterator.next();
                 if (checked.contains(check)) {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException(sm.getString("ordering.orderConflict", this.ordering.getJar()));
                 }
                 if (check.isBeforeInternal(ordering, checked)) {
                     return false;
@@ -96,8 +104,7 @@ public class OrderingResolver {
          * @return
          */
         public boolean isAfter(Ordering ordering) {
-            Set<Ordering> checked = new HashSet<Ordering>();
-            return isAfterInternal(ordering, checked);
+            return isAfterInternal(ordering, new HashSet<Ordering>());
         }
         
         protected boolean isAfterInternal(Ordering ordering, Set<Ordering> checked) {
@@ -109,7 +116,7 @@ public class OrderingResolver {
             while (afterIterator.hasNext()) {
                 Ordering check = afterIterator.next();
                 if (checked.contains(check)) {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException(sm.getString("ordering.orderConflict", this.ordering.getJar()));
                 }
                 if (check.isAfterInternal(ordering, checked)) {
                     return false;
@@ -138,7 +145,7 @@ public class OrderingResolver {
             }
             return false;
         }
-        
+
         /**
          * Check is a fragment marked as after others is before a fragment that is not.
          * 
@@ -198,14 +205,14 @@ public class OrderingResolver {
                 Iterator<Ordering> workIterator2 = work.iterator();
                 boolean found = false;
                 while (workIterator2.hasNext()) {
-                    Ordering ordering2 = workIterator.next();
+                    Ordering ordering2 = workIterator2.next();
                     if (name.equals(ordering2.ordering.getName())) {
                         if (found) {
                             // Duplicate name
                             throw new IllegalStateException(sm.getString("ordering.duplicateName", webOrdering.getJar()));
                         }
-                        ordering.after.add(ordering2);
-                        ordering2.before.add(ordering);
+                        ordering.addAfter(ordering2);
+                        ordering2.addBefore(ordering);
                         found = true;
                     }
                 }
@@ -214,20 +221,20 @@ public class OrderingResolver {
                     throw new IllegalStateException(sm.getString("ordering.unkonwnName", webOrdering.getJar()));
                 }
             }
-            Iterator<String> before = webOrdering.getAfter().iterator();
+            Iterator<String> before = webOrdering.getBefore().iterator();
             while (before.hasNext()) {
                 String name = before.next();
                 Iterator<Ordering> workIterator2 = work.iterator();
                 boolean found = false;
                 while (workIterator2.hasNext()) {
-                    Ordering ordering2 = workIterator.next();
+                    Ordering ordering2 = workIterator2.next();
                     if (name.equals(ordering2.ordering.getName())) {
                         if (found) {
                             // Duplicate name
                             throw new IllegalStateException(sm.getString("ordering.duplicateName", webOrdering.getJar()));
                         }
-                        ordering.before.add(ordering2);
-                        ordering2.after.add(ordering);
+                        ordering.addBefore(ordering2);
+                        ordering2.addAfter(ordering);
                         found = true;
                     }
                 }
@@ -271,9 +278,9 @@ public class OrderingResolver {
                 tempOrder.add(pos + 1, ordering);
             } else if (ordering.afterOthers) {
                 // Insert at the last possible element
-                int insertBefore = tempOrder.size() - 1;
+                int insertBefore = tempOrder.size();
                 boolean first = ordering.isFirstAfterOthers();
-                int firstAfterOthers = tempOrder.size() - 1;
+                int firstAfterOthers = tempOrder.size();
                 for (int i = tempOrder.size() - 1; i >= 0; i--) {
                     if (ordering.isBefore(tempOrder.get(i))) {
                         insertBefore = i;
@@ -290,7 +297,7 @@ public class OrderingResolver {
             } else {
                 // Insert according to other already inserted elements
                 int insertAfter = -1;
-                int insertBefore = tempOrder.size() - 1;
+                int insertBefore = tempOrder.size();
                 for (int i = 0; i < tempOrder.size(); i++) {
                     if (ordering.isAfter(tempOrder.get(i)) || tempOrder.get(i).beforeOthers) {
                         insertAfter = i;
@@ -317,5 +324,161 @@ public class OrderingResolver {
         
     }
     
+    
+    public static void main(String args[]) {
+        ArrayList<String> order = new ArrayList<String>();
+        ArrayList<WebOrdering> webOrderings = new ArrayList<WebOrdering>();
+        resolveOrder(webOrderings, order);
+        
+        main1(args);
+        main2(args);
+        main3(args);
+    }
+
+    public static void main1(String args[]) {
+
+        ArrayList<String> order = new ArrayList<String>();
+        ArrayList<WebOrdering> webOrderings = new ArrayList<WebOrdering>();
+
+        WebOrdering A = new WebOrdering();
+        A.setName("A");
+        A.setJar("A.jar");
+        A.setAfterOthers(true);
+        A.addAfter("C");
+        webOrderings.add(A);
+        
+        WebOrdering B = new WebOrdering();
+        B.setName("B");
+        B.setJar("B.jar");
+        B.setBeforeOthers(true);
+        webOrderings.add(B);
+        
+        WebOrdering C = new WebOrdering();
+        C.setName("C");
+        C.setJar("C.jar");
+        C.setAfterOthers(true);
+        webOrderings.add(C);
+        
+        WebOrdering D = new WebOrdering();
+        D.setName("D");
+        D.setJar("D.jar");
+        webOrderings.add(D);
+        
+        WebOrdering E = new WebOrdering();
+        E.setName("E");
+        E.setJar("E.jar");
+        webOrderings.add(E);
+        
+        WebOrdering F = new WebOrdering();
+        F.setName("F");
+        F.setJar("F.jar");
+        F.setBeforeOthers(true);
+        F.addBefore("B");
+        webOrderings.add(F);
+        
+        long n1 = System.nanoTime();
+        resolveOrder(webOrderings, order);
+        long n2 = System.nanoTime();
+        
+        System.out.print("Result: ");
+        Iterator<String> orderIterator = order.iterator();
+        while (orderIterator.hasNext()) {
+            System.out.print(orderIterator.next() + " ");
+        }
+        System.out.println("ns: " + (n2 - n1));
+        
+    }
+    
+    public static void main2(String args[]) {
+
+        ArrayList<String> order = new ArrayList<String>();
+        ArrayList<WebOrdering> webOrderings = new ArrayList<WebOrdering>();
+
+        WebOrdering A = new WebOrdering();
+        A.setJar("noid.jar");
+        A.setAfterOthers(true);
+        A.addBefore("C");
+        webOrderings.add(A);
+        
+        WebOrdering B = new WebOrdering();
+        B.setName("B");
+        B.setJar("B.jar");
+        B.setBeforeOthers(true);
+        webOrderings.add(B);
+        
+        WebOrdering C = new WebOrdering();
+        C.setName("C");
+        C.setJar("C.jar");
+        webOrderings.add(C);
+        
+        WebOrdering D = new WebOrdering();
+        D.setName("D");
+        D.setJar("D.jar");
+        D.setAfterOthers(true);
+        webOrderings.add(D);
+        
+        WebOrdering E = new WebOrdering();
+        E.setName("E");
+        E.setJar("E.jar");
+        E.setBeforeOthers(true);
+        webOrderings.add(E);
+        
+        WebOrdering F = new WebOrdering();
+        F.setName("F");
+        F.setJar("F.jar");
+        webOrderings.add(F);
+        
+        long n1 = System.nanoTime();
+        resolveOrder(webOrderings, order);
+        long n2 = System.nanoTime();
+        
+        System.out.print("Result: ");
+        Iterator<String> orderIterator = order.iterator();
+        while (orderIterator.hasNext()) {
+            System.out.print(orderIterator.next() + " ");
+        }
+        System.out.println("ns: " + (n2 - n1));
+        
+    }
+    
+    public static void main3(String args[]) {
+
+        ArrayList<String> order = new ArrayList<String>();
+        ArrayList<WebOrdering> webOrderings = new ArrayList<WebOrdering>();
+
+        WebOrdering A = new WebOrdering();
+        A.setName("A");
+        A.setJar("A.jar");
+        A.addAfter("B");
+        webOrderings.add(A);
+        
+        WebOrdering B = new WebOrdering();
+        B.setName("B");
+        B.setJar("B.jar");
+        webOrderings.add(B);
+        
+        WebOrdering C = new WebOrdering();
+        C.setName("C");
+        C.setJar("C.jar");
+        C.setBeforeOthers(true);
+        webOrderings.add(C);
+        
+        WebOrdering D = new WebOrdering();
+        D.setName("D");
+        D.setJar("D.jar");
+        webOrderings.add(D);
+        
+        long n1 = System.nanoTime();
+        resolveOrder(webOrderings, order);
+        long n2 = System.nanoTime();
+        
+        System.out.print("Result: ");
+        Iterator<String> orderIterator = order.iterator();
+        while (orderIterator.hasNext()) {
+            System.out.print(orderIterator.next() + " ");
+        }
+        System.out.println("ns: " + (n2 - n1));
+        
+    }
     
 }
