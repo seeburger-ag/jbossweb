@@ -385,6 +385,25 @@ public class ContextConfig
                 context.setDocBase(originalDocBase);
                 originalDocBase = docBase;
             }
+            // Invoke Servlet container initializer: instantiate and call onStartup
+            if (ok) {
+                Iterator<ServletContainerInitializerInfo> initializers = 
+                    getServletContainerInitializerInfo().values().iterator();
+                while (initializers.hasNext()) {
+                    ServletContainerInitializerInfo service = initializers.next();
+                    try {
+                        ServletContainerInitializer servletContainerInitializer = 
+                            (ServletContainerInitializer) service.getServletContainerInitializer().newInstance();
+                        servletContainerInitializer.onStartup(service.getStartupNotifySet(), context.getServletContext());
+                    } catch (Throwable t) {
+                        log.error(sm.getString("contextConfig.servletContainerInitializer", 
+                                service.getServletContainerInitializer().getName()), t);
+                        ok = false;
+                    }
+                }
+            }
+        } else if (event.getType().equals(Context.COMPLETE_CONFIG_EVENT)) {
+            completeConfig();
         } else if (event.getType().equals(Lifecycle.STOP_EVENT)) {
             if (originalDocBase != null) {
                 String docBase = context.getDocBase();
@@ -569,7 +588,7 @@ public class ContextConfig
 
     }
     
-    // FIXME: Do TLD parsing when found
+    // FIXME: Do TLD parsing when found ? (clarification from EG states there's no order)
     protected void applicationTldConfig() {
         
         // Add all TLDs from explicit web config
@@ -1356,7 +1375,8 @@ public class ContextConfig
                 }
                 servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
             } catch (Exception e) {
-                // FIXME: error message or exception
+                log.warn(sm.getString("contextConfig.servletContainerInitializer", file.getName()), e);
+                return;
             } finally {
                 try {
                     if (is != null) {
@@ -1378,7 +1398,8 @@ public class ContextConfig
                         typesArray = handlesTypes.value();
                     }
                 } catch (Throwable t) {
-                    // FIXME: error message or exception
+                    log.warn(sm.getString("contextConfig.servletContainerInitializer", file.getName()), t);
+                    return;
                 }
             }
             // Add in jarService map, and add in the local map used to speed up lookups
@@ -1765,48 +1786,6 @@ public class ContextConfig
         if (ok) {
             applicationTldConfig();
         }
-        // Scan all Servlet API related annotations
-        if (ok && !context.getIgnoreAnnotations()) {
-            // FIXME: Moved to after running all listeners, as they can add servlets or filters
-            WebAnnotationSet.loadApplicationAnnotations(context);
-        }
-        if (ok) {
-            validateSecurityRoles();
-        }
-
-        // Find webapp overlays
-        if (ok) {
-            JarRepository jarRepository = context.getJarRepository();
-            JarFile[] jars = jarRepository.findJars();
-            for (int i = 0; i < jars.length; i++) {
-                if (jars[i].getEntry(Globals.OVERLAY_PATH) != null) {
-                    overlays.add(jars[i].getName());
-                }
-            }
-        }
-
-        // Invoke Servlet container initializer: instantiate and call onStartup
-        if (ok) {
-            Iterator<ServletContainerInitializerInfo> initializers = 
-                getServletContainerInitializerInfo().values().iterator();
-            while (initializers.hasNext()) {
-                ServletContainerInitializerInfo service = initializers.next();
-                try {
-                    ServletContainerInitializer servletContainerInitializer = 
-                        (ServletContainerInitializer) service.getServletContainerInitializer().newInstance();
-                    servletContainerInitializer.onStartup(service.getStartupNotifySet(), context.getServletContext());
-                } catch (Throwable t) {
-                    log.error(sm.getString("contextConfig.servletContainerInitializer", 
-                            service.getServletContainerInitializer()), t);
-                    ok = false;
-                }
-            }
-        }
-        
-        // Configure an authenticator if we need one
-        if (ok) {
-            authenticatorConfig();
-        }
 
         // Dump the contents of this pipeline if requested
         if ((log.isDebugEnabled()) && (context instanceof ContainerBase)) {
@@ -1833,6 +1812,43 @@ public class ContextConfig
 
     }
 
+    /**
+     * Process a "start" event for this Context.
+     */
+    protected void completeConfig() {
+        // Called from StandardContext.start()
+
+        // Scan all Servlet API related annotations
+        if (ok && !context.getIgnoreAnnotations()) {
+            WebAnnotationSet.loadApplicationAnnotations(context);
+        }
+        if (ok) {
+            validateSecurityRoles();
+        }
+
+        // Configure an authenticator if we need one
+        if (ok) {
+            authenticatorConfig();
+        }
+
+        // Find and configure webapp overlays
+        if (ok) {
+            JarRepository jarRepository = context.getJarRepository();
+            JarFile[] jars = jarRepository.findJars();
+            for (int i = 0; i < jars.length; i++) {
+                if (jars[i].getEntry(Globals.OVERLAY_PATH) != null) {
+                    overlays.add(jars[i].getName());
+                }
+            }
+        }
+
+        // Make our application available if no problems were encountered
+        if (!ok) {
+            log.error(sm.getString("contextConfig.unavailable"));
+            context.setConfigured(false);
+        }
+
+    }
 
     /**
      * Process a "stop" event for this Context.

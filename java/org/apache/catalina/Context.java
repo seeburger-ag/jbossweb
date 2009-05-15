@@ -66,6 +66,13 @@ public interface Context extends Container {
     public static final String RELOAD_EVENT = "reload";
 
 
+    /**
+     * The LifecycleEvent type sent to complete the configuration 
+     * (called after running all listeners and other init callbacks).
+     */
+    public static final String COMPLETE_CONFIG_EVENT = "complete-config";
+
+
     // ------------------------------------------------------------- Properties
 
 

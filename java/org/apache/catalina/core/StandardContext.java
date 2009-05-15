@@ -4127,7 +4127,16 @@ public class StandardContext
                 }
             }
 
-            // Start manager
+            if (ok) {
+                // Notify our interested LifecycleListeners
+                lifecycle.fireLifecycleEvent(COMPLETE_CONFIG_EVENT, null);
+            }
+            
+            if (!getConfigured()) {
+                ok = false;
+            }
+
+           // Start manager
             if (ok && (manager != null) && (manager instanceof Lifecycle)) {
                 ok = false;
                 ((Lifecycle) getManager()).start();
@@ -4152,6 +4161,10 @@ public class StandardContext
                 loadOnStartup(findChildren());
             }
             
+        } catch (Throwable t) {
+            // This can happen in rare cases with custom components
+            ok = false;
+            log.error(sm.getString("standardContext.startFailed", getName()), t);
         } finally {
             // Unbinding thread
             unbindThread(oldCCL);
