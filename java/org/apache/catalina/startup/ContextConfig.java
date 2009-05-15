@@ -998,64 +998,67 @@ public class ContextConfig
      */
     protected void createFragmentsOrder() {
         
+        WebAbsoluteOrdering absoluteOrdering = context.getWebAbsoluteOrdering();
+        List<WebOrdering> orderings = new ArrayList<WebOrdering>();
+        HashSet<String> jarsSet = new HashSet<String>();
+        boolean fragmentFound = false;
+        
+        // Parse the ordering defined in web fragments
         JarRepository jarRepository = context.getJarRepository();
         JarFile[] jars = jarRepository.findJars();
         for (int i = 0; i < jars.length; i++) {
             // Find webapp descriptor fragments
-            if (jars[i].getEntry(Globals.WEB_FRAGMENT_PATH) != null) {
-                webFragments.add(jars[i].getName());
-            }
-        }
-        
-        // Read order from web.xml and fragments (note: if no fragments, skip)
-        WebAbsoluteOrdering absoluteOrdering = context.getWebAbsoluteOrdering();
-        List<WebOrdering> orderings = new ArrayList<WebOrdering>();
-        Iterator<String> jarsWithWebFragments = webFragments.iterator();
-        HashSet<String> jarsSet = new HashSet<String>();
-
-        // Parse the ordering defined in web fragments
-        while (jarsWithWebFragments.hasNext()) {
-            String jar = jarsWithWebFragments.next();
-            jarsSet.add(jar);
-            JarFile jarFile = null;
+            jarsSet.add(jars[i].getName());
+            JarFile jarFile = jars[i];
             InputStream is = null;
-            try {
-                jarFile = jarRepository.findJar(jar);
-                ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
-                if (entry != null) {
+            ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
+            if (entry != null) {
+                fragmentFound = true;
+                try {
+                    webFragments.add(jars[i].getName());
                     is = jarFile.getInputStream(entry);
-                    InputSource input = new InputSource((new File(jar)).toURI().toURL().toExternalForm());
+                    InputSource input = new InputSource((new File(jars[i].getName())).toURI().toURL().toExternalForm());
                     input.setByteStream(is);
                     synchronized (fragmentOrderingDigester) {
                         try {
                             fragmentOrderingDigester.parse(input);
                             WebOrdering ordering = (WebOrdering) fragmentOrderingDigester.peek();
                             if (ordering != null) {
-                                ordering.setJar(jar);
+                                ordering.setJar(jars[i].getName());
                                 orderings.add(ordering);
                             }
                         } finally {
                             fragmentOrderingDigester.reset();
                         }
                     }
-                }
-            } catch (Exception e) {
-                log.error(sm.getString("contextConfig.fragmentOrderingParse", jar), e);
-                ok = false;
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
+                } catch (Exception e) {
+                    log.error(sm.getString("contextConfig.fragmentOrderingParse", jars[i].getName()), e);
+                    ok = false;
+                } finally {
+                    try {
+                        if (is != null) {
+                            is.close();
+                        }
+                    } catch (IOException e) {
+                        // Ignore
                     }
-                } catch (IOException e) {
-                    // Ignore
                 }
+            } else {
+                // If there is no fragment, still consider it for ordering as a
+                // fragment specifying no name and no order
+                WebOrdering ordering = new WebOrdering();
+                ordering.setJar(jars[i].getName());
+                orderings.add(ordering);
             }
         }
-
+        if (!fragmentFound) {
+            // Drop the order as there is no fragment in the webapp
+            orderings.clear();
+        }
+        
         // Generate web fragments parsing order
         if (absoluteOrdering != null) {
-            // Absolute ordering from web.xml, any fragment ordering is ignored
+            // Absolute ordering from web.xml, any relative fragment ordering is ignored
             List<String> fragmentNames = absoluteOrdering.getOrder();
             int otherPos = -1;
             for (int i = 0; i < fragmentNames.size(); i++) {
@@ -1141,9 +1144,9 @@ public class ContextConfig
             // Parse web fragment according to order
             // FIXME: Merging rules
             InputStream is = null;
-            try {
-                ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
-                if (entry != null) {
+            ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
+            if (entry != null) {
+                try {
                     is = jarFile.getInputStream(entry);
                     InputSource input = new InputSource((new File(jar)).toURI().toURL().toExternalForm());
                     input.setByteStream(is);
@@ -1161,17 +1164,17 @@ public class ContextConfig
                             parseException = null;
                         }
                     }
-                }
-            } catch (Exception e) {
-                log.error(sm.getString("contextConfig.applicationParse", jar), e);
-                ok = false;
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
+                } catch (Exception e) {
+                    log.error(sm.getString("contextConfig.applicationParse", jar), e);
+                    ok = false;
+                } finally {
+                    try {
+                        if (is != null) {
+                            is.close();
+                        }
+                    } catch (IOException e) {
+                        // Ignore
                     }
-                } catch (IOException e) {
-                    // Ignore
                 }
             }
 
