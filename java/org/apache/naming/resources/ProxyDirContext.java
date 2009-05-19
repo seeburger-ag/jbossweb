@@ -49,22 +49,32 @@ package org.apache.naming.resources;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.NotContextException;
+import javax.naming.OperationNotSupportedException;
+import javax.naming.directory.AttributeModificationException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.InvalidAttributesException;
+import javax.naming.directory.InvalidSearchControlsException;
+import javax.naming.directory.InvalidSearchFilterException;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.apache.naming.NamingContextBindingsEnumeration;
+import org.apache.naming.NamingContextEnumeration;
 import org.apache.naming.StringManager;
 
 /**
@@ -149,7 +159,7 @@ public class ProxyDirContext implements DirContext {
     /**
      * Overlay DirContexts.
      */
-    protected DirContext[] overlayDirContexts;
+    protected DirContext[] overlays = null;
 
 
     /**
@@ -247,6 +257,20 @@ public class ProxyDirContext implements DirContext {
         return this.contextName;
     }
 
+    
+    /**
+     * Add overlay.
+     */
+    public void addOverlay(DirContext overlay) {
+        if (overlays == null) {
+            overlays = new DirContext[0];
+        }
+        DirContext[] result = new DirContext[overlays.length + 1];
+        System.arraycopy(overlays, 0, result, 0, overlays.length);
+        result[overlays.length] = overlay;
+        overlays = result;
+    }
+    
 
     // -------------------------------------------------------- Context Methods
 
@@ -474,10 +498,53 @@ public class ProxyDirContext implements DirContext {
      * this context. Each element of the enumeration is of type NameClassPair.
      * @exception NamingException if a naming exception is encountered
      */
-    // FIXME: Should use overlays
     public NamingEnumeration<NameClassPair> list(Name name)
         throws NamingException {
-        return dirContext.list(parseName(name));
+        if (overlays == null) {
+            return dirContext.list(parseName(name));
+        } else {
+            NamingException notFound = null;
+            HashMap<String, NameClassPair> merged = null;
+            NamingEnumeration<NameClassPair> main = null;
+            try {
+                main = dirContext.list(parseName(name));
+            } catch (NamingException e) {
+                notFound = e;
+            }
+            for (int i = 0; i < overlays.length; i++) {
+                NamingEnumeration<NameClassPair> overlay = null;
+                try {
+                    overlay = overlays[i].list(parseName(name));
+                } catch (NamingException e) {
+                    // Ignore
+                }
+                if (main == null) {
+                    main = overlay;
+                } else {
+                    // Merge that into the merged set
+                    if (merged == null) {
+                        merged = new HashMap<String, NameClassPair>();
+                        while (main.hasMore()) {
+                            NameClassPair pair = main.next();
+                            merged.put(pair.getName(), pair);
+                        }
+                    }
+                    while (overlay.hasMore()) {
+                        NameClassPair pair = overlay.next();
+                        if (merged.get(pair.getName()) == null) {
+                            merged.put(pair.getName(), pair);
+                        }
+                    }
+                }
+            }
+            if (main == null && merged == null) {
+                throw notFound;
+            } else if (merged != null) {
+                return new NamingContextEnumeration(merged.values().iterator());
+            } else {
+                return main;
+            }
+        }
     }
 
 
@@ -490,10 +557,53 @@ public class ProxyDirContext implements DirContext {
      * this context. Each element of the enumeration is of type NameClassPair.
      * @exception NamingException if a naming exception is encountered
      */
-    // FIXME: Should use overlays
     public NamingEnumeration<NameClassPair> list(String name)
         throws NamingException {
-        return dirContext.list(parseName(name));
+        if (overlays == null) {
+            return dirContext.list(parseName(name));
+        } else {
+            NamingException notFound = null;
+            HashMap<String, NameClassPair> merged = null;
+            NamingEnumeration<NameClassPair> main = null;
+            try {
+                main = dirContext.list(parseName(name));
+            } catch (NamingException e) {
+                notFound = e;
+            }
+            for (int i = 0; i < overlays.length; i++) {
+                NamingEnumeration<NameClassPair> overlay = null;
+                try {
+                    overlay = overlays[i].list(parseName(name));
+                } catch (NamingException e) {
+                    // Ignore
+                }
+                if (main == null) {
+                    main = overlay;
+                } else {
+                    // Merge that into the merged set
+                    if (merged == null) {
+                        merged = new HashMap<String, NameClassPair>();
+                        while (main.hasMore()) {
+                            NameClassPair pair = main.next();
+                            merged.put(pair.getName(), pair);
+                        }
+                    }
+                    while (overlay.hasMore()) {
+                        NameClassPair pair = overlay.next();
+                        if (merged.get(pair.getName()) == null) {
+                            merged.put(pair.getName(), pair);
+                        }
+                    }
+                }
+            }
+            if (main == null && merged == null) {
+                throw notFound;
+            } else if (merged != null) {
+                return new NamingContextEnumeration(merged.values().iterator());
+            } else {
+                return main;
+            }
+        }
     }
 
 
@@ -510,10 +620,53 @@ public class ProxyDirContext implements DirContext {
      * Each element of the enumeration is of type Binding.
      * @exception NamingException if a naming exception is encountered
      */
-    // FIXME: Should use overlays
     public NamingEnumeration<Binding> listBindings(Name name)
         throws NamingException {
-        return dirContext.listBindings(parseName(name));
+        if (overlays == null) {
+            return dirContext.listBindings(parseName(name));
+        } else {
+            NamingException notFound = null;
+            HashMap<String, Binding> merged = null;
+            NamingEnumeration<Binding> main = null;
+            try {
+                main = dirContext.listBindings(parseName(name));
+            } catch (NamingException e) {
+                notFound = e;
+            }
+            for (int i = 0; i < overlays.length; i++) {
+                NamingEnumeration<Binding> overlay = null;
+                try {
+                    overlay = overlays[i].listBindings(parseName(name));
+                } catch (NamingException e) {
+                    // Ignore
+                }
+                if (main == null) {
+                    main = overlay;
+                } else {
+                    // Merge that into the merged set
+                    if (merged == null) {
+                        merged = new HashMap<String, Binding>();
+                        while (main.hasMore()) {
+                            Binding pair = main.next();
+                            merged.put(pair.getName(), pair);
+                        }
+                    }
+                    while (overlay.hasMore()) {
+                        Binding pair = overlay.next();
+                        if (merged.get(pair.getName()) == null) {
+                            merged.put(pair.getName(), pair);
+                        }
+                    }
+                }
+            }
+            if (main == null && merged == null) {
+                throw notFound;
+            } else if (merged != null) {
+                return new NamingContextBindingsEnumeration(merged.values().iterator(), this);
+            } else {
+                return main;
+            }
+        }
     }
 
 
@@ -526,10 +679,53 @@ public class ProxyDirContext implements DirContext {
      * Each element of the enumeration is of type Binding.
      * @exception NamingException if a naming exception is encountered
      */
-    // FIXME: Should use overlays
     public NamingEnumeration<Binding> listBindings(String name)
         throws NamingException {
-        return dirContext.listBindings(parseName(name));
+        if (overlays == null) {
+            return dirContext.listBindings(parseName(name));
+        } else {
+            NamingException notFound = null;
+            HashMap<String, Binding> merged = null;
+            NamingEnumeration<Binding> main = null;
+            try {
+                main = dirContext.listBindings(parseName(name));
+            } catch (NamingException e) {
+                notFound = e;
+            }
+            for (int i = 0; i < overlays.length; i++) {
+                NamingEnumeration<Binding> overlay = null;
+                try {
+                    overlay = overlays[i].listBindings(parseName(name));
+                } catch (NamingException e) {
+                    // Ignore
+                }
+                if (main == null) {
+                    main = overlay;
+                } else {
+                    // Merge that into the merged set
+                    if (merged == null) {
+                        merged = new HashMap<String, Binding>();
+                        while (main.hasMore()) {
+                            Binding pair = main.next();
+                            merged.put(pair.getName(), pair);
+                        }
+                    }
+                    while (overlay.hasMore()) {
+                        Binding pair = overlay.next();
+                        if (merged.get(pair.getName()) == null) {
+                            merged.put(pair.getName(), pair);
+                        }
+                    }
+                }
+            }
+            if (main == null && merged == null) {
+                throw notFound;
+            } else if (merged != null) {
+                return new NamingContextBindingsEnumeration(merged.values().iterator(), this);
+            } else {
+                return main;
+            }
+        }
     }
 
 
@@ -1529,10 +1725,10 @@ public class ProxyDirContext implements DirContext {
     /**
      * Load entry into cache.
      */
-    // FIXME: Should use overlays
     protected void cacheLoad(CacheEntry entry) {
 
         String name = entry.name;
+        DirContext currentContext = dirContext;
 
         // Retrieve missing info
         boolean exists = true;
@@ -1540,7 +1736,7 @@ public class ProxyDirContext implements DirContext {
         // Retrieving attributes
         if (entry.attributes == null) {
             try {
-                Attributes attributes = dirContext.getAttributes(entry.name);
+                Attributes attributes = currentContext.getAttributes(entry.name);
                 if (!(attributes instanceof ResourceAttributes)) {
                     entry.attributes = 
                         new ResourceAttributes(attributes);
@@ -1551,11 +1747,30 @@ public class ProxyDirContext implements DirContext {
                 exists = false;
             }
         }
+        
+        // Check overlays
+        if (overlays != null) {
+            for (int i = 0; (i < overlays.length) && !exists; i++) {
+                try {
+                    Attributes attributes = overlays[i].getAttributes(entry.name);
+                    if (!(attributes instanceof ResourceAttributes)) {
+                        entry.attributes = 
+                            new ResourceAttributes(attributes);
+                    } else {
+                        entry.attributes = (ResourceAttributes) attributes;
+                    }
+                    currentContext = overlays[i];
+                    exists = true;
+                } catch (NamingException e) {
+                    // Ignore
+                }
+            }
+        }
 
         // Retriving object
         if ((exists) && (entry.resource == null) && (entry.context == null)) {
             try {
-                Object object = dirContext.lookup(name);
+                Object object = currentContext.lookup(name);
                 if (object instanceof InputStream) {
                     entry.resource = new Resource((InputStream) object);
                 } else if (object instanceof DirContext) {
@@ -1610,7 +1825,12 @@ public class ProxyDirContext implements DirContext {
         entry.exists = exists;
 
         // Set timestamp
-        entry.timestamp = System.currentTimeMillis() + cacheTTL;
+        if (currentContext == dirContext) {
+            entry.timestamp = System.currentTimeMillis() + cacheTTL;
+        } else {
+            // Overlay cache never expire
+            entry.timestamp = Long.MAX_VALUE;
+        }
 
         // Add new entry to cache
         synchronized (cache) {

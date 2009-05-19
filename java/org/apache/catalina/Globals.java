@@ -343,7 +343,7 @@ public final class Globals {
      * The folder used for JAR overlays.
      */
     public static final String OVERLAY_PATH =
-        System.getProperty("org.apache.catalina.OVERLAY_PATH", "/META-INF/resources/");
+        System.getProperty("org.apache.catalina.OVERLAY_PATH", "/META-INF/resources");
 
 
     /**

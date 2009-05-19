@@ -109,6 +109,8 @@ import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.WebOrdering;
 import org.apache.catalina.util.StringManager;
+import org.apache.naming.resources.JARDirContext;
+import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.WarComponents;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
@@ -588,7 +590,11 @@ public class ContextConfig
 
     }
     
-    // FIXME: Do TLD parsing when found ? (clarification from EG states there's no order)
+    
+    /**
+     * Parse TLDs. This is separate, and is not subject to the order defined. Also,
+     * all TLDs from all JARs are parsed.
+     */
     protected void applicationTldConfig() {
         
         // Add all TLDs from explicit web config
@@ -1155,13 +1161,11 @@ public class ContextConfig
             scanClasses(explodedJars[i], "", !context.getIgnoreAnnotations());
         }
         
+        // Parse web fragment according to order
         Iterator<String> orderIterator = order.iterator();
         while (orderIterator.hasNext()) {
             String jar = orderIterator.next();
             JarFile jarFile = jarRepository.findJar(jar);
-            
-            // Parse web fragment according to order
-            // FIXME: Merging rules
             InputStream is = null;
             ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
             if (entry != null) {
@@ -1196,14 +1200,15 @@ public class ContextConfig
                     }
                 }
             }
-
+            // Scan the JAR for TLDs and annotations
             scanJar(jarFile, true);
         }
         
-        // Process any Jar not in the order, without annotations
+        // Process any Jar not in the order
         JarFile[] jarFiles = jarRepository.findJars();
         for (int i = 0; i < jarFiles.length; i++) {
             if (!order.contains(jarFiles[i].getName())) {
+                // Scan the JAR for TLDs only
                 scanJar(jarFiles[i], false);
             }
         }
@@ -1831,18 +1836,28 @@ public class ContextConfig
             authenticatorConfig();
         }
 
-        // Find and configure webapp overlays
+        // Find and configure overlays
         if (ok) {
             JarRepository jarRepository = context.getJarRepository();
             JarFile[] jars = jarRepository.findJars();
             for (int i = 0; i < jars.length; i++) {
                 if (jars[i].getEntry(Globals.OVERLAY_PATH) != null) {
+                    if (context.getResources() instanceof ProxyDirContext) {
+                        ProxyDirContext resources = (ProxyDirContext) context.getResources();
+                        JARDirContext overlay = new JARDirContext();
+                        overlay.setJarFile(jars[i], Globals.OVERLAY_PATH);
+                        resources.addOverlay(overlay);
+                    } else {
+                        // Error, overlays need a ProxyDirContext to compose results
+                        log.error(sm.getString("contextConfig.noOverlay", jars[i].getName()));
+                        ok = false;
+                    }
                     overlays.add(jars[i].getName());
                 }
             }
         }
 
-        // Make our application available if no problems were encountered
+        // Make our application unavailable if problems were encountered
         if (!ok) {
             log.error(sm.getString("contextConfig.unavailable"));
             context.setConfigured(false);

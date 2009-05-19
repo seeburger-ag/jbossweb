@@ -148,11 +148,6 @@ public class JARDirContext extends BaseDirContext {
      * Set the JAR file from which data will be read.
      * 
      * @param jarFile The JAR file
-     * 
-     * @exception IllegalArgumentException if the specified value is not
-     *  supported by this implementation
-     * @exception IllegalArgumentException if this would create a
-     *  malformed URL
      */
     public void setJarFile(JarFile jarFile, String prefix) {
 
@@ -162,6 +157,9 @@ public class JARDirContext extends BaseDirContext {
             (sm.getString("resources.null"));
 
         this.prefix = prefix;
+        if (prefix.startsWith("/")) {
+            this.prefix = prefix.substring(1);
+        }
         this.base = jarFile;
         
         loadEntries();
@@ -214,8 +212,6 @@ public class JARDirContext extends BaseDirContext {
      */
     public Object lookup(Name name)
         throws NamingException {
-        //if (prefixName != null)
-        //    name.addAll(0, prefixName);
         if (name.isEmpty())
             return this;
         Entry entry = treeLookup(name);
@@ -301,8 +297,6 @@ public class JARDirContext extends BaseDirContext {
      */
     public NamingEnumeration list(Name name)
         throws NamingException {
-        //if (prefixName != null)
-        //    name.addAll(0, prefixName);
         if (name.isEmpty())
             return new NamingContextEnumeration(list(entries).iterator());
         Entry entry = treeLookup(name);
@@ -347,8 +341,6 @@ public class JARDirContext extends BaseDirContext {
      */
     public NamingEnumeration listBindings(Name name)
         throws NamingException {
-        //if (prefixName != null)
-        //    name.addAll(0, prefixName);
         if (name.isEmpty())
             return new NamingContextBindingsEnumeration(list(entries).iterator(),
                     this);
@@ -464,9 +456,6 @@ public class JARDirContext extends BaseDirContext {
     public Attributes getAttributes(Name name, String[] attrIds)
         throws NamingException {
         
-        //if (prefixName != null)
-        //    name.addAll(0, prefixName);
-
         Entry entry = null;
         if (name.isEmpty())
             entry = entries;
@@ -741,37 +730,6 @@ public class JARDirContext extends BaseDirContext {
 
 
     /**
-     * Add a prefix.
-     */
-    protected String prefix(String path) {
-        if (prefix == null) {
-            return path;
-        } else if (path.startsWith("/")) {
-            return prefix + path;
-        } else {
-            return prefix + "/" + path;
-        }
-    }
-
-
-    /**
-     * Remove a prefix.
-     */
-    protected String unprefix(String path) {
-        if (prefix == null) {
-            return path;
-        } else if (path.startsWith("/")) {
-            if (path.startsWith(prefix)) {
-                
-            }
-            return prefix + path;
-        } else {
-            return prefix + "/" + path;
-        }
-    }
-
-
-    /**
      * Normalize the name of an entry read from the Zip.
      */
     protected String normalize(ZipEntry entry) {
@@ -803,7 +761,6 @@ public class JARDirContext extends BaseDirContext {
                     // Don't create entries for everything in the JAR if there is a prefix
                     continue;
                 }
-                name = name.substring(prefix.length());
                 int pos = name.lastIndexOf('/');
                 // Check that parent entries exist and, if not, create them.
                 // This fixes a bug for war files that don't record separate
@@ -811,8 +768,8 @@ public class JARDirContext extends BaseDirContext {
                 int currentPos = -1;
                 int lastPos = 0;
                 while ((currentPos = name.indexOf('/', lastPos)) != -1) {
-                    Name parentName = new CompositeName(name.substring(0, lastPos));
-                    Name childName = new CompositeName(name.substring(0, currentPos));
+                    Name parentName = new CompositeName(name.substring(prefix.length(), lastPos));
+                    Name childName = new CompositeName(name.substring(prefix.length(), currentPos));
                     String entryName = name.substring(lastPos, currentPos);
                     // Parent should have been created in last cycle through
                     // this loop
@@ -824,7 +781,7 @@ public class JARDirContext extends BaseDirContext {
                         // normalize method and add '/' character to end to
                         // signify that it is a directory entry
                         String zipName = name.substring(1, currentPos) + "/";
-                        child = new Entry(entryName, new JarEntry(prefix + zipName));
+                        child = new Entry(entryName, new JarEntry(zipName));
                         if (parent != null)
                             parent.addChild(child);
                     }
