@@ -337,7 +337,7 @@
     </copy>
     <filter token="VERSION" value="${version}"/>
     <copy tofile="${tomcat.build}/webapps/docs/RELEASE-NOTES.txt" file="RELEASE-NOTES" 
-          filtering="true" />
+          filtering="true" encoding="ISO-8859-1" />
 
     <copy   tofile="${tomcat.build}/webapps/docs/appdev/sample/build.xml"
               file="webapps/docs/appdev/build.xml.txt"/>
@@ -573,7 +573,7 @@
 
     <filter token="VERSION" value="${version}"/>
     <copy tofile="${tomcat.build}/webapps/ROOT/RELEASE-NOTES.txt" file="RELEASE-NOTES" 
-          filtering="true" />
+          filtering="true" encoding="ISO-8859-1" />
 
   	<copy file="${tomcat-dbcp.jar}" todir="${tomcat.build}/lib" />
     <copy file="${jasper-jdt.jar}" todir="${tomcat.build}/lib" />
