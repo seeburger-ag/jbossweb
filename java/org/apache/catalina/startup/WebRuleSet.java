@@ -239,6 +239,11 @@ public class WebRuleSet extends RuleSetBase {
         digester.addRule(prefix + elementName + "/jsp-config",
                          jspConfig);
         
+        digester.addCallMethod(prefix + elementName + "/jsp-config/taglib",
+                "addTaglib", 2);
+        digester.addCallParam(prefix + elementName + "/jsp-config/taglib/taglib-location", 1);
+        digester.addCallParam(prefix + elementName + "/jsp-config/taglib/taglib-uri", 0);
+
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/url-pattern",
                                "addJspMapping", 0);
 
