@@ -46,7 +46,6 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Server;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardServer;
@@ -462,7 +461,7 @@ public class ManagerServlet
         }
 
         // Acquire global JNDI resources if available
-        Server server = ServerFactory.getServer();
+        Server server = ((Engine) host.getParent()).getService().getServer();
         if ((server != null) && (server instanceof StandardServer)) {
             global = ((StandardServer) server).getGlobalNamingContext();
         }
@@ -521,7 +520,7 @@ public class ManagerServlet
      */
     protected synchronized void save(PrintWriter writer, String path) {
 
-        Server server = ServerFactory.getServer();
+        Server server = ((Engine) host.getParent()).getService().getServer();
 
         if (!(server instanceof StandardServer)) {
             writer.println(sm.getString("managerServlet.saveFail", server));

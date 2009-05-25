@@ -84,6 +84,15 @@
         <bug>46925</bug>: Improve search for nested roles in JNDIRealm by replacing recursive search with
         iterative search. Patch provided by Stefan Zoerner. (rjung)
       </fix>
+      <fix>
+        Close stream after error in the classloader. (pero)
+      </fix>
+      <fix>
+        <bug>47046</bug>: JMX unregistration. (markt)
+      </fix>
+      <update>
+        Remove ServerFactory. (markt)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -108,11 +117,10 @@
         <bug>46909</bug>: The ';' should really only be used if there is a following parameter. (markt)
       </fix>
       <fix>
-        <bug>42390</bug>: Correct JSP compilation error with nested tagfile tags with variables with "AT_BEGIN" scope.
-        Patch provided by Konstantin Kolinko. (markt)
+        <bug>37929</bug>: Fix session access to an invalidated session. (markt)
       </fix>
       <fix>
-        <bug>37929</bug>: Fix session access to an invalidated session. (markt)
+        Removed some casts in ELResolverImpl. Patch suggested by kkolinko. (markt)
       </fix>
     </changelog>
   </subsection>

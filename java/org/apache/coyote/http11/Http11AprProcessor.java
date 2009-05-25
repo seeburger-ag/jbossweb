@@ -1482,7 +1482,7 @@ public class Http11AprProcessor implements ActionHook {
     /**
      * Parse host.
      */
-    public void parseHost(MessageBytes valueMB) {
+    protected void parseHost(MessageBytes valueMB) {
 
         if (valueMB == null || valueMB.isNull()) {
             // HTTP/1.0

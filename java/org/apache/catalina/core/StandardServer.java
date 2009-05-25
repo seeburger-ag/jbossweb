@@ -38,7 +38,6 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.util.LifecycleSupport;
@@ -63,16 +62,6 @@ public final class StandardServer
     private static Logger log = Logger.getLogger(StandardServer.class);
    
 
-    // -------------------------------------------------------------- Constants
-
-
-    /**
-     * ServerLifecycleListener classname.
-     */
-    private static String SERVER_LISTENER_CLASS_NAME =
-        "org.apache.catalina.mbeans.ServerLifecycleListener";
-
-
     // ------------------------------------------------------------ Constructor
 
 
@@ -80,9 +69,6 @@ public final class StandardServer
      * Construct a default instance of this class.
      */
     public StandardServer() {
-
-        super();
-        ServerFactory.setServer(this);
 
         globalNamingResources = new NamingResources();
         globalNamingResources.setContainer(this);

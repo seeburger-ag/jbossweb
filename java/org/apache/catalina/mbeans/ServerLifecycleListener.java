@@ -20,6 +20,7 @@ package org.apache.catalina.mbeans;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.management.MBeanException;
 
 import org.apache.catalina.Container;
@@ -36,7 +37,6 @@ import org.apache.catalina.Loader;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Server;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
@@ -48,7 +48,6 @@ import org.apache.catalina.deploy.ContextEnvironment;
 import org.apache.catalina.deploy.ContextResource;
 import org.apache.catalina.deploy.ContextResourceLink;
 import org.apache.catalina.deploy.NamingResources;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -125,19 +124,33 @@ public class ServerLifecycleListener
         Lifecycle lifecycle = event.getLifecycle();
         if (Lifecycle.START_EVENT.equals(event.getType())) {
 
-            if (lifecycle instanceof Server) {
-                createMBeans();
-            }
+            try {
 
-            // We are embedded.
-            if( lifecycle instanceof Service ) {
-                try {
+                if (lifecycle instanceof Server) {
                     MBeanFactory factory = new MBeanFactory();
+                    factory.setContainer(lifecycle);
+                    createMBeans(factory);
+                    createMBeans((Server) lifecycle);
+                }
+
+                if( lifecycle instanceof Service ) {
+                    MBeanFactory factory = new MBeanFactory();
+                    factory.setContainer(lifecycle);
                     createMBeans(factory);
                     createMBeans((Service)lifecycle);
-                } catch( Exception ex ) {
-                    log.error("Create mbean factory");
                 }
+
+            } catch (MBeanException t) {
+
+                Exception e = t.getTargetException();
+                if (e == null)
+                    e = t;
+                log.error("createMBeans: MBeanException", e);
+
+            } catch (Throwable t) {
+
+                log.error("createMBeans: Throwable", t);
+
             }
 
             /*
@@ -148,7 +161,7 @@ public class ServerLifecycleListener
             createMBeans();
             */
 
-        } else if (Lifecycle.STOP_EVENT.equals(event.getType())) {
+        } else if (Lifecycle.AFTER_STOP_EVENT.equals(event.getType())) {
             try {
                 if (lifecycle instanceof Server) {
                     destroyMBeans((Server)lifecycle);
@@ -264,33 +277,6 @@ public class ServerLifecycleListener
 
 
     // ------------------------------------------------------ Protected Methods
-
-
-    /**
-     * Create the MBeans that correspond to every existing node of our tree.
-     */
-    protected void createMBeans() {
-
-        try {
-
-            MBeanFactory factory = new MBeanFactory();
-            createMBeans(factory);
-            createMBeans(ServerFactory.getServer());
-
-        } catch (MBeanException t) {
-
-            Exception e = t.getTargetException();
-            if (e == null)
-                e = t;
-            log.error("createMBeans: MBeanException", e);
-
-        } catch (Throwable t) {
-
-            log.error("createMBeans: Throwable", t);
-
-        }
-
-    }
 
 
     /**
@@ -640,10 +626,6 @@ public class ServerLifecycleListener
      */
     protected void createMBeans(Service service) throws Exception {
 
-        // Create the MBean for the Service itself
-        if (log.isDebugEnabled())
-            log.debug("Creating MBean for Service " + service);
-        //MBeanUtils.createMBean(service);
         if (service instanceof StandardService) {
             ((StandardService) service).addPropertyChangeListener(this);
         }
@@ -676,10 +658,10 @@ public class ServerLifecycleListener
     protected void destroyMBeans(Connector connector, Service service)
         throws Exception {
 
-//        // deregister the MBean for the Connector itself
-//        if (log.isDebugEnabled())
-//            log.debug("Destroying MBean for Connector " + connector);
-//        MBeanUtils.destroyMBean(connector, service);
+        // deregister the MBean for the Connector itself
+        if (log.isDebugEnabled())
+            log.debug("Destroying MBean for Connector " + connector);
+        MBeanUtils.destroyMBean(connector, service);
 
     }
 
@@ -727,7 +709,7 @@ public class ServerLifecycleListener
         // deregister the MBean for the Context itself
         if (log.isDebugEnabled())
             log.debug("Destroying MBean for Context " + context);
-        //MBeanUtils.destroyMBean(context);
+        MBeanUtils.destroyMBean(context);
         if (context instanceof StandardContext) {
             ((StandardContext) context).
                 removePropertyChangeListener(this);
@@ -865,7 +847,7 @@ public class ServerLifecycleListener
         if (log.isDebugEnabled()) {
             log.debug("Destroying MBean for Engine " + engine);
         }
-        //MBeanUtils.destroyMBean(engine);
+        MBeanUtils.destroyMBean(engine);
 
     }
 
@@ -902,7 +884,7 @@ public class ServerLifecycleListener
         if (log.isDebugEnabled()) {
             log.debug("Destroying MBean for Host " + host);
         }
-        //MBeanUtils.destroyMBean(host);
+        MBeanUtils.destroyMBean(host);
 
     }
 
@@ -979,7 +961,7 @@ public class ServerLifecycleListener
         if (log.isDebugEnabled()) {
             log.debug("Destroying MBean for Server " + server);
         }
-        //MBeanUtils.destroyMBean(server);
+        MBeanUtils.destroyMBean(server);
         if (server instanceof StandardServer) {
             ((StandardServer) server).removePropertyChangeListener(this);
         }
@@ -1000,20 +982,15 @@ public class ServerLifecycleListener
         // Deregister the MBeans for the associated Engine
         Engine engine = (Engine) service.getContainer();
         if (engine != null) {
-            //destroyMBeans(engine);
+            destroyMBeans(engine);
         }
 
-//        // Deregister the MBeans for the corresponding Connectors
-//        Connector connectors[] = service.findConnectors();
-//        for (int j = 0; j < connectors.length; j++) {
-//            destroyMBeans(connectors[j], service);
-//        }
-
-        // Deregister the MBean for the Service itself
-        if (log.isDebugEnabled()) {
-            log.debug("Destroying MBean for Service " + service);
+        // Deregister the MBeans for the corresponding Connectors
+        Connector connectors[] = service.findConnectors();
+        for (int j = 0; j < connectors.length; j++) {
+            destroyMBeans(connectors[j], service);
         }
-        //MBeanUtils.destroyMBean(service);
+
         if (service instanceof StandardService) {
             ((StandardService) service).removePropertyChangeListener(this);
         }

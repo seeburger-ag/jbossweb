@@ -21,9 +21,13 @@ package org.apache.catalina.deploy;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.io.Serializable;
+
+import org.apache.catalina.Context;
+import org.apache.catalina.Engine;
+import org.apache.catalina.Server;
 
 
 /**
@@ -191,9 +195,26 @@ public class NamingResources implements Serializable {
     public void addEnvironment(ContextEnvironment environment) {
 
         if (entries.containsKey(environment.getName())) {
-            if (findEnvironment(environment.getName()).getOverride()) {
-                removeEnvironment(environment.getName());
+            ContextEnvironment ce = findEnvironment(environment.getName());
+            ContextResourceLink rl = findResourceLink(environment.getName());
+            if (ce != null) {
+                if (ce.getOverride()) {
+                    removeEnvironment(environment.getName());
+                } else {
+                    return;
+                }
+            } else if (rl != null) {
+                // Link. Need to look at the global resources
+                NamingResources global = getServer().getGlobalNamingResources();
+                if (global.findEnvironment(rl.getGlobal()) != null) {
+                    if (global.findEnvironment(rl.getGlobal()).getOverride()) {
+                        removeResourceLink(environment.getName());
+                    } else {
+                        return;
+                    }
+                }
             } else {
+                // It exists but it isn't an env or a res link...
                 return;
             }
         }
@@ -208,6 +229,20 @@ public class NamingResources implements Serializable {
 
     }
 
+    // Container should be an instance of Server or Context. If it is anything
+    // else, return null which will trigger a NPE.
+    private Server getServer() {
+        if (container instanceof Server) {
+            return (Server) container;
+        }
+        if (container instanceof Context) {
+            // Could do this in one go. Lots of casts so split out for clarity
+            Engine engine =
+                (Engine) ((Context) container).getParent().getParent();
+            return engine.getService().getServer();
+        }
+        return null;
+    }
 
     /**
      * Add a local EJB resource reference for this web application.

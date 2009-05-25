@@ -778,12 +778,11 @@ public class Http11Processor implements ActionHook {
     }
 
     /**
-     * Process pipelined HTTP requests using the specified input and output
-     * streams.
+     * Process pipelined HTTP requests on the specified socket.
      *
-     * @param input stream from which the HTTP requests will be read
-     * @param output stream which will be used to output the HTTP
-     * responses
+     * @param socket Socket from which the HTTP requests will be read
+     *               and the HTTP responses will be written.
+     *  
      * @throws IOException error during an I/O operation
      */
     public SocketState process(Socket socket)
@@ -1389,7 +1388,7 @@ public class Http11Processor implements ActionHook {
     /**
      * Parse host.
      */
-    public void parseHost(MessageBytes valueMB) {
+    protected void parseHost(MessageBytes valueMB) {
 
         if (valueMB == null || valueMB.isNull()) {
             // HTTP/1.0
