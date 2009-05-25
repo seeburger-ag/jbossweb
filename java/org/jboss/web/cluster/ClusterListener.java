@@ -51,7 +51,6 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
@@ -91,6 +90,12 @@ public class ClusterListener
     
     // ----------------------------------------------------------------- Fields
 
+    
+    /**
+     * Associated server.
+     */
+    protected Server server = null;
+    
 
     /**
      * URL encoder used to generate requests bodies.
@@ -507,7 +512,7 @@ public class ClusterListener
             }
         } else if (Lifecycle.AFTER_START_EVENT.equals(event.getType())) {
             if (source instanceof Server) {
-
+                server = (Server) source;
                 if (this.proxyList == null) {
                     if (advertise != 0) {
                         proxies = new Proxy[0];
@@ -721,7 +726,7 @@ public class ClusterListener
      * Disable all webapps for all engines. To be used through JMX or similar.
      */
     public boolean disable() {
-    	Service[] services = ServerFactory.getServer().findServices();
+    	Service[] services = server.findServices();
         for (int i = 0; i < services.length; i++) {
             Engine engine = (Engine) services[i].getContainer();
             HashMap<String, String> parameters = new HashMap<String, String>();
@@ -737,7 +742,7 @@ public class ClusterListener
      * Enable all webapps for all engines. To be used through JMX or similar.
      */
     public boolean enable() {
-    	Service[] services = ServerFactory.getServer().findServices();
+    	Service[] services = server.findServices();
         for (int i = 0; i < services.length; i++) {
             Engine engine = (Engine) services[i].getContainer();
             HashMap<String, String> parameters = new HashMap<String, String>();
@@ -900,7 +905,7 @@ public class ClusterListener
      */
     protected void reset(int pos) {
        
-        Service[] services = ServerFactory.getServer().findServices();
+        Service[] services = server.findServices();
         for (int i = 0; i < services.length; i++) {
             Engine engine = (Engine) services[i].getContainer();
             removeAll((Engine) services[i].getContainer(), pos);
