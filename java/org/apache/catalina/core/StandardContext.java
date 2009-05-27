@@ -421,6 +421,18 @@ public class StandardContext
      */
     protected String instanceListeners[] = new String[0];
 
+    
+    /**
+     * The set of JSP property groups defined for the webapp, keyed by pattern.
+     */
+    protected HashMap<String, JspPropertyGroup> jspPropertyGroups = new HashMap<String, JspPropertyGroup>();
+    
+
+    /**
+     * The set of taglibs defined for the webapp, keyed by uri.
+     */
+    protected HashMap<String, TagLibraryInfo> jspTagLibraries = new HashMap<String, TagLibraryInfo>();
+    
 
     /**
      * The logical name of the webapp, if any which may be used in other descriptors.
@@ -2273,7 +2285,7 @@ public class StandardContext
     public void addJspPropertyGroup(JspPropertyGroup propertyGroup) {
         // Add any JSP mapping specified, as it needs to be mapped to the JSP Servlet
         addJspMapping(propertyGroup.getUrlPattern());
-        // FIXME: store locally to pass to the Jasper plugin later on
+        jspPropertyGroups.put(propertyGroup.getUrlPattern(), propertyGroup);
     }
 
 
@@ -2288,7 +2300,7 @@ public class StandardContext
         for (int i = 0; i < listeners.length; i++) {
             addApplicationListener(listeners[i]);
         }
-        // FIXME: store locally to pass to the Jasper plugin later on
+        jspTagLibraries.put(tagLibraryInfo.getUri(), tagLibraryInfo);
     }
 
     
@@ -2495,7 +2507,7 @@ public class StandardContext
         results[welcomeFiles.length] = name;
         welcomeFiles = results;
 
-        postWelcomeFiles();
+        postContextAttributes();
         fireContainerEvent("addWelcomeFile", name);
 
     }
@@ -3418,7 +3430,7 @@ public class StandardContext
         welcomeFiles = results;
 
         // Inform interested listeners
-        postWelcomeFiles();
+        postContextAttributes();
         fireContainerEvent("removeWelcomeFile", name);
 
     }
@@ -4140,7 +4152,7 @@ public class StandardContext
             
             // Create context attributes that will be required
             if (ok) {
-                postWelcomeFiles();
+                postContextAttributes();
             }
             
             if (ok) {
@@ -4792,13 +4804,16 @@ public class StandardContext
 
 
     /**
-     * Post a copy of our current list of welcome files as a servlet context
-     * attribute, so that the default servlet can find them.
+     * Create mandatory servlet context attributes.
      */
-    protected void postWelcomeFiles() {
+    protected void postContextAttributes() {
 
         getServletContext().setAttribute("org.apache.catalina.WELCOME_FILES",
                                          welcomeFiles);
+        getServletContext().setAttribute("org.apache.catalina.jsp.PROPERTY_GROUPS",
+                jspPropertyGroups);
+        getServletContext().setAttribute("org.apache.catalina.jsp.TAG_LIBRARIES",
+                jspTagLibraries);
 
     }
 

@@ -87,6 +87,9 @@ public class TldRuleSet extends RuleSetBase {
      */
     public void addRuleInstances(Digester digester) {
 
+        // Parse uri and prefix attributes
+        digester.addSetProperties(prefix + "taglib");
+        
         digester.addCallMethod(prefix + "taglib/tlibversion",
                 "setTlibversion", 0);
         digester.addCallMethod(prefix + "taglib/tlib-version",
@@ -100,7 +103,7 @@ public class TldRuleSet extends RuleSetBase {
         digester.addCallMethod(prefix + "taglib/short-name",
                 "setShortname", 0);
         digester.addCallMethod(prefix + "taglib/uri",
-                "setUri", 0);
+                "setUrn", 0);
         digester.addCallMethod(prefix + "taglib/info",
                 "setInfo", 0);
         digester.addCallMethod(prefix + "taglib/description",

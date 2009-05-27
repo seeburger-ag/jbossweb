@@ -1999,6 +1999,10 @@ public class ContextConfig
             context.removeTaglib(taglibs[i]);
         }
 
+        // FIXME: remove JSP property groups
+        
+        // FIXME: remove JSP tag libraries
+        
         // Removing welcome files
         String[] welcomeFiles = context.findWelcomeFiles();
         for (i = 0; i < welcomeFiles.length; i++) {
