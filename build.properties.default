@@ -16,10 +16,10 @@ version.build=0
 version.patch=GA_CP
 
 # ----- Vesion Control Flags -----
-jboss.version.major=5
-jboss.version.minor=0
-jboss.version.build=0
-jboss.version.patch=Beta
+jboss.version.major=4
+jboss.version.minor=2
+jboss.version.build=3
+jboss.version.patch=GA
 
 # ----- Compile Control Flags -----
 compile.debug=on
