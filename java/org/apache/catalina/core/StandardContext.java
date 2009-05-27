@@ -83,6 +83,7 @@ import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.Injectable;
 import org.apache.catalina.deploy.InjectionTarget;
+import org.apache.catalina.deploy.JspPropertyGroup;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.MessageDestination;
 import org.apache.catalina.deploy.MessageDestinationRef;
@@ -2260,6 +2261,17 @@ public class StandardContext
             if(log.isDebugEnabled())
                 log.debug("Skiping " + pattern + " , no servlet " + servletName);
         }
+    }
+
+
+    /**
+     * Add the given jsp-property-group.
+     *
+     * @param pattern URL pattern to be mapped
+     */
+    public void addJspPropertyGroup(JspPropertyGroup propertyGroup) {
+        addJspMapping(propertyGroup.getUrlPattern());
+        // FIXME: store locally to pass to the Jasper plugin later on
     }
 
 

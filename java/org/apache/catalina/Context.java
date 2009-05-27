@@ -25,6 +25,7 @@ import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
+import org.apache.catalina.deploy.JspPropertyGroup;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityConstraint;
@@ -577,6 +578,14 @@ public interface Context extends Container {
      * @param pattern URL pattern to be mapped 
      */
     public void addJspMapping(String pattern);
+
+
+    /**
+     * Add the given jsp-property-group.
+     *
+     * @param propertyGroup the property group which will be added
+     */
+    public void addJspPropertyGroup(JspPropertyGroup propertyGroup);
 
 
     /**

@@ -37,6 +37,8 @@ public class TagLibraryInfo {
      */
     protected String        uri;
     
+    protected ArrayList<String> listeners = new ArrayList<String>();
+
     /**
      * An array describing the tags that are defined in this tag library.
      */
@@ -163,5 +165,12 @@ public class TagLibraryInfo {
         return tags.toArray(new TagInfo[0]);
     }
     
+    public void addListener(String listener) {
+        listeners.add(listener);
+    }
+    
+    public String[] getListeners() {
+        return listeners.toArray(new String[0]);
+    }
 
 }

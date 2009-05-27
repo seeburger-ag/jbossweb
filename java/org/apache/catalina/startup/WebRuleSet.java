@@ -244,8 +244,35 @@ public class WebRuleSet extends RuleSetBase {
         digester.addCallParam(prefix + elementName + "/jsp-config/taglib/taglib-location", 1);
         digester.addCallParam(prefix + elementName + "/jsp-config/taglib/taglib-uri", 0);
 
+        digester.addObjectCreate(prefix + elementName + "/jsp-config/jsp-property-group",
+            "org.apache.catalina.deploy.JspPropertyGroup");
+        digester.addSetNext(prefix + elementName + "/jsp-config/jsp-property-group",
+                "addJspPropertyGroup", "org.apache.catalina.deploy.JspPropertyGroup");
+
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/url-pattern",
-                               "addJspMapping", 0);
+                               "setUrlPattern", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/el-ignored",
+                "setElIgnored", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/page-encoding",
+                "setPageEncoding", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/scripting-invalid",
+                "setScriptingInvalid", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/is-xml",
+                "setIsXml", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/include-prelude",
+                "setIncludePrelude", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/include-coda",
+                "setIncludeCoda", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/deferred-syntax-allowed-as-literal",
+                "setDeferredSyntaxAllowedAsLiteral", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/trim-directive-whitespaces",
+                "setTrimDirectiveWhitespaces", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/default-content-type",
+                "setDefaultContentType", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/buffer",
+                "setBuffer", 0);
+        digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/error-on-undeclared-namespace",
+                "setErrorOnUndeclaredNamespace", 0);
 
         digester.addCallMethod(prefix + elementName + "/listener/listener-class",
                                "addApplicationListener", 0);
