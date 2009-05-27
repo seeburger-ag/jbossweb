@@ -108,6 +108,7 @@ import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.WebOrdering;
+import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.JARDirContext;
 import org.apache.naming.resources.ProxyDirContext;
@@ -621,12 +622,14 @@ public class ContextConfig
                     ok = false;
                 } else {
                     synchronized (tldDigester) {
+                        TagLibraryInfo tagLibraryInfo = new TagLibraryInfo();
                         try {
-                            tldDigester.push(context);
+                            tldDigester.push(tagLibraryInfo);
                             tldDigester.parse(new InputSource(stream));
                         } finally {
                             tldDigester.reset();
                         }
+                        context.addJspTagLibrary(tagLibraryInfo);
                     }
                 }
             } catch (Exception e) {

@@ -38,6 +38,8 @@ public class TagLibraryInfo {
     protected String        uri;
     
     protected ArrayList<String> listeners = new ArrayList<String>();
+    
+    protected TagLibraryValidatorInfo validator;
 
     /**
      * An array describing the tags that are defined in this tag library.
@@ -171,6 +173,14 @@ public class TagLibraryInfo {
     
     public String[] getListeners() {
         return listeners.toArray(new String[0]);
+    }
+
+    public TagLibraryValidatorInfo getValidator() {
+        return validator;
+    }
+
+    public void setValidator(TagLibraryValidatorInfo validator) {
+        this.validator = validator;
     }
 
 }

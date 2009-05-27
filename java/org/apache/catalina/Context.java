@@ -31,6 +31,7 @@ import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
+import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.tomcat.util.http.mapper.Mapper;
 
@@ -586,6 +587,14 @@ public interface Context extends Container {
      * @param propertyGroup the property group which will be added
      */
     public void addJspPropertyGroup(JspPropertyGroup propertyGroup);
+
+
+    /**
+     * Add the given JSP tag library metadata.
+     *
+     * @param tagLibraryInfo the tag library info that will be added
+     */
+    public void addJspTagLibrary(TagLibraryInfo tagLibraryInfo);
 
 
     /**

@@ -92,6 +92,7 @@ import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
+import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.startup.ContextConfig;
@@ -2270,11 +2271,27 @@ public class StandardContext
      * @param pattern URL pattern to be mapped
      */
     public void addJspPropertyGroup(JspPropertyGroup propertyGroup) {
+        // Add any JSP mapping specified, as it needs to be mapped to the JSP Servlet
         addJspMapping(propertyGroup.getUrlPattern());
         // FIXME: store locally to pass to the Jasper plugin later on
     }
 
 
+    /**
+     * Add the given JSP tag library metadata.
+     *
+     * @param tagLibrayInfo the tag library info that will be added
+     */
+    public void addJspTagLibrary(TagLibraryInfo tagLibraryInfo) {
+        // Add listeners specified by the taglib
+        String[] listeners = tagLibraryInfo.getListeners();
+        for (int i = 0; i < listeners.length; i++) {
+            addApplicationListener(listeners[i]);
+        }
+        // FIXME: store locally to pass to the Jasper plugin later on
+    }
+
+    
     /**
      * Add a Locale Encoding Mapping (see Sec 5.4 of Servlet spec 2.4)
      *
