@@ -87,7 +87,7 @@ public class TldRuleSet extends RuleSetBase {
      */
     public void addRuleInstances(Digester digester) {
 
-        // Parse uri and prefix attributes
+        // uri and prefix attributes
         digester.addSetProperties(prefix + "taglib");
         
         digester.addCallMethod(prefix + "taglib/tlibversion",
@@ -108,6 +108,8 @@ public class TldRuleSet extends RuleSetBase {
                 "setInfo", 0);
         digester.addCallMethod(prefix + "taglib/description",
                 "setInfo", 0);
+        digester.addCallMethod(prefix + "taglib/listener/listener-class",
+                "addListener", 0);
         
         // validator element
         digester.addObjectCreate(prefix + "taglib/validator",
@@ -204,9 +206,6 @@ public class TldRuleSet extends RuleSetBase {
                 "setDeferredMethod", 0);
         digester.addCallMethod(prefix + "taglib/tag/attribute/deferred-value/method-signature",
                 "setMethodSignature", 0);
-
-        digester.addCallMethod(prefix + "taglib/listener/listener-class",
-                               "addApplicationListener", 0);
 
     }
 

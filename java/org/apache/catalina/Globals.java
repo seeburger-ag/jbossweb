@@ -139,6 +139,33 @@ public final class Globals {
 
 
     /**
+     * The servlet context attribute under which we record the set of
+     * JSP property groups (as an object of type HashMap<String, JspPropertyGroup>)
+     * for this application.
+     */
+    public static final String JSP_PROPERTY_GROUPS =
+        "org.apache.catalina.JSP_PROPERTY_GROUPS";
+
+
+    /**
+     * The servlet context attribute under which we record the set of
+     * JSP tag libraries (as an object of type HashMap<String, TagLibraryInfo>) 
+     * for this application.
+     */
+    public static final String JSP_TAG_LIBRARIES =
+        "org.apache.catalina.JSP_TAG_LIBRARIES";
+
+
+    /**
+     * The servlet context attribute under which we record the set of
+     * JSP tag libraries locations (as an object of type HashMap<String, String>) 
+     * for this application.
+     */
+    public static final String JSP_TAG_LIBRARIES_LOCATION =
+        "org.apache.catalina.JSP_TAG_LIBRARIES_LOCATION";
+
+
+    /**
      * The request attribute under which we store the key size being used for
      * this SSL connection (as an object of type java.lang.Integer).
      */

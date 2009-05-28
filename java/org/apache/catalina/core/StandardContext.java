@@ -2507,7 +2507,8 @@ public class StandardContext
         results[welcomeFiles.length] = name;
         welcomeFiles = results;
 
-        postContextAttributes();
+        if (started)
+            postContextAttributes();
         fireContainerEvent("addWelcomeFile", name);
 
     }
@@ -3430,7 +3431,8 @@ public class StandardContext
         welcomeFiles = results;
 
         // Inform interested listeners
-        postContextAttributes();
+        if (started)
+            postContextAttributes();
         fireContainerEvent("removeWelcomeFile", name);
 
     }
@@ -4120,11 +4122,6 @@ public class StandardContext
             ok = false;
         }
 
-        // We put the resources into the servlet context
-        if (ok)
-            getServletContext().setAttribute
-                (Globals.RESOURCES_ATTR, getResources());
-
         // Initialize associated mapper
         mapper.setContext(getPath(), welcomeFiles, resources);
 
@@ -4132,7 +4129,7 @@ public class StandardContext
         oldCCL = bindThread();
 
         // Annotation processor setup
-        if (ok ) {
+        if (ok) {
             if (instanceManager == null) {
                 javax.naming.Context context = null;
                 if (isUseNaming() && namingContextListener != null) {
@@ -4142,9 +4139,6 @@ public class StandardContext
                 	buildInjectionMap(getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
                 instanceManager = new DefaultInstanceManager
                 	(context, injectionMap, this, this.getClass().getClassLoader());
-                getServletContext().setAttribute(InstanceManager.class.getName(), instanceManager);
-            } else {
-                getServletContext().setAttribute(InstanceManager.class.getName(), instanceManager);
             }
         }
 
@@ -4792,30 +4786,20 @@ public class StandardContext
 
 
     /**
-     * Post a copy of our web application resources as a servlet context
-     * attribute.
-     */
-    protected void postResources() {
-
-        getServletContext().setAttribute
-            (Globals.RESOURCES_ATTR, getResources());
-
-    }
-
-
-    /**
      * Create mandatory servlet context attributes.
      */
     protected void postContextAttributes() {
-
-        getServletContext().setAttribute("org.apache.catalina.WELCOME_FILES",
-                                         welcomeFiles);
-        getServletContext().setAttribute("org.apache.catalina.jsp.PROPERTY_GROUPS",
-                jspPropertyGroups);
-        getServletContext().setAttribute("org.apache.catalina.jsp.TAG_LIBRARIES",
-                jspTagLibraries);
-
+        ServletContext context = getServletContext();
+        context.setAttribute(Globals.RESOURCES_ATTR, getResources());
+        context.setAttribute(Globals.WELCOME_FILES_ATTR, welcomeFiles);
+        // Jasper attributes
+        context.setAttribute(Globals.JSP_PROPERTY_GROUPS, jspPropertyGroups);
+        context.setAttribute(Globals.JSP_TAG_LIBRARIES, jspTagLibraries);
+        context.setAttribute(Globals.JSP_TAG_LIBRARIES_LOCATION, taglibs);
+        // Instance manager (also used by Jasper)
+        context.setAttribute(InstanceManager.class.getName(), instanceManager);
     }
+
 
     public String getHostname() {
         Container parentHost = getParent();
@@ -4869,7 +4853,7 @@ public class StandardContext
                 workDir = "work" + File.separator + engineName +
                     File.separator + hostName + File.separator + temp;
             }
-            setWorkDir(workDir);
+            this.workDir = workDir;
         }
 
         // Create this directory if necessary
