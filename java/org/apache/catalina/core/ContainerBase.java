@@ -1413,9 +1413,6 @@ public abstract class ContainerBase
     }
 
 
-    // ------------------------------------------------------ Protected Methods
-
-
     /**
      * Notify all container event listeners that a particular event has
      * occurred for this Container.  The default implementation performs
@@ -1437,6 +1434,9 @@ public abstract class ContainerBase
             ((ContainerListener) list[i]).containerEvent(event);
 
     }
+
+
+    // ------------------------------------------------------ Protected Methods
 
 
     /**

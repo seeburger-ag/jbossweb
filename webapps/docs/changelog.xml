@@ -93,6 +93,9 @@
       <update>
         Remove ServerFactory. (markt)
       </update>
+      <fix>
+        <bug>47299</bug>: Expose Container.fireContainerEvent, which became public long ago. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

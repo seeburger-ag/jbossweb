@@ -71,3 +71,6 @@ Fix 47080: NPE in RealmBase.findSecurityConstraints when uri is null (normally u
 
 770876
 Windows 64 bit stuff ... Zzzzz
+
+781036
+Some configBase creation flag
