@@ -23,27 +23,28 @@
 package org.apache.catalina.deploy;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class JspPropertyGroup implements Serializable {
 
-    protected String urlPattern = null;
+    protected ArrayList<String> urlPatterns = new ArrayList<String>();
     protected boolean elIgnored = false;
     protected String pageEncoding = null;
     protected boolean scriptingInvalid = false;
     protected boolean isXml = false;
-    protected String includePrelude = null;
-    protected String includeCoda = null;
+    protected ArrayList<String> includePreludes = new ArrayList<String>();
+    protected ArrayList<String> includeCodas = new ArrayList<String>();
     protected boolean deferredSyntaxAllowedAsLiteral = false;
     protected boolean trimDirectiveWhitespaces = false;
     protected String defaultContentType = null;
     protected String buffer = null;
     protected boolean errorOnUndeclaredNamespace = false;
 
-    public String getUrlPattern() {
-        return urlPattern;
+    public String[] getUrlPatterns() {
+        return urlPatterns.toArray(new String[0]);
     }
-    public void setUrlPattern(String urlPattern) {
-        this.urlPattern = urlPattern;
+    public void addUrlPattern(String urlPattern) {
+        urlPatterns.add(urlPattern);
     }
     public boolean isElIgnored() {
         return elIgnored;
@@ -69,17 +70,17 @@ public class JspPropertyGroup implements Serializable {
     public void setXml(boolean isXml) {
         this.isXml = isXml;
     }
-    public String getIncludePrelude() {
-        return includePrelude;
+    public String[] getIncludePreludes() {
+        return includePreludes.toArray(new String[0]);
     }
-    public void setIncludePrelude(String includePrelude) {
-        this.includePrelude = includePrelude;
+    public void addIncludePrelude(String includePrelude) {
+        includePreludes.add(includePrelude);
     }
-    public String getIncludeCoda() {
-        return includeCoda;
+    public String[] getIncludeCodas() {
+        return includeCodas.toArray(new String[0]);
     }
-    public void setIncludeCoda(String includeCoda) {
-        this.includeCoda = includeCoda;
+    public void addIncludeCoda(String includeCoda) {
+        includeCodas.add(includeCoda);
     }
     public boolean isDeferredSyntaxAllowedAsLiteral() {
         return deferredSyntaxAllowedAsLiteral;

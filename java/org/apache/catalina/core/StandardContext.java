@@ -2284,8 +2284,12 @@ public class StandardContext
      */
     public void addJspPropertyGroup(JspPropertyGroup propertyGroup) {
         // Add any JSP mapping specified, as it needs to be mapped to the JSP Servlet
-        addJspMapping(propertyGroup.getUrlPattern());
-        jspPropertyGroups.put(propertyGroup.getUrlPattern(), propertyGroup);
+        String[] urlPatterns = propertyGroup.getUrlPatterns();
+        for (int i = 0; i < urlPatterns.length; i++) {
+            addJspMapping(urlPatterns[i]);
+            // Split off the groups to individual mappings
+            jspPropertyGroups.put(urlPatterns[i], propertyGroup);
+        }
     }
 
 

@@ -250,7 +250,7 @@ public class WebRuleSet extends RuleSetBase {
                 "addJspPropertyGroup", "org.apache.catalina.deploy.JspPropertyGroup");
 
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/url-pattern",
-                               "setUrlPattern", 0);
+                               "addUrlPattern", 0);
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/el-ignored",
                 "setElIgnored", 0);
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/page-encoding",
@@ -260,9 +260,9 @@ public class WebRuleSet extends RuleSetBase {
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/is-xml",
                 "setIsXml", 0);
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/include-prelude",
-                "setIncludePrelude", 0);
+                "addIncludePrelude", 0);
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/include-coda",
-                "setIncludeCoda", 0);
+                "addIncludeCoda", 0);
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/deferred-syntax-allowed-as-literal",
                 "setDeferredSyntaxAllowedAsLiteral", 0);
         digester.addCallMethod(prefix + elementName + "/jsp-config/jsp-property-group/trim-directive-whitespaces",
