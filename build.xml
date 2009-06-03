@@ -45,10 +45,14 @@
 
   <!-- Some compilers will disable debugging if true. And it doesn't do anything
        in most cases -->
-  <property name="compile.optimize"     value="false"/>
-  <property name="compile.debug"        value="true" />
-  <property name="compile.deprecation"  value="false" />
-  <property name="compile.source"       value="1.5" />
+  <property name="compile.optimize"            value="false"/>
+  <property name="compile.debug"               value="true" />
+  <property name="compile.deprecation"         value="false" />
+  <property name="compile.source"              value="1.5" />
+  <property name="compile.target"              value="1.5" />
+  <!-- Define ant.build.javac.target, the default javac target with ant 1.7, for cases 
+       when the javac target property is ignored (e.g. FC10 x86-64 OpenJDK 64-Bit). -->
+  <property name="ant.build.javac.target"      value="1.5" />
 
   <path id="catalina.classpath">
     <fileset dir="lib">
@@ -101,6 +105,7 @@
            debug="${compile.debug}"
            deprecation="${compile.deprecation}"
            source="${compile.source}"
+           target="${compile.target}"
            optimize="${compile.optimize}"
            excludes="**/CVS/**,**/.svn/**">
       <classpath refid="catalina.classpath" />
