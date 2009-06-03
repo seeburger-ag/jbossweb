@@ -19,9 +19,6 @@ package org.apache.catalina.deploy.jsp;
 
 import java.util.ArrayList;
 
-import javax.servlet.jsp.tagext.TagFileInfo;
-import javax.servlet.jsp.tagext.TagInfo;
-
 public class TagLibraryInfo {
 
     // Protected fields
