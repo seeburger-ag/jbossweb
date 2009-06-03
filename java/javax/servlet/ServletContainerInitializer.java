@@ -40,12 +40,19 @@ package javax.servlet;
 import java.util.Set;
 
 /**
- * An implementation of this interface can be provided by a library /
- * runtime to get notified by the container for the classes / interfaces 
- * that it expresses interest via the <tt>@HandlesTypes</tt> annotation. If
- * there is no <tt>@HandlesTypes</tt> annotation on an implementation of this
- * interface, the container MUST invoke the <tt>onStartup</tt> method once for
- * every webapp passing it a <tt>null</tt> set of classes.
+ * Interface which may be implemented by a library/runtime in order
+ * to be notified by the container of any of the classes/interfaces 
+ * in which it has expressed interest via the
+ * {@link javax.servlet.annotation.HandlesTypes HandlesTypes} annotation.
+ *
+ * <p>If an implementation of this interface does not have any such
+ * annotation, the container must pass a <tt>null</tt> set of classes to
+ * its {@link #onStartup} method.
+ *
+ * <p>Implementations of this interface may be declared by a JAR file
+ * resource located inside the <tt>META-INF/services</tt> directory and
+ * named for the fully qualified class name of this interface, and will be 
+ * discovered using the runtime's service provider lookup mechanism.
  *
  * @see javax.servlet.annotation.HandlesTypes
  *
@@ -54,12 +61,27 @@ import java.util.Set;
 public interface ServletContainerInitializer {
 
     /**
-     * @param c The set of classes that an implementation of ServletContainerInitializer expressed interest on
-     * via the <tt>HandlesTypes</tt> annotation. If there is no <tt>HandlesTypes</tt> annotation on the implementation
-     * of the ServletContainerInitializer, a <tt>null</tt> set of classes will be passed
+     * Notifies this <tt>ServletContainerInitializer</tt> of the startup
+     * of the application represented by the given <tt>ServletContext</tt>.
      *
-     * @param ctx The <tt>ServletContext</tt> instance in which the types defined via the <tt>HandlesTypes</tt>
-     * are found.
+     * <p>If this <tt>ServletContainerInitializer</tt> is bundled in a JAR
+     * file inside the <tt>WEB-INF/lib</tt> directory of an application,
+     * its <tt>onStartup</tt> method will be invoked only once during the
+     * startup of the bundling application. If this
+     * <tt>ServletContainerInitializer</tt> is bundled inside a JAR file
+     * outside of any <tt>WEB-INF/lib</tt> directory, but still
+     * discoverable by the runtime's service provider lookup mechanism,
+     * its <tt>onStartup</tt> method will be invoked every time an 
+     * application is started.
+     *
+     * @param c The set of classes in which this
+     * <tt>ServletContainerInitializer</tt> has expressed interest via
+     * the <tt>HandlesTypes</tt> annotation, or <tt>null</tt> if this
+     * <tt>ServletContainerInitializer</tt> does not have any such
+     * annotation
+     *
+     * @param ctx The <tt>ServletContext</tt> instance in which the types
+     * defined via the <tt>HandlesTypes</tt> annotation were found.
      */
     public void onStartup(Set<Class<?>> c, ServletContext ctx); 
 }

@@ -1122,7 +1122,7 @@ public class RequestFacade implements HttpServletRequest {
     }
 
 
-    public Part getPart(String name) throws IllegalArgumentException {
+    public Part getPart(String name) throws ServletException {
         if (request == null) {
             throw new IllegalStateException(
                             sm.getString("requestFacade.nullRequest"));
@@ -1132,7 +1132,7 @@ public class RequestFacade implements HttpServletRequest {
     }
 
 
-    public Iterable<Part> getParts() {
+    public Iterable<Part> getParts() throws ServletException {
         if (request == null) {
             throw new IllegalStateException(
                             sm.getString("requestFacade.nullRequest"));

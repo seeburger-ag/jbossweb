@@ -737,6 +737,8 @@ public interface HttpServletRequest extends ServletRequest {
      *                                      NOT establish the message and 
      *                                      HTTP status code to be returned 
      *                                      to the user).
+     *
+     * @since Servlet 3.0
      */
     public boolean authenticate(HttpServletResponse response) 
 	throws IOException,ServletException;
@@ -776,6 +778,8 @@ public interface HttpServletRequest extends ServletRequest {
      *                                      to the call to login), or if 
      *                                      validation of the provided 
      *                                      username and password fails.
+     *
+     * @since Servlet 3.0
      */
     public void login(String username, String password) 
 	throws ServletException;
@@ -786,30 +790,59 @@ public interface HttpServletRequest extends ServletRequest {
      * <code>getUserPrincipal</code>, <code>getRemoteUser</code>, 
      * and <code>getAuthType</code> is called on the request.
      *
-     * @exception	ServletException    ff logout fails.
+     * @exception ServletException if logout fails
+     *
+     * @since Servlet 3.0
      */
     public void logout() throws ServletException;
 
-    /**
-     * Retrieves all the parts of the multi-part/form-data http message
-     *
-     * @return An <code>Iterable</code> for all the parts of the multi-part/form-data request
-     */
-    public Iterable<Part> getParts();
 
     /**
-     * Returns the part specified by the name.
+     * Gets all the {@link Part} components of this request, provided
+     * that it is of type <tt>multipart/form-data</tt>.
      *
-     * @param name the name of the part
-     * @return The part being requested for by name.
-     * @exception IllegalArgumentException If the name specified does not exist
+     * <p>If this request is of type <tt>multipart/form-data</tt>, but
+     * does not contain any Part components, the returned
+     * <tt>Iterable</tt>  will be empty.
      *
+     * @return A (possibly empty) <code>Iterable</code> over all the
+     * Part components of this request
+     *
+     * @throws ServletException if this request is not of type
+     * <tt>multipart/form-data</tt>
+     * @throws IllegalStateException if the request body is larger than
+     * <tt>maxRequestSize</tt>, or any Part in the request is larger than
+     * <tt>maxFileSize</tt>
+     *
+     * @see javax.servlet.annotation.MultipartConfig#maxFileSize
+     * @see javax.servlet.annotation.MultipartConfig#maxRequestSize
+     *
+     * @since Servlet 3.0
      */
-    public Part getPart(String name) throws IllegalArgumentException;
+    public Iterable<Part> getParts() throws ServletException;
 
 
-
-
+    /**
+     * Gets the {@link Part} with the given name.
+     *
+     * @param name the name of the requested Part
+     *
+     * @return The Part with the given name, or <tt>null</tt> if this
+     * request is of type <tt>multipart/form-data</tt>, but does not
+     * contain the requested Part
+     *
+     * @throws ServletException if this request is not of type
+     * <tt>multipart/form-data</tt>
+     * @throws IllegalStateException if the request body is larger than
+     * <tt>maxRequestSize</tt>, or any Part in the request is larger than
+     * <tt>maxFileSize</tt>
+     *
+     * @see javax.servlet.annotation.MultipartConfig#maxFileSize
+     * @see javax.servlet.annotation.MultipartConfig#maxRequestSize
+     *
+     * @since Servlet 3.0
+     */
+    public Part getPart(String name) throws ServletException;
     
 }
 

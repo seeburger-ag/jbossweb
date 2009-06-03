@@ -3041,20 +3041,21 @@ public class Request
     }
 
 
-    public Part getPart(String name) throws IllegalArgumentException {
+    public Part getPart(String name) throws ServletException {
         if (parts == null) {
             parseMultipart();
         }
         Part result = parts.get(name);
         if (result == null) {
-            throw new IllegalArgumentException();
+            // FIXME: error message
+            throw new ServletException();
         } else {
             return result;
         }
     }
 
 
-    public Iterable<Part> getParts() {
+    public Iterable<Part> getParts() throws ServletException {
         if (parts == null) {
             parseMultipart();
         }
