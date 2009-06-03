@@ -629,6 +629,7 @@ public class ContextConfig
                         } finally {
                             tldDigester.reset();
                         }
+                        tagLibraryInfo.setLocation("");
                         context.addJspTagLibrary(tagLibraryInfo);
                     }
                 }
@@ -662,8 +663,9 @@ public class ContextConfig
                 while (jarTLDsIterator.hasNext()) {
                     stream = jarFile.getInputStream(jarFile.getEntry(jarTLDsIterator.next()));
                     synchronized (tldDigester) {
+                        TagLibraryInfo tagLibraryInfo = new TagLibraryInfo();
                         try {
-                            tldDigester.push(context);
+                            tldDigester.push(tagLibraryInfo);
                             tldDigester.parse(new InputSource(stream));
                         } finally {
                             tldDigester.reset();
@@ -675,6 +677,8 @@ public class ContextConfig
                                 }
                             }
                         }
+                        tagLibraryInfo.setLocation(jarPath);
+                        context.addJspTagLibrary(tagLibraryInfo);
                     }
                 }
             } catch (Exception e) {

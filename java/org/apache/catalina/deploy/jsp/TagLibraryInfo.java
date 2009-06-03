@@ -84,6 +84,8 @@ public class TagLibraryInfo {
      */
     protected String info;        // optional
 
+    protected String location;
+    
     public String getPrefix() {
         return prefix;
     }
@@ -178,6 +180,14 @@ public class TagLibraryInfo {
 
     public void setValidator(TagLibraryValidatorInfo validator) {
         this.validator = validator;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
 }
