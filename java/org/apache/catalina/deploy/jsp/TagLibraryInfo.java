@@ -84,7 +84,15 @@ public class TagLibraryInfo {
      */
     protected String info;        // optional
 
+    /**
+     * The location of the taglib, which should be the JAR path, or empty if exploded.
+     */
     protected String location;
+    
+    /**
+     * The access path for the taglib, relative to the location.
+     */
+    protected String path;
     
     public String getPrefix() {
         return prefix;
@@ -188,6 +196,14 @@ public class TagLibraryInfo {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
 }

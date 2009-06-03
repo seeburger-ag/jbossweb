@@ -630,6 +630,7 @@ public class ContextConfig
                             tldDigester.reset();
                         }
                         tagLibraryInfo.setLocation("");
+                        tagLibraryInfo.setPath(tldPath);
                         context.addJspTagLibrary(tagLibraryInfo);
                     }
                 }
@@ -661,7 +662,8 @@ public class ContextConfig
                 jarFile = new JarFile(jarPath);
                 Iterator<String> jarTLDsIterator =  TLDs.get(jarPath).iterator();
                 while (jarTLDsIterator.hasNext()) {
-                    stream = jarFile.getInputStream(jarFile.getEntry(jarTLDsIterator.next()));
+                    String tldPath = jarTLDsIterator.next();
+                    stream = jarFile.getInputStream(jarFile.getEntry(tldPath));
                     synchronized (tldDigester) {
                         TagLibraryInfo tagLibraryInfo = new TagLibraryInfo();
                         try {
@@ -678,6 +680,7 @@ public class ContextConfig
                             }
                         }
                         tagLibraryInfo.setLocation(jarPath);
+                        tagLibraryInfo.setPath(tldPath);
                         context.addJspTagLibrary(tagLibraryInfo);
                     }
                 }
