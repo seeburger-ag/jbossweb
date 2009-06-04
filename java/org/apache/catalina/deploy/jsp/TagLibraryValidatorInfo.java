@@ -23,7 +23,7 @@ import java.util.Map;
 public class TagLibraryValidatorInfo {
 
     protected String validatorClass;
-    protected Map<String, String> initParams = new HashMap<String, String>();
+    protected Map<String, Object> initParams = new HashMap<String, Object>();
 
     public String getValidatorClass() {
         return validatorClass;
@@ -31,10 +31,10 @@ public class TagLibraryValidatorInfo {
     public void setValidatorClass(String validatorClass) {
         this.validatorClass = validatorClass;
     }
-    public void addInitParam(String name, String value) {
+    public void addInitParam(String name, Object value) {
         initParams.put(name, value);
     }
-    public Map<String, String> getInitParams() {
+    public Map<String, Object> getInitParams() {
         return initParams;
     }
 

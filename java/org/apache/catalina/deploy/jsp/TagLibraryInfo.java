@@ -126,6 +126,13 @@ public class TagLibraryInfo {
         this.jspversion = jspversion;
     }
 
+    /**
+     * For the version attribute.
+     */
+    public void setVersion(String jspversion) {
+        this.jspversion = jspversion;
+    }
+
     public String getShortname() {
         return shortname;
     }

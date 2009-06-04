@@ -20,18 +20,18 @@ package org.apache.catalina.deploy.jsp;
 public class TagAttributeInfo {
     protected String name;
     protected String type;
-    protected boolean reqTime;
-    protected boolean required;
+    protected boolean reqTime = false;
+    protected boolean required = false;
     /*
      * private fields for JSP 2.0
      */
-    protected boolean fragment;
+    protected boolean fragment = false;
     /*
      * private fields for JSP 2.1
      */
     protected String description;
-    protected boolean deferredValue;
-    protected boolean deferredMethod;
+    protected boolean deferredValue = false;
+    protected boolean deferredMethod = false;
     protected String expectedTypeName;
     protected String methodSignature;
 
