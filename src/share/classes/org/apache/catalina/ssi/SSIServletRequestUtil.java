@@ -59,6 +59,13 @@ public class SSIServletRequestUtil {
      *            Path to be normalized
      */
     public static String normalize(String path) {
-        return RequestUtil.normalize(path);
+        if (path == null) return null;
+        String normalized = path;
+        //Why doesn't RequestUtil do this??
+        // Normalize the slashes and add leading slash if necessary
+        if (normalized.indexOf('\\') >= 0)
+            normalized = normalized.replace('\\', '/');
+        normalized = RequestUtil.normalize(path);
+        return normalized;
     }
 }

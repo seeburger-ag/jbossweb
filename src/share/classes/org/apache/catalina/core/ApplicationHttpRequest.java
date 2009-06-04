@@ -318,9 +318,10 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
         int pos = requestPath.lastIndexOf('/');
         String relative = null;
         if (pos >= 0) {
-            relative = requestPath.substring(0, pos + 1) + path;
+            relative = RequestUtil.normalize
+                (requestPath.substring(0, pos + 1) + path);
         } else {
-            relative = requestPath + path;
+            relative = RequestUtil.normalize(requestPath + path);
         }
 
         return (context.getServletContext().getRequestDispatcher(relative));
