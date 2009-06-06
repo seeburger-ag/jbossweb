@@ -112,7 +112,6 @@ import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.JARDirContext;
 import org.apache.naming.resources.ProxyDirContext;
-import org.apache.tomcat.WarComponents;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
 import org.xml.sax.ErrorHandler;
@@ -129,7 +128,7 @@ import org.xml.sax.SAXParseException;
  */
 
 public class ContextConfig
-    implements LifecycleListener, WarComponents {
+    implements LifecycleListener {
 
     protected static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger( ContextConfig.class );
@@ -267,8 +266,8 @@ public class ContextConfig
      * Used to speed up scanning for the services interest classes.
      */
     protected Class<?>[] handlesTypesArray = null;
-    protected Map<Class<?>, ServletContainerInitializerInfoImpl> handlesTypes = 
-        new HashMap<Class<?>, ServletContainerInitializerInfoImpl>();
+    protected Map<Class<?>, ServletContainerInitializerInfo> handlesTypes = 
+        new HashMap<Class<?>, ServletContainerInitializerInfo>();
 
 
     // ------------------------------------------------------------- Properties
@@ -1332,7 +1331,7 @@ public class ContextConfig
             if (handlesTypesArray != null) {
                 for (int i = 0; i < handlesTypesArray.length; i++) {
                     if (handlesTypesArray[i].isAssignableFrom(clazz)) {
-                        ServletContainerInitializerInfoImpl jarServletContainerInitializerService = 
+                        ServletContainerInitializerInfo jarServletContainerInitializerService = 
                             handlesTypes.get(handlesTypesArray[i]);
                         jarServletContainerInitializerService.addStartupNotifyClass(clazz);
                     }
@@ -1437,8 +1436,8 @@ public class ContextConfig
                 }
             }
             // Add in jarService map, and add in the local map used to speed up lookups
-            ServletContainerInitializerInfoImpl jarServletContainerInitializerService = 
-                new ServletContainerInitializerInfoImpl(servletContainerInitializerClass, handlesTypesArray);
+            ServletContainerInitializerInfo jarServletContainerInitializerService = 
+                new ServletContainerInitializerInfo(servletContainerInitializerClass, handlesTypesArray);
             servletContainerInitializerInfos.put(file.getName(), jarServletContainerInitializerService);
             if (typesArray != null) {
                 ArrayList<Class<?>> handlesTypesList = new ArrayList<Class<?>>();
@@ -2186,11 +2185,11 @@ public class ContextConfig
     }
 
 
-    protected class ServletContainerInitializerInfoImpl implements ServletContainerInitializerInfo {
+    protected class ServletContainerInitializerInfo {
         protected Class<?> servletContainerInitializer = null;
         protected Class<?>[] interestClasses = null;
         protected HashSet<Class<?>> startupNotifySet = new HashSet<Class<?>>();
-        protected ServletContainerInitializerInfoImpl(Class<?> servletContainerInitializer, Class<?>[] interestClasses) {
+        protected ServletContainerInitializerInfo(Class<?> servletContainerInitializer, Class<?>[] interestClasses) {
             this.servletContainerInitializer = servletContainerInitializer;
             this.interestClasses = interestClasses;
         }
