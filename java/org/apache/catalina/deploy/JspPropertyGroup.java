@@ -28,29 +28,20 @@ import java.util.ArrayList;
 public class JspPropertyGroup implements Serializable {
 
     protected ArrayList<String> urlPatterns = new ArrayList<String>();
-    protected boolean elIgnored = false;
+    protected String elIgnored = null;
     protected String pageEncoding = null;
-    protected boolean scriptingInvalid = false;
-    protected boolean isXml = false;
+    protected String scriptingInvalid = null;
+    protected String isXml = null;
     protected ArrayList<String> includePreludes = new ArrayList<String>();
     protected ArrayList<String> includeCodas = new ArrayList<String>();
-    protected boolean deferredSyntaxAllowedAsLiteral = false;
-    protected boolean trimDirectiveWhitespaces = false;
+    protected String deferredSyntaxAllowedAsLiteral = null;
+    protected String trimDirectiveWhitespaces = null;
     protected String defaultContentType = null;
     protected String buffer = null;
-    protected boolean errorOnUndeclaredNamespace = false;
+    protected String errorOnUndeclaredNamespace = null;
 
-    public String[] getUrlPatterns() {
-        return urlPatterns.toArray(new String[0]);
-    }
     public void addUrlPattern(String urlPattern) {
         urlPatterns.add(urlPattern);
-    }
-    public boolean isElIgnored() {
-        return elIgnored;
-    }
-    public void setElIgnored(boolean elIgnored) {
-        this.elIgnored = elIgnored;
     }
     public String getPageEncoding() {
         return pageEncoding;
@@ -58,42 +49,11 @@ public class JspPropertyGroup implements Serializable {
     public void setPageEncoding(String pageEncoding) {
         this.pageEncoding = pageEncoding;
     }
-    public boolean isScriptingInvalid() {
-        return scriptingInvalid;
-    }
-    public void setScriptingInvalid(boolean scriptingInvalid) {
-        this.scriptingInvalid = scriptingInvalid;
-    }
-    public boolean isXml() {
-        return isXml;
-    }
-    public void setXml(boolean isXml) {
-        this.isXml = isXml;
-    }
-    public String[] getIncludePreludes() {
-        return includePreludes.toArray(new String[0]);
-    }
     public void addIncludePrelude(String includePrelude) {
         includePreludes.add(includePrelude);
     }
-    public String[] getIncludeCodas() {
-        return includeCodas.toArray(new String[0]);
-    }
     public void addIncludeCoda(String includeCoda) {
         includeCodas.add(includeCoda);
-    }
-    public boolean isDeferredSyntaxAllowedAsLiteral() {
-        return deferredSyntaxAllowedAsLiteral;
-    }
-    public void setDeferredSyntaxAllowedAsLiteral(
-            boolean deferredSyntaxAllowedAsLiteral) {
-        this.deferredSyntaxAllowedAsLiteral = deferredSyntaxAllowedAsLiteral;
-    }
-    public boolean isTrimDirectiveWhitespaces() {
-        return trimDirectiveWhitespaces;
-    }
-    public void setTrimDirectiveWhitespaces(boolean trimDirectiveWhitespaces) {
-        this.trimDirectiveWhitespaces = trimDirectiveWhitespaces;
     }
     public String getDefaultContentType() {
         return defaultContentType;
@@ -107,11 +67,51 @@ public class JspPropertyGroup implements Serializable {
     public void setBuffer(String buffer) {
         this.buffer = buffer;
     }
-    public boolean isErrorOnUndeclaredNamespace() {
+    public String getElIgnored() {
+        return elIgnored;
+    }
+    public void setElIgnored(String elIgnored) {
+        this.elIgnored = elIgnored;
+    }
+    public String getScriptingInvalid() {
+        return scriptingInvalid;
+    }
+    public void setScriptingInvalid(String scriptingInvalid) {
+        this.scriptingInvalid = scriptingInvalid;
+    }
+    public String getIsXml() {
+        return isXml;
+    }
+    public void setIsXml(String isXml) {
+        this.isXml = isXml;
+    }
+    public String getDeferredSyntaxAllowedAsLiteral() {
+        return deferredSyntaxAllowedAsLiteral;
+    }
+    public void setDeferredSyntaxAllowedAsLiteral(
+            String deferredSyntaxAllowedAsLiteral) {
+        this.deferredSyntaxAllowedAsLiteral = deferredSyntaxAllowedAsLiteral;
+    }
+    public String getTrimDirectiveWhitespaces() {
+        return trimDirectiveWhitespaces;
+    }
+    public void setTrimDirectiveWhitespaces(String trimDirectiveWhitespaces) {
+        this.trimDirectiveWhitespaces = trimDirectiveWhitespaces;
+    }
+    public String getErrorOnUndeclaredNamespace() {
         return errorOnUndeclaredNamespace;
     }
-    public void setErrorOnUndeclaredNamespace(boolean errorOnUndeclaredNamespace) {
+    public void setErrorOnUndeclaredNamespace(String errorOnUndeclaredNamespace) {
         this.errorOnUndeclaredNamespace = errorOnUndeclaredNamespace;
+    }
+    public ArrayList<String> getUrlPatterns() {
+        return urlPatterns;
+    }
+    public ArrayList<String> getIncludePreludes() {
+        return includePreludes;
+    }
+    public ArrayList<String> getIncludeCodas() {
+        return includeCodas;
     }
 
 }
