@@ -22,16 +22,16 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 import javax.servlet.jsp.tagext.FunctionInfo;
 import javax.servlet.jsp.tagext.PageData;
@@ -45,11 +45,11 @@ import javax.servlet.jsp.tagext.TagVariableInfo;
 import javax.servlet.jsp.tagext.ValidationMessage;
 import javax.servlet.jsp.tagext.VariableInfo;
 
+import org.apache.catalina.Globals;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.xmlparser.ParserUtils;
 import org.apache.jasper.xmlparser.TreeNode;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 /**
@@ -139,71 +139,214 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         this.parserController = pc;
         this.pi = pi;
         this.err = err;
-        InputStream in = null;
-        JarFile jarFile = null;
-
-        if (location == null) {
-            // The URI points to the TLD itself or to a JAR file in which the
-            // TLD is stored
-            location = generateTLDLocation(uri, ctxt);
-        }
-
-        try {
-            if (!location[0].endsWith("jar")) {
-                // Location points to TLD file
-                try {
-                    in = getResourceAsStream(location[0]);
-                    if (in == null) {
-                        throw new FileNotFoundException(location[0]);
-                    }
-                } catch (FileNotFoundException ex) {
-                    err.jspError("jsp.error.file.not.found", location[0]);
-                }
-
-                parseTLD(ctxt, location[0], in, null);
-                // Add TLD to dependency list
-                PageInfo pageInfo = ctxt.createCompiler().getPageInfo();
-                if (pageInfo != null) {
-                    pageInfo.addDependant(location[0]);
-                }
-            } else {
-                // Tag library is packaged in JAR file
-                try {
-                    URL jarFileUrl = new URL("jar:" + location[0] + "!/");
-                    JarURLConnection conn = (JarURLConnection) jarFileUrl
-                            .openConnection();
-                    conn.setUseCaches(false);
-                    conn.connect();
-                    jarFile = conn.getJarFile();
-                    ZipEntry jarEntry = jarFile.getEntry(location[1]);
-                    in = jarFile.getInputStream(jarEntry);
-                    parseTLD(ctxt, location[0], in, jarFileUrl);
-                } catch (Exception ex) {
-                    err.jspError("jsp.error.tld.unable_to_read", location[0],
-                            location[1], ex.toString());
-                }
-            }
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (Throwable t) {
-                }
-            }
-            if (jarFile != null) {
-                try {
-                    jarFile.close();
-                } catch (Throwable t) {
-                }
+        
+        URL jarFileUrl = null;
+        if (location[0].endsWith(".jar")) {
+            try {
+                jarFileUrl = new URL("jar:" + location[0] + "!/");
+            } catch (MalformedURLException ex) {
+                err.jspError("jsp.error.file.not.found", location[0]);
             }
         }
+        
+        org.apache.catalina.deploy.jsp.TagLibraryInfo tagLibraryInfo = 
+            ((HashMap<String, org.apache.catalina.deploy.jsp.TagLibraryInfo>) 
+            ctxt.getServletContext().getAttribute(Globals.JSP_TAG_LIBRARIES)).get(uriIn);
 
+        ArrayList<TagInfo> tagInfos = new ArrayList<TagInfo>();
+        ArrayList<TagFileInfo> tagFileInfos = new ArrayList<TagFileInfo>();
+        HashMap<String, FunctionInfo> functionInfos = new HashMap<String, FunctionInfo>();
+
+        this.jspversion = tagLibraryInfo.getJspversion();
+        this.tlibversion = tagLibraryInfo.getTlibversion();
+        this.shortname = tagLibraryInfo.getShortname();
+        this.urn = tagLibraryInfo.getUri();
+        this.info = tagLibraryInfo.getInfo();
+        if (tagLibraryInfo.getValidator() != null) {
+            this.tagLibraryValidator = createValidator(tagLibraryInfo);
+        }
+        org.apache.catalina.deploy.jsp.TagInfo tagInfosArray[] = tagLibraryInfo.getTags();
+        for (int i = 0; i < tagInfosArray.length; i++) {
+            TagInfo tagInfo = createTagInfo(tagInfosArray[i]);
+            tagInfos.add(tagInfo);
+        }
+        org.apache.catalina.deploy.jsp.TagFileInfo tagFileInfosArray[] = tagLibraryInfo.getTagFileInfos();
+        for (int i = 0; i < tagFileInfosArray.length; i++) {
+            TagFileInfo tagFileInfo = createTagFileInfo(tagFileInfosArray[i], jarFileUrl);
+            tagFileInfos.add(tagFileInfo);
+        }
+        org.apache.catalina.deploy.jsp.FunctionInfo functionInfosArray[] = tagLibraryInfo.getFunctionInfos();
+        for (int i = 0; i < functionInfosArray.length; i++) {
+            FunctionInfo functionInfo = createFunctionInfo(functionInfosArray[i]);
+            if (functionInfos.containsKey(functionInfo.getName())) {
+                err.jspError("jsp.error.tld.fn.duplicate.name", functionInfo.getName(),
+                        uri);
+            }
+            functionInfos.put(functionInfo.getName(), functionInfo);
+        }
+        
+        if (tlibversion == null) {
+            err.jspError("jsp.error.tld.mandatory.element.missing",
+                    "tlib-version");
+        }
+        if (jspversion == null) {
+            err.jspError("jsp.error.tld.mandatory.element.missing",
+                    "jsp-version");
+        }
+
+        this.tags = tagInfos.toArray(new TagInfo[0]);
+        this.tagFiles = tagFileInfos.toArray(new TagFileInfo[0]);
+        this.functions = functionInfos.values().toArray(new FunctionInfo[0]);
     }
 
     public TagLibraryInfo[] getTagLibraryInfos() {
         Collection coll = pi.getTaglibs();
         return (TagLibraryInfo[]) coll.toArray(new TagLibraryInfo[0]);
     }
+    
+    protected TagInfo createTagInfo(org.apache.catalina.deploy.jsp.TagInfo tagInfo)
+        throws JasperException {
+
+        ArrayList<TagAttributeInfo> attributeInfos = new ArrayList<TagAttributeInfo>();
+        ArrayList<TagVariableInfo> variableInfos = new ArrayList<TagVariableInfo>();
+
+        org.apache.catalina.deploy.jsp.TagAttributeInfo attributeInfosArray[] = tagInfo.getTagAttributeInfos();
+        for (int i = 0; i < attributeInfosArray.length; i++) {
+            TagAttributeInfo attributeInfo = createTagAttributeInfo(attributeInfosArray[i]);
+            attributeInfos.add(attributeInfo);
+        }
+
+        org.apache.catalina.deploy.jsp.TagVariableInfo variableInfosArray[] = tagInfo.getTagVariableInfos();
+        for (int i = 0; i < variableInfosArray.length; i++) {
+            TagVariableInfo variableInfo = createTagVariableInfo(variableInfosArray[i]);
+            variableInfos.add(variableInfo);
+        }
+        
+        TagExtraInfo tei = null;
+        String teiClassName = tagInfo.getTagExtraInfo();
+        if (teiClassName != null && !teiClassName.equals("")) {
+            try {
+                Class teiClass = ctxt.getClassLoader().loadClass(teiClassName);
+                tei = (TagExtraInfo) teiClass.newInstance();
+            } catch (Exception e) {
+                err.jspError("jsp.error.teiclass.instantiation", teiClassName,
+                        e);
+            }
+        }
+
+        return new TagInfo(tagInfo.getTagName(), tagInfo.getTagClassName(), tagInfo.getBodyContent(), 
+                tagInfo.getInfoString(), this, tei, attributeInfos.toArray(new TagAttributeInfo[0]), 
+                tagInfo.getDisplayName(), tagInfo.getSmallIcon(), tagInfo.getLargeIcon(),
+                variableInfos.toArray(new TagVariableInfo[0]), tagInfo.isDynamicAttributes());
+    }
+    
+    protected TagAttributeInfo createTagAttributeInfo(org.apache.catalina.deploy.jsp.TagAttributeInfo attributeInfo) {
+
+        String type = attributeInfo.getType();
+        String expectedType = attributeInfo.getExpectedTypeName();
+        String methodSignature = attributeInfo.getMethodSignature();
+        boolean rtexprvalue = attributeInfo.isReqTime();
+
+        if (type != null) {
+            if ("1.2".equals(jspversion)
+                    && (type.equals("Boolean") || type.equals("Byte")
+                            || type.equals("Character")
+                            || type.equals("Double")
+                            || type.equals("Float")
+                            || type.equals("Integer")
+                            || type.equals("Long") || type.equals("Object")
+                            || type.equals("Short") || type
+                            .equals("String"))) {
+                type = "java.lang." + type;
+            }
+        }
+
+        if (attributeInfo.isDeferredValue()) {
+            type = "javax.el.ValueExpression";
+            if (expectedType != null) {
+                expectedType = expectedType.trim();
+            } else {
+                expectedType = "java.lang.Object";
+            }
+        }
+        
+        if (attributeInfo.isDeferredMethod()) {
+            type = "javax.el.MethodExpression";
+            if (methodSignature != null) {
+                methodSignature = methodSignature.trim();
+            } else {
+                methodSignature = "java.lang.Object method()";
+            }
+        }
+
+        if (attributeInfo.isFragment()) {
+            /*
+             * According to JSP.C-3 ("TLD Schema Element Structure - tag"),
+             * 'type' and 'rtexprvalue' must not be specified if 'fragment' has
+             * been specified (this will be enforced by validating parser).
+             * Also, if 'fragment' is TRUE, 'type' is fixed at
+             * javax.servlet.jsp.tagext.JspFragment, and 'rtexprvalue' is fixed
+             * at true. See also JSP.8.5.2.
+             */
+            type = "javax.servlet.jsp.tagext.JspFragment";
+            rtexprvalue = true;
+        }
+
+        if (!rtexprvalue && type == null) {
+            // According to JSP spec, for static values (those determined at
+            // translation time) the type is fixed at java.lang.String.
+            type = "java.lang.String";
+        }
+        
+        return new TagAttributeInfo(attributeInfo.getName(), attributeInfo.isRequired(), 
+                type, rtexprvalue, attributeInfo.isFragment(), attributeInfo.getDescription(), 
+                attributeInfo.isDeferredValue(), attributeInfo.isDeferredMethod(), expectedType,
+                methodSignature);
+    }
+    
+    protected TagVariableInfo createTagVariableInfo(org.apache.catalina.deploy.jsp.TagVariableInfo variableInfo) {
+        int scope = VariableInfo.NESTED;
+        String s = variableInfo.getScope();
+        if (s != null) {
+            if ("NESTED".equals(s)) {
+                scope = VariableInfo.NESTED;
+            } else if ("AT_BEGIN".equals(s)) {
+                scope = VariableInfo.AT_BEGIN;
+            } else if ("AT_END".equals(s)) {
+                scope = VariableInfo.AT_END;
+            }
+        }
+        String className = variableInfo.getClassName();
+        if (className != null) {
+            className = "java.lang.String";
+        }
+        return new TagVariableInfo(variableInfo.getNameGiven(), variableInfo.getNameFromAttribute(), 
+                className, variableInfo.isDeclare(), scope);
+    }
+
+    protected TagFileInfo createTagFileInfo(org.apache.catalina.deploy.jsp.TagFileInfo tagFileInfo, URL jarFileUrl)
+        throws JasperException {
+        String name = tagFileInfo.getName();
+        String path = tagFileInfo.getPath();
+        if (path.startsWith("/META-INF/tags")) {
+            // Tag file packaged in JAR
+            // See https://issues.apache.org/bugzilla/show_bug.cgi?id=46471
+            // This needs to be removed once all the broken code that depends on
+            // it has been removed
+            ctxt.setTagFileJarUrl(path, jarFileUrl);
+        } else if (!path.startsWith("/WEB-INF/tags")) {
+            err.jspError("jsp.error.tagfile.illegalPath", path);
+        }
+        TagInfo tagInfo = TagFileProcessor.parseTagFileDirectives(
+                parserController, name, path, jarFileUrl, this);
+        return new TagFileInfo(name, path, tagInfo);
+    }
+    
+    protected FunctionInfo createFunctionInfo(org.apache.catalina.deploy.jsp.FunctionInfo functionInfo) {
+        return new FunctionInfo(functionInfo.getName(), 
+                functionInfo.getFunctionClass(), functionInfo.getFunctionSignature());
+    }
+    
     
     /*
      * @param ctxt The JSP compilation context @param uri The TLD's uri @param
@@ -334,6 +477,46 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         }
 
         return location;
+    }
+
+    private TagLibraryValidator createValidator(TreeNode elem)
+    throws JasperException {
+
+        String validatorClass = null;
+        Map initParams = new Hashtable();
+
+        Iterator list = elem.findChildren();
+        while (list.hasNext()) {
+            TreeNode element = (TreeNode) list.next();
+            String tname = element.getName();
+            if ("validator-class".equals(tname))
+                validatorClass = element.getBody();
+            else if ("init-param".equals(tname)) {
+                String[] initParam = createInitParam(element);
+                initParams.put(initParam[0], initParam[1]);
+            } else if ("description".equals(tname) || // Ignored elements
+                    false) {
+            } else {
+                log.warn(Localizer.getMessage(
+                        "jsp.warning.unknown.element.in.validator", tname));
+            }
+        }
+
+        TagLibraryValidator tlv = null;
+        if (validatorClass != null && !validatorClass.equals("")) {
+            try {
+                Class tlvClass = ctxt.getClassLoader()
+                .loadClass(validatorClass);
+                tlv = (TagLibraryValidator) tlvClass.newInstance();
+            } catch (Exception e) {
+                err.jspError("jsp.error.tlvclass.instantiation",
+                        validatorClass, e);
+            }
+        }
+        if (tlv != null) {
+            tlv.setInitParameters(initParams);
+        }
+        return tlv;
     }
 
     private TagInfo createTagInfo(TreeNode elem, String jspVersion)
@@ -624,28 +807,11 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                 declare, scope);
     }
 
-    private TagLibraryValidator createValidator(TreeNode elem)
+    private TagLibraryValidator createValidator(org.apache.catalina.deploy.jsp.TagLibraryInfo tagLibraryInfo)
             throws JasperException {
-
-        String validatorClass = null;
-        Map initParams = new Hashtable();
-
-        Iterator list = elem.findChildren();
-        while (list.hasNext()) {
-            TreeNode element = (TreeNode) list.next();
-            String tname = element.getName();
-            if ("validator-class".equals(tname))
-                validatorClass = element.getBody();
-            else if ("init-param".equals(tname)) {
-                String[] initParam = createInitParam(element);
-                initParams.put(initParam[0], initParam[1]);
-            } else if ("description".equals(tname) || // Ignored elements
-            false) {
-            } else {
-                log.warn(Localizer.getMessage(
-                            "jsp.warning.unknown.element.in.validator", tname));
-            }
-        }
+        org.apache.catalina.deploy.jsp.TagLibraryValidatorInfo tlvInfo = tagLibraryInfo.getValidator();
+        String validatorClass = tlvInfo.getValidatorClass();
+        Map<String, Object> initParams = tlvInfo.getInitParams();
 
         TagLibraryValidator tlv = null;
         if (validatorClass != null && !validatorClass.equals("")) {

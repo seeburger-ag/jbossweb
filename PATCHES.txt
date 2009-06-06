@@ -74,3 +74,9 @@ Windows 64 bit stuff ... Zzzzz
 
 781036
 Some configBase creation flag
+
+781779
+Useless syncing
+
+782000 782005 782007 782010 782013 782032
+Changes to APR init
