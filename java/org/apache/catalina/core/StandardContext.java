@@ -2304,7 +2304,7 @@ public class StandardContext
         for (int i = 0; i < listeners.length; i++) {
             addApplicationListener(listeners[i]);
         }
-        System.out.println("Add TLD for URI: " + tagLibraryInfo.getUri() + " " + tagLibraryInfo);
+        //System.out.println("Add TLD for URI: " + tagLibraryInfo.getUri() + " " + tagLibraryInfo);
         jspTagLibraries.put(tagLibraryInfo.getUri(), tagLibraryInfo);
     }
 
@@ -2316,7 +2316,7 @@ public class StandardContext
      * @param tagLibrayInfo the tag library info that will be added
      */
     public void addJspTagLibrary(String uri, TagLibraryInfo tagLibraryInfo) {
-        System.out.println("Add TLD for implicit URI: " + uri + " " + tagLibraryInfo);
+        //System.out.println("Add TLD for implicit URI: " + uri + " " + tagLibraryInfo);
         jspTagLibraries.put(uri, tagLibraryInfo);
     }
 
@@ -4064,6 +4064,8 @@ public class StandardContext
                 started = true;
 
                 // Start our subordinate components, if any
+                if ((jarRepository != null) && (jarRepository instanceof Lifecycle))
+                    ((Lifecycle) jarRepository).start();
                 if ((loader != null) && (loader instanceof Lifecycle))
                     ((Lifecycle) loader).start();
 

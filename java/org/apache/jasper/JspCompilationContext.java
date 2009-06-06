@@ -556,14 +556,7 @@ public class JspCompilationContext {
      * 'exposed' in the web application.
      */
     public String[] getTldLocation(String uri) throws JasperException {
-        System.out.print("Look for: " + uri + " TLDs list: ");
-        Iterator<String> keys = jspTagLibraries.keySet().iterator();
-        while (keys.hasNext()) {
-            System.out.print(keys.next() + ", ");
-        }
-        System.out.println();
         org.apache.catalina.deploy.jsp.TagLibraryInfo tagLibraryInfo = jspTagLibraries.get(uri);
-        System.out.println("Result: " + tagLibraryInfo);
         if (tagLibraryInfo == null) {
             return null;
         } else {
@@ -577,9 +570,12 @@ public class JspCompilationContext {
             return location;
         }
         /*
-        String[] location = 
-            getOptions().getTldLocationsCache().getLocation(uri);
-        return location;
+        System.out.print("Look for: " + uri + " TLDs list: ");
+        Iterator<String> keys = jspTagLibraries.keySet().iterator();
+        while (keys.hasNext()) {
+            System.out.print(keys.next() + ", ");
+        }
+        System.out.println();
         */
     }
 
