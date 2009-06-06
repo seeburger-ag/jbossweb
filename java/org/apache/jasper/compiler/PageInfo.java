@@ -16,6 +16,7 @@
  */
 package org.apache.jasper.compiler;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,12 +24,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
+import javax.el.ExpressionFactory;
+import javax.servlet.jsp.tagext.TagLibraryInfo;
+
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
-
-import javax.el.ExpressionFactory;
-import javax.servlet.jsp.tagext.TagLibraryInfo;
 
 /**
  * A repository for various info about the translation unit under compilation.
@@ -89,8 +90,8 @@ class PageInfo {
     private HashSet prefixes;
 
     private boolean hasJspRoot = false;
-    private Vector includePrelude;
-    private Vector includeCoda;
+    private ArrayList<String> includePrelude;
+    private ArrayList<String> includeCoda;
     private Vector pluginDcls;      // Id's for tagplugin declarations
 
 
@@ -104,8 +105,8 @@ class PageInfo {
         this.nonCustomTagPrefixMap = new HashMap();
         this.imports = new Vector();
         this.dependants = new Vector();
-        this.includePrelude = new Vector();
-        this.includeCoda = new Vector();
+        this.includePrelude = new ArrayList<String>();
+        this.includeCoda = new ArrayList<String>();
         this.pluginDcls = new Vector();
         this.prefixes = new HashSet();
 
@@ -175,7 +176,7 @@ class PageInfo {
         return includePrelude;
     }
 
-    public void setIncludePrelude(Vector prelude) {
+    public void setIncludePrelude(ArrayList<String> prelude) {
         includePrelude = prelude;
     }
 
@@ -183,7 +184,7 @@ class PageInfo {
         return includeCoda;
     }
 
-    public void setIncludeCoda(Vector coda) {
+    public void setIncludeCoda(ArrayList<String> coda) {
         includeCoda = coda;
     }
 

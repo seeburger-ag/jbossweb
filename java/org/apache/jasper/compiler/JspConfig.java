@@ -1,33 +1,63 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * JBoss, Home of Professional Open Source
+ * Copyright 2009, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  * 
- *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 1999-2009 The Apache Software Foundation
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
+
 
 package org.apache.jasper.compiler;
 
 import java.io.InputStream;
-import java.util.Iterator;
-import java.util.Vector;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.servlet.ServletContext;
 
+import org.apache.catalina.Globals;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.xmlparser.ParserUtils;
 import org.apache.jasper.xmlparser.TreeNode;
-import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 import org.xml.sax.InputSource;
 
@@ -46,7 +76,7 @@ public class JspConfig {
     // Logger
     private Logger log = Logger.getLogger(JspConfig.class);
 
-    private Vector jspProperties = null;
+    private ArrayList<JspPropertyGroup> jspProperties = null;
     private ServletContext ctxt;
     private boolean initialized = false;
 
@@ -100,20 +130,20 @@ public class JspConfig {
                 return;
             }
 
-            jspProperties = new Vector();
+            jspProperties = new ArrayList<JspPropertyGroup>();
             Iterator jspPropertyList = jspConfig.findChildren("jsp-property-group");
             while (jspPropertyList.hasNext()) {
 
                 TreeNode element = (TreeNode) jspPropertyList.next();
                 Iterator list = element.findChildren();
 
-                Vector urlPatterns = new Vector();
+                ArrayList<String> urlPatterns = new ArrayList<String>();
                 String pageEncoding = null;
                 String scriptingInvalid = null;
                 String elIgnored = null;
                 String isXml = null;
-                Vector includePrelude = new Vector();
-                Vector includeCoda = new Vector();
+                ArrayList<String> includePrelude = new ArrayList<String>();
+                ArrayList<String> includeCoda = new ArrayList<String>();
                 String deferredSyntaxAllowedAsLiteral = null;
                 String trimDirectiveWhitespaces = null;
 
@@ -123,7 +153,7 @@ public class JspConfig {
                     String tname = element.getName();
 
                     if ("url-pattern".equals(tname))
-                        urlPatterns.addElement( element.getBody() );
+                        urlPatterns.add( element.getBody() );
                     else if ("page-encoding".equals(tname))
                         pageEncoding = element.getBody();
                     else if ("is-xml".equals(tname))
@@ -133,9 +163,9 @@ public class JspConfig {
                     else if ("scripting-invalid".equals(tname))
                         scriptingInvalid = element.getBody();
                     else if ("include-prelude".equals(tname))
-                        includePrelude.addElement(element.getBody());
+                        includePrelude.add(element.getBody());
                     else if ("include-coda".equals(tname))
-                        includeCoda.addElement(element.getBody());
+                        includeCoda.add(element.getBody());
                     else if ("deferred-syntax-allowed-as-literal".equals(tname))
                         deferredSyntaxAllowedAsLiteral = element.getBody();
                     else if ("trim-directive-whitespaces".equals(tname))
@@ -149,7 +179,7 @@ public class JspConfig {
                 // Add one JspPropertyGroup for each URL Pattern.  This makes
                 // the matching logic easier.
                 for( int p = 0; p < urlPatterns.size(); p++ ) {
-                    String urlPattern = (String)urlPatterns.elementAt( p );
+                    String urlPattern = urlPatterns.get(p);
                     String path = null;
                     String extension = null;
 
@@ -198,7 +228,7 @@ public class JspConfig {
                     JspPropertyGroup propertyGroup =
                         new JspPropertyGroup(path, extension, property);
 
-                    jspProperties.addElement(propertyGroup);
+                    jspProperties.add(propertyGroup);
                 }
             }
         } catch (Exception ex) {
@@ -215,7 +245,82 @@ public class JspConfig {
     private void init() throws JasperException {
 
         if (!initialized) {
-            processWebDotXml(ctxt);
+            //processWebDotXml(ctxt);
+            HashMap<String, org.apache.catalina.deploy.JspPropertyGroup> jspPropertyGroups =
+                (HashMap<String, org.apache.catalina.deploy.JspPropertyGroup>) 
+                ctxt.getAttribute(Globals.JSP_PROPERTY_GROUPS);
+
+            String versionString = (String) ctxt.getAttribute(Globals.SERVLET_VERSION);
+            double version = 2.3;
+            if (versionString != null) {
+                try {
+                    version =  Double.parseDouble(versionString);
+                } catch (NumberFormatException e) {
+                }
+            }
+            if (version < 2.4) {
+                defaultIsELIgnored = "true";
+            }
+            
+            jspProperties = new ArrayList<JspPropertyGroup>();
+            Iterator<String> urlPatternIterator = jspPropertyGroups.keySet().iterator();
+            while (urlPatternIterator.hasNext()) {
+                String urlPattern = urlPatternIterator.next();
+                org.apache.catalina.deploy.JspPropertyGroup jspPropertyGroup =
+                    jspPropertyGroups.get(urlPattern);
+                
+                String path = null;
+                String extension = null;
+
+                if (urlPattern.indexOf('*') < 0) {
+                    // Exact match
+                    path = urlPattern;
+                } else {
+                    int i = urlPattern.lastIndexOf('/');
+                    String file;
+                    if (i >= 0) {
+                        path = urlPattern.substring(0,i+1);
+                        file = urlPattern.substring(i+1);
+                    } else {
+                        file = urlPattern;
+                    }
+
+                    // pattern must be "*", or of the form "*.jsp"
+                    if (file.equals("*")) {
+                        extension = "*";
+                    } else if (file.startsWith("*.")) {
+                        extension = file.substring(file.indexOf('.')+1);
+                    }
+
+                    // The url patterns are reconstructed as the follwoing:
+                    // path != null, extension == null:  / or /foo/bar.ext
+                    // path == null, extension != null:  *.ext
+                    // path != null, extension == "*":   /foo/*
+                    boolean isStar = "*".equals(extension);
+                    if ((path == null && (extension == null || isStar))
+                            || (path != null && !isStar)) {
+                        log.warn(Localizer.getMessage(
+                                "jsp.warning.bad.urlpattern.propertygroup",
+                                urlPattern));
+                        continue;
+                    }
+                }
+
+                JspProperty property = new JspProperty(jspPropertyGroup.getIsXml(),
+                        jspPropertyGroup.getElIgnored(),
+                        jspPropertyGroup.getScriptingInvalid(),
+                        jspPropertyGroup.getPageEncoding(),
+                        jspPropertyGroup.getIncludePreludes(),
+                        jspPropertyGroup.getIncludeCodas(),
+                        jspPropertyGroup.getDeferredSyntaxAllowedAsLiteral(),
+                        jspPropertyGroup.getTrimDirectiveWhitespaces());
+                JspPropertyGroup propertyGroup =
+                    new JspPropertyGroup(path, extension, property);
+
+                jspProperties.add(propertyGroup);
+                
+            }
+            
             defaultJspProperty = new JspProperty(defaultIsXml,
                     defaultIsELIgnored,
                     defaultIsScriptingInvalid,
@@ -287,8 +392,8 @@ public class JspConfig {
             uriExtension = uri.substring(index+1);
         }
 
-        Vector includePreludes = new Vector();
-        Vector includeCodas = new Vector();
+        ArrayList<String> includePreludes = new ArrayList<String>();
+        ArrayList<String> includeCodas = new ArrayList<String>();
 
         JspPropertyGroup isXmlMatch = null;
         JspPropertyGroup elIgnoredMatch = null;
@@ -297,10 +402,10 @@ public class JspConfig {
         JspPropertyGroup deferedSyntaxAllowedAsLiteralMatch = null;
         JspPropertyGroup trimDirectiveWhitespacesMatch = null;
 
-        Iterator iter = jspProperties.iterator();
+        Iterator<JspPropertyGroup> iter = jspProperties.iterator();
         while (iter.hasNext()) {
 
-            JspPropertyGroup jpg = (JspPropertyGroup) iter.next();
+            JspPropertyGroup jpg = iter.next();
             JspProperty jp = jpg.getJspProperty();
 
             // (arrays will be the same length)
@@ -473,14 +578,14 @@ public class JspConfig {
         private String elIgnored;
         private String scriptingInvalid;
         private String pageEncoding;
-        private Vector includePrelude;
-        private Vector includeCoda;
+        private ArrayList<String> includePrelude;
+        private ArrayList<String> includeCoda;
         private String deferedSyntaxAllowedAsLiteral;
         private String trimDirectiveWhitespaces;
 
         public JspProperty(String isXml, String elIgnored,
                 String scriptingInvalid, String pageEncoding,
-                Vector includePrelude, Vector includeCoda,
+                ArrayList<String> includePrelude, ArrayList<String> includeCoda,
                 String deferedSyntaxAllowedAsLiteral, 
                 String trimDirectiveWhitespaces) {
 
@@ -510,11 +615,11 @@ public class JspConfig {
             return pageEncoding;
         }
 
-        public Vector getIncludePrelude() {
+        public ArrayList<String> getIncludePrelude() {
             return includePrelude;
         }
 
-        public Vector getIncludeCoda() {
+        public ArrayList<String> getIncludeCoda() {
             return includeCoda;
         }
         
