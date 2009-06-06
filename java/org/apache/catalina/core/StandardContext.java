@@ -503,6 +503,12 @@ public class StandardContext
      */
     protected String publicId = null;
 
+    
+    /**
+     * Version number.
+     */
+    protected String version = null;
+
 
     /**
      * The reloadable flag for this web application.
@@ -1582,6 +1588,26 @@ public class StandardContext
 
 
     /**
+     * Return the Servlet API version defined for the webapp.
+     */
+    public String getVersion() {
+        return this.version;
+    }
+
+
+    /**
+     * Set the Servlet API version defined for the webapp.
+     *
+     * @param version The version
+     */
+    public void setVersion(String version) {
+        String oldVersion = this.version;
+        this.version = version;
+        support.firePropertyChange("version", oldVersion, version);
+    }
+
+
+    /**
      * Return the reloadable flag for this web application.
      */
     public boolean getReloadable() {
@@ -2284,11 +2310,11 @@ public class StandardContext
      */
     public void addJspPropertyGroup(JspPropertyGroup propertyGroup) {
         // Add any JSP mapping specified, as it needs to be mapped to the JSP Servlet
-        String[] urlPatterns = propertyGroup.getUrlPatterns();
-        for (int i = 0; i < urlPatterns.length; i++) {
-            addJspMapping(urlPatterns[i]);
+        ArrayList<String> urlPatterns = propertyGroup.getUrlPatterns();
+        for (int i = 0; i < urlPatterns.size(); i++) {
+            addJspMapping(urlPatterns.get(i));
             // Split off the groups to individual mappings
-            jspPropertyGroups.put(urlPatterns[i], propertyGroup);
+            jspPropertyGroups.put(urlPatterns.get(i), propertyGroup);
         }
     }
 
@@ -4809,12 +4835,12 @@ public class StandardContext
      */
     protected void postContextAttributes() {
         ServletContext context = getServletContext();
+        context.setAttribute(Globals.SERVLET_VERSION, version);
         context.setAttribute(Globals.RESOURCES_ATTR, getResources());
         context.setAttribute(Globals.WELCOME_FILES_ATTR, welcomeFiles);
         // Jasper attributes
         context.setAttribute(Globals.JSP_PROPERTY_GROUPS, jspPropertyGroups);
         context.setAttribute(Globals.JSP_TAG_LIBRARIES, jspTagLibraries);
-        context.setAttribute(Globals.JSP_TAG_LIBRARIES_LOCATION, taglibs);
         // Instance manager (also used by Jasper)
         context.setAttribute(InstanceManager.class.getName(), instanceManager);
     }

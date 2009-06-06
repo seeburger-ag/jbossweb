@@ -946,6 +946,30 @@ final class IgnoreAnnotationsRule extends Rule {
 }
 
 /**
+ * A Rule that sets the version field on the context.
+ */
+final class VersionRule extends Rule {
+
+    public VersionRule() {
+    }
+
+    public void begin(String namespace, String name, Attributes attributes)
+        throws Exception {
+        Context context = (Context) digester.peek(digester.getCount() - 1);
+        String value = attributes.getValue("version");
+        if (value != null) {
+            context.setVersion(value);
+        }
+        if (digester.getLogger().isDebugEnabled()) {
+            digester.getLogger().debug
+                (context.getClass().getName() + ".setIgnoreAnnotations( " +
+                    context.getIgnoreAnnotations() + ")");
+        }
+    }
+
+}
+
+/**
  * A Rule that sets soap headers on the ContextHandler.
  * 
  */

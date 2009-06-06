@@ -157,12 +157,11 @@ public final class Globals {
 
 
     /**
-     * The servlet context attribute under which we record the set of
-     * JSP tag libraries locations (as an object of type HashMap<String, String>) 
-     * for this application.
+     * The servlet context attribute under which we record the Servlet API version
+     * support declared for this webapp.
      */
-    public static final String JSP_TAG_LIBRARIES_LOCATION =
-        "org.apache.catalina.JSP_TAG_LIBRARIES_LOCATION";
+    public static final String SERVLET_VERSION =
+        "org.apache.catalina.SERVLET_VERSION";
 
 
     /**

@@ -407,6 +407,20 @@ public interface Context extends Container {
 
 
     /**
+     * Return the Servlet API version defined for the webapp.
+     */
+    public String getVersion();
+
+
+    /**
+     * Set the Servlet API version defined for the webapp.
+     *
+     * @param version The version
+     */
+    public void setVersion(String version);
+
+
+    /**
      * Return the reloadable flag for this web application.
      */
     public boolean getReloadable();
