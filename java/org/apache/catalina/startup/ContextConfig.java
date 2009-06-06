@@ -598,17 +598,9 @@ public class ContextConfig
      */
     protected void applicationTldConfig() {
         
-        // Add all TLDs from explicit web config
         Map<String, Set<String>> TLDs = getTLDs();
         Set<String> warTLDs = TLDs.get("");
-        String taglibs[] = context.findTaglibs();
-        for (int i = 0; i < taglibs.length; i++) {
-            String resourcePath = context.findTaglib(taglibs[i]);
-            if (!resourcePath.startsWith("/")) {
-                resourcePath = "/WEB-INF/" + resourcePath;
-            }
-            warTLDs.add(resourcePath);
-        }
+        ArrayList<TagLibraryInfo> tagLibraries = new ArrayList<TagLibraryInfo>();
 
         // Parse all TLDs from the WAR
         Iterator<String> warTLDsIterator = warTLDs.iterator();
@@ -631,7 +623,9 @@ public class ContextConfig
                         }
                         tagLibraryInfo.setLocation("");
                         tagLibraryInfo.setPath(tldPath);
+                        tagLibraries.add(tagLibraryInfo);
                         context.addJspTagLibrary(tagLibraryInfo);
+                        context.addJspTagLibrary(tldPath, tagLibraryInfo);
                     }
                 }
             } catch (Exception e) {
@@ -681,7 +675,11 @@ public class ContextConfig
                         }
                         tagLibraryInfo.setLocation(jarPath);
                         tagLibraryInfo.setPath(tldPath);
+                        tagLibraries.add(tagLibraryInfo);
                         context.addJspTagLibrary(tagLibraryInfo);
+                        if (tldPath.equals("META-INF/taglib.tld")) {
+                            context.addJspTagLibrary(jarPath, tagLibraryInfo);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -695,6 +693,27 @@ public class ContextConfig
                     } catch (Throwable t) {
                         // Ignore
                     }
+                }
+            }
+        }
+        
+        // Add additional TLDs URIs from explicit web config
+        String taglibs[] = context.findTaglibs();
+        for (int i = 0; i < taglibs.length; i++) {
+            String uri = taglibs[i];
+            String path = context.findTaglib(taglibs[i]);
+            String location = "";
+            if (path.indexOf(':') == -1 && !path.startsWith("/")) {
+                path = "/WEB-INF/" + path;
+            }
+            if (path.endsWith(".jar")) {
+                location = path;
+                path = "META-INF/taglib.tld";
+            }
+            for (int j = 0; j < tagLibraries.size(); j++) {
+                TagLibraryInfo tagLibraryInfo = tagLibraries.get(j);
+                if (tagLibraryInfo.getLocation().equals(location) && tagLibraryInfo.getPath().equals(path)) {
+                    context.addJspTagLibrary(uri, tagLibraryInfo);
                 }
             }
         }

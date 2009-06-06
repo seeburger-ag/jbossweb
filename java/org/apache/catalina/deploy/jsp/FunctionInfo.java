@@ -19,6 +19,7 @@ package org.apache.catalina.deploy.jsp;
 
 public class FunctionInfo {
 
+    protected String description;
     protected String name;
     protected String functionClass;
     protected String functionSignature;
@@ -40,6 +41,12 @@ public class FunctionInfo {
     }
     public void setFunctionSignature(String functionSignature) {
         this.functionSignature = functionSignature;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 }

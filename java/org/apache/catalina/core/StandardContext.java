@@ -2304,7 +2304,20 @@ public class StandardContext
         for (int i = 0; i < listeners.length; i++) {
             addApplicationListener(listeners[i]);
         }
+        System.out.println("Add TLD for URI: " + tagLibraryInfo.getUri() + " " + tagLibraryInfo);
         jspTagLibraries.put(tagLibraryInfo.getUri(), tagLibraryInfo);
+    }
+
+    
+    /**
+     * Add the given JSP tag library metadata with a specified mapping.
+     *
+     * @param uri the tag library URI
+     * @param tagLibrayInfo the tag library info that will be added
+     */
+    public void addJspTagLibrary(String uri, TagLibraryInfo tagLibraryInfo) {
+        System.out.println("Add TLD for implicit URI: " + uri + " " + tagLibraryInfo);
+        jspTagLibraries.put(uri, tagLibraryInfo);
     }
 
     

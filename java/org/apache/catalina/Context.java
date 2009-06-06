@@ -598,6 +598,14 @@ public interface Context extends Container {
 
 
     /**
+     * Add the given JSP tag library metadata.
+     *
+     * @param tagLibraryInfo the tag library info that will be added
+     */
+    public void addJspTagLibrary(String uri, TagLibraryInfo tagLibraryInfo);
+
+
+    /**
      * Add a Locale Encoding Mapping (see Sec 5.4 of Servlet spec 2.4)
      *
      * @param locale locale to map an encoding for

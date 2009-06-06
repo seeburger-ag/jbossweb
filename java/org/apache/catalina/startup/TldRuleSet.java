@@ -103,7 +103,7 @@ public class TldRuleSet extends RuleSetBase {
         digester.addCallMethod(prefix + "taglib/short-name",
                 "setShortname", 0);
         digester.addCallMethod(prefix + "taglib/uri",
-                "setUrn", 0);
+                "setUri", 0);
         digester.addCallMethod(prefix + "taglib/info",
                 "setInfo", 0);
         digester.addCallMethod(prefix + "taglib/description",
@@ -206,6 +206,21 @@ public class TldRuleSet extends RuleSetBase {
                 "setDeferredMethod", 0);
         digester.addCallMethod(prefix + "taglib/tag/attribute/deferred-value/method-signature",
                 "setMethodSignature", 0);
+
+        // tag/function element
+        digester.addObjectCreate(prefix + "taglib/function",
+                "org.apache.catalina.deploy.jsp.FunctionInfo");
+        digester.addSetNext(prefix + "taglib/function",
+                "addFunctionInfo",
+                "org.apache.catalina.deploy.jsp.FunctionInfo");
+        digester.addCallMethod(prefix + "taglib/function/name",
+                "setName", 0);
+        digester.addCallMethod(prefix + "taglib/function/description",
+                "setDescription", 0);
+        digester.addCallMethod(prefix + "taglib/function/function-class",
+                "setFunctionClass", 0);
+        digester.addCallMethod(prefix + "taglib/function/function-signature",
+                "setFunctionSignature", 0);
 
     }
 

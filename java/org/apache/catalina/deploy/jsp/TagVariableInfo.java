@@ -25,8 +25,8 @@ public class TagVariableInfo {
     protected String   nameGiven;         // <name-given>
     protected String   nameFromAttribute; // <name-from-attribute>
     protected String   className;         // <class>
-    protected boolean  declare;           // <declare>
-    protected int      scope;             // <scope>
+    protected boolean  declare = true;           // <declare>
+    protected String      scope;             // <scope>
 
     public String getNameGiven() {
         return nameGiven;
@@ -52,10 +52,10 @@ public class TagVariableInfo {
     public void setDeclare(boolean declare) {
         this.declare = declare;
     }
-    public int getScope() {
+    public String getScope() {
         return scope;
     }
-    public void setScope(int scope) {
+    public void setScope(String scope) {
         this.scope = scope;
     }
     
