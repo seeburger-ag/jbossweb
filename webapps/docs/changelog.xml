@@ -125,6 +125,9 @@
       <fix>
         Removed some casts in ELResolverImpl. Patch suggested by kkolinko. (markt)
       </fix>
+      <fix>
+        <bug>47318</bug>: Process include preludes and codas when processing directives and whole pages. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

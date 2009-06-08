@@ -5,6 +5,7 @@ Standalone:
 - Update digester XML parsing rules for web.xml updates (session tracking-mode, cookie-config, servlet enabled,
   servlets and filters async-supported, http-method-omission)
 - Enforce web.xml fragments merging rules
+- Migrate relevant components to JAR repository (in paticular classloader)
 - Lazy webapp startup valve
 - Abstract JMX in custom modeler better
 - JSP 2.2 changes
