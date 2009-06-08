@@ -24,7 +24,10 @@
   <subsection name="Catalina">
     <changelog>
       <fix>
-        Don't use XML parser from webapp to process TLD files. (markt, jclere)
+        <bug>45933</bug>: Don't use xml parser from web-app to process tld files. (markt)
+      </fix>
+      <fix>
+        <bug>29936</bug>: Create digesters and parsers earlier so we aren't using the webapp class loader when we create them. (markt) 
       </fix>
     </changelog>
   </subsection>
