@@ -24,6 +24,31 @@
   <subsection name="Catalina">
     <changelog>
       <fix>
+        Don't use XML parser from webapp to process TLD files. (markt, jclere)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <bug>47318</bug>: Process include preludes and codas when processing directives and whole pages. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 2.1.3.GA (remm)">
+  <subsection name="General">
+    <changelog>
+    </changelog>
+  </subsection>
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
         NPE in various realms. (markt)
       </fix>
       <fix>
