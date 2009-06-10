@@ -167,6 +167,8 @@ public class WebRuleSet extends RuleSetBase {
                          new SetPublicIdRule("setPublicId"));
         digester.addRule(prefix + elementName,
                          new IgnoreAnnotationsRule());
+        digester.addRule(prefix + elementName,
+                         new VersionRule());
 
         digester.addCallMethod(prefix + elementName + "/context-param",
                                "addParameter", 2);
@@ -962,8 +964,8 @@ final class VersionRule extends Rule {
         }
         if (digester.getLogger().isDebugEnabled()) {
             digester.getLogger().debug
-                (context.getClass().getName() + ".setIgnoreAnnotations( " +
-                    context.getIgnoreAnnotations() + ")");
+                (context.getClass().getName() + ".setVersion( " +
+                    context.getVersion() + ")");
         }
     }
 
