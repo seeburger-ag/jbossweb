@@ -4278,12 +4278,6 @@ public class StandardContext
             broadcaster.sendNotification(notification);
         }
 
-        // Close all JARs right away to avoid always opening a peak number 
-        // of files on startup
-        if (getLoader() instanceof WebappLoader) {
-            ((WebappLoader) getLoader()).closeJARs(true);
-        }
-
         // Reinitializing if something went wrong
         if (!ok && started) {
             stop();

@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -51,16 +23,28 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilePermission;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
+import java.util.ArrayList;
+import java.util.jar.JarFile;
 
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.naming.Binding;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
 import javax.servlet.ServletContext;
 
 import org.apache.catalina.Container;
@@ -76,6 +60,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
+import org.apache.naming.resources.Resource;
 import org.apache.tomcat.util.modeler.Registry;
 
 
@@ -94,18 +79,11 @@ import org.apache.tomcat.util.modeler.Registry;
  *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
- * @version $Revision$ $Date$
+ * @version $Revision: 914 $ $Date: 2009-01-29 17:56:25 +0100 (Thu, 29 Jan 2009) $
  */
 
-public class WebappLoader
+public class LegacyWebappLoader
     implements Lifecycle, Loader, PropertyChangeListener, MBeanRegistration  {
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     // ----------------------------------------------------------- Constructors
 
@@ -114,7 +92,7 @@ public class WebappLoader
      * Construct a new WebappLoader with no defined parent class loader
      * (so that the actual parent will be the system class loader).
      */
-    public WebappLoader() {
+    public LegacyWebappLoader() {
 
         this(null);
 
@@ -127,7 +105,7 @@ public class WebappLoader
      *
      * @param parent The parent class loader
      */
-    public WebappLoader(ClassLoader parent) {
+    public LegacyWebappLoader(ClassLoader parent) {
         super();
         this.parentClassLoader = parent;
     }
@@ -145,7 +123,7 @@ public class WebappLoader
     /**
      * The class loader being managed by this Loader component.
      */
-    private WebappClassLoader classLoader = null;
+    private LegacyWebappClassLoader classLoader = null;
 
 
     /**
@@ -165,7 +143,7 @@ public class WebappLoader
      * The descriptive information about this Loader implementation.
      */
     private static final String info =
-        "org.apache.catalina.loader.WebappLoader/1.0";
+        "org.apache.catalina.loader.LegacyWebappLoader/1.0";
 
 
     /**
@@ -176,11 +154,11 @@ public class WebappLoader
 
     /**
      * The Java class name of the ClassLoader implementation to be used.
-     * This class should extend WebappClassLoader, otherwise, a different 
+     * This class should extend LegacyWebappClassLoader, otherwise, a different 
      * loader implementation must be used.
      */
     private String loaderClass =
-        "org.apache.catalina.loader.WebappClassLoader";
+        "org.apache.catalina.loader.LegacyWebappClassLoader";
 
 
     /**
@@ -196,6 +174,19 @@ public class WebappLoader
 
 
     /**
+     * The set of repositories associated with this class loader.
+     */
+    private String repositories[] = new String[0];
+
+
+    /**
+     * The string manager for this package.
+     */
+    protected static final StringManager sm =
+        StringManager.getManager(Constants.Package);
+
+
+    /**
      * Has this component been started?
      */
     private boolean started = false;
@@ -205,6 +196,18 @@ public class WebappLoader
      * The property change support for this component.
      */
     protected PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+
+    /**
+     * Classpath set in the loader.
+     */
+    private String classpath = null;
+
+
+    /**
+     * Repositories that are set in the loader, for JMX.
+     */
+    private ArrayList loaderRepositories = null;
 
 
     // ------------------------------------------------------------- Properties
@@ -368,6 +371,22 @@ public class WebappLoader
         if (log.isDebugEnabled())
             log.debug(sm.getString("webappLoader.addRepository", repository));
 
+        for (int i = 0; i < repositories.length; i++) {
+            if (repository.equals(repositories[i]))
+                return;
+        }
+        String results[] = new String[repositories.length + 1];
+        for (int i = 0; i < repositories.length; i++)
+            results[i] = repositories[i];
+        results[repositories.length] = repository;
+        repositories = results;
+
+        if (started && (classLoader != null)) {
+            classLoader.addRepository(repository);
+            if( loaderRepositories != null ) loaderRepositories.add(repository);
+            setClassPath();
+        }
+
     }
 
 
@@ -380,7 +399,7 @@ public class WebappLoader
         if (reloadable && modified()) {
             try {
                 Thread.currentThread().setContextClassLoader
-                    (WebappLoader.class.getClassLoader());
+                    (LegacyWebappLoader.class.getClassLoader());
                 if (container instanceof StandardContext) {
                     ((StandardContext) container).reload();
                 }
@@ -390,6 +409,8 @@ public class WebappLoader
                         (container.getLoader().getClassLoader());
                 }
             }
+        } else {
+            closeJARs(false);
         }
     }
 
@@ -401,12 +422,54 @@ public class WebappLoader
      * String are immutable).
      */
     public String[] findRepositories() {
-        return null;
+
+        return ((String[])repositories.clone());
+
+    }
+
+    public String[] getRepositories() {
+        return ((String[])repositories.clone());
+    }
+
+    /** Extra repositories for this loader
+     */
+    public String getRepositoriesString() {
+        StringBuffer sb=new StringBuffer();
+        for( int i=0; i<repositories.length ; i++ ) {
+            sb.append( repositories[i]).append(":");
+        }
+        return sb.toString();
+    }
+
+    public String[] findLoaderRepositories() {
+        return getLoaderRepositories();
+    }
+    
+    public String[] getLoaderRepositories() {
+        if( loaderRepositories==null ) return  null;
+        String res[]=new String[ loaderRepositories.size()];
+        loaderRepositories.toArray(res);
+        return res;
+    }
+
+    public String getLoaderRepositoriesString() {
+        String repositories[]=getLoaderRepositories();
+        StringBuffer sb=new StringBuffer();
+        for( int i=0; i<repositories.length ; i++ ) {
+            sb.append( repositories[i]).append(":");
+        }
+        return sb.toString();
     }
 
 
-    public String[] findLoaderRepositories() {
-        return null;
+    /** 
+     * Classpath, as set in org.apache.catalina.jsp_classpath context
+     * property
+     *
+     * @return The classpath
+     */
+    public String getClasspath() {
+        return classpath;
     }
 
 
@@ -415,17 +478,31 @@ public class WebappLoader
      * such that the loaded classes should be reloaded?
      */
     public boolean modified() {
+
         return (classLoader.modified());
+
     }
 
-    
+
+    /**
+     * Used to periodically signal to the classloader to release JAR resources.
+     */
+    public void closeJARs(boolean force) {
+        if (classLoader !=null){
+            classLoader.closeJARs(force);
+        }
+    }
+
+
     /**
      * Remove a property change listener from this component.
      *
      * @param listener The listener to remove
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
+
         support.removePropertyChangeListener(listener);
+
     }
 
 
@@ -567,24 +644,13 @@ public class WebappLoader
             if (container instanceof StandardContext)
                 classLoader.setAntiJARLocking(((StandardContext) container).getAntiJARLocking());
 
-            // Configure our repositories
-            if (!(container instanceof Context))
-                throw new IllegalStateException("This loader only supports a Context");
-            ServletContext servletContext = ((Context) container).getServletContext();
-            if (servletContext == null)
-                throw new IllegalStateException("No servlet context available");
-
-            File workDir =
-                (File) servletContext.getAttribute(Globals.WORK_DIR_ATTR);
-            if (workDir == null) {
-                log.info("No work dir for " + servletContext);
+            for (int i = 0; i < repositories.length; i++) {
+                classLoader.addRepository(repositories[i]);
             }
 
-            if( log.isDebugEnabled()) 
-                log.debug(sm.getString("webappLoader.deploy", workDir.getAbsolutePath()));
-
-            classLoader.setWorkDir(workDir);
-            classLoader.setRepository(container.getJarRepository());
+            // Configure our repositories
+            setRepositories();
+            setClassPath();
 
             setPermissions();
 
@@ -600,9 +666,9 @@ public class WebappLoader
             String path = ctx.getPath();
             if (path.equals("")) {
                 path = "/";
-            }
+            }   
             ObjectName cloname = new ObjectName
-                (ctx.getEngineName() + ":type=WebappClassLoader,path="
+                (ctx.getEngineName() + ":type=LegacyWebappClassLoader,path="
                  + path + ",host=" + ctx.getParent().getName());
             Registry.getRegistry(null, null)
                 .registerComponent(classLoader, cloname, null);
@@ -651,7 +717,7 @@ public class WebappLoader
                 path = "/";
             }
             ObjectName cloname = new ObjectName
-                (ctx.getEngineName() + ":type=WebappClassLoader,path="
+                (ctx.getEngineName() + ":type=LegacyWebappClassLoader,path="
                  + path + ",host=" + ctx.getParent().getName());
             Registry.getRegistry(null, null).unregisterComponent(cloname);
         } catch (Throwable t) {
@@ -700,11 +766,11 @@ public class WebappLoader
     /**
      * Create associated classLoader.
      */
-    private WebappClassLoader createClassLoader()
+    private LegacyWebappClassLoader createClassLoader()
         throws Exception {
 
         Class clazz = Class.forName(loaderClass);
-        WebappClassLoader classLoader = null;
+        LegacyWebappClassLoader classLoader = null;
 
         if (parentClassLoader == null) {
             parentClassLoader = container.getParentClassLoader();
@@ -712,7 +778,7 @@ public class WebappLoader
         Class[] argTypes = { ClassLoader.class };
         Object[] args = { parentClassLoader };
         Constructor constr = clazz.getConstructor(argTypes);
-        classLoader = (WebappClassLoader) constr.newInstance(args);
+        classLoader = (LegacyWebappClassLoader) constr.newInstance(args);
 
         return classLoader;
 
@@ -810,8 +876,329 @@ public class WebappLoader
     }
 
 
+    /**
+     * Configure the repositories for our class loader, based on the
+     * associated Context.
+     */
+    private void setRepositories() {
+
+        if (!(container instanceof Context))
+            return;
+        ServletContext servletContext =
+            ((Context) container).getServletContext();
+        if (servletContext == null)
+            return;
+
+        loaderRepositories=new ArrayList();
+        // Loading the work directory
+        File workDir =
+            (File) servletContext.getAttribute(Globals.WORK_DIR_ATTR);
+        if (workDir == null) {
+            log.info("No work dir for " + servletContext);
+        }
+
+        if( log.isDebugEnabled()) 
+            log.debug(sm.getString("webappLoader.deploy", workDir.getAbsolutePath()));
+
+        classLoader.setWorkDir(workDir);
+
+        DirContext resources = container.getResources();
+
+        // Setting up the class repository (/WEB-INF/classes), if it exists
+
+        String classesPath = "/WEB-INF/classes";
+        DirContext classes = null;
+
+        try {
+            Object object = resources.lookup(classesPath);
+            if (object instanceof DirContext) {
+                classes = (DirContext) object;
+            }
+        } catch(NamingException e) {
+            // Silent catch: it's valid that no /WEB-INF/classes collection
+            // exists
+        }
+
+        if (classes != null) {
+
+            File classRepository = null;
+
+            String absoluteClassesPath =
+                servletContext.getRealPath(classesPath);
+
+            if (absoluteClassesPath != null) {
+
+                classRepository = new File(absoluteClassesPath);
+
+            } else {
+
+                classRepository = new File(workDir, classesPath);
+                classRepository.mkdirs();
+                copyDir(classes, classRepository);
+
+            }
+
+            if(log.isDebugEnabled())
+                log.debug(sm.getString("webappLoader.classDeploy", classesPath,
+                             classRepository.getAbsolutePath()));
+
+
+            // Adding the repository to the class loader
+            classLoader.addRepository(classesPath + "/", classRepository);
+            loaderRepositories.add(classRepository.getAbsolutePath());
+
+        }
+
+        // Setting up the JAR repository (/WEB-INF/lib), if it exists
+
+        String libPath = "/WEB-INF/lib";
+
+        classLoader.setJarPath(libPath);
+
+        DirContext libDir = null;
+        // Looking up directory /WEB-INF/lib in the context
+        try {
+            Object object = resources.lookup(libPath);
+            if (object instanceof DirContext)
+                libDir = (DirContext) object;
+        } catch(NamingException e) {
+            // Silent catch: it's valid that no /WEB-INF/lib collection
+            // exists
+        }
+
+        if (libDir != null) {
+
+            boolean copyJars = false;
+            String absoluteLibPath = servletContext.getRealPath(libPath);
+
+            File destDir = null;
+
+            if (absoluteLibPath != null) {
+                destDir = new File(absoluteLibPath);
+            } else {
+                copyJars = true;
+                destDir = new File(workDir, libPath);
+                destDir.mkdirs();
+            }
+
+            // Looking up directory /WEB-INF/lib in the context
+            try {
+                NamingEnumeration enumeration = resources.listBindings(libPath);
+                while (enumeration.hasMoreElements()) {
+
+                    Binding binding = (Binding) enumeration.nextElement();
+                    String filename = libPath + "/" + binding.getName();
+                    if (!filename.endsWith(".jar"))
+                        continue;
+
+                    // Copy JAR in the work directory, always (the JAR file
+                    // would get locked otherwise, which would make it
+                    // impossible to update it or remove it at runtime)
+                    File destFile = new File(destDir, binding.getName());
+
+                    if( log.isDebugEnabled())
+                    log.debug(sm.getString("webappLoader.jarDeploy", filename,
+                                     destFile.getAbsolutePath()));
+
+                    Object obj = binding.getObject();
+                    if (!(obj instanceof Resource))
+                        continue;
+                    
+                    Resource jarResource = (Resource) obj;
+                    if (copyJars) {
+                        if (!copy(jarResource.streamContent(),
+                                  new FileOutputStream(destFile)))
+                            continue;
+                    }
+
+                    try {
+                        JarFile jarFile = new JarFile(destFile);
+                        classLoader.addJar(filename, jarFile, destFile);
+                    } catch (Exception ex) {
+                        // Catch the exception if there is an empty jar file
+                        // Should ignore and continute loading other jar files 
+                        // in the dir
+                    }
+                    
+                    loaderRepositories.add(destFile.getAbsolutePath());
+
+                }
+            } catch (NamingException e) {
+                // Silent catch: it's valid that no /WEB-INF/lib directory
+                // exists
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }
+
+
+    /**
+     * Set the appropriate context attribute for our class path.  This
+     * is required only because Jasper depends on it.
+     */
+    private void setClassPath() {
+
+        // Validate our current state information
+        if (!(container instanceof Context))
+            return;
+        ServletContext servletContext =
+            ((Context) container).getServletContext();
+        if (servletContext == null)
+            return;
+
+        if (container instanceof StandardContext) {
+            String baseClasspath = 
+                ((StandardContext) container).getCompilerClasspath();
+            if (baseClasspath != null) {
+                servletContext.setAttribute(Globals.CLASS_PATH_ATTR,
+                                            baseClasspath);
+                return;
+            }
+        }
+
+        StringBuffer classpath = new StringBuffer();
+
+        // Assemble the class path information from our class loader chain
+        ClassLoader loader = getClassLoader();
+        int layers = 0;
+        int n = 0;
+        while (loader != null) {
+            if (!(loader instanceof URLClassLoader)) {
+                String cp=getClasspath( loader );
+                if( cp==null ) {
+                    log.info( "Unknown loader " + loader + " " + loader.getClass());
+                    break;
+                } else {
+                    if (n > 0) 
+                        classpath.append(File.pathSeparator);
+                    classpath.append(cp);
+                    n++;
+                }
+                break;
+                //continue;
+            }
+            URL repositories[] =
+                ((URLClassLoader) loader).getURLs();
+            for (int i = 0; i < repositories.length; i++) {
+                String repository = repositories[i].toString();
+                if (repository.startsWith("file://"))
+                    repository = repository.substring(7);
+                else if (repository.startsWith("file:"))
+                    repository = repository.substring(5);
+                else if (repository.startsWith("jndi:"))
+                    repository =
+                        servletContext.getRealPath(repository.substring(5));
+                else
+                    continue;
+                if (repository == null)
+                    continue;
+                if (n > 0)
+                    classpath.append(File.pathSeparator);
+                classpath.append(repository);
+                n++;
+            }
+            loader = loader.getParent();
+            layers++;
+        }
+
+        this.classpath=classpath.toString();
+
+        // Store the assembled class path as a servlet context attribute
+        servletContext.setAttribute(Globals.CLASS_PATH_ATTR,
+                                    classpath.toString());
+
+    }
+
+    // try to extract the classpath from a loader that is not URLClassLoader
+    private String getClasspath( ClassLoader loader ) {
+        try {
+            Method m=loader.getClass().getMethod("getClasspath", new Class[] {});
+            if( log.isTraceEnabled())
+                log.trace("getClasspath " + m );
+            if( m==null ) return null;
+            Object o=m.invoke( loader, new Object[] {} );
+            if( log.isDebugEnabled() )
+                log.debug("gotClasspath " + o);
+            if( o instanceof String )
+                return (String)o;
+            return null;
+        } catch( Exception ex ) {
+            if (log.isDebugEnabled())
+                log.debug("getClasspath ", ex);
+        }
+        return null;
+    }
+
+    /**
+     * Copy directory.
+     */
+    private boolean copyDir(DirContext srcDir, File destDir) {
+
+        try {
+
+            NamingEnumeration enumeration = srcDir.list("");
+            while (enumeration.hasMoreElements()) {
+                NameClassPair ncPair =
+                    (NameClassPair) enumeration.nextElement();
+                String name = ncPair.getName();
+                Object object = srcDir.lookup(name);
+                File currentFile = new File(destDir, name);
+                if (object instanceof Resource) {
+                    InputStream is = ((Resource) object).streamContent();
+                    OutputStream os = new FileOutputStream(currentFile);
+                    if (!copy(is, os))
+                        return false;
+                } else if (object instanceof InputStream) {
+                    OutputStream os = new FileOutputStream(currentFile);
+                    if (!copy((InputStream) object, os))
+                        return false;
+                } else if (object instanceof DirContext) {
+                    currentFile.mkdir();
+                    copyDir((DirContext) object, currentFile);
+                }
+            }
+
+        } catch (NamingException e) {
+            return false;
+        } catch (IOException e) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+
+    /**
+     * Copy a file to the specified temp directory. This is required only
+     * because Jasper depends on it.
+     */
+    private boolean copy(InputStream is, OutputStream os) {
+
+        try {
+            byte[] buf = new byte[4096];
+            while (true) {
+                int len = is.read(buf);
+                if (len < 0)
+                    break;
+                os.write(buf, 0, len);
+            }
+            is.close();
+            os.close();
+        } catch (IOException e) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+
     private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( WebappLoader.class );
+        org.jboss.logging.Logger.getLogger( LegacyWebappLoader.class );
 
     private ObjectName oname;
     private MBeanServer mserver;
