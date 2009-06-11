@@ -20,18 +20,18 @@ package org.apache.catalina.deploy.jsp;
 public class TagAttributeInfo {
     protected String name;
     protected String type;
-    protected boolean reqTime = false;
-    protected boolean required = false;
+    protected String reqTime;
+    protected String required;
     /*
      * private fields for JSP 2.0
      */
-    protected boolean fragment = false;
+    protected String fragment;
     /*
      * private fields for JSP 2.1
      */
     protected String description;
-    protected boolean deferredValue = false;
-    protected boolean deferredMethod = false;
+    protected String deferredValue;
+    protected String deferredMethod;
     protected String expectedTypeName;
     protected String methodSignature;
 
@@ -47,41 +47,11 @@ public class TagAttributeInfo {
     public void setType(String type) {
         this.type = type;
     }
-    public boolean isReqTime() {
-        return reqTime;
-    }
-    public void setReqTime(boolean reqTime) {
-        this.reqTime = reqTime;
-    }
-    public boolean isRequired() {
-        return required;
-    }
-    public void setRequired(boolean required) {
-        this.required = required;
-    }
-    public boolean isFragment() {
-        return fragment;
-    }
-    public void setFragment(boolean fragment) {
-        this.fragment = fragment;
-    }
     public String getDescription() {
         return description;
     }
     public void setDescription(String description) {
         this.description = description;
-    }
-    public boolean isDeferredValue() {
-        return deferredValue;
-    }
-    public void setDeferredValue(boolean deferredValue) {
-        this.deferredValue = deferredValue;
-    }
-    public boolean isDeferredMethod() {
-        return deferredMethod;
-    }
-    public void setDeferredMethod(boolean deferredMethod) {
-        this.deferredMethod = deferredMethod;
     }
     public String getExpectedTypeName() {
         return expectedTypeName;
@@ -95,4 +65,35 @@ public class TagAttributeInfo {
     public void setMethodSignature(String methodSignature) {
         this.methodSignature = methodSignature;
     }
+    public String getReqTime() {
+        return reqTime;
+    }
+    public void setReqTime(String reqTime) {
+        this.reqTime = reqTime;
+    }
+    public String getRequired() {
+        return required;
+    }
+    public void setRequired(String required) {
+        this.required = required;
+    }
+    public String getFragment() {
+        return fragment;
+    }
+    public void setFragment(String fragment) {
+        this.fragment = fragment;
+    }
+    public String getDeferredValue() {
+        return deferredValue;
+    }
+    public void setDeferredValue(String deferredValue) {
+        this.deferredValue = deferredValue;
+    }
+    public String getDeferredMethod() {
+        return deferredMethod;
+    }
+    public void setDeferredMethod(String deferredMethod) {
+        this.deferredMethod = deferredMethod;
+    }
+    
 }

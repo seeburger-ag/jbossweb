@@ -196,8 +196,6 @@ public class TldRuleSet extends RuleSetBase {
                 "setFragment", 0);
         digester.addCallMethod(prefix + "taglib/tag/attribute/description",
                 "setDescription", 0);
-        digester.addCallMethod(prefix + "taglib/tag/attribute/required",
-                "setRequired", 0);
         digester.addCallMethod(prefix + "taglib/tag/attribute/deferred-value",
                 "setDeferredValue", 0);
         digester.addCallMethod(prefix + "taglib/tag/attribute/deferred-value/type",
