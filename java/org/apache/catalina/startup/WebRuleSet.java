@@ -202,6 +202,10 @@ public class WebRuleSet extends RuleSetBase {
                             "addFilterDef",
                             "org.apache.catalina.deploy.FilterDef");
 
+        digester.addCallMethod(prefix + elementName + "/filter/async-supported",
+                "setAsyncSupported", 1, new Class[] { Boolean.TYPE });
+        digester.addCallParam(prefix + elementName + "/filter/async-supported", 0);
+
         digester.addCallMethod(prefix + elementName + "/filter/description",
                                "setDescription", 0);
         digester.addCallMethod(prefix + elementName + "/filter/display-name",
@@ -325,6 +329,8 @@ public class WebRuleSet extends RuleSetBase {
                             "org.apache.catalina.deploy.SecurityCollection");
         digester.addCallMethod(prefix + elementName + "/security-constraint/web-resource-collection/http-method",
                                "addMethod", 0);
+        digester.addCallMethod(prefix + elementName + "/security-constraint/web-resource-collection/http-method-omission",
+                               "addMethodOmission", 0);
         digester.addCallMethod(prefix + elementName + "/security-constraint/web-resource-collection/url-pattern",
                                "addPattern", 0);
         digester.addCallMethod(prefix + elementName + "/security-constraint/web-resource-collection/web-resource-name",
@@ -339,8 +345,16 @@ public class WebRuleSet extends RuleSetBase {
                             "addChild",
                             "org.apache.catalina.Container");
 
+        digester.addCallMethod(prefix + elementName + "/servlet/async-supported",
+                "setAsyncSupported", 1, new Class[] { Boolean.TYPE });
+        digester.addCallParam(prefix + elementName + "/servlet/async-supported", 0);
+
         digester.addCallMethod(prefix + elementName + "/servlet/description",
                 "setDescription", 0);
+
+        digester.addCallMethod(prefix + elementName + "/servlet/enabled",
+                "setEnabled", 1, new Class[] { Boolean.TYPE });
+        digester.addCallParam(prefix + elementName + "/servlet/enabled", 0);
 
         digester.addCallMethod(prefix + elementName + "/servlet/init-param",
                                "addInitParameter", 2);
@@ -378,6 +392,30 @@ public class WebRuleSet extends RuleSetBase {
                                "setSessionTimeout", 1,
                                new Class[] { Integer.TYPE });
         digester.addCallParam(prefix + elementName + "/session-config/session-timeout", 0);
+        digester.addCallMethod(prefix + elementName + "/session-config/tracking-mode", "addSessionTrackingMode", 0);
+        
+        digester.addObjectCreate(prefix + elementName + "/session-config/cookie-config",
+            "org.apache.catalina.deploy.SessionCookie");
+        digester.addSetNext(prefix + elementName + "/session-config/cookie-config",
+                "setSessionCookie",
+                "org.apache.catalina.deploy.SessionCookie");
+        digester.addCallMethod(prefix + elementName + "/session-config/cookie-config/cookie-name",
+                "setName", 0);
+        digester.addCallMethod(prefix + elementName + "/session-config/cookie-config/cookie-domain",
+                "setDomain", 0);
+        digester.addCallMethod(prefix + elementName + "/session-config/cookie-config/cookie-path",
+                "setPath", 0);
+        digester.addCallMethod(prefix + elementName + "/session-config/cookie-config/cookie-comment",
+                "setComment", 0);
+        digester.addCallMethod(prefix + elementName + "/session-config/cookie-config/http-only",
+                "setHttpOnly", 1, new Class[] { Boolean.TYPE });
+        digester.addCallParam(prefix + elementName + "/session-config/cookie-config/http-only", 0);
+        digester.addCallMethod(prefix + elementName + "/session-config/cookie-config/secure",
+                "setSecure", 1, new Class[] { Boolean.TYPE });
+        digester.addCallParam(prefix + elementName + "/session-config/cookie-config/secure", 0);
+        digester.addCallMethod(prefix + elementName + "/session-config/cookie-config/max-age",
+                "setMaxAge", 1, new Class[] { Integer.TYPE });
+        digester.addCallParam(prefix + elementName + "/session-config/cookie-config/max-age", 0);
 
         digester.addCallMethod(prefix + elementName + "/taglib",
                                "addTaglib", 2);

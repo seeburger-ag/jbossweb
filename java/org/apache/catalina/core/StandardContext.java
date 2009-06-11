@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.EventListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -314,7 +315,7 @@ public class StandardContext
     /**
      * Session tracking modes.
      */
-    protected Set<SessionTrackingMode> sessionTrackingModes = defaultSessionTrackingModes;
+    protected Set<SessionTrackingMode> sessionTrackingModes = null;
     
 
    /**
@@ -1710,13 +1711,30 @@ public class StandardContext
 
 
     public Set<SessionTrackingMode> getSessionTrackingModes() {
-        return sessionTrackingModes;
+        if (sessionTrackingModes == null) {
+            return defaultSessionTrackingModes;
+        } else {
+            return sessionTrackingModes;
+        }
     }
 
 
     public void setSessionTrackingModes(
             Set<SessionTrackingMode> sessionTrackingModes) {
         this.sessionTrackingModes = sessionTrackingModes;
+    }
+    
+    
+    public void addSessionTrackingMode(String trackingMode) {
+        SessionTrackingMode mode = SessionTrackingMode.valueOf(trackingMode);
+        if (mode == null) {
+            // FIXME: error message
+            throw new IllegalArgumentException();
+        }
+        if (sessionTrackingModes == null) {
+            sessionTrackingModes = new HashSet<SessionTrackingMode>();
+        }
+        sessionTrackingModes.add(mode);
     }
     
     
@@ -2476,6 +2494,7 @@ public class StandardContext
     public void addServletMapping(String pattern, String name,
                                   boolean jspWildCard) {
         // Validate the proposed mapping
+        Wrapper wrapper = (Wrapper) findChild(name);
         if (findChild(name) == null)
             throw new IllegalArgumentException
                 (sm.getString("standardContext.servletMap.name", name));
@@ -2488,16 +2507,17 @@ public class StandardContext
         String name2 = (String) servletMappings.get(pattern);
         if (name2 != null) {
             // Don't allow more than one servlet on the same pattern
-            Wrapper wrapper = (Wrapper) findChild(name2);
-            wrapper.removeMapping(pattern);
+            Wrapper wrapper2 = (Wrapper) findChild(name2);
+            wrapper2.removeMapping(pattern);
             mapper.removeWrapper(pattern);
         }
         servletMappings.put(pattern, name);
-        Wrapper wrapper = (Wrapper) findChild(name);
         wrapper.addMapping(pattern);
 
         // Update context mapper
-        mapper.addWrapper(pattern, wrapper, jspWildCard);
+        if (wrapper.getEnabled()) {
+            mapper.addWrapper(pattern, wrapper, jspWildCard);
+        }
 
         fireContainerEvent("addServletMapping", pattern);
 
@@ -4188,6 +4208,8 @@ public class StandardContext
         }
 
         try {
+            
+            
             
             // Create context attributes that will be required
             if (ok) {

@@ -112,6 +112,12 @@ public class StandardWrapper
     
     
     /**
+     * Enabled flag.
+     */
+    protected boolean enabled = true;
+    
+    
+    /**
      * The date and time at which this servlet will become available (in
      * milliseconds since the epoch), or zero if the servlet is available.
      * If this value equals Long.MAX_VALUE, the unavailability of this
@@ -310,14 +316,6 @@ public class StandardWrapper
 
 
     /**
-     * Return the Servlet description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-
-    /**
      * Set the async supported value.
      *
      * @param value New async supported value
@@ -326,6 +324,14 @@ public class StandardWrapper
         boolean oldAsyncSupported = this.asyncSupported;
         this.asyncSupported = value;
         support.firePropertyChange("asyncSupported", oldAsyncSupported, asyncSupported);
+    }
+
+
+    /**
+     * Return the Servlet description.
+     */
+    public String getDescription() {
+        return description;
     }
 
 
@@ -350,6 +356,26 @@ public class StandardWrapper
             // Change the facade (normally, this happens when the Wrapper is created)
             facade = new StandardWrapperFacade.Dynamic(this);
         }
+    }
+
+
+    /**
+     * Return the enabled value.
+     */
+    public boolean getEnabled() {
+        return enabled;
+    }
+
+
+    /**
+     * Set the enabled value.
+     *
+     * @param value New enabled value
+     */
+    public void setEnabled(boolean value) {
+        boolean oldEnabled = this.enabled;
+        this.enabled = value;
+        support.firePropertyChange("enabled", oldEnabled, enabled);
     }
 
 

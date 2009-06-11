@@ -513,6 +513,7 @@ public class MapperListener
                   ("mapperListener.registerWrapper", 
                    wrapperName, contextName));
 
+        // FIXME: need to handle enabled flag
         String[] mappings = (String[])
             mBeanServer.invoke(objectName, "findMappings", null, null);
         Object wrapper = 

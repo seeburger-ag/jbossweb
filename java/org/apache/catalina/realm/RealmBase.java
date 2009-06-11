@@ -493,6 +493,9 @@ public abstract class RealmBase
 	    }
 
             for(int j=0; j < collection.length; j++){
+                if(collection[j].findMethodOmission(method)) {
+                    continue;
+                }
                 String [] patterns = collection[j].findPatterns();
  
                 // If patterns is null, continue to avoid an NPE
@@ -537,6 +540,9 @@ public abstract class RealmBase
 	    }
 
             for(int j=0; j < collection.length; j++){
+                if(collection[j].findMethodOmission(method)) {
+                    continue;
+                }
                 String [] patterns = collection[j].findPatterns();
 
                 // If patterns is null, continue to avoid an NPE
@@ -606,6 +612,9 @@ public abstract class RealmBase
             int pos = -1;
             for(int j=0; j < collection.length; j++){
                 String [] patterns = collection[j].findPatterns();
+                if(collection[j].findMethodOmission(method)) {
+                    continue;
+                }
 
                 // If patterns is null, continue to avoid an NPE
                 // See Bugzilla 30624

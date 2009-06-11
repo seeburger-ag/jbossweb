@@ -98,6 +98,12 @@ public class SecurityCollection implements Serializable {
 
 
     /**
+     * The HTTP methods not covered by this web resource collection.
+     */
+    private String methodOmissions[] = new String[0];
+
+
+    /**
      * The name of this web resource collection.
      */
     private String name = null;
@@ -176,6 +182,22 @@ public class SecurityCollection implements Serializable {
 
 
     /**
+     * Add an HTTP request method to be skipped from this web resource collection.
+     */
+    public void addMethodOmission(String method) {
+
+        if (method == null)
+            return;
+        String results[] = new String[methodOmissions.length + 1];
+        for (int i = 0; i < methodOmissions.length; i++)
+            results[i] = methodOmissions[i];
+        results[methodOmissions.length] = method;
+        methodOmissions = results;
+
+    }
+
+
+    /**
      * Add a URL pattern to be part of this web resource collection.
      */
     public void addPattern(String pattern) {
@@ -221,6 +243,37 @@ public class SecurityCollection implements Serializable {
     public String[] findMethods() {
 
         return (methods);
+
+    }
+
+
+    /**
+     * Return <code>true</code> if the specified HTTP request method is
+     * not part of this web resource collection.
+     *
+     * @param method Request method to check
+     */
+    public boolean findMethodOmission(String method) {
+
+        if (methods.length == 0)
+            return (true);
+        for (int i = 0; i < methodOmissions.length; i++) {
+            if (methodOmissions[i].equals(method))
+                return (true);
+        }
+        return (false);
+
+    }
+
+
+    /**
+     * Return the set of HTTP request methods that are not part of this web
+     * resource collection, or a zero-length array if no request methods
+     * is omitted.
+     */
+    public String[] findMethodOmissions() {
+
+        return (methodOmissions);
 
     }
 
@@ -278,6 +331,36 @@ public class SecurityCollection implements Serializable {
                     results[j++] = methods[i];
             }
             methods = results;
+        }
+
+    }
+
+
+    /**
+     * Remove the specified HTTP request method from those that are not part
+     * of this web resource collection.
+     *
+     * @param method Request method to be removed
+     */
+    public void removeMethodOmission(String method) {
+
+        if (method == null)
+            return;
+        int n = -1;
+        for (int i = 0; i < methodOmissions.length; i++) {
+            if (methodOmissions[i].equals(method)) {
+                n = i;
+                break;
+            }
+        }
+        if (n >= 0) {
+            int j = 0;
+            String results[] = new String[methodOmissions.length - 1];
+            for (int i = 0; i < methodOmissions.length; i++) {
+                if (i != n)
+                    results[j++] = methodOmissions[i];
+            }
+            methodOmissions = results;
         }
 
     }

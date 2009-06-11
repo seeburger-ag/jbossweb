@@ -120,6 +120,20 @@ public interface Wrapper extends Container {
 
 
     /**
+     * Return the enabled value.
+     */
+    public boolean getEnabled();
+
+
+    /**
+     * Set the enabled value.
+     *
+     * @param value New async supported value
+     */
+    public void setEnabled(boolean enabled);
+
+
+    /**
      * Return the InstanceSupport object for this Wrapper instance.
      */
     public InstanceSupport getInstanceSupport();
