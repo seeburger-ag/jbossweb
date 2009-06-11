@@ -415,7 +415,7 @@ public class WebappLoader
      * such that the loaded classes should be reloaded?
      */
     public boolean modified() {
-        return (classLoader.modified());
+        return false;
     }
 
     
@@ -562,7 +562,6 @@ public class WebappLoader
         try {
 
             classLoader = createClassLoader();
-            classLoader.setResources(container.getResources());
             classLoader.setDelegate(this.delegate);
             if (container instanceof StandardContext)
                 classLoader.setAntiJARLocking(((StandardContext) container).getAntiJARLocking());

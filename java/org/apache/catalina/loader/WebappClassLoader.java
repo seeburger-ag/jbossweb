@@ -71,17 +71,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes.Name;
-
-import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 
 import org.apache.catalina.JarRepository;
 import org.apache.catalina.Lifecycle;
@@ -89,7 +87,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.JndiPermission;
-import org.apache.naming.resources.ResourceAttributes;
 import org.apache.tomcat.util.IntrospectionUtils;
 
 /**
@@ -130,7 +127,7 @@ import org.apache.tomcat.util.IntrospectionUtils;
  */
 public class WebappClassLoader
     extends URLClassLoader
-    implements Reloader, Lifecycle
+    implements Lifecycle
  {
 
     protected static org.jboss.logging.Logger log=
@@ -249,23 +246,17 @@ public class WebappClassLoader
 
 
     /**
-     * Associated directory context giving access to the resources in this
-     * webapp.
-     */
-    protected DirContext resources = null;
-
-
-    /**
      * The cache of ResourceEntry for classes and resources we have loaded,
      * keyed by resource name.
      */
-    protected HashMap<String, ResourceEntry> resourceEntries = new HashMap<String, ResourceEntry>();
+    protected Map<String, ResourceEntry> resourceEntries = new ConcurrentHashMap<String, ResourceEntry>();
 
 
     /**
      * The list of not found resources.
      */
-    protected HashSet<String> notFoundResources = new HashSet<String>();
+    protected Map<String, Object> notFoundResources = new ConcurrentHashMap<String, Object>();
+    protected static final Object VALUE = new Object();
 
 
     /**
@@ -337,14 +328,14 @@ public class WebappClassLoader
      * The list of JARs last modified dates, in the order they should be
      * searched for locally loaded classes or resources.
      */
-    protected long[] lastModifiedDates = new long[0];
+    //protected long[] lastModifiedDates = new long[0];
 
 
     /**
      * The list of resources which should be checked when checking for
      * modifications.
      */
-    protected String[] paths = new String[0];
+    //protected String[] paths = new String[0];
 
 
     /**
@@ -418,16 +409,6 @@ public class WebappClassLoader
 
     public void setRepository(JarRepository repository) {
         this.repository = repository;
-    }
-
-
-    public DirContext getResources() {
-        return resources;
-    }
-
-
-    public void setResources(DirContext resources) {
-        this.resources = resources;
     }
 
 
@@ -539,78 +520,6 @@ public class WebappClassLoader
      */
     protected void setParentClassLoader(ClassLoader pcl) {
         parent = pcl;
-    }
-
-
-    // ------------------------------------------------------- Reloader Methods
-
-
-    /**
-     * Add a new repository to the set of places this ClassLoader can look for
-     * classes to be loaded.
-     *
-     * @param repository Name of a source of classes to be loaded, such as a
-     *  directory pathname, a JAR file pathname, or a ZIP file pathname
-     *
-     * @exception IllegalArgumentException if the specified repository is
-     *  invalid or does not exist
-     */
-    public void addRepository(String repository) {
-
-        // FIXME: remove
-        // Ignore any of the standard repositories, as they are set up using
-        // either addJar or addRepository
-        if (repository.startsWith("/WEB-INF/lib")
-            || repository.startsWith("/WEB-INF/classes"))
-            return;
-
-    }
-
-
-    /**
-     * Return a String array of the current repositories for this class
-     * loader.  If there are no repositories, a zero-length array is
-     * returned.For security reason, returns a clone of the Array (since 
-     * String are immutable).
-     */
-    public String[] findRepositories() {
-        return null;
-    }
-
-
-    /**
-     * Have one or more classes or resources been modified so that a reload
-     * is appropriate?
-     */
-    public boolean modified() {
-
-        if (log.isDebugEnabled())
-            log.debug("modified()");
-
-        int length = lastModifiedDates.length;
-
-        for (int i = 0; i < length; i++) {
-            try {
-                long lastModified =
-                    ((ResourceAttributes) resources.getAttributes(paths[i]))
-                    .getLastModified();
-                if (lastModified != lastModifiedDates[i]) {
-                    if( log.isDebugEnabled() ) 
-                        log.debug("  Resource '" + paths[i]
-                                  + "' was modified; Date is now: "
-                                  + new java.util.Date(lastModified) + " Was: "
-                                  + new java.util.Date(lastModifiedDates[i]));
-                    return (true);
-                }
-            } catch (NamingException e) {
-                log.error("    Resource '" + paths[i] + "' is missing");
-                return (true);
-            }
-        }
-
-        // No classes have been modified
-        return (false);
-
     }
 
 
@@ -1233,10 +1142,7 @@ public class WebappClassLoader
 
         notFoundResources.clear();
         resourceEntries.clear();
-        resources = null;
         repositoryURLs = null;
-        lastModifiedDates = null;
-        paths = null;
         parent = null;
         repository = null;
 
@@ -1274,7 +1180,7 @@ public class WebappClassLoader
         // Null out any static or final fields from loaded classes,
         // as a workaround for apparent garbage collection bugs
         if (ENABLE_CLEAR_REFERENCES) {
-            Iterator loadedClasses = ((HashMap) resourceEntries.clone()).values().iterator();
+            Iterator loadedClasses = resourceEntries.values().iterator();
             while (loadedClasses.hasNext()) {
                 ResourceEntry entry = (ResourceEntry) loadedClasses.next();
                 if (entry.loadedClass != null) {
@@ -1572,32 +1478,9 @@ public class WebappClassLoader
                 }
             }
 
-            // Register the full path for modification checking
-            // Note: Only syncing on a 'constant' object is needed
-            synchronized (allPermission) {
-
-                int j;
-
-                long[] result2 = 
-                    new long[lastModifiedDates.length + 1];
-                for (j = 0; j < lastModifiedDates.length; j++) {
-                    result2[j] = lastModifiedDates[j];
-                }
-                result2[lastModifiedDates.length] = entry.lastModified;
-                lastModifiedDates = result2;
-
-                String[] result = new String[paths.length + 1];
-                for (j = 0; j < paths.length; j++) {
-                    result[j] = paths[j];
-                }
-                result[paths.length] = resource.getPath();
-                paths = result;
-
-            }
-
         }
 
-        if ((entry == null) && (notFoundResources.contains(name)))
+        if ((entry == null) && (notFoundResources.containsKey(name)))
             return null;
 
         JarEntry jarEntry = null;
@@ -1680,9 +1563,7 @@ public class WebappClassLoader
         }
 
         if (entry == null) {
-            synchronized (notFoundResources) {
-                notFoundResources.add(name);
-            }
+            notFoundResources.put(name, VALUE);
             return null;
         }
 
