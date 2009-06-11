@@ -36,7 +36,7 @@
   <property name="test.runner"       value="junit.textui.TestRunner"/>
 
   <!-- Can't be lower - jsp uses templates -->
-  <property name="compile.source" value="1.5"/>
+  <property name="compile.source" value="1.6"/>
 
   <!-- JAR artifacts -->
   <property name="bootstrap.jar" value="${tomcat.build}/bin/bootstrap.jar"/>
@@ -690,10 +690,6 @@
 
     <!-- Build Tomcat DBCP bundle -->
     <antcall target="downloadgz">
-      <param name="sourcefile" value="${commons-collections-src.loc}"/>
-      <param name="destfile" value="${tomcat-dbcp.jar}" />
-    </antcall>
-    <antcall target="downloadgz">
       <param name="sourcefile" value="${commons-pool-src.loc}"/>
       <param name="destfile" value="${tomcat-dbcp.jar}" />
     </antcall>
@@ -786,8 +782,8 @@
         debug="${compile.debug}"
         optimize="${compile.optimize}"
         deprecation="${compile.deprecation}"
-        source="${compile.source}"
-        target="${compile.target}"
+        source="1.5"
+        target="1.5"
         excludes="**/CVS/**,**/.svn/**">
       <include name="**" />
     </javac>

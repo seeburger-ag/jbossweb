@@ -256,7 +256,7 @@
 
 
   <!-- ==================== RELEASE: Create Release ======================= -->
-  <target name="release" depends="clean,dist-static,dist-deployer,installer,package-zip,package-tgz,package-deployer-zip,package-deployer-tgz,dist-source,dist-javadoc,package-docs-tgz,package-src-zip,package-src-tgz"
+  <target name="release" depends="clean,dist-static,installer,package-zip,package-tgz,dist-source,dist-javadoc,package-docs-tgz,package-src-zip,package-src-tgz"
    description="Create a JBoss Web packaged distribution">
 
     <filter token="VERSION" value="${version}"/>
