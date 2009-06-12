@@ -96,6 +96,12 @@
       <fix>
         <bug>47299</bug>: Expose Container.fireContainerEvent, which became public long ago. (remm)
       </fix>
+      <fix>
+        Two bugs related to session activity with the persistent manager. (markt)
+      </fix>
+      <fix>
+        <bug>47343</bug>: Fix redeploy resources order. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

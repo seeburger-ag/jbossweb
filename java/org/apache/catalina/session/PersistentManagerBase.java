@@ -814,6 +814,9 @@ public abstract class PersistentManagerBase
         ((StandardSession)session).tellNew();
         add(session);
         ((StandardSession)session).activate();
+        // endAccess() to ensure timeouts happen correctly.
+        // access() to keep access count correct or it will end up negative
+        session.access();
         session.endAccess();
 
         return (session);
@@ -1050,6 +1053,12 @@ public abstract class PersistentManagerBase
                     int timeIdle = // Truncate, do not round up
                         (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
                     if (timeIdle > maxIdleSwap && timeIdle > minIdleSwap) {
+                        if (sessions[i] instanceof StandardSession) {
+                            if (((StandardSession) sessions[i]).accessCount.get() > 0) {
+                                // Session is currently being accessed - skip it
+                                continue;
+                            }
+                        }
                         if (log.isDebugEnabled())
                             log.debug(sm.getString
                                 ("persistentManager.swapMaxIdle",
@@ -1094,6 +1103,12 @@ public abstract class PersistentManagerBase
                 int timeIdle = // Truncate, do not round up
                     (int) ((timeNow - sessions[i].getLastAccessedTime()) / 1000L);
                 if (timeIdle > minIdleSwap) {
+                    if (sessions[i] instanceof StandardSession) {
+                        if (((StandardSession) sessions[i]).accessCount.get() > 0) {
+                            // Session is currently being accessed - skip it
+                            continue;
+                        }
+                    }
                     if(log.isDebugEnabled())
                         log.debug(sm.getString
                             ("persistentManager.swapTooManyActive",
