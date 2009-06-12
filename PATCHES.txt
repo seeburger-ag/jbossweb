@@ -80,3 +80,6 @@ Useless syncing
 
 782000 782005 782007 782010 782013 782032
 Changes to APR init
+
+784083
+Useless alias feature, rather redundant with overlays, and has no place in the DirContext implementation
