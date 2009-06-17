@@ -23,21 +23,21 @@ import javax.el.FunctionMapper;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: markt $
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: rjung $
  */
 public class FunctionMapperFactory extends FunctionMapper {
 
     protected FunctionMapperImpl memento = null;
     protected FunctionMapper target;
-    
+
     public FunctionMapperFactory(FunctionMapper mapper) {
         if (mapper == null) {
             throw new NullPointerException("FunctionMapper target cannot be null");
         }
         this.target = mapper;
     }
-   
-    
+
+
     /* (non-Javadoc)
      * @see javax.el.FunctionMapper#resolveFunction(java.lang.String, java.lang.String)
      */
@@ -51,7 +51,7 @@ public class FunctionMapperFactory extends FunctionMapper {
         }
         return m;
     }
-    
+
     public FunctionMapper create() {
         return this.memento;
     }
