@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@ import org.apache.el.util.MessageFactory;
 /**
  * A helper class of Arithmetic defined by the EL Specification
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: markt $
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: rjung $
  */
 public abstract class ELArithmetic {
 
@@ -110,12 +110,12 @@ public abstract class ELArithmetic {
     public final static class DoubleDelegate extends ELArithmetic {
 
         protected Number add(Number num0, Number num1) {
-        	// could only be one of these
-        	if (num0 instanceof BigDecimal) {
-        		return ((BigDecimal) num0).add(new BigDecimal(num1.doubleValue()));
-        	} else if (num1 instanceof BigDecimal) {
-        		return ((new BigDecimal(num0.doubleValue()).add((BigDecimal) num1)));
-        	}
+            // could only be one of these
+            if (num0 instanceof BigDecimal) {
+                return ((BigDecimal) num0).add(new BigDecimal(num1.doubleValue()));
+            } else if (num1 instanceof BigDecimal) {
+                return ((new BigDecimal(num0.doubleValue()).add((BigDecimal) num1)));
+            }
             return new Double(num0.doubleValue() + num1.doubleValue());
         }
 
@@ -123,7 +123,7 @@ public abstract class ELArithmetic {
             if (num instanceof Double)
                 return num;
             if (num instanceof BigInteger)
-            	return new BigDecimal((BigInteger) num);
+                return new BigDecimal((BigInteger) num);
             return new Double(num.doubleValue());
         }
 
@@ -140,22 +140,22 @@ public abstract class ELArithmetic {
         }
 
         protected Number subtract(Number num0, Number num1) {
-        	// could only be one of these
-        	if (num0 instanceof BigDecimal) {
-        		return ((BigDecimal) num0).subtract(new BigDecimal(num1.doubleValue()));
-        	} else if (num1 instanceof BigDecimal) {
-        		return ((new BigDecimal(num0.doubleValue()).subtract((BigDecimal) num1)));
-        	}
+            // could only be one of these
+            if (num0 instanceof BigDecimal) {
+                return ((BigDecimal) num0).subtract(new BigDecimal(num1.doubleValue()));
+            } else if (num1 instanceof BigDecimal) {
+                return ((new BigDecimal(num0.doubleValue()).subtract((BigDecimal) num1)));
+            }
             return new Double(num0.doubleValue() - num1.doubleValue());
         }
 
         protected Number multiply(Number num0, Number num1) {
-        	// could only be one of these
-        	if (num0 instanceof BigDecimal) {
-        		return ((BigDecimal) num0).multiply(new BigDecimal(num1.doubleValue()));
-        	} else if (num1 instanceof BigDecimal) {
-        		return ((new BigDecimal(num0.doubleValue()).multiply((BigDecimal) num1)));
-        	}
+            // could only be one of these
+            if (num0 instanceof BigDecimal) {
+                return ((BigDecimal) num0).multiply(new BigDecimal(num1.doubleValue()));
+            } else if (num1 instanceof BigDecimal) {
+                return ((new BigDecimal(num0.doubleValue()).multiply((BigDecimal) num1)));
+            }
             return new Double(num0.doubleValue() * num1.doubleValue());
         }
 
@@ -164,8 +164,6 @@ public abstract class ELArithmetic {
                     || obj1 instanceof Double
                     || obj0 instanceof Float
                     || obj1 instanceof Float
-                    || (obj0 != null && (Double.TYPE == obj0.getClass() || Float.TYPE == obj0.getClass()))
-                    || (obj1 != null && (Double.TYPE == obj1.getClass() || Float.TYPE == obj1.getClass()))
                     || (obj0 instanceof String && ELSupport
                             .isStringFloat((String) obj0)) || (obj1 instanceof String && ELSupport
                     .isStringFloat((String) obj1)));
@@ -272,7 +270,7 @@ public abstract class ELArithmetic {
         else if (DOUBLE.matches(obj0, obj1))
             delegate = DOUBLE;
         else if (BIGINTEGER.matches(obj0, obj1))
-            delegate = BIGINTEGER;   
+            delegate = BIGINTEGER;
         else
             delegate = LONG;
 
@@ -326,12 +324,15 @@ public abstract class ELArithmetic {
         return (obj != null && isNumberType(obj.getClass()));
     }
 
-    public final static boolean isNumberType(final Class type) {
-        return type == (java.lang.Long.class) || type == Long.TYPE || type == (java.lang.Double.class) || type == Double.TYPE || type == (java.lang.Byte.class) || type == Byte.TYPE || type == (java.lang.Short.class) || type == Short.TYPE || type == (java.lang.Integer.class) || type == Integer.TYPE || type == (java.lang.Float.class) || type == Float.TYPE || type == (java.math.BigInteger.class) || type == (java.math.BigDecimal.class);
+    public final static boolean isNumberType(final Class<?> type) {
+        return type == Long.TYPE || type == Double.TYPE ||
+            type == Byte.TYPE || type == Short.TYPE ||
+            type == Integer.TYPE || type == Float.TYPE ||
+            Number.class.isAssignableFrom(type);
     }
 
     /**
-     * 
+     *
      */
     protected ELArithmetic() {
         super();
@@ -348,7 +349,7 @@ public abstract class ELArithmetic {
     protected abstract Number coerce(final Number num);
 
     protected final Number coerce(final Object obj) {
-        
+
         if (isNumber(obj)) {
             return coerce((Number) obj);
         }
@@ -359,13 +360,12 @@ public abstract class ELArithmetic {
             return coerce(ZERO);
         }
 
-        Class objType = obj.getClass();
-        if (Character.class.equals(objType) || Character.TYPE == objType) {
+        if (obj instanceof Character) {
             return coerce(new Short((short) ((Character) obj).charValue()));
         }
 
-        throw new IllegalArgumentException(MessageFactory.get("el.convert", obj,
-                objType));
+        throw new IllegalArgumentException(MessageFactory.get("error.convert",
+                obj, obj.getClass(), "Number"));
     }
 
     protected abstract Number coerce(final String str);

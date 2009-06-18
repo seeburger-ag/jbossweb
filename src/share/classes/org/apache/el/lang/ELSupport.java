@@ -32,11 +32,9 @@ import org.apache.el.util.MessageFactory;
  * A helper class that implements the EL Specification
  * 
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: remm $
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author: markt $
  */
 public class ELSupport {
-
-    private final static ELSupport REF = new ELSupport();
 
     private final static Long ZERO = new Long(0L);
 
@@ -139,7 +137,7 @@ public class ELSupport {
             return obj0.equals(obj1);
         }
     }
-    
+
     /**
      * @param obj
      * @param type
@@ -164,7 +162,7 @@ public class ELSupport {
         if (obj == null || "".equals(obj)) {
             return Boolean.FALSE;
         }
-        if (obj instanceof Boolean || obj.getClass() == Boolean.TYPE) {
+        if (obj instanceof Boolean) {
             return (Boolean) obj;
         }
         if (obj instanceof String) {
@@ -187,7 +185,7 @@ public class ELSupport {
             return new Character((char) ((Number) obj).shortValue());
         }
         Class objType = obj.getClass();
-        if (obj instanceof Character || objType == Character.TYPE) {
+        if (obj instanceof Character) {
             return (Character) obj;
         }
 
@@ -225,9 +223,15 @@ public class ELSupport {
             if (number instanceof BigDecimal) {
                 return ((BigDecimal) number).toBigInteger();
             }
+            if (number instanceof BigInteger) {
+                return number;
+            }
             return BigInteger.valueOf(number.longValue());
         }
         if (BigDecimal.class.equals(type)) {
+            if (number instanceof BigDecimal) {
+                return number;
+            }
             if (number instanceof BigInteger) {
                 return new BigDecimal((BigInteger) number);
             }
@@ -259,14 +263,13 @@ public class ELSupport {
             return coerceToNumber((Number) obj, type);
         }
 
-        Class objType = obj.getClass();
-        if (Character.class.equals(objType) || Character.TYPE == objType) {
+        if (obj instanceof Character) {
             return coerceToNumber(new Short((short) ((Character) obj)
                     .charValue()), type);
         }
 
         throw new IllegalArgumentException(MessageFactory.get("error.convert",
-                obj, objType, type));
+                obj, obj.getClass(), type));
     }
 
     protected final static Number coerceToNumber(final String val,
@@ -337,7 +340,8 @@ public class ELSupport {
 
     public final static Object coerceToType(final Object obj, final Class type)
             throws IllegalArgumentException {
-        if (type == null || Object.class.equals(type)) {
+        if (type == null || Object.class.equals(type) ||
+                (obj != null && type.isAssignableFrom(obj.getClass()))) {
             return obj;
         }
         if (String.class.equals(type)) {
@@ -351,9 +355,6 @@ public class ELSupport {
         }
         if (Boolean.class.equals(type) || Boolean.TYPE == type) {
             return coerceToBoolean(obj);
-        }
-        if (obj != null && type.isAssignableFrom(obj.getClass())) {
-            return obj;
         }
         if (type.isEnum()) {
             return coerceToEnum(obj, type);
@@ -402,10 +403,7 @@ public class ELSupport {
         return (obj0 instanceof Double
                 || obj1 instanceof Double
                 || obj0 instanceof Float
-                || obj1 instanceof Float
-                || (obj0 != null && (Double.TYPE == obj0.getClass() || Float.TYPE == obj0
-                        .getClass())) || (obj1 != null && (Double.TYPE == obj1
-                .getClass() || Float.TYPE == obj1.getClass())));
+                || obj1 instanceof Float);
     }
 
     public final static boolean isDoubleStringOp(final Object obj0,
@@ -424,25 +422,14 @@ public class ELSupport {
                 || obj0 instanceof Short
                 || obj1 instanceof Short
                 || obj0 instanceof Byte
-                || obj1 instanceof Byte
-                || (obj0 != null && (Long.TYPE == obj0.getClass()
-                        || Integer.TYPE == obj0.getClass()
-                        || Character.TYPE == obj0.getClass()
-                        || Short.TYPE == obj0.getClass() || Byte.TYPE == obj0
-                        .getClass())) || (obj0 != null && (Long.TYPE == obj0
-                .getClass()
-                || Integer.TYPE == obj0.getClass()
-                || Character.TYPE == obj0.getClass()
-                || Short.TYPE == obj0.getClass() || Byte.TYPE == obj0
-                .getClass())));
+                || obj1 instanceof Byte);
     }
 
     public final static boolean isStringFloat(final String str) {
         int len = str.length();
         if (len > 1) {
-            char c = 0;
             for (int i = 0; i < len; i++) {
-                switch (c = str.charAt(i)) {
+                switch (str.charAt(i)) {
                 case 'E':
                     return true;
                 case 'e':
