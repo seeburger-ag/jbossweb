@@ -30,6 +30,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.naming.Binding;
 import javax.naming.NamingEnumeration;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.UnavailableException;
@@ -467,8 +468,7 @@ public class ManagerServlet
         }
 
         // Calculate the directory into which we will be deploying applications
-        versioned = (File) getServletContext().getAttribute
-            ("javax.servlet.context.tempdir");
+        versioned = (File) getServletContext().getAttribute(ServletContext.TEMPDIR);
 
         // Identify the appBase of the owning Host of this Context
         // (if any)
