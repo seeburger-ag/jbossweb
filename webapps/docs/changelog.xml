@@ -22,6 +22,9 @@
       <update>
         Servlet 3.0 API. (markt, remm)
       </update>
+      <update>
+        Commons Pool 1.5.1. (markt)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
@@ -97,10 +100,16 @@
         <bug>47299</bug>: Expose Container.fireContainerEvent, which became public long ago. (remm)
       </fix>
       <fix>
-        Two bugs related to session activity with the persistent manager. (markt)
+        Three bugs related to session activity with the persistent manager. (kkolinko, markt)
       </fix>
       <fix>
         <bug>47343</bug>: Fix redeploy resources order. (markt)
+      </fix>
+      <fix>
+        Add support for chunked POSTs. (markt)
+      </fix>
+      <fix>
+        MIME types cleanup. (kkolinko)
       </fix>
     </changelog>
   </subsection>

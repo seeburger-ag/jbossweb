@@ -75,7 +75,7 @@ Windows 64 bit stuff ... Zzzzz
 781036
 Some configBase creation flag
 
-781779
+781779 and all followups
 Useless syncing
 
 782000 782005 782007 782010 782013 782032
