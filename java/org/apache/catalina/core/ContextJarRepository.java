@@ -66,7 +66,6 @@ import javax.servlet.ServletContext;
 import org.apache.catalina.Contained;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
 import org.apache.catalina.JarRepository;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
@@ -301,7 +300,7 @@ public class ContextJarRepository
             return;
         
         // Access work directory
-        File workDir = (File) servletContext.getAttribute(Globals.WORK_DIR_ATTR);
+        File workDir = (File) servletContext.getAttribute(ServletContext.TEMPDIR);
         if (workDir == null) {
             // FIXME: this is actually an error
             log.info("No work dir for " + servletContext);

@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.catalina.Globals;
 import org.apache.catalina.util.IOTools;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
 
 
 /**
@@ -570,7 +569,7 @@ public class ScriptEnvironment {
         this.scriptPathPrefix = scriptPathPrefix;
         this.context = context;
         this.webAppRootDir = context.getRealPath("/");
-        this.tempDir = (File)context.getAttribute(Globals.WORK_DIR_ATTR);
+        this.tempDir = (File)context.getAttribute(ServletContext.TEMPDIR);
 
 
         if (req.getAttribute(Globals.INCLUDE_CONTEXT_PATH_ATTR) != null) {
