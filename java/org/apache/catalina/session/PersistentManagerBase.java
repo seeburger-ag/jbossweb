@@ -1053,11 +1053,10 @@ public abstract class PersistentManagerBase
                     int timeIdle = // Truncate, do not round up
                         (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
                     if (timeIdle > maxIdleSwap && timeIdle > minIdleSwap) {
-                        if (sessions[i] instanceof StandardSession) {
-                            if (((StandardSession) sessions[i]).accessCount.get() > 0) {
-                                // Session is currently being accessed - skip it
-                                continue;
-                            }
+                        if (session.accessCount != null &&
+                                session.accessCount.get() > 0) {
+                            // Session is currently being accessed - skip it
+                            continue;
                         }
                         if (log.isDebugEnabled())
                             log.debug(sm.getString
@@ -1099,24 +1098,24 @@ public abstract class PersistentManagerBase
         long timeNow = System.currentTimeMillis();
 
         for (int i = 0; i < sessions.length && toswap > 0; i++) {
-            synchronized (sessions[i]) {
+            StandardSession session =  (StandardSession) sessions[i];
+            synchronized (session) {
                 int timeIdle = // Truncate, do not round up
-                    (int) ((timeNow - sessions[i].getLastAccessedTime()) / 1000L);
+                    (int) ((timeNow - session.getThisAccessedTimeInternal()) / 1000L);
                 if (timeIdle > minIdleSwap) {
-                    if (sessions[i] instanceof StandardSession) {
-                        if (((StandardSession) sessions[i]).accessCount.get() > 0) {
-                            // Session is currently being accessed - skip it
-                            continue;
-                        }
+                    if (session.accessCount != null &&
+                            session.accessCount.get() > 0) {
+                        // Session is currently being accessed - skip it
+                        continue;
                     }
                     if(log.isDebugEnabled())
                         log.debug(sm.getString
                             ("persistentManager.swapTooManyActive",
-                             sessions[i].getIdInternal(), new Integer(timeIdle)));
+                             session.getIdInternal(), new Integer(timeIdle)));
                     try {
-                        swapOut(sessions[i]);
+                        swapOut(session);
                     } catch (IOException e) {
-                        ;   // This is logged in writeSession()
+                        // This is logged in writeSession()
                     }
                     toswap--;
                 }
