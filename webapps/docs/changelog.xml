@@ -143,6 +143,9 @@
       <fix>
         <bug>47318</bug>: Process include preludes and codas when processing directives and whole pages. (markt)
       </fix>
+      <fix>
+        <bug>38797</bug>: Fix getProperty code to what it used to be in Tomcat 5.5.12. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
