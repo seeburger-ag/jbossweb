@@ -111,6 +111,9 @@
       <fix>
         MIME types cleanup. (kkolinko)
       </fix>
+      <fix>
+        JDBC driver cleanup fix, using a hack to define the cleaner component in the webapp classloader. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
