@@ -3061,12 +3061,21 @@ public class Request
     }
 
     public void logout() throws ServletException {
+        Principal principal = userPrincipal;
         userPrincipal = null;
         authType = null;
         Session session = getSessionInternal(false);
         if (session != null) {
             session.setPrincipal(null);
             session.setAuthType(null);
+        }
+        if (principal instanceof GenericPrincipal) {
+            GenericPrincipal gp = (GenericPrincipal) principal;
+            try {
+                gp.logout();
+            } catch (Exception e) {
+                throw new ServletException(sm.getString("coyoteRequest.logoutfail"), e);
+            }
         }
     }
 

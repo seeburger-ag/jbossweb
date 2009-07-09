@@ -114,6 +114,12 @@
       <fix>
         JDBC driver cleanup fix, using a hack to define the cleaner component in the webapp classloader. (markt)
       </fix>
+      <fix>
+        <bug>39231</bug>: Call logout on the JAAS login context whenever possible. (markt)
+      </fix>
+      <fix>
+        <bug>37984</bug>: Strip {MD5} as well as {SHA} from digested passwords. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
