@@ -90,17 +90,17 @@ public class WebOrderingRuleSet extends RuleSetBase {
      */
     public void addRuleInstances(Digester digester) {
 
-        digester.addObjectCreate(prefix + "web-app",
+        digester.addObjectCreate(prefix + "web-fragment",
                                "org.apache.catalina.deploy.WebOrdering");
-        digester.addCallMethod(prefix + "web-app/name",
+        digester.addCallMethod(prefix + "web-fragment/name",
                 "setName", 0);
-        digester.addCallMethod(prefix + "web-app/ordering/after/name",
+        digester.addCallMethod(prefix + "web-fragment/ordering/after/name",
                 "addAfter", 0);
-        digester.addCallMethod(prefix + "web-app/ordering/before/name",
+        digester.addCallMethod(prefix + "web-fragment/ordering/before/name",
                 "addBefore", 0);
-        digester.addRule(prefix + "web-app/ordering/after/others",
+        digester.addRule(prefix + "web-fragment/ordering/after/others",
                 new SetAfterOthersRule());
-        digester.addRule(prefix + "web-app/ordering/before/others",
+        digester.addRule(prefix + "web-fragment/ordering/before/others",
                 new SetBeforeOthersRule());
 
     }
