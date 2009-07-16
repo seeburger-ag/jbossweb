@@ -1149,7 +1149,7 @@ public class StandardContext
      * Return the "use cookies for session ids" flag.
      */
     public boolean getCookies() {
-        return (sessionTrackingModes.contains(SessionTrackingMode.COOKIE));
+        return (getSessionTrackingModes().contains(SessionTrackingMode.COOKIE));
     }
 
 
@@ -1159,7 +1159,7 @@ public class StandardContext
      * @param cookies The new flag
      */
     public void setCookies(boolean cookies) {
-        boolean oldCookies = sessionTrackingModes.contains(SessionTrackingMode.COOKIE);
+        boolean oldCookies = defaultSessionTrackingModes.contains(SessionTrackingMode.COOKIE);
         if (oldCookies && !cookies) {
             defaultSessionTrackingModes.remove(SessionTrackingMode.COOKIE);
         }
