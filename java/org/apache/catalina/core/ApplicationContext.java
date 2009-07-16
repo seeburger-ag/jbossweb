@@ -54,6 +54,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -74,6 +75,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -1186,6 +1188,34 @@ public class ApplicationContext
             uriCC.setLimit(-1);
             mappingData = new MappingData();
         }
+    }
+
+
+    @Override
+    public void addListener(String className) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public <T extends EventListener> void addListener(T t) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void addListener(Class<? extends EventListener> listenerClass) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public JspConfigDescriptor getJspConfigDescriptor() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 

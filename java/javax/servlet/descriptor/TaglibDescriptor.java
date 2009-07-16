@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -32,33 +32,36 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
  */
 
-
-package javax.servlet.annotation;
-
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+package javax.servlet.descriptor;
 
 /**
- * This annotation is used to declare the types an instance of the
- * ServletContainerInitializer can handle.
+ * This interface provides access to the <code>&lt;taglib&gt;</code>
+ * related configuration of a web application.
  *
- * @see javax.servlet.ServletContainerInitializer
+ * <p>The configuration is aggregated from the <code>web.xml</code> and
+ * <code>web-fragment.xml</code> descriptor files of the web application.
  *
  * @since Servlet 3.0
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface HandlesTypes {
+public interface TaglibDescriptor {
+  
     /**
-     * The types that a <tt>ServletContainerInitializer</tt> expresses interesst in. When this annotation
-     * is applied on an implementation of <tt>ServletContainerInitializer</tt> the <tt>onStartup</tt> method
-     * of the ServletContainerInitializer instance will get a <tt>Set</tt> of classes that were either annotated
-     * with, or extends / implements the types listed via this annotation.
+     * Gets the unique identifier of the tag library represented by this
+     * TaglibDescriptor.
+     *  
+     * @return the unique identifier of the tag library represented by this
+     * TaglibDescriptor
      */
-    Class[] value();
+    public String getTaglibURI();
+
+    /**
+     * Gets the location of the tag library represented by this
+     * TaglibDescriptor.
+     *  
+     * @return the location of the tag library represented by this
+     * TaglibDescriptor
+     */    
+    public String getTaglibLocation();    
 }

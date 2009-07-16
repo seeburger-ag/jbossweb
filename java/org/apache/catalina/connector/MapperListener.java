@@ -43,6 +43,7 @@ import org.jboss.logging.Logger;
  *
  * @author Remy Maucherat
  * @author Costin Manolache
+ * FIXME: redo as server listener ? see ClusterListener
  */
 public class MapperListener
     implements NotificationListener, ContainerListener

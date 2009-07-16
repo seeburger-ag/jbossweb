@@ -1,7 +1,6 @@
 Roadmap for JBoss Web 3.0
 
 Standalone:
-- Access control annotations
 - Enforce web.xml fragments merging rules
 - Lazy webapp startup valve
 - JMX abstraction: redo MapperListener with regular listeners, and abstract JMX in modeler

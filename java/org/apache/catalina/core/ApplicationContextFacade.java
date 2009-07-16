@@ -57,6 +57,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +71,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.security.SecurityUtil;
@@ -566,16 +568,6 @@ public final class ApplicationContextFacade
         }
     }
 
-/*
-    public void setSessionCookieConfig(SessionCookieConfig sessionCookieConfig) {
-        if (SecurityUtil.isPackageProtectionEnabled()) {
-            doPrivileged("setSessionCookieConfig",
-                    new Object[]{sessionCookieConfig});
-        } else {
-            context.setSessionCookieConfig(sessionCookieConfig);
-        }
-    }*/
-
 
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -583,6 +575,42 @@ public final class ApplicationContextFacade
                     new Object[]{sessionTrackingModes});
         } else {
             context.setSessionTrackingModes(sessionTrackingModes);
+        }
+    }
+
+
+    public void addListener(String className) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("addListener", new Object[]{className});
+        } else {
+            context.addListener(className);
+        }
+    }
+
+
+    public <T extends EventListener> void addListener(T t) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("addListener", new Object[]{t});
+        } else {
+            context.addListener(t);
+        }
+    }
+
+
+    public void addListener(Class<? extends EventListener> listenerClass) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("addListener", new Object[]{listenerClass});
+        } else {
+            context.addListener(listenerClass);
+        }
+    }
+
+
+    public JspConfigDescriptor getJspConfigDescriptor() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (JspConfigDescriptor) doPrivileged("getJspConfigDescriptor", null);
+        } else {
+            return context.getJspConfigDescriptor();
         }
     }
 

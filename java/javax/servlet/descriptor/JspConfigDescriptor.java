@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -32,33 +32,38 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
  */
 
-
-package javax.servlet.annotation;
-
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+package javax.servlet.descriptor;
 
 /**
- * This annotation is used to declare the types an instance of the
- * ServletContainerInitializer can handle.
+ * This interface provides access to the <code>&lt;jsp-config&gt;</code>
+ * related configuration of a web application.
  *
- * @see javax.servlet.ServletContainerInitializer
+ * <p>The configuration is aggregated from the <code>web.xml</code> and
+ * <code>web-fragment.xml</code> descriptor files of the web application.
  *
  * @since Servlet 3.0
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface HandlesTypes {
+public interface JspConfigDescriptor {
+
     /**
-     * The types that a <tt>ServletContainerInitializer</tt> expresses interesst in. When this annotation
-     * is applied on an implementation of <tt>ServletContainerInitializer</tt> the <tt>onStartup</tt> method
-     * of the ServletContainerInitializer instance will get a <tt>Set</tt> of classes that were either annotated
-     * with, or extends / implements the types listed via this annotation.
+     * Gets an <code>Iterable</code> over the <code>&lt;taglib&gt;</code>
+     * elements that are nested inside the <code>&lt;jsp-config&gt;</code>.
+     *
+     * @return <code>Iterable</code> over the <code>taglib</code>
+     * elements that are nested inside the <code>jsp-config</code>
      */
-    Class[] value();
+    public Iterable<TaglibDescriptor> getTaglibs();
+
+    /**
+     * Gets an <code>Iterable</code> over the
+     * <code>&lt;jsp-property-group&gt;</code> elements that are nested
+     * inside the <code>&lt;jsp-config&gt;</code>.
+     *
+     * @return <code>Iterable</code> over the
+     * <code>&lt;jsp-property-group&gt;</code>
+     * elements that are nested inside the <code>&lt;jsp-config&gt;</code>
+     */
+    public Iterable<JspPropertyGroupDescriptor> getJspPropertyGroups();
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -260,17 +260,26 @@ public interface AsyncContext {
      * <p>Any listeners of type {@link AsyncListener} that were added to the
      * request that was used to initialize this AsyncContext will have their
      * {@link AsyncListener#onComplete(AsyncEvent)} method invoked.
+     *
+     * <p>It is legal to call this method any time after a call to
+     * {@link ServletRequest#startAsync()} or
+     * {@link ServletRequest#startAsync(ServletRequest, ServletResponse)},
+     * and before a call to one of the <tt>dispatch</tt> methods
+     * of this class. 
+     * If this method is called before the container-initiated dispatch
+     * that called <tt>startAsync</tt> has returned to the container, then
+     * the call will not take effect (and any invocations of
+     * {@link AsyncListener#onComplete(AsyncEvent)} will be delayed) until
+     * after the container-initiated dispatch has returned to the container.
      */
     public void complete();
 
 
     /**
-     * Dispatches a container thread to run the specified Runnable in the
-     * {@link ServletContext} that initialized this AsyncContext.
+     * Causes the container to dispatch a thread to run the specified Runnable 
+     * in the {@link ServletContext} that initialized this AsyncContext.
      *
      * @param run the asynchronous handler
      */
     public void start(Runnable run);
 }
-
-

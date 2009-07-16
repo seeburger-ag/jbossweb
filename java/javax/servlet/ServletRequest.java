@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -620,8 +620,9 @@ public interface ServletRequest {
      * {@link AsyncContext#complete} is called on the returned
      * {@link AsyncContext}, or the AsyncContext times out.
      *
-     * <p>The timer for async timeouts will not start until this request
-     * and its associated response have returned from the container.
+     * <p>The timer for async timeouts will not start until the
+     * container-initiated dispatch that called <tt>startAsync</tt>
+     * has returned to the container.
      *
      * <p>If a timeout occurs and none of the
      * {@link AsyncListener#onTimeout(AsyncEvent)} handlers call
@@ -671,8 +672,9 @@ public interface ServletRequest {
      * {@link AsyncContext#complete} is called on the returned
      * {@link AsyncContext}, or the AsyncContext times out.
      *
-     * <p>The timer for async timeouts will not start until this request
-     * and its associated response have returned from the container.
+     * <p>The timer for async timeouts will not start until the
+     * container-initiated dispatch that called <tt>startAsync</tt>
+     * has returned to the container.
      *
      * <p>If a timeout occurs and none of the
      * {@link AsyncListener#onTimeout(AsyncEvent)} handlers call

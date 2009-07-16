@@ -25,7 +25,9 @@ package org.apache.catalina.deploy;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class JspPropertyGroup implements Serializable {
+import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+
+public class JspPropertyGroup implements Serializable, JspPropertyGroupDescriptor {
 
     protected ArrayList<String> urlPatterns = new ArrayList<String>();
     protected String elIgnored = null;
