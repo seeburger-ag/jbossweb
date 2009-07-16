@@ -214,6 +214,13 @@ public class StandardContext
 
 
     /**
+     * The set of application listener class names configured for this
+     * application, in the order they were encountered in the web.xml file.
+     */
+    protected EventListener applicationListenerInstances[] = new EventListener[0];
+
+
+    /**
      * The set of instantiated application event listener objects</code>.
      */
     protected Object applicationEventListenersObjects[] = 
@@ -2010,7 +2017,7 @@ public class StandardContext
      * @param listener Java class name of a listener class
      */
     public void addApplicationListener(String listener) {
-        String results[] =new String[applicationListeners.length + 1];
+        String results[] = new String[applicationListeners.length + 1];
         for (int i = 0; i < applicationListeners.length; i++) {
             if (listener.equals(applicationListeners[i])) {
                 log.info(sm.getString("standardContext.duplicateListener", listener));
@@ -2021,7 +2028,27 @@ public class StandardContext
         results[applicationListeners.length] = listener;
         applicationListeners = results;
         fireContainerEvent("addApplicationListener", listener);
-        // FIXME - add instance if already started?
+    }
+
+
+    /**
+     * Add a new Listener instance to the set of Listeners
+     * configured for this application.
+     *
+     * @param listener Java instance of a listener
+     */
+    public <T extends EventListener> void addApplicationListenerInstance(T listener) {
+        EventListener results[] = new EventListener[applicationListenerInstances.length + 1];
+        for (int i = 0; i < applicationListenerInstances.length; i++) {
+            if (listener.equals(applicationListenerInstances[i])) {
+                log.info(sm.getString("standardContext.duplicateListener", listener));
+                return;
+            }
+            results[i] = applicationListenerInstances[i];
+        }
+        results[applicationListenerInstances.length] = listener;
+        applicationListenerInstances = results;
+        fireContainerEvent("addApplicationListenerInstance", listener);
     }
 
 
@@ -2794,6 +2821,16 @@ public class StandardContext
      */
     public String[] findInstanceListeners() {
         return (instanceListeners);
+    }
+
+
+    /**
+     * Return the set of JSP property groups.
+     */
+    public JspPropertyGroup[] findJspPropertyGroups() {
+        JspPropertyGroup results[] =
+            new JspPropertyGroup[jspPropertyGroups.size()];
+        return jspPropertyGroups.values().toArray(results);
     }
 
 
@@ -3691,9 +3728,10 @@ public class StandardContext
 
         // Instantiate the required listeners
         String listeners[] = findApplicationListeners();
-        EventListener results[] = new EventListener[listeners.length];
+        EventListener listenerInstances[] = applicationListenerInstances;
+        EventListener results[] = new EventListener[listeners.length + listenerInstances.length];
         boolean ok = true;
-        for (int i = 0; i < results.length; i++) {
+        for (int i = 0; i < listeners.length; i++) {
             if (getLogger().isDebugEnabled())
                 getLogger().debug(" Configuring event listener class '" +
                     listeners[i] + "'");
@@ -3705,6 +3743,9 @@ public class StandardContext
                                   listeners[i]), t);
                 ok = false;
             }
+        }
+        for (int i = 0; i < listenerInstances.length; i++) {
+            results[i + listeners.length] = listenerInstances[i];
         }
         if (!ok) {
             getLogger().error(sm.getString("standardContext.applicationSkipped"));

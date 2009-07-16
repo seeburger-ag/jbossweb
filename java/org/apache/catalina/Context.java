@@ -19,6 +19,8 @@
 package org.apache.catalina;
 
 
+import java.util.EventListener;
+
 import javax.servlet.ServletContext;
 
 import org.apache.catalina.deploy.ApplicationParameter;
@@ -529,6 +531,15 @@ public interface Context extends Container {
 
 
     /**
+     * Add a new Listener instance to the set of Listeners
+     * configured for this application.
+     *
+     * @param listener Java instance of a listener
+     */
+    public <T extends EventListener> void addApplicationListenerInstance(T listener);
+
+
+    /**
      * Add a new application parameter for this application.
      *
      * @param parameter The new application parameter
@@ -800,6 +811,12 @@ public interface Context extends Container {
      * newly created Wrappers automatically.
      */
     public String[] findInstanceListeners();
+
+
+    /**
+     * Return the set of JSP property groups.
+     */
+    public JspPropertyGroup[] findJspPropertyGroups();
 
 
     /**

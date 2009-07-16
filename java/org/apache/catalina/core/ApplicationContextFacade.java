@@ -122,6 +122,7 @@ public final class ApplicationContextFacade
     
     
     private void initClassCache(){
+        // FIXME: redo method list
         Class[] clazz = new Class[]{String.class};
         classCache.put("getContext", clazz);
         classCache.put("getMimeType", clazz);

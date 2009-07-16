@@ -76,6 +76,8 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
+import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+import javax.servlet.descriptor.TaglibDescriptor;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -84,6 +86,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.deploy.FilterDef;
+import org.apache.catalina.deploy.JspPropertyGroup;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResourceSet;
@@ -1052,6 +1055,60 @@ public class ApplicationContext
     }
 
 
+    public void addListener(String className) {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
+        // FIXME: forbidden if the listener is from a TLD
+        context.addApplicationListener(className);
+    }
+
+
+    public <T extends EventListener> void addListener(T listener) {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
+        // FIXME: forbidden if the listener is from a TLD
+        context.addApplicationListenerInstance(listener);
+    }
+
+
+    public void addListener(Class<? extends EventListener> listenerClass) {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
+        // FIXME: forbidden if the listener is from a TLD
+        try {
+            context.addApplicationListenerInstance(listenerClass.newInstance());
+        } catch (Exception e) {
+            // FIXME: better error
+            throw new IllegalStateException(e);
+        }
+    }
+
+
+    public JspConfigDescriptor getJspConfigDescriptor() {
+        ArrayList<TaglibDescriptor> taglibDescriptors = new ArrayList<TaglibDescriptor>();
+        String[] taglibURIs = context.findTaglibs();
+        for (int i = 0; i < taglibURIs.length; i++) {
+            String taglibLocation = context.findTaglib(taglibURIs[i]);
+            TaglibDescriptor taglibDescriptor = 
+                new TaglibDescriptorImpl(taglibURIs[i], taglibLocation);
+            taglibDescriptors.add(taglibDescriptor);
+        }
+        ArrayList<JspPropertyGroupDescriptor> jspPropertyGroupDescriptors = 
+            new ArrayList<JspPropertyGroupDescriptor>();
+        JspPropertyGroup[] jspPropertyGroups = context.findJspPropertyGroups();
+        for (int i = 0; i < jspPropertyGroups.length; i++) {
+            jspPropertyGroupDescriptors.add(jspPropertyGroups[i]);
+        }
+        return new JspConfigDescriptorImpl(jspPropertyGroupDescriptors, taglibDescriptors);
+    }
+
+
     // -------------------------------------------------------- Package Methods
     protected StandardContext getContext() {
         return this.context;
@@ -1190,33 +1247,51 @@ public class ApplicationContext
         }
     }
 
+    
+    /**
+     * JSP config metadata class (not used for Jasper).
+     */
+    private static final class JspConfigDescriptorImpl implements JspConfigDescriptor {
 
-    @Override
-    public void addListener(String className) {
-        // TODO Auto-generated method stub
+        private Iterable<JspPropertyGroupDescriptor> jspPropertyGroups;
+        private Iterable<TaglibDescriptor> taglibs;
+        public JspConfigDescriptorImpl(Iterable<JspPropertyGroupDescriptor> jspPropertyGroups,
+                Iterable<TaglibDescriptor> taglibs) {
+            this.jspPropertyGroups = jspPropertyGroups;
+            this.taglibs = taglibs;
+        }
+
+        public Iterable<JspPropertyGroupDescriptor> getJspPropertyGroups() {
+            return jspPropertyGroups;
+        }
+
+        public Iterable<TaglibDescriptor> getTaglibs() {
+            return taglibs;
+        }
         
     }
+    
+    /**
+     * JSP taglib descriptor metadata class (not used for Jasper).
+     */
+    private static final class TaglibDescriptorImpl implements TaglibDescriptor {
 
-
-    @Override
-    public <T extends EventListener> void addListener(T t) {
-        // TODO Auto-generated method stub
+        private String taglibLocation;
+        private String taglibURI;
         
+        public TaglibDescriptorImpl(String taglibURI, String taglibLocation) {
+            this.taglibLocation = taglibLocation;
+            this.taglibURI = taglibURI;
+        }
+
+        public String getTaglibLocation() {
+            return taglibLocation;
+        }
+
+        public String getTaglibURI() {
+            return taglibURI;
+        }
+
     }
-
-
-    @Override
-    public void addListener(Class<? extends EventListener> listenerClass) {
-        // TODO Auto-generated method stub
-        
-    }
-
-
-    @Override
-    public JspConfigDescriptor getJspConfigDescriptor() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 
 }
