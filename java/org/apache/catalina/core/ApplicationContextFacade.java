@@ -607,6 +607,25 @@ public final class ApplicationContextFacade
     }
 
 
+    public <T extends EventListener> T createListener(Class<T> clazz)
+            throws ServletException {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (T) doPrivileged("createListener", new Object[]{clazz});
+        } else {
+            return context.createListener(clazz);
+        }
+    }
+
+
+    public ClassLoader getClassLoader() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (ClassLoader) doPrivileged("getClassLoader", null);
+        } else {
+            return context.getClassLoader();
+        }
+    }
+
+
     public JspConfigDescriptor getJspConfigDescriptor() {
         if (SecurityUtil.isPackageProtectionEnabled()) {
             return (JspConfigDescriptor) doPrivileged("getJspConfigDescriptor", null);

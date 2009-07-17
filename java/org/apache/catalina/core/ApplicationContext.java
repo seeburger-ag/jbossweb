@@ -1082,11 +1082,35 @@ public class ApplicationContext
         }
         // FIXME: forbidden if the listener is from a TLD
         try {
-            context.addApplicationListenerInstance(listenerClass.newInstance());
+            EventListener listenerInstance = 
+                (EventListener) context.getInstanceManager().newInstance(listenerClass);
+            context.addApplicationListenerInstance(listenerInstance);
         } catch (Exception e) {
             // FIXME: better error
             throw new IllegalStateException(e);
         }
+    }
+
+
+    public <T extends EventListener> T createListener(Class<T> clazz)
+            throws ServletException {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
+        T listenerInstance = null;
+        try {
+            listenerInstance = (T) context.getInstanceManager().newInstance(clazz);
+        } catch (Exception e) {
+            // FIXME: better error
+            throw new ServletException(e);
+        }
+        return listenerInstance;
+    }
+
+
+    public ClassLoader getClassLoader() {
+        return context.getLoader().getClassLoader();
     }
 
 

@@ -20,7 +20,7 @@
   <subsection name="General">
     <changelog>
       <update>
-        Servlet 3.0 API. (markt, remm)
+        Servlet 3.0 API. (remm)
       </update>
       <update>
         Commons Pool 1.5.2. (markt)
@@ -72,7 +72,7 @@
         <bug>46562</bug>: In SSI, close the reader when done. (markt)
       </fix>
       <add>
-        AsyncContext implementation. (remm)
+        AsyncContext implementation, internally built on top of the event API. (remm)
       </add>
       <add>
         Multipart implementation. (remm)
@@ -120,6 +120,9 @@
       <fix>
         <bug>37984</bug>: Strip {MD5} as well as {SHA} from digested passwords. (markt)
       </fix>
+      <add>
+        All other Servlet 3.0 features. (remm)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -128,7 +131,7 @@
         Remove useless instanceof in the HTTP protocol. (markt)
       </fix>
       <update>
-        Add support for non IO events in all connectors. (remm)
+        Add support for non IO based events in all AJP and HTTP connectors. (remm)
       </update>
       <fix>
         Fix handling of timeout values &lt;= 0 with the poller refactoring. (remm)
