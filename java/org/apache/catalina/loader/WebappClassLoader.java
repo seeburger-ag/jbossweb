@@ -267,72 +267,10 @@ public class WebappClassLoader
     protected boolean delegate = false;
 
 
-    /**
-     * Last time a JAR was accessed.
-     */
-    //protected long lastJarAccessed = 0L;
-
-
-    /**
-     * The list of local repositories, in the order they should be searched
-     * for locally loaded classes or resources.
-     */
-    //protected String[] repositories = new String[0];
-
-
      /**
       * Repositories URLs, used to cache the result of getURLs.
       */
      protected URL[] repositoryURLs = null;
-
-
-    /**
-     * Repositories translated as path in the work directory (for Jasper
-     * originally), but which is used to generate fake URLs should getURLs be
-     * called.
-     */
-    //protected File[] files = new File[0];
-
-
-    /**
-     * The list of JARs, in the order they should be searched
-     * for locally loaded classes or resources.
-     */
-    //protected JarFile[] jarFiles = new JarFile[0];
-
-
-    /**
-     * The list of JARs, in the order they should be searched
-     * for locally loaded classes or resources.
-     */
-    //protected File[] jarRealFiles = new File[0];
-
-
-    /**
-     * The path which will be monitored for added Jar files.
-     */
-    //protected String jarPath = null;
-
-
-    /**
-     * The list of JARs, in the order they should be searched
-     * for locally loaded classes or resources.
-     */
-    //protected String[] jarNames = new String[0];
-
-
-    /**
-     * The list of JARs last modified dates, in the order they should be
-     * searched for locally loaded classes or resources.
-     */
-    //protected long[] lastModifiedDates = new long[0];
-
-
-    /**
-     * The list of resources which should be checked when checking for
-     * modifications.
-     */
-    //protected String[] paths = new String[0];
 
 
     /**
@@ -378,11 +316,6 @@ public class WebappClassLoader
      */
     protected boolean started = false;
 
-
-    /**
-     * Has external repositories.
-     */
-    //protected boolean hasExternalRepositories = false;
 
     /**
      * need conversion for properties files
@@ -1214,7 +1147,30 @@ public class WebappClassLoader
         // Null out any static or final fields from loaded classes,
         // as a workaround for apparent garbage collection bugs
         if (ENABLE_CLEAR_REFERENCES) {
-            Iterator loadedClasses = resourceEntries.values().iterator();
+            java.util.Collection<ResourceEntry> values = resourceEntries.values();
+            Iterator<ResourceEntry> loadedClasses = values.iterator();
+            //
+            // walk through all loaded class to trigger initialization for
+            //    any uninitialized classes, otherwise initialization of
+            //    one class may call a previously cleared class.
+            while(loadedClasses.hasNext()) {
+                ResourceEntry entry = loadedClasses.next();
+                if (entry.loadedClass != null) {
+                    Class<?> clazz = entry.loadedClass;
+                    try {
+                        Field[] fields = clazz.getDeclaredFields();
+                        for (int i = 0; i < fields.length; i++) {
+                            if(Modifier.isStatic(fields[i].getModifiers())) {
+                                fields[i].get(null);
+                                break;
+                            }
+                        }
+                    } catch(Throwable t) {
+                        // Ignore
+                    }
+                }
+            }
+            loadedClasses = values.iterator();
             while (loadedClasses.hasNext()) {
                 ResourceEntry entry = (ResourceEntry) loadedClasses.next();
                 if (entry.loadedClass != null) {

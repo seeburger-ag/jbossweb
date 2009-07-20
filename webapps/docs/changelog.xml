@@ -123,6 +123,10 @@
       <add>
         All other Servlet 3.0 features. (remm)
       </add>
+      <fix>
+        <bug>41059</bug>: Reduce one possible source of errors if using ENABLE_CLEAR_REFERENCES=true.
+        Patch by Curt Arnold. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
