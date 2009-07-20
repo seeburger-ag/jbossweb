@@ -92,88 +92,91 @@ public class JspConfig {
     private void init() throws JasperException {
 
         if (!initialized) {
-            //processWebDotXml(ctxt);
-            HashMap<String, org.apache.catalina.deploy.JspPropertyGroup> jspPropertyGroups =
-                (HashMap<String, org.apache.catalina.deploy.JspPropertyGroup>) 
-                ctxt.getAttribute(Globals.JSP_PROPERTY_GROUPS);
+            synchronized (this) {
+                if (!initialized) {
+                    HashMap<String, org.apache.catalina.deploy.JspPropertyGroup> jspPropertyGroups =
+                        (HashMap<String, org.apache.catalina.deploy.JspPropertyGroup>) 
+                        ctxt.getAttribute(Globals.JSP_PROPERTY_GROUPS);
 
-            String versionString = (String) ctxt.getAttribute(Globals.SERVLET_VERSION);
-            double version = 2.3;
-            if (versionString != null) {
-                try {
-                    version =  Double.parseDouble(versionString);
-                } catch (NumberFormatException e) {
+                    String versionString = (String) ctxt.getAttribute(Globals.SERVLET_VERSION);
+                    double version = 2.3;
+                    if (versionString != null) {
+                        try {
+                            version =  Double.parseDouble(versionString);
+                        } catch (NumberFormatException e) {
+                        }
+                    }
+                    if (version < 2.4) {
+                        defaultIsELIgnored = "true";
+                    }
+
+                    jspProperties = new ArrayList<JspPropertyGroup>();
+                    Iterator<String> urlPatternIterator = jspPropertyGroups.keySet().iterator();
+                    while (urlPatternIterator.hasNext()) {
+                        String urlPattern = urlPatternIterator.next();
+                        org.apache.catalina.deploy.JspPropertyGroup jspPropertyGroup =
+                            jspPropertyGroups.get(urlPattern);
+
+                        String path = null;
+                        String extension = null;
+
+                        if (urlPattern.indexOf('*') < 0) {
+                            // Exact match
+                            path = urlPattern;
+                        } else {
+                            int i = urlPattern.lastIndexOf('/');
+                            String file;
+                            if (i >= 0) {
+                                path = urlPattern.substring(0,i+1);
+                                file = urlPattern.substring(i+1);
+                            } else {
+                                file = urlPattern;
+                            }
+
+                            // pattern must be "*", or of the form "*.jsp"
+                            if (file.equals("*")) {
+                                extension = "*";
+                            } else if (file.startsWith("*.")) {
+                                extension = file.substring(file.indexOf('.')+1);
+                            }
+
+                            // The url patterns are reconstructed as the follwoing:
+                            // path != null, extension == null:  / or /foo/bar.ext
+                            // path == null, extension != null:  *.ext
+                            // path != null, extension == "*":   /foo/*
+                            boolean isStar = "*".equals(extension);
+                            if ((path == null && (extension == null || isStar))
+                                    || (path != null && !isStar)) {
+                                log.warn(Localizer.getMessage(
+                                        "jsp.warning.bad.urlpattern.propertygroup",
+                                        urlPattern));
+                                continue;
+                            }
+                        }
+
+                        JspProperty property = new JspProperty(jspPropertyGroup.getIsXml(),
+                                jspPropertyGroup.getElIgnored(),
+                                jspPropertyGroup.getScriptingInvalid(),
+                                jspPropertyGroup.getPageEncoding(),
+                                jspPropertyGroup.getIncludePreludes(),
+                                jspPropertyGroup.getIncludeCodas(),
+                                jspPropertyGroup.getDeferredSyntaxAllowedAsLiteral(),
+                                jspPropertyGroup.getTrimDirectiveWhitespaces());
+                        JspPropertyGroup propertyGroup =
+                            new JspPropertyGroup(path, extension, property);
+
+                        jspProperties.add(propertyGroup);
+
+                    }
+
+                    defaultJspProperty = new JspProperty(defaultIsXml,
+                            defaultIsELIgnored,
+                            defaultIsScriptingInvalid,
+                            null, null, null, defaultDeferedSyntaxAllowedAsLiteral, 
+                            defaultTrimDirectiveWhitespaces);
+                    initialized = true;
                 }
             }
-            if (version < 2.4) {
-                defaultIsELIgnored = "true";
-            }
-            
-            jspProperties = new ArrayList<JspPropertyGroup>();
-            Iterator<String> urlPatternIterator = jspPropertyGroups.keySet().iterator();
-            while (urlPatternIterator.hasNext()) {
-                String urlPattern = urlPatternIterator.next();
-                org.apache.catalina.deploy.JspPropertyGroup jspPropertyGroup =
-                    jspPropertyGroups.get(urlPattern);
-                
-                String path = null;
-                String extension = null;
-
-                if (urlPattern.indexOf('*') < 0) {
-                    // Exact match
-                    path = urlPattern;
-                } else {
-                    int i = urlPattern.lastIndexOf('/');
-                    String file;
-                    if (i >= 0) {
-                        path = urlPattern.substring(0,i+1);
-                        file = urlPattern.substring(i+1);
-                    } else {
-                        file = urlPattern;
-                    }
-
-                    // pattern must be "*", or of the form "*.jsp"
-                    if (file.equals("*")) {
-                        extension = "*";
-                    } else if (file.startsWith("*.")) {
-                        extension = file.substring(file.indexOf('.')+1);
-                    }
-
-                    // The url patterns are reconstructed as the follwoing:
-                    // path != null, extension == null:  / or /foo/bar.ext
-                    // path == null, extension != null:  *.ext
-                    // path != null, extension == "*":   /foo/*
-                    boolean isStar = "*".equals(extension);
-                    if ((path == null && (extension == null || isStar))
-                            || (path != null && !isStar)) {
-                        log.warn(Localizer.getMessage(
-                                "jsp.warning.bad.urlpattern.propertygroup",
-                                urlPattern));
-                        continue;
-                    }
-                }
-
-                JspProperty property = new JspProperty(jspPropertyGroup.getIsXml(),
-                        jspPropertyGroup.getElIgnored(),
-                        jspPropertyGroup.getScriptingInvalid(),
-                        jspPropertyGroup.getPageEncoding(),
-                        jspPropertyGroup.getIncludePreludes(),
-                        jspPropertyGroup.getIncludeCodas(),
-                        jspPropertyGroup.getDeferredSyntaxAllowedAsLiteral(),
-                        jspPropertyGroup.getTrimDirectiveWhitespaces());
-                JspPropertyGroup propertyGroup =
-                    new JspPropertyGroup(path, extension, property);
-
-                jspProperties.add(propertyGroup);
-                
-            }
-            
-            defaultJspProperty = new JspProperty(defaultIsXml,
-                    defaultIsELIgnored,
-                    defaultIsScriptingInvalid,
-                    null, null, null, defaultDeferedSyntaxAllowedAsLiteral, 
-                    defaultTrimDirectiveWhitespaces);
-            initialized = true;
         }
     }
 

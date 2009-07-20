@@ -74,11 +74,9 @@ public class WebdavFixFilter implements Filter {
     private static final String UA_MINIDIR_5_2_3790 =
         "Microsoft-WebDAV-MiniRedir/5.2.3790";
 
-    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
-	@Override
 	public void destroy() {
 	}
 
@@ -86,7 +84,6 @@ public class WebdavFixFilter implements Filter {
      * Check for the broken MS WebDAV client and if detected issue a re-direct
      * that hopefully will cause the non-broken client to be used.
      */
-	@Override
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
 	    if (!(request instanceof HttpServletRequest) ||

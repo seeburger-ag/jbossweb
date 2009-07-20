@@ -863,6 +863,10 @@ class Generator {
                             // Composite expression - must coerce to String
                             type = String.class;
                         }
+                        if (i+1 < size) {
+                            // Composite expression - must coerce to String
+                            type = String.class;
+                        }
                         output.append(quote(tx.substring(mark, i)));
                     }
                     mark = i;

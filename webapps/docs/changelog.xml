@@ -162,6 +162,12 @@
       <fix>
         <bug>38797</bug>: Fix getProperty code to what it used to be in Tomcat 5.5.12. (markt)
       </fix>
+      <fix>
+        <bug>41661</bug>: JspConfig.init() needs a minimal amount of thread safety. (markt)
+      </fix>
+      <fix>
+        <bug>47413</bug>: First part of a composite expression "${a}${b}" was not coerced to String. (kkolinko)
+      </fix>
     </changelog>
   </subsection>
 </section>

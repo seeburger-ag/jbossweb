@@ -24,7 +24,6 @@ import javax.servlet.jsp.tagext.Tag;
 import org.apache.jasper.Constants;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
 
 /**
  * Pool of tag handlers that can be reused.
@@ -35,8 +34,8 @@ public class TagHandlerPool {
 
     private Tag[] handlers;
 
-    public static String OPTION_TAGPOOL="tagpoolClassName";
-    public static String OPTION_MAXSIZE="tagpoolMaxSize";
+    public static final String OPTION_TAGPOOL="tagpoolClassName";
+    public static final String OPTION_MAXSIZE="tagpoolMaxSize";
 
     private Logger log = Logger.getLogger(TagHandlerPool.class);
     
