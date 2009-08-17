@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
@@ -1132,7 +1133,7 @@ public class RequestFacade implements HttpServletRequest {
     }
 
 
-    public Iterable<Part> getParts() throws ServletException {
+    public Collection<Part> getParts() throws ServletException {
         if (request == null) {
             throw new IllegalStateException(
                             sm.getString("requestFacade.nullRequest"));

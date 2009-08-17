@@ -47,6 +47,7 @@
 package org.apache.catalina.core;
 
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -203,7 +204,7 @@ public class StandardWrapperFacade
     }
 
 
-    public Iterable<String> getMappings() {
+    public Collection<String> getMappings() {
         HashSet<String> result = new HashSet<String>();
         String[] mappings = wrapper.findMappings();
         for (int i = 0; i < mappings.length; i++) {

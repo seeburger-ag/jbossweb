@@ -50,6 +50,7 @@ package org.apache.catalina.core;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -307,7 +308,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     }
 
 
-    public Iterable<String> getServletNameMappings() {
+    public Collection<String> getServletNameMappings() {
         HashSet<String> result = new HashSet<String>();
         FilterMap[] filterMaps = context.findFilterMaps();
         for (int i = 0; i < filterMaps.length; i++) {
@@ -326,7 +327,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     }
 
 
-    public Iterable<String> getUrlPatternMappings() {
+    public Collection<String> getUrlPatternMappings() {
         HashSet<String> result = new HashSet<String>();
         FilterMap[] filterMaps = context.findFilterMaps();
         for (int i = 0; i < filterMaps.length; i++) {

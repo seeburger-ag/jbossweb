@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
@@ -291,7 +292,7 @@ public class DummyRequest
     public void logout() throws ServletException {}
     public long getAsyncTimeout() { return 0; }
     public Part getPart(String name) throws IllegalArgumentException { return null; }
-    public Iterable<Part> getParts() { return null; }
+    public Collection<Part> getParts() { return null; }
     
 }
 

@@ -24,6 +24,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Collection;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
@@ -563,7 +564,7 @@ public class ResponseFacade
     }
 
 
-    public Iterable<String> getHeaderNames() {
+    public Collection<String> getHeaderNames() {
         if (response == null) {
             throw new IllegalStateException(
                             sm.getString("responseFacade.nullResponse"));
@@ -573,7 +574,7 @@ public class ResponseFacade
     }
 
 
-    public Iterable<String> getHeaders(String name) {
+    public Collection<String> getHeaders(String name) {
         if (response == null) {
             throw new IllegalStateException(
                             sm.getString("responseFacade.nullResponse"));

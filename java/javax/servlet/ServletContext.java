@@ -168,7 +168,7 @@ public interface ServletContext {
     
 
     /**
-     * Returns the major version of the Java Servlet API that this
+     * Returns the major version of the Servlet API that this
      * servlet container supports. All implementations that comply
      * with Version 3.0 must have this method return the integer 3.
      *
@@ -187,6 +187,50 @@ public interface ServletContext {
     public int getMinorVersion();
     
    
+    /**
+     * Gets the major version of the Servlet specification that the
+     * application represented by this ServletContext is based on.
+     *
+     * <p>The value returned may be different from {@link #getMajorVersion},
+     * which returns the major version of the Servlet specification
+     * supported by the Servlet container.
+     *
+     * @return the major version of the Servlet specification that the
+     * application represented by this ServletContext is based on
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
+     * with {@link javax.servlet.annotation.WebListener}
+     *
+     * @since Servlet 3.0
+     */
+    public int getEffectiveMajorVersion();
+    
+    
+    /**
+     * Gets the minor version of the Servlet specification that the
+     * application represented by this ServletContext is based on.
+     *
+     * <p>The value returned may be different from {@link #getMinorVersion},
+     * which returns the minor version of the Servlet specification
+     * supported by the Servlet container.
+     *
+     * @return the minor version of the Servlet specification that the
+     * application xrepresented by this ServletContext is based on
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
+     * with {@link javax.servlet.annotation.WebListener}
+     *
+     * @since Servlet 3.0
+     */
+    public int getEffectiveMinorVersion();
+
+
     /**
      * Returns the MIME type of the specified file, or <code>null</code> if 
      * the MIME type is not known. The MIME type is determined
@@ -576,10 +620,12 @@ public interface ServletContext {
      * context initialization parameter with a matching name
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      * 
      * @since Servlet 3.0
@@ -705,10 +751,12 @@ public interface ServletContext {
      * ServletContext already contains a servlet with a matching name
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -735,10 +783,12 @@ public interface ServletContext {
      * container
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @throws IllegalArgumentException if the given servlet instance 
@@ -766,10 +816,12 @@ public interface ServletContext {
      * ServletContext already contains a servlet with a matching name
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -794,10 +846,10 @@ public interface ServletContext {
      * @throws ServletException if an error occurs during the instantiation
      * of, or resource injection into the new Servlet
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -813,10 +865,10 @@ public interface ServletContext {
      * given <tt>servletName</tt>, or null if no ServletRegistration exists
      * under that name in this ServletContext
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -825,7 +877,7 @@ public interface ServletContext {
 
 
     /**
-     * Gets an immutable (and possibly empty) Map of the ServletRegistration
+     * Gets a (possibly empty) Map of the ServletRegistration
      * objects (keyed by servlet name) corresponding to all servlets
      * registered with this ServletContext.
      *
@@ -834,18 +886,21 @@ public interface ServletContext {
      * ServletRegistration objects corresponding to all servlets that have
      * been added via one of the <tt>addServlet</tt> methods.
      *
+     * <p>Any changes to the returned Map must not affect this
+     * ServletContext.
+     *
      * @return Map of the ServletRegistration objects corresponding
      * to all servlets currently registered with this ServletContext
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
      */
-    public Map<String, ServletRegistration> getServletRegistrations();
+    public Map<String, ? extends ServletRegistration> getServletRegistrations();
 
 
     /**
@@ -867,10 +922,12 @@ public interface ServletContext {
      * ServletContext already contains a filter with a matching name
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -897,10 +954,12 @@ public interface ServletContext {
      * container
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -925,10 +984,12 @@ public interface ServletContext {
      * ServletContext already contains a filter with a matching name
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -953,10 +1014,10 @@ public interface ServletContext {
      * @throws ServletException if an error occurs during the instantiation
      * of, or resource injection into the new Filter
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -973,10 +1034,10 @@ public interface ServletContext {
      * given <tt>filterName</tt>, or null if no FilterRegistration exists
      * under that name in this ServletContext
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -985,7 +1046,7 @@ public interface ServletContext {
 
 
     /**
-     * Gets an immutable (and possibly empty) Map of the FilterRegistration
+     * Gets a (possibly empty) Map of the FilterRegistration
      * objects (keyed by filter name) corresponding to all filters
      * registered with this ServletContext.
      *
@@ -994,18 +1055,21 @@ public interface ServletContext {
      * FilterRegistration objects corresponding to all filters that have
      * been added via one of the <tt>addFilter</tt> methods.
      *
+     * <p>Any changes to the returned Map must not affect this
+     * ServletContext.
+     *
      * @return Map of the FilterRegistration objects corresponding
      * to all filters currently registered with this ServletContext
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
      */
-    public Map<String, FilterRegistration> getFilterRegistrations();
+    public Map<String, ? extends FilterRegistration> getFilterRegistrations();
 
 
     /**
@@ -1020,10 +1084,10 @@ public interface ServletContext {
      * various properties of the session tracking cookies created on
      * behalf of this <tt>ServletContext</tt> may be configured
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -1043,10 +1107,12 @@ public interface ServletContext {
      * become effective for this <tt>ServletContext</tt>
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @throws IllegalArgumentException if <tt>sessionTrackingModes</tt>
@@ -1067,10 +1133,10 @@ public interface ServletContext {
      * @return set of the session tracking modes supported by default for
      * this <tt>ServletContext</tt>
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -1092,10 +1158,10 @@ public interface ServletContext {
      * @return set of the session tracking modes in effect for this
      * <tt>ServletContext</tt>
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -1143,10 +1209,12 @@ public interface ServletContext {
      * passed to {@link ServletContainerInitializer#onStartup}
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -1188,10 +1256,12 @@ public interface ServletContext {
      * passed to {@link ServletContainerInitializer#onStartup}
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -1234,10 +1304,12 @@ public interface ServletContext {
      * to {@link ServletContainerInitializer#onStartup}
      *
      * @throws IllegalStateException if this ServletContext has already
-     * been initialized, or if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * been initialized
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @since Servlet 3.0
@@ -1270,10 +1342,10 @@ public interface ServletContext {
      * @throws ServletException if an error occurs during the instantiation
      * of, or resource injection into the new EventListener
      *
-     * @throws IllegalStateException if this ServletContext was passed to the
-     * {@link ServletContextListener#contextInitialized} method of a
-     * {@link ServletContextListener} that was not declared in
-     * <code>web.xml</code> or <code>web-fragment.xml</code>, or annotated
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
      * with {@link javax.servlet.annotation.WebListener}
      *
      * @throws IllegalArgumentException if the specified EventListener class
@@ -1304,6 +1376,12 @@ public interface ServletContext {
      * represented by this ServletContext, or null if no such configuration
      * exists
      *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
+     * with {@link javax.servlet.annotation.WebListener}
+     *
      * @see javax.servlet.descriptor.JspConfigDescriptor
      *
      * @since Servlet 3.0
@@ -1312,11 +1390,27 @@ public interface ServletContext {
 
 
     /**
-     * Gets the classloader of the web application represented by this
+     * Gets the class loader of the web application represented by this
      * ServletContext.
      *
-     * @return the classloader of the web application represented by this
+     * <p>If a security manager exists, and the caller's class loader
+     * is not the same as, or an ancestor of the requested class loader,
+     * then the security manager's <code>checkPermission</code> method is
+     * called with a <code>RuntimePermission("getClassLoader")</code>
+     * permission to check whether access to the requested class loader
+     * should be granted.
+     *
+     * @return the class loader of the web application represented by this
      * ServletContext
+     *
+     * @throws UnsupportedOperationException if this ServletContext was
+     * passed to the {@link ServletContextListener#contextInitialized} method
+     * of a {@link ServletContextListener} that was neither declared in
+     * <code>web.xml</code> or <code>web-fragment.xml</code>, nor annotated
+     * with {@link javax.servlet.annotation.WebListener}
+     *
+     * @throws SecurityException if a security manager denies access to 
+     * the requested class loader
      *
      * @since Servlet 3.0
      */

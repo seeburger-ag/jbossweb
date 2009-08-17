@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.Map;
 
 
@@ -537,12 +538,12 @@ public class DefaultFileItem
     }
 
 
-    public Iterable<String> getHeaderNames() {
+    public Collection<String> getHeaderNames() {
         return headers.keySet();
     }
 
 
-    public Iterable<String> getHeaders(String name) {
+    public Collection<String> getHeaders(String name) {
         // FIXME: Create a Set out of the comma separated values
         return null;
     }

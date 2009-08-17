@@ -54,6 +54,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -3112,7 +3113,7 @@ public class Request
     }
 
 
-    public Iterable<Part> getParts() throws ServletException {
+    public Collection<Part> getParts() throws ServletException {
         if (parts == null) {
             parseMultipart();
         }

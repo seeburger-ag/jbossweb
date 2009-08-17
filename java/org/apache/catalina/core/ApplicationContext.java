@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
@@ -1133,6 +1134,17 @@ public class ApplicationContext
     }
 
 
+    public int getEffectiveMajorVersion() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+
+    public int getEffectiveMinorVersion() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
     // -------------------------------------------------------- Package Methods
     protected StandardContext getContext() {
         return this.context;
@@ -1277,19 +1289,19 @@ public class ApplicationContext
      */
     private static final class JspConfigDescriptorImpl implements JspConfigDescriptor {
 
-        private Iterable<JspPropertyGroupDescriptor> jspPropertyGroups;
-        private Iterable<TaglibDescriptor> taglibs;
-        public JspConfigDescriptorImpl(Iterable<JspPropertyGroupDescriptor> jspPropertyGroups,
-                Iterable<TaglibDescriptor> taglibs) {
+        private Collection<JspPropertyGroupDescriptor> jspPropertyGroups;
+        private Collection<TaglibDescriptor> taglibs;
+        public JspConfigDescriptorImpl(Collection<JspPropertyGroupDescriptor> jspPropertyGroups,
+                Collection<TaglibDescriptor> taglibs) {
             this.jspPropertyGroups = jspPropertyGroups;
             this.taglibs = taglibs;
         }
 
-        public Iterable<JspPropertyGroupDescriptor> getJspPropertyGroups() {
+        public Collection<JspPropertyGroupDescriptor> getJspPropertyGroups() {
             return jspPropertyGroups;
         }
 
-        public Iterable<TaglibDescriptor> getTaglibs() {
+        public Collection<TaglibDescriptor> getTaglibs() {
             return taglibs;
         }
         

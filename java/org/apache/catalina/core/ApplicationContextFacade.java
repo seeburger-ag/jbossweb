@@ -635,6 +635,24 @@ public final class ApplicationContextFacade
     }
 
 
+    public int getEffectiveMajorVersion() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (Integer) doPrivileged("getEffectiveMajorVersion", null);
+        } else {
+            return context.getEffectiveMajorVersion();
+        }
+    }
+
+
+    public int getEffectiveMinorVersion() {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            return (Integer) doPrivileged("getEffectiveMinorVersion", null);
+        } else {
+            return context.getEffectiveMinorVersion();
+        }
+    }
+
+
     /**
      * Use reflection to invoke the requested method. Cache the method object 
      * to speed up the process

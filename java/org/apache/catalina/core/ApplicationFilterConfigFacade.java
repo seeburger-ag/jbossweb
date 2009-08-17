@@ -47,6 +47,7 @@
 package org.apache.catalina.core;
 
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -169,12 +170,12 @@ public class ApplicationFilterConfigFacade implements FilterConfig, FilterRegist
     }
 
 
-    public Iterable<String> getServletNameMappings() {
+    public Collection<String> getServletNameMappings() {
         return config.getServletNameMappings();
     }
 
 
-    public Iterable<String> getUrlPatternMappings() {
+    public Collection<String> getUrlPatternMappings() {
         return config.getUrlPatternMappings();
     }
 
