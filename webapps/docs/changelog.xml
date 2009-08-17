@@ -127,6 +127,9 @@
         <bug>41059</bug>: Reduce one possible source of errors if using ENABLE_CLEAR_REFERENCES=true.
         Patch by Curt Arnold. (markt)
       </fix>
+      <fix>
+        Register filters with JMX. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -139,6 +142,9 @@
       </update>
       <fix>
         Fix handling of timeout values &lt;= 0 with the poller refactoring. (remm)
+      </fix>
+      <fix>
+        <jboss-jira>JBAS-6442</jboss-jira>: The character encoder should tolerate unmappable characters. (jfclere)
       </fix>
     </changelog>
   </subsection>

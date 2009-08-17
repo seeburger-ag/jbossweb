@@ -59,6 +59,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.ObjectName;
 import javax.naming.NamingException;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -76,6 +77,7 @@ import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.log.SystemLogHandler;
+import org.apache.tomcat.util.modeler.Registry;
 
 
 /**
@@ -89,6 +91,9 @@ import org.apache.tomcat.util.log.SystemLogHandler;
 
 public final class ApplicationFilterConfig implements FilterConfig, Serializable {
 
+
+    protected static org.jboss.logging.Logger log=
+        org.jboss.logging.Logger.getLogger( ApplicationFilterConfig.class );
 
     protected static StringManager sm =
         StringManager.getManager(Constants.Package);
@@ -155,6 +160,12 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     private transient InstanceManager instanceManager;
 
 
+    /**
+     * JMX registration name
+     */
+    private ObjectName oname;
+
+
     // --------------------------------------------------- FilterConfig Methods
 
 
@@ -163,6 +174,14 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      */
     public String getFilterName() {
         return (filterDef.getFilterName());
+    }
+
+
+    /**
+     * Return the class of the filter we are configuring.
+     */
+    public String getFilterClass() {
+        return filterDef.getFilterClass();
     }
 
 
@@ -364,6 +383,11 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     }
 
 
+    public Map<String, String> getInitParameters() {
+        return Collections.unmodifiableMap(filterDef.getParameterMap());
+    }
+
+
     // -------------------------------------------------------- Package Methods
 
 
@@ -412,8 +436,11 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
         } else {
             filter.init(this);
         }
+        
+        // Expose filter via JMX
+        registerJMX();
+        
         return (this.filter);
-
 
     }
 
@@ -441,6 +468,8 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      */
     void release() {
 
+        unregsiterJMX();
+        
         if (this.filter != null)
         {
             if (Globals.IS_SECURITY_ENABLED) {
@@ -481,6 +510,57 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             }
         }
         return instanceManager;
+    }
+
+    private void registerJMX() {
+        String parentName = context.getName();
+        parentName = ("".equals(parentName)) ? "/" : parentName;
+
+        String hostName = context.getParent().getName();
+        hostName = (hostName == null) ? "DEFAULT" : hostName;
+
+        // domain == engine name
+        String domain = context.getParent().getParent().getName();
+
+        String webMod = "//" + hostName + parentName;
+        String onameStr = null;
+        if (context instanceof StandardContext) {
+            StandardContext standardContext = (StandardContext) context;
+            onameStr = domain + ":j2eeType=Filter,name=" +
+                 filterDef.getFilterName() + ",WebModule=" + webMod +
+                 ",J2EEApplication=" +
+                 standardContext.getJ2EEApplication() + ",J2EEServer=" +
+                 standardContext.getJ2EEServer();
+        } else {
+            onameStr = domain + ":j2eeType=Filter,name=" +
+                 filterDef.getFilterName() + ",WebModule=" + webMod;
+        }
+        try {
+            oname = new ObjectName(onameStr);
+            Registry.getRegistry(null, null).registerComponent(this, oname,
+                    null);
+        } catch (Exception ex) {
+            log.info(sm.getString("applicationFilterConfig.jmxRegsiterFail",
+                    getFilterClass(), getFilterName()), ex);
+        }
+    }
+    
+    private void unregsiterJMX() {
+        // unregister this component
+        if (oname != null) {
+            try {
+                Registry.getRegistry(null, null).unregisterComponent(oname);
+                if(log.isDebugEnabled())
+                    log.debug(sm.getString(
+                            "applicationFilterConfig.jmxUnregsiter",
+                            getFilterClass(), getFilterName()));
+            } catch(Exception ex) {
+                log.error(sm.getString(
+                        "applicationFilterConfig.jmxUnregsiterFail",
+                        getFilterClass(), getFilterName()), ex);
+            }
+        }
+
     }
 
 }
