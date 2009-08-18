@@ -876,16 +876,13 @@ public class Response
      * a zero-length array if no headers have been set.
      */
     public Collection<String> getHeaderNames() {
-
         MimeHeaders headers = coyoteResponse.getMimeHeaders();
+        Collection<String> headersCollection = new ArrayList<String>();
         int n = headers.size();
-        String[] result = new String[n];
         for (int i = 0; i < n; i++) {
-            result[i] = headers.getName(i).toString();
+            headersCollection.add(headers.getName(i).toString());
         }
-        // FIXME
-        return null;
-
+        return headersCollection;
     }
 
 
@@ -914,8 +911,12 @@ public class Response
      * @param name Header name to look up
      */
     public Collection<String> getHeaders(String name) {
-        // FIXME
-        return null;
+        Enumeration enumeration = coyoteResponse.getMimeHeaders().values(name);
+        Collection<String> headerValuesCollection = new ArrayList<String>();
+        while (enumeration.hasMoreElements()) {
+            headerValuesCollection.add((String) enumeration.nextElement());
+        }
+        return headerValuesCollection;
     }
     
     

@@ -415,6 +415,18 @@ public interface Context extends Container {
 
 
     /**
+     * Return the Servlet API version defined for the webapp.
+     */
+    public int getVersionMajor();
+
+
+    /**
+     * Return the Servlet API version defined for the webapp.
+     */
+    public int getVersionMinor();
+
+
+    /**
      * Set the Servlet API version defined for the webapp.
      *
      * @param version The version

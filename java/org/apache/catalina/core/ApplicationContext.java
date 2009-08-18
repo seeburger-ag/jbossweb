@@ -847,6 +847,7 @@ public class ApplicationContext
 
     public FilterRegistration.Dynamic addFilter(String filterName, String className)
             throws IllegalArgumentException, IllegalStateException {
+        // FIXME: restricted method
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -862,6 +863,7 @@ public class ApplicationContext
 
 
     public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
+        // FIXME: restricted method
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -879,12 +881,14 @@ public class ApplicationContext
 
     public FilterRegistration.Dynamic addFilter(String filterName,
             Class<? extends Filter> filterClass) {
+        // FIXME: restricted method
         return addFilter(filterName, filterClass.getName());
     }
 
 
     public ServletRegistration.Dynamic addServlet(String servletName, String className)
             throws IllegalArgumentException, IllegalStateException {
+        // FIXME: restricted method
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -901,11 +905,13 @@ public class ApplicationContext
     public ServletRegistration.Dynamic addServlet(String servletName,
             Class<? extends Servlet> clazz) throws IllegalArgumentException,
             IllegalStateException {
+        // FIXME: restricted method
         return addServlet(servletName, clazz.getName());
     }
 
 
     public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
+        // FIXME: restricted method
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -921,6 +927,7 @@ public class ApplicationContext
 
 
     public FilterRegistration getFilterRegistration(String filterName) {
+        // FIXME: restricted method
         ApplicationFilterConfig filterConfig = context.findApplicationFilterConfig(filterName);
         if (filterConfig == null) {
             FilterDef filterDef = context.findFilterDef(filterName);
@@ -936,6 +943,7 @@ public class ApplicationContext
 
 
     public ServletRegistration getServletRegistration(String servletName) {
+        // FIXME: restricted method
         Wrapper wrapper = (Wrapper) context.findChild(servletName);
         if (wrapper != null) {
             return wrapper.getFacade();
@@ -946,6 +954,7 @@ public class ApplicationContext
 
 
     public Map<String, FilterRegistration> getFilterRegistrations() {
+        // FIXME: restricted method
         HashMap<String, FilterRegistration> result = 
             new HashMap<String, FilterRegistration>();
         ApplicationFilterConfig[] filterConfigs = context.findApplicationFilterConfigs();
@@ -957,6 +966,7 @@ public class ApplicationContext
 
 
     public Map<String, ServletRegistration> getServletRegistrations() {
+        // FIXME: restricted method
         HashMap<String, ServletRegistration> result = 
             new HashMap<String, ServletRegistration>();
         Container[] wrappers = context.findChildren();
@@ -968,34 +978,26 @@ public class ApplicationContext
     }
 
 
-    /**
-     * By default {@link SessionTrackingMode#URL} is always supported, {@link
-     * SessionTrackingMode#COOKIE} is supported unless the <code>cookies</code>
-     * attribute has been set to <code>false</code> for the context and {@link
-     * SessionTrackingMode#SSL} is supported if at least one of the connectors
-     * used by this context has the attribute <code>secure</code> set to
-     * <code>true</code>.
-     */
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
+        // FIXME: restricted method
         return context.getDefaultSessionTrackingModes();
     }
 
-    /**
-     * Return the supplied value if one was previously set, else return the
-     * defaults.
-     */
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+        // FIXME: restricted method
         return context.getSessionTrackingModes();
     }
 
 
     public SessionCookieConfig getSessionCookieConfig() {
+        // FIXME: restricted method
         return context.getSessionCookie();
     }
 
 
     public <T extends Filter> T createFilter(Class<T> c)
             throws ServletException {
+        // FIXME: restricted method
         try {
             return (T) context.getInstanceManager().newInstance(c);
         } catch (Throwable e) {
@@ -1007,6 +1009,7 @@ public class ApplicationContext
 
     public <T extends Servlet> T createServlet(Class<T> c)
             throws ServletException {
+        // FIXME: restricted method
         try {
             return (T) context.getInstanceManager().newInstance(c);
         } catch (Throwable e) {
@@ -1017,6 +1020,7 @@ public class ApplicationContext
 
 
     public boolean setInitParameter(String name, String value) {
+        // FIXME: restricted method
         mergeParameters();
         if (parameters.get(name) != null) {
             return false;
@@ -1035,13 +1039,12 @@ public class ApplicationContext
      *                                  requested
      */
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
-
+        // FIXME: restricted method
         if (context.getAvailable()) {
             throw new IllegalStateException(
                     sm.getString("applicationContext.setSessionTracking.ise",
                             getContextPath()));
         }
-        
         // Check that only supported tracking modes have been requested
         for (SessionTrackingMode sessionTrackingMode : sessionTrackingModes) {
             if (!getDefaultSessionTrackingModes().contains(sessionTrackingMode)) {
@@ -1050,38 +1053,37 @@ public class ApplicationContext
                         sessionTrackingMode.toString(), getContextPath()));
             }
         }
-        // TODO SERVLET3 - The SSL test
-        
+        // TODO: Possible SSL tracking mode
         context.setSessionTrackingModes(sessionTrackingModes);
     }
 
 
     public void addListener(String className) {
+        // FIXME: restricted method
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
-        // FIXME: forbidden if the listener is from a TLD
         context.addApplicationListener(className);
     }
 
 
     public <T extends EventListener> void addListener(T listener) {
+        // FIXME: restricted method
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
-        // FIXME: forbidden if the listener is from a TLD
         context.addApplicationListenerInstance(listener);
     }
 
 
     public void addListener(Class<? extends EventListener> listenerClass) {
+        // FIXME: restricted method
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
-        // FIXME: forbidden if the listener is from a TLD
         try {
             EventListener listenerInstance = 
                 (EventListener) context.getInstanceManager().newInstance(listenerClass);
@@ -1095,6 +1097,7 @@ public class ApplicationContext
 
     public <T extends EventListener> T createListener(Class<T> clazz)
             throws ServletException {
+        // FIXME: restricted method
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -1111,11 +1114,13 @@ public class ApplicationContext
 
 
     public ClassLoader getClassLoader() {
+        // FIXME: restricted method
         return context.getLoader().getClassLoader();
     }
 
 
     public JspConfigDescriptor getJspConfigDescriptor() {
+        // FIXME: restricted method
         ArrayList<TaglibDescriptor> taglibDescriptors = new ArrayList<TaglibDescriptor>();
         String[] taglibURIs = context.findTaglibs();
         for (int i = 0; i < taglibURIs.length; i++) {
@@ -1135,14 +1140,14 @@ public class ApplicationContext
 
 
     public int getEffectiveMajorVersion() {
-        // TODO Auto-generated method stub
-        return 0;
+        // FIXME: restricted method
+        return context.getVersionMajor();
     }
 
 
     public int getEffectiveMinorVersion() {
-        // TODO Auto-generated method stub
-        return 0;
+        // FIXME: restricted method
+        return context.getVersionMinor();
     }
 
     // -------------------------------------------------------- Package Methods

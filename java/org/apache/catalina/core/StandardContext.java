@@ -519,6 +519,18 @@ public class StandardContext
 
 
     /**
+     * Version number.
+     */
+    protected int versionMinor = 0;
+
+
+    /**
+     * Version number.
+     */
+    protected int versionMajor = 0;
+
+
+    /**
      * The reloadable flag for this web application.
      */
     protected boolean reloadable = false;
@@ -1604,6 +1616,34 @@ public class StandardContext
 
 
     /**
+     * Return the Servlet API version defined for the webapp.
+     */
+    public int getVersionMajor() {
+        if (version != null) {
+            int pos = version.indexOf('.');
+            if (pos != -1) {
+                versionMajor = Integer.parseInt(version.substring(0, pos));
+            }
+        }
+        return versionMajor;
+    }
+
+
+    /**
+     * Return the Servlet API version defined for the webapp.
+     */
+    public int getVersionMinor() {
+        if (version != null) {
+            int pos = version.indexOf('.');
+            if (pos < version.length()) {
+                versionMinor = Integer.parseInt(version.substring(pos + 1));
+            }
+        }
+        return versionMinor;
+    }
+
+
+    /**
      * Set the Servlet API version defined for the webapp.
      *
      * @param version The version
@@ -1611,6 +1651,8 @@ public class StandardContext
     public void setVersion(String version) {
         String oldVersion = this.version;
         this.version = version;
+        getVersionMajor();
+        getVersionMinor();
         support.firePropertyChange("version", oldVersion, version);
     }
 
