@@ -255,8 +255,6 @@ public class SecurityCollection implements Serializable {
      */
     public boolean findMethodOmission(String method) {
 
-        if (methods.length == 0)
-            return (true);
         for (int i = 0; i < methodOmissions.length; i++) {
             if (methodOmissions[i].equals(method))
                 return (true);
