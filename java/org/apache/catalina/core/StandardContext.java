@@ -127,6 +127,9 @@ public class StandardContext
 {
     protected static Logger log = Logger.getLogger(StandardContext.class);
 
+    public static final boolean CONFIGBASE_MKDIRS =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.CONFIGBASE_MKDIRS", "true")).booleanValue();
+
 
     // ----------------------------------------------------------- Constructors
 
@@ -4817,7 +4820,9 @@ public class StandardContext
         if (host != null) {
             configBase = new File(configBase, host.getName());
         }
-        configBase.mkdirs();
+        if (CONFIGBASE_MKDIRS) {
+            configBase.mkdirs();
+        }
         return configBase;
     }
 
