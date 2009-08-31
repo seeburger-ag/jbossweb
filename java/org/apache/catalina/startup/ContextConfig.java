@@ -650,11 +650,11 @@ public class ContextConfig
             if (jarPath.equals("")) {
                 continue;
             }
-            JarFile jarFile = null;
-            try {
-                jarFile = new JarFile(jarPath);
-                Iterator<String> jarTLDsIterator =  TLDs.get(jarPath).iterator();
-                while (jarTLDsIterator.hasNext()) {
+            JarRepository jarRepository = context.getJarRepository();
+            JarFile jarFile = jarRepository.findJar(jarPath);
+            Iterator<String> jarTLDsIterator =  TLDs.get(jarPath).iterator();
+            while (jarTLDsIterator.hasNext()) {
+                try {
                     String tldPath = jarTLDsIterator.next();
                     stream = jarFile.getInputStream(jarFile.getEntry(tldPath));
                     synchronized (tldDigester) {
@@ -680,17 +680,17 @@ public class ContextConfig
                             context.addJspTagLibrary(jarPath, tagLibraryInfo);
                         }
                     }
-                }
-            } catch (Exception e) {
-                log.error(sm.getString("contextConfig.tldJarException",
-                        jarPath, context.getPath()), e);
-                ok = false;
-            } finally {
-                if (jarFile != null) {
-                    try {
-                        jarFile.close();
-                    } catch (Throwable t) {
-                        // Ignore
+                } catch (Exception e) {
+                    log.error(sm.getString("contextConfig.tldJarException",
+                            jarPath, context.getPath()), e);
+                    ok = false;
+                } finally {
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (Throwable t) {
+                            // Ignore
+                        }
                     }
                 }
             }
