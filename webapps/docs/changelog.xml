@@ -146,6 +146,9 @@
       <fix>
         <jboss-jira>JBAS-6442</jboss-jira>: The character encoder should tolerate unmappable characters. (jfclere)
       </fix>
+      <fix>
+        Add flag to set Expires for cookie expiration on IE. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

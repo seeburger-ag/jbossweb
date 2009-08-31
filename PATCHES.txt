@@ -35,9 +35,6 @@ however)
 Executor modifications, very specialized work that breaks the Executor design (a single task can be submitted
 to the real executor more than once) to supposedly work better with the NIO connector. 
 
-728947
-Lame IE 6 and 7 cookie hack for expires.
-
 various
 New JDBC pool module
 
