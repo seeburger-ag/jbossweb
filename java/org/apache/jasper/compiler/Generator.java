@@ -1764,6 +1764,17 @@ class Generator {
                 generateLocalVariables(out, n);
             }
 
+            // Add the named objects to the list of 'introduced' names to enable
+            // a later test as per JSP.5.3
+            VariableInfo[] infos = n.getVariableInfos();
+            if (infos != null && infos.length > 0) {
+                for (int i = 0; i < infos.length; i++) {
+                    VariableInfo info = infos[i];
+                    if (info != null && info.getVarName() != null)
+                        pageInfo.getVarInfoNames().add(info.getVarName());
+                }
+            }
+            
             if (n.implementsSimpleTag()) {
                 generateCustomDoTag(n, handlerInfo, tagHandlerVar);
             } else {
@@ -1815,17 +1826,6 @@ class Generator {
                 out = outSave;
             }
 
-            // Add the named objects to the list of 'introduced' names to enable
-            // a later test as per JSP.5.3
-            VariableInfo[] infos = n.getVariableInfos();
-            if (infos != null && infos.length > 0) {
-                for (int i = 0; i < infos.length; i++) {
-                    VariableInfo info = infos[i];
-                    if (info != null && info.getVarName() != null)
-                        pageInfo.getVarInfoNames().add(info.getVarName());
-                }
-            }
-            
         }
 
         private static final String SINGLE_QUOTE = "'";
