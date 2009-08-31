@@ -130,6 +130,9 @@
       <fix>
         Register filters with JMX. (markt)
       </fix>
+      <fix>
+        <bug>47705</bug>: Fix divide by zero in the manager sessions command. (funkman)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
