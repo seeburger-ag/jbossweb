@@ -101,6 +101,7 @@ class PageInfo {
 
         this.jspFile = jspFile;
         this.beanRepository = beanRepository;
+        this.varInfoNames = new HashSet<String>();
         this.taglibsMap = new HashMap();
         this.jspPrefixMapper = new HashMap();
         this.xmlPrefixMapper = new HashMap();
