@@ -81,6 +81,12 @@ public interface Context extends Container {
 
 
     /**
+     * Add the given session tracking mode.
+     */
+    public void addSessionTrackingMode(String trackingMode);
+
+
+    /**
      * Return the absolute ordering that is configured for this context, or
      * null if no absolute ordering has been defined.
      */
