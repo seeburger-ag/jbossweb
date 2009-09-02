@@ -862,9 +862,10 @@ public abstract class ContainerBase
         if( log.isDebugEnabled() )
             log.debug("Add child " + child + " " + this);
 
+        if (child.getName() == null)
+            throw new IllegalArgumentException(sm.getString("containerBase.addChild.nullName"));
         if (children.get(child.getName()) != null)
-            throw new IllegalArgumentException("addChild:  Child name '" +
-                    child.getName() + "' is not unique");
+            throw new IllegalArgumentException(sm.getString("containerBase.addChild.notUnique", child.getName()));
 
         child.setParent(this);  // May throw IAE
         children.put(child.getName(), child);
@@ -876,9 +877,7 @@ public abstract class ContainerBase
                 ((Lifecycle) child).start();
                 success = true;
             } catch (LifecycleException e) {
-                log.error("ContainerBase.addChild: start: ", e);
-                throw new IllegalStateException
-                ("ContainerBase.addChild: start: " + e);
+                throw new IllegalStateException(sm.getString("containerBase.addChild.start", child.getName()), e);
             } finally {
                 if (!success) {
                     children.remove(child.getName());
