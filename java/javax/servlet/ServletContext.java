@@ -743,12 +743,18 @@ public interface ServletContext {
      * classloader associated with the application represented by this
      * ServletContext.
      *
+     * <p>If this ServletContext already contains a preliminary
+     * ServletRegistration for a servlet with the given <tt>servletName</tt>,
+     * it will be completed (by assigning the given <tt>className</tt> to it)
+     * and returned.
+     *
      * @param servletName the name of the servlet
      * @param className the fully qualified class name of the servlet
      *
      * @return a ServletRegistration object that may be used to further
      * configure the registered servlet, or <tt>null</tt> if this
-     * ServletContext already contains a servlet with a matching name
+     * ServletContext already contains a complete ServletRegistration for
+     * a servlet with the given <tt>servletName</tt> 
      *
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
@@ -772,15 +778,20 @@ public interface ServletContext {
      * <p>The registered servlet may be further configured via the returned
      * {@link ServletRegistration} object.
      *
+     * <p>If this ServletContext already contains a preliminary
+     * ServletRegistration for a servlet with the given <tt>servletName</tt>,
+     * it will be completed (by assigning the class name of the given servlet
+     * instance to it) and returned.
+     *
      * @param servletName the name of the servlet
      * @param servlet the servlet instance to register
      *
      * @return a ServletRegistration object that may be used to further
      * configure the given servlet, or <tt>null</tt> if this
-     * ServletContext already contains a servlet with a matching name,
-     * or if the same servlet instance has already been registered with
-     * this or another ServletContext that is part of the same servlet
-     * container
+     * ServletContext already contains a complete ServletRegistration for a
+     * servlet with the given <tt>servletName</tt> or if the same servlet
+     * instance has already been registered with this or another
+     * ServletContext in the same container
      *
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
@@ -807,13 +818,19 @@ public interface ServletContext {
      * <p>The registered servlet may be further configured via the returned
      * {@link ServletRegistration} object.
      *
+     * <p>If this ServletContext already contains a preliminary
+     * ServletRegistration for a servlet with the given <tt>servletName</tt>,
+     * it will be completed (by assigning the name of the given
+     * <tt>servletClass</tt> to it) and returned.
+     *
      * @param servletName the name of the servlet
      * @param servletClass the class object from which the servlet will be
      * instantiated
      *
      * @return a ServletRegistration object that may be used to further
      * configure the registered servlet, or <tt>null</tt> if this
-     * ServletContext already contains a servlet with a matching name
+     * ServletContext already contains a complete ServletRegistration for
+     * the given <tt>servletName</tt> 
      *
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
@@ -831,13 +848,17 @@ public interface ServletContext {
 
 
     /**
-     * Instantiates the given Servlet class and performs any required
-     * resource injection into the new Servlet instance before returning
-     * it.
+     * Instantiates the given Servlet class.
+     *
+     * <p>This method must support all annotations applicable to Servlets
+     * as defined by the Servlet specification.
      *
      * <p>The returned Servlet instance may be further customized before it
      * is registered with this ServletContext via a call to 
      * {@link #addServlet(String,Servlet)}.
+     *
+     * <p>The given Servlet class must define a zero argument constructor,
+     * which is used to instantiate it.
      *
      * @param clazz the Servlet class to instantiate
      *
@@ -861,9 +882,9 @@ public interface ServletContext {
      * Gets the ServletRegistration corresponding to the servlet with the
      * given <tt>servletName</tt>.
      *
-     * @return the ServletRegistration corresponding to the servlet with the
-     * given <tt>servletName</tt>, or null if no ServletRegistration exists
-     * under that name in this ServletContext
+     * @return the (complete or preliminary) ServletRegistration for the
+     * servlet with the given <tt>servletName</tt>, or null if no
+     * ServletRegistration exists under that name
      *
      * @throws UnsupportedOperationException if this ServletContext was
      * passed to the {@link ServletContextListener#contextInitialized} method
@@ -889,8 +910,9 @@ public interface ServletContext {
      * <p>Any changes to the returned Map must not affect this
      * ServletContext.
      *
-     * @return Map of the ServletRegistration objects corresponding
-     * to all servlets currently registered with this ServletContext
+     * @return Map of the (complete and preliminary) ServletRegistration
+     * objects corresponding to all servlets currently registered with this
+     * ServletContext
      *
      * @throws UnsupportedOperationException if this ServletContext was
      * passed to the {@link ServletContextListener#contextInitialized} method
@@ -914,12 +936,18 @@ public interface ServletContext {
      * classloader associated with the application represented by this
      * ServletContext.
      *
+     * <p>If this ServletContext already contains a preliminary
+     * FilterRegistration for a filter with the given <tt>filterName</tt>,
+     * it will be completed (by assigning the given <tt>className</tt> to it)
+     * and returned.
+     *
      * @param filterName the name of the filter
      * @param className the fully qualified class name of the filter
      *
      * @return a FilterRegistration object that may be used to further
      * configure the registered filter, or <tt>null</tt> if this
-     * ServletContext already contains a filter with a matching name
+     * ServletContext already contains a complete FilterRegistration for
+     * a filter with the given <tt>filterName</tt> 
      *
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
@@ -943,15 +971,20 @@ public interface ServletContext {
      * <p>The registered filter may be further configured via the returned
      * {@link FilterRegistration} object.
      *
+     * <p>If this ServletContext already contains a preliminary
+     * FilterRegistration for a filter with the given <tt>filterName</tt>,
+     * it will be completed (by assigning the class name of the given filter
+     * instance to it) and returned.
+     *
      * @param filterName the name of the filter
      * @param filter the filter instance to register
      *
      * @return a FilterRegistration object that may be used to further
      * configure the given filter, or <tt>null</tt> if this
-     * ServletContext already contains a filter with a matching name,
-     * or if the same filter instance has already been registered with
-     * this or another ServletContext that is part of the same servlet
-     * container
+     * ServletContext already contains a complete FilterRegistration for a
+     * filter with the given <tt>filterName</tt> or if the same filter
+     * instance has already been registered with this or another
+     * ServletContext in the same container
      *
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
@@ -975,13 +1008,19 @@ public interface ServletContext {
      * <p>The registered filter may be further configured via the returned
      * {@link FilterRegistration} object.
      *
+     * <p>If this ServletContext already contains a preliminary
+     * FilterRegistration for a filter with the given <tt>filterName</tt>,
+     * it will be completed (by assigning the name of the given
+     * <tt>filterClass</tt> to it) and returned.
+     *
      * @param filterName the name of the filter
      * @param filterClass the class object from which the filter will be
      * instantiated
      *
      * @return a FilterRegistration object that may be used to further
      * configure the registered filter, or <tt>null</tt> if this
-     * ServletContext already contains a filter with a matching name
+     * ServletContext already contains a complete FilterRegistration for a
+     * filter with the given <tt>filterName</tt> 
      *
      * @throws IllegalStateException if this ServletContext has already
      * been initialized
@@ -999,13 +1038,17 @@ public interface ServletContext {
 
 
     /**
-     * Instantiates the given Filter class and performs any required
-     * resource injection into the new Filter instance before returning
-     * it.
+     * Instantiates the given Filter class.
+     *
+     * <p>This method must support all annotations applicable to Filters
+     * as defined by the Servlet specification.
      *
      * <p>The returned Filter instance may be further customized before it
      * is registered with this ServletContext via a call to 
      * {@link #addFilter(String,Filter)}.
+     *
+     * <p>The given Filter class must define a zero argument constructor,
+     * which is used to instantiate it.
      *
      * @param clazz the Filter class to instantiate
      *
@@ -1030,9 +1073,9 @@ public interface ServletContext {
      * Gets the FilterRegistration corresponding to the filter with the
      * given <tt>filterName</tt>.
      *
-     * @return the FilterRegistration corresponding to the filter with the
-     * given <tt>filterName</tt>, or null if no FilterRegistration exists
-     * under that name in this ServletContext
+     * @return the (complete or preliminary) FilterRegistration for the
+     * filter with the given <tt>filterName</tt>, or null if no
+     * FilterRegistration exists under that name
      *
      * @throws UnsupportedOperationException if this ServletContext was
      * passed to the {@link ServletContextListener#contextInitialized} method
@@ -1058,8 +1101,9 @@ public interface ServletContext {
      * <p>Any changes to the returned Map must not affect this
      * ServletContext.
      *
-     * @return Map of the FilterRegistration objects corresponding
-     * to all filters currently registered with this ServletContext
+     * @return Map of the (complete and preliminary) FilterRegistration
+     * objects corresponding to all filters currently registered with this
+     * ServletContext
      *
      * @throws UnsupportedOperationException if this ServletContext was
      * passed to the {@link ServletContextListener#contextInitialized} method
@@ -1318,9 +1362,7 @@ public interface ServletContext {
 
 
     /**
-     * Instantiates the given EventListener class and performs any
-     * required resource injection into the new EventListener instance
-     * before returning it.
+     * Instantiates the given EventListener class.
      *
      * <p>The specified EventListener class must implement at least one of
      * the <code>{@link ServletContextListener}</code>,
@@ -1331,9 +1373,15 @@ public interface ServletContext {
      * <code>{@link javax.servlet.http.HttpSessionAttributeListener}</code>
      * interfaces.
      *
+     * <p>This method must support all annotations applicable to the above
+     * listener interfaces as defined by the Servlet specification.
+     *
      * <p>The returned EventListener instance may be further customized
      * before it is registered with this ServletContext via a call to
      * {@link #addListener(EventListener)}.
+     *
+     * <p>The given EventListener class must define a zero argument
+     * constructor, which is used to instantiate it.
      *
      * @param clazz the EventListener class to instantiate
      *
