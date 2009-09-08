@@ -687,7 +687,28 @@ public class ClusterListener
     	}
     	return result.toString();
     }
-    
+ 
+    /**
+     * Check the node connectivity with the proxies.
+     *
+     *
+     * @return the status of the node or the proxy.
+     */
+    public String doProxyPing(String JvmRoute) {
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        if (JvmRoute != null)
+            parameters.put("JVMRoute", JvmRoute);
+        // Send PING * request
+        Proxy[] local = proxies;
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < local.length; i++) {
+            result.append("Proxy[").append(i).append("]: [").append(local[i].address)
+                            .append(':').append(local[i].port).append("]: \r\n");
+            result.append(sendRequest("PING", true, parameters, i));
+            result.append("\r\n");
+        }
+        return result.toString();
+    }   
     
     /**
      * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
