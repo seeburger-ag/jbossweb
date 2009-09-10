@@ -581,10 +581,8 @@ public class FileDirContext extends BaseDirContext {
                 is.close();
             }
         } catch (IOException e) {
-            NamingException ne = new NamingException
+            throw new NamingException
                 (sm.getString("resources.bindFailed", e));
-            ne.initCause(e);
-            throw ne;
         }
 
     }

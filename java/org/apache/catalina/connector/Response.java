@@ -29,7 +29,6 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -39,6 +38,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
@@ -51,6 +51,7 @@ import org.apache.tomcat.util.buf.UEncoder;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.http.ServerCookie;
+import org.apache.tomcat.util.http.TomcatCookie;
 import org.apache.tomcat.util.net.URL;
 
 /**
@@ -155,6 +156,26 @@ public class Response
      */
     public org.apache.coyote.Response getCoyoteResponse() {
         return (coyoteResponse);
+    }
+
+
+    /**
+     * Return the Context within which this Request is being processed.
+     */
+    public Context getContext() {
+        return (request.getContext());
+    }
+
+    /**
+     * Set the Context within which this Request is being processed.  This
+     * must be called as soon as the appropriate Context is identified, because
+     * it identifies the value to be returned by <code>getContextPath()</code>,
+     * and thus enables parsing of the request URI.
+     *
+     * @param context The newly associated Context
+     */
+    public void setContext(Context context) {
+        request.setContext(context);
     }
 
 
@@ -269,7 +290,7 @@ public class Response
 
 
     /**
-     * Clear cached encoders (to save memory for event or async requests).
+     * Clear cached encoders (to save memory for Comet requests).
      */
     public void clearEncoders() {
         outputBuffer.clearEncoders();
@@ -837,7 +858,7 @@ public class Response
             return;
         }
 
-        CharsetMapper cm = request.getContext().getCharsetMapper();
+        CharsetMapper cm = getContext().getCharsetMapper();
         String charset = cm.getCharset( locale );
         if ( charset != null ){
             coyoteResponse.setCharacterEncoding(charset);
@@ -875,22 +896,7 @@ public class Response
      * Return an array of all the header names set for this response, or
      * a zero-length array if no headers have been set.
      */
-    public Collection<String> getHeaderNames() {
-        MimeHeaders headers = coyoteResponse.getMimeHeaders();
-        Collection<String> headersCollection = new ArrayList<String>();
-        int n = headers.size();
-        for (int i = 0; i < n; i++) {
-            headersCollection.add(headers.getName(i).toString());
-        }
-        return headersCollection;
-    }
-
-
-    /**
-     * Return an array of all the header names set for this response, or
-     * a zero-length array if no headers have been set.
-     */
-    public String[] getHeaderNamesArray() {
+    public String[] getHeaderNames() {
 
         MimeHeaders headers = coyoteResponse.getMimeHeaders();
         int n = headers.size();
@@ -903,23 +909,6 @@ public class Response
     }
 
 
-    /**
-     * Return an array of all the header values associated with the
-     * specified header name, or an zero-length array if there are no such
-     * header values.
-     *
-     * @param name Header name to look up
-     */
-    public Collection<String> getHeaders(String name) {
-        Enumeration enumeration = coyoteResponse.getMimeHeaders().values(name);
-        Collection<String> headerValuesCollection = new ArrayList<String>();
-        while (enumeration.hasMoreElements()) {
-            headerValuesCollection.add((String) enumeration.nextElement());
-        }
-        return headerValuesCollection;
-    }
-    
-    
     /**
      * Return an array of all the header values associated with the
      * specified header name, or an zero-length array if there are no such
@@ -997,6 +986,23 @@ public class Response
      *
      * @param cookie Cookie to be added
      */
+    public void addTomcatCookie(final TomcatCookie cookie) {
+
+        // Ignore any call from an included servlet
+        if (included)
+            return;
+
+        addCookieInternal(cookie);
+
+    }
+
+
+    /**
+     * Add the specified Cookie to those that will be included with
+     * this Response.
+     *
+     * @param cookie Cookie to be added
+     */
     public void addCookieInternal(final Cookie cookie) {
 
         if (isCommitted())
@@ -1012,7 +1018,7 @@ public class Response
                         (sb, cookie.getVersion(), cookie.getName(), 
                          cookie.getValue(), cookie.getPath(), 
                          cookie.getDomain(), cookie.getComment(), 
-                         cookie.getMaxAge(), cookie.getSecure(), cookie.isHttpOnly());
+                         cookie.getMaxAge(), cookie.getSecure(), false);
                     return null;
                 }
             });
@@ -1020,7 +1026,48 @@ public class Response
             ServerCookie.appendCookieValue
                 (sb, cookie.getVersion(), cookie.getName(), cookie.getValue(),
                      cookie.getPath(), cookie.getDomain(), cookie.getComment(), 
-                     cookie.getMaxAge(), cookie.getSecure(), cookie.isHttpOnly());
+                     cookie.getMaxAge(), cookie.getSecure(), false);
+        }
+        // if we reached here, no exception, cookie is valid
+        // the header name is Set-Cookie for both "old" and v.1 ( RFC2109 )
+        // RFC2965 is not supported by browsers and the Servlet spec
+        // asks for 2109.
+        addHeader("Set-Cookie", sb.toString());
+
+        cookies.add(cookie);
+    }
+
+
+    /**
+     * Add the specified Cookie to those that will be included with
+     * this Response.
+     *
+     * @param cookie Cookie to be added
+     */
+    public void addCookieInternal(final TomcatCookie cookie) {
+
+        if (isCommitted())
+            return;
+
+        final StringBuffer sb = new StringBuffer();
+        // web application code can receive a IllegalArgumentException 
+        // from the appendCookieValue invocation
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run(){
+                    ServerCookie.appendCookieValue
+                        (sb, cookie.getVersion(), cookie.getName(), 
+                         cookie.getValue(), cookie.getPath(), 
+                         cookie.getDomain(), cookie.getComment(), 
+                         cookie.getMaxAge(), cookie.getSecure(), cookie.getHttpOnly());
+                    return null;
+                }
+            });
+        } else {
+            ServerCookie.appendCookieValue
+                (sb, cookie.getVersion(), cookie.getName(), cookie.getValue(),
+                     cookie.getPath(), cookie.getDomain(), cookie.getComment(), 
+                     cookie.getMaxAge(), cookie.getSecure(), cookie.getHttpOnly());
         }
         // if we reached here, no exception, cookie is valid
         // the header name is Set-Cookie for both "old" and v.1 ( RFC2109 )
@@ -1484,7 +1531,7 @@ public class Response
         if (serverPort != urlPort)
             return (false);
 
-        String contextPath = request.getContext().getPath();
+        String contextPath = getContext().getPath();
         if (contextPath != null) {
             String file = url.getFile();
             if ((file == null) || !file.startsWith(contextPath))
@@ -1635,6 +1682,7 @@ public class Response
         return (sb.toString());
 
     }
+
 
 }
 

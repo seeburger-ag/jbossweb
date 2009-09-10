@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -49,13 +21,11 @@ package org.apache.catalina.core;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestWrapper;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.deploy.FilterMap;
 import org.jboss.servlet.http.HttpEventFilter;
 
@@ -82,8 +52,6 @@ public final class ApplicationFilterFactory {
     public static final Integer INCLUDE_INTEGER = new Integer(INCLUDE);
     public static final int REQUEST = 8;
     public static final Integer REQUEST_INTEGER = new Integer(REQUEST);
-    public static final int ASYNC = 16;
-    public static final Integer ASYNC_INTEGER = new Integer(ASYNC);
 
     public static final String DISPATCHER_TYPE_ATTR = 
         Globals.DISPATCHER_TYPE_ATTR;
@@ -123,9 +91,10 @@ public final class ApplicationFilterFactory {
      * a filter chain at all, return <code>null</code>.
      *
      * @param request The servlet request we are processing
-     * @param wrapper The servlet instance to be wrapped
+     * @param servlet The servlet instance to be wrapped
      */
-    public ApplicationFilterChain createFilterChain(ServletRequest request, Wrapper wrapper) {
+    public ApplicationFilterChain createFilterChain
+        (ServletRequest request, Wrapper wrapper, Servlet servlet) {
 
         // get the dispatcher type
         int dispatcher = -1; 
@@ -145,50 +114,38 @@ public final class ApplicationFilterFactory {
         if (request instanceof HttpServletRequest) 
             hreq = (HttpServletRequest)request;
         // If there is no servlet to execute, return null
-        if (wrapper.getServlet() == null)
+        if (servlet == null)
             return (null);
 
-        boolean event = false;
-        
-        // Get the request facade object
-        RequestFacade requestFacade = null;
-        if (request instanceof Request) {
-            Request coreRequest = (Request) request;
-            event = coreRequest.isEventMode();
-            requestFacade = (RequestFacade) coreRequest.getRequest();
-        } else {
-            ServletRequest current = request;
-            while (current != null) {
-                // If we run into the container request we are done
-                if (current instanceof RequestFacade) {
-                    requestFacade = (RequestFacade) current;
-                    break;
-                }
-                // Advance to the next request in the chain
-                current = ((ServletRequestWrapper) current).getRequest();
-            }
-        }
+        boolean comet = false;
         
         // Create and initialize a filter chain object
         ApplicationFilterChain filterChain = null;
-        if (requestFacade == null) {
-            // Not normal: some async functions and tracing will be disabled
-            filterChain = new ApplicationFilterChain();
-        } else {
-            // Add this filter chain to the request facade
+        if (request instanceof Request) {
+            Request req = (Request) request;
+            comet = req.isComet();
             if (Globals.IS_SECURITY_ENABLED) {
+                // Security: Do not recycle
                 filterChain = new ApplicationFilterChain();
-                requestFacade.setFilterChain(filterChain);
+                if (comet) {
+                    req.setFilterChain(filterChain);
+                }
             } else {
-                filterChain = requestFacade.getFilterChain();
+                filterChain = (ApplicationFilterChain) req.getFilterChain();
                 if (filterChain == null) {
                     filterChain = new ApplicationFilterChain();
-                    requestFacade.setFilterChain(filterChain);
+                    req.setFilterChain(filterChain);
                 }
             }
-            filterChain.setRequestFacade(requestFacade);
+        } else {
+            // Request dispatcher in use
+            filterChain = new ApplicationFilterChain();
         }
-        filterChain.setWrapper(wrapper);
+
+        filterChain.setServlet(servlet);
+
+        filterChain.setSupport
+            (((StandardWrapper)wrapper).getInstanceSupport());
 
         // Acquire the filter mappings for this Context
         StandardContext context = (StandardContext) wrapper.getParent();
@@ -214,16 +171,16 @@ public final class ApplicationFilterFactory {
                 ;       // FIXME - log configuration problem
                 continue;
             }
-            boolean isEventFilter = false;
-            if (event) {
+            boolean isCometFilter = false;
+            if (comet) {
                 try {
-                    isEventFilter = filterConfig.getFilter() instanceof HttpEventFilter;
+                    isCometFilter = filterConfig.getFilter() instanceof HttpEventFilter;
                 } catch (Exception e) {
                     // Note: The try catch is there because getFilter has a lot of 
                     // declared exceptions. However, the filter is allocated much
                     // earlier
                 }
-                if (isEventFilter) {
+                if (isCometFilter) {
                     filterChain.addFilter(filterConfig);
                 }
             } else {
@@ -244,16 +201,16 @@ public final class ApplicationFilterFactory {
                 ;       // FIXME - log configuration problem
                 continue;
             }
-            boolean isEventFilter = false;
-            if (event) {
+            boolean isCometFilter = false;
+            if (comet) {
                 try {
-                    isEventFilter = filterConfig.getFilter() instanceof HttpEventFilter;
+                    isCometFilter = filterConfig.getFilter() instanceof HttpEventFilter;
                 } catch (Exception e) {
                     // Note: The try catch is there because getFilter has a lot of 
                     // declared exceptions. However, the filter is allocated much
                     // earlier
                 }
-                if (isEventFilter) {
+                if (isCometFilter) {
                     filterChain.addFilter(filterConfig);
                 }
             } else {
@@ -398,15 +355,7 @@ public final class ApplicationFilterFactory {
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
+                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE) {
                         return true;
                 }
                 break;
@@ -419,15 +368,7 @@ public final class ApplicationFilterFactory {
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_INCLUDE ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
+                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE) {
                         return true;
                 }
                 break;
@@ -440,15 +381,7 @@ public final class ApplicationFilterFactory {
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE) {
+                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE) {
                         return true;
                 }
                 break;
@@ -461,36 +394,7 @@ public final class ApplicationFilterFactory {
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
                     filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE) {
-                        return true;
-                }
-                break;
-            }
-            case ASYNC : {
-                if (filterMap.getDispatcherMapping() == FilterMap.ASYNC ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
+                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE) {
                         return true;
                 }
                 break;

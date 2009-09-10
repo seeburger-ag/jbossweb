@@ -1,23 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.apache.coyote.ajp;
@@ -46,8 +41,6 @@ import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.HttpMessages;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.net.AprEndpoint;
-import org.apache.tomcat.util.net.SocketStatus;
-import org.apache.tomcat.util.net.AprEndpoint.Handler.SocketState;
 import org.apache.tomcat.util.res.StringManager;
 
 
@@ -170,6 +163,12 @@ public class AjpAprProcessor implements ActionHook {
 
 
     /**
+     * State flag.
+     */
+    protected boolean started = false;
+
+
+    /**
      * Error flag.
      */
     protected boolean error = false;
@@ -270,20 +269,6 @@ public class AjpAprProcessor implements ActionHook {
     protected static final ByteBuffer flushMessageBuffer;
 
 
-    /**
-     * Event used.
-     */
-    protected boolean event = false;
-    
-    
-    /**
-     * Event processing.
-     */
-    protected boolean eventProcessing = true;
-    public void startProcessing() { eventProcessing = true; }
-    public void endProcessing() { eventProcessing = false; }
-
-
     // ----------------------------------------------------- Static Initializer
 
 
@@ -341,21 +326,6 @@ public class AjpAprProcessor implements ActionHook {
     public void setRequiredSecret(String requiredSecret) { this.requiredSecret = requiredSecret; }
 
 
-    /**
-     * Timeout.
-     */
-    protected int timeout = -1;
-    public void setTimeout(int timeout) { this.timeout = timeout; }
-    public int getTimeout() { return timeout; }
-
-
-    /**
-     * A resume has been requested.
-     */
-    protected boolean resumeNotification = false;
-    public boolean getResumeNotification() { return resumeNotification; }
-
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -368,51 +338,13 @@ public class AjpAprProcessor implements ActionHook {
     }
 
 
-    public SocketState event(SocketStatus status)
-    throws IOException {
-
-        RequestInfo rp = request.getRequestProcessor();
-        try {
-            if (status == SocketStatus.OPEN_CALLBACK) {
-                // The resume notification is now done
-                resumeNotification = false;
-            } else if (status == SocketStatus.ERROR) {
-                // Set error flag right away
-                error = true;
-            }
-            rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
-            error = !adapter.event(request, response, status);
-        } catch (InterruptedIOException e) {
-            error = true;
-        } catch (Throwable t) {
-            log.error(sm.getString("http11processor.request.process"), t);
-            // 500 - Internal Server Error
-            response.setStatus(500);
-            error = true;
-        }
-
-        rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
-
-        if (error) {
-            recycle();
-            return SocketState.CLOSED;
-        } else if (!event) {
-            finish();
-            recycle();
-            return SocketState.OPEN;
-        } else {
-            return SocketState.LONG;
-        }
-    }
-
-
     /**
      * Process pipelined HTTP requests using the specified input and output
      * streams.
      *
      * @throws IOException error during an I/O operation
      */
-    public SocketState process(long socket)
+    public boolean process(long socket)
         throws IOException {
         RequestInfo rp = request.getRequestProcessor();
         rp.setStage(org.apache.coyote.Constants.STAGE_PARSE);
@@ -428,7 +360,7 @@ public class AjpAprProcessor implements ActionHook {
         boolean openSocket = true;
         boolean keptAlive = false;
 
-        while (!error && !event) {
+        while (started && !error) {
 
             // Parsing the request header
             try {
@@ -438,8 +370,6 @@ public class AjpAprProcessor implements ActionHook {
                     // (long keepalive), so that the processor should be recycled
                     // and the method should return true
                     rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
-                    // Add the socket to the poller
-                    endpoint.getPoller().add(socket);
                     break;
                 }
                 // Check message type, process right away and break if
@@ -498,7 +428,7 @@ public class AjpAprProcessor implements ActionHook {
             }
 
             // Finish the response if not done yet
-            if (!event && !finished) {
+            if (!finished) {
                 try {
                     finish();
                 } catch (Throwable t) {
@@ -513,28 +443,23 @@ public class AjpAprProcessor implements ActionHook {
             }
             request.updateCounters();
 
-            if (!event) {
-                recycle();
-            }
-
             rp.setStage(org.apache.coyote.Constants.STAGE_KEEPALIVE);
+            recycle();
 
+        }
+
+        // Add the socket to the poller
+        if (!error) {
+            endpoint.getPoller().add(socket);
+        } else {
+            openSocket = false;
         }
 
         rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
+        recycle();
 
-        if (event) {
-            if (error) {
-                recycle();
-                return SocketState.CLOSED;
-            } else {
-                eventProcessing = false;
-                return SocketState.LONG;
-            }
-        } else {
-            recycle();
-            return SocketState.CLOSED;
-        }
+        return openSocket;
+
     }
 
 
@@ -600,6 +525,14 @@ public class AjpAprProcessor implements ActionHook {
                 error = true;
             }
 
+        } else if (actionCode == ActionCode.ACTION_START) {
+
+            started = true;
+
+        } else if (actionCode == ActionCode.ACTION_STOP) {
+
+            started = false;
+
         } else if (actionCode == ActionCode.ACTION_REQ_SSL_ATTRIBUTE ) {
 
             if (!certificates.isNull()) {
@@ -661,21 +594,6 @@ public class AjpAprProcessor implements ActionHook {
             empty = false;
             replay = true;
 
-        } else if (actionCode == ActionCode.ACTION_EVENT_BEGIN) {
-            event = true;
-        } else if (actionCode == ActionCode.ACTION_EVENT_END) {
-            event = false;
-        } else if (actionCode == ActionCode.ACTION_EVENT_SUSPEND) {
-            // No action needed
-        } else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
-            // An event is being processed already: adding for resume will be done
-            // when the socket gets back to the poller
-            if (!eventProcessing && !resumeNotification) {
-                endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
-            }
-            resumeNotification = true;
-        } else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
-            timeout = ((Integer) param).intValue();
         }
 
 
@@ -1271,9 +1189,6 @@ public class AjpAprProcessor implements ActionHook {
         empty = true;
         replay = false;
         finished = false;
-        timeout = -1;
-        resumeNotification = false;
-        eventProcessing = true;
         request.recycle();
         response.recycle();
         certificates.recycle();

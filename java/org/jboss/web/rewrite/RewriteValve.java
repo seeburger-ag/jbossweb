@@ -53,6 +53,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
+import org.apache.tomcat.util.http.TomcatCookie;
 import org.apache.tomcat.util.net.URL;
 
 public class RewriteValve extends ValveBase
@@ -111,7 +112,7 @@ public class RewriteValve extends ValveBase
     public void start() throws LifecycleException {
 
         InputStream is = null;
-
+        
         // Process configuration file for this valve
         if (getContainer() instanceof Context) {
             context = true;
@@ -357,7 +358,7 @@ public class RewriteValve extends ValveBase
 
             // - cookie
             if (rules[i].isCookie() && newtest != null) {
-                Cookie cookie = new Cookie(rules[i].getCookieName(), 
+                TomcatCookie cookie = new TomcatCookie(rules[i].getCookieName(), 
                         rules[i].getCookieResult());
                 cookie.setDomain(rules[i].getCookieDomain());
                 cookie.setMaxAge(rules[i].getCookieLifetime());

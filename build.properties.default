@@ -10,9 +10,9 @@
 # -----------------------------------------------------------------------------
 
 # ----- Version Control Flags -----
-version.major=3
-version.minor=0
-version.build=0
+version.major=2
+version.minor=1
+version.build=4
 version.patch=0
 version.tag=SNAPSHOT
 
@@ -24,8 +24,8 @@ base.path=/usr/share/java
 #base.path=C:/path/to/the/repository
 #base.path=/usr/local
 
-compile.source=1.6
-compile.target=1.6
+compile.source=1.5
+compile.target=1.5
 compile.debug=true
 
 base-commons.loc=http://archive.apache.org/dist/commons
@@ -48,16 +48,23 @@ commons-dbcp.home=${base.path}/commons-dbcp-1.2.2-src
 commons-dbcp-src.loc=${base-commons.loc}/dbcp/source/commons-dbcp-1.2.2-src.tar.gz
 
 # ----- Commons Pool, version 1.1 or later -----
-commons-pool.home=${base.path}/commons-pool-1.5.2-src
-commons-pool-src.loc=${base-commons.loc}/pool/source/commons-pool-1.5.2-src.tar.gz
+commons-pool.home=${base.path}/commons-pool-1.4-src
+commons-pool-src.loc=${base-commons.loc}/pool/source/commons-pool-1.4-src.tar.gz
+
+# ----- Commons Collections, version 2.0 or later -----
+commons-collections.home=${base.path}/commons-collections-3.2.1-src
+commons-collections.lib=${commons-collections.home}
+commons-collections.jar=${commons-collections.lib}/commons-collections-3.2.1.jar
+commons-collections.loc=${base-jakarta.loc}/commons/collections/binaries/commons-collections-3.2.1.tar.gz
+commons-collections-src.loc=${base-commons.loc}/collections/source/commons-collections-3.2.1-src.tar.gz
 
 # ----- NSIS, version 2.0 or later -----
-nsis.home=${base.path}/nsis-2.44
+nsis.home=${base.path}/nsis-2.45
 nsis.exe=${nsis.home}/makensis.exe
 nsis.installoptions.dll=${nsis.home}/Plugins/InstallOptions.dll
 nsis.nsexec.dll=${nsis.home}/Plugins/nsExec.dll
 nsis.nsisdl.dll=${nsis.home}/Plugins/NSISdl.dll
-nsis.loc=${base-sf.loc}/nsis/nsis-2.44.zip
+nsis.loc=${base-sf.loc}/nsis/nsis-2.45.zip
 
 # ----- JBoss Native, version 2.0 or later -----
 jbossnative.home=${base.path}/jboss-native-2.0.6

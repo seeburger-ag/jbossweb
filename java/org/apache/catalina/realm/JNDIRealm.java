@@ -18,8 +18,6 @@
 package org.apache.catalina.realm;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -29,18 +27,19 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import javax.naming.AuthenticationException;
+import javax.naming.Context;
 import javax.naming.CommunicationException;
 import javax.naming.CompositeName;
-import javax.naming.Context;
 import javax.naming.InvalidNameException;
-import javax.naming.Name;
 import javax.naming.NameNotFoundException;
-import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.NameParser;
+import javax.naming.Name;
+import javax.naming.AuthenticationException;
 import javax.naming.PartialResultException;
 import javax.naming.ServiceUnavailableException;
 import javax.naming.directory.Attribute;
@@ -49,7 +48,6 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.util.Base64;
 import org.apache.tomcat.util.buf.ByteChunk;
@@ -144,10 +142,9 @@ import org.apache.tomcat.util.buf.CharChunk;
  * authenticated by setting the <code>commonRole</code> property to the
  * name of this role. The role doesn't have to exist in the directory.</li>
  *
- * <li>If the directory server contains nested roles, you can search for them
- * by setting <code>roleNested</code> to <code>true</code>.
- * The default value is <code>false</code>, so role searches will not find
- * nested roles.</li>
+ * <li>If the directory server contains nested roles, you can search for roles
+ * recursively by setting <code>roleRecursionLimit</code> to some positive value.
+ * The default value is <code>0</code>, so role searches do not recurse.</li>
  *
  * <li>Note that the standard <code>&lt;security-role-ref&gt;</code> element in
  *     the web application deployment descriptor allows applications to refer
@@ -320,6 +317,14 @@ public class JNDIRealm extends RealmBase {
      */
     protected MessageFormat[] userPatternFormatArray = null;
 
+
+    /**
+     * The maximum recursion depth when resolving roles recursively.
+     * By default we don't resolve roles recursively.
+     */
+    protected int roleRecursionLimit = 0;
+
+
     /**
      * The base element for role searches.
      */
@@ -357,12 +362,6 @@ public class JNDIRealm extends RealmBase {
      * Should we search the entire subtree for matching memberships?
      */
     protected boolean roleSubtree = false;
-    
-    /**
-     * Should we look for nested group in order to determine roles?
-     */
-    protected boolean roleNested = false;
-
 
     /**
      * An alternate URL, to which, we should connect if connectionURL fails.
@@ -653,6 +652,28 @@ public class JNDIRealm extends RealmBase {
 
 
     /**
+     * Return the maximum recursion depth for role searches.
+     */
+    public int getRoleRecursionLimit() {
+
+        return (this.roleRecursionLimit);
+
+    }
+
+
+    /**
+     * Set the maximum recursion depth for role searches.
+     *
+     * @param roleRecursionLimit The new recursion limit
+     */
+    public void setRoleRecursionLimit(int roleRecursionLimit) {
+
+        this.roleRecursionLimit = roleRecursionLimit;
+
+    }
+
+
+    /**
      * Return the base element for role searches.
      */
     public String getRoleBase() {
@@ -742,28 +763,6 @@ public class JNDIRealm extends RealmBase {
         this.roleSubtree = roleSubtree;
 
     }
-    
-    /**
-     * Return the "The nested group search flag" flag.
-     */
-    public boolean getRoleNested() {
-
-        return (this.roleNested);
-
-    }
-
-
-    /**
-     * Set the "search subtree for roles" flag.
-     *
-     * @param roleNested The nested group search flag
-     */
-    public void setRoleNested(boolean roleNested) {
-
-        this.roleNested = roleNested;
-
-    }
-     
 
 
     /**
@@ -1295,7 +1294,7 @@ public class JNDIRealm extends RealmBase {
             attrIds = new String[0];
         constraints.setReturningAttributes(attrIds);
 
-        NamingEnumeration<SearchResult> results =
+        NamingEnumeration results =
             context.search(userBase, filter, constraints);
 
 
@@ -1312,7 +1311,7 @@ public class JNDIRealm extends RealmBase {
         }
 
         // Get result for the first entry found
-        SearchResult result = results.next();
+        SearchResult result = (SearchResult)results.next();
 
         // Check no further entries were found
         try {
@@ -1420,10 +1419,10 @@ public class JNDIRealm extends RealmBase {
 
         boolean validated = false;
         if (hasMessageDigest()) {
-            // Some directories prefix the password with the hash type
+            // iPlanet support if the values starts with {SHA1}
             // The string is in a format compatible with Base64.encode not
             // the Hex encoding of the parent class.
-            if (password.startsWith("{MD5}") || password.startsWith("{SHA}")) {
+            if (password.startsWith("{SHA}")) {
                 /* sync since super.digest() does this same thing */
                 synchronized (this) {
                     password = password.substring(5);
@@ -1547,6 +1546,70 @@ public class JNDIRealm extends RealmBase {
         return (validated);
      }
 
+
+    /**
+     * Add roles to a user and search for other roles containing them themselves.
+     * We search recursively with a limited depth.
+     * By default the depth is 0, and we only use direct roles.
+     * The search needs to use the distinguished role names,
+     * but to return the role names.
+     *
+     * @param depth Recursion depth, starting at zero
+     * @param context The directory context we are searching
+     * @param recursiveMap The cumulative result map of role names and DNs.
+     * @param recursiveSet The cumulative result set of role names.
+     * @param groupName The role name to add to the list.
+     * @param groupDName The distinguished name of the role.
+     *
+     * @exception NamingException if a directory server error occurs
+     */
+    private void getRolesRecursive(int depth, DirContext context, Map<String, String> recursiveMap, Set<String> recursiveSet,
+                                     String groupName, String groupDName) throws NamingException {
+        if (containerLog.isTraceEnabled())
+            containerLog.trace("Recursive search depth " + depth + " for group '" + groupDName + " (" + groupName + ")'");
+        // Adding the given group to the result set if not already found
+        if (!recursiveSet.contains(groupDName)) {
+            recursiveSet.add(groupDName);
+            recursiveMap.put(groupDName, groupName);
+            if (depth >= roleRecursionLimit) {
+                if (roleRecursionLimit > 0)
+                    containerLog.warn("Terminating recursive role search because of recursion limit " +
+                                      roleRecursionLimit + ", results might be incomplete");
+                return;
+            }
+            // Prepare the parameters for searching groups
+            String filter = roleFormat.format(new String[] { groupDName });
+            SearchControls controls = new SearchControls();
+            controls.setSearchScope(roleSubtree ? SearchControls.SUBTREE_SCOPE : SearchControls.ONELEVEL_SCOPE);
+            controls.setReturningAttributes(new String[] { roleName });
+            if (containerLog.isTraceEnabled()) {
+                containerLog.trace("Recursive search in role base '" + roleBase + "' for attribute '" + roleName + "'" +
+                                   " with filter expression '" + filter + "'");
+            }
+            // Searching groups that assign the given group
+            NamingEnumeration results = context.search(roleBase, filter, controls);
+            if (results != null) {
+                // Iterate over the resulting groups
+                try {
+                    while (results.hasMore()) {
+                        SearchResult result = (SearchResult) results.next();
+                        Attributes attrs = result.getAttributes();
+                        if (attrs == null)
+                            continue;
+                        String dname = getDistinguishedName(context, roleBase, result);
+                        String name = getAttributeValue(roleName, attrs);
+                        if (name != null && dname != null) {
+                           getRolesRecursive(depth+1, context, recursiveMap, recursiveSet, name, dname);
+                        }
+                    }
+                } catch (PartialResultException ex) {
+                    if (!adCompat)
+                        throw ex;
+                }
+            }
+        }
+    }
+
     /**
      * Return a List of roles associated with the given User.  Any
      * roles present in the user's directory entry are supplemented by
@@ -1582,15 +1645,19 @@ public class JNDIRealm extends RealmBase {
             list.add(commonRole);
 
         if (containerLog.isTraceEnabled()) {
-            containerLog.trace("  Found " + list.size() + " user internal roles");
-            for (int i=0; i<list.size(); i++)
-                containerLog.trace(  "  Found user internal role " + list.get(i));
+            if (list != null) {
+                containerLog.trace("  Found " + list.size() + " user internal roles");
+                for (int i=0; i<list.size(); i++)
+                    containerLog.trace(  "  Found user internal role " + list.get(i));
+            } else {
+                containerLog.trace("  Found no user internal roles");
+            }
         }
 
         // Are we configured to do role searches?
         if ((roleFormat == null) || (roleName == null))
             return (list);
-        
+
         // Set up parameters for an appropriate search
         String filter = roleFormat.format(new String[] { doRFC2254Encoding(dn), username });
         SearchControls controls = new SearchControls();
@@ -1601,7 +1668,7 @@ public class JNDIRealm extends RealmBase {
         controls.setReturningAttributes(new String[] {roleName});
 
         // Perform the configured search and process the results
-        NamingEnumeration<SearchResult> results =
+        NamingEnumeration results =
             context.search(roleBase, filter, controls);
         if (results == null)
             return (list);  // Should never happen, but just in case ...
@@ -1609,7 +1676,7 @@ public class JNDIRealm extends RealmBase {
         HashMap<String, String> groupMap = new HashMap<String, String>();
         try {
             while (results.hasMore()) {
-                SearchResult result = results.next();
+                SearchResult result = (SearchResult) results.next();
                 Attributes attrs = result.getAttributes();
                 if (attrs == null)
                     continue;
@@ -1627,60 +1694,30 @@ public class JNDIRealm extends RealmBase {
         Set<String> keys = groupMap.keySet();
         if (containerLog.isTraceEnabled()) {
             containerLog.trace("  Found " + keys.size() + " direct roles");
-            for (String key: keys) {
-                containerLog.trace(  "  Found direct role " + key + " -> " + groupMap.get(key));
+            for (Iterator<String> i = keys.iterator(); i.hasNext();) {
+                Object k = i.next();
+                containerLog.trace(  "  Found direct role " + k + " -> " + groupMap.get(k));
             }
         }
 
-        // if nested group search is enabled, perform searches for nested groups until no new group is found
-        if (getRoleNested()) {
+        HashSet<String> recursiveSet = new HashSet<String>();
+        HashMap<String, String> recursiveMap = new HashMap<String, String>();
 
-            // The following efficient algorithm is known as memberOf Algorithm, as described in "Practices in 
-            // Directory Groups". It avoids group slurping and handles cyclic group memberships as well.
-            // See http://middleware.internet2.edu/dir/ for details
-
-            Set<String> newGroupDNs = new HashSet<String>(groupMap.keySet());
-            while (!newGroupDNs.isEmpty()) {
-                Set<String> newThisRound = new HashSet<String>(); // Stores the groups we find in this iteration
-
-                for (String groupDN : newGroupDNs) {
-                    filter = roleFormat.format(new String[] { groupDN });
-
-                    if (containerLog.isTraceEnabled()) {
-                        containerLog.trace("Perform a nested group search with base "+ roleBase + " and filter " + filter);
-                    }
-
-                    results = context.search(roleBase, filter, controls);
-
-                    try {
-                        while (results.hasMore()) {
-                            SearchResult result = results.next();
-                            Attributes attrs = result.getAttributes();
-                            if (attrs == null)
-                                continue;
-                            String dname = getDistinguishedName(context, roleBase, result);
-                            String name = getAttributeValue(roleName, attrs);
-                            if (name != null && dname != null && !groupMap.keySet().contains(dname)) {
-                                groupMap.put(dname, name);
-                                newThisRound.add(dname);
-
-                                if (containerLog.isTraceEnabled()) {
-                                    containerLog.trace("  Found nested role " + dname + " -> " + name);
-                                }
-
-                            }
-                         }
-                    } catch (PartialResultException ex) {
-                        if (!adCompat)
-                            throw ex;
-                    }
-                }
-
-                newGroupDNs = newThisRound;
-            }
+        for (Iterator<String> i = keys.iterator(); i.hasNext();) {
+            String k = i.next();
+            getRolesRecursive(0, context, recursiveMap, recursiveSet, groupMap.get(k), k);
         }
 
-        return new ArrayList<String>(groupMap.values());
+        HashSet<String> resultSet = new HashSet<String>(list);
+        resultSet.addAll(recursiveMap.values());
+
+        if (containerLog.isTraceEnabled()) {
+            containerLog.trace("  Returning " + resultSet.size() + " roles");
+            for (Iterator<String> i = resultSet.iterator(); i.hasNext();)
+                containerLog.trace(  "  Found role " + i.next());
+        }
+
+        return new ArrayList<String>(resultSet);
     }
 
 
@@ -1741,7 +1778,7 @@ public class JNDIRealm extends RealmBase {
         Attribute attr = attrs.get(attrId);
         if (attr == null)
             return (values);
-        NamingEnumeration<?> e = attr.getAll();
+        NamingEnumeration e = attr.getAll();
         try {
             while(e.hasMore()) {
                 String value = (String)e.next();
@@ -1932,7 +1969,7 @@ public class JNDIRealm extends RealmBase {
      *
      * @return java.util.Hashtable the configuration for the directory context.
      */
-    protected Hashtable<String,String> getDirectoryContextEnvironment() {
+    protected Hashtable getDirectoryContextEnvironment() {
 
         Hashtable<String,String> env = new Hashtable<String,String>();
 
@@ -1971,7 +2008,7 @@ public class JNDIRealm extends RealmBase {
      */
     protected void release(DirContext context) {
 
-        // NO-OP since we are not pooling anything
+        ; // NO-OP since we are not pooling anything
 
     }
 
@@ -2055,7 +2092,7 @@ public class JNDIRealm extends RealmBase {
                 startingPoint = endParenLoc+1;
                 startParenLoc = userPatternString.indexOf('(', startingPoint);
             }
-            return pathList.toArray(new String[] {});
+            return (String[])pathList.toArray(new String[] {});
         }
         return null;
 
@@ -2113,51 +2150,19 @@ public class JNDIRealm extends RealmBase {
      * @param result The search result
      * @return String containing the distinguished name
      */
-    protected String getDistinguishedName(DirContext context, String base,
-            SearchResult result) throws NamingException {
-        // Get the entry's distinguished name.  For relative results, this means
-        // we need to composite a name with the base name, the context name, and
-        // the result name.  For non-relative names, use the returned name.
-        if (result.isRelative()) {
-           if (containerLog.isTraceEnabled()) {
-               containerLog.trace("  search returned relative name: " +
-                       result.getName());
-           }
-           NameParser parser = context.getNameParser("");
-           Name contextName = parser.parse(context.getNameInNamespace());
-           Name baseName = parser.parse(base);
-   
-           // Bugzilla 32269
-           Name entryName =
-               parser.parse(new CompositeName(result.getName()).get(0));
-   
-           Name name = contextName.addAll(baseName);
-           name = name.addAll(entryName);
-           return name.toString();
-        } else {
-           String absoluteName = result.getName();
-           if (containerLog.isTraceEnabled())
-               containerLog.trace("  search returned absolute name: " +
-                       result.getName());
-           try {
-               // Normalize the name by running it through the name parser.
-               NameParser parser = context.getNameParser("");
-               URI userNameUri = new URI(absoluteName);
-               String pathComponent = userNameUri.getPath();
-               // Should not ever have an empty path component, since that is /{DN}
-               if (pathComponent.length() < 1 ) {
-                   throw new InvalidNameException(
-                           "Search returned unparseable absolute name: " +
-                           absoluteName );
-               }
-               Name name = parser.parse(pathComponent.substring(1));
-               return name.toString();
-           } catch ( URISyntaxException e ) {
-               throw new InvalidNameException(
-                       "Search returned unparseable absolute name: " +
-                       absoluteName );
-           }
-        }
+    protected String getDistinguishedName(DirContext context, String base, SearchResult result)
+        throws NamingException {
+        // Get the entry's distinguished name
+        NameParser parser = context.getNameParser("");
+        Name contextName = parser.parse(context.getNameInNamespace());
+        Name baseName = parser.parse(base);
+
+        // Bugzilla 32269
+        Name entryName = parser.parse(new CompositeName(result.getName()).get(0));
+
+        Name name = contextName.addAll(baseName);
+        name = name.addAll(entryName);
+        return name.toString();
     }
 
 

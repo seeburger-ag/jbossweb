@@ -33,6 +33,7 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.ErrorPage;
+import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.logging.Logger;
@@ -250,10 +251,10 @@ final class StandardHostValve
                 (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                  errorPage.getLocation());
             request.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    Integer.valueOf(ApplicationFilterFactory.ERROR));
+                              new Integer(ApplicationFilterFactory.ERROR));
             request.setAttribute
                 (Globals.STATUS_CODE_ATTR,
-                        Integer.valueOf(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
+                 new Integer(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
             request.setAttribute(Globals.ERROR_MESSAGE_ATTR,
                               throwable.getMessage());
             request.setAttribute(Globals.EXCEPTION_ATTR,
@@ -319,9 +320,9 @@ final class StandardHostValve
         if (errorPage != null) {
             response.setAppCommitted(false);
             request.setAttribute(Globals.STATUS_CODE_ATTR,
-                              Integer.valueOf(statusCode));
+                              new Integer(statusCode));
 
-            String message = response.getMessage();
+            String message = RequestUtil.filter(response.getMessage());
             if (message == null)
                 message = "";
             request.setAttribute(Globals.ERROR_MESSAGE_ATTR, message);
@@ -329,7 +330,7 @@ final class StandardHostValve
                 (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                  errorPage.getLocation());
             request.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    Integer.valueOf(ApplicationFilterFactory.ERROR));
+                              new Integer(ApplicationFilterFactory.ERROR));
 
 
             Wrapper wrapper = request.getWrapper();

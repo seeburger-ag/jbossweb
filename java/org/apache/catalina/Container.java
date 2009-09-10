@@ -335,23 +335,6 @@ public interface Container {
     public void setResources(DirContext resources);
 
 
-    /**
-     * Return the JarRepository with which this Container is associated.  
-     * If there is no associated JarRepository, return the JarRepository 
-     * associated with our parent Container (if any); 
-     * otherwise return <code>null</code>.
-     */
-    public JarRepository getJarRepository();
-
-
-    /**
-     * Set the JarRepository with which this Container is associated.
-     *
-     * @param jarRepository The newly associated JarRepository
-     */
-    public void setJarRepository(JarRepository jarRepository);
-
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -421,17 +404,6 @@ public interface Container {
      * array is returned.
      */
     public ContainerListener[] findContainerListeners();
-
-
-    /**
-     * Notify all container event listeners that a particular event has
-     * occurred for this Container.  The default implementation performs
-     * this notification synchronously using the calling thread.
-     *
-     * @param type Event type
-     * @param data Event data
-     */
-    public void fireContainerEvent(String type, Object data);
 
 
     /**

@@ -137,6 +137,18 @@ public class HostConfig
     
 
     /**
+     * Attribute value used to turn on/off XML validation
+     */
+    protected boolean xmlValidation = false;
+
+
+    /**
+     * Attribute value used to turn on/off XML namespace awarenes.
+     */
+    protected boolean xmlNamespaceAware = false;
+
+
+    /**
      * The <code>Digester</code> instance used to parse context descriptors.
      */
     protected static Digester digester = createDigester();
@@ -233,6 +245,44 @@ public class HostConfig
     }
     
     
+     /**
+     * Set the validation feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlValidation true to enable xml instance validation
+     */
+    public void setXmlValidation(boolean xmlValidation){
+        this.xmlValidation = xmlValidation;
+    }
+
+    /**
+     * Get the server.xml <host> attribute's xmlValidation.
+     * @return true if validation is enabled.
+     *
+     */
+    public boolean getXmlValidation(){
+        return xmlValidation;
+    }
+
+    /**
+     * Get the server.xml <host> attribute's xmlNamespaceAware.
+     * @return true if namespace awarenes is enabled.
+     *
+     */
+    public boolean getXmlNamespaceAware(){
+        return xmlNamespaceAware;
+    }
+
+
+    /**
+     * Set the namespace aware feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlNamespaceAware true to enable namespace awareness
+     */
+    public void setXmlNamespaceAware(boolean xmlNamespaceAware){
+        this.xmlNamespaceAware=xmlNamespaceAware;
+    }    
+
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -252,6 +302,8 @@ public class HostConfig
             if (host instanceof StandardHost) {
                 setDeployXML(((StandardHost) host).isDeployXML());
                 setUnpackWARs(((StandardHost) host).isUnpackWARs());
+                setXmlNamespaceAware(((StandardHost) host).getXmlNamespaceAware());
+                setXmlValidation(((StandardHost) host).getXmlValidation());
             }
         } catch (ClassCastException e) {
             log.error(sm.getString("hostConfig.cce", event.getLifecycle()), e);
@@ -779,6 +831,8 @@ public class HostConfig
                     }
                 }
                 context.setConfigFile(xml.getAbsolutePath());
+                deployedApp.redeployResources.put
+                    (xml.getAbsolutePath(), new Long(xml.lastModified()));
             } else {
                 context = (Context) Class.forName(contextClass).newInstance();
             }
@@ -786,11 +840,6 @@ public class HostConfig
             // Populate redeploy resources with the WAR file
             deployedApp.redeployResources.put
                 (war.getAbsolutePath(), new Long(war.lastModified()));
-
-            if (deployXML && xml.exists()) {
-                deployedApp.redeployResources.put
-                (xml.getAbsolutePath(), new Long(xml.lastModified()));
-            }
 
             if (context instanceof Lifecycle) {
                 Class<?> clazz = Class.forName(host.getConfigClass());
@@ -885,7 +934,6 @@ public class HostConfig
         try {
             Context context = null;
             File xml = new File(dir, Constants.ApplicationContextXml);
-            File xmlCopy = null;
             if (deployXML && xml.exists()) {
                 // Will only do this on initial deployment. On subsequent
                 // deployments the copied xml file means we'll use
@@ -903,7 +951,7 @@ public class HostConfig
                     }
                 }
                 configBase.mkdirs();
-                xmlCopy = new File(configBase(), file + ".xml");
+                File xmlCopy = new File(configBase, file + ".xml");
                 InputStream is = null;
                 OutputStream os = null;
                 try {
@@ -924,6 +972,8 @@ public class HostConfig
                     }
                 }
                 context.setConfigFile(xmlCopy.getAbsolutePath());
+                deployedApp.redeployResources.put
+                    (xmlCopy.getAbsolutePath(), new Long(xmlCopy.lastModified()));
             } else {
                 context = (Context) Class.forName(contextClass).newInstance();
             }
@@ -939,10 +989,6 @@ public class HostConfig
             host.addChild(context);
             deployedApp.redeployResources.put(dir.getAbsolutePath(),
                     new Long(dir.lastModified()));
-            if (xmlCopy != null) {
-                deployedApp.redeployResources.put
-                (xmlCopy.getAbsolutePath(), new Long(xmlCopy.lastModified()));
-            }
             addWatchedResources(deployedApp, dir.getAbsolutePath(), context);
         } catch (Throwable t) {
             log.error(sm.getString("hostConfig.deployDir.error", file), t);

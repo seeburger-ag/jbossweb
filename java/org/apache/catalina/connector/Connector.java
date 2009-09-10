@@ -256,7 +256,7 @@ public class Connector
      /**
       * Mapper listener.
       */
-     protected MapperListener mapperListener = new MapperListener(mapper, this);
+     protected MapperListener mapperListener = new MapperListener(mapper);
 
 
      /**
@@ -875,16 +875,6 @@ public class Connector
      */
     public boolean getXpoweredBy() {
         return xpoweredBy;
-    }
-
-
-    /**
-     * Indicates if the protocol handler support IO events.
-     *
-     * @return true if IO events are supported
-     */
-    public boolean hasIoEvents() {
-        return protocolHandler.hasIoEvents();
     }
 
 

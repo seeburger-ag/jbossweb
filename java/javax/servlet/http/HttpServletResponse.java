@@ -1,63 +1,23 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License. You can obtain
- * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
- * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
- * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
- * accompanied this code.  If applicable, add the following below the License
- * Header, with the fields enclosed by brackets [] replaced by your own
- * identifying information: "Portions Copyrighted [year]
- * [name of copyright owner]"
- *
- * Contributor(s):
- *
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 2004 The Apache Software Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package javax.servlet.http;
 
 import java.io.IOException;
-import java.util.Collection;
+
 import javax.servlet.ServletResponse;
 
 /**
@@ -72,6 +32,7 @@ import javax.servlet.ServletResponse;
  *
  * 
  * @author	Various
+ * @version	$Version$
  *
  * @see		javax.servlet.ServletResponse
  *
@@ -343,9 +304,9 @@ public interface HttpServletResponse extends ServletResponse {
      *
      * @see #sendError
      */
+
     public void setStatus(int sc);
   
-
     /**
      * @deprecated As of version 2.1, due to ambiguous meaning of the 
      * message parameter. To set a status code 
@@ -357,79 +318,8 @@ public interface HttpServletResponse extends ServletResponse {
      * @param	sc	the status code
      * @param	sm	the status message
      */
+
     public void setStatus(int sc, String sm);
-
-
-    /**
-     * Gets the current status code of this response.
-     *
-     * @return the current status code of this response
-     *
-     * @since Servlet 3.0
-     */
-    public int getStatus();
-
-
-    /**
-     * Gets the value of the response header with the given name.
-     * 
-     * <p>If a response header with the given name exists and contains
-     * multiple values, the value that was added first will be returned.
-     *
-     * <p>This method considers only response headers set or added via
-     * {@link #setHeader}, {@link #addHeader}, {@link #setDateHeader},
-     * {@link #addDateHeader}, {@link #setIntHeader}, or
-     * {@link #addIntHeader}, respectively.
-     *
-     * @param name the name of the response header whose value to return
-     *
-     * @return the value of the response header with the given name,
-     * or <tt>null</tt> if no header with the given name has been set
-     * on this response
-     *
-     * @since Servlet 3.0
-     */
-    public String getHeader(String name); 
-
-
-    /**
-     * Gets the values of the response header with the given name.
-     *
-     * <p>This method considers only response headers set or added via
-     * {@link #setHeader}, {@link #addHeader}, {@link #setDateHeader},
-     * {@link #addDateHeader}, {@link #setIntHeader}, or
-     * {@link #addIntHeader}, respectively.
-     *
-     * <p>Any changes to the returned <code>Collection</code> must not 
-     * affect this <code>HttpServletResponse</code>.
-     *
-     * @param name the name of the response header whose values to return
-     *
-     * @return a (possibly empty) <code>Collection</code> of the values
-     * of the response header with the given name
-     *
-     * @since Servlet 3.0
-     */			
-    public Collection<String> getHeaders(String name); 
-    
-
-    /**
-     * Gets the names of the headers of this response.
-     *
-     * <p>This method considers only response headers set or added via
-     * {@link #setHeader}, {@link #addHeader}, {@link #setDateHeader},
-     * {@link #addDateHeader}, {@link #setIntHeader}, or
-     * {@link #addIntHeader}, respectively.
-     *
-     * <p>Any changes to the returned <code>Collection</code> must not 
-     * affect this <code>HttpServletResponse</code>.
-     *
-     * @return a (possibly empty) <code>Collection</code> of the names
-     * of the headers of this response
-     *
-     * @since Servlet 3.0
-     */
-    public Collection<String> getHeaderNames();
 
     
     /*

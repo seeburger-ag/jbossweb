@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -52,11 +24,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.EventListener;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -65,29 +33,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.Binding;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
-import javax.servlet.descriptor.JspPropertyGroupDescriptor;
-import javax.servlet.descriptor.TaglibDescriptor;
 
-import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ApplicationParameter;
-import org.apache.catalina.deploy.FilterDef;
-import org.apache.catalina.deploy.JspPropertyGroup;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResourceSet;
@@ -845,311 +801,6 @@ public class ApplicationContext
     }
 
 
-    public FilterRegistration.Dynamic addFilter(String filterName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        // FIXME: restricted method
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        FilterDef filterDef = new FilterDef();
-        filterDef.setFilterName(filterName);
-        filterDef.setFilterClass(className);
-        ApplicationFilterConfig filterConfig = new ApplicationFilterConfig(context, filterDef);
-        filterConfig.setDynamic(true);
-        context.addApplicationFilterConfig(filterConfig);
-        return (FilterRegistration.Dynamic) filterConfig.getFacade();
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
-        // FIXME: restricted method
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        FilterDef filterDef = new FilterDef();
-        filterDef.setFilterName(filterName);
-        filterDef.setFilterClass(filter.getClass().getName());
-        ApplicationFilterConfig filterConfig = new ApplicationFilterConfig(context, filterDef);
-        filterConfig.setDynamic(true);
-        filterConfig.setFilter(filter);
-        context.addApplicationFilterConfig(filterConfig);
-        return (FilterRegistration.Dynamic) filterConfig.getFacade();
-    }
-
-
-    public FilterRegistration.Dynamic addFilter(String filterName,
-            Class<? extends Filter> filterClass) {
-        // FIXME: restricted method
-        return addFilter(filterName, filterClass.getName());
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName, String className)
-            throws IllegalArgumentException, IllegalStateException {
-        // FIXME: restricted method
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        Wrapper wrapper = context.createWrapper();
-        wrapper.setDynamic(true);
-        wrapper.setName(servletName);
-        wrapper.setServletClass(className);
-        context.addChild(wrapper);
-        return (ServletRegistration.Dynamic) wrapper.getFacade();
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName,
-            Class<? extends Servlet> clazz) throws IllegalArgumentException,
-            IllegalStateException {
-        // FIXME: restricted method
-        return addServlet(servletName, clazz.getName());
-    }
-
-
-    public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
-        // FIXME: restricted method
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        Wrapper wrapper = context.createWrapper();
-        wrapper.setDynamic(true);
-        wrapper.setName(servletName);
-        wrapper.setServletClass(servlet.getClass().getName());
-        wrapper.setServlet(servlet);
-        context.addChild(wrapper);
-        return (ServletRegistration.Dynamic) wrapper.getFacade();
-    }
-
-
-    public FilterRegistration getFilterRegistration(String filterName) {
-        // FIXME: restricted method
-        ApplicationFilterConfig filterConfig = context.findApplicationFilterConfig(filterName);
-        if (filterConfig == null) {
-            FilterDef filterDef = context.findFilterDef(filterName);
-            if (filterDef == null) {
-                return null;
-            } else {
-                filterConfig = new ApplicationFilterConfig(context, filterDef);
-                context.addApplicationFilterConfig(filterConfig);
-            }
-        }
-        return filterConfig.getFacade();
-    }
-
-
-    public ServletRegistration getServletRegistration(String servletName) {
-        // FIXME: restricted method
-        Wrapper wrapper = (Wrapper) context.findChild(servletName);
-        if (wrapper != null) {
-            return wrapper.getFacade();
-        } else {
-            return null;
-        }
-    }
-
-
-    public Map<String, FilterRegistration> getFilterRegistrations() {
-        // FIXME: restricted method
-        HashMap<String, FilterRegistration> result = 
-            new HashMap<String, FilterRegistration>();
-        ApplicationFilterConfig[] filterConfigs = context.findApplicationFilterConfigs();
-        for (int i = 0; i < filterConfigs.length; i++) {
-            result.put(filterConfigs[i].getFilterName(), filterConfigs[i].getFacade());
-        }
-        return Collections.unmodifiableMap(result);
-    }
-
-
-    public Map<String, ServletRegistration> getServletRegistrations() {
-        // FIXME: restricted method
-        HashMap<String, ServletRegistration> result = 
-            new HashMap<String, ServletRegistration>();
-        Container[] wrappers = context.findChildren();
-        for (int i = 0; i < wrappers.length; i++) {
-            Wrapper wrapper = (Wrapper) wrappers[i];
-            result.put(wrapper.getName(), wrapper.getFacade());
-        }
-        return Collections.unmodifiableMap(result);
-    }
-
-
-    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        // FIXME: restricted method
-        return context.getDefaultSessionTrackingModes();
-    }
-
-    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        // FIXME: restricted method
-        return context.getSessionTrackingModes();
-    }
-
-
-    public SessionCookieConfig getSessionCookieConfig() {
-        // FIXME: restricted method
-        return context.getSessionCookie();
-    }
-
-
-    public <T extends Filter> T createFilter(Class<T> c)
-            throws ServletException {
-        // FIXME: restricted method
-        try {
-            return (T) context.getInstanceManager().newInstance(c);
-        } catch (Throwable e) {
-            throw new ServletException
-                (sm.getString("applicationContext.create"), e);
-        }
-    }
-
-
-    public <T extends Servlet> T createServlet(Class<T> c)
-            throws ServletException {
-        // FIXME: restricted method
-        try {
-            return (T) context.getInstanceManager().newInstance(c);
-        } catch (Throwable e) {
-            throw new ServletException
-                (sm.getString("applicationContext.create"), e);
-        }
-    }
-
-
-    public boolean setInitParameter(String name, String value) {
-        // FIXME: restricted method
-        mergeParameters();
-        if (parameters.get(name) != null) {
-            return false;
-        } else {
-            parameters.put(name, value);
-            return true;
-        }
-    }
-
-
-    /**
-     * @throws IllegalStateException if the context has already been initialised
-     * @throws IllegalArgumentException TODO SERVLET3 Something to do with SSL
-     *                                  but the spec language is not clear
-     *                                  If an unsupported tracking mode is
-     *                                  requested
-     */
-    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
-        // FIXME: restricted method
-        if (context.getAvailable()) {
-            throw new IllegalStateException(
-                    sm.getString("applicationContext.setSessionTracking.ise",
-                            getContextPath()));
-        }
-        // Check that only supported tracking modes have been requested
-        for (SessionTrackingMode sessionTrackingMode : sessionTrackingModes) {
-            if (!getDefaultSessionTrackingModes().contains(sessionTrackingMode)) {
-                throw new IllegalArgumentException(sm.getString(
-                        "applicationContext.setSessionTracking.iae",
-                        sessionTrackingMode.toString(), getContextPath()));
-            }
-        }
-        // TODO: Possible SSL tracking mode
-        context.setSessionTrackingModes(sessionTrackingModes);
-    }
-
-
-    public void addListener(String className) {
-        // FIXME: restricted method
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        context.addApplicationListener(className);
-    }
-
-
-    public <T extends EventListener> void addListener(T listener) {
-        // FIXME: restricted method
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        context.addApplicationListenerInstance(listener);
-    }
-
-
-    public void addListener(Class<? extends EventListener> listenerClass) {
-        // FIXME: restricted method
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        try {
-            EventListener listenerInstance = 
-                (EventListener) context.getInstanceManager().newInstance(listenerClass);
-            context.addApplicationListenerInstance(listenerInstance);
-        } catch (Exception e) {
-            // FIXME: better error
-            throw new IllegalStateException(e);
-        }
-    }
-
-
-    public <T extends EventListener> T createListener(Class<T> clazz)
-            throws ServletException {
-        // FIXME: restricted method
-        if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
-        }
-        T listenerInstance = null;
-        try {
-            listenerInstance = (T) context.getInstanceManager().newInstance(clazz);
-        } catch (Exception e) {
-            // FIXME: better error
-            throw new ServletException(e);
-        }
-        return listenerInstance;
-    }
-
-
-    public ClassLoader getClassLoader() {
-        // FIXME: restricted method
-        return context.getLoader().getClassLoader();
-    }
-
-
-    public JspConfigDescriptor getJspConfigDescriptor() {
-        // FIXME: restricted method
-        ArrayList<TaglibDescriptor> taglibDescriptors = new ArrayList<TaglibDescriptor>();
-        String[] taglibURIs = context.findTaglibs();
-        for (int i = 0; i < taglibURIs.length; i++) {
-            String taglibLocation = context.findTaglib(taglibURIs[i]);
-            TaglibDescriptor taglibDescriptor = 
-                new TaglibDescriptorImpl(taglibURIs[i], taglibLocation);
-            taglibDescriptors.add(taglibDescriptor);
-        }
-        ArrayList<JspPropertyGroupDescriptor> jspPropertyGroupDescriptors = 
-            new ArrayList<JspPropertyGroupDescriptor>();
-        JspPropertyGroup[] jspPropertyGroups = context.findJspPropertyGroups();
-        for (int i = 0; i < jspPropertyGroups.length; i++) {
-            jspPropertyGroupDescriptors.add(jspPropertyGroups[i]);
-        }
-        return new JspConfigDescriptorImpl(jspPropertyGroupDescriptors, taglibDescriptors);
-    }
-
-
-    public int getEffectiveMajorVersion() {
-        // FIXME: restricted method
-        return context.getVersionMajor();
-    }
-
-
-    public int getEffectiveMinorVersion() {
-        // FIXME: restricted method
-        return context.getVersionMinor();
-    }
-
     // -------------------------------------------------------- Package Methods
     protected StandardContext getContext() {
         return this.context;
@@ -1288,51 +939,5 @@ public class ApplicationContext
         }
     }
 
-    
-    /**
-     * JSP config metadata class (not used for Jasper).
-     */
-    private static final class JspConfigDescriptorImpl implements JspConfigDescriptor {
-
-        private Collection<JspPropertyGroupDescriptor> jspPropertyGroups;
-        private Collection<TaglibDescriptor> taglibs;
-        public JspConfigDescriptorImpl(Collection<JspPropertyGroupDescriptor> jspPropertyGroups,
-                Collection<TaglibDescriptor> taglibs) {
-            this.jspPropertyGroups = jspPropertyGroups;
-            this.taglibs = taglibs;
-        }
-
-        public Collection<JspPropertyGroupDescriptor> getJspPropertyGroups() {
-            return jspPropertyGroups;
-        }
-
-        public Collection<TaglibDescriptor> getTaglibs() {
-            return taglibs;
-        }
-        
-    }
-    
-    /**
-     * JSP taglib descriptor metadata class (not used for Jasper).
-     */
-    private static final class TaglibDescriptorImpl implements TaglibDescriptor {
-
-        private String taglibLocation;
-        private String taglibURI;
-        
-        public TaglibDescriptorImpl(String taglibURI, String taglibLocation) {
-            this.taglibLocation = taglibLocation;
-            this.taglibURI = taglibURI;
-        }
-
-        public String getTaglibLocation() {
-            return taglibLocation;
-        }
-
-        public String getTaglibURI() {
-            return taglibURI;
-        }
-
-    }
 
 }

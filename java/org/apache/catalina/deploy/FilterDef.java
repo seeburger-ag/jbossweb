@@ -35,24 +35,7 @@ import java.io.Serializable;
 public class FilterDef implements Serializable {
 
 
-    private static final long serialVersionUID = 8703643991210305617L;
-
-
     // ------------------------------------------------------------- Properties
-
-
-    /**
-     * Async supported.
-     */
-    private boolean asyncSupported = false;
-
-    public boolean getAsyncSupported() {
-        return (this.asyncSupported);
-    }
-
-    public void setAsyncSupported(boolean asyncSupported) {
-        this.asyncSupported = asyncSupported;
-    }
 
 
     /**
@@ -130,10 +113,12 @@ public class FilterDef implements Serializable {
      * The set of initialization parameters for this filter, keyed by
      * parameter name.
      */
-    private Map<String, String> parameters = new HashMap<String, String>();
+    private Map parameters = new HashMap();
 
-    public Map<String, String> getParameterMap() {
+    public Map getParameterMap() {
+
         return (this.parameters);
+
     }
 
 
@@ -162,18 +147,9 @@ public class FilterDef implements Serializable {
      * @param value The initialization parameter value
      */
     public void addInitParameter(String name, String value) {
+
         parameters.put(name, value);
-    }
 
-
-    /**
-     * Add an initialization parameter to the set of parameters associated
-     * with this filter.
-     *
-     * @param name The initialization parameter name
-     */
-    public String getInitParameter(String name) {
-        return parameters.get(name);
     }
 
 

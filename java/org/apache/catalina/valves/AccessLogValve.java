@@ -856,7 +856,8 @@ public class AccessLogValve
         // Initialize the timeZone, Date formatters, and currentDate
         timezone = TimeZone.getDefault();
         timeZoneNoDST = calculateTimeZoneOffset(timezone.getRawOffset());
-        int offset = timezone.getDSTSavings();
+        Calendar calendar = Calendar.getInstance(timezone);
+        int offset = calendar.get(Calendar.DST_OFFSET);
         timeZoneDST = calculateTimeZoneOffset(timezone.getRawOffset() + offset);
 
         if (fileDateFormat == null || fileDateFormat.length() == 0)

@@ -19,11 +19,13 @@
 package org.apache.catalina.session;
 
 
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
@@ -52,10 +54,10 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.SessionEvent;
 import org.apache.catalina.SessionListener;
-import org.apache.catalina.realm.GenericPrincipal;
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.StringManager;
+
+import org.apache.catalina.security.SecurityUtil;
 
 /**
  * Standard implementation of the <b>Session</b> interface.  This object is
@@ -137,6 +139,24 @@ public class StandardSession
      * version of this object.
      */
     protected transient String authType = null;
+
+
+    /**
+     * The <code>java.lang.Method</code> for the
+     * <code>fireContainerEvent()</code> method of the
+     * <code>org.apache.catalina.core.StandardContext</code> method,
+     * if our Context implementation is of this class.  This value is
+     * computed dynamically the first time it is needed, or after
+     * a session reload (since it is declared transient).
+     */
+    protected transient Method containerEventMethod = null;
+
+
+    /**
+     * The method signature for the <code>fireContainerEvent</code> method.
+     */
+    protected static final Class containerEventTypes[] =
+    { String.class, Object.class };
 
 
     /**
@@ -249,6 +269,14 @@ public class StandardSession
 
 
     /**
+     * The property change support for this component.  NOTE:  This value
+     * is not included in the serialized version of this object.
+     */
+    protected transient PropertyChangeSupport support =
+        new PropertyChangeSupport(this);
+
+
+    /**
      * The current accessed time for this session.
      */
     protected int thisAccessedTime = 0;
@@ -282,7 +310,9 @@ public class StandardSession
      */
     public void setAuthType(String authType) {
 
+        String oldAuthType = this.authType;
         this.authType = authType;
+        support.firePropertyChange("authType", oldAuthType, this.authType);
 
     }
 
@@ -361,12 +391,18 @@ public class StandardSession
                 HttpSessionListener listener =
                     (HttpSessionListener) listeners[i];
                 try {
-                    context.fireContainerEvent("beforeSessionCreated", listener);
+                    fireContainerEvent(context,
+                                       "beforeSessionCreated",
+                                       listener);
                     listener.sessionCreated(event);
-                    context.fireContainerEvent("afterSessionCreated", listener);
+                    fireContainerEvent(context,
+                                       "afterSessionCreated",
+                                       listener);
                 } catch (Throwable t) {
                     try {
-                        context.fireContainerEvent("afterSessionCreated", listener);
+                        fireContainerEvent(context,
+                                           "afterSessionCreated",
+                                           listener);
                     } catch (Exception e) {
                         ;
                     }
@@ -390,31 +426,6 @@ public class StandardSession
 
     }
 
-
-    /**
-     * Return the last time the client sent a request associated with this
-     * session, as the number of milliseconds since midnight, January 1, 1970
-     * GMT.  Actions that your application takes, such as getting or setting
-     * a value associated with the session, do not affect the access time.
-     * This one gets updated whenever a request starts.
-     */
-    public long getThisAccessedTime() {
-
-        if (!isValidInternal()) {
-            throw new IllegalStateException
-                (sm.getString("standardSession.getThisAccessedTime.ise"));
-        }
-
-        return (this.thisAccessedTime);
-    }
-
-    /**
-     * Return the last client access time without invalidation check
-     * @see #getThisAccessedTime().
-     */
-    public long getThisAccessedTimeInternal() {
-        return (this.thisAccessedTime);
-    }
 
     /**
      * Return the last time the client sent a request associated with this
@@ -527,7 +538,9 @@ public class StandardSession
      */
     public void setPrincipal(Principal principal) {
 
+        Principal oldPrincipal = this.principal;
         this.principal = principal;
+        support.firePropertyChange("principal", oldPrincipal, this.principal);
 
     }
 
@@ -683,12 +696,18 @@ public class StandardSession
                     HttpSessionListener listener =
                         (HttpSessionListener) listeners[j];
                     try {
-                        context.fireContainerEvent("beforeSessionDestroyed", listener);
+                        fireContainerEvent(context,
+                                           "beforeSessionDestroyed",
+                                           listener);
                         listener.sessionDestroyed(event);
-                        context.fireContainerEvent("afterSessionDestroyed", listener);
+                        fireContainerEvent(context,
+                                           "afterSessionDestroyed",
+                                           listener);
                     } catch (Throwable t) {
                         try {
-                            context.fireContainerEvent("afterSessionDestroyed", listener);
+                            fireContainerEvent(context,
+                                               "afterSessionDestroyed",
+                                               listener);
                         } catch (Exception e) {
                             ;
                         }
@@ -726,18 +745,6 @@ public class StandardSession
             // Notify interested session event listeners
             if (notify) {
                 fireSessionEvent(Session.SESSION_DESTROYED_EVENT, null);
-            }
-
-            // Call the logout method
-            if (principal instanceof GenericPrincipal) {
-                GenericPrincipal gp = (GenericPrincipal) principal;
-                try {
-                    gp.logout();
-                } catch (Exception e) {
-                    manager.getContainer().getLogger().error(
-                            sm.getString("standardSession.logoutfail"),
-                            e);
-                }
             }
 
             // We have completed expire of this session
@@ -1337,33 +1344,39 @@ public class StandardSession
                 (HttpSessionAttributeListener) listeners[i];
             try {
                 if (unbound != null) {
-                    context.fireContainerEvent("beforeSessionAttributeReplaced",
+                    fireContainerEvent(context,
+                                       "beforeSessionAttributeReplaced",
                                        listener);
                     if (event == null) {
                         event = new HttpSessionBindingEvent
                             (getSession(), name, unbound);
                     }
                     listener.attributeReplaced(event);
-                    context.fireContainerEvent("afterSessionAttributeReplaced",
+                    fireContainerEvent(context,
+                                       "afterSessionAttributeReplaced",
                                        listener);
                 } else {
-                    context.fireContainerEvent("beforeSessionAttributeAdded",
+                    fireContainerEvent(context,
+                                       "beforeSessionAttributeAdded",
                                        listener);
                     if (event == null) {
                         event = new HttpSessionBindingEvent
                             (getSession(), name, value);
                     }
                     listener.attributeAdded(event);
-                    context.fireContainerEvent("afterSessionAttributeAdded",
+                    fireContainerEvent(context,
+                                       "afterSessionAttributeAdded",
                                        listener);
                 }
             } catch (Throwable t) {
                 try {
                     if (unbound != null) {
-                        context.fireContainerEvent("afterSessionAttributeReplaced",
+                        fireContainerEvent(context,
+                                           "afterSessionAttributeReplaced",
                                            listener);
                     } else {
-                        context.fireContainerEvent("afterSessionAttributeAdded",
+                        fireContainerEvent(context,
+                                           "afterSessionAttributeAdded",
                                            listener);
                     }
                 } catch (Exception e) {
@@ -1535,6 +1548,39 @@ public class StandardSession
 
 
     /**
+     * Fire container events if the Context implementation is the
+     * <code>org.apache.catalina.core.StandardContext</code>.
+     *
+     * @param context Context for which to fire events
+     * @param type Event type
+     * @param data Event data
+     *
+     * @exception Exception occurred during event firing
+     */
+    protected void fireContainerEvent(Context context,
+                                    String type, Object data)
+        throws Exception {
+
+        if (!"org.apache.catalina.core.StandardContext".equals
+            (context.getClass().getName())) {
+            return; // Container events are not supported
+        }
+        // NOTE:  Race condition is harmless, so do not synchronize
+        if (containerEventMethod == null) {
+            containerEventMethod =
+                context.getClass().getMethod("fireContainerEvent",
+                                             containerEventTypes);
+        }
+        Object containerEventParams[] = new Object[2];
+        containerEventParams[0] = type;
+        containerEventParams[1] = data;
+        containerEventMethod.invoke(context, containerEventParams);
+
+    }
+                                      
+
+
+    /**
      * Notify all session event listeners that a particular event has
      * occurred for this Session.  The default implementation performs
      * this notification synchronously using the calling thread.
@@ -1614,18 +1660,21 @@ public class StandardSession
             HttpSessionAttributeListener listener =
                 (HttpSessionAttributeListener) listeners[i];
             try {
-                context.fireContainerEvent("beforeSessionAttributeRemoved",
+                fireContainerEvent(context,
+                                   "beforeSessionAttributeRemoved",
                                    listener);
                 if (event == null) {
                     event = new HttpSessionBindingEvent
                         (getSession(), name, value);
                 }
                 listener.attributeRemoved(event);
-                context.fireContainerEvent("afterSessionAttributeRemoved",
+                fireContainerEvent(context,
+                                   "afterSessionAttributeRemoved",
                                    listener);
             } catch (Throwable t) {
                 try {
-                    context.fireContainerEvent("afterSessionAttributeRemoved",
+                    fireContainerEvent(context,
+                                       "afterSessionAttributeRemoved",
                                        listener);
                 } catch (Exception e) {
                     ;

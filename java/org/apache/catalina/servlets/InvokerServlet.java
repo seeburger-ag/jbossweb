@@ -283,7 +283,7 @@ public final class InvokerServlet
 
         // Synchronize to avoid race conditions when multiple requests
         // try to initialize the same servlet at the same time
-        synchronized (context) {
+        synchronized (this) {
 
             // Are we referencing an existing servlet class or name?
             wrapper = (Wrapper) context.findChild(servletClass);
@@ -361,10 +361,8 @@ public final class InvokerServlet
             instance = wrapper.allocate();
         } catch (ServletException e) {
             log(sm.getString("invokerServlet.allocate", inRequestURI), e);
-            synchronized (context) {
-                context.removeServletMapping(pattern);
-                context.removeChild(wrapper);
-            }
+            context.removeServletMapping(pattern);
+            context.removeChild(wrapper);
             Throwable rootCause = e.getRootCause();
             if (rootCause == null)
                 rootCause = e;

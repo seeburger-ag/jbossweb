@@ -1,23 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.apache.coyote.http11;
@@ -36,6 +31,7 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
@@ -98,11 +94,6 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     protected Adapter adapter;
     public void setAdapter(Adapter adapter) { this.adapter = adapter; }
     public Adapter getAdapter() { return adapter; }
-
-
-    public boolean hasIoEvents() {
-        return true;
-    }
 
 
     /** Start the protocol
@@ -579,7 +570,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         }
                     } else {
                         if (proto.endpoint.isRunning()) {
-                            proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
+                            proto.endpoint.getCometPoller().add(socket, result.getCometTimeout(), 
                                     result.getReadNotifications(), result.getWriteNotification(), result.getResumeNotification(), false);
                         }
                     }
@@ -596,6 +587,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     processor = createProcessor();
                 }
 
+                processor.action(ActionCode.ACTION_START, null);
+
                 SocketState state = processor.process(socket);
                 if (state == SocketState.LONG) {
                     // Associate the connection with the processor. The next request 
@@ -606,8 +599,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         // Call a read event right away
                         state = event(socket, SocketStatus.OPEN_READ);
                     } else {
-                        proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), 
-                                processor.getReadNotifications(), false, processor.getResumeNotification(), false);
+                        proto.endpoint.getCometPoller().add(socket, processor.getCometTimeout(), 
+                                processor.getReadNotifications(), false, false, false);
                     }
                 } else {
                     recycledProcessors.offer(processor);

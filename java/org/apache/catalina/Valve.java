@@ -133,7 +133,7 @@ public interface Valve {
 
     
     /**
-     * Process an event.
+     * Process a Comet event.
      *
      * @param request The servlet request to be processed
      * @param response The servlet response to be created

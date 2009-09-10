@@ -67,30 +67,30 @@
       <p>The URL for the catalina.properties configuration file.</p>
     </property>
 
-    <property name="org.apache.tomcat.tomcat.util.buf.StringCache.byte.enabled">
+    <property name="tomcat.util.buf.StringCache.byte.enabled">
       <p>If <code>true</code>, the String cache is enabled for
       <code>ByteChunk</code>. If not specified, the default value of
       <code>false</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.tomcat.util.buf.StringCache.char.enabled">
+    <property name="tomcat.util.buf.StringCache.char.enabled">
       <p>If <code>true</code>, the String cache is enabled for
       <code>CharChunk</code>. If not specified, the default value of
       <code>false</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.tomcat.util.buf.StringCache.trainThreshold">
+    <property name="tomcat.util.buf.StringCache.trainThreshold">
       <p>The number of times <code>toString()</code> must be called before the
       cache is activated. If not specified, the default value of
       <code>20000</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.tomcat.util.buf.StringCache.cacheSize">
+    <property name="tomcat.util.buf.StringCache.cacheSize">
       <p>The size of the String cache. If not specified, the default value of
       <code>200</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.tomcat.util.buf.StringCache.maxStringSize">
+    <property name="tomcat.util.buf.StringCache.maxStringSize">
       <p>The maximum length of String that will be cached. If not specified, the
       default value of <code>128</code> will be used.</p>
     </property>
@@ -99,7 +99,6 @@
       <p>The size of the cache to use parsed and formatted date value. If not
       specified, the default value of <code>1000</code> will be used.</p>
     </property>
-
     <property name="org.apache.catalina.core. StandardService.DELAY_CONNECTOR_STARTUP">
       <p>If <code>true</code>, the connector startup will not be done automatically. Useful
       in embedded mode.</p>
@@ -118,12 +117,6 @@
       ISO-8859-1 encoded, particularly if user provided input is included in
       the message, to prevent a possible XSS vulnerability. If not specified
       the default value of <code>false</code> will be used.</p>
-    </property>
-
-    <property name="org.apache.tomcat.util. http.ServerCookie.VERSION_SWITCH">
-      <p>If using cookie values which have to be quoted to be valid and v0 cookies,
-      this will cause an automatic switch to v1 cookies. If not
-      specified, the default value of <code>true</code> will be used.</p>
     </property>
 
   </properties>
@@ -309,14 +302,6 @@
       </li>
       </ul>
       </p>
-    </property>
-
-    <property name="org.apache.catalina.core. StandardWrapperValve.SERVLET_STATS">
-      <p>If <code>true</code> or if
-      <code>org.apache.catalina.STRICT_SERVLET_COMPLIANCE</code> is
-      <code>true</code>, the wrapper will collect the JSR-77 statistics for
-      individual servlets. If not specified, the
-      default value of <code>false</code> will be used.</p>
     </property>
 
     <property
