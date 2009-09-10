@@ -43,7 +43,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.SingleThreadModel;
 import javax.servlet.UnavailableException;
-import javax.servlet.annotation.MultipartConfig;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
@@ -53,6 +52,7 @@ import org.apache.catalina.InstanceEvent;
 import org.apache.catalina.InstanceListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
+import org.apache.catalina.deploy.Multipart;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
@@ -190,7 +190,7 @@ public class StandardWrapper
     /**
      * The multipart config annotation configured on this servlet.
      */
-    protected MultipartConfig multipartConfig = null;
+    protected Multipart multipartConfig = null;
 
 
     /**
@@ -544,7 +544,7 @@ public class StandardWrapper
     /**
      * Multipart configuration for this Servlet.
      */
-    public MultipartConfig getMultipartConfig() {
+    public Multipart getMultipartConfig() {
         return multipartConfig;
     }
     
@@ -552,7 +552,7 @@ public class StandardWrapper
     /**
      * Set the multipart configuration for this Servlet.
      */
-    public void setMultipartConfig(MultipartConfig multipartConfig) {
+    public void setMultipartConfig(Multipart multipartConfig) {
         this.multipartConfig = multipartConfig;
     }
     

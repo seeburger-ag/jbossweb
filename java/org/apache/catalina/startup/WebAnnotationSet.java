@@ -32,6 +32,8 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.annotation.security.RunAs;
 import javax.annotation.security.TransportProtected;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +48,7 @@ import org.apache.catalina.deploy.ContextResourceEnvRef;
 import org.apache.catalina.deploy.ContextService;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.MessageDestinationRef;
+import org.apache.catalina.deploy.Multipart;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
 
@@ -95,7 +98,7 @@ public class WebAnnotationSet {
     protected static void loadApplicationFilterAnnotations(Context context) {
         FilterDef[] filterDefs = context.findFilterDefs();
         for (int i = 0; i < filterDefs.length; i++) {
-            loadClassAnnotation(context, (filterDefs[i]).getFilterClass());
+            loadClassAnnotation(context, filterDefs[i].getFilterClass());
         }
     }
     
@@ -107,7 +110,7 @@ public class WebAnnotationSet {
         
         ClassLoader classLoader = context.getLoader().getClassLoader();
         StandardWrapper wrapper = null;
-        Class classClass = null;
+        Class<?> classClass = null;
         
         Container[] children = context.findChildren();
         for (int i = 0; i < children.length; i++) {
@@ -131,7 +134,19 @@ public class WebAnnotationSet {
                 }
                 
                 loadClassAnnotation(context, wrapper.getServletClass());
-                
+
+                // Multipart configuration annotation
+                if (classClass.isAnnotationPresent(MultipartConfig.class)) {
+                    MultipartConfig annotation = 
+                        (MultipartConfig) classClass.getAnnotation(MultipartConfig.class);
+                    Multipart multipartConfig = new Multipart();
+                    multipartConfig.setLocation(annotation.location());
+                    multipartConfig.setMaxRequestSize(annotation.maxFileSize());
+                    multipartConfig.setMaxFileSize(annotation.maxFileSize());
+                    multipartConfig.setFileSizeThreshold(annotation.fileSizeThreshold());
+                    wrapper.setMultipartConfig(multipartConfig);
+                }
+
                 // Process JSR 250 access control annotations
                 // Process PermitAll, TransportProtected and RolesAllowed on the class
                 boolean classPA = false, classTP = false;
@@ -278,7 +293,7 @@ public class WebAnnotationSet {
     protected static void loadClassAnnotation(Context context, String fileString) {
         
         ClassLoader classLoader = context.getLoader().getClassLoader();
-        Class classClass = null;
+        Class<?> classClass = null;
         
         try {
             classClass = classLoader.loadClass(fileString);

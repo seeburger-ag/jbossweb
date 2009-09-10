@@ -27,8 +27,8 @@ import java.io.Serializable;
 public class Multipart implements Serializable {
 
     protected String location = null;
-    protected long maxFileSize = 0;
-    protected long maxRequestSize = 0;
+    protected long maxFileSize = -1;
+    protected long maxRequestSize = -1;
     protected int fileSizeThreshold = 0;
     
     public String getLocation() {

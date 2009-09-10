@@ -77,7 +77,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestAttributeEvent;
 import javax.servlet.ServletRequestAttributeListener;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -96,6 +95,7 @@ import org.apache.catalina.core.ApplicationFilterChain;
 import org.apache.catalina.core.ApplicationFilterConfig;
 import org.apache.catalina.core.ApplicationFilterFactory;
 import org.apache.catalina.deploy.FilterDef;
+import org.apache.catalina.deploy.Multipart;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.ParameterMap;
@@ -2758,7 +2758,7 @@ public class Request
      */
     protected void parseMultipart() {
         
-        MultipartConfig config = wrapper.getMultipartConfig();
+        Multipart config = wrapper.getMultipartConfig();
         if (config == null) {
             return;
         }
@@ -2782,14 +2782,17 @@ public class Request
             return;
 
         DiskFileUpload fu = new DiskFileUpload();
-        fu.setRepositoryPath(config.location());
-        if (config.fileSizeThreshold() > 0) {
-            fu.setSizeThreshold(config.fileSizeThreshold());
+        fu.setRepositoryPath(config.getLocation());
+        if (config.getFileSizeThreshold() > 0) {
+            fu.setSizeThreshold(config.getFileSizeThreshold());
         }
-        if (config.maxRequestSize() > 0) {
-            fu.setSizeMax(config.maxRequestSize());
+        if (config.getMaxRequestSize() > 0) {
+            fu.setSizeMax(config.getMaxRequestSize());
         }
-        // FIXME: Unimplemented per file max size: fu.setSizeFileMax(config.maxFileSize());
+        if (config.getMaxFileSize() > 0) {
+            // FIXME: Unimplemented per file max size
+            //fu.setSizeFileMax(config.getMaxFileSize());
+        }
 
         parts = new HashMap<String, Part>();
         try {

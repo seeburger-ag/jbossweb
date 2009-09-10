@@ -23,8 +23,8 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.UnavailableException;
-import javax.servlet.annotation.MultipartConfig;
 
+import org.apache.catalina.deploy.Multipart;
 import org.apache.catalina.util.InstanceSupport;
 
 
@@ -172,13 +172,13 @@ public interface Wrapper extends Container {
     /**
      * Multipart configuration for this Servlet.
      */
-    public MultipartConfig getMultipartConfig();
+    public Multipart getMultipartConfig();
     
 
     /**
      * Set the multipart configuration for this Servlet.
      */
-    public void setMultipartConfig(MultipartConfig multipartConfig);
+    public void setMultipartConfig(Multipart multipartConfig);
     
 
     /**

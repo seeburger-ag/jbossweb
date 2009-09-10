@@ -430,15 +430,6 @@ public class ContextConfig
      */
     protected void processConfigAnnotations(Class<?> clazz) {
 
-        if (clazz.isAnnotationPresent(WebInitParam.class)) {
-            WebInitParam annotation = clazz.getAnnotation(WebInitParam.class);
-            // Add init param
-            context.addParameter(annotation.name(), annotation.value());
-        }
-        if (clazz.isAnnotationPresent(MultipartConfig.class)) {
-            MultipartConfig annotation = clazz.getAnnotation(MultipartConfig.class);
-            // FIXME: Do something ....
-        }
         if (clazz.isAnnotationPresent(WebFilter.class)) {
             WebFilter annotation = clazz.getAnnotation(WebFilter.class);
             // Add servlet filter
@@ -493,7 +484,6 @@ public class ContextConfig
             }
         }
         if (clazz.isAnnotationPresent(WebListener.class)) {
-            WebListener annotation = clazz.getAnnotation(WebListener.class);
             // Add listener
             context.addApplicationListener(clazz.getName());
         }
