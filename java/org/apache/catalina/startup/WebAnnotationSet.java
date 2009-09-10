@@ -33,7 +33,6 @@ import javax.annotation.security.RolesAllowed;
 import javax.annotation.security.RunAs;
 import javax.annotation.security.TransportProtected;
 import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -141,7 +140,7 @@ public class WebAnnotationSet {
                         (MultipartConfig) classClass.getAnnotation(MultipartConfig.class);
                     Multipart multipartConfig = new Multipart();
                     multipartConfig.setLocation(annotation.location());
-                    multipartConfig.setMaxRequestSize(annotation.maxFileSize());
+                    multipartConfig.setMaxRequestSize(annotation.maxRequestSize());
                     multipartConfig.setMaxFileSize(annotation.maxFileSize());
                     multipartConfig.setFileSizeThreshold(annotation.fileSizeThreshold());
                     wrapper.setMultipartConfig(multipartConfig);
