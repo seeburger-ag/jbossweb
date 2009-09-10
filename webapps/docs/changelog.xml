@@ -19,6 +19,9 @@
 <section name="JBoss Web 2.1.4.GA (remm)">
   <subsection name="General">
     <changelog>
+      <update>
+        NSIS 2.45. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
