@@ -406,6 +406,7 @@ final class StandardWrapperValve
                     || event.getType() == EventType.TIMEOUT) {
                 // Invoke the listeners with onComplete or onTimeout
                 boolean timeout = (event.getType() == EventType.TIMEOUT) ? true : false;
+                boolean error = (event.getType() == EventType.ERROR) ? true : false;
                 Iterator<AsyncEvent> asyncEvents = asyncContext.getAsyncListeners().keySet().iterator();
                 if (timeout && !asyncEvents.hasNext()) {
                     // FIXME: MUST do an ERROR dispatch to the original URI and MUST set the response code to 500
@@ -416,6 +417,11 @@ final class StandardWrapperValve
                     try {
                         if (timeout) {
                             asyncListener.onTimeout(asyncEvent);
+                        } else if (error) {
+                            Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
+                            AsyncEvent asyncEvent2 = new AsyncEvent(asyncEvent.getAsyncContext(), 
+                                    asyncEvent.getSuppliedRequest(), asyncEvent.getSuppliedResponse(), t);
+                            asyncListener.onError(asyncEvent2);
                         } else {
                             asyncListener.onComplete(asyncEvent);
                         }
@@ -455,6 +461,7 @@ final class StandardWrapperValve
                     container.getLogger().error(sm.getString("standardWrapper.async.dispatchError",
                             getContainer().getName()), e);
                     exception(request, response, e);
+                    // TODO: the exception must be sent to error
                 }
                 // If there is no new startAsync, then close the response
                 if (!asyncContext.isReady()) {

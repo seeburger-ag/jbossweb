@@ -2974,7 +2974,7 @@ public class Request
 
     public void addAsyncListener(AsyncListener listener,
             ServletRequest servletRequest, ServletResponse servletResponse) {
-        AsyncEvent event = new AsyncEvent(servletRequest, servletResponse);
+        AsyncEvent event = new AsyncEvent(asyncContext, servletRequest, servletResponse);
         asyncListeners.put(event, listener);
     }
 
