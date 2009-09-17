@@ -152,6 +152,9 @@
       <fix>
         Add flag to set Expires for cookie expiration on IE. (markt)
       </fix>
+      <fix>
+        <bug>47225</bug>: Fix bad length when redirecting in the mapper. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
