@@ -19,27 +19,13 @@
 package org.apache.catalina.startup;
 
 
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-
 import javax.annotation.Resource;
 import javax.annotation.Resources;
 import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.annotation.security.RunAs;
-import javax.annotation.security.TransportProtected;
 import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
 import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.deploy.ContextEnvironment;
 import org.apache.catalina.deploy.ContextResource;
@@ -48,8 +34,6 @@ import org.apache.catalina.deploy.ContextService;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.MessageDestinationRef;
 import org.apache.catalina.deploy.Multipart;
-import org.apache.catalina.deploy.SecurityCollection;
-import org.apache.catalina.deploy.SecurityConstraint;
 
 /**
  * <p><strong>AnnotationSet</strong> for processing the annotations of the web application
@@ -148,6 +132,7 @@ public class WebAnnotationSet {
 
                 // Process JSR 250 access control annotations
                 // Process PermitAll, TransportProtected and RolesAllowed on the class
+                /*
                 boolean classPA = false, classTP = false;
                 String[] classRA = null;
                 ArrayList<String> methodOmissions = new ArrayList<String>();
@@ -278,7 +263,7 @@ public class WebAnnotationSet {
                     constraint.addCollection(collection);
                     context.addConstraint(constraint);
                 }
-                
+                */
             }
         }
         
