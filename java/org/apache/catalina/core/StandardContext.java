@@ -218,6 +218,14 @@ public class StandardContext
 
     /**
      * The set of application listener class names configured for this
+     * application that have been added from TLDs, and have a limited access to
+     * the servlet context.
+     */
+    protected HashSet<String> restrictedApplicationListeners = new HashSet<String>();
+
+
+    /**
+     * The set of application listener class names configured for this
      * application, in the order they were encountered in the web.xml file.
      */
     protected EventListener applicationListenerInstances[] = new EventListener[0];
@@ -2062,15 +2070,41 @@ public class StandardContext
      * @param listener Java class name of a listener class
      */
     public void addApplicationListener(String listener) {
+        addApplicationListener(listener, false);
+    }
+
+
+    /**
+     * Add a new Listener class name to the set of Listeners
+     * configured for this application.
+     *
+     * @param listener Java class name of a listener class
+     */
+    protected void addApplicationListener(String listener, boolean restricted) {
         String results[] = new String[applicationListeners.length + 1];
         for (int i = 0; i < applicationListeners.length; i++) {
             if (listener.equals(applicationListeners[i])) {
                 log.info(sm.getString("standardContext.duplicateListener", listener));
+                if (!restricted && restrictedApplicationListeners.contains(listener)) {
+                    restrictedApplicationListeners.remove(listener);
+                }
                 return;
             }
             results[i] = applicationListeners[i];
         }
         results[applicationListeners.length] = listener;
+        if (restricted && !restrictedApplicationListeners.contains(listener)) {
+            boolean found = false;
+            for (String check : applicationListeners) {
+                if (check.equals(listener)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                restrictedApplicationListeners.add(listener);
+            }
+        }
         applicationListeners = results;
         fireContainerEvent("addApplicationListener", listener);
     }
@@ -2418,9 +2452,8 @@ public class StandardContext
         // Add listeners specified by the taglib
         String[] listeners = tagLibraryInfo.getListeners();
         for (int i = 0; i < listeners.length; i++) {
-            addApplicationListener(listeners[i]);
+            addApplicationListener(listeners[i], true);
         }
-        //System.out.println("Add TLD for URI: " + tagLibraryInfo.getUri() + " " + tagLibraryInfo);
         jspTagLibraries.put(tagLibraryInfo.getUri(), tagLibraryInfo);
     }
 
@@ -2432,7 +2465,6 @@ public class StandardContext
      * @param tagLibrayInfo the tag library info that will be added
      */
     public void addJspTagLibrary(String uri, TagLibraryInfo tagLibraryInfo) {
-        //System.out.println("Add TLD for implicit URI: " + uri + " " + tagLibraryInfo);
         jspTagLibraries.put(uri, tagLibraryInfo);
     }
 
@@ -3834,6 +3866,7 @@ public class StandardContext
             ServletContextListener listener =
                 (ServletContextListener) instances[i];
             try {
+                context.setRestricted(isRestricted(listener));
                 fireContainerEvent("beforeContextInitialized", listener);
                 listener.contextInitialized(event);
                 fireContainerEvent("afterContextInitialized", listener);
@@ -3843,6 +3876,8 @@ public class StandardContext
                     (sm.getString("standardContext.listenerStart",
                                   instances[i].getClass().getName()), t);
                 ok = false;
+            } finally {
+                context.setRestricted(false);
             }
         }
         return (ok);
@@ -4651,6 +4686,14 @@ public class StandardContext
 
 
     /**
+     * Is the specified listener restricted ?
+     */
+    protected boolean isRestricted(Object listener) {
+        return restrictedApplicationListeners.contains(listener.getClass().getName());
+    }
+
+
+   /**
      * Are we processing a version 2.2 deployment descriptor?
      */
     protected boolean isServlet22() {

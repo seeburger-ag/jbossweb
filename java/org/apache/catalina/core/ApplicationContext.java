@@ -188,6 +188,12 @@ public class ApplicationContext
     private ThreadLocal<DispatchData> dispatchData =
         new ThreadLocal<DispatchData>();
 
+    
+    /**
+     * The restricted flag.
+     */
+    private boolean restricted = false;
+    
 
     // --------------------------------------------------------- Public Methods
 
@@ -201,6 +207,16 @@ public class ApplicationContext
 
         return context.getResources();
 
+    }
+
+
+    public boolean isRestricted() {
+        return restricted;
+    }
+
+
+    public void setRestricted(boolean restricted) {
+        this.restricted = restricted;
     }
 
 
@@ -847,7 +863,9 @@ public class ApplicationContext
 
     public FilterRegistration.Dynamic addFilter(String filterName, String className)
             throws IllegalArgumentException, IllegalStateException {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -863,7 +881,9 @@ public class ApplicationContext
 
 
     public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -881,14 +901,18 @@ public class ApplicationContext
 
     public FilterRegistration.Dynamic addFilter(String filterName,
             Class<? extends Filter> filterClass) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         return addFilter(filterName, filterClass.getName());
     }
 
 
     public ServletRegistration.Dynamic addServlet(String servletName, String className)
             throws IllegalArgumentException, IllegalStateException {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -905,13 +929,17 @@ public class ApplicationContext
     public ServletRegistration.Dynamic addServlet(String servletName,
             Class<? extends Servlet> clazz) throws IllegalArgumentException,
             IllegalStateException {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         return addServlet(servletName, clazz.getName());
     }
 
 
     public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -927,7 +955,9 @@ public class ApplicationContext
 
 
     public FilterRegistration getFilterRegistration(String filterName) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         ApplicationFilterConfig filterConfig = context.findApplicationFilterConfig(filterName);
         if (filterConfig == null) {
             FilterDef filterDef = context.findFilterDef(filterName);
@@ -943,7 +973,9 @@ public class ApplicationContext
 
 
     public ServletRegistration getServletRegistration(String servletName) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         Wrapper wrapper = (Wrapper) context.findChild(servletName);
         if (wrapper != null) {
             return wrapper.getFacade();
@@ -954,7 +986,9 @@ public class ApplicationContext
 
 
     public Map<String, FilterRegistration> getFilterRegistrations() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         HashMap<String, FilterRegistration> result = 
             new HashMap<String, FilterRegistration>();
         ApplicationFilterConfig[] filterConfigs = context.findApplicationFilterConfigs();
@@ -966,7 +1000,9 @@ public class ApplicationContext
 
 
     public Map<String, ServletRegistration> getServletRegistrations() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         HashMap<String, ServletRegistration> result = 
             new HashMap<String, ServletRegistration>();
         Container[] wrappers = context.findChildren();
@@ -979,25 +1015,33 @@ public class ApplicationContext
 
 
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         return context.getDefaultSessionTrackingModes();
     }
 
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         return context.getSessionTrackingModes();
     }
 
 
     public SessionCookieConfig getSessionCookieConfig() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         return context.getSessionCookie();
     }
 
 
     public <T extends Filter> T createFilter(Class<T> c)
             throws ServletException {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         try {
             return (T) context.getInstanceManager().newInstance(c);
         } catch (Throwable e) {
@@ -1009,7 +1053,9 @@ public class ApplicationContext
 
     public <T extends Servlet> T createServlet(Class<T> c)
             throws ServletException {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         try {
             return (T) context.getInstanceManager().newInstance(c);
         } catch (Throwable e) {
@@ -1020,7 +1066,9 @@ public class ApplicationContext
 
 
     public boolean setInitParameter(String name, String value) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         mergeParameters();
         if (parameters.get(name) != null) {
             return false;
@@ -1039,7 +1087,9 @@ public class ApplicationContext
      *                                  requested
      */
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.getAvailable()) {
             throw new IllegalStateException(
                     sm.getString("applicationContext.setSessionTracking.ise",
@@ -1059,7 +1109,9 @@ public class ApplicationContext
 
 
     public void addListener(String className) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -1069,7 +1121,9 @@ public class ApplicationContext
 
 
     public <T extends EventListener> void addListener(T listener) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -1079,7 +1133,9 @@ public class ApplicationContext
 
 
     public void addListener(Class<? extends EventListener> listenerClass) {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -1097,7 +1153,9 @@ public class ApplicationContext
 
     public <T extends EventListener> T createListener(Class<T> clazz)
             throws ServletException {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         if (context.isInitialized()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
@@ -1114,13 +1172,17 @@ public class ApplicationContext
 
 
     public ClassLoader getClassLoader() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         return context.getLoader().getClassLoader();
     }
 
 
     public JspConfigDescriptor getJspConfigDescriptor() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         ArrayList<TaglibDescriptor> taglibDescriptors = new ArrayList<TaglibDescriptor>();
         String[] taglibURIs = context.findTaglibs();
         for (int i = 0; i < taglibURIs.length; i++) {
@@ -1140,13 +1202,17 @@ public class ApplicationContext
 
 
     public int getEffectiveMajorVersion() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         return context.getVersionMajor();
     }
 
 
     public int getEffectiveMinorVersion() {
-        // FIXME: restricted method
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
         return context.getVersionMinor();
     }
 
