@@ -583,7 +583,6 @@
     <jar jarfile="${tomcat.jars}/jbossweb.jar" index="true">
       <fileset dir="${tomcat.classes}">
       	<!-- Temp EE class -->
-        <include name="javax/annotation/security/TransportProtected.class" />
         <include name="org/apache/catalina/**" />
         <exclude name="org/apache/catalina/startup/catalina.properties" />
         <include name="org/apache/naming/**" />
