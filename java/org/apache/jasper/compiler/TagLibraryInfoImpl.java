@@ -255,8 +255,8 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         String methodSignature = attributeInfo.getMethodSignature();
         boolean rtexprvalue = JspUtil.booleanValue(attributeInfo.getReqTime());
         boolean fragment = JspUtil.booleanValue(attributeInfo.getFragment());
-        boolean deferredValue = JspUtil.booleanValue(attributeInfo.getDeferredValue());
-        boolean deferredMethod = JspUtil.booleanValue(attributeInfo.getDeferredMethod());
+        boolean deferredValue = attributeInfo.getDeferredValue() != null;
+        boolean deferredMethod = attributeInfo.getDeferredMethod() != null;
         boolean required = JspUtil.booleanValue(attributeInfo.getRequired());
         
         if (type != null) {
