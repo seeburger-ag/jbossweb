@@ -140,15 +140,19 @@ public final class LibraryLoader {
                 dlibName = dlibName.substring(1);
                 optional = true;
             }
-            String fullPath = metaPath + path +
+            String fullPath = metaPath + File.separator + path +
                               File.separator + dlibName;
+            meta = new File(fullPath);
+            if (!meta.exists()) {
+               fullPath = metaPath + File.separator + dlibName; 
+            }
             try {
                 Runtime.getRuntime().load(fullPath);
             }
             catch (Throwable d) {
                 if (!optional) {
-                    java.io.File fd = new java.io.File(fullPath);
-                    if (fd.exists()) {
+                    meta = new File(fullPath);
+                    if (meta.exists()) {
                         throw new UnsatisfiedLinkError(" Error: " + d.getMessage() + " " );
                     } else {
                         throw new UnsatisfiedLinkError(" Can't find: " + fullPath + " ");
