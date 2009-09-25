@@ -118,6 +118,10 @@ public final class LibraryLoader {
              */
             metaPath = basePath + "bin" + File.separator +
                        getDefaultMetaPath();
+            meta = new File(metaPath);
+            if (!meta.exists()) {
+                metaPath = basePath + "bin" + File.separator + "native";
+            }
         }
         try {
             InputStream is = LibraryLoader.class.getResourceAsStream
