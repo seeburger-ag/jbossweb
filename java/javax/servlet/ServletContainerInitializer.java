@@ -54,10 +54,28 @@ import java.util.Set;
  * by the annotation, the container must pass a <tt>null</tt> Set of classes
  * to {@link #onStartup}.
  *
+ * <p>When examining the classes of an application to
+ * see if they match any of the criteria specified by the HandlesTypes
+ * annotation of a ServletContainerInitializer, the container may run into
+ * classloading problems if any of the application's optional JAR
+ * files are missing. Because the container is not in a position to decide
+ * whether these types of classloading failures will prevent
+ * the application from working correctly, it must ignore them,
+ * while at the same time providing a configuration option that would
+ * log them. 
+ *
  * <p>Implementations of this interface may be declared by a JAR file
  * resource located inside the <tt>META-INF/services</tt> directory and
  * named for the fully qualified class name of this interface, and will be 
  * discovered using the runtime's service provider lookup mechanism.
+ *
+ * <p>When an application is deployed, the order in which
+ * ServletContainerInitializer implementations are discovered
+ * by the runtime's service lookup mechanism must follow the
+ * application's classloading delegation model.
+ * Any ServletContainerInitializer implementations declared in
+ * any of the application's web fragment JAR files that are excluded
+ * from absolute ordering must be ignored.
  *
  * @see javax.servlet.annotation.HandlesTypes
  *
