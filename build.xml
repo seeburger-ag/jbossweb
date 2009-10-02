@@ -219,7 +219,6 @@
         <!-- Modules -->
         <exclude name="org/apache/catalina/ant/**" />
         <exclude name="org/apache/catalina/cluster/**" />
-        <exclude name="org/apache/catalina/ha/**" />
         <exclude name="org/apache/catalina/tribes/**" />
         <exclude name="org/apache/catalina/launcher/**" />
         <exclude name="org/apache/catalina/storeconfig/**" />
@@ -582,6 +581,7 @@
       <fileset dir="${tomcat.classes}">
         <include name="org/apache/*" />
         <include name="org/apache/catalina/**" />
+        <include name="org/apache/catalina/ha/backend/**" />
         <exclude name="org/apache/catalina/startup/catalina.properties" />
         <include name="org/apache/naming/**" />
         <include name="org/apache/comet/**" />
