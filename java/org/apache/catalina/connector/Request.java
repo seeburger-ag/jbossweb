@@ -66,7 +66,6 @@ import java.util.TreeMap;
 
 import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
-import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
@@ -270,8 +269,8 @@ public class Request
     /**
      * Async listeners.
      */
-    protected LinkedHashMap<AsyncEvent, AsyncListener> asyncListeners = 
-        new LinkedHashMap<AsyncEvent, AsyncListener>();
+    protected LinkedHashMap<AsyncListener, AsyncListenerRegistration> asyncListeners = 
+        new LinkedHashMap<AsyncListener, AsyncListenerRegistration>();
     
     
     /**
@@ -2972,16 +2971,6 @@ public class Request
         return true;
     }
 
-    public void addAsyncListener(AsyncListener listener,
-            ServletRequest servletRequest, ServletResponse servletResponse) {
-        AsyncEvent event = new AsyncEvent(asyncContext, servletRequest, servletResponse);
-        asyncListeners.put(event, listener);
-    }
-
-    public void addAsyncListener(AsyncListener listener) {
-        addAsyncListener(listener, getRequest(), response.getResponse());
-    }
-
     public AsyncContext getAsyncContext() {
         return asyncContext;
     }
@@ -3010,20 +2999,19 @@ public class Request
         return true;
     }
 
-    public long getAsyncTimeout() {
-        return this.asyncTimeout;
-    }
-
-    public void setAsyncTimeout(long asyncTimeout) {
-        this.asyncTimeout = asyncTimeout;
-    }
-
     public AsyncContext startAsync() throws IllegalStateException {
         return startAsync(null, null);
     }
 
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
+        /* TODO
+     * <p>This method clears the list of {@link AsyncListener} instances
+     * (if any) that were registered with the AsyncContext returned by the
+     * previous call to one of the startAsync methods, after calling each
+     * AsyncListener at its {@link AsyncListener#onStartAsync onStartAsync}
+     * method.
+         */
         int timeout = (asyncTimeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) asyncTimeout;
         if (timeout <= 0) {
             timeout = Integer.MAX_VALUE;
@@ -3170,8 +3158,8 @@ public class Request
 
     public class AsyncContextImpl implements AsyncContext {
 
-        protected ServletRequest request = null;
-        protected ServletResponse response = null;
+        protected ServletRequest servletRequest = null;
+        protected ServletResponse servletResponse = null;
         
         protected ServletContext servletContext = null;
         protected String path = null;
@@ -3186,12 +3174,12 @@ public class Request
         }
 
         public void dispatch() {
-            if (request == getRequestFacade()) {
+            if (servletRequest == getRequestFacade()) {
                 // Get the path directly
                 path = getRequestPathMB().toString();
-            } else if (request instanceof HttpServletRequest) {
+            } else if (servletRequest instanceof HttpServletRequest) {
                 // Rebuild the path
-                path = ((HttpServletRequest) request).getRequestURI();
+                path = ((HttpServletRequest) servletRequest).getRequestURI();
                 if (servletContext != null) {
                     path = path.substring(servletContext.getContextPath().length());
                 } else {
@@ -3214,23 +3202,23 @@ public class Request
         }
 
         public ServletRequest getRequest() {
-            if (request != null) {
-                return request;
+            if (servletRequest != null) {
+                return servletRequest;
             } else {
                 return getRequestFacade();
             }
         }
 
         public ServletResponse getResponse() {
-            if (response != null) {
-                return response;
+            if (servletResponse != null) {
+                return servletResponse;
             } else {
                 return getResponseFacade();
             }
         }
 
         public boolean hasOriginalRequestAndResponse() {
-            return (request == getRequestFacade() && response == getResponseFacade());
+            return (servletRequest == getRequestFacade() && servletResponse == getResponseFacade());
         }
 
         public void start(Runnable runnable) {
@@ -3246,12 +3234,12 @@ public class Request
             ready = false;
         }
 
-        public void setRequestAndResponse(ServletRequest request, ServletResponse response) {
-            if (request == null && response == null) {
+        public void setRequestAndResponse(ServletRequest servletRequest, ServletResponse servletResponse) {
+            if (servletRequest == null && response == null) {
                 
             }
-            this.request = request;
-            this.response = response;
+            this.servletRequest = servletRequest;
+            this.servletResponse = servletResponse;
         }
 
         public ServletContext getServletContext() {
@@ -3278,10 +3266,54 @@ public class Request
             ready = true;
         }
         
-        public Map<AsyncEvent, AsyncListener> getAsyncListeners() {
+        public Map<AsyncListener, AsyncListenerRegistration> getAsyncListeners() {
             return asyncListeners;
         }
 
+        public void addListener(AsyncListener listener,
+                ServletRequest servletRequest, ServletResponse servletResponse) {
+            asyncListeners.put(listener, 
+                    new AsyncListenerRegistration(listener, servletRequest, servletResponse));
+        }
+
+        public void addListener(AsyncListener listener) {
+            addListener(listener, getRequest(), response.getResponse());
+        }
+
+        public long getTimeout() {
+            return asyncTimeout;
+        }
+
+        public void setTimeout(long timeout) {
+            asyncTimeout = timeout;
+        }
+
+    }
+
+    
+    // ------------------------------------------ RequestResponse Inner Class
+
+
+    public class AsyncListenerRegistration {
+        protected ServletRequest request;
+        protected ServletResponse response;
+        protected AsyncListener listener;
+        protected AsyncListenerRegistration(AsyncListener listener, 
+                ServletRequest request, ServletResponse response)
+        {
+            this.listener = listener;
+            this.request = request;
+            this.response = response;
+        }
+        public ServletRequest getRequest() {
+            return request;
+        }
+        public ServletResponse getResponse() {
+            return response;
+        }
+        public AsyncListener getListener() {
+            return listener;
+        }
     }
 
 

@@ -48,7 +48,6 @@ package org.apache.catalina.core;
 
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Iterator;
 
 import javax.management.MalformedObjectNameException;
@@ -58,7 +57,6 @@ import javax.servlet.AsyncListener;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -67,7 +65,7 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.connector.ResponseFacade;
+import org.apache.catalina.connector.Request.AsyncListenerRegistration;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.log.SystemLogHandler;
@@ -407,22 +405,27 @@ final class StandardWrapperValve
                 // Invoke the listeners with onComplete or onTimeout
                 boolean timeout = (event.getType() == EventType.TIMEOUT) ? true : false;
                 boolean error = (event.getType() == EventType.ERROR) ? true : false;
-                Iterator<AsyncEvent> asyncEvents = asyncContext.getAsyncListeners().keySet().iterator();
-                if (timeout && !asyncEvents.hasNext()) {
+                Iterator<AsyncListenerRegistration> asyncListenerRegistrations = 
+                    asyncContext.getAsyncListeners().values().iterator();
+                if (timeout && !asyncListenerRegistrations.hasNext()) {
                     // FIXME: MUST do an ERROR dispatch to the original URI and MUST set the response code to 500
                 }
-                while (asyncEvents.hasNext()) {
-                    AsyncEvent asyncEvent = asyncEvents.next();
-                    AsyncListener asyncListener = asyncContext.getAsyncListeners().get(asyncEvent);
+                while (asyncListenerRegistrations.hasNext()) {
+                    AsyncListenerRegistration asyncListenerRegistration = asyncListenerRegistrations.next();
+                    AsyncListener asyncListener = asyncListenerRegistration.getListener();
                     try {
                         if (timeout) {
+                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
+                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
                             asyncListener.onTimeout(asyncEvent);
                         } else if (error) {
                             Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
-                            AsyncEvent asyncEvent2 = new AsyncEvent(asyncEvent.getAsyncContext(), 
-                                    asyncEvent.getSuppliedRequest(), asyncEvent.getSuppliedResponse(), t);
-                            asyncListener.onError(asyncEvent2);
+                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
+                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse(), t);
+                            asyncListener.onError(asyncEvent);
                         } else {
+                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
+                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
                             asyncListener.onComplete(asyncEvent);
                         }
                     } catch (Throwable e) {

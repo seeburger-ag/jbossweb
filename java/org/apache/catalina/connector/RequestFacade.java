@@ -28,7 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.AsyncListener;
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -942,27 +941,6 @@ public class RequestFacade implements HttpServletRequest {
     }
 
 
-    public void addAsyncListener(AsyncListener listener,
-            ServletRequest servletRequest, ServletResponse servletResponse) {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        request.addAsyncListener(listener, servletRequest, servletResponse);
-    }
-
-
-    public void addAsyncListener(AsyncListener listener) {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        request.addAsyncListener(listener);
-    }
-
-
     public AsyncContext getAsyncContext() {
         if (request == null) {
             throw new IllegalStateException(
@@ -1000,26 +978,6 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return request.isAsyncSupported();
-    }
-
-
-    public void setAsyncTimeout(long timeout) {
-        if (request == null) {
-            throw new IllegalStateException(
-                    sm.getString("requestFacade.nullRequest"));
-        }
-
-        request.setAsyncTimeout(timeout);
-    }
-
-
-    public long getAsyncTimeout() {
-        if (request == null) {
-            throw new IllegalStateException(
-                    sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.getAsyncTimeout();
     }
 
 
