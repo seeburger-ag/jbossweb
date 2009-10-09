@@ -56,11 +56,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
 
 import org.apache.catalina.Context;
+import org.apache.catalina.deploy.Multipart;
 import org.apache.catalina.util.StringManager;
 
 
@@ -232,6 +235,27 @@ public class StandardWrapperFacade
     public String getName() {
         return wrapper.getName();
     }
+    
+    
+    public String getRunAsRole() {
+        return wrapper.getRunAs();
+    }
 
-
+    public void setRunAsRole(String roleName) {
+        wrapper.setRunAs(roleName);
+    }
+    
+    public void setServletSecurity(ServletSecurityElement servletSecurity) {
+        wrapper.setServletSecurity(servletSecurity);
+    }
+    
+    public void setMultipartConfig(MultipartConfigElement multipartConfig) {
+        Multipart multipart = new Multipart();
+        multipart.setLocation(multipartConfig.getLocation());
+        multipart.setMaxFileSize(multipartConfig.getMaxFileSize());
+        multipart.setMaxRequestSize(multipartConfig.getMaxRequestSize());
+        multipart.setFileSizeThreshold(multipartConfig.getFileSizeThreshold());
+        wrapper.setMultipartConfig(multipart);
+    }
+    
 }

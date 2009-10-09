@@ -653,6 +653,14 @@ public final class ApplicationContextFacade
     }
 
 
+    public void declareRoles(String... roleNames) {
+        if (SecurityUtil.isPackageProtectionEnabled()) {
+            doPrivileged("declareRoles", new Object[]{roleNames});
+        } else {
+            context.declareRoles(roleNames);
+        }
+    }
+    
     /**
      * Use reflection to invoke the requested method. Cache the method object 
      * to speed up the process

@@ -22,6 +22,7 @@ package org.apache.catalina;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
 import javax.servlet.UnavailableException;
 
 import org.apache.catalina.deploy.Multipart;
@@ -423,5 +424,16 @@ public interface Wrapper extends Container {
      */
     public void unload() throws ServletException;
 
+    
+    /**
+     * Set an associated ServletSecurity.
+     */
+    public void setServletSecurity(ServletSecurityElement servletSecurity);
+
+    
+    /**
+     * Get an associated ServletSecurity, if any.
+     */
+    public ServletSecurityElement getServletSecurity();
 
 }

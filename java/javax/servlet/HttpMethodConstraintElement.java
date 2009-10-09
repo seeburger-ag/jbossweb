@@ -33,38 +33,61 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package javax.servlet;
 
-package javax.servlet.annotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.annotation.Documented;
+import javax.servlet.annotation.HttpMethodConstraint;
 
 /**
- * This annotation is used on a Servlet or Filter implementation class
- * to specify an initialization parameter.
- * 
+ * Java Class represntation of an {@link HttpMethodConstraint} annotation value.
+ *
  * @since Servlet 3.0
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface WebInitParam {
+public class HttpMethodConstraintElement extends HttpConstraintElement {
+
+    private String methodName;
 
     /**
-     * Name of the initialization parameter
+     * Constructs an instance with default {@link HttpConstraintElement}
+     * value.
+     *
+     * @param methodName the name of an HTTP protocol method. The name must
+     * not be null, or the empty string, and must be a legitimate HTTP
+     * Method name as defined by RFC 2616
      */
-    String name();
-    
+    public HttpMethodConstraintElement(String methodName) {
+        if (methodName == null || methodName.length() == 0) {
+            throw new IllegalArgumentException("invalid HTTP method name");
+        }
+        this.methodName = methodName;
+    }
     /**
-     * Value of the initialization parameter
-     */    
-    String value();
-    
-    /**
-     * Description of the initialization parameter
+     * Constructs an instance with specified {@link HttpConstraintElement}
+     * value.
+     *
+     * @param methodName the name of an HTTP protocol method. The name must
+     * not be null, or the empty string, and must be a legitimate HTTP
+     * Method name as defined by RFC 2616
+     *
+     * @param constraint the HTTPconstraintElement value to assign to the
+     * named HTTP method
      */
-    String description() default "";
+    public HttpMethodConstraintElement(String methodName,
+            HttpConstraintElement constraint) {
+        super(constraint.getEmptyRoleSemantic(),
+                constraint.getTransportGuarantee(),
+                constraint.getRolesAllowed());
+        if (methodName == null || methodName.length() == 0) {
+            throw new IllegalArgumentException("invalid HTTP method name");
+        }
+        this.methodName = methodName;
+    }
+
+    /**
+     * Gets the HTTP method name.
+     *
+     * @return the Http method name
+     */
+    public String getMethodName() {
+        return this.methodName;
+    }
 }

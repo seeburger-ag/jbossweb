@@ -1216,6 +1216,23 @@ public class ApplicationContext
         return context.getVersionMinor();
     }
 
+    public void declareRoles(String... roleNames) {
+        if (restricted) {
+            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+        }
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
+        for (String role: roleNames) {
+            if (role == null || "".equals(role)) {
+                throw new IllegalArgumentException(sm.getString("applicationContext.emptyRole",
+                        getContextPath()));
+            }
+            context.addSecurityRole(role);
+        }
+    }
+    
     // -------------------------------------------------------- Package Methods
     protected StandardContext getContext() {
         return this.context;

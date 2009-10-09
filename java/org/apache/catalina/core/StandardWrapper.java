@@ -41,6 +41,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.ServletSecurityElement;
 import javax.servlet.SingleThreadModel;
 import javax.servlet.UnavailableException;
 
@@ -218,6 +219,13 @@ public class StandardWrapper
      * The run-as identity for this servlet.
      */
     protected String runAs = null;
+    
+    
+    /**
+     * Associated ServletSecurity.
+     */
+    protected ServletSecurityElement servletSecurity = null;
+    
 
     /**
      * The notification sequence number.
@@ -627,7 +635,25 @@ public class StandardWrapper
 
     }
 
+    
+    /**
+     * Get an associated ServletSecurity, if any.
+     */
+    public ServletSecurityElement getServletSecurity() {
+        return servletSecurity;
+    }
+    
 
+    /**
+     * Set an associated ServletSecurity.
+     */
+    public void setServletSecurity(ServletSecurityElement servletSecurity) {
+        ServletSecurityElement oldServletSecurity = this.servletSecurity;
+        this.servletSecurity = servletSecurity;
+        support.firePropertyChange("servletSecurity", oldServletSecurity, this.servletSecurity);
+    }
+
+    
     /**
      * Return the fully qualified servlet class name for this servlet.
      */
