@@ -56,6 +56,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,14 +75,18 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.servlet.DispatcherType;
+import javax.servlet.HttpMethodConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebListener;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
+import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
@@ -105,6 +110,7 @@ import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.LoginConfig;
+import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.WebOrdering;
@@ -1845,6 +1851,10 @@ public class ContextConfig
         if (ok && !context.getIgnoreAnnotations()) {
             WebAnnotationSet.loadApplicationAnnotations(context);
         }
+        // Resolve security
+        if (ok) {
+            resolveServletSecurity();
+        }
         if (ok) {
             validateSecurityRoles();
         }
@@ -2073,6 +2083,101 @@ public class ContextConfig
         String workDir = ((StandardContext) context).getWorkPath();
         if (workDir != null)
             ExpandWar.delete(new File(workDir));
+    }
+    
+    
+    /**
+     * Translate servlet security associated with Servlets to security constraints.
+     */
+    protected void resolveServletSecurity() {
+        Container wrappers[] = context.findChildren();
+        for (int i = 0; i < wrappers.length; i++) {
+            Wrapper wrapper = (Wrapper) wrappers[i];
+            ServletSecurityElement servletSecurity = wrapper.getServletSecurity();
+            if (servletSecurity != null) {
+                
+                ArrayList<String> methodOmissions = new ArrayList<String>();
+                boolean classPA = servletSecurity.getEmptyRoleSemantic().equals(EmptyRoleSemantic.PERMIT);
+                boolean classDA = servletSecurity.getEmptyRoleSemantic().equals(EmptyRoleSemantic.DENY);
+                boolean classTP = servletSecurity.getTransportGuarantee().equals(TransportGuarantee.CONFIDENTIAL);
+                String[] classRA = servletSecurity.getRolesAllowed();
+                Collection<HttpMethodConstraintElement> httpMethodConstraints = 
+                    servletSecurity.getHttpMethodConstraints();
+
+                // Process method constraints
+                if (httpMethodConstraints != null && httpMethodConstraints.size() > 0)
+                {
+                   for (HttpMethodConstraintElement httpMethodConstraint : httpMethodConstraints)
+                   {
+                      boolean methodPA = httpMethodConstraint.getEmptyRoleSemantic().equals(EmptyRoleSemantic.PERMIT);
+                      boolean methodDA = httpMethodConstraint.getEmptyRoleSemantic().equals(EmptyRoleSemantic.DENY);
+                      boolean methodTP = httpMethodConstraint.getTransportGuarantee().equals(TransportGuarantee.CONFIDENTIAL);
+                      String[] methodRA = httpMethodConstraint.getRolesAllowed();
+                      if (methodPA || methodDA || methodTP || methodRA != null)
+                      {
+                         methodOmissions.add(httpMethodConstraint.getMethodName());
+                         // Define a constraint specific for the method
+                         SecurityConstraint constraint = new SecurityConstraint();
+                         if (methodDA) {
+                             constraint.setAuthConstraint(true);
+                         }
+                         if (methodPA) {
+                             constraint.addAuthRole("*");
+                         }
+                         if (methodRA != null) {
+                             for (String role : methodRA) {
+                                 constraint.addAuthRole(role);
+                             }
+                         }
+                         if (methodTP) {
+                             constraint.setUserConstraint(org.apache.catalina.realm.Constants.CONFIDENTIAL_TRANSPORT);
+                         }
+                         SecurityCollection collection = new SecurityCollection();
+                         collection.addMethod(httpMethodConstraint.getMethodName());
+                         String[] urlPatterns = wrapper.findMappings();
+                         for (String urlPattern : urlPatterns) {
+                             collection.addPattern(urlPattern);
+                         }
+                         constraint.addCollection(collection);
+                         context.addConstraint(constraint);
+                      }
+
+                   }
+
+                }
+
+                if (classPA || classDA || classTP || classRA != null)
+                {
+                    // Define a constraint for the class
+                    SecurityConstraint constraint = new SecurityConstraint();
+                    if (classPA) {
+                        constraint.addAuthRole("*");
+                    }
+                    if (classDA) {
+                        constraint.setAuthConstraint(true);
+                    }
+                    if (classRA != null) {
+                        for (String role : classRA) {
+                            constraint.addAuthRole(role);
+                        }
+                    }
+                    if (classTP) {
+                        constraint.setUserConstraint(org.apache.catalina.realm.Constants.CONFIDENTIAL_TRANSPORT);
+                    }
+                    SecurityCollection collection = new SecurityCollection();
+                    String[] urlPatterns = wrapper.findMappings();
+                    for (String urlPattern : urlPatterns) {
+                        collection.addPattern(urlPattern);
+                    }
+                    for (String methodOmission : methodOmissions) {
+                        collection.addMethodOmission(methodOmission);
+                    }
+                    constraint.addCollection(collection);
+                    context.addConstraint(constraint);
+                }
+                
+            }
+        }
     }
     
     
