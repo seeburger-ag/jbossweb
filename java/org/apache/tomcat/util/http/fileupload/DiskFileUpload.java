@@ -171,6 +171,32 @@ public class DiskFileUpload
     }
 
 
+    /**
+     * Returns the max size of a file.
+     *
+     * @return The size, in bytes.
+     *
+     * @see #setFileSizeMax(long)
+     */
+    public long getFileSizeMax()
+    {
+        return fileItemFactory.getFileSizeMax();
+    }
+
+
+    /**
+     * Sets the max size of a file.
+     *
+     * @param fileSizeMax The size, in bytes.
+     *
+     * @see #getSizeThreshold()
+     */
+    public void setFileSizeMax(long fileSizeMax)
+    {
+        fileItemFactory.setFileSizeMax(fileSizeMax);
+    }
+
+
     // --------------------------------------------------------- Public methods
 
 

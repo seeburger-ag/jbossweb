@@ -66,6 +66,7 @@ import java.util.TreeMap;
 
 import javax.security.auth.Subject;
 import javax.servlet.AsyncContext;
+import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
@@ -2414,6 +2415,9 @@ public class Request
     public void setTimeout(int timeout) {
         coyoteRequest.action(ActionCode.ACTION_EVENT_TIMEOUT, timeout);
     }
+    public void setTimeout0(int timeout) {
+        setTimeout(timeout);
+    }
     
     
     public void resume() {
@@ -2789,8 +2793,7 @@ public class Request
             fu.setSizeMax(config.getMaxRequestSize());
         }
         if (config.getMaxFileSize() > 0) {
-            // FIXME: Unimplemented per file max size
-            //fu.setSizeFileMax(config.getMaxFileSize());
+            fu.setFileSizeMax(config.getMaxFileSize());
         }
 
         parts = new HashMap<String, Part>();
@@ -3005,25 +3008,24 @@ public class Request
 
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
-        /* TODO
-     * <p>This method clears the list of {@link AsyncListener} instances
-     * (if any) that were registered with the AsyncContext returned by the
-     * previous call to one of the startAsync methods, after calling each
-     * AsyncListener at its {@link AsyncListener#onStartAsync onStartAsync}
-     * method.
-         */
-        int timeout = (asyncTimeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) asyncTimeout;
-        if (timeout <= 0) {
-            timeout = Integer.MAX_VALUE;
-        }
         if (CHECK_ASYNC && !isAsyncSupported()) {
             throw new IllegalStateException(sm.getString("coyoteRequest.noAsync"));
         }
         // FIXME: if (asyncContext != null && !processing) { throw ISE }
+        LinkedHashMap<AsyncListener, AsyncListenerRegistration> localAsyncListeners = asyncListeners;
+        asyncListeners = new LinkedHashMap<AsyncListener, AsyncListenerRegistration>();
+        for (AsyncListenerRegistration registration : localAsyncListeners.values()) {
+            AsyncListener asyncListener = registration.getListener();
+            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, registration.getRequest(), registration.getResponse());
+            try {
+                asyncListener.onStartAsync(asyncEvent);
+            } catch (IOException e) {
+                // FIXME: error reporting ? throw new IllegalStateException(e);
+            }
+        }
         if (response.isClosed()) {
             throw new IllegalStateException(sm.getString("coyoteRequest.closed"));
         }
-        setTimeout(timeout);
         if (asyncContext == null) {
             asyncContext = new AsyncContextImpl();
             eventMode = true;
@@ -3286,6 +3288,11 @@ public class Request
 
         public void setTimeout(long timeout) {
             asyncTimeout = timeout;
+            int realTimeout = (asyncTimeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) asyncTimeout;
+            if (realTimeout <= 0) {
+                realTimeout = Integer.MAX_VALUE;
+            }
+            setTimeout0(realTimeout);
         }
 
     }

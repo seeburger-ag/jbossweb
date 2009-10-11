@@ -56,6 +56,12 @@ public class DefaultFileItemFactory implements FileItemFactory
     public static final int DEFAULT_SIZE_THRESHOLD = 10240;
 
 
+    /**
+     * The default max size for a file.
+     */
+    public static final int DEFAULT_FILE_SIZE_MAX = -1;
+
+
     // ----------------------------------------------------- Instance Variables
 
 
@@ -69,6 +75,12 @@ public class DefaultFileItemFactory implements FileItemFactory
      * The threshold above which uploads will be stored on disk.
      */
     private int sizeThreshold = DEFAULT_SIZE_THRESHOLD;
+
+
+    /**
+     * The max file size.
+     */
+    private long fileSizeMax = DEFAULT_FILE_SIZE_MAX;
 
 
     // ----------------------------------------------------------- Constructors
@@ -161,6 +173,32 @@ public class DefaultFileItemFactory implements FileItemFactory
     }
 
 
+    /**
+     * Returns the max size of a file.
+     *
+     * @return The size, in bytes.
+     *
+     * @see #setFileSizeMax(int)
+     */
+    public long getFileSizeMax()
+    {
+        return fileSizeMax;
+    }
+
+
+    /**
+     * Sets the max size of a file.
+     *
+     * @param fileSizeMax The size, in bytes.
+     *
+     * @see #getSizeThreshold()
+     */
+    public void setFileSizeMax(long fileSizeMax)
+    {
+        this.fileSizeMax = fileSizeMax;
+    }
+
+
     // --------------------------------------------------------- Public Methods
 
     /**
@@ -185,6 +223,7 @@ public class DefaultFileItemFactory implements FileItemFactory
             Map<String, String> headers
             )
     {
+        // FIXME: Add file size max
         return new DefaultFileItem(fieldName, contentType,
                 isFormField, fileName, headers, sizeThreshold, repository);
     }

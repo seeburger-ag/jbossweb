@@ -156,15 +156,16 @@ public class StandardWrapperFacade
         Set<String> conflicts = new HashSet<String>();
         if (((Context) wrapper.getParent()).isInitialized()) {
             throw new IllegalStateException(sm.getString
-                    ("servletRegistration.addServletMapping.ise", ((Context) wrapper.getParent()).getPath()));
+                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }
-        if (urlPatterns != null) {
-            for (int i = 0; i < urlPatterns.length; i++) {
-                if (((Context) wrapper.getParent()).findServletMapping(urlPatterns[i]) != null) {
-                    conflicts.add(urlPatterns[i]);
-                } else {
-                    ((Context) wrapper.getParent()).addServletMapping(urlPatterns[i], wrapper.getName());
-                }
+        if (urlPatterns == null || urlPatterns.length == 0) {
+            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+        }
+        for (String urlPattern : urlPatterns) {
+            if (((Context) wrapper.getParent()).findServletMapping(urlPattern) != null) {
+                conflicts.add(urlPattern);
+            } else {
+                ((Context) wrapper.getParent()).addServletMapping(urlPattern, wrapper.getName());
             }
         }
         return conflicts;
@@ -172,6 +173,10 @@ public class StandardWrapperFacade
 
 
     public void setAsyncSupported(boolean asyncSupported) {
+        if (((Context) wrapper.getParent()).isInitialized()) {
+            throw new IllegalStateException(sm.getString
+                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+        }
         wrapper.setAsyncSupported(asyncSupported);
     }
 
@@ -182,12 +187,30 @@ public class StandardWrapperFacade
 
 
     public boolean setInitParameter(String name, String value) {
-        wrapper.addInitParameter(name, value);
-        return true;
+        if (((Context) wrapper.getParent()).isInitialized()) {
+            throw new IllegalStateException(sm.getString
+                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+        }
+        if (name == null || value == null) {
+            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+        }
+        if (wrapper.findInitParameter(name) == null) {
+            wrapper.addInitParameter(name, value);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
     public Set<String> setInitParameters(Map<String, String> initParameters) {
+        if (((Context) wrapper.getParent()).isInitialized()) {
+            throw new IllegalStateException(sm.getString
+                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+        }
+        if (initParameters == null) {
+            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+        }
         Set<String> conflicts = new HashSet<String>();
         Iterator<String> parameterNames = initParameters.keySet().iterator();
         while (parameterNames.hasNext()) {
@@ -195,7 +218,11 @@ public class StandardWrapperFacade
             if (wrapper.findInitParameter(parameterName) != null) {
                 conflicts.add(parameterName);
             } else {
-                wrapper.addInitParameter(parameterName, initParameters.get(parameterName));
+                String value = initParameters.get(parameterName);
+                if (value == null) {
+                    throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+                }
+                wrapper.addInitParameter(parameterName, value);
             }
         }
         return conflicts;
@@ -203,6 +230,10 @@ public class StandardWrapperFacade
 
 
     public void setLoadOnStartup(int loadOnStartup) {
+        if (((Context) wrapper.getParent()).isInitialized()) {
+            throw new IllegalStateException(sm.getString
+                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+        }
         wrapper.setLoadOnStartup(loadOnStartup);
     }
 
@@ -242,14 +273,35 @@ public class StandardWrapperFacade
     }
 
     public void setRunAsRole(String roleName) {
+        if (((Context) wrapper.getParent()).isInitialized()) {
+            throw new IllegalStateException(sm.getString
+                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+        }
+        if (roleName == null) {
+            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+        }
         wrapper.setRunAs(roleName);
     }
     
     public void setServletSecurity(ServletSecurityElement servletSecurity) {
+        if (((Context) wrapper.getParent()).isInitialized()) {
+            throw new IllegalStateException(sm.getString
+                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+        }
+        if (servletSecurity == null) {
+            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+        }
         wrapper.setServletSecurity(servletSecurity);
     }
     
     public void setMultipartConfig(MultipartConfigElement multipartConfig) {
+        if (((Context) wrapper.getParent()).isInitialized()) {
+            throw new IllegalStateException(sm.getString
+                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+        }
+        if (multipartConfig == null) {
+            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+        }
         Multipart multipart = new Multipart();
         multipart.setLocation(multipartConfig.getLocation());
         multipart.setMaxFileSize(multipartConfig.getMaxFileSize());

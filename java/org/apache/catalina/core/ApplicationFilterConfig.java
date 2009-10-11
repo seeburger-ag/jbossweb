@@ -266,15 +266,20 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     public boolean addMappingForServletNames(EnumSet<DispatcherType> dispatcherTypes, 
             boolean isMatchAfter, String... servletNames) {
         if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.addFilterMapping.ise", context.getPath()));
+            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+        }
+        if (servletNames == null || servletNames.length == 0) {
+            throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
         }
         FilterMap filterMap = new FilterMap(); 
         for (String servletName : servletNames) {
             filterMap.addServletName(servletName);
         }
         filterMap.setFilterName(filterDef.getFilterName());
-        for (DispatcherType dispatcherType: dispatcherTypes) {
-            filterMap.setDispatcher(dispatcherType.name());
+        if (dispatcherTypes != null) {
+            for (DispatcherType dispatcherType: dispatcherTypes) {
+                filterMap.setDispatcher(dispatcherType.name());
+            }
         }
         if (isMatchAfter) {
             context.addFilterMap(filterMap);
@@ -289,15 +294,20 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... urlPatterns) {
         if (context.isInitialized()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.addFilterMapping.ise", context.getPath()));
+            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+        }
+        if (urlPatterns == null || urlPatterns.length == 0) {
+            throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
         }
         FilterMap filterMap = new FilterMap(); 
         for (String urlPattern : urlPatterns) {
             filterMap.addURLPattern(urlPattern);
         }
         filterMap.setFilterName(filterDef.getFilterName());
-        for (DispatcherType dispatcherType: dispatcherTypes) {
-            filterMap.setDispatcher(dispatcherType.name());
+        if (dispatcherTypes != null) {
+            for (DispatcherType dispatcherType: dispatcherTypes) {
+                filterMap.setDispatcher(dispatcherType.name());
+            }
         }
         if (isMatchAfter) {
             context.addFilterMap(filterMap);
@@ -347,6 +357,9 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     public void setAsyncSupported(boolean asyncSupported) {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+        }
         filterDef.setAsyncSupported(asyncSupported);
         context.addFilterDef(filterDef);
     }
@@ -359,6 +372,12 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     public boolean setInitParameter(String name, String value) {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+        }
+        if (name == null || value == null) {
+            throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
+        }
         if (filterDef.getInitParameter(name) != null) {
             return false;
         }
@@ -369,6 +388,12 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     public Set<String> setInitParameters(Map<String, String> initParameters) {
+        if (context.isInitialized()) {
+            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+        }
+        if (initParameters == null) {
+            throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
+        }
         Set<String> conflicts = new HashSet<String>();
         Iterator<String> parameterNames = initParameters.keySet().iterator();
         while (parameterNames.hasNext()) {
@@ -376,7 +401,11 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             if (filterDef.getInitParameter(parameterName) != null) {
                 conflicts.add(parameterName);
             } else {
-                filterDef.addInitParameter(parameterName, initParameters.get(parameterName));
+                String value = initParameters.get(parameterName);
+                if (value == null) {
+                    throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
+                }
+                filterDef.addInitParameter(parameterName, value);
             }
         }
         context.addFilterDef(filterDef);
