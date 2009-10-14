@@ -171,14 +171,16 @@ public interface HttpServletResponse extends ServletResponse {
 
     /**
      * Sends an error response to the client using the specified
-     * status.  The server defaults to creating the
+     * status and clears the buffer.  The server defaults to creating the
      * response to look like an HTML-formatted server error page
      * containing the specified message, setting the content type
-     * to "text/html", leaving cookies and other headers unmodified.
+     * to "text/html". The server will preserve cookies and may clear or
+     * update any headers needed to serve the error page as a valid response.
      *
      * If an error-page declaration has been made for the web application
      * corresponding to the status code passed in, it will be served back in 
-     * preference to the suggested msg parameter. 
+     * preference to the suggested msg parameter and the msg parameter will
+     * be ignored. 
      *
      * <p>If the response has already been committed, this method throws 
      * an IllegalStateException.
@@ -195,7 +197,15 @@ public interface HttpServletResponse extends ServletResponse {
 
     /**
      * Sends an error response to the client using the specified status
-     * code and clearing the buffer. 
+     * code and clears the buffer.
+     * 
+     * The server will preserve cookies and may clear or
+     * update any headers needed to serve the error page as a valid response.
+     *
+     * If an error-page declaration has been made for the web application
+     * corresponding to the status code passed in, it will be served back
+     * the error page
+     * 
      * <p>If the response has already been committed, this method throws 
      * an IllegalStateException.
      * After using this method, the response should be considered
@@ -211,8 +221,11 @@ public interface HttpServletResponse extends ServletResponse {
 
     /**
      * Sends a temporary redirect response to the client using the
-     * specified redirect location URL.  This method can accept relative URLs;
-     * the servlet container must convert the relative URL to an absolute URL
+     * specified redirect location URL and clears the buffer. The buffer will
+     * be replaced with the data set by this method. Calling this method sets the
+     * status code to {@link #SC_FOUND} 302 (Found).
+     * This method can accept relative URLs;the servlet container must convert
+     * the relative URL to an absolute URL
      * before sending the response to the client. If the location is relative 
      * without a leading '/' the container interprets it as relative to
      * the current request URI. If the location is relative with a leading
@@ -330,14 +343,21 @@ public interface HttpServletResponse extends ServletResponse {
 
     
     /**
-     * Sets the status code for this response.  This method is used to
-     * set the return status code when there is no error (for example,
-     * for the status codes SC_OK or SC_MOVED_TEMPORARILY).  If there
-     * is an error, and the caller wishes to invoke an error-page defined
-     * in the web application, the <code>sendError</code> method should be used
-     * instead.
-     * <p> The container clears the buffer and sets the Location header, preserving
-     * cookies and other headers.
+     * Sets the status code for this response. 
+     *
+     * <p>This method is used to set the return status code when there is
+     * no error (for example, for the SC_OK or SC_MOVED_TEMPORARILY status
+     * codes).
+     *
+     * <p>If this method is used to set an error code, then the container's
+     * error page mechanism will not be triggered. If there is an error and
+     * the caller wishes to invoke an error page defined in the web
+     * application, then {@link #sendError} must be used instead.
+     *
+     * <p>This method preserves any cookies and other response headers. 
+     *
+     * <p>Valid status codes are those in the 2XX, 3XX, 4XX, and 5XX ranges.
+     * Other status codes are treated as container specific.
      *
      * @param	sc	the status code
      *
