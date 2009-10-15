@@ -112,6 +112,7 @@ import org.apache.tomcat.util.http.Parameters;
 import org.apache.tomcat.util.http.ServerCookie;
 import org.apache.tomcat.util.http.fileupload.DiskFileUpload;
 import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileUploadBase;
 import org.apache.tomcat.util.http.mapper.MappingData;
 
 
@@ -2667,8 +2668,15 @@ public class Request
         }
         if (!("application/x-www-form-urlencoded".equals(contentType))) {
             // Check for multipart as an alternate way to send parameters
-            if (parts == null) {
-                parseMultipart();
+            if (parts == null && "multipart/form-data".equals(contentType)) {
+                try {
+                    parseMultipart();
+                } catch (Exception e) {
+                    if (context.getLogger().isDebugEnabled()) {
+                        context.getLogger().debug(
+                                sm.getString("coyoteRequest.parseMultipart"), e);
+                    }
+                }
             }
             return;
         }
@@ -2759,7 +2767,8 @@ public class Request
     /**
      * Parse multipart.
      */
-    protected void parseMultipart() {
+    protected void parseMultipart()
+        throws IOException, ServletException {
         
         Multipart config = wrapper.getMultipartConfig();
         if (config == null) {
@@ -2782,7 +2791,7 @@ public class Request
             contentType = contentType.trim();
         }
         if (!("multipart/form-data".equals(contentType)))
-            return;
+            throw new ServletException(sm.getString("coyoteRequest.notMultipart"));
 
         DiskFileUpload fu = new DiskFileUpload();
         fu.setRepositoryPath(config.getLocation());
@@ -2798,21 +2807,16 @@ public class Request
 
         parts = new HashMap<String, Part>();
         try {
-            Iterator<FileItem> items = fu.parseRequest(getRequest()).iterator();
-            while (items.hasNext()) {
-                FileItem fileItem = items.next();
+            for (FileItem fileItem : fu.parseRequest(getRequest())) {
                 if (fileItem.getFileName() == null) {
                     coyoteRequest.getParameters().addParameterValues(fileItem.getName(), new String[] {fileItem.getString()});
                 }
-                parts.put(fileItem.getFieldName(), fileItem);
+                parts.put(fileItem.getName(), fileItem);
             }
-        } catch (IOException e) {
-            // Client disconnect
-            if (context.getLogger().isDebugEnabled()) {
-                context.getLogger().debug(
-                        sm.getString("coyoteRequest.parseMultipart"), e);
-            }
-            return;
+        } catch(FileUploadBase.FileSizeLimitExceededException e) {
+            throw new IllegalStateException(sm.getString("coyoteRequest.parseMultipart"), e);
+        } catch(FileUploadBase.SizeLimitExceededException e) {
+            throw new IllegalStateException(sm.getString("coyoteRequest.parseMultipart"), e);
         }
 
     }
@@ -3092,7 +3096,7 @@ public class Request
     }
 
 
-    public Part getPart(String name) throws ServletException {
+    public Part getPart(String name) throws IOException, ServletException {
         if (parts == null) {
             parseMultipart();
         }
@@ -3106,7 +3110,7 @@ public class Request
     }
 
 
-    public Collection<Part> getParts() throws ServletException {
+    public Collection<Part> getParts() throws IOException, ServletException {
         if (parts == null) {
             parseMultipart();
         }

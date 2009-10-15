@@ -143,6 +143,11 @@ public abstract class FileUploadBase
      */
     private long sizeMax = -1;
 
+    /**
+     * The maximum size permitted for a single uploaded file, as opposed
+     * to {@link #sizeMax}. A value of -1 indicates no maximum.
+     */
+    private long fileSizeMax = -1;
 
     /**
      * The content encoding to use when reading part headers.
@@ -198,6 +203,28 @@ public abstract class FileUploadBase
 
 
     /**
+     * Returns the maximum allowed size of a single uploaded file,
+     * as opposed to {@link #getSizeMax()}.
+     *
+     * @see #setFileSizeMax(long)
+     * @return Maximum size of a single uploaded file.
+     */
+    public long getFileSizeMax() {
+        return fileSizeMax;
+    }
+
+    /**
+     * Sets the maximum allowed size of a single uploaded file,
+     * as opposed to {@link #getSizeMax()}.
+     *
+     * @see #getFileSizeMax()
+     * @param fileSizeMax Maximum size of a single uploaded file.
+     */
+    public void setFileSizeMax(long fileSizeMax) {
+        this.fileSizeMax = fileSizeMax;
+    }
+
+    /**
      * Retrieves the character encoding used when reading the headers of an
      * individual part. When not specified, or <code>null</code>, the platform
      * default encoding is used.
@@ -240,7 +267,7 @@ public abstract class FileUploadBase
      *                                the request or storing files.
      */
     public List<FileItem> parseRequest(HttpServletRequest req)
-        throws FileUploadException
+        throws IOException, FileUploadException
     {
         if (null == req)
         {
@@ -275,75 +302,47 @@ public abstract class FileUploadBase
                 + "it's size exceeds allowed range");
         }
 
-        try
+        int boundaryIndex = contentType.indexOf("boundary=");
+        if (boundaryIndex < 0)
         {
-            int boundaryIndex = contentType.indexOf("boundary=");
-            if (boundaryIndex < 0)
+            throw new FileUploadException(
+                    "the request was rejected because "
+                    + "no multipart boundary was found");
+        }
+        byte[] boundary = contentType.substring(
+                boundaryIndex + 9).getBytes();
+
+        InputStream input = req.getInputStream();
+
+        MultipartStream multi = new MultipartStream(input, boundary);
+        multi.setFileSizeMax(fileSizeMax);
+        multi.setHeaderEncoding(headerEncoding);
+
+        boolean nextPart = multi.skipPreamble();
+        while (nextPart)
+        {
+            Map<String, String> headers = parseHeaders(multi.readHeaders());
+            String fieldName = getFieldName(headers);
+            if (fieldName != null)
             {
-                throw new FileUploadException(
-                        "the request was rejected because "
-                        + "no multipart boundary was found");
-            }
-            byte[] boundary = contentType.substring(
-                    boundaryIndex + 9).getBytes();
-
-            InputStream input = req.getInputStream();
-
-            MultipartStream multi = new MultipartStream(input, boundary);
-            multi.setHeaderEncoding(headerEncoding);
-
-            boolean nextPart = multi.skipPreamble();
-            while (nextPart)
-            {
-                Map<String, String> headers = parseHeaders(multi.readHeaders());
-                String fieldName = getFieldName(headers);
-                if (fieldName != null)
+                String subContentType = getHeader(headers, CONTENT_TYPE);
+                if (subContentType != null && subContentType
+                        .startsWith(MULTIPART_MIXED))
                 {
-                    String subContentType = getHeader(headers, CONTENT_TYPE);
-                    if (subContentType != null && subContentType
-                                                .startsWith(MULTIPART_MIXED))
-                    {
-                        // Multiple files.
-                        byte[] subBoundary =
-                            subContentType.substring(
+                    // Multiple files.
+                    byte[] subBoundary =
+                        subContentType.substring(
                                 subContentType
                                 .indexOf("boundary=") + 9).getBytes();
-                        multi.setBoundary(subBoundary);
-                        boolean nextSubPart = multi.skipPreamble();
-                        while (nextSubPart)
-                        {
-                            headers = parseHeaders(multi.readHeaders());
-                            if (getFileName(headers) != null)
-                            {
-                                FileItem item =
-                                        createItem(headers, false);
-                                OutputStream os = item.getOutputStream();
-                                try
-                                {
-                                    multi.readBodyData(os);
-                                }
-                                finally
-                                {
-                                    os.close();
-                                }
-                                items.add(item);
-                            }
-                            else
-                            {
-                                // Ignore anything but files inside
-                                // multipart/mixed.
-                                multi.discardBodyData();
-                            }
-                            nextSubPart = multi.readBoundary();
-                        }
-                        multi.setBoundary(boundary);
-                    }
-                    else
+                    multi.setBoundary(subBoundary);
+                    boolean nextSubPart = multi.skipPreamble();
+                    while (nextSubPart)
                     {
+                        headers = parseHeaders(multi.readHeaders());
                         if (getFileName(headers) != null)
                         {
-                            // A single file.
-                            FileItem item = createItem(headers, false);
+                            FileItem item =
+                                createItem(headers, false);
                             OutputStream os = item.getOutputStream();
                             try
                             {
@@ -357,34 +356,54 @@ public abstract class FileUploadBase
                         }
                         else
                         {
-                            // A form field.
-                            FileItem item = createItem(headers, true);
-                            OutputStream os = item.getOutputStream();
-                            try
-                            {
-                                multi.readBodyData(os);
-                            }
-                            finally
-                            {
-                                os.close();
-                            }
-                            items.add(item);
+                            // Ignore anything but files inside
+                            // multipart/mixed.
+                            multi.discardBodyData();
                         }
+                        nextSubPart = multi.readBoundary();
                     }
+                    multi.setBoundary(boundary);
                 }
                 else
                 {
-                    // Skip this part.
-                    multi.discardBodyData();
+                    if (getFileName(headers) != null)
+                    {
+                        // A single file.
+                        FileItem item = createItem(headers, false);
+                        OutputStream os = item.getOutputStream();
+                        try
+                        {
+                            multi.readBodyData(os);
+                        }
+                        finally
+                        {
+                            os.close();
+                        }
+                        items.add(item);
+                    }
+                    else
+                    {
+                        // A form field.
+                        FileItem item = createItem(headers, true);
+                        OutputStream os = item.getOutputStream();
+                        try
+                        {
+                            multi.readBodyData(os);
+                        }
+                        finally
+                        {
+                            os.close();
+                        }
+                        items.add(item);
+                    }
                 }
-                nextPart = multi.readBoundary();
             }
-        }
-        catch (IOException e)
-        {
-            throw new FileUploadException(
-                "Processing of " + MULTIPART_FORM_DATA
-                    + " request failed. " + e.getMessage());
+            else
+            {
+                // Skip this part.
+                multi.discardBodyData();
+            }
+            nextPart = multi.readBoundary();
         }
 
         return items;
@@ -634,6 +653,33 @@ public abstract class FileUploadBase
          * @param message The detail message.
          */
         public SizeLimitExceededException(String message)
+        {
+            super(message);
+        }
+    }
+
+    /**
+     * Thrown to indicate that the request size exceeds the configured maximum.
+     */
+    public static class FileSizeLimitExceededException
+        extends FileUploadException
+    {
+        /**
+         * Constructs a <code>SizeExceededException</code> with no
+         * detail message.
+         */
+        public FileSizeLimitExceededException()
+        {
+            super();
+        }
+
+        /**
+         * Constructs an <code>SizeExceededException</code> with
+         * the specified detail message.
+         *
+         * @param message The detail message.
+         */
+        public FileSizeLimitExceededException(String message)
         {
             super(message);
         }

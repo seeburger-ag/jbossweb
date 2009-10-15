@@ -1081,7 +1081,7 @@ public class RequestFacade implements HttpServletRequest {
     }
 
 
-    public Part getPart(String name) throws ServletException {
+    public Part getPart(String name) throws IOException, ServletException {
         if (request == null) {
             throw new IllegalStateException(
                             sm.getString("requestFacade.nullRequest"));
@@ -1091,7 +1091,7 @@ public class RequestFacade implements HttpServletRequest {
     }
 
 
-    public Collection<Part> getParts() throws ServletException {
+    public Collection<Part> getParts() throws IOException, ServletException {
         if (request == null) {
             throw new IllegalStateException(
                             sm.getString("requestFacade.nullRequest"));

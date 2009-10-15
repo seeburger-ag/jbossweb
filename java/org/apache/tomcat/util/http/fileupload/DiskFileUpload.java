@@ -20,6 +20,7 @@ package org.apache.tomcat.util.http.fileupload;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
@@ -219,7 +220,7 @@ public class DiskFileUpload
     public List<FileItem> parseRequest(HttpServletRequest req,
                                             int sizeThreshold,
                                             long sizeMax, String path)
-        throws FileUploadException
+        throws IOException, FileUploadException
     {
         setSizeThreshold(sizeThreshold);
         setSizeMax(sizeMax);
