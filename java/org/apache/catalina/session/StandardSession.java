@@ -670,18 +670,15 @@ public class StandardSession
             expiring = true;
         
             // Notify interested application event listeners
-            // FIXME - Assumes we call listeners in reverse order
             Context context = (Context) manager.getContainer();
             Object listeners[] = context.getApplicationLifecycleListeners();
-            if (notify && (listeners != null)) {
+            if (notify && listeners != null && (listeners.length > 0)) {
                 HttpSessionEvent event =
                     new HttpSessionEvent(getSession());
-                for (int i = 0; i < listeners.length; i++) {
-                    int j = (listeners.length - 1) - i;
-                    if (!(listeners[j] instanceof HttpSessionListener))
+                for (int i = listeners.length - 1; i >= 0; i--) {
+                    if (!(listeners[i] instanceof HttpSessionListener))
                         continue;
-                    HttpSessionListener listener =
-                        (HttpSessionListener) listeners[j];
+                    HttpSessionListener listener = (HttpSessionListener) listeners[i];
                     try {
                         context.fireContainerEvent("beforeSessionDestroyed", listener);
                         listener.sessionDestroyed(event);
@@ -1606,9 +1603,9 @@ public class StandardSession
         // Notify interested application event listeners
         Context context = (Context) manager.getContainer();
         Object listeners[] = context.getApplicationEventListeners();
-        if (listeners == null)
+        if (listeners == null || (listeners.length < 1))
             return;
-        for (int i = 0; i < listeners.length; i++) {
+        for (int i = listeners.length - 1; i >= 0; i--) {
             if (!(listeners[i] instanceof HttpSessionAttributeListener))
                 continue;
             HttpSessionAttributeListener listener =

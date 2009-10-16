@@ -3918,16 +3918,15 @@ public class StandardContext
 
         boolean ok = true;
         Object listeners[] = getApplicationLifecycleListeners();
-        if (listeners != null) {
+        if (listeners != null && (listeners.length > 0)) {
             ServletContextEvent event =
                 new ServletContextEvent(getServletContext());
-            for (int i = 0; i < listeners.length; i++) {
-                int j = (listeners.length - 1) - i;
-                if (listeners[j] == null)
+            for (int i = listeners.length - 1; i >= 0; i--) {
+                if (listeners[i] == null)
                     continue;
-                if (listeners[j] instanceof ServletContextListener) {
+                if (listeners[i] instanceof ServletContextListener) {
                     ServletContextListener listener =
-                        (ServletContextListener) listeners[j];
+                        (ServletContextListener) listeners[i];
                     try {
                         fireContainerEvent("beforeContextDestroyed", listener);
                         listener.contextDestroyed(event);
@@ -3936,16 +3935,16 @@ public class StandardContext
                         fireContainerEvent("afterContextDestroyed", listener);
                         getLogger().error
                             (sm.getString("standardContext.listenerStop",
-                                listeners[j].getClass().getName()), t);
+                                listeners[i].getClass().getName()), t);
                         ok = false;
                     }
                 }
                 try {
-                    getInstanceManager().destroyInstance(listeners[j]);
+                    getInstanceManager().destroyInstance(listeners[i]);
                 } catch (Throwable t) {
                     getLogger().error
                        (sm.getString("standardContext.listenerStop",
-                            listeners[j].getClass().getName()), t);
+                            listeners[i].getClass().getName()), t);
                     ok = false;
                 }
             }
@@ -3953,17 +3952,16 @@ public class StandardContext
 
         // Annotation processing
         listeners = getApplicationEventListeners();
-        if (listeners != null) {
-            for (int i = 0; i < listeners.length; i++) {
-                int j = (listeners.length - 1) - i;
-                if (listeners[j] == null)
+        if (listeners != null && (listeners.length > 0)) {
+            for (int i = listeners.length - 1; i >= 0; i--) {
+                if (listeners[i] == null)
                     continue;
                 try {
-                    getInstanceManager().destroyInstance(listeners[j]);
+                    getInstanceManager().destroyInstance(listeners[i]);
                 } catch (Throwable t) {
                     getLogger().error
                         (sm.getString("standardContext.listenerStop",
-                            listeners[j].getClass().getName()), t);
+                            listeners[i].getClass().getName()), t);
                     ok = false;
                 }
             }
