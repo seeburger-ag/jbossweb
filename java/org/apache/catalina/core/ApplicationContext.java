@@ -873,6 +873,7 @@ public class ApplicationContext
         FilterDef filterDef = new FilterDef();
         filterDef.setFilterName(filterName);
         filterDef.setFilterClass(className);
+        context.addFilterDef(filterDef);
         ApplicationFilterConfig filterConfig = new ApplicationFilterConfig(context, filterDef);
         filterConfig.setDynamic(true);
         context.addApplicationFilterConfig(filterConfig);
@@ -891,6 +892,7 @@ public class ApplicationContext
         FilterDef filterDef = new FilterDef();
         filterDef.setFilterName(filterName);
         filterDef.setFilterClass(filter.getClass().getName());
+        context.addFilterDef(filterDef);
         ApplicationFilterConfig filterConfig = new ApplicationFilterConfig(context, filterDef);
         filterConfig.setDynamic(true);
         filterConfig.setFilter(filter);

@@ -2310,10 +2310,8 @@ public class StandardContext
      * @param filterDef The filter definition to be added
      */
     public void addApplicationFilterConfig(ApplicationFilterConfig filterConfig) {
-
         filterConfigs.put(filterConfig.getFilterName(), filterConfig);
         fireContainerEvent("addApplicationFilterConfig", filterConfig);
-
     }
 
 
