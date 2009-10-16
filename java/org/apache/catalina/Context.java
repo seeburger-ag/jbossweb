@@ -173,6 +173,20 @@ public interface Context extends Container {
 
 
     /**
+     * Return the application starting flag for this Context.
+     */
+    public boolean isStarting();
+
+
+    /**
+     * Set the application starting flag for this Context.
+     *
+     * @param starting The new application starting flag
+     */
+    public void setStarting(boolean starting);
+    
+    
+    /**
      * Return the Locale to character set mapper for this Context.
      */
     public CharsetMapper getCharsetMapper();

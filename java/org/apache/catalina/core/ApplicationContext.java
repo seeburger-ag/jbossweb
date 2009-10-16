@@ -866,7 +866,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
@@ -884,7 +884,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
@@ -913,7 +913,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
@@ -940,7 +940,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
@@ -1090,7 +1090,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.getAvailable()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(
                     sm.getString("applicationContext.setSessionTracking.ise",
                             getContextPath()));
@@ -1112,7 +1112,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
@@ -1124,7 +1124,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
@@ -1136,7 +1136,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
@@ -1156,7 +1156,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
@@ -1220,7 +1220,7 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }

@@ -154,7 +154,7 @@ public class StandardWrapperFacade
 
     public Set<String> addMapping(String... urlPatterns) {
         Set<String> conflicts = new HashSet<String>();
-        if (((Context) wrapper.getParent()).isInitialized()) {
+        if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }
@@ -173,7 +173,7 @@ public class StandardWrapperFacade
 
 
     public void setAsyncSupported(boolean asyncSupported) {
-        if (((Context) wrapper.getParent()).isInitialized()) {
+        if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }
@@ -187,7 +187,7 @@ public class StandardWrapperFacade
 
 
     public boolean setInitParameter(String name, String value) {
-        if (((Context) wrapper.getParent()).isInitialized()) {
+        if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }
@@ -204,7 +204,7 @@ public class StandardWrapperFacade
 
 
     public Set<String> setInitParameters(Map<String, String> initParameters) {
-        if (((Context) wrapper.getParent()).isInitialized()) {
+        if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }
@@ -230,7 +230,7 @@ public class StandardWrapperFacade
 
 
     public void setLoadOnStartup(int loadOnStartup) {
-        if (((Context) wrapper.getParent()).isInitialized()) {
+        if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }
@@ -273,7 +273,7 @@ public class StandardWrapperFacade
     }
 
     public void setRunAsRole(String roleName) {
-        if (((Context) wrapper.getParent()).isInitialized()) {
+        if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }
@@ -284,7 +284,7 @@ public class StandardWrapperFacade
     }
     
     public void setServletSecurity(ServletSecurityElement servletSecurity) {
-        if (((Context) wrapper.getParent()).isInitialized()) {
+        if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }
@@ -295,7 +295,7 @@ public class StandardWrapperFacade
     }
     
     public void setMultipartConfig(MultipartConfigElement multipartConfig) {
-        if (((Context) wrapper.getParent()).isInitialized()) {
+        if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
         }

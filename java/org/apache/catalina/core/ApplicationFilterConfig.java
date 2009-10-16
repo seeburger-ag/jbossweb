@@ -265,7 +265,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
     public boolean addMappingForServletNames(EnumSet<DispatcherType> dispatcherTypes, 
             boolean isMatchAfter, String... servletNames) {
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
         }
         if (servletNames == null || servletNames.length == 0) {
@@ -293,7 +293,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     public boolean addMappingForUrlPatterns(
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... urlPatterns) {
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
         }
         if (urlPatterns == null || urlPatterns.length == 0) {
@@ -357,7 +357,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     public void setAsyncSupported(boolean asyncSupported) {
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
         }
         filterDef.setAsyncSupported(asyncSupported);
@@ -372,7 +372,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     public boolean setInitParameter(String name, String value) {
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
         }
         if (name == null || value == null) {
@@ -388,7 +388,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
 
     public Set<String> setInitParameters(Map<String, String> initParameters) {
-        if (context.isInitialized()) {
+        if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
         }
         if (initParameters == null) {

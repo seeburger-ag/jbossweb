@@ -269,6 +269,11 @@ public class StandardContext
     protected boolean available = false;
     
     /**
+     * The application starting flag for this Context.
+     */
+    protected boolean starting = false;
+    
+    /**
      * The broadcaster that sends j2ee notifications. 
      */
     protected NotificationBroadcasterSupport broadcaster = null;
@@ -1084,6 +1089,24 @@ public class StandardContext
 
 
     /**
+     * Return the application starting flag for this Context.
+     */
+    public boolean isStarting() {
+        return (this.starting);
+    }
+
+
+    /**
+     * Set the application starting flag for this Context.
+     *
+     * @param starting The new application starting flag
+     */
+    public void setStarting(boolean starting) {
+        this.starting = starting;
+    }
+
+
+   /**
      * Return the Locale to character set mapper for this Context.
      */
     public CharsetMapper getCharsetMapper() {
@@ -4130,6 +4153,7 @@ public class StandardContext
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
 
         setAvailable(false);
+        setStarting(true);
         setConfigured(false);
         boolean ok = true;
 
@@ -4407,6 +4431,7 @@ public class StandardContext
             }
             setAvailable(false);
         }
+        setStarting(false);
 
         // JMX registration
         registerJMX();
