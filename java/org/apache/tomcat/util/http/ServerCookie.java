@@ -290,7 +290,12 @@ public class ServerCookie implements Serializable {
         buf.append( name );
         buf.append("=");
         // Servlet implementation does not check anything else
-        
+
+        // Switch version if allowed and a comment has been configured
+        if (version == 0 && comment != null && VERSION_SWITCH) {
+            version = 1;
+        }
+
         version = maybeQuote2(version, buf, value,true);
 
         // Add version 1 specific information
