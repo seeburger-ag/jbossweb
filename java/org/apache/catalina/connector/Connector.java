@@ -64,6 +64,10 @@ public class Connector
     public static final boolean RECYCLE_FACADES =
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.RECYCLE_FACADES", "false")).booleanValue();
 
+    
+    protected static final boolean X_POWERED_BY = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.X_POWERED_BY", "false")).booleanValue();
+    
 
     // ------------------------------------------------------------ Constructor
 
@@ -115,10 +119,10 @@ public class Connector
     protected boolean enableLookups = false;
 
 
-    /*
+    /**
      * Is generation of X-Powered-By response header enabled/disabled?
      */
-    protected boolean xpoweredBy = false;
+    protected boolean xpoweredBy = X_POWERED_BY;
 
 
     /**

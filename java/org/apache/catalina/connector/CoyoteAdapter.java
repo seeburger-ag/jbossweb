@@ -90,6 +90,10 @@ public class CoyoteAdapter
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", "false")).booleanValue();
 
 
+    protected static final String X_POWERED_BY = 
+        System.getProperty("org.apache.catalina.connector.CoyoteAdapter.X_POWERED_BY", "Servlet/3.0; JBossWeb-3");
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -343,7 +347,7 @@ public class CoyoteAdapter
         }
 
         if (connector.getXpoweredBy()) {
-            response.addHeader("X-Powered-By", "Servlet/3.0");
+            response.addHeader("X-Powered-By", X_POWERED_BY);
         }
 
         boolean event = false;
