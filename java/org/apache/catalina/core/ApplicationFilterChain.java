@@ -252,6 +252,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
         // Call the next filter if there is one
         if (pos < filterCount) {
             ApplicationFilterConfig filterConfig = filters[pos++];
+            pointer++;
             Filter filter = null;
             try {
                 filter = filterConfig.getFilter();
@@ -275,22 +276,27 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
 
                 support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
                                           filter, request, response);
+                pointer--;
             } catch (IOException e) {
+                pointer--;
                 if (filter != null)
                     support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
                                               filter, request, response, e);
                 throw e;
             } catch (ServletException e) {
+                pointer--;
                 if (filter != null)
                     support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
                                               filter, request, response, e);
                 throw e;
             } catch (RuntimeException e) {
+                pointer--;
                 if (filter != null)
                     support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
                                               filter, request, response, e);
                 throw e;
             } catch (Throwable e) {
+                pointer--;
                 if (filter != null)
                     support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
                                               filter, request, response, e);
@@ -302,6 +308,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
 
         // We fell off the end of the chain -- call the servlet instance
         Servlet servlet = wrapper.getServlet();
+        pointer++;
         try {
             if (Globals.STRICT_SERVLET_COMPLIANCE) {
                 lastServicedRequest.set(request);
@@ -352,6 +359,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
             throw new ServletException
               (sm.getString("filterChain.servlet"), e);
         } finally {
+            pointer--;
             if (Globals.STRICT_SERVLET_COMPLIANCE) {
                 lastServicedRequest.set(null);
                 lastServicedResponse.set(null);

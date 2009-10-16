@@ -2992,12 +2992,16 @@ public class Request
             ApplicationFilterChain filterChain = filterChains.get(i);
             int n = filterChain.getFilterCount();
             int pos = filterChain.getPointer();
-            for (int j = 0; j < pos; j++) {
+            int lastFilter = pos;
+            if (pos == n + 1) {
+                lastFilter = n;
+            }
+            for (int j = 0; j < lastFilter; j++) {
                 if (!filterChain.getFilters()[j].getFilterDef().getAsyncSupported()) {
                     return false;
                 }
             }
-            if (pos == n) {
+            if (pos == n + 1) {
                 if (!filterChain.getWrapper().getAsyncSupported()) {
                     return false;
                 }
