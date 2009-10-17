@@ -454,6 +454,12 @@ public class Request
      */
     protected String localName = null;
 
+    
+    /**
+     * Can call startAsync.
+     */
+    protected boolean canStartAsync = true;
+    
 
     // --------------------------------------------------------- Public Methods
 
@@ -478,6 +484,7 @@ public class Request
         
         asyncContext = null;
         asyncTimeout = 300000;
+        canStartAsync = true;
         asyncListeners.clear();
         authType = null;
         inputBuffer.recycle();
@@ -842,6 +849,14 @@ public class Request
         this.wrapper = wrapper;
     }
 
+
+    public boolean getCanStartAsync() {
+        return canStartAsync;
+    }
+
+    public void setCanStartAsync(boolean canStartAsync) {
+        this.canStartAsync = canStartAsync;
+    }
 
     // ------------------------------------------------- Request Public Methods
 
@@ -2183,6 +2198,9 @@ public class Request
             return (null);
         return context.getServletContext();
     }
+    public ServletContext getServletContext0() {
+        return getServletContext();
+    }
 
 
     /**
@@ -3019,7 +3037,16 @@ public class Request
         if (CHECK_ASYNC && !isAsyncSupported()) {
             throw new IllegalStateException(sm.getString("coyoteRequest.noAsync"));
         }
-        // FIXME: if (asyncContext != null && !processing) { throw ISE }
+        // ISE if response is closed
+        if (response.isClosed()) {
+            throw new IllegalStateException(sm.getString("coyoteRequest.closed"));
+        }
+        // ISE if this method is called again without any asynchronous dispatch
+        // ISE if called outside of the subsequent dispatch
+        // ISE if called again within the scope of the same dispatch
+        if (!canStartAsync) {
+            throw new IllegalStateException(sm.getString("coyoteRequest.cannotStartAsync"));
+        }
         LinkedHashMap<AsyncListener, AsyncListenerRegistration> localAsyncListeners = asyncListeners;
         asyncListeners = new LinkedHashMap<AsyncListener, AsyncListenerRegistration>();
         for (AsyncListenerRegistration registration : localAsyncListeners.values()) {
@@ -3028,12 +3055,11 @@ public class Request
             try {
                 asyncListener.onStartAsync(asyncEvent);
             } catch (IOException e) {
-                // FIXME: error reporting ? throw new IllegalStateException(e);
+                throw new IllegalStateException(sm.getString("coyoteRequest.onStartAsyncError", 
+                        asyncListener.getClass().getName()), e);
             }
         }
-        if (response.isClosed()) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.closed"));
-        }
+        canStartAsync = false;
         if (asyncContext == null) {
             asyncContext = new AsyncContextImpl();
             eventMode = true;
@@ -3104,13 +3130,7 @@ public class Request
         if (parts == null) {
             parseMultipart();
         }
-        Part result = parts.get(name);
-        if (result == null) {
-            // FIXME: error message
-            throw new ServletException();
-        } else {
-            return result;
-        }
+        return parts.get(name);
     }
 
 
@@ -3184,22 +3204,25 @@ public class Request
         }
 
         public void dispatch() {
+            this.servletContext = null;
             if (servletRequest == getRequestFacade()) {
                 // Get the path directly
                 path = getRequestPathMB().toString();
             } else if (servletRequest instanceof HttpServletRequest) {
-                // Rebuild the path
-                path = ((HttpServletRequest) servletRequest).getRequestURI();
+                // Remap the path to the target context
+                String requestURI = ((HttpServletRequest) servletRequest).getRequestURI();
+                this.servletContext = getServletContext0().getContext(requestURI);
                 if (servletContext != null) {
-                    path = path.substring(servletContext.getContextPath().length());
+                    path = requestURI.substring(servletContext.getContextPath().length());
                 } else {
-                    path = path.substring(context.getName().length());
+                    throw new IllegalStateException(sm.getString("coyoteRequest.dispatchNoServletContext", requestURI));
                 }
             }
             resume();
         }
 
         public void dispatch(String path) {
+            this.servletContext = null;
             this.path = path;
             useAttributes = true;
             resume();

@@ -136,7 +136,8 @@ public interface Valve {
      * Process an event.
      *
      * @param request The servlet request to be processed
-     * @param response The servlet response to be created
+     * @param response The servlet response to be processed
+     * @param event The event to be processed
      *
      * @exception IOException if an input/output error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet

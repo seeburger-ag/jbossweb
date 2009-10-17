@@ -52,6 +52,7 @@ import java.util.Iterator;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.Servlet;
@@ -388,6 +389,7 @@ final class StandardWrapperValve
      *
      * @param request The servlet request to be processed
      * @param response The servlet response to be created
+     * @param event The event to be processed
      *
      * @exception IOException if an input/output error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet
@@ -398,105 +400,9 @@ final class StandardWrapperValve
         throws IOException, ServletException {
         
         // Async processing
-        Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
+        AsyncContext asyncContext = request.getAsyncContext();
         if (asyncContext != null) {
-            if (event.getType() == EventType.END || event.getType() == EventType.ERROR
-                    || event.getType() == EventType.TIMEOUT) {
-                // Invoke the listeners with onComplete or onTimeout
-                boolean timeout = (event.getType() == EventType.TIMEOUT) ? true : false;
-                boolean error = (event.getType() == EventType.ERROR) ? true : false;
-                Iterator<AsyncListenerRegistration> asyncListenerRegistrations = 
-                    asyncContext.getAsyncListeners().values().iterator();
-                if (timeout && !asyncListenerRegistrations.hasNext()) {
-                    // FIXME: MUST do an ERROR dispatch to the original URI and MUST set the response code to 500
-                }
-                while (asyncListenerRegistrations.hasNext()) {
-                    AsyncListenerRegistration asyncListenerRegistration = asyncListenerRegistrations.next();
-                    AsyncListener asyncListener = asyncListenerRegistration.getListener();
-                    try {
-                        if (timeout) {
-                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
-                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
-                            asyncListener.onTimeout(asyncEvent);
-                        } else if (error) {
-                            Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
-                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
-                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse(), t);
-                            asyncListener.onError(asyncEvent);
-                        } else {
-                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
-                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
-                            asyncListener.onComplete(asyncEvent);
-                        }
-                    } catch (Throwable e) {
-                        container.getLogger().error(sm.getString("standardWrapper.async.listenerError",
-                                getContainer().getName()), e);
-                        exception(request, response, e);
-                    }
-                }
-            } else if (asyncContext.getRunnable() != null) {
-                // Execute the runnable
-                try {
-                    asyncContext.getRunnable().run();
-                } catch (Throwable e) {
-                    container.getLogger().error(sm.getString("standardWrapper.async.runnableError",
-                            getContainer().getName()), e);
-                    exception(request, response, e);
-                }
-            } else if (asyncContext.getPath() != null) {
-                // We executed the dispatch
-                asyncContext.done();
-                // Remap the request, set the dispatch attributes, create the filter chain
-                // and invoke the Servlet
-                Context context = (Context) getContainer().getParent();
-                ServletContext servletContext = context.getServletContext();
-                if (asyncContext.getServletContext() != null) {
-                    // Cross context
-                    servletContext = asyncContext.getServletContext();
-                }
-                ApplicationDispatcher dispatcher = 
-                    (ApplicationDispatcher) servletContext.getRequestDispatcher(asyncContext.getPath());
-                // Invoke the dispatcher async method with the attributes flag
-                try {
-                    dispatcher.async(asyncContext.getRequest(), asyncContext.getResponse(), 
-                            asyncContext.getUseAttributes());
-                } catch (Throwable e) {
-                    container.getLogger().error(sm.getString("standardWrapper.async.dispatchError",
-                            getContainer().getName()), e);
-                    exception(request, response, e);
-                    // TODO: the exception must be sent to error
-                }
-                // If there is no new startAsync, then close the response
-                if (!asyncContext.isReady()) {
-                    // FIXME: see which one is the right one to close the response
-                    asyncContext.complete();
-                    /*
-                    if  (asyncContext.getResponse() instanceof ResponseFacade) {
-                        response.setSuspended(true);
-                    } else {
-                        // Close anyway
-                        try {
-                            PrintWriter writer = response.getWriter();
-                            writer.close();
-                        } catch (IllegalStateException e) {
-                            try {
-                                ServletOutputStream stream = response.getOutputStream();
-                                stream.close();
-                            } catch (IllegalStateException f) {
-                                ;
-                            } catch (IOException f) {
-                                ;
-                            }
-                        } catch (IOException e) {
-                            ;
-                        }
-                    }
-                    event.close();
-                    */
-                }
-            } else {
-                throw new IllegalStateException(sm.getString("standardWrapper.async.invalidContext"));
-            }
+            async(request, response, event);
             return;
         }
         
@@ -660,6 +566,99 @@ final class StandardWrapperValve
     }
 
 
+    /**
+     * Process an async dispatch. This is never a direct wrapper invocation.
+     *
+     * @param request The servlet request to be processed
+     * @param response The servlet response to be processed
+     * @param event The event to be processed
+     *
+     * @exception IOException if an input/output error occurs, or is thrown
+     *  by a subsequently invoked Valve, Filter, or Servlet
+     * @exception ServletException if a servlet error occurs, or is thrown
+     *  by a subsequently invoked Valve, Filter, or Servlet
+     */
+    public void async(Request request, Response response, HttpEvent event)
+        throws IOException, ServletException {
+        
+        Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
+        if (asyncContext != null) {
+            if (event.getType() == EventType.END || event.getType() == EventType.ERROR
+                    || event.getType() == EventType.TIMEOUT) {
+                // Invoke the listeners with onComplete or onTimeout
+                boolean timeout = (event.getType() == EventType.TIMEOUT) ? true : false;
+                boolean error = (event.getType() == EventType.ERROR) ? true : false;
+                Iterator<AsyncListenerRegistration> asyncListenerRegistrations = 
+                    asyncContext.getAsyncListeners().values().iterator();
+                while (asyncListenerRegistrations.hasNext()) {
+                    AsyncListenerRegistration asyncListenerRegistration = asyncListenerRegistrations.next();
+                    AsyncListener asyncListener = asyncListenerRegistration.getListener();
+                    try {
+                        if (timeout) {
+                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
+                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
+                            asyncListener.onTimeout(asyncEvent);
+                        } else if (error) {
+                            Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
+                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
+                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse(), t);
+                            asyncListener.onError(asyncEvent);
+                        } else {
+                            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
+                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
+                            asyncListener.onComplete(asyncEvent);
+                        }
+                    } catch (Throwable e) {
+                        container.getLogger().error(sm.getString("standardWrapper.async.listenerError",
+                                getContainer().getName()), e);
+                        exception(request, response, e);
+                    }
+                }
+            } else if (asyncContext.getRunnable() != null) {
+                // Execute the runnable
+                try {
+                    asyncContext.getRunnable().run();
+                } catch (Throwable e) {
+                    container.getLogger().error(sm.getString("standardWrapper.async.runnableError",
+                            getContainer().getName()), e);
+                    exception(request, response, e);
+                }
+            } else if (asyncContext.getPath() != null) {
+                // We executed the dispatch
+                asyncContext.done();
+                // Remap the request, set the dispatch attributes, create the filter chain
+                // and invoke the Servlet
+                Context context = (Context) getContainer().getParent();
+                ServletContext servletContext = context.getServletContext();
+                if (asyncContext.getServletContext() != null) {
+                    // Cross context
+                    servletContext = asyncContext.getServletContext();
+                }
+                request.setCanStartAsync(true);
+                ApplicationDispatcher dispatcher = 
+                    (ApplicationDispatcher) servletContext.getRequestDispatcher(asyncContext.getPath());
+                // Invoke the dispatcher async method with the attributes flag
+                try {
+                    dispatcher.async(asyncContext.getRequest(), asyncContext.getResponse(), 
+                            asyncContext.getUseAttributes());
+                } catch (Throwable e) {
+                    container.getLogger().error(sm.getString("standardWrapper.async.dispatchError",
+                            getContainer().getName()), e);
+                    exception(request, response, e);
+                }
+                request.setCanStartAsync(false);
+                // If there is no new startAsync, then close the response
+                // Note: The spec uses the same asyncContext instance
+                if (!asyncContext.isReady()) {
+                    asyncContext.complete();
+                }
+            } else {
+                throw new IllegalStateException(sm.getString("standardWrapper.async.invalidContext"));
+            }
+        }
+
+    }
+        
     // -------------------------------------------------------- Private Methods
 
 

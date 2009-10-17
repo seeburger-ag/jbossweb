@@ -37,6 +37,7 @@ import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
+import org.jboss.servlet.http.HttpEvent.EventType;
 
 
 /**
@@ -153,8 +154,8 @@ final class StandardHostValve
      * Process Comet event.
      *
      * @param request Request to be processed
-     * @param response Response to be produced
-     * @param valveContext Valve context used to forward to the next Valve
+     * @param response Response to be processed
+     * @param event The event to be processed
      *
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
@@ -185,12 +186,27 @@ final class StandardHostValve
         // Error page processing
         response.setSuspended(false);
 
-        Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
-
-        if (t != null) {
-            throwable(request, response, t);
+        if (request.getAsyncContext() == null) {
+            Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
+            if (t != null) {
+                throwable(request, response, t);
+            } else {
+                status(request, response);
+            }
         } else {
-            status(request, response);
+            Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
+            if ((event.getType() == EventType.TIMEOUT || event.getType() == EventType.ERROR)
+                    && request.isEventMode() && asyncContext.getPath() == null) {
+                Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
+                if (t != null) {
+                    throwable(request, response, t);
+                } else {
+                    status(request, response);
+                }
+            }
+            if (request.isEventMode() && asyncContext.getPath() == null) {
+                asyncContext.complete();
+            }
         }
 
         // Restore the context classloader
