@@ -33,11 +33,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
-import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
-import org.apache.catalina.Session;
 import org.apache.catalina.Manager;
+import org.apache.catalina.Session;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
@@ -96,12 +95,11 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
      * @param request The servlet request being wrapped
      */
     public ApplicationHttpRequest(HttpServletRequest request, Context context,
-                                  boolean crossContext, String originalContextPath) {
+                                  boolean crossContext) {
 
         super(request);
         this.context = context;
         this.crossContext = crossContext;
-        this.originalContextPath = originalContextPath;
         setRequest(request);
 
     }
@@ -116,12 +114,6 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
     protected Context context = null;
     
     
-    /**
-     * If cross context, the original context path.
-     */
-    protected String originalContextPath = null;
-
-
     /**
      * The context path for this request.
      */
@@ -540,25 +532,11 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
                 } catch (IOException e) {
                     // Ignore
                 }
+                if ((localSession != null) && !localSession.isValid())
+                    localSession = null;
                 if (localSession == null && create) {
                     localSession = 
                         context.getManager().createSession(other.getId());
-                    // Associate the two sessions if possible
-                    if (originalContextPath != null) {
-                        Container otherContext = context.getParent().findChild(originalContextPath);
-                        if (otherContext != null) {
-                            try {
-                                Session otherSession = otherContext.getManager().findSession(other.getId());
-                                if (otherSession != null) {
-                                    localSession.setMaxInactiveInterval(otherSession.getMaxInactiveInterval());
-                                    otherSession.addAssociatedSession(context.getPath());
-                                    localSession.addAssociatedSession(originalContextPath);
-                                }
-                            } catch (Exception e) {
-                                // Ignore
-                            }
-                        }
-                    }
                 }
                 if (localSession != null) {
                     localSession.access();

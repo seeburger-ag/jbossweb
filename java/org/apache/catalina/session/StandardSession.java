@@ -263,13 +263,6 @@ public class StandardSession
     protected transient AtomicInteger accessCount = null;
 
     
-    /**
-     * Associated sessions in other contexts.
-     */
-    protected transient Map<String, Object> associatedSessions = null;
-    protected static final Object TOKEN = new Object();
-
-
     // ----------------------------------------------------- Session Properties
 
 
@@ -498,24 +491,6 @@ public class StandardSession
             expire();
         }
         
-        // Expire any associated session
-        if (associatedSessions != null) {
-            for (String path : associatedSessions.keySet()) {
-                Container crossContainer = manager.getContainer().getParent().findChild(path);
-                if (crossContainer != null) {
-                    Manager crossManager = crossContainer.getManager();
-                    try {
-                        Session associatedSession = crossManager.findSession(id);
-                        if (associatedSession instanceof StandardSession) {
-                            ((StandardSession) associatedSession).maxInactiveInterval = interval;
-                        }
-                    } catch (Exception e) {
-                        // Ignore ...
-                    }
-                }
-            }
-        }
-
     }
 
 
@@ -678,17 +653,6 @@ public class StandardSession
 
     
     /**
-     * Add context name in which there is an associated session.
-     */
-    public void addAssociatedSession(String path) {
-        if (associatedSessions == null) {
-            associatedSessions = new ConcurrentHashMap<String, Object>();
-        }
-        associatedSessions.put(path, TOKEN);
-    }
-
-
-    /**
      * Perform the internal processing required to invalidate this session,
      * without triggering an exception if the session has already expired.
      *
@@ -773,22 +737,6 @@ public class StandardSession
                     manager.getContainer().getLogger().error(
                             sm.getString("standardSession.logoutfail"),
                             e);
-                }
-            }
-
-            // Expire any associated session
-            if (associatedSessions != null) {
-                for (String path : associatedSessions.keySet()) {
-                    Container crossContainer = manager.getContainer().getParent().findChild(path);
-                    if (crossContainer != null) {
-                        Manager crossManager = crossContainer.getManager();
-                        try {
-                            Session associatedSession = crossManager.findSession(id);
-                            associatedSession.expire();
-                        } catch (Exception e) {
-                            // Ignore ...
-                        }
-                    }
                 }
             }
 
@@ -912,7 +860,6 @@ public class StandardSession
         setPrincipal(null);
         isNew = false;
         isValid = false;
-        associatedSessions = null;
         manager = null;
 
     }
