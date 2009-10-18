@@ -30,7 +30,6 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +45,7 @@ import javax.servlet.http.HttpSessionContext;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
@@ -80,6 +80,9 @@ import org.apache.catalina.util.StringManager;
 
 public class StandardSession
     implements HttpSession, Session, Serializable {
+
+
+    private static final long serialVersionUID = -4294597583262209053L;
 
 
     protected static final boolean ACTIVITY_CHECK = 
@@ -128,7 +131,7 @@ public class StandardSession
     /**
      * The collection of user data attributes associated with this Session.
      */
-    protected Map attributes = new ConcurrentHashMap();
+    protected Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
 
 
     /**
@@ -190,7 +193,7 @@ public class StandardSession
     /**
      * The session event listeners for this Session.
      */
-    protected transient ArrayList listeners = new ArrayList();
+    protected transient ArrayList<SessionListener> listeners = new ArrayList<SessionListener>();
 
 
     /**
@@ -224,7 +227,7 @@ public class StandardSession
      * and event listeners.  <b>IMPLEMENTATION NOTE:</b> This object is
      * <em>not</em> saved and restored across session serializations!
      */
-    protected transient Map notes = new Hashtable();
+    protected transient Map<String, Object> notes = new ConcurrentHashMap<String, Object>();
 
 
     /**
@@ -260,6 +263,13 @@ public class StandardSession
     protected transient AtomicInteger accessCount = null;
 
     
+    /**
+     * Associated sessions in other contexts.
+     */
+    protected transient Map<String, Object> associatedSessions = null;
+    protected static final Object TOKEN = new Object();
+
+
     // ----------------------------------------------------- Session Properties
 
 
@@ -487,6 +497,24 @@ public class StandardSession
         if (isValid && interval == 0) {
             expire();
         }
+        
+        // Expire any associated session
+        if (associatedSessions != null) {
+            for (String path : associatedSessions.keySet()) {
+                Container crossContainer = manager.getContainer().getParent().findChild(path);
+                if (crossContainer != null) {
+                    Manager crossManager = crossContainer.getManager();
+                    try {
+                        Session associatedSession = crossManager.findSession(id);
+                        if (associatedSession instanceof StandardSession) {
+                            ((StandardSession) associatedSession).maxInactiveInterval = interval;
+                        }
+                    } catch (Exception e) {
+                        // Ignore ...
+                    }
+                }
+            }
+        }
 
     }
 
@@ -648,6 +676,17 @@ public class StandardSession
 
     }
 
+    
+    /**
+     * Add context name in which there is an associated session.
+     */
+    public void addAssociatedSession(String path) {
+        if (associatedSessions == null) {
+            associatedSessions = new ConcurrentHashMap<String, Object>();
+        }
+        associatedSessions.put(path, TOKEN);
+    }
+
 
     /**
      * Perform the internal processing required to invalidate this session,
@@ -734,6 +773,22 @@ public class StandardSession
                     manager.getContainer().getLogger().error(
                             sm.getString("standardSession.logoutfail"),
                             e);
+                }
+            }
+
+            // Expire any associated session
+            if (associatedSessions != null) {
+                for (String path : associatedSessions.keySet()) {
+                    Container crossContainer = manager.getContainer().getParent().findChild(path);
+                    if (crossContainer != null) {
+                        Manager crossManager = crossContainer.getManager();
+                        try {
+                            Session associatedSession = crossManager.findSession(id);
+                            associatedSession.expire();
+                        } catch (Exception e) {
+                            // Ignore ...
+                        }
+                    }
                 }
             }
 
@@ -857,6 +912,7 @@ public class StandardSession
         setPrincipal(null);
         isNew = false;
         isValid = false;
+        associatedSessions = null;
         manager = null;
 
     }
@@ -1418,7 +1474,7 @@ public class StandardSession
 
         // Deserialize the attribute count and attribute values
         if (attributes == null)
-            attributes = new Hashtable();
+            attributes = new ConcurrentHashMap<String, Object>();
         int n = ((Integer) stream.readObject()).intValue();
         boolean isValidSave = isValid;
         isValid = true;
@@ -1432,11 +1488,11 @@ public class StandardSession
         isValid = isValidSave;
 
         if (listeners == null) {
-            listeners = new ArrayList();
+            listeners = new ArrayList<SessionListener>();
         }
 
         if (notes == null) {
-            notes = new Hashtable();
+            notes = new ConcurrentHashMap<String, Object>();
         }
     }
 

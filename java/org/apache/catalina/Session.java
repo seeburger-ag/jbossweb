@@ -251,6 +251,12 @@ public interface Session {
      */
     public void expire();
 
+    
+    /**
+     * Add context name in which there is an associated session.
+     */
+    public void addAssociatedSession(String path);
+    
 
     /**
      * Return the object bound with the specified name to the internal notes
