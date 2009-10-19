@@ -155,11 +155,6 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      */
     private FilterDef filterDef = null;
 
-    /**
-     * the InstanceManager used to create and destroy filter instances.
-     */
-    private transient InstanceManager instanceManager;
-
 
     /**
      * JMX registration name
@@ -446,7 +441,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
         // Identify the class loader we will be using
         if (filterInstance == null) {
             String filterClass = filterDef.getFilterClass();
-            this.filter = (Filter) getInstanceManager().newInstance(filterClass);
+            this.filter = (Filter) context.getInstanceManager().newInstance(filterClass);
         } else {
             this.filter = filterInstance;
             filterInstance = null;
@@ -527,20 +522,6 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
     // -------------------------------------------------------- Private Methods
 
-
-    private InstanceManager getInstanceManager() {
-        if (instanceManager == null) {
-            if (context instanceof StandardContext) {
-                instanceManager = ((StandardContext)context).getInstanceManager();
-            } else {
-                instanceManager = new DefaultInstanceManager(null,
-                        new HashMap<String, Map<String, String>>(),
-                        context,
-                        getClass().getClassLoader()); 
-            }
-        }
-        return instanceManager;
-    }
 
     private void registerJMX() {
         String parentName = context.getName();

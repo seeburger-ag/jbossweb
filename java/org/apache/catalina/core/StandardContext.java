@@ -4362,6 +4362,8 @@ public class StandardContext
                 lifecycle.fireLifecycleEvent(AFTER_START_EVENT, null);
             }
             
+            // FIXME: listener start order is wrong: context listeners should be started there, 
+            // but all others should be after complete config
             // Configure and call application event listeners
             if (ok) {
                 if (!listenerStart()) {

@@ -35,6 +35,7 @@ import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.util.CharsetMapper;
+import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.http.mapper.Mapper;
 
 
@@ -350,6 +351,20 @@ public interface Context extends Container {
     public void setIgnoreAnnotations(boolean ignoreAnnotations);
     
     
+    /**
+     * Used to create application instances.
+     */
+    public InstanceManager getInstanceManager();
+
+
+    /**
+     * Set the instance manager associated with this Context.
+     *
+     * @param instanceManager The instance manager
+     */
+    public void setInstanceManager(InstanceManager instanceManager);
+
+
     /**
      * Return the logical name for this web application.
      */

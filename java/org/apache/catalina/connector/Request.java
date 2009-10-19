@@ -56,6 +56,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -3324,6 +3325,17 @@ public class Request
                 realTimeout = Integer.MAX_VALUE;
             }
             setTimeout0(realTimeout);
+        }
+
+        public <T extends AsyncListener> T createListener(Class<T> clazz)
+                throws ServletException {
+            T listenerInstance = null;
+            try {
+                listenerInstance = (T) context.getInstanceManager().newInstance(clazz);
+            } catch (Exception e) {
+                throw new ServletException(sm.getString("coyoteRequest.createListener", clazz.getName()), e);
+            }
+            return listenerInstance;
         }
 
     }

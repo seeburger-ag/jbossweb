@@ -2134,9 +2134,29 @@ public class ContextConfig
                          }
                          SecurityCollection collection = new SecurityCollection();
                          collection.addMethod(httpMethodConstraint.getMethodName());
-                         String[] urlPatterns = wrapper.findMappings();
-                         for (String urlPattern : urlPatterns) {
-                             collection.addPattern(urlPattern);
+                         if (wrapper.getServletSecurityPatterns() != null) {
+                             for (String urlPattern : wrapper.getServletSecurityPatterns()) {
+                                 collection.addPattern(urlPattern);
+                             }
+                         } else {
+                             String[] urlPatterns = wrapper.findMappings();
+                             Set<String> servletSecurityPatterns = new HashSet<String>();
+                             for (String urlPattern : urlPatterns) {
+                                 servletSecurityPatterns.add(urlPattern);
+                             }
+                             SecurityConstraint[] constraints = context.findConstraints();
+                             for (SecurityConstraint constraint2 : constraints) {
+                                 for (SecurityCollection collection2 : constraint2.findCollections()) {
+                                     for (String urlPattern : collection2.findPatterns()) {
+                                         if (servletSecurityPatterns.contains(urlPattern)) {
+                                             servletSecurityPatterns.remove(urlPattern);
+                                         }
+                                     }
+                                 }
+                             }
+                             for (String urlPattern : servletSecurityPatterns) {
+                                 collection.addPattern(urlPattern);
+                             }
                          }
                          constraint.addCollection(collection);
                          context.addConstraint(constraint);
@@ -2165,9 +2185,29 @@ public class ContextConfig
                         constraint.setUserConstraint(org.apache.catalina.realm.Constants.CONFIDENTIAL_TRANSPORT);
                     }
                     SecurityCollection collection = new SecurityCollection();
-                    String[] urlPatterns = wrapper.findMappings();
-                    for (String urlPattern : urlPatterns) {
-                        collection.addPattern(urlPattern);
+                    if (wrapper.getServletSecurityPatterns() != null) {
+                        for (String urlPattern : wrapper.getServletSecurityPatterns()) {
+                            collection.addPattern(urlPattern);
+                        }
+                    } else {
+                        String[] urlPatterns = wrapper.findMappings();
+                        Set<String> servletSecurityPatterns = new HashSet<String>();
+                        for (String urlPattern : urlPatterns) {
+                            servletSecurityPatterns.add(urlPattern);
+                        }
+                        SecurityConstraint[] constraints = context.findConstraints();
+                        for (SecurityConstraint constraint2 : constraints) {
+                            for (SecurityCollection collection2 : constraint2.findCollections()) {
+                                for (String urlPattern : collection2.findPatterns()) {
+                                    if (servletSecurityPatterns.contains(urlPattern)) {
+                                        servletSecurityPatterns.remove(urlPattern);
+                                    }
+                                }
+                            }
+                        }
+                        for (String urlPattern : servletSecurityPatterns) {
+                            collection.addPattern(urlPattern);
+                        }
                     }
                     for (String methodOmission : methodOmissions) {
                         collection.addMethodOmission(methodOmission);

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.management.ListenerNotFoundException;
@@ -54,6 +55,8 @@ import org.apache.catalina.InstanceListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.Multipart;
+import org.apache.catalina.deploy.SecurityCollection;
+import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
@@ -225,6 +228,12 @@ public class StandardWrapper
      * Associated ServletSecurity.
      */
     protected ServletSecurityElement servletSecurity = null;
+    
+    
+    /**
+     * Associated servlet security patterns.
+     */
+    protected Set<String> servletSecurityPatterns = null;
     
 
     /**
@@ -651,6 +660,47 @@ public class StandardWrapper
         ServletSecurityElement oldServletSecurity = this.servletSecurity;
         this.servletSecurity = servletSecurity;
         support.firePropertyChange("servletSecurity", oldServletSecurity, this.servletSecurity);
+    }
+    
+    
+    /**
+     * Set an associated ServletSecurity on mappings which are currently associated
+     * with the Servlet. This will not set security on patters which are currently
+     * defined in a security constraint.
+     * 
+     * @return the set of patterns for which the servlet security will not be defined
+     */
+    public Set<String> setServletSecurityOnCurrentMappings(ServletSecurityElement servletSecurity) {
+        ServletSecurityElement oldServletSecurity = this.servletSecurity;
+        this.servletSecurity = servletSecurity;
+        support.firePropertyChange("servletSecurity", oldServletSecurity, this.servletSecurity);
+        // Now find to which mappings this servlet security will apply, and return the list
+        // for which is will not apply
+        Set<String> ignoredPatterns = new HashSet<String>();
+        servletSecurityPatterns = new HashSet<String>();
+        for (String mapping : findMappings()) {
+            servletSecurityPatterns.add(mapping);
+        }
+        SecurityConstraint[] constraints = ((Context) getParent()).findConstraints();
+        for (SecurityConstraint constraint : constraints) {
+            for (SecurityCollection collection : constraint.findCollections()) {
+                for (String pattern : collection.findPatterns()) {
+                    if (servletSecurityPatterns.contains(pattern)) {
+                        servletSecurityPatterns.remove(pattern);
+                        ignoredPatterns.add(pattern);
+                    }
+                }
+            }
+        }
+        return ignoredPatterns;
+    }
+    
+    
+    /**
+     * Get an associated ServletSecurity patterns, if any.
+     */
+    public Set<String> getServletSecurityPatterns() {
+        return servletSecurityPatterns;
     }
 
     
@@ -1170,7 +1220,7 @@ public class StandardWrapper
             }
 
             if (servletInstance == null) {
-                InstanceManager instanceManager = ((StandardContext)getParent()).getInstanceManager();
+                InstanceManager instanceManager = ((Context) getParent()).getInstanceManager();
                 try {
                     servlet = (Servlet) instanceManager.newInstance(actualClass);
                 } catch (ClassCastException e) {
@@ -1428,7 +1478,7 @@ public class StandardWrapper
 
             // Annotation processing
             if (!((Context) getParent()).getIgnoreAnnotations()) {
-               ((StandardContext)getParent()).getInstanceManager().destroyInstance(instance);
+               ((Context) getParent()).getInstanceManager().destroyInstance(instance);
             }
 
         } catch (Throwable t) {
@@ -1471,7 +1521,7 @@ public class StandardWrapper
                     }
                     // Annotation processing
                     if (!((Context) getParent()).getIgnoreAnnotations()) {
-                       ((StandardContext)getParent()).getInstanceManager().destroyInstance(s);
+                       ((Context) getParent()).getInstanceManager().destroyInstance(s);
                     }
                 }
             } catch (Throwable t) {

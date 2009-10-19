@@ -283,7 +283,7 @@ public class StandardWrapperFacade
         wrapper.setRunAs(roleName);
     }
     
-    public void setServletSecurity(ServletSecurityElement servletSecurity) {
+    public Set<String> setServletSecurity(ServletSecurityElement servletSecurity) {
         if (!((Context) wrapper.getParent()).isStarting()) {
             throw new IllegalStateException(sm.getString
                     ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
@@ -291,7 +291,7 @@ public class StandardWrapperFacade
         if (servletSecurity == null) {
             throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
         }
-        wrapper.setServletSecurity(servletSecurity);
+        return wrapper.setServletSecurityOnCurrentMappings(servletSecurity);
     }
     
     public void setMultipartConfig(MultipartConfigElement multipartConfig) {

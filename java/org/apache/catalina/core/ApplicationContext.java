@@ -72,13 +72,18 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRequestAttributeListener;
+import javax.servlet.ServletRequestListener;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
 import javax.servlet.descriptor.TaglibDescriptor;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionListener;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -870,6 +875,9 @@ public class ApplicationContext
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
+        if (context.findFilterDef(filterName) != null) {
+            return null;
+        }
         FilterDef filterDef = new FilterDef();
         filterDef.setFilterName(filterName);
         filterDef.setFilterClass(className);
@@ -889,6 +897,10 @@ public class ApplicationContext
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
+        if (context.findFilterDef(filterName) != null) {
+            return null;
+        }
+        // FIXME: Filter instance unicity nonsense
         FilterDef filterDef = new FilterDef();
         filterDef.setFilterName(filterName);
         filterDef.setFilterClass(filter.getClass().getName());
@@ -903,9 +915,6 @@ public class ApplicationContext
 
     public FilterRegistration.Dynamic addFilter(String filterName,
             Class<? extends Filter> filterClass) {
-        if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
-        }
         return addFilter(filterName, filterClass.getName());
     }
 
@@ -919,6 +928,9 @@ public class ApplicationContext
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
+        if (context.findChild(servletName) != null) {
+            return null;
+        }
         Wrapper wrapper = context.createWrapper();
         wrapper.setDynamic(true);
         wrapper.setName(servletName);
@@ -931,9 +943,6 @@ public class ApplicationContext
     public ServletRegistration.Dynamic addServlet(String servletName,
             Class<? extends Servlet> clazz) throws IllegalArgumentException,
             IllegalStateException {
-        if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
-        }
         return addServlet(servletName, clazz.getName());
     }
 
@@ -946,6 +955,10 @@ public class ApplicationContext
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
+        if (context.findChild(servletName) != null) {
+            return null;
+        }
+        // FIXME: Servlet instance unicity nonsense
         Wrapper wrapper = context.createWrapper();
         wrapper.setDynamic(true);
         wrapper.setName(servletName);
@@ -1047,8 +1060,7 @@ public class ApplicationContext
         try {
             return (T) context.getInstanceManager().newInstance(c);
         } catch (Throwable e) {
-            throw new ServletException
-                (sm.getString("applicationContext.create"), e);
+            throw new ServletException(sm.getString("applicationContext.create"), e);
         }
     }
 
@@ -1061,8 +1073,7 @@ public class ApplicationContext
         try {
             return (T) context.getInstanceManager().newInstance(c);
         } catch (Throwable e) {
-            throw new ServletException
-                (sm.getString("applicationContext.create"), e);
+            throw new ServletException(sm.getString("applicationContext.create"), e);
         }
     }
 
@@ -1081,13 +1092,6 @@ public class ApplicationContext
     }
 
 
-    /**
-     * @throws IllegalStateException if the context has already been initialised
-     * @throws IllegalArgumentException TODO SERVLET3 Something to do with SSL
-     *                                  but the spec language is not clear
-     *                                  If an unsupported tracking mode is
-     *                                  requested
-     */
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
@@ -1118,7 +1122,20 @@ public class ApplicationContext
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
-        context.addApplicationListener(className);
+        EventListener listenerInstance = null;
+        try {
+            Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
+            listenerInstance = (EventListener) context.getInstanceManager().newInstance(clazz);
+        } catch (Throwable t) {
+            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
+                    className, getContextPath()), t);
+        }
+        checkListenerType(listenerInstance);
+        if (context.getApplicationLifecycleListeners() != null && listenerInstance instanceof ServletContextListener) {
+            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
+                    className, getContextPath()));
+        }
+        context.addApplicationListenerInstance(listenerInstance);
     }
 
 
@@ -1129,6 +1146,11 @@ public class ApplicationContext
         if (!context.isStarting()) {
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
+        }
+        checkListenerType(listener);
+        if (context.getApplicationLifecycleListeners() != null && listener instanceof ServletContextListener) {
+            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
+                    listener.getClass().getName(), getContextPath()));
         }
         context.addApplicationListenerInstance(listener);
     }
@@ -1142,14 +1164,19 @@ public class ApplicationContext
             throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
+        EventListener listenerInstance = null;
         try {
-            EventListener listenerInstance = 
-                (EventListener) context.getInstanceManager().newInstance(listenerClass);
-            context.addApplicationListenerInstance(listenerInstance);
+            listenerInstance = (EventListener) context.getInstanceManager().newInstance(listenerClass);
         } catch (Exception e) {
-            // FIXME: better error
-            throw new IllegalStateException(e);
+            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
+                    listenerClass.getName(), getContextPath()), e);
         }
+        checkListenerType(listenerInstance);
+        if (context.getApplicationLifecycleListeners() != null && listenerInstance instanceof ServletContextListener) {
+            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
+                    listenerClass.getName(), getContextPath()));
+        }
+        context.addApplicationListenerInstance(listenerInstance);
     }
 
 
@@ -1165,10 +1192,10 @@ public class ApplicationContext
         T listenerInstance = null;
         try {
             listenerInstance = (T) context.getInstanceManager().newInstance(clazz);
-        } catch (Exception e) {
-            // FIXME: better error
-            throw new ServletException(e);
+        } catch (Throwable t) {
+            throw new ServletException(sm.getString("applicationContext.create"), t);
         }
+        checkListenerType(listenerInstance);
         return listenerInstance;
     }
 
@@ -1236,6 +1263,19 @@ public class ApplicationContext
     }
     
     // -------------------------------------------------------- Package Methods
+    
+    protected void checkListenerType(EventListener listener) {
+        if (!(listener instanceof ServletContextListener)
+                && !(listener instanceof ServletContextAttributeListener)
+                && !(listener instanceof ServletRequestListener)
+                && !(listener instanceof ServletRequestAttributeListener)
+                && !(listener instanceof HttpSessionListener)
+                && !(listener instanceof HttpSessionAttributeListener)) {
+            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
+                    listener.getClass().getName(), getContextPath()));
+        }
+    }
+    
     protected StandardContext getContext() {
         return this.context;
     }
