@@ -250,9 +250,9 @@ public class StandardContext
 
 
     /**
-     * The set of instantiated application lifecycle listener objects</code>.
+     * The set of instantiated listener objects</code>.
      */
-    protected Object otherListenersInstances[] = null;
+    protected Object listenersInstances[] = null;
 
 
     /**
@@ -3893,12 +3893,11 @@ public class StandardContext
         for (int i = 0; i < results.length; i++) {
             if (results[i] instanceof ServletContextListener) {
                 contextLifecycleListeners.add(results[i]);
-            } else {
-                otherListeners.add(results[i]);
             }
+            otherListeners.add(results[i]);
         }
 
-        this.otherListenersInstances = otherListeners.toArray();
+        this.listenersInstances = otherListeners.toArray();
         setApplicationLifecycleListeners(contextLifecycleListeners.toArray());
 
         // Send application start events
@@ -3949,15 +3948,11 @@ public class StandardContext
             log.debug("Configuring application event listeners");
 
         // Instantiate the required listeners
-        Object listeners[] = otherListenersInstances;
-        otherListenersInstances = null;
+        Object listeners[] = listenersInstances;
         EventListener listenerInstances[] = applicationListenerInstances;
         EventListener results[] = new EventListener[listeners.length + listenerInstances.length];
         boolean ok = true;
         for (int i = 0; i < listeners.length; i++) {
-            if (getLogger().isDebugEnabled())
-                getLogger().debug(" Configuring event listener class '" +
-                    listeners[i] + "'");
             try {
                 results[i] = (EventListener) listeners[i];
             } catch (Throwable t) {
@@ -3974,6 +3969,7 @@ public class StandardContext
             getLogger().error(sm.getString("standardContext.applicationSkipped"));
             return (false);
         }
+        this.listenersInstances = results;
 
         // Sort listeners in two arrays
         ArrayList<EventListener> eventListeners = new ArrayList<EventListener>();
@@ -4031,36 +4027,11 @@ public class StandardContext
                         ok = false;
                     }
                 }
-                try {
-                    getInstanceManager().destroyInstance(listeners[i]);
-                } catch (Throwable t) {
-                    getLogger().error
-                       (sm.getString("standardContext.listenerStop",
-                            listeners[i].getClass().getName()), t);
-                    ok = false;
-                }
             }
         }
 
         // Annotation processing
-        listeners = getApplicationSessionLifecycleListeners();
-        if (listeners != null && (listeners.length > 0)) {
-            for (int i = listeners.length - 1; i >= 0; i--) {
-                if (listeners[i] == null)
-                    continue;
-                try {
-                    getInstanceManager().destroyInstance(listeners[i]);
-                } catch (Throwable t) {
-                    getLogger().error
-                        (sm.getString("standardContext.listenerStop",
-                            listeners[i].getClass().getName()), t);
-                    ok = false;
-                }
-            }
-        }
-        
-        // Annotation processing
-        listeners = getApplicationEventListeners();
+        listeners = this.listenersInstances;
         if (listeners != null && (listeners.length > 0)) {
             for (int i = listeners.length - 1; i >= 0; i--) {
                 if (listeners[i] == null)
@@ -4079,6 +4050,7 @@ public class StandardContext
         setApplicationEventListeners(null);
         setApplicationLifecycleListeners(null);
         setApplicationSessionLifecycleListeners(null);
+        this.listenersInstances = null;
 
         return (ok);
 
@@ -4771,7 +4743,7 @@ public class StandardContext
         applicationEventListenersInstances = null;
         applicationLifecycleListenersInstances = null;
         applicationSessionLifecycleListenersInstances = null;
-        otherListenersInstances = null;
+        listenersInstances = null;
         instanceManager = null;
         
         authenticator = null;
