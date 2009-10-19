@@ -354,7 +354,7 @@ public class StandardSession
 
         // Notify interested application event listeners
         Context context = (Context) manager.getContainer();
-        Object listeners[] = context.getApplicationLifecycleListeners();
+        Object listeners[] = context.getApplicationSessionLifecycleListeners();
         if (listeners != null) {
             HttpSessionEvent event =
                 new HttpSessionEvent(getSession());
@@ -674,7 +674,7 @@ public class StandardSession
         
             // Notify interested application event listeners
             Context context = (Context) manager.getContainer();
-            Object listeners[] = context.getApplicationLifecycleListeners();
+            Object listeners[] = context.getApplicationSessionLifecycleListeners();
             if (notify && listeners != null && (listeners.length > 0)) {
                 HttpSessionEvent event =
                     new HttpSessionEvent(getSession());

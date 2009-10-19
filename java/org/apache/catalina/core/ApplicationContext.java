@@ -900,7 +900,16 @@ public class ApplicationContext
         if (context.findFilterDef(filterName) != null) {
             return null;
         }
-        // FIXME: Filter instance unicity nonsense
+        // Filter instance unicity
+        for (Container container : context.getParent().findChildren()) {
+            if (container instanceof StandardContext) {
+                for (ApplicationFilterConfig filterConfig : ((StandardContext) container).findApplicationFilterConfigs()) {
+                    if (filterConfig.getFilterInstance() == filter) {
+                        return null;
+                    }
+                }
+            }
+        }
         FilterDef filterDef = new FilterDef();
         filterDef.setFilterName(filterName);
         filterDef.setFilterClass(filter.getClass().getName());
@@ -958,7 +967,14 @@ public class ApplicationContext
         if (context.findChild(servletName) != null) {
             return null;
         }
-        // FIXME: Servlet instance unicity nonsense
+        // Servlet instance unicity
+        for (Container container : context.getParent().findChildren()) {
+            for (Container wrapper : container.findChildren()) {
+                if (((Wrapper) wrapper).getServlet() == servlet) {
+                    return null;
+                }
+            }
+        }
         Wrapper wrapper = context.createWrapper();
         wrapper.setDynamic(true);
         wrapper.setName(servletName);
@@ -1082,6 +1098,10 @@ public class ApplicationContext
         if (restricted) {
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
+        if (!context.isStarting()) {
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
+                            getContextPath()));
+        }
         mergeParameters();
         if (parameters.get(name) != null) {
             return false;
@@ -1097,8 +1117,7 @@ public class ApplicationContext
             throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(
-                    sm.getString("applicationContext.setSessionTracking.ise",
+            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
                             getContextPath()));
         }
         // Check that only supported tracking modes have been requested
@@ -1109,7 +1128,11 @@ public class ApplicationContext
                         sessionTrackingMode.toString(), getContextPath()));
             }
         }
-        // TODO: Possible SSL tracking mode
+        // If SSL is specified, it should be the only one used
+        if (sessionTrackingModes.contains(SessionTrackingMode.SSL) && sessionTrackingModes.size() > 1) {
+            throw new IllegalArgumentException(sm.getString(
+                    "applicationContext.setSessionTracking.ssl", getContextPath()));
+        }
         context.setSessionTrackingModes(sessionTrackingModes);
     }
 

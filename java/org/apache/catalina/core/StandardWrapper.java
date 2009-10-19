@@ -949,7 +949,7 @@ public class StandardWrapper
      * Return the associated servlet instance.
      */
     public Servlet getServlet() {
-        return instance;
+        return (servletInstance != null) ? servletInstance : instance;
     }
     
     

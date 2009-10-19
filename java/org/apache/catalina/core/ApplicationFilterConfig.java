@@ -479,6 +479,14 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     
 
     /**
+     * Return the filter instance.
+     */
+    public Filter getFilterInstance() {
+        return (filterInstance != null) ? filterInstance : filter;
+    }
+    
+
+    /**
      * Return the filter definition we are configured for.
      */
     public FilterDef getFilterDef() {

@@ -160,6 +160,27 @@ public interface Context extends Container {
 
 
     /**
+     * Return the set of initialized application lifecycle listener objects,
+     * in the order they were specified in the web application deployment
+     * descriptor, for this application.
+     *
+     * @exception IllegalStateException if this method is called before
+     *  this application has started, or after it has been stopped
+     */
+    public Object[] getApplicationSessionLifecycleListeners();
+
+
+    /**
+     * Store the set of initialized application lifecycle listener objects,
+     * in the order they were specified in the web application deployment
+     * descriptor, for this application.
+     *
+     * @param listeners The set of instantiated listener objects.
+     */
+    public void setApplicationSessionLifecycleListeners(Object listeners[]);
+
+
+    /**
      * Return the application available flag for this Context.
      */
     public boolean getAvailable();

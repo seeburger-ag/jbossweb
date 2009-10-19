@@ -234,15 +234,25 @@ public class StandardContext
     /**
      * The set of instantiated application event listener objects</code>.
      */
-    protected Object applicationEventListenersObjects[] = 
-        new Object[0];
+    protected Object applicationEventListenersInstances[] = null;
 
 
     /**
      * The set of instantiated application lifecycle listener objects</code>.
      */
-    protected Object applicationLifecycleListenersObjects[] = 
-        new Object[0];
+    protected Object applicationLifecycleListenersInstances[] = null;
+
+
+    /**
+     * The set of instantiated application session lifecycle listener objects</code>.
+     */
+    protected Object applicationSessionLifecycleListenersInstances[] = null;
+
+
+    /**
+     * The set of instantiated application lifecycle listener objects</code>.
+     */
+    protected Object otherListenersInstances[] = null;
 
 
     /**
@@ -330,9 +340,8 @@ public class StandardContext
     /**
      * Session tracking modes.
      */
-    // FIXME: see about SSL tracking mode
     protected Set<SessionTrackingMode> defaultSessionTrackingModes = 
-        EnumSet.of(SessionTrackingMode.URL, SessionTrackingMode.COOKIE /*, SessionTrackingMode.SSL*/);
+        EnumSet.of(SessionTrackingMode.URL, SessionTrackingMode.COOKIE /*TODO:, SessionTrackingMode.SSL*/);
     
 
     /**
@@ -944,7 +953,7 @@ public class StandardContext
      *  this application has started, or after it has been stopped
      */
     public Object[] getApplicationEventListeners() {
-        return (applicationEventListenersObjects);
+        return (applicationEventListenersInstances);
     }
 
 
@@ -956,7 +965,32 @@ public class StandardContext
      * @param listeners The set of instantiated listener objects.
      */
     public void setApplicationEventListeners(Object listeners[]) {
-        applicationEventListenersObjects = listeners;
+        applicationEventListenersInstances = listeners;
+    }
+
+
+    /**
+     * Return the set of initialized application lifecycle listener objects,
+     * in the order they were specified in the web application deployment
+     * descriptor, for this application.
+     *
+     * @exception IllegalStateException if this method is called before
+     *  this application has started, or after it has been stopped
+     */
+    public Object[] getApplicationSessionLifecycleListeners() {
+        return (applicationSessionLifecycleListenersInstances);
+    }
+
+
+    /**
+     * Store the set of initialized application lifecycle listener objects,
+     * in the order they were specified in the web application deployment
+     * descriptor, for this application.
+     *
+     * @param listeners The set of instantiated listener objects.
+     */
+    public void setApplicationSessionLifecycleListeners(Object listeners[]) {
+        applicationSessionLifecycleListenersInstances = listeners;
     }
 
 
@@ -969,7 +1003,7 @@ public class StandardContext
      *  this application has started, or after it has been stopped
      */
     public Object[] getApplicationLifecycleListeners() {
-        return (applicationLifecycleListenersObjects);
+        return (applicationLifecycleListenersInstances);
     }
 
 
@@ -981,7 +1015,7 @@ public class StandardContext
      * @param listeners The set of instantiated listener objects.
      */
     public void setApplicationLifecycleListeners(Object listeners[]) {
-        applicationLifecycleListenersObjects = listeners;
+        applicationLifecycleListenersInstances = listeners;
     }
 
 
@@ -3818,8 +3852,10 @@ public class StandardContext
      * Configure the set of instantiated application event listeners
      * for this Context.  Return <code>true</code> if all listeners wre
      * initialized successfully, or <code>false</code> otherwise.
+     * Only context listeners are actually set in stone at this point,
+     * all others are stored in a temporary location.
      */
-    public boolean listenerStart() {
+    public boolean contextListenerStart() {
 
         if (log.isDebugEnabled())
             log.debug("Configuring application event listeners");
@@ -3845,29 +3881,25 @@ public class StandardContext
         for (int i = 0; i < listenerInstances.length; i++) {
             results[i + listeners.length] = listenerInstances[i];
         }
+        applicationListenerInstances = new EventListener[0];
         if (!ok) {
             getLogger().error(sm.getString("standardContext.applicationSkipped"));
             return (false);
         }
 
         // Sort listeners in two arrays
-        ArrayList<EventListener> eventListeners = new ArrayList<EventListener>();
-        ArrayList<EventListener> lifecycleListeners = new ArrayList<EventListener>();
+        ArrayList<EventListener> otherListeners = new ArrayList<EventListener>();
+        ArrayList<EventListener> contextLifecycleListeners = new ArrayList<EventListener>();
         for (int i = 0; i < results.length; i++) {
-            if ((results[i] instanceof ServletContextAttributeListener)
-                || (results[i] instanceof ServletRequestAttributeListener)
-                || (results[i] instanceof ServletRequestListener)
-                || (results[i] instanceof HttpSessionAttributeListener)) {
-                eventListeners.add(results[i]);
-            }
-            if ((results[i] instanceof ServletContextListener)
-                || (results[i] instanceof HttpSessionListener)) {
-                lifecycleListeners.add(results[i]);
+            if (results[i] instanceof ServletContextListener) {
+                contextLifecycleListeners.add(results[i]);
+            } else {
+                otherListeners.add(results[i]);
             }
         }
 
-        setApplicationEventListeners(eventListeners.toArray());
-        setApplicationLifecycleListeners(lifecycleListeners.toArray());
+        this.otherListenersInstances = otherListeners.toArray();
+        setApplicationLifecycleListeners(contextLifecycleListeners.toArray());
 
         // Send application start events
 
@@ -3906,6 +3938,66 @@ public class StandardContext
     }
 
 
+    /**
+     * Configure the set of instantiated application event listeners
+     * for this Context.  Return <code>true</code> if all listeners wre
+     * initialized successfully, or <code>false</code> otherwise.
+     */
+    public boolean listenerStart() {
+
+        if (log.isDebugEnabled())
+            log.debug("Configuring application event listeners");
+
+        // Instantiate the required listeners
+        Object listeners[] = otherListenersInstances;
+        otherListenersInstances = null;
+        EventListener listenerInstances[] = applicationListenerInstances;
+        EventListener results[] = new EventListener[listeners.length + listenerInstances.length];
+        boolean ok = true;
+        for (int i = 0; i < listeners.length; i++) {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug(" Configuring event listener class '" +
+                    listeners[i] + "'");
+            try {
+                results[i] = (EventListener) listeners[i];
+            } catch (Throwable t) {
+                getLogger().error
+                    (sm.getString("standardContext.applicationListener",
+                                  listeners[i]), t);
+                ok = false;
+            }
+        }
+        for (int i = 0; i < listenerInstances.length; i++) {
+            results[i + listeners.length] = listenerInstances[i];
+        }
+        if (!ok) {
+            getLogger().error(sm.getString("standardContext.applicationSkipped"));
+            return (false);
+        }
+
+        // Sort listeners in two arrays
+        ArrayList<EventListener> eventListeners = new ArrayList<EventListener>();
+        ArrayList<EventListener> sessionLifecycleListeners = new ArrayList<EventListener>();
+        for (int i = 0; i < results.length; i++) {
+            if ((results[i] instanceof ServletContextAttributeListener)
+                || (results[i] instanceof ServletRequestAttributeListener)
+                || (results[i] instanceof ServletRequestListener)
+                || (results[i] instanceof HttpSessionAttributeListener)) {
+                eventListeners.add(results[i]);
+            }
+            if (results[i] instanceof HttpSessionListener) {
+                sessionLifecycleListeners.add(results[i]);
+            }
+        }
+
+        setApplicationEventListeners(eventListeners.toArray());
+        setApplicationSessionLifecycleListeners(sessionLifecycleListeners.toArray());
+
+        return (ok);
+
+    }
+    
+    
     /**
      * Send an application stop event to all interested listeners.
      * Return <code>true</code> if all events were sent successfully,
@@ -3951,6 +4043,23 @@ public class StandardContext
         }
 
         // Annotation processing
+        listeners = getApplicationSessionLifecycleListeners();
+        if (listeners != null && (listeners.length > 0)) {
+            for (int i = listeners.length - 1; i >= 0; i--) {
+                if (listeners[i] == null)
+                    continue;
+                try {
+                    getInstanceManager().destroyInstance(listeners[i]);
+                } catch (Throwable t) {
+                    getLogger().error
+                        (sm.getString("standardContext.listenerStop",
+                            listeners[i].getClass().getName()), t);
+                    ok = false;
+                }
+            }
+        }
+        
+        // Annotation processing
         listeners = getApplicationEventListeners();
         if (listeners != null && (listeners.length > 0)) {
             for (int i = listeners.length - 1; i >= 0; i--) {
@@ -3969,6 +4078,7 @@ public class StandardContext
         
         setApplicationEventListeners(null);
         setApplicationLifecycleListeners(null);
+        setApplicationSessionLifecycleListeners(null);
 
         return (ok);
 
@@ -4362,9 +4472,34 @@ public class StandardContext
                 lifecycle.fireLifecycleEvent(AFTER_START_EVENT, null);
             }
             
-            // FIXME: listener start order is wrong: context listeners should be started there, 
-            // but all others should be after complete config
             // Configure and call application event listeners
+            if (ok) {
+                if (!contextListenerStart()) {
+                    log.error( "Error listenerStart");
+                    ok = false;
+                }
+            }
+
+           // Start manager
+            if (ok && (manager != null) && (manager instanceof Lifecycle)) {
+                ok = false;
+                ((Lifecycle) getManager()).start();
+                ok = true;
+            }
+
+            // Configure and call application filters
+            if (ok) {
+                if (!filterStart()) {
+                    log.error( "Error filterStart");
+                    ok = false;
+                }
+            }
+            
+            // Load and initialize all "load on startup" servlets
+            if (ok) {
+                loadOnStartup(findChildren());
+            }
+            
             if (ok) {
                 if (!listenerStart()) {
                     log.error( "Error listenerStart");
@@ -4381,31 +4516,11 @@ public class StandardContext
                 ok = false;
             }
 
-           // Start manager
-            if (ok && (manager != null) && (manager instanceof Lifecycle)) {
-                ok = false;
-                ((Lifecycle) getManager()).start();
-                ok = true;
-            }
-
             // Start ContainerBackgroundProcessor thread
             if (ok) {
                 super.threadStart();
             }
 
-            // Configure and call application filters
-            if (ok) {
-                if (!filterStart()) {
-                    log.error( "Error filterStart");
-                    ok = false;
-                }
-            }
-            
-            // Load and initialize all "load on startup" servlets
-            if (ok) {
-                loadOnStartup(findChildren());
-            }
-            
         } catch (Throwable t) {
             // This can happen in rare cases with custom components
             ok = false;
@@ -4653,8 +4768,10 @@ public class StandardContext
         distributable = false;
 
         applicationListeners = new String[0];
-        applicationEventListenersObjects = new Object[0];
-        applicationLifecycleListenersObjects = new Object[0];
+        applicationEventListenersInstances = null;
+        applicationLifecycleListenersInstances = null;
+        applicationSessionLifecycleListenersInstances = null;
+        otherListenersInstances = null;
         instanceManager = null;
         
         authenticator = null;
