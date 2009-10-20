@@ -47,10 +47,8 @@ public class C2BConverter {
     public C2BConverter(String charset)
         throws IOException {
         try {
-            byte[] newReplacement = { (byte)'?' };
             encoder = Charset.forName(charset).newEncoder();
-            encoder = encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-            encoder = encoder.replaceWith(newReplacement);
+            encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }
