@@ -22,6 +22,9 @@
       <fix>
         <bug>46950</bug>: Allow renegotiation to work for client certificates. (markt)
       </fix>
+      <fix>
+        Improve fix for <jboss-jira>JBAS-6442</jboss-jira>, which failed for some encodings. (jfclere, remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
