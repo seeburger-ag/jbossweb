@@ -384,12 +384,12 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
             }
         }
         String className = variableInfo.getClassName();
-        if (className != null) {
+        if (className == null) {
             className = "java.lang.String";
         }
         boolean declare = true;
         if (variableInfo.getDeclare() != null) {
-            declare = JspUtil.booleanValue(s);
+            declare = JspUtil.booleanValue(variableInfo.getDeclare());
         }
         return new TagVariableInfo(variableInfo.getNameGiven(), variableInfo.getNameFromAttribute(), 
                 className, declare, scope);
