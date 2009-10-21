@@ -145,6 +145,15 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         this.pi = pi;
         this.err = err;
         
+        if (location == null) {
+            // The URI points to the TLD itself or to a JAR file in which the
+            // TLD is stored
+            location = generateTLDLocation(uri, ctxt);
+            if (location != null) {
+                uri = location[0];
+            }
+        }
+
         URL jarFileUrl = null;
         if (location == null) {
             err.jspError("jsp.error.file.not.found", uriIn);
@@ -159,7 +168,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         
         org.apache.catalina.deploy.jsp.TagLibraryInfo tagLibraryInfo = 
             ((HashMap<String, org.apache.catalina.deploy.jsp.TagLibraryInfo>) 
-            ctxt.getServletContext().getAttribute(Globals.JSP_TAG_LIBRARIES)).get(uriIn);
+            ctxt.getServletContext().getAttribute(Globals.JSP_TAG_LIBRARIES)).get(uri);
 
         ArrayList<TagInfo> tagInfos = new ArrayList<TagInfo>();
         ArrayList<TagFileInfo> tagFileInfos = new ArrayList<TagFileInfo>();
@@ -205,6 +214,45 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         this.tags = tagInfos.toArray(new TagInfo[0]);
         this.tagFiles = tagFileInfos.toArray(new TagFileInfo[0]);
         this.functions = functionInfos.values().toArray(new FunctionInfo[0]);
+    }
+
+    /**
+     * @param uri The uri of the TLD @param ctxt The compilation context
+     * 
+     * @return String array whose first element denotes the path to the TLD. If
+     * the path to the TLD points to a jar file, then the second element denotes
+     * the name of the TLD entry in the jar file, which is hardcoded to
+     * META-INF/taglib.tld.
+     */
+    private String[] generateTLDLocation(String uri, JspCompilationContext ctxt)
+            throws JasperException {
+
+        int uriType = uriType(uri);
+        if (uriType == ABS_URI) {
+            err.jspError("jsp.error.taglibDirective.absUriCannotBeResolved",
+                    uri);
+        } else if (uriType == NOROOT_REL_URI) {
+            uri = ctxt.resolveRelativeUri(uri);
+        }
+
+        String[] location = new String[2];
+        location[0] = uri;
+        if (location[0].endsWith("jar")) {
+            URL url = null;
+            try {
+                url = ctxt.getResource(location[0]);
+            } catch (Exception ex) {
+                err.jspError("jsp.error.tld.unable_to_get_jar", location[0], ex
+                        .toString());
+            }
+            if (url == null) {
+                err.jspError("jsp.error.tld.missing_jar", location[0]);
+            }
+            location[0] = url.toString();
+            location[1] = "META-INF/taglib.tld";
+        }
+
+        return location;
     }
 
     public TagLibraryInfo[] getTagLibraryInfos() {

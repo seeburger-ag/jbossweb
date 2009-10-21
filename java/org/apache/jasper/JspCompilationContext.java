@@ -569,14 +569,6 @@ public class JspCompilationContext {
             }
             return location;
         }
-        /*
-        System.out.print("Look for: " + uri + " TLDs list: ");
-        Iterator<String> keys = jspTagLibraries.keySet().iterator();
-        while (keys.hasNext()) {
-            System.out.print(keys.next() + ", ");
-        }
-        System.out.println();
-        */
     }
 
     /**
