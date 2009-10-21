@@ -68,6 +68,7 @@ import javax.servlet.jsp.tagext.ValidationMessage;
 import javax.servlet.jsp.tagext.VariableInfo;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.util.RequestUtil;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.jboss.logging.Logger;
@@ -169,6 +170,9 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         org.apache.catalina.deploy.jsp.TagLibraryInfo tagLibraryInfo = 
             ((HashMap<String, org.apache.catalina.deploy.jsp.TagLibraryInfo>) 
             ctxt.getServletContext().getAttribute(Globals.JSP_TAG_LIBRARIES)).get(uri);
+        if (tagLibraryInfo == null) {
+            err.jspError("jsp.error.file.not.found", uriIn);
+        }
 
         ArrayList<TagInfo> tagInfos = new ArrayList<TagInfo>();
         ArrayList<TagFileInfo> tagFileInfos = new ArrayList<TagFileInfo>();
@@ -233,6 +237,9 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                     uri);
         } else if (uriType == NOROOT_REL_URI) {
             uri = ctxt.resolveRelativeUri(uri);
+            if (uri != null) {
+                uri = RequestUtil.normalize(uri);
+            }
         }
 
         String[] location = new String[2];
