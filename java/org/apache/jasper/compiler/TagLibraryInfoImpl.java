@@ -161,7 +161,10 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         }
         if (location[0] != null && location[0].endsWith(".jar")) {
             try {
-                jarFileUrl = new URL("jar:file:" + location[0] + "!/");
+                URL jarUrl = ctxt.getServletContext().getResource(location[0]);
+                if (jarUrl != null) {
+                    jarFileUrl = new URL("jar:" + jarUrl + "!/");
+                }
             } catch (MalformedURLException ex) {
                 err.jspError("jsp.error.file.not.found", uriIn);
             }

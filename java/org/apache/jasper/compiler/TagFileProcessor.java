@@ -569,10 +569,10 @@ class TagFileProcessor {
 
         URL tagFileJarUrl = null;
         if (tagFilePath.startsWith("/META-INF/")) {
-            try { 
-                tagFileJarUrl = new URL("jar:" +
-                        compiler.getCompilationContext().getTldLocation(
-                        tagInfo.getTagLibrary().getURI())[0] + "!/");
+            try {
+                String[] location = compiler.getCompilationContext().getTldLocation(tagInfo.getTagLibrary().getURI());
+                URL jarUrl = compiler.getCompilationContext().getServletContext().getResource(location[0]);
+                tagFileJarUrl = new URL("jar:" + jarUrl + "!/");
             } catch (MalformedURLException e) {
                 // Ignore ...
             }
