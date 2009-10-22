@@ -43,7 +43,7 @@ public class TagInfo {
     /*
      * Additional private fields for 2.0 info
      */
-    protected boolean dynamicAttributes;
+    protected String dynamicAttributes;
     
     public void addTagAttributeInfo(TagAttributeInfo tagAttributeInfo) {
         tagAttributeInfos.add(tagAttributeInfo);
@@ -125,11 +125,11 @@ public class TagInfo {
         this.largeIcon = largeIcon;
     }
 
-    public boolean isDynamicAttributes() {
+    public String getDynamicAttributes() {
         return dynamicAttributes;
     }
 
-    public void setDynamicAttributes(boolean dynamicAttributes) {
+    public void setDynamicAttributes(String dynamicAttributes) {
         this.dynamicAttributes = dynamicAttributes;
     }
 

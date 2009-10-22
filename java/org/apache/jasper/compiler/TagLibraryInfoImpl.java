@@ -276,6 +276,8 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         ArrayList<TagAttributeInfo> attributeInfos = new ArrayList<TagAttributeInfo>();
         ArrayList<TagVariableInfo> variableInfos = new ArrayList<TagVariableInfo>();
 
+        boolean dynamicAttributes = JspUtil.booleanValue(tagInfo.getDynamicAttributes());
+
         org.apache.catalina.deploy.jsp.TagAttributeInfo attributeInfosArray[] = tagInfo.getTagAttributeInfos();
         for (int i = 0; i < attributeInfosArray.length; i++) {
             TagAttributeInfo attributeInfo = createTagAttributeInfo(attributeInfosArray[i]);
@@ -299,11 +301,11 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                         e);
             }
         }
-
+        
         return new TagInfo(tagInfo.getTagName(), tagInfo.getTagClassName(), tagInfo.getBodyContent(), 
                 tagInfo.getInfoString(), this, tei, attributeInfos.toArray(new TagAttributeInfo[0]), 
                 tagInfo.getDisplayName(), tagInfo.getSmallIcon(), tagInfo.getLargeIcon(),
-                variableInfos.toArray(new TagVariableInfo[0]), tagInfo.isDynamicAttributes());
+                variableInfos.toArray(new TagVariableInfo[0]), dynamicAttributes);
     }
     
     protected TagAttributeInfo createTagAttributeInfo(org.apache.catalina.deploy.jsp.TagAttributeInfo attributeInfo) {
