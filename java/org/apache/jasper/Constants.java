@@ -83,7 +83,7 @@ public class Constants {
     /**
      * Default size for the tag buffers.
      */
-    public static final int DEFAULT_TAG_BUFFER_SIZE = 512;
+    public static final int DEFAULT_TAG_BUFFER_SIZE = Integer.parseInt(System.getProperty("org.apache.jasper.Constants.DEFAULT_TAG_BUFFER_SIZE", "512"));
 
     /**
      * Default tag handler pool size.
