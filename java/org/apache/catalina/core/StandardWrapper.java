@@ -989,9 +989,6 @@ public class StandardWrapper
                 synchronized (this) {
                     if (instance == null) {
                         try {
-                            if (log.isDebugEnabled())
-                                log.debug("Allocating non-STM instance");
-
                             instance = loadServlet();
                         } catch (ServletException e) {
                             throw e;
@@ -1004,8 +1001,6 @@ public class StandardWrapper
             }
 
             if (!singleThreadModel) {
-                if (log.isTraceEnabled())
-                    log.trace("  Returning non-STM instance");
                 return (instance);
             }
 
@@ -1033,8 +1028,6 @@ public class StandardWrapper
                     }
                 }
             }
-            if (log.isTraceEnabled())
-                log.trace("  Returning allocated STM instance");
             countAllocated++;
             return (Servlet) instancePool.pop();
 

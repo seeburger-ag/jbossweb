@@ -56,7 +56,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -969,7 +968,7 @@ public class Request
      * @param remoteAddr The remote IP address
      */
     public void setRemoteAddr(String remoteAddr) {
-        // Not used
+        this.remoteAddr = remoteAddr;
     }
 
 
@@ -980,7 +979,7 @@ public class Request
      * @param remoteHost The remote host name
      */
     public void setRemoteHost(String remoteHost) {
-        // Not used
+        this.remoteHost = remoteHost;
     }
 
 
