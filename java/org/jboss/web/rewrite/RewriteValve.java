@@ -674,9 +674,9 @@ public class RewriteValve extends ValveBase
             rule.setNocase(true);
         } else if (flag.startsWith("noescape") || flag.startsWith("NE")) {
             rule.setNoescape(true);
+        /* Proxy not supported, would require strong proxy capabilities
         } else if (flag.startsWith("proxy") || flag.startsWith("P")) {
-            // FIXME: Proxy not supported at the moment, would require proxy capabilities
-            //rule.setProxy(true);
+            rule.setProxy(true);*/
         } else if (flag.startsWith("qsappend") || flag.startsWith("QSA")) {
             rule.setQsappend(true);
         } else if (flag.startsWith("redirect") || flag.startsWith("R")) {

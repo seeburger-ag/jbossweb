@@ -77,7 +77,7 @@ public class TomcatResolver extends Resolver {
         } else if (key.equals("REQUEST_METHOD")) {
             return request.getMethod();
         } else if (key.equals("SCRIPT_FILENAME")) {
-            return request.getRealPath(request.getServletPath()); //FIXME ?
+            return request.getRealPath(request.getServletPath());
         } else if (key.equals("REQUEST_PATH")) {
             return request.getRequestPathMB().toString();
         } else if (key.equals("CONTEXT_PATH")) {

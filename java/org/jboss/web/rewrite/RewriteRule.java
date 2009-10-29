@@ -278,11 +278,11 @@ public class RewriteRule {
      *  module. Use this flag to achieve a more powerful implementation of the 
      *  ProxyPass directive, to map some remote stuff into the namespace of 
      *  the local server.
-     *  FIXME: No proxy
+     *  Note: No proxy
      */
 
     /**
-     * FIXME: No passthrough ?
+     * Note: No passthrough
      */
     
     /**
