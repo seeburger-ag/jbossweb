@@ -1764,16 +1764,6 @@ public class AprEndpoint {
                                             // Close socket and clear pool
                                             Socket.destroy(desc[n*2+1]);
                                         }
-                                        // FIXME: decide vs destroy
-                                        /*
-                                        if ((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP) {
-                                            // Destroy and reallocate the poller
-                                            reset = true;
-                                            if (skip == null) {
-                                                skip = new ArrayList<Long>();
-                                            }
-                                            skip.add(desc[n*2+1]);
-                                        }*/
                                     } else if ((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) {
                                         if (!processSocket(desc[n*2+1], SocketStatus.OPEN_READ)) {
                                             // Close socket and clear pool
@@ -1789,16 +1779,6 @@ public class AprEndpoint {
                                         || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
                                     // Close socket and clear pool
                                     Socket.destroy(desc[n*2+1]);
-                                    // FIXME: decide vs destroy
-                                    /*
-                                    if ((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP) {
-                                        // Destroy and reallocate the poller
-                                        reset = true;
-                                        if (skip == null) {
-                                            skip = new ArrayList<Long>();
-                                        }
-                                        skip.add(desc[n*2+1]);
-                                    }*/
                                 } else if (!processSocket(desc[n*2+1])) {
                                     // Close socket and clear pool
                                     Socket.destroy(desc[n*2+1]);
@@ -1821,21 +1801,9 @@ public class AprEndpoint {
                             // Reallocate the current poller
                             int count = Poll.pollset(pollers[i], desc);
                             long newPoller = allocatePoller(actualPollerSize, pool, -1);
-                            // FIXME: don't restore connections for now, since I have not tested it
+                            // Don't restore connections for now, since I have not tested it
                             pollerSpace[i] = actualPollerSize;
                             connectionCount -= count;
-                            /*
-                            for (int j = 0; j < count; j++) {
-                                int events = (int) desc[2*j];
-                                long socket = desc[2*j+1];
-                                Poll.remove(pollers[i], socket);
-                                if (skip != null && skip.contains(socket)) {
-                                    continue;
-                                }
-                                if (Poll.add(newPoller, socket, events) != Status.APR_SUCCESS) {
-                                    // Skip
-                                }
-                            }*/
                             Poll.destroy(pollers[i]);
                             pollers[i] = newPoller;
                         }
