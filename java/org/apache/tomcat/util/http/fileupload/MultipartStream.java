@@ -188,9 +188,6 @@ public class MultipartStream
      */
     private String headerEncoding;
 
-    
-    private long fileSizeMax = -1;
-
 
     // ----------------------------------------------------------- Constructors
 
@@ -264,6 +261,7 @@ public class MultipartStream
      */
     public MultipartStream(InputStream input,
                            byte[] boundary)
+        throws IOException
     {
         this(input, boundary, DEFAULT_BUFSIZE);
     }
@@ -271,8 +269,6 @@ public class MultipartStream
 
     // --------------------------------------------------------- Public methods
 
-    
-    
 
     /**
      * Retrieves the character encoding used when reading the headers of an
@@ -285,16 +281,6 @@ public class MultipartStream
     public String getHeaderEncoding()
     {
         return headerEncoding;
-    }
-
-
-    public long getFileSizeMax() {
-        return fileSizeMax;
-    }
-
-
-    public void setFileSizeMax(long fileSizeMax) {
-        this.fileSizeMax = fileSizeMax;
     }
 
 
@@ -511,9 +497,6 @@ public class MultipartStream
         int total = 0;
         while (!done)
         {
-            if (fileSizeMax > 0 && total > fileSizeMax) {
-                throw new FileUploadBase.FileSizeLimitExceededException("File size exceeded");
-            }
             // Is boundary token present somewere in the buffer?
             pos = findSeparator();
             if (pos != -1)

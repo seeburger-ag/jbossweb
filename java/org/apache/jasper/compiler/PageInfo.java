@@ -16,21 +16,19 @@
  */
 package org.apache.jasper.compiler;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
-
-import javax.el.ExpressionFactory;
-import javax.servlet.jsp.tagext.TagLibraryInfo;
 
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
+
+import javax.el.ExpressionFactory;
+import javax.servlet.jsp.tagext.TagLibraryInfo;
 
 /**
  * A repository for various info about the translation unit under compilation.
@@ -44,7 +42,6 @@ class PageInfo {
     private Vector dependants;
 
     private BeanRepository beanRepository;
-    private Set<String> varInfoNames;
     private HashMap taglibsMap;
     private HashMap jspPrefixMapper;
     private HashMap xmlPrefixMapper;
@@ -92,8 +89,8 @@ class PageInfo {
     private HashSet prefixes;
 
     private boolean hasJspRoot = false;
-    private ArrayList<String> includePrelude;
-    private ArrayList<String> includeCoda;
+    private Vector includePrelude;
+    private Vector includeCoda;
     private Vector pluginDcls;      // Id's for tagplugin declarations
 
 
@@ -101,15 +98,14 @@ class PageInfo {
 
         this.jspFile = jspFile;
         this.beanRepository = beanRepository;
-        this.varInfoNames = new HashSet<String>();
         this.taglibsMap = new HashMap();
         this.jspPrefixMapper = new HashMap();
         this.xmlPrefixMapper = new HashMap();
         this.nonCustomTagPrefixMap = new HashMap();
         this.imports = new Vector();
         this.dependants = new Vector();
-        this.includePrelude = new ArrayList<String>();
-        this.includeCoda = new ArrayList<String>();
+        this.includePrelude = new Vector();
+        this.includeCoda = new Vector();
         this.pluginDcls = new Vector();
         this.prefixes = new HashSet();
 
@@ -179,7 +175,7 @@ class PageInfo {
         return includePrelude;
     }
 
-    public void setIncludePrelude(ArrayList<String> prelude) {
+    public void setIncludePrelude(Vector prelude) {
         includePrelude = prelude;
     }
 
@@ -187,7 +183,7 @@ class PageInfo {
         return includeCoda;
     }
 
-    public void setIncludeCoda(ArrayList<String> coda) {
+    public void setIncludeCoda(Vector coda) {
         includeCoda = coda;
     }
 
@@ -711,9 +707,5 @@ class PageInfo {
 
     public void setTrimDirectiveWhitespaces(boolean trimDirectiveWhitespaces) {
         this.trimDirectiveWhitespaces = trimDirectiveWhitespaces;
-    }
-
-    public Set<String> getVarInfoNames() {
-        return varInfoNames;
     }
 }

@@ -13,9 +13,9 @@
 
   <!-- Project Properties -->
   <property name="name"                  value="JBoss Web" />
-  <property name="year"                  value="2009" />
-  <property name="version.major"         value="3" />
-  <property name="version.minor"         value="0" />
+  <property name="year"                  value="2008" />
+  <property name="version.major"         value="2" />
+  <property name="version.minor"         value="1" />
   <property name="version.build"         value="0" />
   <property name="version.patch"         value="0" />
   <property name="version.tag"           value="SNAPSHOT" />
@@ -128,8 +128,8 @@
     <touch file="${tomcat.dist}/temp/safeToDelete.tmp" />
 
     <!-- Correct permissions and line endings on "bin" scripts -->
-    <fixcrlf srcdir="${tomcat.dist}/bin"   includes="*.sh"  eol="lf"   encoding="ISO-8859-1" fixlast="false"/>
-    <fixcrlf srcdir="${tomcat.dist}/bin"   includes="*.bat" eol="crlf" encoding="ISO-8859-1" fixlast="false"/>
+    <fixcrlf srcdir="${tomcat.dist}/bin"   includes="*.sh"  eol="lf"/>
+    <fixcrlf srcdir="${tomcat.dist}/bin"   includes="*.bat" eol="crlf"/>
     <chmod      dir="${tomcat.dist}/bin"   includes="*.sh"  perm="+x"/>
 
   </target>
@@ -141,7 +141,7 @@
       author="true" version="true"
       windowtitle="JBoss Web API Documentation"
       doctitle="JBoss Web API"
-      bottom="Copyright &amp;#169; 2000-${year} Apache Software Foundation.  All Rights Reserved."
+      bottom="Copyright &#169; 2000-2008 Apache Software Foundation.  All Rights Reserved."
       additionalparam="-breakiterator"
       maxmemory="256m" >
     </javadoc>
@@ -170,7 +170,6 @@
           <include name="org/apache/catalina/startup/DigesterFactory.class" />
           <include name="org/apache/catalina/util/SchemaResolver.class" />
           <include name="org/apache/catalina/util/StringManager.class" />
-          <include name="org/apache/tomcat/*" />
           <include name="org/apache/tomcat/util/*" />
           <include name="org/apache/tomcat/util/digester/*" />
           <exclude name="**/package.html" />
@@ -256,7 +255,7 @@
 
 
   <!-- ==================== RELEASE: Create Release ======================= -->
-  <target name="release" depends="clean,dist-static,installer,package-zip,package-tgz,dist-source,dist-javadoc,package-docs-tgz,package-src-zip,package-src-tgz"
+  <target name="release" depends="clean,dist-static,dist-deployer,installer,package-zip,package-tgz,package-deployer-zip,package-deployer-tgz,dist-source,dist-javadoc,package-docs-tgz,package-src-zip,package-src-tgz"
    description="Create a JBoss Web packaged distribution">
 
     <filter token="VERSION" value="${version}"/>
@@ -406,8 +405,8 @@
 
   <!-- Packages the core tar.gz distro -->
   <target name="package-tgz">
-    <fixcrlf srcdir="${tomcat.dist}" includes="*.txt,LICENSE,NOTICE" eol="lf" encoding="ISO-8859-1" fixlast="false"/>
-    <fixcrlf srcdir="${tomcat.dist}/conf" eol="lf" encoding="ISO-8859-1" fixlast="false"/>
+    <fixcrlf srcdir="${tomcat.dist}" includes="*.txt,LICENSE,NOTICE" eol="lf"/>
+    <fixcrlf srcdir="${tomcat.dist}/conf" eol="lf"/>
     <tar longfile="gnu" compression="gzip"
          tarfile="${tomcat.release}/v${version}/bin/${final.name}.tar.gz">
       <tarfileset dir="${tomcat.dist}" mode="755" prefix="${final.name}">
@@ -471,8 +470,8 @@
   <!-- Packages the deployer Tomcat distro in tar.gz format -->
   <target name="package-deployer-tgz">
     <fixcrlf srcdir="${tomcat.dist}"
-     includes="*.txt,LICENSE,NOTICE" eol="lf" encoding="ISO-8859-1" fixlast="false"/>
-    <fixcrlf srcdir="${tomcat.deployer}" includes="*.xml" eol="lf" encoding="ISO-8859-1" fixlast="false"/>
+     includes="*.txt,LICENSE,NOTICE" eol="lf"/>
+    <fixcrlf srcdir="${tomcat.deployer}" includes="*.xml" eol="lf"/>
 
     <tar longfile="gnu" compression="gzip"
          tarfile="${tomcat.release}/v${version}/bin/${final.name}-deployer.tar.gz">
@@ -497,7 +496,7 @@
   <target name="package-docs-tgz">
 
     <!-- Package gocs -->
-    <fixcrlf srcdir="${tomcat.dist}" includes="*.txt,LICENSE,NOTICE" eol="lf" encoding="ISO-8859-1" fixlast="false"/>
+    <fixcrlf srcdir="${tomcat.dist}" includes="*.txt,LICENSE,NOTICE" eol="lf"/>
 
     <tar longfile="gnu" compression="gzip"
          tarfile="${tomcat.release}/v${version}/bin/${final.name}-fulldocs.tar.gz">
@@ -533,8 +532,7 @@
   <!-- Packages the source code distribution in tar.gz format -->
   <target name="package-src-tgz">
   	<fixcrlf srcdir="${tomcat.dist}/src"
-     excludes="**/*.jar,**/*.gif,**/*.bmp,**/*.jpg,**/*.ico,**/*.war,**/*.exe,**/*.pdf,**/*.bin,**/*.dia" eol="lf"
-  		 encoding="ISO-8859-1" fixlast="false"/>
+     excludes="**/*.jar,**/*.gif,**/*.bmp,**/*.jpg,**/*.ico,**/*.war,**/*.exe.**/*.pdf,**/*.bin,**/*.dia" eol="lf"/>
     <tar longfile="gnu" compression="gzip"
          tarfile="${tomcat.release}/v${version}/src/${final-src.name}.tar.gz">
       <tarfileset dir="${tomcat.dist}/src" prefix="${final-src.name}" />

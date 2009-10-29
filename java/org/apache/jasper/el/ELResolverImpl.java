@@ -32,8 +32,7 @@ import javax.el.PropertyNotWritableException;
 import javax.el.ResourceBundleELResolver;
 import javax.servlet.jsp.el.VariableResolver;
 
-import org.apache.jasper.Constants;
-
+import org.apache.catalina.Globals;
 
 public final class ELResolverImpl extends ELResolver {
     /** @deprecated - Use getDefaultResolver(). Needs to be made private */
@@ -147,13 +146,13 @@ public final class ELResolverImpl extends ELResolver {
     }
 
     public static ELResolver getDefaultResolver() {
-        if (Constants.IS_SECURITY_ENABLED) {
-            CompositeELResolver defaultResolver = new CompositeELResolver();
-            defaultResolver.add(new MapELResolver());
-            defaultResolver.add(new ResourceBundleELResolver());
-            defaultResolver.add(new ListELResolver());
-            defaultResolver.add(new ArrayELResolver());
-            defaultResolver.add(new BeanELResolver());
+        if (Globals.IS_SECURITY_ENABLED) {
+            ELResolver defaultResolver = new CompositeELResolver();
+            ((CompositeELResolver) defaultResolver).add(new MapELResolver());
+            ((CompositeELResolver) defaultResolver).add(new ResourceBundleELResolver());
+            ((CompositeELResolver) defaultResolver).add(new ListELResolver());
+            ((CompositeELResolver) defaultResolver).add(new ArrayELResolver());
+            ((CompositeELResolver) defaultResolver).add(new BeanELResolver());
             return defaultResolver;
         } else {
             return DefaultResolver;

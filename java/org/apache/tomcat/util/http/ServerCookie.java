@@ -76,14 +76,8 @@ public class ServerCookie implements Serializable {
     /**
      * If set to true, we parse cookies according to the servlet spec,
      */
-    public static final boolean VERSION_SWITCH =
-        Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.ServerCookie.VERSION_SWITCH", "true")).booleanValue();
-
-    /**
-     * If set to false, we don't use the IE6/7 Max-Age/Expires work around
-     */
-    public static final boolean ALWAYS_ADD_EXPIRES =
-        Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.ServerCookie.ALWAYS_ADD_EXPIRES", "false")).booleanValue();
+    public static final boolean STRICT_SERVLET_COMPLIANCE =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "false")).booleanValue();
 
 
     // Note: Servlet Spec =< 2.5 only refers to Netscape and RFC2109,
@@ -290,12 +284,7 @@ public class ServerCookie implements Serializable {
         buf.append( name );
         buf.append("=");
         // Servlet implementation does not check anything else
-
-        // Switch version if allowed and a comment has been configured
-        if (version == 0 && comment != null && VERSION_SWITCH) {
-            version = 1;
-        }
-
+        
         version = maybeQuote2(version, buf, value,true);
 
         // Add version 1 specific information
@@ -319,19 +308,18 @@ public class ServerCookie implements Serializable {
         // Max-Age=secs ... or use old "Expires" format
         // TODO RFC2965 Discard
         if (maxAge >= 0) {
-            // IE6, IE7 and possibly other browsers don't understand Max-Age.
-            // They do understand Expires, even with V1 cookies!
-            if (version == 0 || ALWAYS_ADD_EXPIRES) {
+            if (version == 0) {
                 // Wdy, DD-Mon-YY HH:MM:SS GMT ( Expires Netscape format )
                 buf.append ("; Expires=");
                 // To expire immediately we need to set the time in past
-                if (maxAge == 0)
+                if (maxAge == 0) {
                     buf.append( ancientDate );
-                else
+                } else {
                     OLD_COOKIE_FORMAT.get().format(
                             new Date(System.currentTimeMillis() +
                                     maxAge*1000L),
-                            buf, new FieldPosition(0));
+                                    buf, new FieldPosition(0));
+                }
             } else {
                 buf.append ("; Max-Age=");
                 buf.append (maxAge);
@@ -403,7 +391,7 @@ public class ServerCookie implements Serializable {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,1,value.length()-1));
             buf.append('"');
-        } else if (allowVersionSwitch && VERSION_SWITCH && version==0 && !isToken2(value, literals)) {
+        } else if (allowVersionSwitch && (!STRICT_SERVLET_COMPLIANCE) && version==0 && !isToken2(value, literals)) {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,0,value.length()));
             buf.append('"');

@@ -455,6 +455,8 @@ public class HostManagerServlet
         host.setDeployOnStartup(deployOnStartup);
         host.setDeployXML(deployXML);
         host.setUnpackWARs(unpackWARs);
+        host.setXmlNamespaceAware(xmlNamespaceAware);
+        host.setXmlValidation(xmlValidation);
         
         // Add new host
         try {

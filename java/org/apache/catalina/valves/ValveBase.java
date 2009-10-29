@@ -186,8 +186,7 @@ public abstract class ValveBase
      * the thread that is processing the request.
      *
      * @param request The servlet request to be processed
-     * @param response The servlet response to be processed
-     * @param event The event to be processed
+     * @param response The servlet response to be created
      *
      * @exception IOException if an input/output error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet

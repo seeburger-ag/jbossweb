@@ -22,14 +22,13 @@ package org.apache.catalina.core;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
@@ -43,7 +42,6 @@ import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Globals;
-import org.apache.catalina.JarRepository;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
@@ -58,6 +56,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -122,22 +121,10 @@ import org.jboss.logging.Logger;
  */
 
 public abstract class ContainerBase
-    implements Container, Lifecycle, Pipeline, MBeanRegistration {
+    implements Container, Lifecycle, Pipeline, MBeanRegistration, Serializable {
 
     private static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger( ContainerBase.class );
-
-    /**
-     * Container array type.
-     */
-    protected static final Container[] CONTAINER_ARRAY = new Container[0];
-    
-
-    /**
-     * Listener array type.
-     */
-    protected static final ContainerListener[] LISTENER_ARRAY = new ContainerListener[0];
-    
 
     /**
      * Perform addChild with the permissions of this class.
@@ -168,9 +155,9 @@ public abstract class ContainerBase
     /**
      * The child Containers belonging to this Container, keyed by name.
      */
-    protected Map<String, Container> children = new ConcurrentHashMap<String, Container>();
+    protected HashMap children = new HashMap();
 
-    
+
     /**
      * The processor delay for this component.
      */
@@ -186,7 +173,7 @@ public abstract class ContainerBase
     /**
      * The container event listeners for this Container.
      */
-    protected List<ContainerListener> listeners = new CopyOnWriteArrayList<ContainerListener>();
+    protected ArrayList listeners = new ArrayList();
 
 
     /**
@@ -253,12 +240,6 @@ public abstract class ContainerBase
      * The resources DirContext object with which this Container is associated.
      */
     protected DirContext resources = null;
-
-
-    /**
-     * The JarRepository with which this Container is associated.
-     */
-    protected JarRepository jarRepository = null;
 
 
     /**
@@ -729,63 +710,6 @@ public abstract class ContainerBase
 
 
     /**
-     * Return the JarRepository with which this Container is associated.  If there is
-     * no associated JarRepository, return the JarRepository associated with our parent
-     * Container (if any); otherwise return <code>null</code>.
-     */
-    public JarRepository getJarRepository() {
-
-        if (jarRepository != null)
-            return (jarRepository);
-        if (parent != null)
-            return (parent.getJarRepository());
-        return (null);
-
-    }
-
-
-    /**
-     * Set the JarRepository with which this Container is associated.
-     *
-     * @param jarRepository The newly associated JarRepository
-     */
-    public synchronized void setJarRepository(JarRepository jarRepository) {
-
-        // Change components if necessary
-        JarRepository oldJarRepository = this.jarRepository;
-        if (oldJarRepository == jarRepository)
-            return;
-        this.jarRepository = jarRepository;
-
-        // Stop the old component if necessary
-        if (started && (oldJarRepository != null) &&
-            (oldJarRepository instanceof Lifecycle)) {
-            try {
-                ((Lifecycle) oldJarRepository).stop();
-            } catch (LifecycleException e) {
-                log.error("ContainerBase.setJarRepository: stop: ", e);
-            }
-        }
-
-        // Start the new component if necessary
-        if (jarRepository != null)
-            jarRepository.setContainer(this);
-        if (started && (jarRepository != null) &&
-            (jarRepository instanceof Lifecycle)) {
-            try {
-                ((Lifecycle) jarRepository).start();
-            } catch (LifecycleException e) {
-                log.error("ContainerBase.setJarRepository: start: ", e);
-            }
-        }
-
-        // Report this property change to interested listeners
-        support.firePropertyChange("jarRepository", oldJarRepository, this.jarRepository);
-
-    }
-
-
-    /**
       * Return the resources DirContext object with which this Container is
       * associated.  If there is no associated resources object, return the
       * resources associated with our parent Container (if any); otherwise
@@ -857,35 +781,37 @@ public abstract class ContainerBase
         }
     }
 
-    private synchronized void addChildInternal(Container child) {
+    private void addChildInternal(Container child) {
 
         if( log.isDebugEnabled() )
             log.debug("Add child " + child + " " + this);
+        synchronized(children) {
+            if (children.get(child.getName()) != null)
+                throw new IllegalArgumentException("addChild:  Child name '" +
+                                                   child.getName() +
+                                                   "' is not unique");
+            child.setParent(this);  // May throw IAE
+            children.put(child.getName(), child);
 
-        if (child.getName() == null)
-            throw new IllegalArgumentException(sm.getString("containerBase.addChild.nullName"));
-        if (children.get(child.getName()) != null)
-            throw new IllegalArgumentException(sm.getString("containerBase.addChild.notUnique", child.getName()));
-
-        child.setParent(this);  // May throw IAE
-        children.put(child.getName(), child);
-
-        // Start child
-        if (started && startChildren && (child instanceof Lifecycle)) {
-            boolean success = false;
-            try {
-                ((Lifecycle) child).start();
-                success = true;
-            } catch (LifecycleException e) {
-                throw new IllegalStateException(sm.getString("containerBase.addChild.start", child.getName()), e);
-            } finally {
-                if (!success) {
-                    children.remove(child.getName());
+            // Start child
+            if (started && startChildren && (child instanceof Lifecycle)) {
+                boolean success = false;
+                try {
+                    ((Lifecycle) child).start();
+                    success = true;
+                } catch (LifecycleException e) {
+                    log.error("ContainerBase.addChild: start: ", e);
+                    throw new IllegalStateException
+                        ("ContainerBase.addChild: start: " + e);
+                } finally {
+                    if (!success) {
+                        children.remove(child.getName());
+                    }
                 }
             }
-        }
 
-        fireContainerEvent(ADD_CHILD_EVENT, child);
+            fireContainerEvent(ADD_CHILD_EVENT, child);
+        }
 
     }
 
@@ -897,7 +823,9 @@ public abstract class ContainerBase
      */
     public void addContainerListener(ContainerListener listener) {
 
-        listeners.add(listener);
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
 
     }
 
@@ -921,9 +849,13 @@ public abstract class ContainerBase
      * @param name Name of the child Container to be retrieved
      */
     public Container findChild(String name) {
+
         if (name == null)
             return (null);
-        return children.get(name);
+        synchronized (children) {       // Required by post-start changes
+            return ((Container) children.get(name));
+        }
+
     }
 
 
@@ -932,7 +864,12 @@ public abstract class ContainerBase
      * If this Container has no children, a zero-length array is returned.
      */
     public Container[] findChildren() {
-        return children.values().toArray(CONTAINER_ARRAY);
+
+        synchronized (children) {
+            Container results[] = new Container[children.size()];
+            return ((Container[]) children.values().toArray(results));
+        }
+
     }
 
 
@@ -942,7 +879,13 @@ public abstract class ContainerBase
      * array is returned.
      */
     public ContainerListener[] findContainerListeners() {
-        return listeners.toArray(LISTENER_ARRAY);
+
+        synchronized (listeners) {
+            ContainerListener[] results = 
+                new ContainerListener[listeners.size()];
+            return ((ContainerListener[]) listeners.toArray(results));
+        }
+
     }
 
 
@@ -975,13 +918,15 @@ public abstract class ContainerBase
      *
      * @param child Existing child Container to be removed
      */
-    public synchronized void removeChild(Container child) {
+    public void removeChild(Container child) {
 
-        if (children.get(child.getName()) == null)
-            return;
-        if (children.get(child.getName()) != child)
-            return;
-        children.remove(child.getName());
+        synchronized(children) {
+            if (children.get(child.getName()) == null)
+                return;
+            if (children.get(child.getName()) != child)
+                return;
+            children.remove(child.getName());
+        }
         
         if (started && (child instanceof Lifecycle)) {
             try {
@@ -1010,7 +955,11 @@ public abstract class ContainerBase
      * @param listener The listener to remove
      */
     public void removeContainerListener(ContainerListener listener) {
-        listeners.remove(listener);
+
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+
     }
 
 
@@ -1085,8 +1034,6 @@ public abstract class ContainerBase
         started = true;
 
         // Start our subordinate components, if any
-        if ((jarRepository != null) && (jarRepository instanceof Lifecycle))
-            ((Lifecycle) jarRepository).start();
         if ((loader != null) && (loader instanceof Lifecycle))
             ((Lifecycle) loader).start();
         logger = null;
@@ -1185,9 +1132,6 @@ public abstract class ContainerBase
         }
         if ((loader != null) && (loader instanceof Lifecycle)) {
             ((Lifecycle) loader).stop();
-        }
-        if ((jarRepository != null) && (jarRepository instanceof Lifecycle)) {
-            ((Lifecycle) jarRepository).stop();
         }
 
         // Notify our interested LifecycleListeners
@@ -1392,13 +1336,6 @@ public abstract class ContainerBase
                 log.warn(sm.getString("containerBase.backgroundProcess.realm", realm), e);                
             }
         }
-        if (jarRepository != null) {
-            try {
-                jarRepository.backgroundProcess();
-            } catch (Exception e) {
-                log.warn(sm.getString("containerBase.backgroundProcess.jarRepository", jarRepository), e);                
-            }
-        }
         Valve current = pipeline.getFirst();
         while (current != null) {
             try {
@@ -1410,6 +1347,9 @@ public abstract class ContainerBase
         }
         lifecycle.fireLifecycleEvent(Lifecycle.PERIODIC_EVENT, null);
     }
+
+
+    // ------------------------------------------------------ Protected Methods
 
 
     /**
@@ -1433,9 +1373,6 @@ public abstract class ContainerBase
             ((ContainerListener) list[i]).containerEvent(event);
 
     }
-
-
-    // ------------------------------------------------------ Protected Methods
 
 
     /**
@@ -1469,7 +1406,7 @@ public abstract class ContainerBase
     protected String suffix;
     protected ObjectName oname;
     protected ObjectName controller;
-    protected MBeanServer mserver;
+    protected transient MBeanServer mserver;
 
     public ObjectName getJmxName() {
         return oname;

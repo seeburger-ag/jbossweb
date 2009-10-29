@@ -251,7 +251,7 @@ public interface Session {
      */
     public void expire();
 
-    
+
     /**
      * Return the object bound with the specified name to the internal notes
      * for this session, or <code>null</code> if no such binding exists.

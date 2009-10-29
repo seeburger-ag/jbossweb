@@ -19,7 +19,6 @@
 package org.apache.catalina.servlets;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -464,7 +463,7 @@ public class WebdavServlet
 
         Node propNode = null;
         
-        if (req.getContentLength() > 0) {
+        if (req.getInputStream().available() > 0) {
             DocumentBuilder documentBuilder = getDocumentBuilder();
     
             try {
@@ -495,11 +494,9 @@ public class WebdavServlet
                     }
                 }
             } catch (SAXException e) {
-                // Something went wrong - bad request
-                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                // Something went wrong - use the defaults.
             } catch (IOException e) {
-                // Something went wrong - bad request
-                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                // Something went wrong - use the defaults.
             }
         }
 
@@ -737,7 +734,7 @@ public class WebdavServlet
             return;
         }
 
-        if (req.getContentLength() > 0) {
+        if (req.getInputStream().available() > 0) {
             DocumentBuilder documentBuilder = getDocumentBuilder();
             try {
                 // Document document =
@@ -748,7 +745,7 @@ public class WebdavServlet
 
             } catch(SAXException saxe) {
                 // Parse error - assume invalid content
-                resp.sendError(WebdavStatus.SC_UNSUPPORTED_MEDIA_TYPE);
+                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
                 return;
             }
         }
@@ -1665,20 +1662,14 @@ public class WebdavServlet
                                       path, destinationPath);
 
         if ((!result) || (!errorList.isEmpty())) {
-            if (errorList.size() == 1) {
-                resp.sendError(errorList.elements().nextElement().intValue());
-            } else {
-                sendReport(req, resp, errorList);
-            }
+
+            sendReport(req, resp, errorList);
             return false;
+
         }
 
         // Copy was successful
-        if (exists) {
-            resp.setStatus(WebdavStatus.SC_NO_CONTENT);
-        } else {
-            resp.setStatus(WebdavStatus.SC_CREATED);
-        }
+        resp.setStatus(WebdavStatus.SC_CREATED);
 
         // Removing any lock-null resource which would be present at
         // the destination path
@@ -1716,7 +1707,8 @@ public class WebdavServlet
             try {
                 resources.createSubcontext(dest);
             } catch (NamingException e) {
-                errorList.put(dest, WebdavStatus.SC_CONFLICT);
+                errorList.put
+                    (dest, new Integer(WebdavStatus.SC_CONFLICT));
                 return false;
             }
 
@@ -1736,7 +1728,8 @@ public class WebdavServlet
                     copyResource(resources, errorList, childSrc, childDest);
                 }
             } catch (NamingException e) {
-                errorList.put(dest, WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                errorList.put
+                    (dest, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
                 return false;
             }
 
@@ -1746,17 +1739,15 @@ public class WebdavServlet
                 try {
                     resources.bind(dest, object);
                 } catch (NamingException e) {
-                    if (e.getCause() instanceof FileNotFoundException) {
-                        // We know the source exists so it must be the
-                        // destination dir that can't be found
-                        errorList.put(source, WebdavStatus.SC_CONFLICT);
-                    } else {
-                        errorList.put(source, WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-                    }
+                    errorList.put
+                        (source,
+                         new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
                     return false;
                 }
             } else {
-                errorList.put(source, WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                errorList.put
+                    (source,
+                     new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
                 return false;
             }
 

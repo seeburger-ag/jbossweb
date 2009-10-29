@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import javax.servlet.AsyncContext;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -35,8 +34,8 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
-import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
+import org.apache.catalina.Manager;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
@@ -73,10 +72,7 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
       Globals.INCLUDE_SERVLET_PATH_ATTR, Globals.INCLUDE_PATH_INFO_ATTR,
       Globals.INCLUDE_QUERY_STRING_ATTR, Globals.FORWARD_REQUEST_URI_ATTR, 
       Globals.FORWARD_CONTEXT_PATH_ATTR, Globals.FORWARD_SERVLET_PATH_ATTR, 
-      Globals.FORWARD_PATH_INFO_ATTR, Globals.FORWARD_QUERY_STRING_ATTR, 
-      AsyncContext.ASYNC_REQUEST_URI, AsyncContext.ASYNC_CONTEXT_PATH, 
-      AsyncContext.ASYNC_SERVLET_PATH, AsyncContext.ASYNC_PATH_INFO, 
-      AsyncContext.ASYNC_QUERY_STRING };
+      Globals.FORWARD_PATH_INFO_ATTR, Globals.FORWARD_QUERY_STRING_ATTR };
 
 
     /**
@@ -112,8 +108,8 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
      * The context for this request.
      */
     protected Context context = null;
-    
-    
+
+
     /**
      * The context path for this request.
      */
@@ -532,8 +528,6 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
                 } catch (IOException e) {
                     // Ignore
                 }
-                if ((localSession != null) && !localSession.isValid())
-                    localSession = null;
                 if (localSession == null && create) {
                     localSession = 
                         context.getManager().createSession(other.getId());

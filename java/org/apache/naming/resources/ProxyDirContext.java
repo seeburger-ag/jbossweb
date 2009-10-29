@@ -1,47 +1,19 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
 
 
 package org.apache.naming.resources;
@@ -49,38 +21,23 @@ package org.apache.naming.resources;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Hashtable;
 
-import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.NotContextException;
-import javax.naming.OperationNotSupportedException;
-import javax.naming.directory.AttributeModificationException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
-import javax.naming.directory.InvalidAttributesException;
-import javax.naming.directory.InvalidSearchControlsException;
-import javax.naming.directory.InvalidSearchFilterException;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 
-import org.apache.naming.NamingContextBindingsEnumeration;
-import org.apache.naming.NamingContextEnumeration;
 import org.apache.naming.StringManager;
 
 /**
- * Proxy Directory Context implementation. This implementation looks up the
- * resources from a main DirContext, with secondary DirContext allowed 
- * to provide overlays for the main one, when caching is enabled.
+ * Proxy Directory Context implementation.
  *
  * @author Remy Maucherat
  * @version $Revision$ $Date$
@@ -102,7 +59,7 @@ public class ProxyDirContext implements DirContext {
     /**
      * Builds a proxy directory context using the given environment.
      */
-    public ProxyDirContext(Hashtable<String, Object> env, DirContext dirContext) {
+    public ProxyDirContext(Hashtable env, DirContext dirContext) {
         this.env = env;
         this.dirContext = dirContext;
         if (dirContext instanceof BaseDirContext) {
@@ -110,15 +67,12 @@ public class ProxyDirContext implements DirContext {
             // the caching policy.
             BaseDirContext baseDirContext = (BaseDirContext) dirContext;
             if (baseDirContext.isCached()) {
-                if (cacheClassName != null) {
-                    try {
-                        cache = (ResourceCache) 
+                try {
+                    cache = (ResourceCache) 
                         Class.forName(cacheClassName).newInstance();
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException(e);
-                    }
-                } else {
-                    cache = new ResourceCache();
+                } catch (Exception e) {
+                    //FIXME
+                    e.printStackTrace();
                 }
                 cache.setCacheMaxSize(baseDirContext.getCacheMaxSize());
                 cacheTTL = baseDirContext.getCacheTTL();
@@ -135,13 +89,42 @@ public class ProxyDirContext implements DirContext {
     }
 
 
+    /**
+     * Builds a clone of this proxy dir context, wrapping the given directory
+     * context, and sharing the same cache.
+     */
+    // TODO: Refactor using the proxy field
+    /*
+    protected ProxyDirContext(ProxyDirContext proxyDirContext, 
+                              DirContext dirContext, String vPath) {
+        this.env = proxyDirContext.env;
+        this.dirContext = dirContext;
+        this.vPath = vPath;
+        this.cache = proxyDirContext.cache;
+        this.cacheMaxSize = proxyDirContext.cacheMaxSize;
+        this.cacheSize = proxyDirContext.cacheSize;
+        this.cacheTTL = proxyDirContext.cacheTTL;
+        this.cacheObjectMaxSize = proxyDirContext.cacheObjectMaxSize;
+        this.notFoundCache = proxyDirContext.notFoundCache;
+        this.hostName = proxyDirContext.hostName;
+        this.contextName = proxyDirContext.contextName;
+    }
+    */
+
+
     // ----------------------------------------------------- Instance Variables
+
+
+    /**
+     * Proxy DirContext (either this or the real proxy).
+     */
+    protected ProxyDirContext proxy = this;
 
 
     /**
      * Environment.
      */
-    protected Hashtable<String, Object> env;
+    protected Hashtable env;
 
 
     /**
@@ -157,9 +140,9 @@ public class ProxyDirContext implements DirContext {
 
 
     /**
-     * Overlay DirContexts.
+     * Virtual path.
      */
-    protected DirContext[] overlays = null;
+    protected String vPath = null;
 
 
     /**
@@ -257,20 +240,6 @@ public class ProxyDirContext implements DirContext {
         return this.contextName;
     }
 
-    
-    /**
-     * Add overlay.
-     */
-    public void addOverlay(DirContext overlay) {
-        if (overlays == null) {
-            overlays = new DirContext[0];
-        }
-        DirContext[] result = new DirContext[overlays.length + 1];
-        System.arraycopy(overlays, 0, result, 0, overlays.length);
-        result[overlays.length] = overlay;
-        overlays = result;
-    }
-    
 
     // -------------------------------------------------------- Context Methods
 
@@ -498,53 +467,9 @@ public class ProxyDirContext implements DirContext {
      * this context. Each element of the enumeration is of type NameClassPair.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<NameClassPair> list(Name name)
+    public NamingEnumeration list(Name name)
         throws NamingException {
-        if (overlays == null) {
-            return dirContext.list(parseName(name));
-        } else {
-            NamingException notFound = null;
-            HashMap<String, NameClassPair> merged = null;
-            NamingEnumeration<NameClassPair> main = null;
-            try {
-                main = dirContext.list(parseName(name));
-            } catch (NamingException e) {
-                notFound = e;
-            }
-            for (int i = 0; i < overlays.length; i++) {
-                NamingEnumeration<NameClassPair> overlay = null;
-                try {
-                    overlay = overlays[i].list(parseName(name));
-                } catch (NamingException e) {
-                    // Ignore
-                }
-                if (main == null) {
-                    main = overlay;
-                } else {
-                    // Merge that into the merged set
-                    if (merged == null) {
-                        merged = new HashMap<String, NameClassPair>();
-                        while (main.hasMore()) {
-                            NameClassPair pair = main.next();
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                    while (overlay.hasMore()) {
-                        NameClassPair pair = overlay.next();
-                        if (merged.get(pair.getName()) == null) {
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                }
-            }
-            if (main == null && merged == null) {
-                throw notFound;
-            } else if (merged != null) {
-                return new NamingContextEnumeration(merged.values().iterator());
-            } else {
-                return main;
-            }
-        }
+        return dirContext.list(parseName(name));
     }
 
 
@@ -557,53 +482,9 @@ public class ProxyDirContext implements DirContext {
      * this context. Each element of the enumeration is of type NameClassPair.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<NameClassPair> list(String name)
+    public NamingEnumeration list(String name)
         throws NamingException {
-        if (overlays == null) {
-            return dirContext.list(parseName(name));
-        } else {
-            NamingException notFound = null;
-            HashMap<String, NameClassPair> merged = null;
-            NamingEnumeration<NameClassPair> main = null;
-            try {
-                main = dirContext.list(parseName(name));
-            } catch (NamingException e) {
-                notFound = e;
-            }
-            for (int i = 0; i < overlays.length; i++) {
-                NamingEnumeration<NameClassPair> overlay = null;
-                try {
-                    overlay = overlays[i].list(parseName(name));
-                } catch (NamingException e) {
-                    // Ignore
-                }
-                if (main == null) {
-                    main = overlay;
-                } else {
-                    // Merge that into the merged set
-                    if (merged == null) {
-                        merged = new HashMap<String, NameClassPair>();
-                        while (main.hasMore()) {
-                            NameClassPair pair = main.next();
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                    while (overlay.hasMore()) {
-                        NameClassPair pair = overlay.next();
-                        if (merged.get(pair.getName()) == null) {
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                }
-            }
-            if (main == null && merged == null) {
-                throw notFound;
-            } else if (merged != null) {
-                return new NamingContextEnumeration(merged.values().iterator());
-            } else {
-                return main;
-            }
-        }
+        return dirContext.list(parseName(name));
     }
 
 
@@ -620,53 +501,9 @@ public class ProxyDirContext implements DirContext {
      * Each element of the enumeration is of type Binding.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<Binding> listBindings(Name name)
+    public NamingEnumeration listBindings(Name name)
         throws NamingException {
-        if (overlays == null) {
-            return dirContext.listBindings(parseName(name));
-        } else {
-            NamingException notFound = null;
-            HashMap<String, Binding> merged = null;
-            NamingEnumeration<Binding> main = null;
-            try {
-                main = dirContext.listBindings(parseName(name));
-            } catch (NamingException e) {
-                notFound = e;
-            }
-            for (int i = 0; i < overlays.length; i++) {
-                NamingEnumeration<Binding> overlay = null;
-                try {
-                    overlay = overlays[i].listBindings(parseName(name));
-                } catch (NamingException e) {
-                    // Ignore
-                }
-                if (main == null) {
-                    main = overlay;
-                } else {
-                    // Merge that into the merged set
-                    if (merged == null) {
-                        merged = new HashMap<String, Binding>();
-                        while (main.hasMore()) {
-                            Binding pair = main.next();
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                    while (overlay.hasMore()) {
-                        Binding pair = overlay.next();
-                        if (merged.get(pair.getName()) == null) {
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                }
-            }
-            if (main == null && merged == null) {
-                throw notFound;
-            } else if (merged != null) {
-                return new NamingContextBindingsEnumeration(merged.values().iterator(), this);
-            } else {
-                return main;
-            }
-        }
+        return dirContext.listBindings(parseName(name));
     }
 
 
@@ -679,53 +516,9 @@ public class ProxyDirContext implements DirContext {
      * Each element of the enumeration is of type Binding.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<Binding> listBindings(String name)
+    public NamingEnumeration listBindings(String name)
         throws NamingException {
-        if (overlays == null) {
-            return dirContext.listBindings(parseName(name));
-        } else {
-            NamingException notFound = null;
-            HashMap<String, Binding> merged = null;
-            NamingEnumeration<Binding> main = null;
-            try {
-                main = dirContext.listBindings(parseName(name));
-            } catch (NamingException e) {
-                notFound = e;
-            }
-            for (int i = 0; i < overlays.length; i++) {
-                NamingEnumeration<Binding> overlay = null;
-                try {
-                    overlay = overlays[i].listBindings(parseName(name));
-                } catch (NamingException e) {
-                    // Ignore
-                }
-                if (main == null) {
-                    main = overlay;
-                } else {
-                    // Merge that into the merged set
-                    if (merged == null) {
-                        merged = new HashMap<String, Binding>();
-                        while (main.hasMore()) {
-                            Binding pair = main.next();
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                    while (overlay.hasMore()) {
-                        Binding pair = overlay.next();
-                        if (merged.get(pair.getName()) == null) {
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                }
-            }
-            if (main == null && merged == null) {
-                throw notFound;
-            } else if (merged != null) {
-                return new NamingContextBindingsEnumeration(merged.values().iterator(), this);
-            } else {
-                return main;
-            }
-        }
+        return dirContext.listBindings(parseName(name));
     }
 
 
@@ -955,7 +748,7 @@ public class ProxyDirContext implements DirContext {
      * @return the environment of this context; never null
      * @exception NamingException if a naming exception is encountered
      */
-    public Hashtable<?,?> getEnvironment()
+    public Hashtable getEnvironment()
         throws NamingException {
         return dirContext.getEnvironment();
     }
@@ -1388,7 +1181,7 @@ public class ProxyDirContext implements DirContext {
      * context named by name.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<SearchResult> search(Name name, Attributes matchingAttributes,
+    public NamingEnumeration search(Name name, Attributes matchingAttributes,
                                     String[] attributesToReturn)
         throws NamingException {
         return dirContext.search(parseName(name), matchingAttributes, 
@@ -1412,7 +1205,7 @@ public class ProxyDirContext implements DirContext {
      * context named by name.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<SearchResult> search(String name, Attributes matchingAttributes,
+    public NamingEnumeration search(String name, Attributes matchingAttributes,
                                     String[] attributesToReturn)
         throws NamingException {
         return dirContext.search(parseName(name), matchingAttributes, 
@@ -1435,7 +1228,7 @@ public class ProxyDirContext implements DirContext {
      * context named by name.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<SearchResult> search(Name name, Attributes matchingAttributes)
+    public NamingEnumeration search(Name name, Attributes matchingAttributes)
         throws NamingException {
         return dirContext.search(parseName(name), matchingAttributes);
     }
@@ -1454,7 +1247,7 @@ public class ProxyDirContext implements DirContext {
      * context named by name.
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<SearchResult> search(String name, Attributes matchingAttributes)
+    public NamingEnumeration search(String name, Attributes matchingAttributes)
         throws NamingException {
         return dirContext.search(parseName(name), matchingAttributes);
     }
@@ -1479,7 +1272,7 @@ public class ProxyDirContext implements DirContext {
      * contain invalid settings
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<SearchResult> search(Name name, String filter, 
+    public NamingEnumeration search(Name name, String filter, 
                                     SearchControls cons)
         throws NamingException {
         return dirContext.search(parseName(name), filter, cons);
@@ -1505,7 +1298,7 @@ public class ProxyDirContext implements DirContext {
      * contain invalid settings
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<SearchResult> search(String name, String filter, 
+    public NamingEnumeration search(String name, String filter, 
                                     SearchControls cons)
         throws NamingException {
         return dirContext.search(parseName(name), filter, cons);
@@ -1536,7 +1329,7 @@ public class ProxyDirContext implements DirContext {
      * represents an invalid search filter
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<SearchResult> search(Name name, String filterExpr,
+    public NamingEnumeration search(Name name, String filterExpr,
                                     Object[] filterArgs, SearchControls cons)
         throws NamingException {
         return dirContext.search(parseName(name), filterExpr, filterArgs, 
@@ -1568,7 +1361,7 @@ public class ProxyDirContext implements DirContext {
      * represents an invalid search filter
      * @exception NamingException if a naming exception is encountered
      */
-    public NamingEnumeration<SearchResult> search(String name, String filterExpr,
+    public NamingEnumeration search(String name, String filterExpr,
                                     Object[] filterArgs, SearchControls cons)
         throws NamingException {
         return dirContext.search(parseName(name), filterExpr, filterArgs, 
@@ -1728,7 +1521,6 @@ public class ProxyDirContext implements DirContext {
     protected void cacheLoad(CacheEntry entry) {
 
         String name = entry.name;
-        DirContext currentContext = dirContext;
 
         // Retrieve missing info
         boolean exists = true;
@@ -1736,7 +1528,7 @@ public class ProxyDirContext implements DirContext {
         // Retrieving attributes
         if (entry.attributes == null) {
             try {
-                Attributes attributes = currentContext.getAttributes(entry.name);
+                Attributes attributes = dirContext.getAttributes(entry.name);
                 if (!(attributes instanceof ResourceAttributes)) {
                     entry.attributes = 
                         new ResourceAttributes(attributes);
@@ -1747,34 +1539,14 @@ public class ProxyDirContext implements DirContext {
                 exists = false;
             }
         }
-        
-        // Check overlays
-        if (overlays != null) {
-            for (int i = 0; (i < overlays.length) && !exists; i++) {
-                try {
-                    Attributes attributes = overlays[i].getAttributes(entry.name);
-                    if (!(attributes instanceof ResourceAttributes)) {
-                        entry.attributes = 
-                            new ResourceAttributes(attributes);
-                    } else {
-                        entry.attributes = (ResourceAttributes) attributes;
-                    }
-                    currentContext = overlays[i];
-                    exists = true;
-                } catch (NamingException e) {
-                    // Ignore
-                }
-            }
-        }
 
         // Retriving object
         if ((exists) && (entry.resource == null) && (entry.context == null)) {
             try {
-                Object object = currentContext.lookup(name);
+                Object object = dirContext.lookup(name);
                 if (object instanceof InputStream) {
                     entry.resource = new Resource((InputStream) object);
                 } else if (object instanceof DirContext) {
-                    //entry.context = new ProxyDirContextFacade(this, name);
                     entry.context = (DirContext) object;
                 } else if (object instanceof Resource) {
                     entry.resource = (Resource) object;
@@ -1825,12 +1597,7 @@ public class ProxyDirContext implements DirContext {
         entry.exists = exists;
 
         // Set timestamp
-        if (currentContext == dirContext) {
-            entry.timestamp = System.currentTimeMillis() + cacheTTL;
-        } else {
-            // Overlay cache never expire
-            entry.timestamp = Long.MAX_VALUE;
-        }
+        entry.timestamp = System.currentTimeMillis() + cacheTTL;
 
         // Add new entry to cache
         synchronized (cache) {

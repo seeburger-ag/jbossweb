@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.Map;
 
 
 /**
@@ -114,14 +112,8 @@ public class DefaultFileItem
     /**
      * Output stream for this item.
      */
-    private transient DeferredFileOutputStream dfos;
+    private DeferredFileOutputStream dfos;
 
-    
-    /**
-     * Headers associated with the file item.
-     */
-    private Map<String, String> headers;
-    
 
     // ----------------------------------------------------------- Constructors
 
@@ -144,14 +136,12 @@ public class DefaultFileItem
      *                      exceed the threshold.
      */
     DefaultFileItem(String fieldName, String contentType, boolean isFormField,
-                    String fileName, Map<String, String> headers, int sizeThreshold, 
-                    File repository)
+                    String fileName, int sizeThreshold, File repository)
     {
         this.fieldName = fieldName;
         this.contentType = contentType;
         this.isFormField = isFormField;
         this.fileName = fileName;
-        this.headers = headers;
         this.sizeThreshold = sizeThreshold;
         this.repository = repository;
     }
@@ -203,7 +193,7 @@ public class DefaultFileItem
      *
      * @return The original filename in the client's filesystem.
      */
-    public String getFileName()
+    public String getName()
     {
         return fileName;
     }
@@ -348,7 +338,7 @@ public class DefaultFileItem
      *
      * @exception Exception if an error occurs.
      */
-    public void write(File file) throws IOException
+    public void write(File file) throws Exception
     {
         if (isInMemory())
         {
@@ -460,12 +450,6 @@ public class DefaultFileItem
     }
 
 
-    public String getName()
-    {
-        return fieldName;
-    }
-
-
     /**
      * Sets the field name used to reference this file item.
      *
@@ -532,26 +516,6 @@ public class DefaultFileItem
         return dfos;
     }
 
-
-    public String getHeader(String name) {
-        return headers.get(name);
-    }
-
-
-    public Collection<String> getHeaderNames() {
-        return headers.keySet();
-    }
-
-
-    public Collection<String> getHeaders(String name) {
-        // FIXME: Create a Set out of the comma separated values
-        return null;
-    }
-
-
-    public void write(String fileName) throws IOException {
-        write(new File(fileName));
-    }
 
     // --------------------------------------------------------- Public methods
 
@@ -640,6 +604,5 @@ public class DefaultFileItem
         }
         return id;
     }
-
 
 }

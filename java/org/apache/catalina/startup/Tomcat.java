@@ -42,6 +42,7 @@ import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
 import org.apache.catalina.core.StandardWrapper;
+import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.realm.RealmBase;
 import org.apache.catalina.session.StandardManager;
@@ -77,7 +78,7 @@ import org.apache.catalina.session.StandardManager;
  * see setters for doc. It can be used for simple tests and
  * demo.
  * 
- * @see TestTomcat for examples on how to use this
+ * @see TomcatStartupAPITest for examples on how to use this
  * @author Costin Manolache
  */
 public class Tomcat {
@@ -177,10 +178,6 @@ public class Tomcat {
      *    ctx.addErrorPage(ep);
      *   
      * ctx.addMimeMapping("ext", "type");
-     * 
-     * Note: If you reload the Context, all your configuration will be lost. If
-     * you need reload support, consider using a LifecycleListener to provide
-     * your configuration.
      *  
      * TODO: add the rest
      *
@@ -215,7 +212,7 @@ public class Tomcat {
      * 
      *    wrapper.addInitParameter("name", "value");
      */
-    public static StandardWrapper addServlet(StandardContext ctx, 
+    public StandardWrapper addServlet(StandardContext ctx, 
                                       String servletName, 
                                       String servletClass) {
         // will do class for name and set init params
@@ -230,7 +227,7 @@ public class Tomcat {
     /** Use an existing servlet, no class.forName or initialization will be 
      *  performed
      */
-    public static StandardWrapper addServlet(StandardContext ctx,
+    public StandardWrapper addServlet(StandardContext ctx,
                                       String servletName, 
                                       Servlet servlet) {
         // will do class for name and set init params
@@ -246,6 +243,7 @@ public class Tomcat {
      * Initialize and start the server.
      */
     public void start() throws Exception {
+        setSilent();
         getServer();
         getConnector();
         server.initialize();
@@ -361,7 +359,7 @@ public class Tomcat {
         if(engine == null ) {
             getServer();
             engine = new StandardEngine();
-            engine.setName( "Tomcat" );
+            engine.setName( "default" );
             engine.setDefaultHost(hostname);
             service.setContainer(engine);
         }
@@ -419,7 +417,7 @@ public class Tomcat {
             initSimpleAuth();
         }
         ctx.setRealm(defaultRealm);
-        ctx.addLifecycleListener(new DefaultWebXmlListener());
+        initWebappDefaults(ctx);
         
         ContextConfig ctxCfg = new ContextConfig();
         ctx.addLifecycleListener( ctxCfg );
@@ -504,14 +502,8 @@ public class Tomcat {
         "org.apache.catalina.core.StandardEngine",
         "org.apache.catalina.startup.ContextConfig",
         "org.apache.catalina.core.ApplicationContext",
-        "org.apache.catalina.core.AprLifecycleListener"
     };
     
-    /**
-     * Sets the log level to WARN for the loggers that log information on
-     * Tomcat start up. This prevents the usual startup information being
-     * logged to the console.
-     */
     public void setSilent() {
         for (String s : silences) {
             Logger.getLogger(s).setLevel(Level.WARNING);
@@ -527,44 +519,52 @@ public class Tomcat {
         Logger.getLogger(base).setLevel(Level.WARNING);
     }
     
-    /**
-     * Provide default configuration for a context. This is the programmatic
+    /** Init default servlets for the context. This should be the programmatic
      * equivalent of the default web.xml. 
      * 
      *  TODO: in normal tomcat, if default-web.xml is not found, use this 
      *  method
      */
-    public static void initWebappDefaults(StandardContext ctx) {
+    protected void initWebappDefaults(StandardContext ctx) {
         // Default servlet 
-        StandardWrapper servlet = addServlet(
-                ctx, "default", "org.apache.catalina.servlets.DefaultServlet");
+        StandardWrapper servlet = 
+            addServlet(ctx, "default", 
+                    //new DefaultServlet());
+        // Or:
+                    "org.apache.catalina.servlets.DefaultServlet");
+        servlet.addInitParameter("listings", "false");
         servlet.setLoadOnStartup(1);
 
-        // JSP servlet (by class name - to avoid loading all deps)
-        servlet = addServlet(
-                ctx, "jsp", "org.apache.jasper.servlet.JspServlet");
+        // class name - to avoid loading all deps
+        servlet = addServlet(ctx, "jsp", 
+            "org.apache.jasper.servlet.JspServlet");
         servlet.addInitParameter("fork", "false");
-        servlet.setLoadOnStartup(3);
+        servlet.addInitParameter("xpoweredBy", "false");
         
-        // Servlet mappings 
+        // in default web.xml - but not here, only needed if you have
+        // jsps.
+        //servlet.setLoadOnStartup(3);
+        
         ctx.addServletMapping("/", "default");
         ctx.addServletMapping("*.jsp", "jsp");
         ctx.addServletMapping("*.jspx", "jsp");
-
         // Sessions
         ctx.setManager( new StandardManager());
         ctx.setSessionTimeout(30);
         
-        // MIME mappings
+        // TODO: read mime from /etc/mime.types on linux, or some
+        // resource
         for (int i = 0; i < DEFAULT_MIME_MAPPINGS.length; ) {
             ctx.addMimeMapping(DEFAULT_MIME_MAPPINGS[i++],
                     DEFAULT_MIME_MAPPINGS[i++]);
         }
-        
-        // Welcome files
         ctx.addWelcomeFile("index.html");
         ctx.addWelcomeFile("index.htm");
         ctx.addWelcomeFile("index.jsp");
+        
+        ctx.setLoginConfig( new LoginConfig("NONE", null, null, null));
+        
+        // TODO: set a default realm, add simple API to add users
     }
 
     
@@ -587,24 +587,6 @@ public class Tomcat {
         }
         
     }
-
-
-    /**
-     * Fix reload - required if reloading and using programmatic configuration.
-     * When a context is reloaded, any programmatic configuration is lost. This
-     * listener sets the equivalent of conf/web.xml when the context starts. The
-     * context needs to be an instance of StandardContext for this listener to
-     * have any effect.
-     */
-    public static class DefaultWebXmlListener implements LifecycleListener {
-        public void lifecycleEvent(LifecycleEvent event) {
-            if (Lifecycle.BEFORE_START_EVENT.equals(event.getType()) &&
-                    event.getLifecycle() instanceof StandardContext) {
-                initWebappDefaults((StandardContext) event.getLifecycle());
-            }
-        }
-    }
-
 
     /** Helper class for wrapping existing servlets. This disables servlet 
      * lifecycle and normal reloading, but also reduces overhead and provide
@@ -724,21 +706,12 @@ public class Tomcat {
         "odp", "application/vnd.oasis.opendocument.presentation", 
         "ods", "application/vnd.oasis.opendocument.spreadsheet", 
         "odt", "application/vnd.oasis.opendocument.text", 
-        "otg", "application/vnd.oasis.opendocument.graphics-template", 
+        "ogg", "application/ogg", 
+        "otg ", "application/vnd.oasis.opendocument.graphics-template", 
         "oth", "application/vnd.oasis.opendocument.text-web", 
         "otp", "application/vnd.oasis.opendocument.presentation-template", 
         "ots", "application/vnd.oasis.opendocument.spreadsheet-template ", 
-        "ott", "application/vnd.oasis.opendocument.text-template",
-        "ogx", "application/ogg",
-        "ogv", "video/ogg",
-        "oga", "audio/ogg",
-        "ogg", "audio/ogg",
-        "spx", "audio/ogg",
-        "faca", "audio/flac",
-        "anx", "application/annodex",
-        "axa", "audio/annodex",
-        "axv", "video/annodex",
-        "xspf", "application/xspf+xml",
+        "ott", "application/vnd.oasis.opendocument.text-template", 
         "pbm", "image/x-portable-bitmap", 
         "pct", "image/pict", 
         "pdf", "application/pdf", 
@@ -750,8 +723,7 @@ public class Tomcat {
         "pnm", "image/x-portable-anymap", 
         "pnt", "image/x-macpaint", 
         "ppm", "image/x-portable-pixmap", 
-        "ppt", "application/vnd.ms-powerpoint",
-        "pps", "application/vnd.ms-powerpoint",
+        "ppt", "application/powerpoint", 
         "ps", "application/postscript", 
         "psd", "image/x-photoshop", 
         "qt", "video/quicktime", 
@@ -773,8 +745,6 @@ public class Tomcat {
         "src", "application/x-wais-source", 
         "sv4cpio", "application/x-sv4cpio", 
         "sv4crc", "application/x-sv4crc", 
-        "svg", "image/svg+xml", 
-        "svgz", "image/svg+xml", 
         "swf", "application/x-shockwave-flash", 
         "t", "application/x-troff", 
         "tar", "application/x-tar", 
@@ -793,15 +763,16 @@ public class Tomcat {
         "xbm", "image/x-xbitmap", 
         "xht", "application/xhtml+xml", 
         "xhtml", "application/xhtml+xml", 
-        "xls", "application/vnd.ms-excel", 
         "xml", "application/xml", 
         "xpm", "image/x-xpixmap", 
         "xsl", "application/xml", 
         "xslt", "application/xslt+xml", 
         "xul", "application/vnd.mozilla.xul+xml", 
         "xwd", "image/x-xwindowdump", 
-        "vsd", "application/x-visio", 
         "wav", "audio/x-wav", 
+        "svg", "image/svg+xml", 
+        "svgz", "image/svg+xml", 
+        "vsd", "application/x-visio", 
         "wbmp", "image/vnd.wap.wbmp", 
         "wml", "text/vnd.wap.wml", 
         "wmlc", "application/vnd.wap.wmlc", 
@@ -812,6 +783,9 @@ public class Tomcat {
         "wspolicy", "application/wspolicy+xml", 
         "Z", "application/x-compress", 
         "z", "application/x-compress", 
-        "zip", "application/zip" 
+        "zip", "application/zip", 
+        "xls", "application/vnd.ms-excel", 
+        "doc", "application/vnd.ms-word", 
+        "ppt", "application/vnd.ms-powerpoint"
     };
 }
