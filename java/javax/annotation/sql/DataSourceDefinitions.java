@@ -21,28 +21,26 @@
 
 /*
  *
- * Copyright 2005-2006 Sun Microsystems, Inc. All Rights Reserved.
+ * Copyright 2005-2009 Sun Microsystems, Inc. All Rights Reserved.
  */
 
 
-package javax.annotation;
-import java.lang.annotation.*;
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
+package javax.annotation.sql;
+
+import java.lang.annotation.Target;
+import java.lang.annotation.Retention;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * This class is used to allow multiple resources declarations.
- *
- * @see javax.annotation.Resource
- * @since Common Annotations 1.0
+ * Declares one or more <code>DataSourceDefinition</code> annotations.
+ * 
+ * @see javax.annotation.sql.DataSourceDefinition
+ * @since Common Annotations 1.1
  */
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DataSourceDefinitions {
+    DataSourceDefinition[] value ();
 
-@Documented
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Resources {
-   /**
-    * Array used for multiple resource declarations.
-    */
-   Resource[] value();
 }

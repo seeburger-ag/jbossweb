@@ -127,11 +127,10 @@
 
   <target name="package" >
 
-    <!-- Common Annotations 1.0 JAR File -->
+    <!-- Common Annotations 1.1 JAR File -->
     <jar  jarfile="${annotations-api.jar}">
       <fileset dir="${tomcat.classes}">
-        <include name="javax/annotation/*" />
-        <include name="javax/annotation/security/*" />
+        <include name="javax/annotation/**" />
         <include name="javax/ejb/*" />
         <include name="javax/persistence/*" />
         <include name="javax/xml/ws/*" />
@@ -141,7 +140,7 @@
       </fileset>
     </jar>
 
-    <!-- Servlet 2.5 Implementation JAR File -->
+    <!-- Servlet 3.0 Implementation JAR File -->
     <jar  jarfile="${servlet-api.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="javax/servlet/*" />
@@ -155,7 +154,7 @@
       </fileset>
     </jar>
 
-    <!-- JSP 2.1 Implementation JAR File -->
+    <!-- JSP 2.2 Implementation JAR File -->
     <jar  jarfile="${jsp-api.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="javax/servlet/jsp/**" />
@@ -165,7 +164,7 @@
       </fileset>
     </jar>
 
-    <!-- JSP 2.1 EL Implementation JAR File -->
+    <!-- JSP 2.2 EL Implementation JAR File -->
     <jar  jarfile="${el-api.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="javax/el/*" />
