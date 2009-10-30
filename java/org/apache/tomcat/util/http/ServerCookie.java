@@ -68,23 +68,53 @@ public class ServerCookie implements Serializable {
     };
     private static final String ancientDate;
 
+    /**
+     * If set to true, we parse cookies strictly according to the servlet,
+     * cookie and HTTP specs by default.
+     */
+    public static final boolean STRICT_SERVLET_COMPLIANCE;
+
+    /**
+     * If set to false, we don't use the IE6/7 Max-Age/Expires work around.
+     * Default is usually true. If STRICT_SERVLET_COMPLIANCE==true then default
+     * is false. Explicitly setting always takes priority.
+     */
+    public static final boolean ALWAYS_ADD_EXPIRES;
+
+    /**
+     * If set to true, the <code>/</code> character will be treated as a
+     * separator. Default is usually false. If STRICT_SERVLET_COMPLIANCE==true
+     * then default is true. Explicitly setting always takes priority.
+     */
+    public static final boolean FWD_SLASH_IS_SEPARATOR;
+
 
     static {
         ancientDate = OLD_COOKIE_FORMAT.get().format(new Date(10000));
+        
+        STRICT_SERVLET_COMPLIANCE = Boolean.valueOf(System.getProperty(
+                "org.apache.catalina.STRICT_SERVLET_COMPLIANCE",
+                "false")).booleanValue();
+        
+
+        String alwaysAddExpires = System.getProperty(
+                "org.apache.tomcat.util.http.ServerCookie.ALWAYS_ADD_EXPIRES");
+        if (alwaysAddExpires == null) {
+            ALWAYS_ADD_EXPIRES = !STRICT_SERVLET_COMPLIANCE;
+        } else {
+            ALWAYS_ADD_EXPIRES =
+                Boolean.valueOf(alwaysAddExpires).booleanValue();
+        }
+        
+        String  fwdSlashIsSeparator = System.getProperty(
+                "org.apache.tomcat.util.http.ServerCookie.FWD_SLASH_IS_SEPARATOR");
+        if (fwdSlashIsSeparator == null) {
+            FWD_SLASH_IS_SEPARATOR = STRICT_SERVLET_COMPLIANCE;
+        } else {
+            FWD_SLASH_IS_SEPARATOR =
+                Boolean.valueOf(fwdSlashIsSeparator).booleanValue();
+        }
     }
-
-    /**
-     * If set to true, we parse cookies according to the servlet spec,
-     */
-    public static final boolean VERSION_SWITCH =
-        Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.ServerCookie.VERSION_SWITCH", "true")).booleanValue();
-
-    /**
-     * If set to false, we don't use the IE6/7 Max-Age/Expires work around
-     */
-    public static final boolean ALWAYS_ADD_EXPIRES =
-        Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.ServerCookie.ALWAYS_ADD_EXPIRES", "false")).booleanValue();
-
 
     // Note: Servlet Spec =< 2.5 only refers to Netscape and RFC2109,
     // not RFC2965
@@ -223,26 +253,6 @@ public class ServerCookie implements Serializable {
         return true;
     }
 
-    /**
-     * @deprecated - Not used
-     */
-    public static boolean checkName( String name ) {
-        if (!isToken(name)
-                || name.equalsIgnoreCase("Comment")     // rfc2019
-                || name.equalsIgnoreCase("Discard")     // rfc2965
-                || name.equalsIgnoreCase("Domain")      // rfc2019
-                || name.equalsIgnoreCase("Expires")     // Netscape
-                || name.equalsIgnoreCase("Max-Age")     // rfc2019
-                || name.equalsIgnoreCase("Path")        // rfc2019
-                || name.equalsIgnoreCase("Secure")      // rfc2019
-                || name.equalsIgnoreCase("Version")     // rfc2019
-                // TODO remaining RFC2965 attributes
-            ) {
-            return false;
-        }
-        return true;
-    }
-
     // -------------------- Cookie parsing tools
 
     
@@ -290,12 +300,7 @@ public class ServerCookie implements Serializable {
         buf.append( name );
         buf.append("=");
         // Servlet implementation does not check anything else
-
-        // Switch version if allowed and a comment has been configured
-        if (version == 0 && comment != null && VERSION_SWITCH) {
-            version = 1;
-        }
-
+        
         version = maybeQuote2(version, buf, value,true);
 
         // Add version 1 specific information
@@ -319,6 +324,10 @@ public class ServerCookie implements Serializable {
         // Max-Age=secs ... or use old "Expires" format
         // TODO RFC2965 Discard
         if (maxAge >= 0) {
+            if (version > 0) {
+                buf.append ("; Max-Age=");
+                buf.append (maxAge);
+            }
             // IE6, IE7 and possibly other browsers don't understand Max-Age.
             // They do understand Expires, even with V1 cookies!
             if (version == 0 || ALWAYS_ADD_EXPIRES) {
@@ -332,9 +341,6 @@ public class ServerCookie implements Serializable {
                             new Date(System.currentTimeMillis() +
                                     maxAge*1000L),
                             buf, new FieldPosition(0));
-            } else {
-                buf.append ("; Max-Age=");
-                buf.append (maxAge);
             }
         }
 
@@ -344,7 +350,13 @@ public class ServerCookie implements Serializable {
             if (version==0) {
                 maybeQuote2(version, buf, path);
             } else {
-                maybeQuote2(version, buf, path, ServerCookie.tspecials2NoSlash, false);
+                if (FWD_SLASH_IS_SEPARATOR) {
+                    maybeQuote2(version, buf, path, ServerCookie.tspecials,
+                            false);
+                } else {
+                    maybeQuote2(version, buf, path,
+                            ServerCookie.tspecials2NoSlash, false);
+                }
             }
         }
 
@@ -360,21 +372,6 @@ public class ServerCookie implements Serializable {
         headerBuf.append(buf);
     }
 
-    /**
-     * @deprecated - Not used
-     */
-    @Deprecated
-    public static void maybeQuote (int version, StringBuffer buf,String value) {
-        // special case - a \n or \r  shouldn't happen in any case
-        if (isToken(value)) {
-            buf.append(value);
-        } else {
-            buf.append('"');
-            buf.append(escapeDoubleQuotes(value,0,value.length()));
-            buf.append('"');
-        }
-    }
-    
     public static boolean alreadyQuoted (String value) {
         if (value==null || value.length()==0) return false;
         return (value.charAt(0)=='\"' && value.charAt(value.length()-1)=='\"');
@@ -403,7 +400,7 @@ public class ServerCookie implements Serializable {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,1,value.length()-1));
             buf.append('"');
-        } else if (allowVersionSwitch && VERSION_SWITCH && version==0 && !isToken2(value, literals)) {
+        } else if (allowVersionSwitch && (!STRICT_SERVLET_COMPLIANCE) && version==0 && !isToken2(value, literals)) {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value,0,value.length()));
             buf.append('"');

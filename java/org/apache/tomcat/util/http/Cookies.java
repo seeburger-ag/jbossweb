@@ -37,7 +37,7 @@ public final class Cookies { // extends MultiMap {
 
     private static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger(Cookies.class );
-
+    
     // expected average number of cookies per request
     public static final int INITIAL_SIZE=4; 
     ServerCookie scookies[]=new ServerCookie[INITIAL_SIZE];
@@ -46,19 +46,54 @@ public final class Cookies { // extends MultiMap {
 
     MimeHeaders headers;
 
+    /**
+     * If set to true, we parse cookies strictly according to the servlet,
+     * cookie and HTTP specs by default.
+     */
+    public static final boolean STRICT_SERVLET_COMPLIANCE;
+
+    /**
+     * If set to true, the <code>/</code> character will be treated as a
+     * separator. Default is usually false. If STRICT_SERVLET_COMPLIANCE==true
+     * then default is true. Explicitly setting always takes priority.
+     */
+    public static final boolean FWD_SLASH_IS_SEPARATOR;
+    
     /*
     List of Separator Characters (see isSeparator())
-    Excluding the '/' char violates the RFC, but 
-    it looks like a lot of people put '/'
-    in unquoted values: '/': ; //47 
-    '\t':9 ' ':32 '\"':34 '\'':39 '(':40 ')':41 ',':44 ':':58 ';':59 '<':60 
-    '=':61 '>':62 '?':63 '@':64 '[':91 '\\':92 ']':93 '{':123 '}':125
     */
-    public static final char SEPARATORS[] = { '\t', ' ', '\"', '\'', '(', ')', ',', 
-        ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}' };
+    public static final char SEPARATORS[];
 
     protected static final boolean separators[] = new boolean[128];
     static {
+        STRICT_SERVLET_COMPLIANCE = Boolean.valueOf(System.getProperty(
+                "org.apache.catalina.STRICT_SERVLET_COMPLIANCE",
+                "false")).booleanValue();
+        
+        String  fwdSlashIsSeparator = System.getProperty(
+                "org.apache.tomcat.util.http.ServerCookie.FWD_SLASH_IS_SEPARATOR");
+        if (fwdSlashIsSeparator == null) {
+            FWD_SLASH_IS_SEPARATOR = STRICT_SERVLET_COMPLIANCE;
+        } else {
+            FWD_SLASH_IS_SEPARATOR =
+                Boolean.valueOf(fwdSlashIsSeparator).booleanValue();
+        }
+
+        /*
+        Excluding the '/' char by default violates the RFC, but 
+        it looks like a lot of people put '/'
+        in unquoted values: '/': ; //47 
+        '\t':9 ' ':32 '\"':34 '(':40 ')':41 ',':44 ':':58 ';':59 '<':60 
+        '=':61 '>':62 '?':63 '@':64 '[':91 '\\':92 ']':93 '{':123 '}':125
+        */
+        if (FWD_SLASH_IS_SEPARATOR) {
+            SEPARATORS = new char[] { '\t', ' ', '\"', '(', ')', ',', '/', 
+                    ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}' };
+        } else {
+            SEPARATORS = new char[] { '\t', ' ', '\"', '(', ')', ',', 
+                    ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}' };
+        }
+        
         for (int i = 0; i < 128; i++) {
             separators[i] = false;
         }
@@ -190,13 +225,15 @@ public final class Cookies { // extends MultiMap {
 
             // Uncomment to test the new parsing code
             if( cookieValue.getType() == MessageBytes.T_BYTES ) {
-                if( dbg>0 ) log( "Parsing b[]: " + cookieValue.toString());
+                if(log.isDebugEnabled())
+                    log.debug("Cookies: Parsing b[]: " + cookieValue.toString());
                 ByteChunk bc=cookieValue.getByteChunk();
                 processCookieHeader( bc.getBytes(),
                                      bc.getOffset(),
                                      bc.getLength());
             } else {
-                if( dbg>0 ) log( "Parsing S: " + cookieValue.toString());
+                if(log.isDebugEnabled())
+                    log.debug("Cookies: Parsing S: " + cookieValue.toString());
                 processCookieHeader( cookieValue.toString() );
             }
             pos++;// search from the next position
@@ -224,7 +261,8 @@ public final class Cookies { // extends MultiMap {
     
     private void processCookieHeader(  String cookieString )
     {
-        if( dbg>0 ) log( "Parsing cookie header " + cookieString );
+        if(log.isDebugEnabled())
+            log.debug("Cookies: Parsing cookie header " + cookieString);
         // normal cookie, with a string value.
         // This is the original code, un-optimized - it shouldn't
         // happen in normal case
@@ -248,7 +286,8 @@ public final class Cookies { // extends MultiMap {
                 
                 cookie.getName().setString(name);
                 cookie.getValue().setString(value);
-                if( dbg > 0 ) log( "Add cookie " + name + "=" + value);
+                if(log.isDebugEnabled())
+                    log.debug("Cookies: Add cookie " + name + "=" + value);
             } else {
                 // we have a bad cookie.... just let it go
             }
@@ -277,15 +316,6 @@ public final class Cookies { // extends MultiMap {
         }
         return value;
     }  
-
-
-    // log
-    static final int dbg=0;
-    public void log(String s ) {
-        if (log.isDebugEnabled())
-            log.debug("Cookies: " + s);
-    }
-
 
    /**
      * Returns true if the byte is a separator character as
@@ -370,7 +400,7 @@ public final class Cookies { // extends MultiMap {
             pos = nameEnd = getTokenEndPosition(bytes,pos,end);
 
             // Skip whitespace
-            while (pos < end && isWhiteSpace(bytes[pos])) {pos++; }; 
+            while (pos < end && isWhiteSpace(bytes[pos])) {pos++; } 
          
 
             // Check for an '=' -- This could also be a name-only
@@ -390,7 +420,7 @@ public final class Cookies { // extends MultiMap {
                 // Determine what type of value this is, quoted value,
                 // token, name-only with an '=', or other (bad)
                 switch (bytes[pos]) {
-                case '"':; // Quoted Value
+                case '"': // Quoted Value
                     isQuoted = true;
                     valueStart=pos + 1; // strip "
                     // getQuotedValue returns the position before 
@@ -413,7 +443,7 @@ public final class Cookies { // extends MultiMap {
                     valueStart = valueEnd = -1;
                     // The position is OK (On a delimiter)
                     break;
-                default:;
+                default:
                     if (!isSeparator(bytes[pos])) {
                         // Token
                         valueStart=pos;
@@ -426,10 +456,11 @@ public final class Cookies { // extends MultiMap {
                         // INVALID COOKIE, advance to next delimiter
                         // The starting character of the cookie value was
                         // not valid.
-                        log("Invalid cookie. Value not a token or quoted value");
+                        log.info("Cookies: Invalid cookie." +
+                                "Value not a token or quoted value");
                         while (pos < end && bytes[pos] != ';' && 
                                bytes[pos] != ',') 
-                            {pos++; };
+                            {pos++; }
                         pos++;
                         // Make sure no special avpairs can be attributed to 
                         // the previous cookie by setting the current cookie
@@ -450,7 +481,7 @@ public final class Cookies { // extends MultiMap {
             // in a good state.
   
             // Skip whitespace
-            while (pos < end && isWhiteSpace(bytes[pos])) {pos++; }; 
+            while (pos < end && isWhiteSpace(bytes[pos])) {pos++; }
 
 
             // Make sure that after the cookie we have a separator. This
@@ -525,7 +556,7 @@ public final class Cookies { // extends MultiMap {
                 } 
 
                 // Unknown cookie, complain
-                log("Unknown Special Cookie");
+                log.info("Cookies: Unknown Special Cookie");
 
             } else { // Normal Cookie
                 sc = addCookie();
@@ -557,7 +588,7 @@ public final class Cookies { // extends MultiMap {
      */
     public static final int getTokenEndPosition(byte bytes[], int off, int end){
         int pos = off;
-        while (pos < end && !isSeparator(bytes[pos])) {pos++; };
+        while (pos < end && !isSeparator(bytes[pos])) {pos++; }
         
         if (pos > end)
             return end;

@@ -155,6 +155,9 @@
       <fix>
         <bug>47225</bug>: Fix bad length when redirecting in the mapper. (markt)
       </fix>
+      <fix>
+        Cookie separators and quoting compliance fixes. (markt, kkolinko)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
