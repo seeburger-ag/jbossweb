@@ -158,6 +158,9 @@
       <fix>
         Cookie separators and quoting compliance fixes. (markt, kkolinko)
       </fix>
+      <fix>
+        <bug>46950</bug>: Fix SSL renegociation problems. (jfclere)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
