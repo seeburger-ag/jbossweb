@@ -108,7 +108,7 @@ public class ServerCookie implements Serializable {
         String allowVersionSwitch = System.getProperty(
                 "org.apache.tomcat.util.http.ServerCookie.ALLOW_VERSION_SWITCH");
         if (allowVersionSwitch == null) {
-            ALLOW_VERSION_SWITCH = STRICT_SERVLET_COMPLIANCE;
+            ALLOW_VERSION_SWITCH = true;
         } else {
             ALLOW_VERSION_SWITCH =
                 Boolean.valueOf(allowVersionSwitch).booleanValue();

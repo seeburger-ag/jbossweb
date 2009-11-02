@@ -738,15 +738,46 @@ class Validator {
                 int attrSize = attrs.getLength();
                 Node.JspAttribute[] jspAttrs = new Node.JspAttribute[attrSize];
                 for (int i = 0; i < attrSize; i++) {
+                    // JSP.2.2 - '#{' not allowed in template text
+                    String value = attrs.getValue(i);
+                    if (!pageInfo.isDeferredSyntaxAllowedAsLiteral()) {
+                        if (containsDeferredSyntax(value)) {
+                            err.jspError(n, "jsp.error.el.template.deferred");
+                        }
+                    }
                     jspAttrs[i] = getJspAttribute(null, attrs.getQName(i),
-                            attrs.getURI(i), attrs.getLocalName(i), attrs
-                                    .getValue(i), java.lang.Object.class, n,
-                            false);
+                            attrs.getURI(i), attrs.getLocalName(i), value, 
+                            java.lang.Object.class, n, false);
                 }
                 n.setJspAttributes(jspAttrs);
             }
 
             visitBody(n);
+        }
+
+        /**
+         * Look for a #{ sequence that isn't preceded by \.
+         */
+        private boolean containsDeferredSyntax(String value) {
+            if (value == null) {
+                return false;
+            }
+            
+            int i = 0;
+            int len = value.length();
+            boolean prevCharIsEscape = false;
+            while (i < value.length()) {
+                char c = value.charAt(i);
+                if (c == '#' && (i+1) < len && value.charAt(i+1) == '{' && !prevCharIsEscape) {
+                    return true;
+                } else if (c == '\\') {
+                    prevCharIsEscape = true;
+                } else {
+                    prevCharIsEscape = false;
+                }
+                i++;
+            }
+            return false;
         }
 
         public void visit(Node.CustomTag n) throws JasperException {
