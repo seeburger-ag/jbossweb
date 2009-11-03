@@ -33,8 +33,8 @@ import org.apache.jasper.JasperException;
 public class ELFunctionMapper {
     static private int currFunc = 0;
     private ErrorDispatcher err;
-    StringBuffer ds;  // Contains codes to initialize the functions mappers.
-    StringBuffer ss;  // Contains declarations of the functions mappers.
+    StringBuilder ds;  // Contains codes to initialize the functions mappers.
+    StringBuilder ss;  // Contains declarations of the functions mappers.
 
     /**
      * Creates the functions mappers for all EL expressions in the JSP page.
@@ -48,8 +48,8 @@ public class ELFunctionMapper {
 	currFunc = 0;
 	ELFunctionMapper map = new ELFunctionMapper();
 	map.err = compiler.getErrorDispatcher();
-	map.ds = new StringBuffer();
-	map.ss = new StringBuffer();
+	map.ds = new StringBuilder();
+	map.ss = new StringBuilder();
 
 	page.visit(map.new ELFunctionVisitor());
 

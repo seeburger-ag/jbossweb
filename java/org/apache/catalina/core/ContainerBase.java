@@ -1570,7 +1570,7 @@ public abstract class ContainerBase
         Container host=null;
         Container servlet=null;
         
-        StringBuffer suffix=new StringBuffer();
+        StringBuilder suffix=new StringBuilder();
         
         if( container instanceof StandardHost ) {
             host=container;

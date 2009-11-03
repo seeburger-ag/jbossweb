@@ -324,7 +324,7 @@ public final class JspRuntimeContext {
         }
         
         URL [] urls = ((URLClassLoader) parentClassLoader).getURLs();
-        StringBuffer cpath = new StringBuffer();
+        StringBuilder cpath = new StringBuilder();
         String sep = System.getProperty("path.separator");
 
         for(int i = 0; i < urls.length; i++) {

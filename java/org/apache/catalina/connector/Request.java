@@ -2581,7 +2581,7 @@ public class Request
             return null;
         if (s.indexOf('\\') == -1)
             return s;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i=0; i<s.length(); i++) {
             char c = s.charAt(i);
             if (c!='\\') buf.append(c);
@@ -2892,7 +2892,7 @@ public class Request
         if (white < 0)
             white = value.indexOf('\t');
         if (white >= 0) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             int len = value.length();
             for (int i = 0; i < len; i++) {
                 char ch = value.charAt(i);
@@ -3143,7 +3143,7 @@ public class Request
 
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(sm.getString("coyoteRequest.servletStack", Thread.currentThread().getName()));
         if (eventMode) {
             buf.append(" [event]");

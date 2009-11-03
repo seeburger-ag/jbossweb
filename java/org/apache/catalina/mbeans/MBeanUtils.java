@@ -620,7 +620,7 @@ public class MBeanUtils {
             String serviceName = null;
             if (service != null)
                 serviceName = service.getName();
-            StringBuffer sb = new StringBuffer(domain);
+            StringBuilder sb = new StringBuilder(domain);
             sb.append(":type=Connector");
             sb.append(",port=" + port);
             if ((address != null) && (address.length()>0)) {

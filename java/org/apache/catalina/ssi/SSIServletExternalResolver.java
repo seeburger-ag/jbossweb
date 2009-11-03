@@ -195,7 +195,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
                     Enumeration acceptHeaders = req.getHeaders(accept);
                     if (acceptHeaders != null)
                         if (acceptHeaders.hasMoreElements()) {
-                            StringBuffer rv = new StringBuffer(
+                            StringBuilder rv = new StringBuilder(
                                     (String) acceptHeaders.nextElement());
                             while (acceptHeaders.hasMoreElements()) {
                                 rv.append(", ");
@@ -312,7 +312,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             } else if (nameParts[1].equals("PROTOCOL")) {
                 retVal = req.getProtocol();
             } else if (nameParts[1].equals("SOFTWARE")) {
-                StringBuffer rv = new StringBuffer(context.getServerInfo());
+                StringBuilder rv = new StringBuilder(context.getServerInfo());
                 rv.append(" ");
                 rv.append(System.getProperty("java.vm.name"));
                 rv.append("/");

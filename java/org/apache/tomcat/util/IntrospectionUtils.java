@@ -480,7 +480,7 @@ public final class IntrospectionUtils {
         if (value.indexOf("$") < 0) {
             return value;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int prev = 0;
         // assert value!=nil
         int pos;
@@ -958,7 +958,7 @@ public final class IntrospectionUtils {
 
         if (dbg > 0) {
             // debug
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("" + target.getClass().getName() + "." + methodN + "( ");
             for (int i = 0; i < params.length; i++) {
                 if (i > 0)

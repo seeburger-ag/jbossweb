@@ -4757,7 +4757,7 @@ public class StandardContext
      */
     public String toString() {
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (getParent() != null) {
             sb.append(getParent().toString());
             sb.append(".");
@@ -5047,7 +5047,7 @@ public class StandardContext
         namingContextName = getName();
         } else {
         Stack stk = new Stack();
-        StringBuffer buff = new StringBuffer();
+        StringBuilder buff = new StringBuilder();
         while (parent != null) {
             stk.push(parent.getName());
             parent = parent.getParent();
@@ -5254,7 +5254,7 @@ public class StandardContext
         }
         BufferedReader br = new BufferedReader(
                                 new InputStreamReader(stream));
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String strRead = "";
         try {
             while (strRead != null) {

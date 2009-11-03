@@ -1394,7 +1394,7 @@ public class ApplicationContext
         while (childPaths.hasMoreElements()) {
             Binding binding = (Binding) childPaths.nextElement();
             String name = binding.getName();
-            StringBuffer childPath = new StringBuffer(path);
+            StringBuilder childPath = new StringBuilder(path);
             if (!"/".equals(path) && !path.endsWith("/"))
                 childPath.append("/");
             childPath.append(name);

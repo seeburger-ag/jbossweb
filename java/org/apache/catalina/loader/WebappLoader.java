@@ -434,7 +434,7 @@ public class WebappLoader
      */
     public String toString() {
 
-        StringBuffer sb = new StringBuffer("WebappLoader[");
+        StringBuilder sb = new StringBuilder("WebappLoader[");
         if (container != null)
             sb.append(container.getName());
         sb.append("]");

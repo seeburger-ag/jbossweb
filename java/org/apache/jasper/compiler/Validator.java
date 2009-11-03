@@ -419,7 +419,7 @@ class Validator {
 
         private ClassLoader loader;
 
-        private final StringBuffer buf = new StringBuffer(32);
+        private final StringBuilder buf = new StringBuilder(32);
 
         private static final JspUtil.ValidAttribute[] jspRootAttrs = {
                 new JspUtil.ValidAttribute("xsi:schemaLocation"),
@@ -716,7 +716,7 @@ class Validator {
             }
 
             // build expression
-            StringBuffer expr = this.getBuffer();
+            StringBuilder expr = this.getBuffer();
             expr.append(n.getType()).append('{').append(n.getText())
                     .append('}');
             ELNode.Nodes el = ELParser.parse(expr.toString());
@@ -1388,9 +1388,9 @@ class Validator {
         }
 
         /*
-         * Return an empty StringBuffer [not thread-safe]
+         * Return an empty StringBuilder [not thread-safe]
          */
-        private StringBuffer getBuffer() {
+        private StringBuilder getBuffer() {
             this.buf.setLength(0);
             return this.buf;
         }
@@ -1699,7 +1699,7 @@ class Validator {
 
             ValidationMessage[] errors = tagInfo.validate(n.getTagData());
             if (errors != null && errors.length != 0) {
-                StringBuffer errMsg = new StringBuffer();
+                StringBuilder errMsg = new StringBuilder();
                 errMsg.append("<h3>");
                 errMsg.append(Localizer.getMessage(
                         "jsp.error.tei.invalid.attributes", n.getQName()));
@@ -1789,7 +1789,7 @@ class Validator {
     private static void validateXmlView(PageData xmlView, Compiler compiler)
             throws JasperException {
 
-        StringBuffer errMsg = null;
+        StringBuilder errMsg = null;
         ErrorDispatcher errDisp = compiler.getErrorDispatcher();
 
         for (Iterator iter = compiler.getPageInfo().getTaglibs().iterator(); iter
@@ -1803,7 +1803,7 @@ class Validator {
             ValidationMessage[] errors = tli.validate(xmlView);
             if ((errors != null) && (errors.length != 0)) {
                 if (errMsg == null) {
-                    errMsg = new StringBuffer();
+                    errMsg = new StringBuilder();
                 }
                 errMsg.append("<h3>");
                 errMsg.append(Localizer.getMessage(

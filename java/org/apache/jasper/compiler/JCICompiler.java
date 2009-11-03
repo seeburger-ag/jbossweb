@@ -97,7 +97,7 @@ public class JCICompiler extends org.apache.jasper.compiler.Compiler {
                 for (int i = 0; i < problems.length; i++) {
                     CompilationProblem problem = problems[i];
                     problemList.add(ErrorDispatcher.createJavacError
-                            (problem.getFileName(), pageNodes, new StringBuffer(problem.getMessage()), 
+                            (problem.getFileName(), pageNodes, new StringBuilder(problem.getMessage()), 
                                     problem.getStartLine(), ctxt));
                 }
             } catch (JasperException e) {

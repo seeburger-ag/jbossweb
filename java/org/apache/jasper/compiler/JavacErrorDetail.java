@@ -39,7 +39,7 @@ public class JavacErrorDetail {
     private int javaLineNum;
     private String jspFileName;
     private int jspBeginLineNum;
-    private StringBuffer errMsg;
+    private StringBuilder errMsg;
     private String jspExtract = null;
 
     /**
@@ -52,7 +52,7 @@ public class JavacErrorDetail {
      */
     public JavacErrorDetail(String javaFileName,
                             int javaLineNum,
-                            StringBuffer errMsg) {
+                            StringBuilder errMsg) {
 
         this.javaFileName = javaFileName;
         this.javaLineNum = javaLineNum;
@@ -76,7 +76,7 @@ public class JavacErrorDetail {
                             int javaLineNum,
                             String jspFileName,
                             int jspBeginLineNum,
-                            StringBuffer errMsg) {
+                            StringBuilder errMsg) {
 
         this(javaFileName, javaLineNum, jspFileName, jspBeginLineNum, errMsg,
                 null);
@@ -86,7 +86,7 @@ public class JavacErrorDetail {
             int javaLineNum,
             String jspFileName,
             int jspBeginLineNum,
-            StringBuffer errMsg,
+            StringBuilder errMsg,
             JspCompilationContext ctxt) {
         
         this(javaFileName, javaLineNum, errMsg);
@@ -119,7 +119,7 @@ public class JavacErrorDetail {
                 }
     
                 // copy out a fragment of JSP to display to the user
-                StringBuffer fragment = new StringBuffer(1024);
+                StringBuilder fragment = new StringBuilder(1024);
                 int startIndex = Math.max(0, this.jspBeginLineNum-1-3);
                 int endIndex = Math.min(
                         jspLines.length-1, this.jspBeginLineNum-1+3);

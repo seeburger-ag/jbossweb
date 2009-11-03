@@ -143,7 +143,7 @@ public class Digester extends DefaultHandler {
     /**
      * The body text of the current element.
      */
-    protected StringBuffer bodyText = new StringBuffer();
+    protected StringBuilder bodyText = new StringBuilder();
 
 
     /**
@@ -1069,7 +1069,7 @@ public class Digester extends DefaultHandler {
         }
 
         // Recover the body text from the surrounding element
-        bodyText = (StringBuffer) bodyTexts.pop();
+        bodyText = (StringBuilder) bodyTexts.pop();
         if (debug) {
             log.debug("  Popping body text '" + bodyText.toString() + "'");
         }
@@ -1271,7 +1271,7 @@ public class Digester extends DefaultHandler {
         if (debug) {
             log.debug("  Pushing body text '" + bodyText.toString() + "'");
         }
-        bodyText = new StringBuffer();
+        bodyText = new StringBuilder();
 
         // the actual element name is either in localName or qName, depending 
         // on whether the parser is namespace aware
@@ -1281,7 +1281,7 @@ public class Digester extends DefaultHandler {
         }
 
         // Compute the current matching rule
-        StringBuffer sb = new StringBuffer(match);
+        StringBuilder sb = new StringBuilder(match);
         if (match.length() > 0) {
             sb.append('/');
         }
@@ -2825,11 +2825,11 @@ public class Digester extends DefaultHandler {
 
 
     /**
-     * Return a new StringBuffer containing the same contents as the
+     * Return a new StringBuilder containing the same contents as the
      * input buffer, except that data of form ${varname} have been
      * replaced by the value of that var as defined in the system property.
      */
-    private StringBuffer updateBodyText(StringBuffer bodyText) {
+    private StringBuilder updateBodyText(StringBuilder bodyText) {
         String in = bodyText.toString();
         String out;
         try {
@@ -2843,7 +2843,7 @@ public class Digester extends DefaultHandler {
             // a new buffer
             return bodyText;
         } else {
-            return new StringBuffer(out);
+            return new StringBuilder(out);
         }
     }
 

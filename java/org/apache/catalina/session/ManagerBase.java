@@ -958,11 +958,11 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         String result = null;
 
         // Render the result as a String of hexadecimal digits
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         do {
             int resultLenBytes = 0;
             if (result != null) {
-                buffer = new StringBuffer();
+                buffer = new StringBuilder();
                 duplicates++;
             }
 
@@ -1136,7 +1136,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      *
      */
     public String listSessionIds() {
-        StringBuffer sb=new StringBuffer();
+        StringBuilder sb=new StringBuilder();
         Iterator keys = sessions.keySet().iterator();
         while (keys.hasNext()) {
             sb.append(keys.next()).append(" ");

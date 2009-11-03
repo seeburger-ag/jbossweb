@@ -211,7 +211,7 @@ class JSSESupport implements SSLSupport {
         byte [] ssl_session = session.getId();
         if ( ssl_session == null) 
             return null;
-        StringBuffer buf=new StringBuffer("");
+        StringBuilder buf=new StringBuilder("");
         for(int x=0; x<ssl_session.length; x++) {
             String digit=Integer.toHexString((int)ssl_session[x]);
             if (digit.length()<2) buf.append('0');

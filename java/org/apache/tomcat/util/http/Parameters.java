@@ -452,7 +452,7 @@ public final class Parameters {
     /** Debug purpose
      */
     public String paramsAsString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Enumeration en = getParameterNames();
         while (en.hasMoreElements()) {
             String k = (String) en.nextElement();

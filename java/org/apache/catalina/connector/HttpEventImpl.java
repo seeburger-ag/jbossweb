@@ -114,7 +114,7 @@ public class HttpEventImpl implements HttpEvent {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer("HttpEventImpl[");
+        StringBuilder buf = new StringBuilder("HttpEventImpl[");
         buf.append(super.toString());
         buf.append("] Event:");
         buf.append(getType());
