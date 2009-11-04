@@ -291,7 +291,7 @@ public class StandardWrapperFacade
         if (servletSecurity == null) {
             throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
         }
-        return wrapper.setServletSecurityOnCurrentMappings(servletSecurity);
+        return wrapper.setServletSecurity(servletSecurity);
     }
     
     public void setMultipartConfig(MultipartConfigElement multipartConfig) {

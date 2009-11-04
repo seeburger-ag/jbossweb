@@ -231,12 +231,6 @@ public class StandardWrapper
     
     
     /**
-     * Associated servlet security patterns.
-     */
-    protected Set<String> servletSecurityPatterns = null;
-    
-
-    /**
      * The notification sequence number.
      */
     protected long sequenceNumber = 0;
@@ -654,39 +648,28 @@ public class StandardWrapper
     
 
     /**
-     * Set an associated ServletSecurity.
-     */
-    public void setServletSecurity(ServletSecurityElement servletSecurity) {
-        ServletSecurityElement oldServletSecurity = this.servletSecurity;
-        this.servletSecurity = servletSecurity;
-        support.firePropertyChange("servletSecurity", oldServletSecurity, this.servletSecurity);
-    }
-    
-    
-    /**
      * Set an associated ServletSecurity on mappings which are currently associated
      * with the Servlet. This will not set security on patters which are currently
      * defined in a security constraint.
      * 
      * @return the set of patterns for which the servlet security will not be defined
      */
-    public Set<String> setServletSecurityOnCurrentMappings(ServletSecurityElement servletSecurity) {
+    public Set<String> setServletSecurity(ServletSecurityElement servletSecurity) {
         ServletSecurityElement oldServletSecurity = this.servletSecurity;
         this.servletSecurity = servletSecurity;
         support.firePropertyChange("servletSecurity", oldServletSecurity, this.servletSecurity);
         // Now find to which mappings this servlet security will apply, and return the list
         // for which is will not apply
         Set<String> ignoredPatterns = new HashSet<String>();
-        servletSecurityPatterns = new HashSet<String>();
+        HashSet<String> currentMappings = new HashSet<String>();
         for (String mapping : findMappings()) {
-            servletSecurityPatterns.add(mapping);
+            currentMappings.add(mapping);
         }
         SecurityConstraint[] constraints = ((Context) getParent()).findConstraints();
         for (SecurityConstraint constraint : constraints) {
             for (SecurityCollection collection : constraint.findCollections()) {
                 for (String pattern : collection.findPatterns()) {
-                    if (servletSecurityPatterns.contains(pattern)) {
-                        servletSecurityPatterns.remove(pattern);
+                    if (currentMappings.contains(pattern)) {
                         ignoredPatterns.add(pattern);
                     }
                 }
@@ -695,14 +678,6 @@ public class StandardWrapper
         return ignoredPatterns;
     }
     
-    
-    /**
-     * Get an associated ServletSecurity patterns, if any.
-     */
-    public Set<String> getServletSecurityPatterns() {
-        return servletSecurityPatterns;
-    }
-
     
     /**
      * Return the fully qualified servlet class name for this servlet.

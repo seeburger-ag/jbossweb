@@ -429,28 +429,15 @@ public interface Wrapper extends Container {
     
     /**
      * Set an associated ServletSecurity.
-     */
-    public void setServletSecurity(ServletSecurityElement servletSecurity);
-
-    
-    /**
-     * Set an associated ServletSecurity on mappings which are currently associated
-     * with the Servlet. This will not set security on patters which are currently
-     * defined in a security constraint.
-     * 
+      * 
      * @return the set of patterns for which the servlet security will not be defined
-     */
-    public Set<String> setServletSecurityOnCurrentMappings(ServletSecurityElement servletSecurity);
+    */
+    public Set<String> setServletSecurity(ServletSecurityElement servletSecurity);
 
     
     /**
      * Get an associated ServletSecurity, if any.
      */
     public ServletSecurityElement getServletSecurity();
-
-    /**
-     * Get an associated ServletSecurity patterns, if any.
-     */
-    public Set<String> getServletSecurityPatterns();
 
 }
