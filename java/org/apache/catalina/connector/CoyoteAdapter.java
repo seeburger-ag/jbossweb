@@ -302,7 +302,6 @@ public class CoyoteAdapter
                 // Recycle the wrapper request and response
                 if (error || close || response.isClosed()) {
                     request.recycle();
-                    request.setFilterChain(null);
                     response.recycle();
                     res.action(ActionCode.ACTION_EVENT_END, null);
                 }
@@ -365,10 +364,6 @@ public class CoyoteAdapter
                     if (!response.isClosed() && !response.isError()) {
                         res.action(ActionCode.ACTION_EVENT_BEGIN, null);
                         event = true;
-                    } else {
-                        // Clear the filter chain, as otherwise it will not be reset elsewhere
-                        // since this is an event driven request
-                        request.setFilterChain(null);
                     }
                 }
 

@@ -505,6 +505,7 @@ public class Request
         localAddr = null;
         localName = null;
         currentFilterChain = 0;
+        filterChains.clear();
 
         attributes.clear();
         notes.clear();
@@ -648,7 +649,7 @@ public class Request
      */
     public ApplicationFilterChain getFilterChain() {
         if (currentFilterChain < filterChains.size()) {
-            return filterChains.get(currentFilterChain++);
+            return filterChains.get(currentFilterChain);
         } else {
             return null;
         }
