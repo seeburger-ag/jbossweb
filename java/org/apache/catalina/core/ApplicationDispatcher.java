@@ -373,7 +373,7 @@ final class ApplicationDispatcher
                 requestPath);
         state.outerRequest.setAttribute
             (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                Integer.valueOf(ApplicationFilterFactory.ASYNC_INTEGER));
+                    ApplicationFilterFactory.ASYNC_INTEGER);
         invoke(state.outerRequest, response, state);
 
     }
@@ -531,13 +531,13 @@ final class ApplicationDispatcher
         Integer disInt = (Integer) request.getAttribute
             (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR);
         if (disInt != null) {
-            if (disInt.intValue() != ApplicationFilterFactory.ERROR) {
+            if (disInt != ApplicationFilterFactory.ERROR_INTEGER) {
                 state.outerRequest.setAttribute
                     (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                      requestPath);
                 state.outerRequest.setAttribute
                     (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                     Integer.valueOf(ApplicationFilterFactory.FORWARD));
+                     ApplicationFilterFactory.FORWARD_INTEGER);
                 invoke(state.outerRequest, response, state);
             } else {
                 invoke(state.outerRequest, response, state);
@@ -600,7 +600,7 @@ final class ApplicationDispatcher
             if (servletPath != null)
                 wrequest.setServletPath(servletPath);
             wrequest.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    Integer.valueOf(ApplicationFilterFactory.INCLUDE));
+                    ApplicationFilterFactory.INCLUDE_INTEGER);
             wrequest.setAttribute(
                     ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                     requestPath);
@@ -632,7 +632,7 @@ final class ApplicationDispatcher
             }
             
             wrequest.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    Integer.valueOf(ApplicationFilterFactory.INCLUDE));
+                    ApplicationFilterFactory.INCLUDE_INTEGER);
             wrequest.setAttribute(
                     ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                     requestPath);

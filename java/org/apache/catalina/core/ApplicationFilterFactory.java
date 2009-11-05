@@ -74,15 +74,15 @@ public final class ApplicationFilterFactory {
     // -------------------------------------------------------------- Constants
 
 
-    public static final int ERROR = 1;
+    private static final int ERROR = 1;
     public static final Integer ERROR_INTEGER = new Integer(ERROR);
-    public static final int FORWARD = 2;
+    private static final int FORWARD = 2;
     public static final Integer FORWARD_INTEGER = new Integer(FORWARD);
-    public static final int INCLUDE = 4;
+    private static final int INCLUDE = 4;
     public static final Integer INCLUDE_INTEGER = new Integer(INCLUDE);
-    public static final int REQUEST = 8;
+    private static final int REQUEST = 8;
     public static final Integer REQUEST_INTEGER = new Integer(REQUEST);
-    public static final int ASYNC = 16;
+    private static final int ASYNC = 16;
     public static final Integer ASYNC_INTEGER = new Integer(ASYNC);
 
     public static final String DISPATCHER_TYPE_ATTR = 

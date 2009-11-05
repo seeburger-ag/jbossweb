@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -236,6 +237,25 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
             }
         }
 
+    }
+
+
+    public DispatcherType getDispatcherType() {
+        if (dispatcherType == null) {
+            return DispatcherType.REQUEST;
+        } else if (dispatcherType == ApplicationFilterFactory.REQUEST_INTEGER) {
+            return DispatcherType.REQUEST;
+        } else if (dispatcherType == ApplicationFilterFactory.ASYNC_INTEGER) {
+            return DispatcherType.ASYNC;
+        } else if (dispatcherType == ApplicationFilterFactory.ERROR_INTEGER) {
+            return DispatcherType.ERROR;
+        } else if (dispatcherType == ApplicationFilterFactory.FORWARD_INTEGER) {
+            return DispatcherType.FORWARD;
+        } else if (dispatcherType == ApplicationFilterFactory.INCLUDE_INTEGER) {
+            return DispatcherType.INCLUDE;
+        }
+        // Never happens
+        throw new IllegalStateException();
     }
 
 

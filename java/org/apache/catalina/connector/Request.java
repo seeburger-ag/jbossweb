@@ -3002,7 +3002,7 @@ public class Request
     }
 
     public boolean isAsyncStarted() {
-        return (asyncContext != null);
+        return (asyncContext != null && !canStartAsync && eventMode);
     }
 
     public boolean isAsyncSupported() {

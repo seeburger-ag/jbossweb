@@ -266,7 +266,7 @@ final class StandardHostValve
                 (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                  errorPage.getLocation());
             request.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    Integer.valueOf(ApplicationFilterFactory.ERROR));
+                    ApplicationFilterFactory.ERROR_INTEGER);
             request.setAttribute
                 (Globals.STATUS_CODE_ATTR,
                         Integer.valueOf(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
@@ -345,7 +345,7 @@ final class StandardHostValve
                 (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                  errorPage.getLocation());
             request.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    Integer.valueOf(ApplicationFilterFactory.ERROR));
+                    ApplicationFilterFactory.ERROR_INTEGER);
 
 
             Wrapper wrapper = request.getWrapper();
