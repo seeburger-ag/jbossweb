@@ -47,10 +47,15 @@
 package org.apache.catalina.connector;
 
 import java.io.IOException;
+import java.util.Iterator;
+
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
+import org.apache.catalina.connector.Request.AsyncListenerRegistration;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.coyote.ActionCode;
@@ -364,6 +369,20 @@ public class CoyoteAdapter
                     if (!response.isClosed() && !response.isError()) {
                         res.action(ActionCode.ACTION_EVENT_BEGIN, null);
                         event = true;
+                    }
+                } else if (request.getAsyncContext() != null) {
+                    // The AC was closed right away, so call onComplete as no event callback
+                    // will occur in that case
+                    Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
+                    for (AsyncListenerRegistration asyncListenerRegistration : asyncContext.getAsyncListeners().values()) {
+                        AsyncListener asyncListener = asyncListenerRegistration.getListener();
+                        AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
+                                asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
+                        try {
+                            asyncListener.onComplete(asyncEvent);
+                        } catch (Throwable t) {
+                            log.error(sm.getString("coyoteAdapter.complete", asyncListener.getClass()), t);
+                        }
                     }
                 }
 

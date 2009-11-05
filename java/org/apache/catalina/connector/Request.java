@@ -3030,7 +3030,7 @@ public class Request
     }
 
     public AsyncContext startAsync() throws IllegalStateException {
-        return startAsync(null, null);
+        return startAsync(getRequest(), getResponse().getResponse());
     }
 
     public AsyncContext startAsync(ServletRequest servletRequest,
@@ -3269,9 +3269,6 @@ public class Request
         }
 
         public void setRequestAndResponse(ServletRequest servletRequest, ServletResponse servletResponse) {
-            if (servletRequest == null && response == null) {
-                
-            }
             this.servletRequest = servletRequest;
             this.servletResponse = servletResponse;
         }

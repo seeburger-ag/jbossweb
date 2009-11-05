@@ -653,7 +653,8 @@ final class StandardWrapperValve
                     asyncContext.complete();
                 }
             } else {
-                throw new IllegalStateException(sm.getString("standardWrapper.async.invalidContext"));
+                throw new IllegalStateException(sm.getString("standardWrapper.async.invalidContext",
+                        getContainer().getName()));
             }
         }
 
