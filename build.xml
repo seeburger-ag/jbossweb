@@ -601,14 +601,42 @@
       </fileset>
     </jar>
 
-    <copy file="${jasper-jdt.jar}" todir="${tomcat.jars}" />
-    <copy todir="${tomcat.jars}">
-      <fileset dir="${tomcat.build}/lib">
-        <include name="el-api.jar"/>
-        <include name="jsp-api.jar"/>
-        <include name="servlet-api.jar"/>
+    <!-- Servlet 3.0 Implementation JAR File -->
+    <jar  jarfile="${tomcat.jars}/servlet-api.jar">
+      <fileset dir="${tomcat.classes}">
+        <include name="javax/servlet/*" />
+        <include name="javax/servlet/annotation/*" />
+        <include name="javax/servlet/descriptor/*" />
+        <include name="javax/servlet/http/*" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
       </fileset>
-    </copy>
+    </jar>
+
+    <!-- JSP 2.2 Implementation JAR File -->
+    <jar  jarfile="${tomcat.jars}/jsp-api.jar">
+      <fileset dir="${tomcat.classes}">
+        <include name="javax/servlet/jsp/*" />
+        <include name="javax/servlet/jsp/el/*" />
+        <include name="javax/servlet/jsp/tagext/*" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+    <!-- EL Implementation JAR File -->
+    <jar  jarfile="${tomcat.jars}/el-api.jar">
+      <fileset dir="${tomcat.classes}">
+        <include name="javax/el/*" />
+        <!-- Javadoc and i18n exclusions -->
+        <exclude name="**/package.html" />
+        <exclude name="**/LocalStrings_*" />
+      </fileset>
+    </jar>
+
+    <copy file="${jasper-jdt.jar}" todir="${tomcat.jars}" />
 
     <!-- Create a source jar of the jbossweb/servlet classes -->
     <zip destfile="${tomcat.jars}/jbossweb-src.zip">

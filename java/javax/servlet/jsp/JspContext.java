@@ -1,26 +1,64 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/ 
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License. You can obtain
+ * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
+ * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code.  If applicable, add the following below the License
+ * Header, with the fields enclosed by brackets [] replaced by your own
+ * identifying information: "Portions Copyrighted [year]
+ * [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ *
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 2004 The Apache Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package javax.servlet.jsp;
 
 import java.util.Enumeration;
 
-import javax.el.ELContext;
 import javax.servlet.jsp.el.ExpressionEvaluator;
 import javax.servlet.jsp.el.VariableResolver;
+
+import javax.el.ELContext;
 
 /**
  * <p>
@@ -66,7 +104,7 @@ import javax.servlet.jsp.el.VariableResolver;
  * Expression Language evaluator:
  * <code>getExpressionEvaluator()</code>, <code>getVariableResolver()</code>
  *
- * @since 2.0
+ * @since JSP 2.0
  */
 
 public abstract class JspContext {
@@ -220,24 +258,44 @@ public abstract class JspContext {
      * The JSP Container must return a valid instance of an 
      * ExpressionEvaluator that can parse EL expressions.
      *
+     * @deprecated As of JSP 2.1, replaced by
+     *     {@link JspApplicationContext#getExpressionFactory}
      * @return A valid instance of an ExpressionEvaluator.
-     * @since 2.0
+     * @since JSP 2.0
      */
     public abstract ExpressionEvaluator getExpressionEvaluator();
-    
-    
-    public abstract ELContext getELContext();
     
     /**
      * Returns an instance of a VariableResolver that provides access to the
      * implicit objects specified in the JSP specification using this JspContext
      * as the context object.
      *
+     * @deprecated As of JSP 2.1, replaced by {@link ELContext#getELResolver},
+     *     which can be obtained by 
+     *     <code>jspContext.getELContext().getELResolver()</code>.
      * @return A valid instance of a VariableResolver.
-     * @since 2.0
+     * @since JSP 2.0
      */
     public abstract VariableResolver getVariableResolver();
     
+    /**
+     * Returns the <code>ELContext</code> associated with this 
+     * <code>JspContext</code>.
+     *
+     * <p>The <code>ELContext</code> is created lazily and is reused if 
+     * it already exists. There is a new <code>ELContext</code> for each
+     * <code>JspContext</code>.</p>
+     *
+     * <p>The <code>ELContext</code> must contain the <code>ELResolver</code>
+     * described in the JSP specification (and in the javadocs for
+     * {@link JspApplicationContext#addELResolver}).</p>
+     *
+     * @return The <code>ELContext</code> associated with this
+     *     <code>JspContext</code>.
+     * @since JSP 2.1
+     */
+    public abstract ELContext getELContext();
+
     /**
      * Return a new JspWriter object that sends output to the
      * provided Writer.  Saves the current "out" JspWriter,
@@ -256,7 +314,7 @@ public abstract class JspContext {
      * @param writer The Writer for the returned JspWriter to send
      *     output to.
      * @return a new JspWriter that writes to the given Writer.
-     * @since 2.0
+     * @since JSP 2.0
      */
     public JspWriter pushBody( java.io.Writer writer ) {
         return null; // XXX to implement
