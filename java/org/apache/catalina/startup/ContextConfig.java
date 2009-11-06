@@ -2101,6 +2101,7 @@ public class ContextConfig
                 boolean classDA = servletSecurity.getEmptyRoleSemantic().equals(EmptyRoleSemantic.DENY);
                 boolean classTP = servletSecurity.getTransportGuarantee().equals(TransportGuarantee.CONFIDENTIAL);
                 String[] classRA = servletSecurity.getRolesAllowed();
+                boolean classConstraint = classDA || classTP || (classRA != null && classRA.length > 0);
                 Collection<HttpMethodConstraintElement> httpMethodConstraints = 
                     servletSecurity.getHttpMethodConstraints();
 
@@ -2113,7 +2114,7 @@ public class ContextConfig
                       boolean methodDA = httpMethodConstraint.getEmptyRoleSemantic().equals(EmptyRoleSemantic.DENY);
                       boolean methodTP = httpMethodConstraint.getTransportGuarantee().equals(TransportGuarantee.CONFIDENTIAL);
                       String[] methodRA = httpMethodConstraint.getRolesAllowed();
-                      if (methodPA || methodDA || methodTP || methodRA != null)
+                      if (classConstraint || methodDA || methodTP || (methodRA != null && methodRA.length > 0))
                       {
                          methodOmissions.add(httpMethodConstraint.getMethodName());
                          // Define a constraint specific for the method
@@ -2161,7 +2162,7 @@ public class ContextConfig
 
                 }
 
-                if (classPA || classDA || classTP || classRA != null)
+                if (classConstraint)
                 {
                     // Define a constraint for the class
                     SecurityConstraint constraint = new SecurityConstraint();
