@@ -3232,6 +3232,7 @@ public class Request
         public void dispatch(ServletContext servletContext, String path) {
             this.servletContext = servletContext;
             this.path = path;
+            useAttributes = true;
             resume();
         }
 

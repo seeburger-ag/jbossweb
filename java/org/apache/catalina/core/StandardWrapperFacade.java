@@ -164,7 +164,10 @@ public class StandardWrapperFacade
         for (String urlPattern : urlPatterns) {
             if (((Context) wrapper.getParent()).findServletMapping(urlPattern) != null) {
                 conflicts.add(urlPattern);
-            } else {
+            }
+        }
+        if (conflicts.isEmpty()) {
+            for (String urlPattern : urlPatterns) {
                 ((Context) wrapper.getParent()).addServletMapping(urlPattern, wrapper.getName());
             }
         }
