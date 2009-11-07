@@ -2101,7 +2101,6 @@ public class ContextConfig
                 boolean classDA = servletSecurity.getEmptyRoleSemantic().equals(EmptyRoleSemantic.DENY);
                 boolean classTP = servletSecurity.getTransportGuarantee().equals(TransportGuarantee.CONFIDENTIAL);
                 String[] classRA = servletSecurity.getRolesAllowed();
-                boolean classConstraint = classDA || classTP || (classRA != null && classRA.length > 0);
                 Collection<HttpMethodConstraintElement> httpMethodConstraints = 
                     servletSecurity.getHttpMethodConstraints();
 
@@ -2110,13 +2109,13 @@ public class ContextConfig
                 {
                    for (HttpMethodConstraintElement httpMethodConstraint : httpMethodConstraints)
                    {
+                      methodOmissions.add(httpMethodConstraint.getMethodName());
                       boolean methodPA = httpMethodConstraint.getEmptyRoleSemantic().equals(EmptyRoleSemantic.PERMIT);
                       boolean methodDA = httpMethodConstraint.getEmptyRoleSemantic().equals(EmptyRoleSemantic.DENY);
                       boolean methodTP = httpMethodConstraint.getTransportGuarantee().equals(TransportGuarantee.CONFIDENTIAL);
                       String[] methodRA = httpMethodConstraint.getRolesAllowed();
-                      if (classConstraint || methodDA || methodTP || (methodRA != null && methodRA.length > 0))
+                      if (methodDA || methodTP || (methodRA != null && methodRA.length > 0))
                       {
-                         methodOmissions.add(httpMethodConstraint.getMethodName());
                          // Define a constraint specific for the method
                          SecurityConstraint constraint = new SecurityConstraint();
                          if (methodDA) {
@@ -2162,7 +2161,7 @@ public class ContextConfig
 
                 }
 
-                if (classConstraint)
+                if (classDA || classTP || (classRA != null && classRA.length > 0))
                 {
                     // Define a constraint for the class
                     SecurityConstraint constraint = new SecurityConstraint();
