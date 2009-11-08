@@ -75,6 +75,7 @@ import javax.naming.directory.SearchResult;
 
 import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
+import org.apache.naming.NamingEnumerationImpl;
 import org.apache.naming.StringManager;
 
 /**
@@ -540,7 +541,7 @@ public class ProxyDirContext implements DirContext {
             if (main == null && merged == null) {
                 throw notFound;
             } else if (merged != null) {
-                return new NamingContextEnumeration(merged.values().iterator());
+                return new NamingEnumerationImpl<NameClassPair>(merged.values());
             } else {
                 return main;
             }
@@ -599,7 +600,7 @@ public class ProxyDirContext implements DirContext {
             if (main == null && merged == null) {
                 throw notFound;
             } else if (merged != null) {
-                return new NamingContextEnumeration(merged.values().iterator());
+                return new NamingEnumerationImpl<NameClassPair>(merged.values());
             } else {
                 return main;
             }
@@ -662,7 +663,7 @@ public class ProxyDirContext implements DirContext {
             if (main == null && merged == null) {
                 throw notFound;
             } else if (merged != null) {
-                return new NamingContextBindingsEnumeration(merged.values().iterator(), this);
+                return new NamingEnumerationImpl<Binding>(merged.values());
             } else {
                 return main;
             }
@@ -721,7 +722,7 @@ public class ProxyDirContext implements DirContext {
             if (main == null && merged == null) {
                 throw notFound;
             } else if (merged != null) {
-                return new NamingContextBindingsEnumeration(merged.values().iterator(), this);
+                return new NamingEnumerationImpl<Binding>(merged.values());
             } else {
                 return main;
             }
