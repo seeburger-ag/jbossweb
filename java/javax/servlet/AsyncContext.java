@@ -419,6 +419,11 @@ public interface AsyncContext {
      * <p>The given AsyncListener class must define a zero argument
      * constructor, which is used to instantiate it.
      *
+     * <p>This method supports resource injection if the given
+     * <tt>clazz</tt> represents a Managed Bean.
+     * See the Java EE platform and JSR 299 specifications for additional
+     * details about Managed Beans and resource injection.
+
      * <p>This method supports any annotations applicable to AsyncListener.
      *
      * @param clazz the AsyncListener class to instantiate

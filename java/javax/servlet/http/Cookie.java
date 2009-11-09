@@ -96,9 +96,19 @@ import java.util.ResourceBundle;
  */
 public class Cookie implements Cloneable, Serializable {
 
-    private static final long serialVersionUID = -6454587001725327448L;
+    private static final long serialVersionUID = 4014436410614806011L;
 
-    private static final String tspecials = "/()<>@,;:\\\"[]?={} \t";
+    public static final boolean STRICT =
+        Boolean.valueOf(System.getProperty("Cookie.STRICT", "false")).booleanValue();
+
+    private static final String tspecials;
+    static {
+        if (STRICT) {
+            tspecials = "/()<>@,;:\\\"[]?={} \t";
+        } else {
+            tspecials = ",; ";
+        }
+    }
 
     private static final String LSTRING_FILE =
         "javax.servlet.http.LocalStrings";
