@@ -22,6 +22,7 @@ import javax.el.ELException;
 import javax.el.MethodExpression;
 import javax.el.MethodInfo;
 import javax.el.MethodNotFoundException;
+import javax.el.PropertyNotFoundException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 
@@ -46,7 +47,12 @@ public final class AstIdentifier extends SimpleNode {
             }
         }
         ctx.setPropertyResolved(false);
-        return ctx.getELResolver().getType(ctx, null, this.image);
+        Class result = ctx.getELResolver().getType(ctx, null, this.image);
+        if (ctx.isPropertyResolved()) {
+            return result;
+        } else {
+            throw new PropertyNotFoundException("Could not resolve property '" + this.image + "'");
+        }
     }
 
     public Object getValue(EvaluationContext ctx) throws ELException {
@@ -58,7 +64,12 @@ public final class AstIdentifier extends SimpleNode {
             }
         }
         ctx.setPropertyResolved(false);
-        return ctx.getELResolver().getValue(ctx, null, this.image);
+        Object result = ctx.getELResolver().getValue(ctx, null, this.image);
+        if (ctx.isPropertyResolved()) {
+            return result;
+        } else {
+            throw new PropertyNotFoundException("Could not resolve property '" + this.image + "'");
+        }
     }
 
     public boolean isReadOnly(EvaluationContext ctx) throws ELException {
@@ -70,7 +81,12 @@ public final class AstIdentifier extends SimpleNode {
             }
         }
         ctx.setPropertyResolved(false);
-        return ctx.getELResolver().isReadOnly(ctx, null, this.image);
+        boolean result = ctx.getELResolver().isReadOnly(ctx, null, this.image);
+        if (ctx.isPropertyResolved()) {
+            return result;
+        } else {
+            throw new PropertyNotFoundException("Could not resolve property '" + this.image + "'");
+        }
     }
 
     public void setValue(EvaluationContext ctx, Object value)
@@ -85,6 +101,9 @@ public final class AstIdentifier extends SimpleNode {
         }
         ctx.setPropertyResolved(false);
         ctx.getELResolver().setValue(ctx, null, this.image, value);
+        if (!ctx.isPropertyResolved()) {
+            throw new PropertyNotFoundException("Could not resolve property '" + this.image + "'");
+        }
     }
 
     private final Object invokeTarget(EvaluationContext ctx, Object target,

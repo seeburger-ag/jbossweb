@@ -31,6 +31,7 @@ import javax.el.FunctionMapper;
 import javax.el.PropertyNotFoundException;
 import javax.el.PropertyNotWritableException;
 import javax.el.ValueExpression;
+import javax.el.ValueReference;
 import javax.el.VariableMapper;
 
 import org.apache.el.lang.ELSupport;
@@ -196,7 +197,15 @@ public final class ValueExpressionImpl extends ValueExpression implements
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-        return this.expr.hashCode();
+        StringBuilder hash = new StringBuilder(getNode().toString());
+        for (int i = 0; i < getNode().jjtGetNumChildren(); i++) {
+            Node child = getNode().jjtGetChild(i);
+            String childToString = child.toString();
+            if (childToString != null) {
+                hash.append('[').append(childToString).append(']');
+            }
+        }
+        return hash.toString().hashCode();
     }
 
     /*
@@ -257,6 +266,13 @@ public final class ValueExpressionImpl extends ValueExpression implements
         out.writeObject(this.varMapper);
     }
 
+    public ValueReference getValueReference(ELContext context) {
+        System.out.println("Node: " + this.getNode() + " Image: " + this.getNode().getImage());
+        EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
+                this.varMapper);
+        return this.getNode().getValueReference(ctx);
+    }
+    
     public String toString() {
         return "ValueExpression["+this.expr+"]";
     }
