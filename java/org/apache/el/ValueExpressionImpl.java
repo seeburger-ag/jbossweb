@@ -197,15 +197,21 @@ public final class ValueExpressionImpl extends ValueExpression implements
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-        StringBuilder hash = new StringBuilder(getNode().toString());
-        for (int i = 0; i < getNode().jjtGetNumChildren(); i++) {
-            Node child = getNode().jjtGetChild(i);
-            String childToString = child.toString();
-            if (childToString != null) {
-                hash.append('[').append(childToString).append(']');
-            }
-        }
+        StringBuilder hash = new StringBuilder();
+        comparableRepresentation(hash, getNode());
         return hash.toString().hashCode();
+    }
+    
+    private void comparableRepresentation(StringBuilder string, Node node) {
+        if (node.toString() != null) {
+            string.append(node.toString());
+        }
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            Node child = node.jjtGetChild(i);
+            string.append('[');
+            comparableRepresentation(string, child);
+            string.append(']');
+        }
     }
 
     /*
@@ -267,7 +273,6 @@ public final class ValueExpressionImpl extends ValueExpression implements
     }
 
     public ValueReference getValueReference(ELContext context) {
-        System.out.println("Node: " + this.getNode() + " Image: " + this.getNode().getImage());
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
                 this.varMapper);
         return this.getNode().getValueReference(ctx);
