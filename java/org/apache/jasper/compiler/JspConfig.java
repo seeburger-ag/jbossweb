@@ -46,8 +46,6 @@
 
 package org.apache.jasper.compiler;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,10 +54,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.catalina.Globals;
 import org.apache.jasper.JasperException;
-import org.apache.jasper.xmlparser.ParserUtils;
-import org.apache.jasper.xmlparser.TreeNode;
 import org.jboss.logging.Logger;
-import org.xml.sax.InputSource;
 
 /**
  * Handles the jsp-config element in WEB_INF/web.xml.  This is used
@@ -84,6 +79,9 @@ public class JspConfig {
     private String defaultDeferedSyntaxAllowedAsLiteral = null;
     private String defaultTrimDirectiveWhitespaces = null;
     private JspProperty defaultJspProperty;
+    private String defaultDefaultContentType = null;
+    private String defaultBuffer = null;
+    private String defaultErrorOnUndeclaredNamespace = null;
 
     public JspConfig(ServletContext ctxt) {
         this.ctxt = ctxt;
@@ -161,7 +159,10 @@ public class JspConfig {
                                 jspPropertyGroup.getIncludePreludes(),
                                 jspPropertyGroup.getIncludeCodas(),
                                 jspPropertyGroup.getDeferredSyntaxAllowedAsLiteral(),
-                                jspPropertyGroup.getTrimDirectiveWhitespaces());
+                                jspPropertyGroup.getTrimDirectiveWhitespaces(),
+                                jspPropertyGroup.getDefaultContentType(),
+                                jspPropertyGroup.getBuffer(),
+                                jspPropertyGroup.getErrorOnUndeclaredNamespace());
                         JspPropertyGroup propertyGroup =
                             new JspPropertyGroup(path, extension, property);
 
@@ -173,7 +174,8 @@ public class JspConfig {
                             defaultIsELIgnored,
                             defaultIsScriptingInvalid,
                             null, null, null, defaultDeferedSyntaxAllowedAsLiteral, 
-                            defaultTrimDirectiveWhitespaces);
+                            defaultTrimDirectiveWhitespaces, defaultDefaultContentType,
+                            defaultBuffer, defaultErrorOnUndeclaredNamespace);
                     initialized = true;
                 }
             }
@@ -251,6 +253,9 @@ public class JspConfig {
         JspPropertyGroup pageEncodingMatch = null;
         JspPropertyGroup deferedSyntaxAllowedAsLiteralMatch = null;
         JspPropertyGroup trimDirectiveWhitespacesMatch = null;
+        JspPropertyGroup defaultContentTypeMatch = null;
+        JspPropertyGroup bufferMatch = null;
+        JspPropertyGroup errorOnUndeclaredNamespaceMatch = null;
 
         Iterator<JspPropertyGroup> iter = jspProperties.iterator();
         while (iter.hasNext()) {
@@ -313,8 +318,18 @@ public class JspConfig {
                 trimDirectiveWhitespacesMatch =
                     selectProperty(trimDirectiveWhitespacesMatch, jpg);
             }
+            if (jp.getDefaultContentType() != null) {
+                defaultContentTypeMatch =
+                    selectProperty(defaultContentTypeMatch, jpg);
+            }
+            if (jp.getBuffer() != null) {
+                bufferMatch = selectProperty(bufferMatch, jpg);
+            }
+            if (jp.isErrorOnUndeclaredNamespace() != null) {
+                errorOnUndeclaredNamespaceMatch =
+                    selectProperty(errorOnUndeclaredNamespaceMatch, jpg);
+            }
         }
-
 
         String isXml = defaultIsXml;
         String isELIgnored = defaultIsELIgnored;
@@ -322,6 +337,9 @@ public class JspConfig {
         String pageEncoding = null;
         String isDeferedSyntaxAllowedAsLiteral = defaultDeferedSyntaxAllowedAsLiteral;
         String isTrimDirectiveWhitespaces = defaultTrimDirectiveWhitespaces;
+        String defaultContentType = defaultDefaultContentType;
+        String buffer = defaultBuffer;
+        String isErrorOnUnderclaredNamespace = defaultErrorOnUndeclaredNamespace;
 
         if (isXmlMatch != null) {
             isXml = isXmlMatch.getJspProperty().isXml();
@@ -344,10 +362,22 @@ public class JspConfig {
             isTrimDirectiveWhitespaces =
                 trimDirectiveWhitespacesMatch.getJspProperty().isTrimDirectiveWhitespaces();
         }
+        if (defaultContentTypeMatch != null) {
+            defaultContentType =
+                defaultContentTypeMatch.getJspProperty().getDefaultContentType();
+        }
+        if (bufferMatch != null) {
+            buffer = bufferMatch.getJspProperty().getBuffer();
+        }
+        if (errorOnUndeclaredNamespaceMatch != null) {
+            isErrorOnUnderclaredNamespace = 
+                errorOnUndeclaredNamespaceMatch.getJspProperty().isErrorOnUndeclaredNamespace();
+        }
 
         return new JspProperty(isXml, isELIgnored, isScriptingInvalid,
                 pageEncoding, includePreludes, includeCodas, 
-                isDeferedSyntaxAllowedAsLiteral, isTrimDirectiveWhitespaces);
+                isDeferedSyntaxAllowedAsLiteral, isTrimDirectiveWhitespaces,
+                defaultContentType, buffer, isErrorOnUnderclaredNamespace);
     }
 
     /**
@@ -432,12 +462,16 @@ public class JspConfig {
         private ArrayList<String> includeCoda;
         private String deferedSyntaxAllowedAsLiteral;
         private String trimDirectiveWhitespaces;
+        private String defaultContentType;
+        private String buffer;
+        private String errorOnUndeclaredNamespace;
 
         public JspProperty(String isXml, String elIgnored,
                 String scriptingInvalid, String pageEncoding,
                 ArrayList<String> includePrelude, ArrayList<String> includeCoda,
                 String deferedSyntaxAllowedAsLiteral, 
-                String trimDirectiveWhitespaces) {
+                String trimDirectiveWhitespaces, String defaultContentType,
+                String buffer, String errorOnUndeclaredNamespace) {
 
             this.isXml = isXml;
             this.elIgnored = elIgnored;
@@ -447,6 +481,9 @@ public class JspConfig {
             this.includeCoda = includeCoda;
             this.deferedSyntaxAllowedAsLiteral = deferedSyntaxAllowedAsLiteral;
             this.trimDirectiveWhitespaces = trimDirectiveWhitespaces;
+            this.defaultContentType = defaultContentType;
+            this.buffer = buffer;
+            this.errorOnUndeclaredNamespace = errorOnUndeclaredNamespace;
         }
 
         public String isXml() {
@@ -479,6 +516,18 @@ public class JspConfig {
         
         public String isTrimDirectiveWhitespaces() {
             return trimDirectiveWhitespaces;
+        }
+        
+        public String getDefaultContentType() {
+            return defaultContentType;
+        }
+        
+        public String getBuffer() {
+            return buffer;
+        }
+        
+        public String isErrorOnUndeclaredNamespace() {
+            return errorOnUndeclaredNamespace;
         }
     }
 }

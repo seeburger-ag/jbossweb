@@ -81,6 +81,9 @@ class PageInfo {
     private String trimDirectiveWhitespacesValue;
     private boolean trimDirectiveWhitespaces = false;
     
+    // JSP 2.2
+    private boolean isErrorOnUndeclaredNamespace = false;
+    
     private String omitXmlDecl = null;
     private String doctypeName = null;
     private String doctypePublic = null;
@@ -469,6 +472,25 @@ class PageInfo {
         bufferValue = value;
     }
 
+    public void setBufferValue(String value, ErrorDispatcher err)
+    throws JasperException {
+
+        if ("none".equalsIgnoreCase(value))
+            buffer = 0;
+        else {
+            if (value == null || !value.endsWith("kb"))
+                err.jspError("jsp.error.page.invalid.buffer");
+            try {
+                Integer k = new Integer(value.substring(0, value.length()-2));
+                buffer = k.intValue() * 1024;
+            } catch (NumberFormatException e) {
+                err.jspError("jsp.error.page.invalid.buffer");
+            }
+        }
+
+        bufferValue = value;
+    }
+
     public String getBufferValue() {
         return bufferValue;
     }
@@ -711,6 +733,14 @@ class PageInfo {
 
     public void setTrimDirectiveWhitespaces(boolean trimDirectiveWhitespaces) {
         this.trimDirectiveWhitespaces = trimDirectiveWhitespaces;
+    }
+
+    public void setErrorOnUndeclaredNamespace(boolean s) {
+        isErrorOnUndeclaredNamespace = s;
+    }
+
+    public boolean isErrorOnUndeclaredNamespace() {
+        return isErrorOnUndeclaredNamespace;
     }
 
     public Set<String> getVarInfoNames() {
