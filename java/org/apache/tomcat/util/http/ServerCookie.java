@@ -373,7 +373,7 @@ public class ServerCookie implements Serializable {
                 maybeQuote2(version, buf, path);
             } else {
                 if (FWD_SLASH_IS_SEPARATOR) {
-                    maybeQuote2(version, buf, path, ServerCookie.tspecials,
+                    maybeQuote2(version, buf, path, ServerCookie.tspecials2,
                             false);
                 } else {
                     maybeQuote2(version, buf, path,
