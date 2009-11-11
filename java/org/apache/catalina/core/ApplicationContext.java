@@ -431,6 +431,10 @@ public class ApplicationContext
         // Validate the path argument
         if (path == null)
             return (null);
+        if (path.equals(""))
+            path = "/";
+        if (path.startsWith("?"))
+            path = "/" + path;
         if (!path.startsWith("/"))
             throw new IllegalArgumentException
                 (sm.getString
