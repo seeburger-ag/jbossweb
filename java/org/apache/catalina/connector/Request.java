@@ -3081,15 +3081,28 @@ public class Request
     }
 
     public void login(String username, String password) throws ServletException {
+        if (userPrincipal != null) {
+            throw new ServletException(sm.getString("coyoteRequest.authFailed"));
+        }
+        // TODO: for JBoss, should always call Authenticator.login instead so that there's
+        //       a callback
         Realm realm = context.getRealm();
         userPrincipal = realm.authenticate(username, password);
         if (userPrincipal == null) {
             throw new ServletException(sm.getString("coyoteRequest.authFailed"));
         }
         authType = "LOGIN";
+        Session session = getSessionInternal(false);
+        if (session != null) {
+            session.setPrincipal(userPrincipal);
+            session.setAuthType(authType);
+        }
+        // Note: if SSO is needed, AuthenticatorBase.register is needed
     }
 
     public void logout() throws ServletException {
+        // TODO: for JBoss, should always call Authenticator.logout instead so that there's
+        //       a callback
         Principal principal = userPrincipal;
         userPrincipal = null;
         authType = null;
