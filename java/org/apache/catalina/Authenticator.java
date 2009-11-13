@@ -37,10 +37,8 @@ import org.apache.catalina.connector.Request;
 public interface Authenticator {
     public boolean authenticate(Request request, HttpServletResponse response)
         throws IOException, ServletException;
-    // TODO
-/*    public boolean login(Request request, HttpServletResponse response,
-            String username, String password)
+    public void login(Request request, String username, String password)
         throws ServletException;
-    public boolean logout(Request request, HttpServletResponse response, Session session)
-        throws ServletException;*/
+    public void logout(Request request)
+        throws ServletException;
 }

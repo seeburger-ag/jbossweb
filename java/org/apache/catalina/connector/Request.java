@@ -3084,32 +3084,23 @@ public class Request
         if (userPrincipal != null) {
             throw new ServletException(sm.getString("coyoteRequest.authFailed"));
         }
-        // TODO: for JBoss, should always call Authenticator.login instead so that there's
-        //       a callback
-        Realm realm = context.getRealm();
-        userPrincipal = realm.authenticate(username, password);
+        if (context.getAuthenticator() != null) {
+            context.getAuthenticator().login(this, username, password);
+        } else {
+            throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
+        }
         if (userPrincipal == null) {
             throw new ServletException(sm.getString("coyoteRequest.authFailed"));
         }
-        authType = "LOGIN";
-        Session session = getSessionInternal(false);
-        if (session != null) {
-            session.setPrincipal(userPrincipal);
-            session.setAuthType(authType);
-        }
-        // Note: if SSO is needed, AuthenticatorBase.register is needed
     }
 
     public void logout() throws ServletException {
-        // TODO: for JBoss, should always call Authenticator.logout instead so that there's
-        //       a callback
         Principal principal = userPrincipal;
-        userPrincipal = null;
-        authType = null;
-        Session session = getSessionInternal(false);
-        if (session != null) {
-            session.setPrincipal(null);
-            session.setAuthType(null);
+        if (context.getAuthenticator() != null) {
+            context.getAuthenticator().logout(this);
+        } else {
+            userPrincipal = null;
+            authType = null;
         }
         if (principal instanceof GenericPrincipal) {
             GenericPrincipal gp = (GenericPrincipal) principal;

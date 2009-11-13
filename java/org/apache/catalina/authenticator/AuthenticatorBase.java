@@ -385,6 +385,38 @@ public abstract class AuthenticatorBase
     }
 
 
+    public void login(Request request, String username, String password)
+        throws ServletException {
+        
+        // Is there an SSO session against which we can try to reauthenticate?
+        String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
+        if (ssoId != null) {
+            if (log.isDebugEnabled())
+                log.debug("SSO Id " + ssoId + " set; attempting " +
+                          "reauthentication");
+            /* Try to reauthenticate using data cached by SSO.  If this fails,
+               either the original SSO logon was of DIGEST or SSL (which
+               we can't reauthenticate ourselves because there is no
+               cached username and password), or the realm denied
+               the user's reauthentication for some reason.
+               In either case we have to prompt the user for a logon */
+            if (reauthenticateFromSSO(ssoId, request))
+                return;
+        }
+
+        Realm realm = context.getRealm();
+        Principal principal = realm.authenticate(username, password);
+        if (principal != null) {
+            register(request, request.getResponseFacade(), principal, Constants.LOGIN_METHOD,
+                     username, password);
+        }
+    }
+    
+    public void logout(Request request)
+        throws ServletException {
+        unregister(request, request.getResponseFacade());
+    }
+    
     /**
      * Enforce the security restrictions in the web application deployment
      * descriptor of our associated Context.
@@ -453,12 +485,12 @@ public abstract class AuthenticatorBase
         // Make sure that constrained resources are not cached by web proxies
         // or browsers as caching can provide a security hole
         if (disableProxyCaching && 
-            // FIXME: Disabled for Mozilla FORM support over SSL 
+            // Note: Disabled for Mozilla FORM support over SSL 
             // (improper caching issue)
             //!request.isSecure() &&
             !"POST".equalsIgnoreCase(request.getMethod())) {
             if (securePagesWithPragma) {
-                // FIXME: These cause problems with downloading office docs
+                // Note: These cause problems with downloading office docs
                 // from IE under SSL and may not be needed for newer Mozilla
                 // clients.
                 response.setHeader("Pragma", "No-cache");
@@ -790,6 +822,48 @@ public abstract class AuthenticatorBase
         if (session == null)
             session = request.getSessionInternal(true);
         sso.associate(ssoId, session);
+
+    }
+
+
+    /**
+     * Register an authenticated Principal and authentication type in our
+     * request, in the current session (if there is one), and with our
+     * SingleSignOn valve, if there is one.  Set the appropriate cookie
+     * to be returned.
+     *
+     * @param request The servlet request we are processing
+     * @param response The servlet response we are generating
+     * @param principal The authenticated Principal to be registered
+     * @param authType The authentication type to be registered
+     * @param username Username used to authenticate (if any)
+     * @param password Password used to authenticate (if any)
+     */
+    protected void unregister(Request request, HttpServletResponse response) {
+
+        // Remove the authentication information from our request
+        request.setAuthType(null);
+        request.setUserPrincipal(null);
+
+        Session session = request.getSessionInternal(false);
+        // Cache the authentication information in our session, if any
+        if (cache && session != null) {
+            session.setAuthType(null);
+            session.setPrincipal(null);
+            session.removeNote(Constants.SESS_USERNAME_NOTE);
+            session.removeNote(Constants.SESS_PASSWORD_NOTE);
+        }
+
+        // Construct a cookie to be returned to the client
+        if (sso == null)
+            return;
+
+        String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
+        if (ssoId != null) {
+            // Update the SSO session with the latest authentication data
+            request.removeNote(Constants.REQ_SSOID_NOTE);
+            sso.deregister(ssoId);
+        }
 
     }
 

@@ -28,6 +28,7 @@ public class Constants {
     public static final String CERT_METHOD = "CLIENT_CERT";
     public static final String DIGEST_METHOD = "DIGEST";
     public static final String FORM_METHOD = "FORM";
+    public static final String LOGIN_METHOD = "LOGIN";
 
     // User data constraints for transport guarantee
     public static final String NONE_TRANSPORT = "NONE";
