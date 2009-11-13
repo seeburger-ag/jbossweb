@@ -1900,14 +1900,29 @@ class Generator {
             Node.JspAttribute[] attrs = n.getJspAttributes();
             for (int i = 0; attrs != null && i < attrs.length; i++) {
                 String attrStr = null;
+                String omit = null;
                 if (attrs[i].isNamedAttribute()) {
+                    Node.JspAttribute omitAttribute = attrs[i].getNamedAttributeNode().getOmitAttribute();
+                    if (omitAttribute != null) {
+                        if (omitAttribute.isLiteral()) {
+                            if (JspUtil.booleanValue(omitAttribute.getValue())) {
+                                continue;
+                            }
+                        } else {
+                            omit = "(!" + attributeValue(attrs[i].getNamedAttributeNode().getOmitAttribute(), false, Boolean.class) + ") ? ";
+                        }
+                    }
                     attrStr = generateNamedAttributeValue(attrs[i]
                             .getNamedAttributeNode());
                 } else {
                     attrStr = attributeValue(attrs[i], false, Object.class);
                 }
-                String s = " + \" " + attrs[i].getName() + "=\\\"\" + "
-                        + attrStr + " + \"\\\"\"";
+                String s = null;
+                if (omit == null) {
+                    s = " + \" " + attrs[i].getName() + "=\\\"\" + " + attrStr + " + \"\\\"\"";
+                } else {
+                    s = " + (" + omit + "(\" " + attrs[i].getName() + "=\\\"\" + " + attrStr + " + \"\\\"\") : (\"\"))";
+                }
                 map.put(attrs[i].getName(), s);
             }
 

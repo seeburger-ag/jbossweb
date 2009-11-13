@@ -1214,6 +1214,9 @@ class Parser implements TagConstants {
         // Check if this is a user-defined tag.
         String uri = pageInfo.getURI(prefix);
         if (uri == null) {
+            if (pageInfo.isErrorOnUndeclaredNamespace()) {
+                err.jspError(start, "jsp.error.bad_tag", shortTagName, prefix);
+            }
             reader.reset(start);
             // Remember the prefix for later error checking
             pageInfo.putNonCustomTagPrefix(prefix, reader.mark());

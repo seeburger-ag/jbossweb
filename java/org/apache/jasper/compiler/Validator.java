@@ -478,6 +478,7 @@ class Validator {
 
         private static final JspUtil.ValidAttribute[] attributeAttrs = {
                 new JspUtil.ValidAttribute("name", true),
+                new JspUtil.ValidAttribute("omit"),
                 new JspUtil.ValidAttribute("trim") };
 
         private static final JspUtil.ValidAttribute[] invokeAttrs = {
@@ -674,6 +675,17 @@ class Validator {
         public void visit(Node.NamedAttribute n) throws JasperException {
             JspUtil.checkAttributes("Attribute", n, attributeAttrs, err);
             visitBody(n);
+            if (n.getOmit() != null) {
+                Attributes attrs = n.getAttributes();
+                for (int i = 0; i < attrs.getLength(); i++) {
+                    if ("omit".equals(attrs.getLocalName(i))) {
+                        n.setOmitAttribute(getJspAttribute(null, attrs.getQName(i),
+                                attrs.getURI(i), attrs.getLocalName(i), 
+                                attrs.getValue(i), java.lang.Boolean.class, 
+                                n, false));
+                    }
+                }
+            }
         }
 
         public void visit(Node.JspBody n) throws JasperException {
