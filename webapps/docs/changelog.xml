@@ -22,6 +22,9 @@
       <update>
         Servlet 3.0 API. (remm)
       </update>
+      <fix>
+        Fix CVE-2009-3555, man-in-the-middle attack in TLS protocol. (markt)
+      </fix>
       <update>
         Commons Pool 1.5.2. (markt)
       </update>

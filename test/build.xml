@@ -33,6 +33,8 @@
   <property file="build.properties.default"/>
 
   <property name="test.classes" value="${basedir}/output/classes"/>
+  <property name="tomcat.classes" value="${basedir}/../output/classes"/>
+  <property name="tomcat.tmp" value="${basedir}/output/classes/output/"/>
 
   <property name="compile.source" value="1.5"/>
 
@@ -41,6 +43,7 @@
   <path id="jbossweb.test.classpath">
     <pathelement location="${test.classes}"/>
     <pathelement location="${junit.jar}"/>
+    <pathelement location="${tomcat.classes}"/>
   </path>
  
   <target name="compile" depends="download">
@@ -56,6 +59,7 @@
          optimize="${compile.optimize}">
          <classpath refid="jbossweb.test.classpath" />
          <include name="java/org/jboss/web/cookies/**" />
+         <include name="java/org/apache/catalina/startup/**" />
   </javac>
   </target>
 
@@ -64,6 +68,21 @@
      <java dir="${test.classes}" classname="${test.runner}" fork="yes">
             <arg value="org.jboss.web.cookies.CookiesTestCase"/>
             <jvmarg line="-Dcluster=${cluster}"/>
+            <classpath refid="jbossweb.test.classpath"/>
+     </java>
+  </target>
+
+  <target name="ssl" depends="compile">
+     <mkdir dir="${tomcat.tmp}" />
+     <mkdir dir="${tomcat.tmp}/build/webapps/examples" />
+     <copy todir="${tomcat.tmp}">
+        <fileset dir="${basedir}/java/org/apache/catalina/startup" includes="*.keystore" />
+     </copy>
+     <copy todir="${tomcat.tmp}/build/webapps/examples">
+        <fileset dir="${basedir}/webapps/simple" includes="*.html" />
+     </copy>
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes">
+            <arg value="org.apache.catalina.startup.TestTomcatSSL"/>
             <classpath refid="jbossweb.test.classpath"/>
      </java>
   </target>
