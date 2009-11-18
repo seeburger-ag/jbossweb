@@ -136,6 +136,9 @@
       <fix>
         <bug>47705</bug>: Fix divide by zero in the manager sessions command. (funkman)
       </fix>
+      <fix>
+        <jboss-jira>JBAS-7159</jboss-jira>: Better usability for Context level usage of RewriteValve. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

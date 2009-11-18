@@ -117,10 +117,15 @@ public class RewriteValve extends ValveBase
             context = true;
             is = ((Context) getContainer()).getServletContext()
                 .getResourceAsStream("/WEB-INF/" + resourcePath);
-            if ((is == null) && (container.getLogger().isInfoEnabled())) {
-                container.getLogger().info("No configuration resource found: /WEB-INF/" + resourcePath);
+            if (container.getLogger().isDebugEnabled()) {
+                if (is == null) {
+                    container.getLogger().debug("No configuration resource found: /WEB-INF/" + resourcePath);
+                } else {
+                    container.getLogger().debug("Read configuration from: /WEB-INF/" + resourcePath);
+                }
             }
-        } else {
+        }
+        if (is == null) {
             String resourceName = getHostConfigPath(resourcePath);
             File file = new File(getConfigBase(), resourceName);
             try {
@@ -139,8 +144,8 @@ public class RewriteValve extends ValveBase
                     }
                     is = new FileInputStream(file);
                 }
-                if ((is == null) && (container.getLogger().isInfoEnabled())) {
-                    container.getLogger().info("No configuration resource found: " + resourceName + 
+                if ((is == null) && (container.getLogger().isDebugEnabled())) {
+                    container.getLogger().debug("No configuration resource found: " + resourceName + 
                             " in " + getConfigBase().getAbsolutePath() + " or in the classloader");
                 }
             } catch (Exception e) {
