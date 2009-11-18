@@ -19,11 +19,8 @@
 package org.apache.catalina.deploy;
 
 
-import java.io.Serializable;
-
-import javax.servlet.DispatcherType;
-
 import org.apache.catalina.util.RequestUtil;
+import java.io.Serializable;
 
 
 /**
@@ -49,10 +46,10 @@ public class FilterMap implements Serializable {
     
     public static final int ERROR = 1;
     public static final int FORWARD = 2;
-    public static final int FORWARD_ERROR = 3;  
+    public static final int FORWARD_ERROR =3;  
     public static final int INCLUDE = 4;
     public static final int INCLUDE_ERROR  = 5;
-    public static final int INCLUDE_ERROR_FORWARD  = 6;
+    public static final int INCLUDE_ERROR_FORWARD  =6;
     public static final int INCLUDE_FORWARD  = 7;
     public static final int REQUEST = 8;
     public static final int REQUEST_ERROR = 9;
@@ -62,27 +59,10 @@ public class FilterMap implements Serializable {
     public static final int REQUEST_FORWARD = 13;
     public static final int REQUEST_INCLUDE = 14;
     public static final int REQUEST_FORWARD_INCLUDE= 15;
-    public static final int ASYNC = 16;
-    public static final int ASYNC_ERROR = 17;
-    public static final int ASYNC_FORWARD = 18;
-    public static final int ASYNC_FORWARD_ERROR = 19;  
-    public static final int ASYNC_INCLUDE = 20;
-    public static final int ASYNC_INCLUDE_ERROR  = 21;
-    public static final int ASYNC_INCLUDE_ERROR_FORWARD  = 22;
-    public static final int ASYNC_INCLUDE_FORWARD  = 23;
-    public static final int ASYNC_REQUEST = 24;
-    public static final int ASYNC_REQUEST_ERROR = 25;
-    public static final int ASYNC_REQUEST_ERROR_FORWARD = 26;
-    public static final int ASYNC_REQUEST_ERROR_FORWARD_INCLUDE = 27;
-    public static final int ASYNC_REQUEST_ERROR_INCLUDE = 28;
-    public static final int ASYNC_REQUEST_FORWARD = 29;
-    public static final int ASYNC_REQUEST_INCLUDE = 30;
-    public static final int ASYNC_REQUEST_FORWARD_INCLUDE= 31;
     
     // represents nothing having been set. This will be seen 
     // as equal to a REQUEST
     private static final int NOT_SET = -1;
-    private static final int ALL = ASYNC_REQUEST_ERROR_FORWARD_INCLUDE;
     
     private int dispatcherMapping=NOT_SET;
     
@@ -181,7 +161,7 @@ public class FilterMap implements Serializable {
     public void setDispatcher(String dispatcherString) {
         String dispatcher = dispatcherString.toUpperCase();
         
-        if (dispatcher.equals(DispatcherType.FORWARD.name())) {
+        if (dispatcher.equals("FORWARD")) {
 
             // apply FORWARD to the global dispatcherMapping.
             switch (dispatcherMapping) {
@@ -193,15 +173,8 @@ public class FilterMap implements Serializable {
                 case REQUEST_ERROR : dispatcherMapping = REQUEST_ERROR_FORWARD; break;
                 case REQUEST_ERROR_INCLUDE : dispatcherMapping = REQUEST_ERROR_FORWARD_INCLUDE; break;
                 case REQUEST_INCLUDE : dispatcherMapping = REQUEST_FORWARD_INCLUDE; break;
-                case ASYNC_ERROR : dispatcherMapping = ASYNC_FORWARD_ERROR; break;
-                case ASYNC_INCLUDE  :  dispatcherMapping = ASYNC_INCLUDE_FORWARD; break;
-                case ASYNC_INCLUDE_ERROR  :  dispatcherMapping = ASYNC_INCLUDE_ERROR_FORWARD; break;
-                case ASYNC_REQUEST : dispatcherMapping = ASYNC_REQUEST_FORWARD; break;
-                case ASYNC_REQUEST_ERROR : dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD; break;
-                case ASYNC_REQUEST_ERROR_INCLUDE : dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD_INCLUDE; break;
-                case ASYNC_REQUEST_INCLUDE : dispatcherMapping = ASYNC_REQUEST_FORWARD_INCLUDE; break;
             }
-        } else if (dispatcher.equals(DispatcherType.INCLUDE.name())) {
+        } else if (dispatcher.equals("INCLUDE")) {
             // apply INCLUDE to the global dispatcherMapping.
             switch (dispatcherMapping) {
                 case NOT_SET  :  dispatcherMapping = INCLUDE; break;
@@ -212,15 +185,8 @@ public class FilterMap implements Serializable {
                 case REQUEST_ERROR : dispatcherMapping = REQUEST_ERROR_INCLUDE; break;
                 case REQUEST_ERROR_FORWARD : dispatcherMapping = REQUEST_ERROR_FORWARD_INCLUDE; break;
                 case REQUEST_FORWARD : dispatcherMapping = REQUEST_FORWARD_INCLUDE; break;
-                case ASYNC_ERROR : dispatcherMapping = ASYNC_INCLUDE_ERROR; break;
-                case ASYNC_FORWARD  :  dispatcherMapping = ASYNC_INCLUDE_FORWARD; break;
-                case ASYNC_FORWARD_ERROR  :  dispatcherMapping = ASYNC_INCLUDE_ERROR_FORWARD; break;
-                case ASYNC_REQUEST : dispatcherMapping = ASYNC_REQUEST_INCLUDE; break;
-                case ASYNC_REQUEST_ERROR : dispatcherMapping = ASYNC_REQUEST_ERROR_INCLUDE; break;
-                case ASYNC_REQUEST_ERROR_FORWARD : dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD_INCLUDE; break;
-                case ASYNC_REQUEST_FORWARD : dispatcherMapping = ASYNC_REQUEST_FORWARD_INCLUDE; break;
             }
-        } else if (dispatcher.equals(DispatcherType.REQUEST.name())) {
+        } else if (dispatcher.equals("REQUEST")) {
             // apply REQUEST to the global dispatcherMapping.
             switch (dispatcherMapping) {
                 case NOT_SET  :  dispatcherMapping = REQUEST; break;
@@ -231,15 +197,8 @@ public class FilterMap implements Serializable {
                 case INCLUDE_ERROR  :  dispatcherMapping = REQUEST_ERROR_INCLUDE; break;
                 case INCLUDE_FORWARD : dispatcherMapping = REQUEST_FORWARD_INCLUDE; break;
                 case INCLUDE_ERROR_FORWARD : dispatcherMapping = REQUEST_ERROR_FORWARD_INCLUDE; break;
-                case ASYNC_ERROR : dispatcherMapping = ASYNC_REQUEST_ERROR; break;
-                case ASYNC_FORWARD  :  dispatcherMapping = ASYNC_REQUEST_FORWARD; break;
-                case ASYNC_FORWARD_ERROR  :  dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD; break;
-                case ASYNC_INCLUDE  :  dispatcherMapping = ASYNC_REQUEST_INCLUDE; break;
-                case ASYNC_INCLUDE_ERROR  :  dispatcherMapping = ASYNC_REQUEST_ERROR_INCLUDE; break;
-                case ASYNC_INCLUDE_FORWARD : dispatcherMapping = ASYNC_REQUEST_FORWARD_INCLUDE; break;
-                case ASYNC_INCLUDE_ERROR_FORWARD : dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD_INCLUDE; break;
             }
-        }  else if (dispatcher.equals(DispatcherType.ERROR.name())) {
+        }  else if (dispatcher.equals("ERROR")) {
             // apply ERROR to the global dispatcherMapping.
             switch (dispatcherMapping) {
                 case NOT_SET  :  dispatcherMapping = ERROR; break;
@@ -250,33 +209,6 @@ public class FilterMap implements Serializable {
                 case REQUEST_INCLUDE : dispatcherMapping = REQUEST_ERROR_INCLUDE; break;
                 case REQUEST_FORWARD : dispatcherMapping = REQUEST_ERROR_FORWARD; break;
                 case REQUEST_FORWARD_INCLUDE : dispatcherMapping = REQUEST_ERROR_FORWARD_INCLUDE; break;
-                case ASYNC_FORWARD  :  dispatcherMapping = ASYNC_FORWARD_ERROR; break;
-                case ASYNC_INCLUDE  :  dispatcherMapping = ASYNC_INCLUDE_ERROR; break;
-                case ASYNC_INCLUDE_FORWARD : dispatcherMapping = ASYNC_INCLUDE_ERROR_FORWARD; break;
-                case ASYNC_REQUEST : dispatcherMapping = ASYNC_REQUEST_ERROR; break;
-                case ASYNC_REQUEST_INCLUDE : dispatcherMapping = ASYNC_REQUEST_ERROR_INCLUDE; break;
-                case ASYNC_REQUEST_FORWARD : dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD; break;
-                case ASYNC_REQUEST_FORWARD_INCLUDE : dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD_INCLUDE; break;
-            }
-        }  else if (dispatcher.equals(DispatcherType.ASYNC.name())) {
-            // apply ASYNC to the global dispatcherMapping.
-            switch (dispatcherMapping) {
-                case NOT_SET  :  dispatcherMapping = ASYNC; break;
-                case ERROR  :  dispatcherMapping = ASYNC_ERROR; break;
-                case FORWARD  :  dispatcherMapping = ASYNC_FORWARD; break;
-                case FORWARD_ERROR  :  dispatcherMapping = ASYNC_FORWARD_ERROR; break;
-                case INCLUDE  :  dispatcherMapping = ASYNC_INCLUDE; break;
-                case INCLUDE_ERROR : dispatcherMapping = ASYNC_INCLUDE_ERROR; break;
-                case INCLUDE_ERROR_FORWARD : dispatcherMapping = ASYNC_INCLUDE_ERROR_FORWARD; break;
-                case INCLUDE_FORWARD : dispatcherMapping = ASYNC_INCLUDE_FORWARD; break;
-                case REQUEST : dispatcherMapping = ASYNC_REQUEST; break;
-                case REQUEST_ERROR : dispatcherMapping = ASYNC_REQUEST_ERROR; break;
-                case REQUEST_ERROR_FORWARD  :  dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD; break;
-                case REQUEST_ERROR_FORWARD_INCLUDE  :  dispatcherMapping = ASYNC_REQUEST_ERROR_FORWARD_INCLUDE; break;
-                case REQUEST_ERROR_INCLUDE : dispatcherMapping = ASYNC_REQUEST_ERROR_INCLUDE; break;
-                case REQUEST_FORWARD : dispatcherMapping = ASYNC_REQUEST_FORWARD; break;
-                case REQUEST_INCLUDE : dispatcherMapping = ASYNC_REQUEST_INCLUDE; break;
-                case REQUEST_FORWARD_INCLUDE : dispatcherMapping = ASYNC_REQUEST_FORWARD_INCLUDE; break;
             }
         }
     }
@@ -297,7 +229,7 @@ public class FilterMap implements Serializable {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("FilterMap[");
+        StringBuffer sb = new StringBuffer("FilterMap[");
         sb.append("filterName=");
         sb.append(this.filterName);
         for (int i = 0; i < servletNames.length; i++) {

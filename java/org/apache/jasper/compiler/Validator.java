@@ -419,7 +419,7 @@ class Validator {
 
         private ClassLoader loader;
 
-        private final StringBuilder buf = new StringBuilder(32);
+        private final StringBuffer buf = new StringBuffer(32);
 
         private static final JspUtil.ValidAttribute[] jspRootAttrs = {
                 new JspUtil.ValidAttribute("xsi:schemaLocation"),
@@ -478,7 +478,6 @@ class Validator {
 
         private static final JspUtil.ValidAttribute[] attributeAttrs = {
                 new JspUtil.ValidAttribute("name", true),
-                new JspUtil.ValidAttribute("omit"),
                 new JspUtil.ValidAttribute("trim") };
 
         private static final JspUtil.ValidAttribute[] invokeAttrs = {
@@ -675,17 +674,6 @@ class Validator {
         public void visit(Node.NamedAttribute n) throws JasperException {
             JspUtil.checkAttributes("Attribute", n, attributeAttrs, err);
             visitBody(n);
-            if (n.getOmit() != null) {
-                Attributes attrs = n.getAttributes();
-                for (int i = 0; i < attrs.getLength(); i++) {
-                    if ("omit".equals(attrs.getLocalName(i))) {
-                        n.setOmitAttribute(getJspAttribute(null, attrs.getQName(i),
-                                attrs.getURI(i), attrs.getLocalName(i), 
-                                attrs.getValue(i), java.lang.Boolean.class, 
-                                n, false));
-                    }
-                }
-            }
         }
 
         public void visit(Node.JspBody n) throws JasperException {
@@ -728,7 +716,7 @@ class Validator {
             }
 
             // build expression
-            StringBuilder expr = this.getBuffer();
+            StringBuffer expr = this.getBuffer();
             expr.append(n.getType()).append('{').append(n.getText())
                     .append('}');
             ELNode.Nodes el = ELParser.parse(expr.toString());
@@ -750,46 +738,15 @@ class Validator {
                 int attrSize = attrs.getLength();
                 Node.JspAttribute[] jspAttrs = new Node.JspAttribute[attrSize];
                 for (int i = 0; i < attrSize; i++) {
-                    // JSP.2.2 - '#{' not allowed in template text
-                    String value = attrs.getValue(i);
-                    if (!pageInfo.isDeferredSyntaxAllowedAsLiteral()) {
-                        if (containsDeferredSyntax(value)) {
-                            err.jspError(n, "jsp.error.el.template.deferred");
-                        }
-                    }
                     jspAttrs[i] = getJspAttribute(null, attrs.getQName(i),
-                            attrs.getURI(i), attrs.getLocalName(i), value, 
-                            java.lang.Object.class, n, false);
+                            attrs.getURI(i), attrs.getLocalName(i), attrs
+                                    .getValue(i), java.lang.Object.class, n,
+                            false);
                 }
                 n.setJspAttributes(jspAttrs);
             }
 
             visitBody(n);
-        }
-
-        /**
-         * Look for a #{ sequence that isn't preceded by \.
-         */
-        private boolean containsDeferredSyntax(String value) {
-            if (value == null) {
-                return false;
-            }
-            
-            int i = 0;
-            int len = value.length();
-            boolean prevCharIsEscape = false;
-            while (i < value.length()) {
-                char c = value.charAt(i);
-                if (c == '#' && (i+1) < len && value.charAt(i+1) == '{' && !prevCharIsEscape) {
-                    return true;
-                } else if (c == '\\') {
-                    prevCharIsEscape = true;
-                } else {
-                    prevCharIsEscape = false;
-                }
-                i++;
-            }
-            return false;
         }
 
         public void visit(Node.CustomTag n) throws JasperException {
@@ -1400,9 +1357,9 @@ class Validator {
         }
 
         /*
-         * Return an empty StringBuilder [not thread-safe]
+         * Return an empty StringBuffer [not thread-safe]
          */
-        private StringBuilder getBuffer() {
+        private StringBuffer getBuffer() {
             this.buf.setLength(0);
             return this.buf;
         }
@@ -1711,7 +1668,7 @@ class Validator {
 
             ValidationMessage[] errors = tagInfo.validate(n.getTagData());
             if (errors != null && errors.length != 0) {
-                StringBuilder errMsg = new StringBuilder();
+                StringBuffer errMsg = new StringBuffer();
                 errMsg.append("<h3>");
                 errMsg.append(Localizer.getMessage(
                         "jsp.error.tei.invalid.attributes", n.getQName()));
@@ -1801,7 +1758,7 @@ class Validator {
     private static void validateXmlView(PageData xmlView, Compiler compiler)
             throws JasperException {
 
-        StringBuilder errMsg = null;
+        StringBuffer errMsg = null;
         ErrorDispatcher errDisp = compiler.getErrorDispatcher();
 
         for (Iterator iter = compiler.getPageInfo().getTaglibs().iterator(); iter
@@ -1815,7 +1772,7 @@ class Validator {
             ValidationMessage[] errors = tli.validate(xmlView);
             if ((errors != null) && (errors.length != 0)) {
                 if (errMsg == null) {
-                    errMsg = new StringBuilder();
+                    errMsg = new StringBuffer();
                 }
                 errMsg.append("<h3>");
                 errMsg.append(Localizer.getMessage(

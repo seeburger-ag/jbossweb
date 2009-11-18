@@ -84,7 +84,7 @@ public class PathCallParamRule extends Rule {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("PathCallParamRule[");
+        StringBuffer sb = new StringBuffer("PathCallParamRule[");
         sb.append("paramIndex=");
         sb.append(paramIndex);
         sb.append("]");

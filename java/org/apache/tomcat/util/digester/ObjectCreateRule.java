@@ -228,7 +228,7 @@ public class ObjectCreateRule extends Rule {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("ObjectCreateRule[");
+        StringBuffer sb = new StringBuffer("ObjectCreateRule[");
         sb.append("className=");
         sb.append(className);
         sb.append(", attributeName=");

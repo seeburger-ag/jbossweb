@@ -193,7 +193,7 @@ final class StandardContextValve
         if ((instances !=null ) &&
                 (instances.length > 0)) {
             // create post-service event
-            for (int i = instances.length - 1; i >= 0; i--) {
+            for (int i = 0; i < instances.length; i++) {
                 if (instances[i] == null)
                     continue;
                 if (!(instances[i] instanceof ServletRequestListener))
@@ -226,12 +226,21 @@ final class StandardContextValve
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
      */
-    public final void event(Request request, Response response, HttpEvent httpEvent)
+    public final void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
 
+        // Select the Wrapper to be used for this Request
+        Wrapper wrapper = request.getWrapper();
+
+        // Normal request processing
+        // FIXME: This could be an addition to the core API too
+        /*
         Object instances[] = context.getApplicationEventListeners();
+
         ServletRequestEvent event = null;
-        if (instances != null && (instances.length > 0)) {
+
+        if ((instances != null) 
+                && (instances.length > 0)) {
             event = new ServletRequestEvent
                 (((StandardContext) container).getServletContext(), 
                  request.getRequest());
@@ -254,14 +263,15 @@ final class StandardContextValve
                 }
             }
         }
+        */
 
-        // Select the Wrapper to be used for this Request
-        Wrapper wrapper = request.getWrapper();
-        wrapper.getPipeline().getFirst().event(request, response, httpEvent);
+        wrapper.getPipeline().getFirst().event(request, response, event);
 
-        if (instances != null && (instances.length > 0)) {
+        /*
+        if ((instances !=null ) &&
+                (instances.length > 0)) {
             // create post-service event
-            for (int i = instances.length - 1; i >= 0; i--) {
+            for (int i = 0; i < instances.length; i++) {
                 if (instances[i] == null)
                     continue;
                 if (!(instances[i] instanceof ServletRequestListener))
@@ -278,6 +288,7 @@ final class StandardContextValve
                 }
             }
         }
+        */
       
     }
 

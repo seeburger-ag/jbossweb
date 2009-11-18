@@ -20,7 +20,6 @@ package org.apache.tomcat.util.http.fileupload;
 
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
@@ -172,32 +171,6 @@ public class DiskFileUpload
     }
 
 
-    /**
-     * Returns the max size of a file.
-     *
-     * @return The size, in bytes.
-     *
-     * @see #setFileSizeMax(long)
-     */
-    public long getFileSizeMax()
-    {
-        return fileItemFactory.getFileSizeMax();
-    }
-
-
-    /**
-     * Sets the max size of a file.
-     *
-     * @param fileSizeMax The size, in bytes.
-     *
-     * @see #getSizeThreshold()
-     */
-    public void setFileSizeMax(long fileSizeMax)
-    {
-        fileItemFactory.setFileSizeMax(fileSizeMax);
-    }
-
-
     // --------------------------------------------------------- Public methods
 
 
@@ -217,10 +190,10 @@ public class DiskFileUpload
      * @exception FileUploadException if there are problems reading/parsing
      *                                the request or storing files.
      */
-    public List<FileItem> parseRequest(HttpServletRequest req,
+    public List /* FileItem */ parseRequest(HttpServletRequest req,
                                             int sizeThreshold,
                                             long sizeMax, String path)
-        throws IOException, FileUploadException
+        throws FileUploadException
     {
         setSizeThreshold(sizeThreshold);
         setSizeMax(sizeMax);

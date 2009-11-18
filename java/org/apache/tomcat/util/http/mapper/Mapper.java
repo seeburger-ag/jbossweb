@@ -371,6 +371,7 @@ public final class Mapper {
      */
     protected void addWrapper(Context context, String path, Object wrapper,
                               boolean jspWildCard) {
+
         synchronized (context) {
             Wrapper newWrapper = new Wrapper();
             newWrapper.object = wrapper;
@@ -401,10 +402,6 @@ public final class Mapper {
                 // Default wrapper
                 newWrapper.name = "";
                 context.defaultWrapper = newWrapper;
-            } else if (path.equals("")) {
-                // Root wrapper
-                newWrapper.name = "";
-                context.rootWrapper = newWrapper;
             } else {
                 // Exact wrapper
                 newWrapper.name = path;
@@ -488,9 +485,6 @@ public final class Mapper {
             } else if (path.equals("/")) {
                 // Default wrapper
                 context.defaultWrapper = null;
-            } else if (path.equals("")) {
-                // Root wrapper
-                context.rootWrapper = null;
             } else {
                 // Exact wrapper
                 String name = path;
@@ -506,7 +500,7 @@ public final class Mapper {
 
     public String getWrappersString( String host, String context ) {
         String names[]=getWrapperNames(host, context);
-        StringBuilder sb=new StringBuilder();
+        StringBuffer sb=new StringBuffer();
         for( int i=0; i<names.length; i++ ) {
             sb.append(names[i]).append(":");
         }
@@ -703,14 +697,7 @@ public final class Mapper {
 
         // Rule 1 -- Exact Match
         Wrapper[] exactWrappers = context.exactWrappers;
-        if (!noServletPath && (pathEnd - servletPath) == 1 && context.rootWrapper != null) {
-            mappingData.requestPath.setString("/");
-            mappingData.wrapperPath.setString("");
-            mappingData.pathInfo.setString("/");
-            mappingData.wrapper = context.rootWrapper.object;
-        } else {
-            internalMapExactWrapper(exactWrappers, path, mappingData);
-        }
+        internalMapExactWrapper(exactWrappers, path, mappingData);
 
         // Rule 2 -- Prefix Match
         boolean checkJspWelcomeFiles = false;
@@ -743,7 +730,7 @@ public final class Mapper {
         if(mappingData.wrapper == null && noServletPath) {
             // The path is empty, redirect to "/"
             mappingData.redirectPath.setChars
-                (path.getBuffer(), pathOffset, pathEnd - pathOffset);
+                (path.getBuffer(), pathOffset, pathEnd);
             path.setEnd(pathEnd - 1);
             return;
         }
@@ -1318,7 +1305,6 @@ public final class Mapper {
         public String[] welcomeResources = new String[0];
         public javax.naming.Context resources = null;
         public Wrapper defaultWrapper = null;
-        public Wrapper rootWrapper = null;
         public Wrapper[] exactWrappers = new Wrapper[0];
         public Wrapper[] wildcardWrappers = new Wrapper[0];
         public Wrapper[] extensionWrappers = new Wrapper[0];

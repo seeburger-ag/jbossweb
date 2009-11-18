@@ -51,6 +51,7 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardContext;
@@ -90,12 +91,6 @@ public class ClusterListener
     
     // ----------------------------------------------------------------- Fields
 
-    
-    /**
-     * Associated server.
-     */
-    protected Server server = null;
-    
 
     /**
      * URL encoder used to generate requests bodies.
@@ -512,7 +507,7 @@ public class ClusterListener
             }
         } else if (Lifecycle.AFTER_START_EVENT.equals(event.getType())) {
             if (source instanceof Server) {
-                server = (Server) source;
+
                 if (this.proxyList == null) {
                     if (advertise != 0) {
                         proxies = new Proxy[0];
@@ -692,7 +687,28 @@ public class ClusterListener
     	}
     	return result.toString();
     }
-    
+ 
+    /**
+     * Check the node connectivity with the proxies.
+     *
+     *
+     * @return the status of the node or the proxy.
+     */
+    public String doProxyPing(String JvmRoute) {
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        if (JvmRoute != null)
+            parameters.put("JVMRoute", JvmRoute);
+        // Send PING * request
+        Proxy[] local = proxies;
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < local.length; i++) {
+            result.append("Proxy[").append(i).append("]: [").append(local[i].address)
+                            .append(':').append(local[i].port).append("]: \r\n");
+            result.append(sendRequest("PING", true, parameters, i));
+            result.append("\r\n");
+        }
+        return result.toString();
+    }   
     
     /**
      * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
@@ -726,7 +742,7 @@ public class ClusterListener
      * Disable all webapps for all engines. To be used through JMX or similar.
      */
     public boolean disable() {
-    	Service[] services = server.findServices();
+    	Service[] services = ServerFactory.getServer().findServices();
         for (int i = 0; i < services.length; i++) {
             Engine engine = (Engine) services[i].getContainer();
             HashMap<String, String> parameters = new HashMap<String, String>();
@@ -742,7 +758,7 @@ public class ClusterListener
      * Enable all webapps for all engines. To be used through JMX or similar.
      */
     public boolean enable() {
-    	Service[] services = server.findServices();
+    	Service[] services = ServerFactory.getServer().findServices();
         for (int i = 0; i < services.length; i++) {
             Engine engine = (Engine) services[i].getContainer();
             HashMap<String, String> parameters = new HashMap<String, String>();
@@ -827,12 +843,11 @@ public class ClusterListener
                         localAddress = connection.getLocalAddress();
                         if (localAddress != null) {
                             IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", localAddress.getHostAddress());
-                            log.info(sm.getString("clusterListener.address", localAddress.getHostAddress()));
                         } else {
                             // Should not happen
                             IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", "127.0.0.1");
-                            log.info(sm.getString("clusterListener.address", "127.0.0.1"));
                         }
+                        log.info(sm.getString("clusterListener.address", localAddress.getHostAddress()));
                     }
                     if (engine.getJvmRoute() == null) {
                         String hostName = null;
@@ -905,7 +920,7 @@ public class ClusterListener
      */
     protected void reset(int pos) {
        
-        Service[] services = server.findServices();
+        Service[] services = ServerFactory.getServer().findServices();
         for (int i = 0; i < services.length; i++) {
             Engine engine = (Engine) services[i].getContainer();
             removeAll((Engine) services[i].getContainer(), pos);
@@ -1538,10 +1553,6 @@ public class ClusterListener
     	    } else {
     	        return address.getHostAddress() + ":" + port;
     	    }
-    	}
-    	
-    	public int hashCode() {
-    	    return (address + ":" + port + "-" + state).hashCode(); 
     	}
     	
     	public boolean equals(Object o) {

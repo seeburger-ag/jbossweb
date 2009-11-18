@@ -13,9 +13,9 @@
 
   <!-- Project Properties -->
   <property name="name"                  value="JBoss Web" />
-  <property name="year"                  value="2009" />
-  <property name="version.major"         value="3" />
-  <property name="version.minor"         value="0" />
+  <property name="year"                  value="2008" />
+  <property name="version.major"         value="2" />
+  <property name="version.minor"         value="1" />
   <property name="version.build"         value="0" />
   <property name="version.patch"         value="0" />
   <property name="version.tag"           value="SNAPSHOT" />
@@ -36,7 +36,7 @@
   <property name="test.runner"       value="junit.textui.TestRunner"/>
 
   <!-- Can't be lower - jsp uses templates -->
-  <property name="compile.source" value="1.6"/>
+  <property name="compile.source" value="1.5"/>
 
   <!-- JAR artifacts -->
   <property name="bootstrap.jar" value="${tomcat.build}/bin/bootstrap.jar"/>
@@ -82,7 +82,6 @@
     <mkdir dir="${tomcat.build}/bin"/>
     <mkdir dir="${tomcat.build}/conf"/>
     <mkdir dir="${tomcat.build}/lib"/>
-    <mkdir dir="${tomcat.build}/logs"/>
     <mkdir dir="${tomcat.build}/temp"/>
     <mkdir dir="${tomcat.build}/webapps"/>
 
@@ -111,7 +110,7 @@
     <filter token="VERSION" value="${version}"/>
     <filter token="VERSION_NUMBER" value="${version.number}"/>
     <filter token="VERSION_BUILT" value="${TODAY} ${TSTAMP}"/>
-    <copy todir="${tomcat.classes}" filtering="true" encoding="ISO-8859-1">
+    <copy todir="${tomcat.classes}" filtering="true">
       <fileset dir="java">
         <include name="**/*.properties"/>
         <include name="**/*.dtd"/>
@@ -127,10 +126,11 @@
 
   <target name="package" >
 
-    <!-- Common Annotations 1.1 JAR File -->
+    <!-- Common Annotations 1.0 JAR File -->
     <jar  jarfile="${annotations-api.jar}">
       <fileset dir="${tomcat.classes}">
-        <include name="javax/annotation/**" />
+        <include name="javax/annotation/*" />
+        <include name="javax/annotation/security/*" />
         <include name="javax/ejb/*" />
         <include name="javax/persistence/*" />
         <include name="javax/xml/ws/*" />
@@ -140,12 +140,10 @@
       </fileset>
     </jar>
 
-    <!-- Servlet 3.0 Implementation JAR File -->
+    <!-- Servlet 2.5 Implementation JAR File -->
     <jar  jarfile="${servlet-api.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="javax/servlet/*" />
-        <include name="javax/servlet/annotation/*" />
-        <include name="javax/servlet/descriptor/*" />
         <include name="javax/servlet/http/*" />
         <include name="javax/servlet/resources/*" />
         <!-- Javadoc and i18n exclusions -->
@@ -154,7 +152,7 @@
       </fileset>
     </jar>
 
-    <!-- JSP 2.2 Implementation JAR File -->
+    <!-- JSP 2.1 Implementation JAR File -->
     <jar  jarfile="${jsp-api.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="javax/servlet/jsp/**" />
@@ -164,7 +162,7 @@
       </fileset>
     </jar>
 
-    <!-- JSP 2.2 EL Implementation JAR File -->
+    <!-- JSP 2.1 EL Implementation JAR File -->
     <jar  jarfile="${el-api.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="javax/el/*" />
@@ -209,6 +207,7 @@
     <!-- Catalina Main JAR File -->
     <jar jarfile="${catalina.jar}">
       <fileset dir="${tomcat.classes}">
+        <include name="org/apache/*" />
         <include name="org/apache/catalina/**" />
         <include name="org/apache/naming/**" />
         <include name="org/jboss/servlet/http/**" />
@@ -242,7 +241,6 @@
     <jar jarfile="${tomcat-coyote.jar}">
       <fileset dir="${tomcat.classes}">
         <include name="org/apache/coyote/**" />
-        <include name="org/apache/tomcat/*" />
         <include name="org/apache/tomcat/jni/**" />
         <include name="org/apache/tomcat/util/**" />
         <!-- Javadoc and i18n exclusions -->
@@ -265,6 +263,7 @@
     <!-- Jasper Implementation JAR File -->
     <jar  jarfile="${jasper.jar}">
       <fileset dir="${tomcat.classes}">
+        <include name="org/apache/*" />
         <include name="org/apache/jasper/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
@@ -336,7 +335,7 @@
     </copy>
     <filter token="VERSION" value="${version}"/>
     <copy tofile="${tomcat.build}/webapps/docs/RELEASE-NOTES.txt" file="RELEASE-NOTES" 
-          filtering="true" encoding="ISO-8859-1" />
+          filtering="true" />
 
     <copy   tofile="${tomcat.build}/webapps/docs/appdev/sample/build.xml"
               file="webapps/docs/appdev/build.xml.txt"/>
@@ -572,7 +571,7 @@
 
     <filter token="VERSION" value="${version}"/>
     <copy tofile="${tomcat.build}/webapps/ROOT/RELEASE-NOTES.txt" file="RELEASE-NOTES" 
-          filtering="true" encoding="ISO-8859-1" />
+          filtering="true" />
 
   	<copy file="${tomcat-dbcp.jar}" todir="${tomcat.build}/lib" />
     <copy file="${jasper-jdt.jar}" todir="${tomcat.build}/lib" />
@@ -580,14 +579,16 @@
     <!-- JBoss Web Main JAR File -->
     <jar jarfile="${tomcat.jars}/jbossweb.jar" index="true">
       <fileset dir="${tomcat.classes}">
-      	<!-- Temp EE class -->
+        <include name="org/apache/*" />
         <include name="org/apache/catalina/**" />
         <include name="org/apache/catalina/ha/backend/**" />
         <exclude name="org/apache/catalina/startup/catalina.properties" />
         <include name="org/apache/naming/**" />
         <include name="org/apache/comet/**" />
         <include name="org/apache/coyote/**" />
-        <include name="org/apache/tomcat/**" />
+        <include name="org/apache/tomcat/bayeux/**" />
+        <include name="org/apache/tomcat/jni/**" />
+        <include name="org/apache/tomcat/util/**" />
         <include name="org/apache/jasper/**" />
         <include name="org/apache/cometd/bayeux/**" />
         <include name="org/apache/el/**" />
@@ -601,42 +602,14 @@
       </fileset>
     </jar>
 
-    <!-- Servlet 3.0 Implementation JAR File -->
-    <jar  jarfile="${tomcat.jars}/servlet-api.jar">
-      <fileset dir="${tomcat.classes}">
-        <include name="javax/servlet/*" />
-        <include name="javax/servlet/annotation/*" />
-        <include name="javax/servlet/descriptor/*" />
-        <include name="javax/servlet/http/*" />
-        <!-- Javadoc and i18n exclusions -->
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-      </fileset>
-    </jar>
-
-    <!-- JSP 2.2 Implementation JAR File -->
-    <jar  jarfile="${tomcat.jars}/jsp-api.jar">
-      <fileset dir="${tomcat.classes}">
-        <include name="javax/servlet/jsp/*" />
-        <include name="javax/servlet/jsp/el/*" />
-        <include name="javax/servlet/jsp/tagext/*" />
-        <!-- Javadoc and i18n exclusions -->
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-      </fileset>
-    </jar>
-
-    <!-- EL Implementation JAR File -->
-    <jar  jarfile="${tomcat.jars}/el-api.jar">
-      <fileset dir="${tomcat.classes}">
-        <include name="javax/el/*" />
-        <!-- Javadoc and i18n exclusions -->
-        <exclude name="**/package.html" />
-        <exclude name="**/LocalStrings_*" />
-      </fileset>
-    </jar>
-
     <copy file="${jasper-jdt.jar}" todir="${tomcat.jars}" />
+    <copy todir="${tomcat.jars}">
+      <fileset dir="${tomcat.build}/lib">
+        <include name="el-api.jar"/>
+        <include name="jsp-api.jar"/>
+        <include name="servlet-api.jar"/>
+      </fileset>
+    </copy>
 
     <!-- Create a source jar of the jbossweb/servlet classes -->
     <zip destfile="${tomcat.jars}/jbossweb-src.zip">
@@ -718,6 +691,10 @@
     </antcall>
 
     <!-- Build Tomcat DBCP bundle -->
+    <antcall target="downloadgz">
+      <param name="sourcefile" value="${commons-collections-src.loc}"/>
+      <param name="destfile" value="${tomcat-dbcp.jar}" />
+    </antcall>
     <antcall target="downloadgz">
       <param name="sourcefile" value="${commons-pool-src.loc}"/>
       <param name="destfile" value="${tomcat-dbcp.jar}" />
@@ -811,8 +788,8 @@
         debug="${compile.debug}"
         optimize="${compile.optimize}"
         deprecation="${compile.deprecation}"
-        source="1.5"
-        target="1.5"
+        source="${compile.source}"
+        target="${compile.target}"
         excludes="**/CVS/**,**/.svn/**">
       <include name="**" />
     </javac>

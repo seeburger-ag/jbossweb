@@ -31,8 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -176,7 +174,8 @@ public final class HTMLManagerServlet extends ManagerServlet {
         DiskFileUpload upload = new DiskFileUpload();
 
         // Get the tempdir
-        File tempdir = (File) getServletContext().getAttribute(ServletContext.TEMPDIR);
+        File tempdir = (File) getServletContext().getAttribute
+            ("javax.servlet.context.tempdir");
         // Set upload parameters
         upload.setSizeMax(-1);
         upload.setRepositoryPath(tempdir.getCanonicalPath());
@@ -208,7 +207,7 @@ public final class HTMLManagerServlet extends ManagerServlet {
                         ("htmlManagerServlet.deployUploadNoFile");
                     break;
                 }
-                war = warUpload.getFileName();
+                war = warUpload.getName();
                 if (!war.toLowerCase().endsWith(".war")) {
                     message = sm.getString
                         ("htmlManagerServlet.deployUploadNotWar",war);

@@ -455,6 +455,8 @@ public class HostManagerServlet
         host.setDeployOnStartup(deployOnStartup);
         host.setDeployXML(deployXML);
         host.setUnpackWARs(unpackWARs);
+        host.setXmlNamespaceAware(xmlNamespaceAware);
+        host.setXmlValidation(xmlValidation);
         
         // Add new host
         try {
@@ -549,7 +551,7 @@ public class HostManagerServlet
             Host host = (Host) hosts[i];
             String name = host.getName();
             String[] aliases = host.findAliases();
-            StringBuilder buf = new StringBuilder();
+            StringBuffer buf = new StringBuffer();
             if (aliases.length > 0) {
                 buf.append(aliases[0]);
                 for (int j = 1; j < aliases.length; j++) {

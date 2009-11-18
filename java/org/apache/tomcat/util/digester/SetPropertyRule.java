@@ -141,7 +141,7 @@ public class SetPropertyRule extends Rule {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("SetPropertyRule[");
+        StringBuffer sb = new StringBuffer("SetPropertyRule[");
         sb.append("name=");
         sb.append(name);
         sb.append(", value=");

@@ -57,7 +57,7 @@ public class ContextResourceEnvRef extends ResourceBase implements Serializable 
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("ContextResourceEnvRef[");
+        StringBuffer sb = new StringBuffer("ContextResourceEnvRef[");
         sb.append("name=");
         sb.append(getName());
         if (getType() != null) {

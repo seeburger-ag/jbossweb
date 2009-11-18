@@ -179,9 +179,9 @@ public class Http11AprProcessor implements ActionHook {
 
 
     /**
-     * Event used.
+     * Comet used.
      */
-    protected boolean event = false;
+    protected boolean comet = false;
 
 
     /**
@@ -259,6 +259,12 @@ public class Http11AprProcessor implements ActionHook {
 
 
     /**
+     * Maximum timeout on uploads. 5 minutes as in Apache HTTPD server.
+     */
+    protected int timeout = 300000;
+
+
+    /**
      * Flag to disable setting a different time-out on uploads.
      */
     protected boolean disableUploadTimeout = false;
@@ -318,22 +324,23 @@ public class Http11AprProcessor implements ActionHook {
     protected String server = null;
 
     
+    protected int cometTimeout = -1;
     protected boolean readNotifications = true;
     protected boolean writeNotification = false;
     protected boolean resumeNotification = false;
-    protected boolean eventProcessing = true;
+    protected boolean cometProcessing = true;
     
 
     // ------------------------------------------------------------- Properties
 
     
     public void startProcessing() {
-        eventProcessing = true;
+        cometProcessing = true;
     }
     
 
     public void endProcessing() {
-        eventProcessing = false;
+        cometProcessing = false;
     }
     
 
@@ -349,6 +356,11 @@ public class Http11AprProcessor implements ActionHook {
 
     public boolean getReadNotifications() {
         return readNotifications;
+    }
+    
+
+    public int getCometTimeout() {
+        return cometTimeout;
     }
     
 
@@ -494,13 +506,6 @@ public class Http11AprProcessor implements ActionHook {
         return (compressableMimeTypes);
     }
 
-
-    /**
-     * Timeout.
-     */
-    protected int timeout = -1;
-    public void setTimeout(int timeout) { this.timeout = timeout; }
-    public int getTimeout() { return timeout; }
 
 
     // --------------------------------------------------------- Public Methods
@@ -709,6 +714,19 @@ public class Http11AprProcessor implements ActionHook {
         return socketBuffer;
     }
 
+    /**
+     * Set the upload timeout.
+     */
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+
+    /**
+     * Get the upload timeout.
+     */
+    public int getTimeout() {
+        return timeout;
+    }
 
     /**
      * Set the server header name.
@@ -785,8 +803,7 @@ public class Http11AprProcessor implements ActionHook {
             outputBuffer.nextRequest();
             recycle();
             return SocketState.CLOSED;
-        } else if (!event) {
-            endRequest();
+        } else if (!comet) {
             boolean pipelined = inputBuffer.nextRequest();
             outputBuffer.nextRequest();
             recycle();
@@ -822,7 +839,7 @@ public class Http11AprProcessor implements ActionHook {
 
         // Error flag
         error = false;
-        event = false;
+        comet = false;
         keepAlive = true;
 
         int keepAliveLeft = maxKeepAliveRequests;
@@ -831,7 +848,7 @@ public class Http11AprProcessor implements ActionHook {
         boolean keptAlive = false;
         boolean openSocket = false;
 
-        while (!error && keepAlive && !event) {
+        while (!error && keepAlive && !comet) {
 
             // Parsing the request header
             try {
@@ -910,7 +927,7 @@ public class Http11AprProcessor implements ActionHook {
                 // If there is an unspecified error, the connection will be closed
                 inputBuffer.setSwallowInput(false);
             }
-            if (!event) {
+            if (!comet) {
                 endRequest();
             }
 
@@ -922,7 +939,7 @@ public class Http11AprProcessor implements ActionHook {
             request.updateCounters();
 
             boolean pipelined = false;
-            if (!event) {
+            if (!comet) {
                 // Next request
                 pipelined = inputBuffer.nextRequest();
                 outputBuffer.nextRequest();
@@ -944,14 +961,14 @@ public class Http11AprProcessor implements ActionHook {
 
         rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
 
-        if (event) {
+        if (comet) {
             if (error) {
                 inputBuffer.nextRequest();
                 outputBuffer.nextRequest();
                 recycle();
                 return SocketState.CLOSED;
             } else {
-                eventProcessing = false;
+                cometProcessing = false;
                 return SocketState.LONG;
             }
         } else {
@@ -991,11 +1008,11 @@ public class Http11AprProcessor implements ActionHook {
         inputBuffer.recycle();
         outputBuffer.recycle();
         this.socket = 0;
-        timeout = -1;
+        cometTimeout = -1;
         readNotifications = true;
         writeNotification = false;
         resumeNotification = false;
-        eventProcessing = true;
+        cometProcessing = true;
     }
     
 
@@ -1059,7 +1076,7 @@ public class Http11AprProcessor implements ActionHook {
             // End the processing of the current request, and stop any further
             // transactions with the client
 
-            event = false;
+            comet = false;
             try {
                 outputBuffer.endRequest();
             } catch (IOException e) {
@@ -1243,39 +1260,39 @@ public class Http11AprProcessor implements ActionHook {
             
         } else if (actionCode == ActionCode.ACTION_AVAILABLE) {
             inputBuffer.useAvailable();
-        } else if (actionCode == ActionCode.ACTION_EVENT_BEGIN) {
-            event = true;
+        } else if (actionCode == ActionCode.ACTION_COMET_BEGIN) {
+            comet = true;
             // Set socket to non blocking mode
             Socket.timeoutSet(socket, 0);
             outputBuffer.setNonBlocking(true);
             inputBuffer.setNonBlocking(true);
-        } else if (actionCode == ActionCode.ACTION_EVENT_END) {
-            event = false;
+        } else if (actionCode == ActionCode.ACTION_COMET_END) {
+            comet = false;
             // End non blocking mode
             outputBuffer.setNonBlocking(false);
             inputBuffer.setNonBlocking(false);
             if (!error) {
                 Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
             }
-        } else if (actionCode == ActionCode.ACTION_EVENT_SUSPEND) {
+        } else if (actionCode == ActionCode.ACTION_COMET_SUSPEND) {
             readNotifications = false;
-        } else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
+        } else if (actionCode == ActionCode.ACTION_COMET_RESUME) {
             readNotifications = true;
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
-            if (!eventProcessing && !resumeNotification) {
-                endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
+            if (!cometProcessing && !resumeNotification) {
+                endpoint.getCometPoller().add(socket, cometTimeout, false, false, true, true);
             }
             resumeNotification = true;
-        } else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
+        } else if (actionCode == ActionCode.ACTION_COMET_WRITE) {
             // An event is being processed already: adding for write will be done
             // when the socket gets back to the poller
-            if (!eventProcessing && !writeNotification) {
-                endpoint.getEventPoller().add(socket, timeout, false, true, false, true);
+            if (!cometProcessing && !writeNotification) {
+                endpoint.getCometPoller().add(socket, cometTimeout, false, true, false, true);
             }
             writeNotification = true;
-        } else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
-            timeout = ((Integer) param).intValue();
+        } else if (actionCode == ActionCode.ACTION_COMET_TIMEOUT) {
+            cometTimeout = ((Integer) param).intValue();
         }
 
     }
@@ -1482,6 +1499,8 @@ public class Http11AprProcessor implements ActionHook {
         if (endpoint.getUseSendfile()) {
             request.setAttribute("org.apache.tomcat.sendfile.support", Boolean.TRUE);
         }
+        // Advertise comet support through a request attribute
+        request.setAttribute("org.apache.tomcat.comet.support", Boolean.TRUE);
         
     }
 
@@ -1489,7 +1508,7 @@ public class Http11AprProcessor implements ActionHook {
     /**
      * Parse host.
      */
-    protected void parseHost(MessageBytes valueMB) {
+    public void parseHost(MessageBytes valueMB) {
 
         if (valueMB == null || valueMB.isNull()) {
             // HTTP/1.0

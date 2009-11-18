@@ -304,8 +304,6 @@ public class SecurityConstraint implements Serializable {
         for (int i = 0; i < collections.length; i++) {
             if (!collections[i].findMethod(method))
                 continue;
-            if (collections[i].findMethodOmission(method))
-                continue;
             String patterns[] = collections[i].findPatterns();
             for (int j = 0; j < patterns.length; j++) {
                 if (matchPattern(uri, patterns[j]))
@@ -385,7 +383,7 @@ public class SecurityConstraint implements Serializable {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("SecurityConstraint[");
+        StringBuffer sb = new StringBuffer("SecurityConstraint[");
         for (int i = 0; i < collections.length; i++) {
             if (i > 0)
                 sb.append(", ");

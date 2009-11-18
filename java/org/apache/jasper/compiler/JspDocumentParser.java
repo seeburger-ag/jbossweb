@@ -69,7 +69,7 @@ class JspDocumentParser
     private JspCompilationContext ctxt;
     private PageInfo pageInfo;
     private String path;
-    private StringBuilder charBuffer;
+    private StringBuffer charBuffer;
 
     // Node representing the XML element currently being parsed
     private Node current;
@@ -458,7 +458,7 @@ class JspDocumentParser
     public void characters(char[] buf, int offset, int len) {
 
         if (charBuffer == null) {
-            charBuffer = new StringBuilder();
+            charBuffer = new StringBuffer();
         }
         charBuffer.append(buf, offset, len);
     }
@@ -1251,33 +1251,29 @@ class JspDocumentParser
                 isPlainUri = true;
             }
 
-            if (ctxt.getOptions().isCaching()) {
-                result = (TagLibraryInfo) ctxt.getOptions().getCache().get(uri);
-            }
-            if (result == null) {
-                // Fallback to Jasper's legacy scanning if nothing was provided
-                // by the options' TLD cache
-                String[] location = ctxt.getTldLocation(uri);
-                if (location != null || !isPlainUri) {
-                    if (result == null) {
-                        /*
-                         * If the uri value is a plain uri, a translation error must
-                         * not be generated if the uri is not found in the taglib map.
-                         * Instead, any actions in the namespace defined by the uri
-                         * value must be treated as uninterpreted.
-                         */
-                        result =
-                            new TagLibraryInfoImpl(
-                                    ctxt,
-                                    parserController,
-                                    pageInfo,
-                                    prefix,
-                                    uri,
-                                    location,
-                                    err);
-                        if (ctxt.getOptions().isCaching()) {
-                            ctxt.getOptions().getCache().put(uri, result);
-                        }
+            String[] location = ctxt.getTldLocation(uri);
+            if (location != null || !isPlainUri) {
+                if (ctxt.getOptions().isCaching()) {
+                    result = (TagLibraryInfoImpl) ctxt.getOptions().getCache().get(uri);
+                }
+                if (result == null) {
+                    /*
+                     * If the uri value is a plain uri, a translation error must
+                     * not be generated if the uri is not found in the taglib map.
+                     * Instead, any actions in the namespace defined by the uri
+                     * value must be treated as uninterpreted.
+                     */
+                    result =
+                        new TagLibraryInfoImpl(
+                            ctxt,
+                            parserController,
+                            pageInfo,
+                            prefix,
+                            uri,
+                            location,
+                            err);
+                    if (ctxt.getOptions().isCaching()) {
+                        ctxt.getOptions().getCache().put(uri, result);
                     }
                 }
             }

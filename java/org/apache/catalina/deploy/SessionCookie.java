@@ -19,17 +19,13 @@ package org.apache.catalina.deploy;
 
 import java.io.Serializable;
 
-import javax.servlet.SessionCookieConfig;
-
-public class SessionCookie implements SessionCookieConfig, Serializable {
+public class SessionCookie implements Serializable {
 
     protected String domain = null;
     protected String path = null;
     protected String comment = null;
     protected boolean httpOnly = false;
     protected boolean secure = false;
-    protected int maxAge = -1;
-    protected String name = null;
 
     public SessionCookie() {
     }
@@ -73,21 +69,4 @@ public class SessionCookie implements SessionCookieConfig, Serializable {
     public void setSecure(boolean secure) {
         this.secure = secure;
     }
-
-    public int getMaxAge() {
-        return maxAge;
-    }
-
-    public void setMaxAge(int maxAge) {
-        this.maxAge = maxAge;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
 }

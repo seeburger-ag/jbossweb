@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -54,34 +26,24 @@ import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
 import javax.security.auth.Subject;
-import javax.servlet.AsyncContext;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
-import javax.servlet.DispatcherType;
+import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestAttributeEvent;
 import javax.servlet.ServletRequestAttributeListener;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -91,11 +53,7 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.ApplicationFilterChain;
-import org.apache.catalina.core.ApplicationFilterConfig;
 import org.apache.catalina.core.ApplicationFilterFactory;
-import org.apache.catalina.deploy.FilterDef;
-import org.apache.catalina.deploy.Multipart;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.ParameterMap;
@@ -103,16 +61,13 @@ import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.StringParser;
 import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.buf.B2CConverter;
-import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.buf.StringCache;
 import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.Parameters;
 import org.apache.tomcat.util.http.ServerCookie;
-import org.apache.tomcat.util.http.fileupload.DiskFileUpload;
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileUploadBase;
+import org.apache.tomcat.util.http.TomcatCookie;
 import org.apache.tomcat.util.http.mapper.MappingData;
 
 
@@ -132,16 +87,6 @@ public class Request
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SESSION_ID_CHECK", "false")).booleanValue();
 
 
-    protected static final boolean WRAPPED_RESPONSE_IN_LOGIN = 
-        Globals.STRICT_SERVLET_COMPLIANCE
-        || Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.WRAPPED_RESPONSE_IN_LOGIN", "false")).booleanValue();
-
-    
-    protected static final boolean CHECK_ASYNC = 
-        Globals.STRICT_SERVLET_COMPLIANCE
-        || Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.CHECK_ASYNC", "true")).booleanValue();
-
-    
     // ----------------------------------------------------------- Constructors
 
 
@@ -250,30 +195,10 @@ public class Request
 
 
     /**
-     * Servlet 3.0 asynchronous mode context (also used as a flag - when not null, 
-     * we're in asynchronous mode).
-     */
-    protected AsyncContextImpl asyncContext = null;
-    
-    
-    /**
      * Authentication type.
      */
     protected String authType = null;
 
-    
-    /**
-     * Async timeout.
-     */
-    protected long asyncTimeout = 600000L;
-    
-    
-    /**
-     * Async listeners.
-     */
-    protected LinkedHashMap<AsyncListener, AsyncListenerRegistration> asyncListeners = 
-        new LinkedHashMap<AsyncListener, AsyncListenerRegistration>();
-    
     
     /**
      * Associated event.
@@ -282,9 +207,9 @@ public class Request
     
 
     /**
-     * Event mode flag
+     * Comet state
      */
-    protected boolean eventMode = false;
+    protected boolean comet = false;
     
     
     /**
@@ -366,12 +291,6 @@ public class Request
     protected static int CACHED_POST_LEN = 8192;
     protected byte[] postData = null;
 
-    
-    /**
-     * Parts associated with the request.
-     */
-    protected Map<String, Part> parts = null;
-    
 
     /**
      * Hash map used in the getParametersMap method.
@@ -454,12 +373,6 @@ public class Request
      */
     protected String localName = null;
 
-    
-    /**
-     * Can call startAsync.
-     */
-    protected boolean canStartAsync = true;
-    
 
     // --------------------------------------------------------- Public Methods
 
@@ -476,16 +389,12 @@ public class Request
         dispatcherType = null;
         requestDispatcherPath = null;
 
-        eventMode = false;
+        comet = false;
         if (event != null) {
             event.clear();
             event = null;
         }
         
-        asyncContext = null;
-        asyncTimeout = 300000;
-        canStartAsync = true;
-        asyncListeners.clear();
         authType = null;
         inputBuffer.recycle();
         usingInputStream = false;
@@ -504,13 +413,10 @@ public class Request
         localPort = -1;
         localAddr = null;
         localName = null;
-        currentFilterChain = 0;
-        filterChains.clear();
 
         attributes.clear();
         notes.clear();
         cookies = null;
-        parts = null;
 
         if (session != null) {
             session.endAccess();
@@ -548,7 +454,7 @@ public class Request
 
 
     /**
-     * Clear cached encoders (to save memory for event or async requests).
+     * Clear cached encoders (to save memory for Comet requests).
      */
     public void clearEncoders() {
         inputBuffer.clearEncoders();
@@ -633,51 +539,24 @@ public class Request
 
 
     /**
-     * Filter chains associated with the request.
+     * Filter chain associated with the request.
      */
-    protected ArrayList<ApplicationFilterChain> filterChains = new ArrayList<ApplicationFilterChain>();
-    
-    
-    /**
-     * Number of filter chains used.
-     */
-    protected int currentFilterChain = 0;
-    
-    
+    protected FilterChain filterChain = null;
+
     /**
      * Get filter chain associated with the request.
      */
-    public ApplicationFilterChain getFilterChain() {
-        if (currentFilterChain < filterChains.size()) {
-            return filterChains.get(currentFilterChain);
-        } else {
-            return null;
-        }
+    public FilterChain getFilterChain() {
+        return (this.filterChain);
     }
-
 
     /**
      * Set filter chain associated with the request.
      * 
      * @param filterChain new filter chain
      */
-    public void setFilterChain(ApplicationFilterChain filterChain) {
-        if (currentFilterChain < filterChains.size()) {
-            filterChains.set(currentFilterChain++, filterChain);
-        } else {
-            filterChains.add(filterChain);
-            currentFilterChain++;
-        }
-    }
-
-
-    /**
-     * Set filter chain associated with the request.
-     * 
-     * @param filterChain new filter chain
-     */
-    public void releaseFilterChain() {
-        currentFilterChain--;
+    public void setFilterChain(FilterChain filterChain) {
+        this.filterChain = filterChain;
     }
 
 
@@ -751,13 +630,6 @@ public class Request
 
 
     /**
-     * Alias for AsyncContext inner class.
-     */
-    public HttpServletRequest getRequestFacade() {
-        return getRequest();
-    }
-
-    /**
      * The response with which this request is associated.
      */
     protected org.apache.catalina.connector.Response response = null;
@@ -776,13 +648,6 @@ public class Request
      */
     public void setResponse(org.apache.catalina.connector.Response response) {
         this.response = response;
-    }
-
-    /**
-     * Alias for AsyncContext inner class.
-     */
-    public HttpServletResponse getResponseFacade() {
-        return getResponse().getResponse();
     }
 
     /**
@@ -850,14 +715,6 @@ public class Request
         this.wrapper = wrapper;
     }
 
-
-    public boolean getCanStartAsync() {
-        return canStartAsync;
-    }
-
-    public void setCanStartAsync(boolean canStartAsync) {
-        this.canStartAsync = canStartAsync;
-    }
 
     // ------------------------------------------------- Request Public Methods
 
@@ -969,7 +826,7 @@ public class Request
      * @param remoteAddr The remote IP address
      */
     public void setRemoteAddr(String remoteAddr) {
-        this.remoteAddr = remoteAddr;
+        // Not used
     }
 
 
@@ -980,7 +837,7 @@ public class Request
      * @param remoteHost The remote host name
      */
     public void setRemoteHost(String remoteHost) {
-        this.remoteHost = remoteHost;
+        // Not used
     }
 
 
@@ -2194,16 +2051,6 @@ public class Request
     }
 
 
-    public ServletContext getServletContext() {
-        if (context == null)
-            return (null);
-        return context.getServletContext();
-    }
-    public ServletContext getServletContext0() {
-        return getServletContext();
-    }
-
-
     /**
      * Return the portion of the request URI used to select the servlet
      * that will process this request.
@@ -2406,18 +2253,18 @@ public class Request
     
     
     /**
-     * Return true if the current request is using event mode.
+     * Return true if the current request is handling Comet traffic.
      */
-    public boolean isEventMode() {
-        return eventMode;
+    public boolean isComet() {
+        return comet;
     }
 
     
     /**
-     * Set event mode.
+     * Set comet state.
      */
-    public void setEventMode(boolean eventMode) {
-        this.eventMode = eventMode;
+    public void setComet(boolean comet) {
+        this.comet = comet;
     }
 
     
@@ -2433,20 +2280,17 @@ public class Request
      * Set connection timeout.
      */
     public void setTimeout(int timeout) {
-        coyoteRequest.action(ActionCode.ACTION_EVENT_TIMEOUT, timeout);
-    }
-    public void setTimeout0(int timeout) {
-        setTimeout(timeout);
+        coyoteRequest.action(ActionCode.ACTION_COMET_TIMEOUT, new Integer(timeout));
     }
     
     
     public void resume() {
-        coyoteRequest.action(ActionCode.ACTION_EVENT_RESUME, null);
+        coyoteRequest.action(ActionCode.ACTION_COMET_RESUME, null);
     }
     
     
     public void suspend() {
-        coyoteRequest.action(ActionCode.ACTION_EVENT_SUSPEND, null);
+        coyoteRequest.action(ActionCode.ACTION_COMET_SUSPEND, null);
     }
     
     
@@ -2527,11 +2371,8 @@ public class Request
         if ( (session != null) && (getContext() != null)
                && getContext().getCookies()
                && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(getRequestedSessionId()))) ) {
-            String cookieName = context.getSessionCookie().getName();
-            if (cookieName == null) {
-                cookieName = Globals.SESSION_COOKIE_NAME;
-            }
-            Cookie cookie = new Cookie(cookieName, session.getIdInternal());
+            TomcatCookie cookie = new TomcatCookie(Globals.SESSION_COOKIE_NAME,
+                    session.getIdInternal());
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
         }
@@ -2550,8 +2391,8 @@ public class Request
      *
      * @param cookie The JSESSIONID cookie to be configured
      */
-    protected void configureSessionCookie(Cookie cookie) {
-        cookie.setMaxAge(context.getSessionCookie().getMaxAge());
+    protected void configureSessionCookie(TomcatCookie cookie) {
+        cookie.setMaxAge(-1);
         if (context.getSessionCookie().getPath() != null) {
             cookie.setPath(context.getSessionCookie().getPath());
         } else {
@@ -2582,7 +2423,7 @@ public class Request
             return null;
         if (s.indexOf('\\') == -1)
             return s;
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         for (int i=0; i<s.length(); i++) {
             char c = s.charAt(i);
             if (c!='\\') buf.append(c);
@@ -2685,20 +2526,8 @@ public class Request
         } else {
             contentType = contentType.trim();
         }
-        if (!("application/x-www-form-urlencoded".equals(contentType))) {
-            // Check for multipart as an alternate way to send parameters
-            if (parts == null && "multipart/form-data".equals(contentType)) {
-                try {
-                    parseMultipart();
-                } catch (Exception e) {
-                    if (context.getLogger().isDebugEnabled()) {
-                        context.getLogger().debug(
-                                sm.getString("coyoteRequest.parseMultipart"), e);
-                    }
-                }
-            }
+        if (!("application/x-www-form-urlencoded".equals(contentType)))
             return;
-        }
 
         int len = getContentLength();
 
@@ -2706,8 +2535,7 @@ public class Request
             int maxPostSize = connector.getMaxPostSize();
             if ((maxPostSize > 0) && (len > maxPostSize)) {
                 if (context.getLogger().isDebugEnabled()) {
-                    context.getLogger().debug(
-                            sm.getString("coyoteRequest.postTooLarge"));
+                    context.getLogger().debug("Post too large");
                 }
                 return;
             }
@@ -2732,110 +2560,6 @@ public class Request
                 return;
             }
             parameters.processParameters(formData, 0, len);
-        } else if ("chunked".equalsIgnoreCase(
-                coyoteRequest.getHeader("transfer-encoding"))) {
-            byte[] formData = null;
-            try {
-                formData = readChunkedPostBody();
-            } catch (IOException e) {
-                // Client disconnect
-                if (context.getLogger().isDebugEnabled()) {
-                    context.getLogger().debug(
-                            sm.getString("coyoteRequest.parseParameters"), e);
-                }
-                return;
-            }
-            parameters.processParameters(formData, 0, formData.length);
-        }
-
-    }
-
-    
-    /**
-     * Read chunked post body.
-     */
-    protected byte[] readChunkedPostBody() throws IOException {
-        ByteChunk body = new ByteChunk();
-        
-        byte[] buffer = new byte[CACHED_POST_LEN];
-        
-        int len = 0;
-        while (len > -1) {
-            len = getStream().read(buffer, 0, CACHED_POST_LEN);
-            if (connector.getMaxPostSize() > 0 &&
-                    (body.getLength() + len) > connector.getMaxPostSize()) {
-                // Too much data
-                throw new IllegalArgumentException(
-                        sm.getString("coyoteRequest.postTooLarge"));
-            }
-            if (len > 0) {
-                body.append(buffer, 0, len);
-            }
-        }
-        if (body.getLength() < body.getBuffer().length) {
-            int length = body.getLength();
-            byte[] result = new byte[length];
-            System.arraycopy(body.getBuffer(), 0, result, 0, length);
-            return result;
-        } else {
-            return body.getBuffer();
-        }
-    }
-
-
-    /**
-     * Parse multipart.
-     */
-    protected void parseMultipart()
-        throws IOException, ServletException {
-        
-        Multipart config = wrapper.getMultipartConfig();
-        if (config == null) {
-            return;
-        }
-        
-        if (usingInputStream || usingReader)
-            return;
-
-        if (!getMethod().equalsIgnoreCase("POST"))
-            return;
-
-        String contentType = getContentType();
-        if (contentType == null)
-            contentType = "";
-        int semicolon = contentType.indexOf(';');
-        if (semicolon >= 0) {
-            contentType = contentType.substring(0, semicolon).trim();
-        } else {
-            contentType = contentType.trim();
-        }
-        if (!("multipart/form-data".equals(contentType)))
-            throw new ServletException(sm.getString("coyoteRequest.notMultipart"));
-
-        DiskFileUpload fu = new DiskFileUpload();
-        fu.setRepositoryPath(config.getLocation());
-        if (config.getFileSizeThreshold() > 0) {
-            fu.setSizeThreshold(config.getFileSizeThreshold());
-        }
-        if (config.getMaxRequestSize() > 0) {
-            fu.setSizeMax(config.getMaxRequestSize());
-        }
-        if (config.getMaxFileSize() > 0) {
-            fu.setFileSizeMax(config.getMaxFileSize());
-        }
-
-        parts = new HashMap<String, Part>();
-        try {
-            for (FileItem fileItem : fu.parseRequest(getRequest())) {
-                if (fileItem.getFileName() == null) {
-                    coyoteRequest.getParameters().addParameterValues(fileItem.getName(), new String[] {fileItem.getString()});
-                }
-                parts.put(fileItem.getName(), fileItem);
-            }
-        } catch(FileUploadBase.FileSizeLimitExceededException e) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.parseMultipart"), e);
-        } catch(FileUploadBase.SizeLimitExceededException e) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.parseMultipart"), e);
         }
 
     }
@@ -2893,7 +2617,7 @@ public class Request
         if (white < 0)
             white = value.indexOf('\t');
         if (white >= 0) {
-            StringBuilder sb = new StringBuilder();
+            StringBuffer sb = new StringBuffer();
             int len = value.length();
             for (int i = 0; i < len; i++) {
                 char ch = value.charAt(i);
@@ -2996,377 +2720,5 @@ public class Request
         }
         return true;
     }
-
-    public AsyncContext getAsyncContext() {
-        return asyncContext;
-    }
-
-    public boolean isAsyncStarted() {
-        return (asyncContext != null && !canStartAsync && eventMode);
-    }
-
-    public boolean isAsyncSupported() {
-        int filterChainCount = currentFilterChain;
-        for (int i = 0; i < filterChainCount; i++) {
-            ApplicationFilterChain filterChain = filterChains.get(i);
-            int n = filterChain.getFilterCount();
-            int pos = filterChain.getPointer();
-            int lastFilter = pos;
-            if (pos == n + 1) {
-                lastFilter = n;
-            }
-            for (int j = 0; j < lastFilter; j++) {
-                if (!filterChain.getFilters()[j].getFilterDef().getAsyncSupported()) {
-                    return false;
-                }
-            }
-            if (pos == n + 1) {
-                if (!filterChain.getWrapper().getAsyncSupported()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    public AsyncContext startAsync() throws IllegalStateException {
-        return startAsync(getRequest(), getResponse().getResponse());
-    }
-
-    public AsyncContext startAsync(ServletRequest servletRequest,
-            ServletResponse servletResponse) throws IllegalStateException {
-        if (CHECK_ASYNC && !isAsyncSupported()) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.noAsync"));
-        }
-        // ISE if response is closed
-        if (response.isClosed()) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.closed"));
-        }
-        // ISE if this method is called again without any asynchronous dispatch
-        // ISE if called outside of the subsequent dispatch
-        // ISE if called again within the scope of the same dispatch
-        if (!canStartAsync) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.cannotStartAsync"));
-        }
-        LinkedHashMap<AsyncListener, AsyncListenerRegistration> localAsyncListeners = asyncListeners;
-        asyncListeners = new LinkedHashMap<AsyncListener, AsyncListenerRegistration>();
-        for (AsyncListenerRegistration registration : localAsyncListeners.values()) {
-            AsyncListener asyncListener = registration.getListener();
-            AsyncEvent asyncEvent = new AsyncEvent(asyncContext, registration.getRequest(), registration.getResponse());
-            try {
-                asyncListener.onStartAsync(asyncEvent);
-            } catch (IOException e) {
-                throw new IllegalStateException(sm.getString("coyoteRequest.onStartAsyncError", 
-                        asyncListener.getClass().getName()), e);
-            }
-        }
-        canStartAsync = false;
-        if (asyncContext == null) {
-            asyncContext = new AsyncContextImpl();
-            eventMode = true;
-        } else {
-            asyncContext.reset();
-        }
-        asyncContext.setRequestAndResponse(servletRequest, servletResponse);
-        return asyncContext;
-    }
-
-    public boolean authenticate(HttpServletResponse response) throws IOException,
-            ServletException {
-        if (context.getAuthenticator() != null) {
-            return context.getAuthenticator().authenticate(this, response);
-        } else {
-            throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
-        }
-    }
-
-    public void login(String username, String password) throws ServletException {
-        if (userPrincipal != null) {
-            throw new ServletException(sm.getString("coyoteRequest.authFailed"));
-        }
-        if (context.getAuthenticator() != null) {
-            context.getAuthenticator().login(this, username, password);
-        } else {
-            throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
-        }
-        if (userPrincipal == null) {
-            throw new ServletException(sm.getString("coyoteRequest.authFailed"));
-        }
-    }
-
-    public void logout() throws ServletException {
-        Principal principal = userPrincipal;
-        if (context.getAuthenticator() != null) {
-            context.getAuthenticator().logout(this);
-        } else {
-            userPrincipal = null;
-            authType = null;
-        }
-        if (principal instanceof GenericPrincipal) {
-            GenericPrincipal gp = (GenericPrincipal) principal;
-            try {
-                gp.logout();
-            } catch (Exception e) {
-                throw new ServletException(sm.getString("coyoteRequest.logoutfail"), e);
-            }
-        }
-    }
-
-    public DispatcherType getDispatcherType() {
-        if (dispatcherType == null) {
-            return DispatcherType.REQUEST;
-        } else if (dispatcherType == ApplicationFilterFactory.REQUEST_INTEGER) {
-            return DispatcherType.REQUEST;
-        } else if (dispatcherType == ApplicationFilterFactory.ASYNC_INTEGER) {
-            return DispatcherType.ASYNC;
-        } else if (dispatcherType == ApplicationFilterFactory.ERROR_INTEGER) {
-            return DispatcherType.ERROR;
-        } else if (dispatcherType == ApplicationFilterFactory.FORWARD_INTEGER) {
-            return DispatcherType.FORWARD;
-        } else if (dispatcherType == ApplicationFilterFactory.INCLUDE_INTEGER) {
-            return DispatcherType.INCLUDE;
-        }
-        // Never happens
-        throw new IllegalStateException();
-    }
-
-
-    public Part getPart(String name) throws IOException, ServletException {
-        if (parts == null) {
-            parseMultipart();
-        }
-        return parts.get(name);
-    }
-
-
-    public Collection<Part> getParts() throws IOException, ServletException {
-        if (parts == null) {
-            parseMultipart();
-        }
-        return parts.values();
-    }
-
-
-    public String toString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append(sm.getString("coyoteRequest.servletStack", Thread.currentThread().getName()));
-        if (eventMode) {
-            buf.append(" [event]");
-        }
-        if (asyncContext != null) {
-            buf.append(" [async]");
-        }
-        buf.append("\r\n");
-        int filterChainCount = currentFilterChain;
-        for (int i = 0; i < filterChainCount; i++) {
-            ApplicationFilterChain filterChain = filterChains.get(i);
-            ApplicationFilterConfig[] filterConfigs = filterChain.getFilters();
-            int n = filterChain.getFilterCount();
-            int pos = filterChain.getPointer();
-            for (int j = 0; j < n; j++) {
-                FilterDef filterDef = filterConfigs[j].getFilterDef();
-                if (pos == j) {
-                    buf.append("-> ");
-                } else {
-                    buf.append("   ");
-                }
-                buf.append("[F] ").append(filterDef.getFilterName()).append(" [")
-                    .append(filterDef.getFilterClass()).append("] ").append(filterDef.getAsyncSupported() ? "[A]" : "")
-                    .append("\r\n");
-            }
-            if (pos == n) {
-                buf.append("-> ");
-            } else {
-                buf.append("   ");
-            }
-            Wrapper wrapper = filterChain.getWrapper();
-            buf.append("[S] ").append(wrapper.getName()).append(" [")
-                .append(wrapper.getServletClass()).append("] ").append(wrapper.getAsyncSupported() ? "[A]" : "")
-                .append("\r\n");
-        }
-        return buf.toString();
-    }
     
-    
-    // ------------------------------------------ AsyncContextImpl Inner Class
-
-
-    public class AsyncContextImpl implements AsyncContext {
-
-        protected ServletRequest servletRequest = null;
-        protected ServletResponse servletResponse = null;
-        
-        protected ServletContext servletContext = null;
-        protected String path = null;
-        protected Runnable runnable = null;
-        protected boolean useAttributes = false;
-        protected boolean original = true;
-        protected boolean ready = true;
-
-        public void complete() {
-            setEventMode(false);
-            resume();
-        }
-
-        public void dispatch() {
-            this.servletContext = null;
-            if (servletRequest == getRequestFacade()) {
-                // Get the path directly
-                path = getRequestPathMB().toString();
-            } else if (servletRequest instanceof HttpServletRequest) {
-                // Remap the path to the target context
-                String requestURI = ((HttpServletRequest) servletRequest).getRequestURI();
-                this.servletContext = getServletContext0().getContext(requestURI);
-                if (servletContext != null) {
-                    path = requestURI.substring(servletContext.getContextPath().length());
-                } else {
-                    throw new IllegalStateException(sm.getString("coyoteRequest.dispatchNoServletContext", requestURI));
-                }
-            }
-            resume();
-        }
-
-        public void dispatch(String path) {
-            this.servletContext = null;
-            this.path = path;
-            useAttributes = true;
-            resume();
-        }
-
-        public void dispatch(ServletContext servletContext, String path) {
-            this.servletContext = servletContext;
-            this.path = path;
-            useAttributes = true;
-            resume();
-        }
-
-        public ServletRequest getRequest() {
-            if (servletRequest != null) {
-                return servletRequest;
-            } else {
-                return getRequestFacade();
-            }
-        }
-
-        public ServletResponse getResponse() {
-            if (servletResponse != null) {
-                return servletResponse;
-            } else {
-                return getResponseFacade();
-            }
-        }
-
-        public boolean hasOriginalRequestAndResponse() {
-            return (servletRequest == getRequestFacade() && servletResponse == getResponseFacade());
-        }
-
-        public void start(Runnable runnable) {
-            this.runnable = runnable;
-            resume();
-        }
-
-        public boolean isReady() {
-            return ready;
-        }
-
-        public void done() {
-            ready = false;
-        }
-
-        public void setRequestAndResponse(ServletRequest servletRequest, ServletResponse servletResponse) {
-            this.servletRequest = servletRequest;
-            this.servletResponse = servletResponse;
-        }
-
-        public ServletContext getServletContext() {
-            return servletContext;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public boolean getUseAttributes() {
-            return useAttributes;
-        }
-
-        public Runnable getRunnable() {
-            return runnable;
-        }
-        
-        public void reset() {
-            servletContext = null;
-            path = null;
-            runnable = null;
-            useAttributes = false;
-            ready = true;
-        }
-        
-        public Map<AsyncListener, AsyncListenerRegistration> getAsyncListeners() {
-            return asyncListeners;
-        }
-
-        public void addListener(AsyncListener listener,
-                ServletRequest servletRequest, ServletResponse servletResponse) {
-            asyncListeners.put(listener, 
-                    new AsyncListenerRegistration(listener, servletRequest, servletResponse));
-        }
-
-        public void addListener(AsyncListener listener) {
-            addListener(listener, getRequest(), response.getResponse());
-        }
-
-        public long getTimeout() {
-            return asyncTimeout;
-        }
-
-        public void setTimeout(long timeout) {
-            asyncTimeout = timeout;
-            int realTimeout = (asyncTimeout > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) asyncTimeout;
-            if (realTimeout <= 0) {
-                realTimeout = Integer.MAX_VALUE;
-            }
-            setTimeout0(realTimeout);
-        }
-
-        public <T extends AsyncListener> T createListener(Class<T> clazz)
-                throws ServletException {
-            T listenerInstance = null;
-            try {
-                listenerInstance = (T) context.getInstanceManager().newInstance(clazz);
-            } catch (Exception e) {
-                throw new ServletException(sm.getString("coyoteRequest.createListener", clazz.getName()), e);
-            }
-            return listenerInstance;
-        }
-
-    }
-
-    
-    // ------------------------------------------ RequestResponse Inner Class
-
-
-    public class AsyncListenerRegistration {
-        protected ServletRequest request;
-        protected ServletResponse response;
-        protected AsyncListener listener;
-        protected AsyncListenerRegistration(AsyncListener listener, 
-                ServletRequest request, ServletResponse response)
-        {
-            this.listener = listener;
-            this.request = request;
-            this.response = response;
-        }
-        public ServletRequest getRequest() {
-            return request;
-        }
-        public ServletResponse getResponse() {
-            return response;
-        }
-        public AsyncListener getListener() {
-            return listener;
-        }
-    }
-
-
 }

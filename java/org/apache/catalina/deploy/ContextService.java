@@ -185,7 +185,7 @@ public class ContextService extends ResourceBase implements Serializable {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("ContextService[");
+        StringBuffer sb = new StringBuffer("ContextService[");
         sb.append("name=");
         sb.append(getName());
         if (getDescription() != null) {

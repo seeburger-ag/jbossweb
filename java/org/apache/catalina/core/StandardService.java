@@ -21,24 +21,24 @@ package org.apache.catalina.core;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
-import org.apache.catalina.Executor;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
+import java.util.ArrayList;
+import org.apache.catalina.Executor;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -382,7 +382,7 @@ public class StandardService
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("StandardService[");
+        StringBuffer sb = new StringBuffer("StandardService[");
         sb.append(getName());
         sb.append("]");
         return (sb.toString());
@@ -670,9 +670,10 @@ public class StandardService
             
         }
         if( server==null ) {
-            // If no server was defined - create one
-            server = new StandardServer();
-            server.addService(this);
+            // Register with the server 
+            // HACK: ServerFactory should be removed...
+            
+            ServerFactory.getServer().addService(this);
         }
                
 

@@ -47,14 +47,14 @@ public class OneLineFormatter extends Formatter {
     private final SimpleDateFormat monthFormatter = new SimpleDateFormat("MM");
     private final SimpleDateFormat yearFormatter = new SimpleDateFormat("yyyy");
     private final SimpleDateFormat timeFormatter =
-        new SimpleDateFormat("HH:mm:ss.S");
+        new SimpleDateFormat("HH:mm:ss");
     
     private Date currentDate;
     private String currentDateString;
 
     @Override
     public String format(LogRecord record) {
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         
         // Timestamp
         addTimestamp(sb, new Date(record.getMillis()));
@@ -89,11 +89,11 @@ public class OneLineFormatter extends Formatter {
         return sb.toString();
     }
 
-    public void addTimestamp(StringBuilder buf, Date date) {
+    public void addTimestamp(StringBuffer buf, Date date) {
         if (currentDate != date) {
             synchronized (this) {
                 if (currentDate != date) {
-                    StringBuilder current = new StringBuilder(32);
+                    StringBuffer current = new StringBuffer(32);
                     current.append(dayFormatter.format(date)); // Day
                     current.append('-');
                     current.append(lookup(monthFormatter.format(date))); // Month

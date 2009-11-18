@@ -61,7 +61,7 @@ public class JdkLoggerFormatter extends Formatter {
             name = name.substring(name.lastIndexOf(".") + 1);
 
         // Use a string buffer for better performance
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         
         buf.append(time);
         buf.append(" ");

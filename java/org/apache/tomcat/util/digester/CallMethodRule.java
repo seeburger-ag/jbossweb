@@ -536,7 +536,7 @@ public class CallMethodRule extends Rule {
         }
         
         if (target == null) {
-            StringBuilder sb = new StringBuilder();
+            StringBuffer sb = new StringBuffer();
             sb.append("[CallMethodRule]{");
             sb.append(digester.match);
             sb.append("} Call target is null (");
@@ -550,7 +550,7 @@ public class CallMethodRule extends Rule {
         
         // Invoke the required method on the top object
         if (digester.log.isDebugEnabled()) {
-            StringBuilder sb = new StringBuilder("[CallMethodRule]{");
+            StringBuffer sb = new StringBuffer("[CallMethodRule]{");
             sb.append(digester.match);
             sb.append("} Call ");
             sb.append(target.getClass().getName());
@@ -606,7 +606,7 @@ public class CallMethodRule extends Rule {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("CallMethodRule[");
+        StringBuffer sb = new StringBuffer("CallMethodRule[");
         sb.append("methodName=");
         sb.append(methodName);
         sb.append(", paramCount=");

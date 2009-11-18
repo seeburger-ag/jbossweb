@@ -218,7 +218,7 @@ class Parser implements TagConstants {
     private String parseName() throws JasperException {
         char ch = (char) reader.peekChar();
         if (Character.isLetter(ch) || ch == '_' || ch == ':') {
-            StringBuilder buf = new StringBuilder();
+            StringBuffer buf = new StringBuffer();
             buf.append(ch);
             reader.nextChar();
             ch = (char) reader.peekChar();
@@ -261,7 +261,7 @@ class Parser implements TagConstants {
      */
     private String parseQuoted(Mark start, String tx, char quote)
             throws JasperException {
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         int size = tx.length();
         int i = 0;
         while (i < size) {
@@ -1214,9 +1214,6 @@ class Parser implements TagConstants {
         // Check if this is a user-defined tag.
         String uri = pageInfo.getURI(prefix);
         if (uri == null) {
-            if (pageInfo.isErrorOnUndeclaredNamespace()) {
-                err.jspError(start, "jsp.error.bad_tag", shortTagName, prefix);
-            }
             reader.reset(start);
             // Remember the prefix for later error checking
             pageInfo.putNonCustomTagPrefix(prefix, reader.mark());
@@ -1780,21 +1777,11 @@ class Parser implements TagConstants {
         while (reader.hasMoreInput()) {
             start = reader.mark();
             if (reader.matches("%--")) {
-                // Comment
-                reader.skipUntil("--%>");
+                parseComment(parent);
             } else if (reader.matches("%@")) {
                 parseDirective(parent);
             } else if (reader.matches("jsp:directive.")) {
                 parseXMLDirective(parent);
-            } else if (reader.matches("%!")) {
-                // Declaration
-                reader.skipUntil("%>");
-            } else if (reader.matches("%=")) {
-                // Expression
-                reader.skipUntil("%>");
-            } else if (reader.matches("%")) {
-                // Scriptlet
-                reader.skipUntil("%>");
             }
             reader.skipUntil("<");
         }

@@ -79,7 +79,7 @@ public class ContextTransaction implements Serializable {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("Transaction[");
+        StringBuffer sb = new StringBuffer("Transaction[");
         sb.append("]");
         return (sb.toString());
 

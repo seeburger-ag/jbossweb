@@ -715,7 +715,7 @@ public final class CGIServlet extends HttpServlet {
         protected void setupFromContext(ServletContext context) {
             this.context = context;
             this.webAppRootDir = context.getRealPath("/");
-            this.tmpDir = (File) context.getAttribute(ServletContext.TEMPDIR);
+            this.tmpDir = (File) context.getAttribute(Globals.WORK_DIR_ATTR);
         }
 
 
@@ -1099,8 +1099,8 @@ public final class CGIServlet extends HttpServlet {
          * directory to enable CGI script to be executed.
          */
         protected void expandCGIScript() {
-            StringBuilder srcPath = new StringBuilder();
-            StringBuilder destPath = new StringBuilder();
+            StringBuffer srcPath = new StringBuffer();
+            StringBuffer destPath = new StringBuffer();
             InputStream is = null;
 
             // paths depend on mapping
@@ -1191,7 +1191,7 @@ public final class CGIServlet extends HttpServlet {
          */
         public String toString() {
 
-            StringBuilder sb = new StringBuilder();
+            StringBuffer sb = new StringBuffer();
 
             sb.append("<TABLE border=2>");
 
@@ -1606,7 +1606,7 @@ public final class CGIServlet extends HttpServlet {
             int bufRead = -1;
 
             //create query arguments
-            StringBuilder cmdAndArgs = new StringBuilder();
+            StringBuffer cmdAndArgs = new StringBuffer();
             if (command.indexOf(" ") < 0) {
                 cmdAndArgs.append(command);
             } else {
@@ -1629,7 +1629,7 @@ public final class CGIServlet extends HttpServlet {
                 }
             }
 
-            StringBuilder command = new StringBuilder(cgiExecutable);
+            StringBuffer command = new StringBuffer(cgiExecutable);
             command.append(" ");
             command.append(cmdAndArgs.toString());
             cmdAndArgs = command;

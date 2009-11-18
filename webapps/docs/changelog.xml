@@ -16,188 +16,61 @@
 
 <body>
 
-<section name="JBoss Web 3.0.0.CR1 (remm)">
-  <subsection name="General">
+<section name="JBoss Web 2.1.6.GA (remm)">
+  <subsection name="Coyote">
     <changelog>
-      <update>
-        Servlet 3.0 API. (remm)
-      </update>
       <fix>
         Fix CVE-2009-3555, man-in-the-middle attack in TLS protocol. (markt)
       </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 2.1.5.GA (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        <bug>46950</bug>: Allow renegotiation to work for client certificates. (markt)
+      </fix>
+      <fix>
+        Improve fix for <jboss-jira>JBAS-6442</jboss-jira>, which failed for some encodings. (jfclere, remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 2.1.4.GA (remm)">
+  <subsection name="General">
+    <changelog>
       <update>
-        Commons Pool 1.5.2. (markt)
+        NSIS 2.45. (remm)
       </update>
     </changelog>
   </subsection>
   <subsection name="Catalina">
     <changelog>
-      <update>
-        Replace TomcatCookie class with the new Cookie API. (remm)
-      </update>
-      <update>
-        Cookie tracking and Servlet 3.0 cookie configuration. (markt, remm)
-      </update>
-      <update>
-        ServletRegistration and FilterRegistration implementation. (remm)
-      </update>
       <fix>
-        XML validation fix. (markt)
+        <bug>45933</bug>: Don't use xml parser from web-app to process tld files. (markt)
       </fix>
       <fix>
-        <bug>46866</bug>: Use nanoTime rather that a weaker init for the Random fallback. (remm)
-      </fix>
-      <fix>
-        <bug>45332</bug>: Encoding fix for tomcat-users file. (markt)
-      </fix>
-      <update>
-        Move InstanceManager and PeriodicEventListener to org.apache.tomcat. (markt)
-      </update>
-      <fix>
-        <bug>46982</bug>: Use DST offset not current offset in the access log valve. (markt)
-      </fix>
-      <fix>
-        Various WebDAV test suite failures. (markt)
-      </fix>
-      <fix>
-        <bug>46933</bug>: Simplify StringManager using Java 5 features. Based on a patch by Jens Kapitza. (markt)
-      </fix>
-      <fix>
-        <bug>46961</bug>: Prefer Class.forName for Java 6 compatibility with array fake types. (markt)
-      </fix>
-      <fix>
-        <bug>42579</bug>: Handle both relative and absolute search results in JNDI realm. Patch provided by Brandon DuRette. (markt)
-      </fix>
-      <fix>
-        <bug>46967</bug>: Secure random security manager fix. Based on a patch provided by Kirk Wolf. (markt)
-      </fix>
-      <fix>
-        <bug>46562</bug>: In SSI, close the reader when done. (markt)
+        <bug>29936</bug>: Create digesters and parsers earlier so we aren't using the webapp class loader when we create them. (markt) 
       </fix>
       <add>
-        AsyncContext implementation, internally built on top of the event API. (remm)
+        Add the PING/PING_RSP logic to cluster listener. (jfclere)
       </add>
-      <add>
-        Multipart implementation. (remm)
-      </add>
-      <add>
-        New JarRepository component to handle better management of JarFiles following the Servlet 3.0 update. (remm)
-      </add>
-      <fix>
-        <bug>47050</bug>: Remove unnecessary filtering in StandardHostValve. (markt)
-      </fix>
-      <fix>
-        <bug>46925</bug>: Improve search for nested roles in JNDIRealm by replacing recursive search with
-        iterative search. Patch provided by Stefan Zoerner. (rjung)
-      </fix>
-      <fix>
-        Close stream after error in the classloader. (pero)
-      </fix>
-      <fix>
-        <bug>47046</bug>: JMX unregistration. (markt)
-      </fix>
-      <update>
-        Remove ServerFactory. (markt)
-      </update>
-      <fix>
-        <bug>47299</bug>: Expose Container.fireContainerEvent, which became public long ago. (remm)
-      </fix>
-      <fix>
-        Three bugs related to session activity with the persistent manager. (kkolinko, markt)
-      </fix>
-      <fix>
-        <bug>47343</bug>: Fix redeploy resources order. (markt)
-      </fix>
-      <fix>
-        Add support for chunked POSTs. (markt)
-      </fix>
-      <fix>
-        MIME types cleanup. (kkolinko)
-      </fix>
-      <fix>
-        JDBC driver cleanup fix, using a hack to define the cleaner component in the webapp classloader. (markt)
-      </fix>
-      <fix>
-        <bug>39231</bug>: Call logout on the JAAS login context whenever possible. (markt)
-      </fix>
-      <fix>
-        <bug>37984</bug>: Strip {MD5} as well as {SHA} from digested passwords. (markt)
-      </fix>
-      <add>
-        All other Servlet 3.0 features. (remm)
-      </add>
-      <fix>
-        <bug>41059</bug>: Reduce one possible source of errors if using ENABLE_CLEAR_REFERENCES=true.
-        Patch by Curt Arnold. (markt)
-      </fix>
-      <fix>
-        Register filters with JMX. (markt)
-      </fix>
-      <fix>
-        <bug>47705</bug>: Fix divide by zero in the manager sessions command. (funkman)
-      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
     <changelog>
       <fix>
-        Remove useless instanceof in the HTTP protocol. (markt)
-      </fix>
-      <update>
-        Add support for non IO based events in all AJP and HTTP connectors. (remm)
-      </update>
-      <fix>
-        Fix handling of timeout values &lt;= 0 with the poller refactoring. (remm)
-      </fix>
-      <fix>
         <jboss-jira>JBAS-6442</jboss-jira>: The character encoder should tolerate unmappable characters. (jfclere)
-      </fix>
-      <fix>
-        Add flag to set Expires for cookie expiration on IE. (markt)
-      </fix>
-      <fix>
-        <bug>47225</bug>: Fix bad length when redirecting in the mapper. (markt)
-      </fix>
-      <fix>
-        Cookie separators and quoting compliance fixes. (markt, kkolinko)
-      </fix>
-      <fix>
-        <bug>46950</bug>: Fix SSL renegociation problems. (jfclere)
       </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
     <changelog>
       <fix>
-        <bug>46915</bug>: JSTL issues resolving resource bundle keys. (markt)
-      </fix>
-      <fix>
-        <bug>46909</bug>: The ';' should really only be used if there is a following parameter. (markt)
-      </fix>
-      <fix>
-        <bug>37929</bug>: Fix session access to an invalidated session. (markt)
-      </fix>
-      <fix>
-        Removed some casts in ELResolverImpl. Patch suggested by kkolinko. (markt)
-      </fix>
-      <fix>
         <bug>47318</bug>: Process include preludes and codas when processing directives and whole pages. (markt)
-      </fix>
-      <fix>
-        <bug>38797</bug>: Fix getProperty code to what it used to be in Tomcat 5.5.12. (markt)
-      </fix>
-      <fix>
-        <bug>41661</bug>: JspConfig.init() needs a minimal amount of thread safety. (markt)
-      </fix>
-      <fix>
-        <bug>47413</bug>: First part of a composite expression "${a}${b}" was not coerced to String. (kkolinko)
-      </fix>
-      <fix>
-        <bug>41824</bug>: Need to use canonical rather than binary form when writing code. (markt)
-      </fix>
-      <fix>
-        <bug>42390</bug>: Correct JSP compilation error with nested tagfile tags with variables with "AT_BEGIN" scope.
-        Patch provided by Konstantin Kolinko. (markt)
       </fix>
     </changelog>
   </subsection>
