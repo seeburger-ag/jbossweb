@@ -139,6 +139,9 @@
       <fix>
         <jboss-jira>JBAS-7159</jboss-jira>: Better usability for Context level usage of RewriteValve. (remm)
       </fix>
+      <fix>
+        <jira>148</jira>: Add additional null checks for unmapped contexts. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

@@ -1512,6 +1512,9 @@ public class Request
             return;
         }
         
+        if (context == null)
+            return;
+        
         // Notify interested application event listeners
         Object listeners[] = context.getApplicationEventListeners();
         if ((listeners == null) || (listeners.length == 0))
@@ -1581,6 +1584,9 @@ public class Request
         if (name.startsWith("org.apache.tomcat.")) {
             coyoteRequest.setAttribute(name, value);
         }
+        
+        if (context == null)
+            return;
         
         // Notify interested application event listeners
         Object listeners[] = context.getApplicationEventListeners();
@@ -2466,9 +2472,7 @@ public class Request
             return (session);
 
         // Return the requested session if it exists and is valid
-        Manager manager = null;
-        if (context != null)
-            manager = context.getManager();
+        Manager manager = context.getManager();
         if (manager == null)
             return (null);      // Sessions are not supported
         if (requestedSessionId != null) {
@@ -2488,7 +2492,7 @@ public class Request
         // Create a new session if requested and the response is not committed
         if (!create)
             return (null);
-        if ((context != null) && (response != null) &&
+        if ((response != null) &&
             context.getCookies() &&
             response.getResponse().isCommitted()) {
             throw new IllegalStateException
@@ -2524,8 +2528,7 @@ public class Request
 
         // Creating a new session cookie based on that session
         // If there was no cookie with the current session id, add a cookie to the response
-        if ( (session != null) && (getContext() != null)
-               && getContext().getCookies()
+        if ( (session != null) && context.getCookies()
                && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(getRequestedSessionId()))) ) {
             String cookieName = context.getSessionCookie().getName();
             if (cookieName == null) {
@@ -2646,6 +2649,9 @@ public class Request
     protected void parseParameters() {
 
         parametersParsed = true;
+
+        if (context == null)
+            return;
 
         Parameters parameters = coyoteRequest.getParameters();
 
@@ -2789,6 +2795,9 @@ public class Request
     protected void parseMultipart()
         throws IOException, ServletException {
         
+        if (context == null)
+            return;
+
         Multipart config = wrapper.getMultipartConfig();
         if (config == null) {
             return;
@@ -3039,7 +3048,7 @@ public class Request
             throw new IllegalStateException(sm.getString("coyoteRequest.noAsync"));
         }
         // ISE if response is closed
-        if (response.isClosed()) {
+        if (response.isClosed() || context == null) {
             throw new IllegalStateException(sm.getString("coyoteRequest.closed"));
         }
         // ISE if this method is called again without any asynchronous dispatch
@@ -3073,7 +3082,7 @@ public class Request
 
     public boolean authenticate(HttpServletResponse response) throws IOException,
             ServletException {
-        if (context.getAuthenticator() != null) {
+        if (context != null && context.getAuthenticator() != null) {
             return context.getAuthenticator().authenticate(this, response);
         } else {
             throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
@@ -3084,7 +3093,7 @@ public class Request
         if (userPrincipal != null) {
             throw new ServletException(sm.getString("coyoteRequest.authFailed"));
         }
-        if (context.getAuthenticator() != null) {
+        if (context != null && context.getAuthenticator() != null) {
             context.getAuthenticator().login(this, username, password);
         } else {
             throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
@@ -3096,7 +3105,7 @@ public class Request
 
     public void logout() throws ServletException {
         Principal principal = userPrincipal;
-        if (context.getAuthenticator() != null) {
+        if (context != null && context.getAuthenticator() != null) {
             context.getAuthenticator().logout(this);
         } else {
             userPrincipal = null;
