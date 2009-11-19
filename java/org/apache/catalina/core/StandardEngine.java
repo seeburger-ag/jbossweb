@@ -37,7 +37,6 @@ import org.apache.catalina.util.ServerInfo;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.modeler.modules.MbeansSource;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
 
 /**
  * Standard implementation of the <b>Engine</b> interface.  Each

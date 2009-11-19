@@ -32,13 +32,11 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Service;
-import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
-import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 
@@ -249,18 +247,6 @@ public class Connector
      * Coyote adapter.
      */
     protected Adapter adapter = null;
-
-
-     /**
-      * Mapper.
-      */
-     protected Mapper mapper = new Mapper();
-
-
-     /**
-      * Mapper listener.
-      */
-     protected MapperListener mapperListener = new MapperListener(mapper, this);
 
 
      /**
@@ -476,16 +462,6 @@ public class Connector
         return (info);
 
     }
-
-
-     /**
-      * Return the mapper.
-      */
-     public Mapper getMapper() {
-
-         return (mapper);
-
-     }
 
 
     /**
@@ -1017,11 +993,10 @@ public class Connector
 
         this.initialized = true;
 
-        if( oname == null && (container instanceof StandardEngine)) {
+        if (oname == null) {
             try {
                 // we are loaded directly, via API - and no name was given to us
-                StandardEngine cb=(StandardEngine)container;
-                oname = createObjectName(cb.getName(), "Connector");
+                oname = createObjectName(container.getName(), "Connector");
                 Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null);
                 controller=oname;
@@ -1125,22 +1100,6 @@ public class Connector
                  ("coyoteConnector.protocolHandlerStartFailed", e));
         }
 
-        if( this.domain != null ) {
-            mapperListener.setDomain( domain );
-            //mapperListener.setEngine( service.getContainer().getName() );
-            mapperListener.init();
-            try {
-                ObjectName mapperOname = createObjectName(this.domain,"Mapper");
-                if (log.isDebugEnabled())
-                    log.debug(sm.getString(
-                            "coyoteConnector.MapperRegistration", mapperOname));
-                Registry.getRegistry(null, null).registerComponent
-                    (mapper, mapperOname, "Mapper");
-            } catch (Exception ex) {
-                log.error(sm.getString
-                        ("coyoteConnector.protocolRegistrationFailed"), ex);
-            }
-        }
     }
 
 
@@ -1161,9 +1120,6 @@ public class Connector
         started = false;
 
         try {
-            mapperListener.destroy();
-            Registry.getRegistry(null, null).unregisterComponent
-                (createObjectName(this.domain,"Mapper"));
             Registry.getRegistry(null, null).unregisterComponent
                 (createObjectName(this.domain,"ProtocolHandler"));
         } catch (MalformedObjectNameException e) {

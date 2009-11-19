@@ -126,8 +126,6 @@ public class ServiceMapperListener
                         ((Lifecycle) context).addLifecycleListener(this);
                     }
                 }
-            } else {
-                return;
             }
         } else if (Lifecycle.STOP_EVENT.equals(event.getType())) {
             if (source instanceof Context) {
@@ -147,8 +145,6 @@ public class ServiceMapperListener
                         mapper.removeContext(host.getName(), context.getName());
                     }
                 }
-            } else {
-                return;
             }
         } else if (Context.COMPLETE_CONFIG_EVENT.equals(event.getType())) {
             Context context = (Context) source;
@@ -166,7 +162,6 @@ public class ServiceMapperListener
                     }
                 }
             }
-        } else if (Lifecycle.PERIODIC_EVENT.equals(event.getType())) {
         }
 
     }
