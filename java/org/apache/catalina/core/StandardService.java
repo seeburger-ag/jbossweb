@@ -38,6 +38,7 @@ import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
+import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 
@@ -125,6 +126,18 @@ public class StandardService
      */
     protected Container container = null;
 
+    
+    /**
+     * Mapper.
+     */
+    protected Mapper mapper = new Mapper();
+
+
+    /**
+     * The associated mapper.
+     */
+    protected ServiceMapperListener mapperListener = new ServiceMapperListener(mapper);
+    
 
     /**
      * Has this component been initialized?
@@ -185,6 +198,12 @@ public class StandardService
         support.firePropertyChange("container", oldContainer, this.container);
 
     }
+
+
+    public Mapper getMapper() {
+        return mapper;
+    }
+
 
     public ObjectName getContainerName() {
         if( container instanceof ContainerBase ) {
@@ -675,7 +694,8 @@ public class StandardService
             server.addService(this);
         }
                
-
+        addLifecycleListener(mapperListener);
+        
         // Initialize our defined Connectors
         synchronized (connectors) {
                 for (int i = 0; i < connectors.length; i++) {
@@ -687,6 +707,7 @@ public class StandardService
     public void destroy() throws LifecycleException {
         if( started ) stop();
         // FIXME unregister should be here probably -- stop doing that ?
+        removeLifecycleListener(mapperListener);
     }
 
     public void init() {

@@ -527,7 +527,7 @@ public class CoyoteAdapter
         } else {
             serverName = req.serverName();
         }
-        connector.getMapper().map(serverName, decodedURI, 
+        connector.getService().getMapper().map(serverName, decodedURI, 
                                   request.getMappingData());
         request.setContext((Context) request.getMappingData().context);
         request.setWrapper((Wrapper) request.getMappingData().wrapper);
