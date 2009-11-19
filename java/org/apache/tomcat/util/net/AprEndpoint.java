@@ -1774,6 +1774,13 @@ public class AprEndpoint {
                                             // Close socket and clear pool
                                             Socket.destroy(desc[n*2+1]);
                                         }
+                                    } else {
+                                        // Unknown event
+                                        log.warn(sm.getString("endpoint.poll.flags", "" + desc[n*2]));
+                                        if (!processSocket(desc[n*2+1], SocketStatus.ERROR)) {
+                                            // Close socket and clear pool
+                                            Socket.destroy(desc[n*2+1]);
+                                        }
                                     }
                                 } else if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
                                         || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
