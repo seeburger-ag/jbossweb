@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -32,11 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -47,8 +48,7 @@ import org.apache.catalina.manager.util.SessionUtils;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.URLEncoder;
-import org.apache.tomcat.util.http.fileupload.DiskFileUpload;
-import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.ParameterParser;
 
 /**
 * Servlet that enables remote management of the web applications deployed
@@ -172,62 +172,54 @@ public final class HTMLManagerServlet extends ManagerServlet {
 
         String message = "";
 
-        // Create a new file upload handler
-        DiskFileUpload upload = new DiskFileUpload();
-
-        // Get the tempdir
-        File tempdir = (File) getServletContext().getAttribute(ServletContext.TEMPDIR);
-        // Set upload parameters
-        upload.setSizeMax(-1);
-        upload.setRepositoryPath(tempdir.getCanonicalPath());
-    
-        // Parse the request
+        Part warPart = null;
+        String filename = null;
         String basename = null;
-        String war = null;
-        FileItem warUpload = null;
+
+        Collection<Part> parts = request.getParts();
+        Iterator<Part> iter = parts.iterator();
+        
         try {
-            List items = upload.parseRequest(request);
-        
-            // Process the uploaded fields
-            Iterator iter = items.iterator();
             while (iter.hasNext()) {
-                FileItem item = (FileItem) iter.next();
-        
-                if (!item.isFormField()) {
-                    if (item.getFieldName().equals("deployWar") &&
-                        warUpload == null) {
-                        warUpload = item;
-                    } else {
-                        item.delete();
-                    }
+                Part part = iter.next();
+                if (part.getName().equals("deployWar") && warPart == null) {
+                    warPart = part;
+                } else {
+                    part.delete();
                 }
             }
+
             while (true) {
-                if (warUpload == null) {
-                    message = sm.getString
-                        ("htmlManagerServlet.deployUploadNoFile");
+                if (warPart == null) {
+                    message =
+                        sm.getString("htmlManagerServlet.deployUploadNoFile");
                     break;
                 }
-                war = warUpload.getFileName();
-                if (!war.toLowerCase().endsWith(".war")) {
-                    message = sm.getString
-                        ("htmlManagerServlet.deployUploadNotWar",war);
+                filename =
+                    extractFilename(warPart.getHeader("Content-Disposition"));
+                if (!filename.toLowerCase().endsWith(".war")) {
+                    message = sm.getString(
+                            "htmlManagerServlet.deployUploadNotWar", filename);
                     break;
                 }
                 // Get the filename if uploaded name includes a path
-                if (war.lastIndexOf('\\') >= 0) {
-                    war = war.substring(war.lastIndexOf('\\') + 1);
+                if (filename.lastIndexOf('\\') >= 0) {
+                    filename =
+                        filename.substring(filename.lastIndexOf('\\') + 1);
                 }
-                if (war.lastIndexOf('/') >= 0) {
-                    war = war.substring(war.lastIndexOf('/') + 1);
+                if (filename.lastIndexOf('/') >= 0) {
+                    filename =
+                        filename.substring(filename.lastIndexOf('/') + 1);
                 }
                 // Identify the appBase of the owning Host of this Context
                 // (if any)
-                basename = war.substring(0, war.toLowerCase().indexOf(".war"));
-                File file = new File(getAppBase(), war);
+                basename = filename.substring(0,
+                        filename.toLowerCase().indexOf(".war"));
+                File file = new File(getAppBase(), filename);
                 if (file.exists()) {
-                    message = sm.getString
-                        ("htmlManagerServlet.deployUploadWarExists",war);
+                    message = sm.getString(
+                            "htmlManagerServlet.deployUploadWarExists",
+                            filename);
                     break;
                 }
                 String path = null;
@@ -238,15 +230,16 @@ public final class HTMLManagerServlet extends ManagerServlet {
                 }
 
                 if ((host.findChild(path) != null) && !isDeployed(path)) {
-                    message = sm.getString
-                        ("htmlManagerServlet.deployUploadInServerXml", war);
+                    message = sm.getString(
+                            "htmlManagerServlet.deployUploadInServerXml",
+                            filename);
                     break;
                 }
 
                 if (!isServiced(path)) {
                     addServiced(path);
                     try {
-                        warUpload.write(file);
+                        warPart.write(file.getAbsolutePath());
                         // Perform new deployment
                         check(path);
                     } finally {
@@ -260,13 +253,39 @@ public final class HTMLManagerServlet extends ManagerServlet {
                 ("htmlManagerServlet.deployUploadFail", e.getMessage());
             log(message, e);
         } finally {
-            if (warUpload != null) {
-                warUpload.delete();
+            if (warPart != null) {
+                warPart.delete();
             }
-            warUpload = null;
+            warPart = null;
         }
 
         list(request, response, message);
+    }
+
+    private String extractFilename(String cd) {
+        String fileName = null;
+        if (cd != null) {
+            String cdl = cd.toLowerCase();
+            if (cdl.startsWith("form-data") || cdl.startsWith("attachment")) {
+                ParameterParser parser = new ParameterParser();
+                parser.setLowerCaseNames(true);
+                // Parameter parser can handle null input
+                Map<String,String> params =
+                    parser.parse(cd, ';');
+                if (params.containsKey("filename")) {
+                    fileName = params.get("filename");
+                    if (fileName != null) {
+                        fileName = fileName.trim();
+                    } else {
+                        // Even if there is no value, the parameter is present,
+                        // so we return an empty file name rather than no file
+                        // name.
+                        fileName = "";
+                    }
+                }
+            }
+        }
+        return fileName;
     }
 
     /**

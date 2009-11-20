@@ -14,8 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package org.apache.tomcat.util.http.fileupload;
 
 import java.io.IOException;
@@ -90,6 +88,7 @@ public abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void write(int b) throws IOException
     {
         checkThreshold(1);
@@ -106,6 +105,7 @@ public abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void write(byte b[]) throws IOException
     {
         checkThreshold(b.length);
@@ -124,6 +124,7 @@ public abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void write(byte b[], int off, int len) throws IOException
     {
         checkThreshold(len);
@@ -138,6 +139,7 @@ public abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void flush() throws IOException
     {
         getStream().flush();
@@ -150,6 +152,7 @@ public abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void close() throws IOException
     {
         try
@@ -219,11 +222,20 @@ public abstract class ThresholdingOutputStream
     {
         if (!thresholdExceeded && (written + count > threshold))
         {
-            thresholdReached();
             thresholdExceeded = true;
+            thresholdReached();
         }
     }
 
+    /**
+     * Resets the byteCount to zero.  You can call this from 
+     * {@link #thresholdReached()} if you want the event to be triggered again. 
+     */
+    protected void resetByteCount() 
+    {
+        this.thresholdExceeded = false;
+        this.written = 0;
+    }
 
     // ------------------------------------------------------- Abstract methods
 

@@ -48,6 +48,7 @@ package org.apache.catalina.connector;
 
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -94,6 +95,7 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ApplicationFilterChain;
 import org.apache.catalina.core.ApplicationFilterConfig;
 import org.apache.catalina.core.ApplicationFilterFactory;
+import org.apache.catalina.core.StandardPart;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.Multipart;
 import org.apache.catalina.realm.GenericPrincipal;
@@ -110,9 +112,12 @@ import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.Parameters;
 import org.apache.tomcat.util.http.ServerCookie;
-import org.apache.tomcat.util.http.fileupload.DiskFileUpload;
+import org.apache.tomcat.util.http.fileupload.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileUploadBase;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.apache.tomcat.util.http.fileupload.ServletFileUpload;
+import org.apache.tomcat.util.http.fileupload.FileUploadBase.FileSizeLimitExceededException;
+import org.apache.tomcat.util.http.fileupload.FileUploadBase.SizeLimitExceededException;
 import org.apache.tomcat.util.http.mapper.MappingData;
 
 
@@ -2818,30 +2823,34 @@ public class Request
         if (!("multipart/form-data".equals(contentType)))
             throw new ServletException(sm.getString("coyoteRequest.notMultipart"));
 
-        DiskFileUpload fu = new DiskFileUpload();
-        fu.setRepositoryPath(config.getLocation());
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+        if (config.getLocation() != null) {
+            factory.setRepository(new File(config.getLocation()));
+        }
         if (config.getFileSizeThreshold() > 0) {
-            fu.setSizeThreshold(config.getFileSizeThreshold());
+            factory.setSizeThreshold(config.getFileSizeThreshold());
         }
-        if (config.getMaxRequestSize() > 0) {
-            fu.setSizeMax(config.getMaxRequestSize());
-        }
-        if (config.getMaxFileSize() > 0) {
-            fu.setFileSizeMax(config.getMaxFileSize());
-        }
+        
+        ServletFileUpload upload = new ServletFileUpload();
+        upload.setFileItemFactory(factory);
+        upload.setFileSizeMax(config.getMaxFileSize());
+        upload.setSizeMax(config.getMaxRequestSize());
 
         parts = new HashMap<String, Part>();
         try {
-            for (FileItem fileItem : fu.parseRequest(getRequest())) {
-                if (fileItem.getFileName() == null) {
-                    coyoteRequest.getParameters().addParameterValues(fileItem.getName(), new String[] {fileItem.getString()});
+            for (FileItem fileItem : upload.parseRequest(getRequest())) {
+                if (fileItem.getName() == null) {
+                    coyoteRequest.getParameters().addParameterValues
+                        (fileItem.getFieldName(), new String[] {fileItem.getString()});
                 }
-                parts.put(fileItem.getName(), fileItem);
+                parts.put(fileItem.getFieldName(), new StandardPart(fileItem, config));
             }
-        } catch(FileUploadBase.FileSizeLimitExceededException e) {
+        } catch(FileSizeLimitExceededException e) {
             throw new IllegalStateException(sm.getString("coyoteRequest.parseMultipart"), e);
-        } catch(FileUploadBase.SizeLimitExceededException e) {
+        } catch(SizeLimitExceededException e) {
             throw new IllegalStateException(sm.getString("coyoteRequest.parseMultipart"), e);
+        } catch (FileUploadException e) {
+            throw new IOException(sm.getString("coyoteRequest.parseMultipart"), e);
         }
 
     }

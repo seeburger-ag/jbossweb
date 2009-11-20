@@ -5,36 +5,31 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package org.apache.tomcat.util.http.fileupload;
-
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-
-import javax.servlet.http.Part;
-
 
 /**
  * <p> This class represents a file or form item that was received within a
  * <code>multipart/form-data</code> POST request.
  *
  * <p> After retrieving an instance of this class from a {@link
- * org.apache.tomcat.util.http.fileupload.FileUpload FileUpload} instance (see
- * {@link org.apache.tomcat.util.http.fileupload.FileUpload
+ * org.apache.commons.fileupload.FileUpload FileUpload} instance (see
+ * {@link org.apache.commons.fileupload.FileUpload
  * #parseRequest(javax.servlet.http.HttpServletRequest)}), you may
  * either request all contents of the file at once using {@link #get()} or
  * request an {@link java.io.InputStream InputStream} with
@@ -55,9 +50,43 @@ import javax.servlet.http.Part;
  *
  * @version $Id$
  */
-public interface FileItem
-    extends Part, Serializable
-{
+public interface FileItem extends Serializable {
+
+
+    // ------------------------------- Methods from javax.activation.DataSource
+
+
+    /**
+     * Returns an {@link java.io.InputStream InputStream} that can be
+     * used to retrieve the contents of the file.
+     *
+     * @return An {@link java.io.InputStream InputStream} that can be
+     *         used to retrieve the contents of the file.
+     *
+     * @throws IOException if an error occurs.
+     */
+    InputStream getInputStream() throws IOException;
+
+
+    /**
+     * Returns the content type passed by the browser or <code>null</code> if
+     * not defined.
+     *
+     * @return The content type passed by the browser or <code>null</code> if
+     *         not defined.
+     */
+    String getContentType();
+
+
+    /**
+     * Returns the original filename in the client's filesystem, as provided by
+     * the browser (or other client software). In most cases, this will be the
+     * base file name, without path information. However, some clients, such as
+     * the Opera browser, do include path information.
+     *
+     * @return The original filename in the client's filesystem.
+     */
+    String getName();
 
 
     // ------------------------------------------------------- FileItem methods
@@ -71,6 +100,14 @@ public interface FileItem
      *         <code>false</code> otherwise.
      */
     boolean isInMemory();
+
+
+    /**
+     * Returns the size of the file item.
+     *
+     * @return The size of the file item, in bytes.
+     */
+    long getSize();
 
 
     /**
@@ -90,11 +127,10 @@ public interface FileItem
      *
      * @return The contents of the item, as a string.
      *
-     * @exception UnsupportedEncodingException if the requested character
-     *                                         encoding is not available.
+     * @throws UnsupportedEncodingException if the requested character
+     *                                      encoding is not available.
      */
-    String getString(String encoding)
-        throws UnsupportedEncodingException;
+    String getString(String encoding) throws UnsupportedEncodingException;
 
 
     /**
@@ -121,17 +157,19 @@ public interface FileItem
      * @param file The <code>File</code> into which the uploaded item should
      *             be stored.
      *
-     * @exception Exception if an error occurs.
+     * @throws Exception if an error occurs.
      */
-    void write(File file) throws IOException;
+    void write(File file) throws Exception;
 
 
     /**
-     * Returns the original filename in the client's filesystem.
-     *
-     * @return The original filename in the client's filesystem.
+     * Deletes the underlying storage for a file item, including deleting any
+     * associated temporary disk file. Although this storage will be deleted
+     * automatically when the <code>FileItem</code> instance is garbage
+     * collected, this method can be used to ensure that this is done at an
+     * earlier time, thus preserving system resources.
      */
-    String getFileName();
+    void delete();
 
 
     /**
@@ -176,9 +214,9 @@ public interface FileItem
      * be used for storing the contents of the file.
      *
      * @return An {@link java.io.OutputStream OutputStream} that can be used
-     *         for storing the contensts of the file.
+     *         for storing the contents of the file.
      *
-     * @exception IOException if an error occurs.
+     * @throws IOException if an error occurs.
      */
     OutputStream getOutputStream() throws IOException;
 
