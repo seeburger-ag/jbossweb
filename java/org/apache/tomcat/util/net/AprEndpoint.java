@@ -1759,7 +1759,8 @@ public class AprEndpoint {
                                 if (event) {
                                     // Event processes either a read or a write depending on what the poller returns
                                     if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
-                                            || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
+                                            || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)
+                                            || ((desc[n*2] & Poll.APR_POLLNVAL) == Poll.APR_POLLNVAL)) {
                                         if (!processSocket(desc[n*2+1], SocketStatus.ERROR)) {
                                             // Close socket and clear pool
                                             Socket.destroy(desc[n*2+1]);
@@ -1783,10 +1784,18 @@ public class AprEndpoint {
                                         }
                                     }
                                 } else if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
-                                        || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
+                                        || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)
+                                        || ((desc[n*2] & Poll.APR_POLLNVAL) == Poll.APR_POLLNVAL)) {
                                     // Close socket and clear pool
                                     Socket.destroy(desc[n*2+1]);
-                                } else if (!processSocket(desc[n*2+1])) {
+                                } else if ((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) {
+                                    if (!processSocket(desc[n*2+1])) {
+                                        // Close socket and clear pool
+                                        Socket.destroy(desc[n*2+1]);
+                                    }
+                                } else {
+                                    // Unknown event
+                                    log.warn(sm.getString("endpoint.poll.flags", "" + desc[n*2]));
                                     // Close socket and clear pool
                                     Socket.destroy(desc[n*2+1]);
                                 }
