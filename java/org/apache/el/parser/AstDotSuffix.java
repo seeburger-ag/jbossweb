@@ -36,4 +36,13 @@ public final class AstDotSuffix extends SimpleNode {
             throws ELException {
         return this.image;
     }
+    
+    public Object getParameters(EvaluationContext ctx)
+            throws ELException {
+        Object[] params = new Object[jjtGetNumChildren()];
+        for (int i = 0; i < jjtGetNumChildren(); i++) {
+            params[i] = jjtGetChild(i).getValue(ctx);
+        }
+        return params;
+    }
 }

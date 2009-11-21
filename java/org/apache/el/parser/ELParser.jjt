@@ -236,7 +236,7 @@ void ValueSuffix() : {}
  */
 void DotSuffix() #DotSuffix : { Token t = null; }
 {
-    <DOT> t=<IDENTIFIER> { jjtThis.setImage(t.image); }
+    <DOT> t=<IDENTIFIER> { jjtThis.setImage(t.image); } (<LPAREN> Parameters() <RPAREN>)?
 }
 
 /*
@@ -245,7 +245,16 @@ void DotSuffix() #DotSuffix : { Token t = null; }
  */
 void BracketSuffix() #BracketSuffix : {}
 {
-    <LBRACK> Expression() <RBRACK>
+    <LBRACK> Expression() <RBRACK> (<LPAREN> Parameters() <RPAREN>)?
+}
+
+/*
+ * Parameters
+ * Method parameters
+ */
+void Parameters() : {}
+{
+    Expression() (<COMMA> Expression())*
 }
 
 /*

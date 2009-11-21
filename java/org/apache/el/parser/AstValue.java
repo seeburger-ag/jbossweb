@@ -113,6 +113,7 @@ public final class AstValue extends SimpleNode {
     }
 
     public Object getValue(EvaluationContext ctx) throws ELException {
+        // TODO: add dot suffix params
         Object base = this.children[0].getValue(ctx);
         int propCount = this.jjtGetNumChildren();
         int i = 1;
@@ -172,6 +173,7 @@ public final class AstValue extends SimpleNode {
 
     public Object invoke(EvaluationContext ctx, Class[] paramTypes,
             Object[] paramValues) throws ELException {
+        // TODO: add dot suffix params
         Target t = getTarget(ctx);
         Method m = ReflectionUtil.getMethod(t.base, t.property, paramTypes);
         Object result = null;
