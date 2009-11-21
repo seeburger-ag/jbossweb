@@ -19,6 +19,11 @@
     Author:    Jacob Hookom
     Email:    jacob at hookom.net
 */
+/*
+  Building:
+  jjtree ELParser.jjt
+  javacc ELParser.jj
+*/
 
 /* == Option Declaration == */
 options
