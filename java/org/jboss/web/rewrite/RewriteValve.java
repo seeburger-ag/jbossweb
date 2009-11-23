@@ -146,7 +146,7 @@ public class RewriteValve extends ValveBase
                 }
                 if ((is == null) && (container.getLogger().isDebugEnabled())) {
                     container.getLogger().debug("No configuration resource found: " + resourceName + 
-                            " in " + getConfigBase().getAbsolutePath() + " or in the classloader");
+                            " in " + getConfigBase() + " or in the classloader");
                 }
             } catch (Exception e) {
                 container.getLogger().error("Error opening configuration", e);
@@ -439,6 +439,7 @@ public class RewriteValve extends ValveBase
                 request.getCoyoteRequest().requestURI().toChars();
                 // Set the new Query if there is one
                 if (queryString != null) {
+                    request.getCoyoteRequest().queryString().setString(null);
                     chunk = request.getCoyoteRequest().queryString().getCharChunk();
                     chunk.recycle();
                     chunk.append(queryString);
@@ -446,6 +447,7 @@ public class RewriteValve extends ValveBase
                 }
                 // Set the new host if it changed
                 if (!host.equals(request.getServerName())) {
+                    request.getCoyoteRequest().serverName().setString(null);
                     chunk = request.getCoyoteRequest().serverName().getCharChunk();
                     chunk.recycle();
                     chunk.append(host.toString());
