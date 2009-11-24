@@ -140,7 +140,16 @@
         <jboss-jira>JBAS-7159</jboss-jira>: Better usability for Context level usage of RewriteValve. (remm)
       </fix>
       <fix>
+        Reset strings for query string and host name in RewriteValve when rewriting. (remm)
+      </fix>
+      <fix>
         <jira>148</jira>: Add additional null checks for unmapped contexts. (remm)
+      </fix>
+      <fix>
+        <bug>48049</bug>: Fix NamingContext.destroySubcontext. (markt)
+      </fix>
+      <fix>
+        <bug>47718</bug>: Resource leak when using the random stream, submitted by George Sexton. (markt)
       </fix>
     </changelog>
   </subsection>
