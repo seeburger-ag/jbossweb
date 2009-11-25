@@ -452,7 +452,6 @@ final class StandardWrapperValve
         // Get the current (unchanged) filter chain for this request
         ApplicationFilterChain filterChain = 
             (ApplicationFilterChain) request.getFilterChain();
-
         // Call the filter chain for this request
         // NOTE: This also calls the servlet's event() method
         try {
@@ -515,7 +514,7 @@ final class StandardWrapperValve
 
         // Release the filter chain (if any) for this request
         if (filterChain != null) {
-            if (asyncContext != null) {
+            if (request.isAsyncStarted()) {
                 filterChain.release();
             } else {
                 filterChain.reuse();

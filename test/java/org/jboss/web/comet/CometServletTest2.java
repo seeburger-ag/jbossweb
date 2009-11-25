@@ -29,9 +29,11 @@ import java.io.Writer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.annotation.WebServlet;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
 
+@WebServlet("/event2")
 public class CometServletTest2 extends HttpServlet implements HttpEventServlet {
 
     int count = 0;

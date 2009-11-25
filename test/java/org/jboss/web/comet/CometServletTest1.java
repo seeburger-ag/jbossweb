@@ -29,11 +29,13 @@ import java.io.OutputStream;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
 
+@WebServlet("/event1")
 public class CometServletTest1 extends HttpServlet implements HttpEventServlet {
 
     int count = 0;

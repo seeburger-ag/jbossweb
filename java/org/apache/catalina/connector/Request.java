@@ -509,7 +509,7 @@ public class Request
         localPort = -1;
         localAddr = null;
         localName = null;
-        currentFilterChain = 0;
+        currentFilterChain = -1;
         filterChains.clear();
 
         attributes.clear();
@@ -646,14 +646,14 @@ public class Request
     /**
      * Number of filter chains used.
      */
-    protected int currentFilterChain = 0;
+    protected int currentFilterChain = -1;
     
     
     /**
      * Get filter chain associated with the request.
      */
     public ApplicationFilterChain getFilterChain() {
-        if (currentFilterChain < filterChains.size()) {
+        if (currentFilterChain >= 0) {
             return filterChains.get(currentFilterChain);
         } else {
             return null;
@@ -667,8 +667,8 @@ public class Request
      * @param filterChain new filter chain
      */
     public void setFilterChain(ApplicationFilterChain filterChain) {
-        if (currentFilterChain < filterChains.size()) {
-            filterChains.set(currentFilterChain++, filterChain);
+        if (currentFilterChain + 1 < filterChains.size()) {
+            filterChains.set(++currentFilterChain, filterChain);
         } else {
             filterChains.add(filterChain);
             currentFilterChain++;
@@ -3021,7 +3021,7 @@ public class Request
     }
 
     public boolean isAsyncSupported() {
-        int filterChainCount = currentFilterChain;
+        int filterChainCount = currentFilterChain + 1;
         for (int i = 0; i < filterChainCount; i++) {
             ApplicationFilterChain filterChain = filterChains.get(i);
             int n = filterChain.getFilterCount();
@@ -3172,7 +3172,7 @@ public class Request
             buf.append(" [async]");
         }
         buf.append("\r\n");
-        int filterChainCount = currentFilterChain;
+        int filterChainCount = currentFilterChain + 1;
         for (int i = 0; i < filterChainCount; i++) {
             ApplicationFilterChain filterChain = filterChains.get(i);
             ApplicationFilterConfig[] filterConfigs = filterChain.getFilters();

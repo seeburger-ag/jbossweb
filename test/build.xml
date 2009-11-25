@@ -33,6 +33,7 @@
   <property file="build.properties.default"/>
 
   <property name="test.classes" value="${basedir}/output/classes"/>
+  <property name="test.webapps" value="${basedir}/output/webapps"/>
   <property name="tomcat.classes" value="${basedir}/../output/classes"/>
   <property name="tomcat.tmp" value="${basedir}/output/classes/output/"/>
 
@@ -50,17 +51,28 @@
 
   <mkdir dir="${test.classes}"/>
   <mkdir dir="${test.classes}/conf"/>
+  <mkdir dir="${test.webapps}"/>
 
   <!-- Compile -->
-  <javac srcdir="." destdir="${test.classes}"
+  <javac srcdir="java" destdir="${test.classes}"
          debug="on" debuglevel="lines,vars,source"
          deprecation="${compile.deprecation}"
          source="${compile.source}"
          optimize="${compile.optimize}">
          <classpath refid="jbossweb.test.classpath" />
-         <include name="java/org/jboss/web/cookies/**" />
-         <include name="java/org/apache/catalina/startup/**" />
+         <include name="**" />
   </javac>
+  	
+  	<mkdir dir="${test.webapps}/cometd"/>
+    <mkdir dir="${test.webapps}/cometd/WEB-INF/classes"/>
+  	
+    <copy todir="${test.webapps}/cometd">
+       <fileset dir="${basedir}/webapps/cometd" includes="**" />
+    </copy>
+    <copy todir="${test.webapps}/cometd/WEB-INF/classes">
+       <fileset dir="${test.classes}" includes="org/apache/cometd/bayeux/samples/*,org/jboss/web/comet/*" />
+    </copy>
+
   </target>
 
   <!-- Run the tests -->
