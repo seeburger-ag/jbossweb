@@ -305,6 +305,20 @@ public class InputBuffer extends Reader
     }
 
 
+    public int getAvailable() {
+        if (eof || closed) {
+            return -1;
+        }
+        int available = 0;
+        if (state != CHAR_STATE) {
+            available = bb.getLength();
+        } else {
+            available = cb.getLength();
+        }
+        return available;
+    }
+
+
     // ------------------------------------------------- Bytes Handling Methods
 
 

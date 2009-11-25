@@ -2430,10 +2430,10 @@ public class Request
 
     
     /**
-     * Return true if bytes are available.
+     * Return true if bytes or chars are available.
      */
     public boolean ready() {
-        return (inputBuffer.available() > 0);
+        return (inputBuffer.getAvailable() > 0);
     }
 
     
