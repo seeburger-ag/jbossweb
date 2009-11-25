@@ -450,11 +450,11 @@ public class ContextConfig
             context.addFilterDef(filterDef);
             FilterMap filterMap = new FilterMap();
             filterMap.setFilterName(filterName);
-            String[] urlPatterns = annotation.urlPatterns();
-            if (urlPatterns != null) {
-                for (int i = 0; i < urlPatterns.length; i++) {
-                    filterMap.addURLPattern(urlPatterns[i]);
-                }
+            for (String urlPattern : annotation.urlPatterns()) {
+                filterMap.addURLPattern(urlPattern);
+            }
+            for (String urlPattern : annotation.value()) {
+                filterMap.addURLPattern(urlPattern);
             }
             String[] servletNames = annotation.servletNames();
             if (servletNames != null) {
@@ -482,11 +482,11 @@ public class ContextConfig
                 wrapper.addInitParameter(params[i].name(), params[i].value());
             }
             context.addChild(wrapper);
-            String[] urlPatterns = annotation.urlPatterns();
-            if (urlPatterns != null) {
-                for (int i = 0; i < urlPatterns.length; i++) {
-                    context.addServletMapping(urlPatterns[i], annotation.name());
-                }
+            for (String urlPattern : annotation.urlPatterns()) {
+                context.addServletMapping(urlPattern, annotation.name());
+            }
+            for (String urlPattern : annotation.value()) {
+                context.addServletMapping(urlPattern, annotation.name());
             }
         }
         if (clazz.isAnnotationPresent(WebListener.class)) {
