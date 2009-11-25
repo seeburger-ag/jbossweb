@@ -47,7 +47,6 @@
 package org.apache.catalina.connector;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;

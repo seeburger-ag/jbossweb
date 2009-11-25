@@ -75,8 +75,7 @@ public class ServiceMapperListener
                 Context context = (Context) event.getData();
                 ((Lifecycle) context).addLifecycleListener(this);
                 if (context.isStarted()) {
-                    mapper.addContext(container.getName(), context.getName(), context, 
-                            context.findWelcomeFiles(), context.getResources());
+                    addContext(context);
                 }
             } else if (container instanceof Engine) {
                 // Deploying a host
@@ -148,22 +147,26 @@ public class ServiceMapperListener
             }
         } else if (Context.COMPLETE_CONFIG_EVENT.equals(event.getType())) {
             Context context = (Context) source;
-            mapper.addContext(context.getParent().getName(), context.getName(), context, 
-                    context.findWelcomeFiles(), context.getResources());
-            // Add all wrappers
-            for (Container child : context.findChildren()) {
-                Wrapper wrapper = (Wrapper) child;
-                if (wrapper.getEnabled()) {
-                    for (String mapping : wrapper.findMappings()) {
-                        boolean jspWildCard = ("jsp".equals(wrapper.getName()) 
-                                && mapping.endsWith("/*"));
-                        mapper.addWrapper(context.getParent().getName(), context.getName(), 
-                                mapping, wrapper, jspWildCard);
-                    }
+            addContext(context);
+        }
+
+    }
+    
+    protected void addContext(Context context) {
+        mapper.addContext(context.getParent().getName(), context.getName(), context, 
+                context.findWelcomeFiles(), context.getResources());
+        // Add all wrappers
+        for (Container child : context.findChildren()) {
+            Wrapper wrapper = (Wrapper) child;
+            if (wrapper.getEnabled()) {
+                for (String mapping : wrapper.findMappings()) {
+                    boolean jspWildCard = ("jsp".equals(wrapper.getName()) 
+                            && mapping.endsWith("/*"));
+                    mapper.addWrapper(context.getParent().getName(), context.getName(), 
+                            mapping, wrapper, jspWildCard);
                 }
             }
         }
-
     }
 
 }

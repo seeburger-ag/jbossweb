@@ -4410,9 +4410,6 @@ public class StandardContext
             ok = false;
         }
 
-        // Initialize associated mapper
-        mapper.setContext(getPath(), welcomeFiles, resources);
-
         // Binding thread
         oldCCL = bindThread();
 
@@ -4431,8 +4428,6 @@ public class StandardContext
         }
 
         try {
-            
-            
             
             // Create context attributes that will be required
             if (ok) {
@@ -4501,6 +4496,9 @@ public class StandardContext
             // Unbinding thread
             unbindThread(oldCCL);
         }
+
+        // Initialize associated mapper
+        mapper.setContext(getPath(), welcomeFiles, resources);
 
         // Set available status depending upon startup success
         if (ok) {
