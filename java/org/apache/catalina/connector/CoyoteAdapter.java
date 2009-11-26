@@ -50,6 +50,7 @@ import java.io.IOException;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
+import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
@@ -568,6 +569,12 @@ public class CoyoteAdapter
             return false;
         }
 
+        // Discard session id if SessionTrackingMode.URL is disabled
+        if (!request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.URL)) {
+            request.setRequestedSessionId(null);
+            request.setRequestedSessionURL(false);
+        }
+        
         // Possible redirect
         MessageBytes redirectPathMB = request.getMappingData().redirectPath;
         if (!redirectPathMB.isNull()) {
@@ -587,13 +594,11 @@ public class CoyoteAdapter
             response.sendRedirect(redirectPath);
             return false;
         }
-
-        // FIXME: Session Id processing according to 
-        // FIXME: request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.URL);
-        // FIXME: request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.COOKIE);
-
-        // Parse session Id
-        parseSessionCookiesId(req, request);
+        
+        // Parse session id if SessionTrackingMode.COOKIE is enabled
+        if (request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.COOKIE)) {
+            parseSessionCookiesId(req, request);
+        }
 
         return true;
     }
