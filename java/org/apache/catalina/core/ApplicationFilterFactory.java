@@ -47,10 +47,8 @@
 package org.apache.catalina.core;
 
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
@@ -141,9 +139,6 @@ public final class ApplicationFilterFactory {
             requestPath = attribute.toString();
         }
         
-        HttpServletRequest hreq = null;
-        if (request instanceof HttpServletRequest) 
-            hreq = (HttpServletRequest)request;
         // If there is no servlet to execute, return null
         if (wrapper.getServlet() == null)
             return (null);
@@ -391,107 +386,32 @@ public final class ApplicationFilterFactory {
     private boolean matchDispatcher(FilterMap filterMap, int dispatcher) {
         switch (dispatcher) {
             case FORWARD : {
-                if (filterMap.getDispatcherMapping() == FilterMap.FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.FORWARD_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.INCLUDE_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.INCLUDE_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
+                if ((filterMap.getDispatcherMapping() & FilterMap.FORWARD) == FilterMap.FORWARD) {
                         return true;
                 }
                 break;
             }
             case INCLUDE : {
-                if (filterMap.getDispatcherMapping() == FilterMap.INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.INCLUDE_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.INCLUDE_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.INCLUDE_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
-                        return true;
+                if ((filterMap.getDispatcherMapping() & FilterMap.INCLUDE) == FilterMap.INCLUDE) {
+                    return true;
                 }
                 break;
             }
             case REQUEST : {
-                if (filterMap.getDispatcherMapping() == FilterMap.REQUEST ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE) {
-                        return true;
+                if ((filterMap.getDispatcherMapping() & FilterMap.REQUEST) == FilterMap.REQUEST) {
+                    return true;
                 }
                 break;
             }
             case ERROR : {
-                if (filterMap.getDispatcherMapping() == FilterMap.ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.FORWARD_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.INCLUDE_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.INCLUDE_ERROR_FORWARD || 
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE) {
-                        return true;
+                if ((filterMap.getDispatcherMapping() & FilterMap.ERROR) == FilterMap.ERROR) {
+                    return true;
                 }
                 break;
             }
             case ASYNC : {
-                if (filterMap.getDispatcherMapping() == FilterMap.ASYNC ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_FORWARD_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_ERROR_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_INCLUDE_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_FORWARD_INCLUDE || 
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_ERROR_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_INCLUDE ||
-                    filterMap.getDispatcherMapping() == FilterMap.ASYNC_REQUEST_FORWARD_INCLUDE) {
-                        return true;
+                if ((filterMap.getDispatcherMapping() & FilterMap.ASYNC) == FilterMap.ASYNC) {
+                    return true;
                 }
                 break;
             }
