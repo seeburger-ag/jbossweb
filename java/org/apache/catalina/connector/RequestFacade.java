@@ -1039,6 +1039,18 @@ public class RequestFacade implements HttpServletRequest {
 
 
     /**
+     * Next filter chain.
+     */
+    public void nextFilterChain() {
+        if (request == null) {
+            throw new IllegalStateException(
+                            sm.getString("requestFacade.nullRequest"));
+        }
+        request.nextFilterChain();
+    }
+
+
+    /**
      * Release the current filter chain.
      */
     public void releaseFilterChain() {

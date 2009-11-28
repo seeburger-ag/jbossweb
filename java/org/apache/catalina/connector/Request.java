@@ -653,7 +653,7 @@ public class Request
      * Get filter chain associated with the request.
      */
     public ApplicationFilterChain getFilterChain() {
-        if (currentFilterChain >= 0) {
+        if (currentFilterChain >= 0 && currentFilterChain < filterChains.size()) {
             return filterChains.get(currentFilterChain);
         } else {
             return null;
@@ -667,12 +667,21 @@ public class Request
      * @param filterChain new filter chain
      */
     public void setFilterChain(ApplicationFilterChain filterChain) {
-        if (currentFilterChain + 1 < filterChains.size()) {
-            filterChains.set(++currentFilterChain, filterChain);
+        if (currentFilterChain >= 0 && currentFilterChain < filterChains.size()) {
+            filterChains.set(currentFilterChain, filterChain);
         } else {
             filterChains.add(filterChain);
-            currentFilterChain++;
         }
+    }
+
+
+    /**
+     * Set filter chain associated with the request.
+     * 
+     * @param filterChain new filter chain
+     */
+    public void nextFilterChain() {
+        currentFilterChain++;
     }
 
 

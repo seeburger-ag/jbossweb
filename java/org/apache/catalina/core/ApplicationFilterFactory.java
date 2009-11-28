@@ -171,6 +171,7 @@ public final class ApplicationFilterFactory {
             filterChain = new ApplicationFilterChain();
         } else {
             // Add this filter chain to the request facade
+            requestFacade.nextFilterChain();
             if (Globals.IS_SECURITY_ENABLED) {
                 filterChain = new ApplicationFilterChain();
                 requestFacade.setFilterChain(filterChain);
