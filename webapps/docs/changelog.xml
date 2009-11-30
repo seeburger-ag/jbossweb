@@ -156,6 +156,9 @@
   <subsection name="Coyote">
     <changelog>
       <fix>
+        Fix incomplete write logic in APR. (jfclere)
+      </fix>
+      <fix>
         Remove useless instanceof in the HTTP protocol. (markt)
       </fix>
       <update>
