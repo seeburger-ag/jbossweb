@@ -718,7 +718,7 @@ public class InternalAprOutputBuffer
                 int end = bbuf.position();
                 int res = 0;
                 while (pos < end) {
-                    res = Socket.sendibb(socket, pos, bbuf.position());
+                    res = Socket.sendibb(socket, pos, end - pos);
                     if (res > 0) {
                         pos += res;
                     } else {
@@ -750,7 +750,7 @@ public class InternalAprOutputBuffer
         int end = bbuf.position();
         int res = 0;
         while (pos < end) {
-            res = Socket.sendibb(socket, pos, bbuf.position());
+            res = Socket.sendibb(socket, pos, end - pos);
             if (res > 0) {
                 pos += res;
             } else {
@@ -812,7 +812,7 @@ public class InternalAprOutputBuffer
                 int pos = 0;
                 int end = bbuf.position();
                 while (pos < end) {
-                    res = Socket.sendibb(socket, pos, end);
+                    res = Socket.sendibb(socket, pos, end - pos);
                     if (res > 0) {
                         pos += res;
                     } else {
