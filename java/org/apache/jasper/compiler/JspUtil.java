@@ -29,9 +29,7 @@ import java.util.zip.ZipEntry;
 import javax.el.FunctionMapper;
 import javax.servlet.jsp.el.ExpressionEvaluator;
 
-
 import org.apache.el.ExpressionFactoryImpl;
-import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.el.ExpressionEvaluatorImpl;
@@ -465,6 +463,8 @@ public class JspUtil {
         c = float.class;
     else if ("double".equals(type))
         c = double.class;
+    else if ("void".equals(type))
+        c = void.class;
     else if (type.indexOf('[') < 0)
         c = loader.loadClass(type);
 
