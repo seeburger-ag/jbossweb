@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -458,7 +459,7 @@ public class StandardContext
     /**
      * The set of JSP property groups defined for the webapp, keyed by pattern.
      */
-    protected HashMap<String, JspPropertyGroup> jspPropertyGroups = new HashMap<String, JspPropertyGroup>();
+    protected LinkedHashMap<String, JspPropertyGroup> jspPropertyGroups = new LinkedHashMap<String, JspPropertyGroup>();
     
 
     /**
