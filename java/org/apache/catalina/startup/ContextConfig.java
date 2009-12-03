@@ -2090,6 +2090,17 @@ public class ContextConfig
      * Translate servlet security associated with Servlets to security constraints.
      */
     protected void resolveServletSecurity() {
+        // Skip all patterns for which a static security constraint has been defined
+        HashSet<String> excludedPatterns = new HashSet<String>();
+        SecurityConstraint[] staticConstraints = context.findConstraints();
+        for (SecurityConstraint staticConstraint : staticConstraints) {
+            for (SecurityCollection collection : staticConstraint.findCollections()) {
+                for (String urlPattern : collection.findPatterns()) {
+                    excludedPatterns.add(urlPattern);
+                }
+            }
+        }
+        // Iterate over servlet security objects
         Container wrappers[] = context.findChildren();
         for (int i = 0; i < wrappers.length; i++) {
             Wrapper wrapper = (Wrapper) wrappers[i];
@@ -2138,16 +2149,8 @@ public class ContextConfig
                          String[] urlPatterns = wrapper.findMappings();
                          Set<String> servletSecurityPatterns = new HashSet<String>();
                          for (String urlPattern : urlPatterns) {
-                             servletSecurityPatterns.add(urlPattern);
-                         }
-                         SecurityConstraint[] constraints = context.findConstraints();
-                         for (SecurityConstraint constraint2 : constraints) {
-                             for (SecurityCollection collection2 : constraint2.findCollections()) {
-                                 for (String urlPattern : collection2.findPatterns()) {
-                                     if (servletSecurityPatterns.contains(urlPattern)) {
-                                         servletSecurityPatterns.remove(urlPattern);
-                                     }
-                                 }
+                             if (!excludedPatterns.contains(urlPattern)) {
+                                 servletSecurityPatterns.add(urlPattern);
                              }
                          }
                          for (String urlPattern : servletSecurityPatterns) {
@@ -2184,16 +2187,8 @@ public class ContextConfig
                     String[] urlPatterns = wrapper.findMappings();
                     Set<String> servletSecurityPatterns = new HashSet<String>();
                     for (String urlPattern : urlPatterns) {
-                        servletSecurityPatterns.add(urlPattern);
-                    }
-                    SecurityConstraint[] constraints = context.findConstraints();
-                    for (SecurityConstraint constraint2 : constraints) {
-                        for (SecurityCollection collection2 : constraint2.findCollections()) {
-                            for (String urlPattern : collection2.findPatterns()) {
-                                if (servletSecurityPatterns.contains(urlPattern)) {
-                                    servletSecurityPatterns.remove(urlPattern);
-                                }
-                            }
+                        if (!excludedPatterns.contains(urlPattern)) {
+                            servletSecurityPatterns.add(urlPattern);
                         }
                     }
                     for (String urlPattern : servletSecurityPatterns) {
