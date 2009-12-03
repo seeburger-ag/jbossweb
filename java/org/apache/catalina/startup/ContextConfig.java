@@ -2120,7 +2120,8 @@ public class ContextConfig
                 {
                    for (HttpMethodConstraintElement httpMethodConstraint : httpMethodConstraints)
                    {
-                      methodOmissions.add(httpMethodConstraint.getMethodName());
+                       String method = toHttpMethod(httpMethodConstraint.getMethodName());
+                      methodOmissions.add(method);
                       boolean methodPA = httpMethodConstraint.getEmptyRoleSemantic().equals(EmptyRoleSemantic.PERMIT);
                       boolean methodDA = httpMethodConstraint.getEmptyRoleSemantic().equals(EmptyRoleSemantic.DENY);
                       boolean methodTP = httpMethodConstraint.getTransportGuarantee().equals(TransportGuarantee.CONFIDENTIAL);
@@ -2144,7 +2145,7 @@ public class ContextConfig
                              constraint.setUserConstraint(org.apache.catalina.realm.Constants.CONFIDENTIAL_TRANSPORT);
                          }
                          SecurityCollection collection = new SecurityCollection();
-                         collection.addMethod(httpMethodConstraint.getMethodName());
+                         collection.addMethod(method);
                          // Determine pattern set
                          String[] urlPatterns = wrapper.findMappings();
                          Set<String> servletSecurityPatterns = new HashSet<String>();
@@ -2203,6 +2204,20 @@ public class ContextConfig
                 
             }
         }
+    }
+    
+    
+    /**
+     * Although this does not comply with the spec, it is likely Java method names
+     * will be used in the annotations. Since it is not possible to validate, this
+     * would be an error that is invisible for the user.
+     * @param method
+     * @return
+     */
+    protected String toHttpMethod(String method) {
+        if (method == null || method.length() < 3 || (!method.startsWith("do")))
+            return method;
+        return method.substring(2).toUpperCase();
     }
     
     
