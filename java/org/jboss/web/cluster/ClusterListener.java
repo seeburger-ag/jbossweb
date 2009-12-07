@@ -709,6 +709,9 @@ public class ClusterListener
         }
         return result.toString();
     }   
+    public String doProxyPing(String scheme, String host, int port) {
+        return doProxyPing(scheme + "://" + host + String.valueOf(port));
+    }
     
     /**
      * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
