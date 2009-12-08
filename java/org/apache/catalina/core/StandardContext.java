@@ -954,7 +954,8 @@ public class StandardContext
      *  this application has started, or after it has been stopped
      */
     public Object[] getApplicationEventListeners() {
-        return (applicationEventListenersInstances);
+        return (applicationEventListenersInstances != null 
+                ? applicationEventListenersInstances : listenersInstances);
     }
 
 
@@ -979,7 +980,8 @@ public class StandardContext
      *  this application has started, or after it has been stopped
      */
     public Object[] getApplicationSessionLifecycleListeners() {
-        return (applicationSessionLifecycleListenersInstances);
+        return (applicationSessionLifecycleListenersInstances != null 
+                ? applicationSessionLifecycleListenersInstances : listenersInstances);
     }
 
 
