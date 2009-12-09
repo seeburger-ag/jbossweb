@@ -2133,7 +2133,7 @@ public class ContextConfig
                          if (methodDA) {
                              constraint.setAuthConstraint(true);
                          }
-                         if (methodPA) {
+                         if (methodPA && (methodRA == null || methodRA.length == 0)) {
                              constraint.addAuthRole("*");
                          }
                          if (methodRA != null) {
@@ -2169,7 +2169,7 @@ public class ContextConfig
                 {
                     // Define a constraint for the class
                     SecurityConstraint constraint = new SecurityConstraint();
-                    if (classPA) {
+                    if (classPA && (classRA == null || classRA.length == 0)) {
                         constraint.addAuthRole("*");
                     }
                     if (classDA) {
