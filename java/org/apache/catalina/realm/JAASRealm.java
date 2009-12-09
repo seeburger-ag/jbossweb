@@ -31,6 +31,7 @@ import javax.security.auth.login.CredentialExpiredException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
@@ -345,7 +346,7 @@ public class JAASRealm
         return authenticate(username,
                 new JAASCallbackHandler(this, username, clientDigest, nonce,
                         nc, cnonce, qop, realmName, md5a2,
-                        Constants.DIGEST_METHOD));
+                        HttpServletRequest.DIGEST_AUTH));
     }
 
 
@@ -471,7 +472,7 @@ public class JAASRealm
 
         return authenticate(username,
                 new JAASCallbackHandler(this, username, null, null, null, null,
-                        null, null, null, Constants.CERT_METHOD));
+                        null, null, null, HttpServletRequest.CLIENT_CERT_AUTH));
 
     }
 

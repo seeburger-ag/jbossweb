@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.StringTokenizer;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Realm;
@@ -174,7 +175,7 @@ public class DigestAuthenticator
             if (principal != null) {
                 String username = parseUsername(authorization);
                 register(request, response, principal,
-                         Constants.DIGEST_METHOD,
+                         HttpServletRequest.DIGEST_AUTH,
                          username, null);
                 return (true);
             }

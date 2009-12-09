@@ -24,10 +24,6 @@ public class Constants {
     public static final String Package = "org.apache.catalina.authenticator";
 
     // Authentication methods for login configuration
-    public static final String BASIC_METHOD = "BASIC";
-    public static final String CERT_METHOD = "CLIENT_CERT";
-    public static final String DIGEST_METHOD = "DIGEST";
-    public static final String FORM_METHOD = "FORM";
     public static final String LOGIN_METHOD = "LOGIN";
 
     // User data constraints for transport guarantee
