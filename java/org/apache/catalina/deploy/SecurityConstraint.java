@@ -190,6 +190,7 @@ public class SecurityConstraint implements Serializable {
 
         if (authRole == null)
             return;
+        authConstraint = true;
         if ("*".equals(authRole)) {
             allRoles = true;
             return;
@@ -199,7 +200,6 @@ public class SecurityConstraint implements Serializable {
             results[i] = authRoles[i];
         results[authRoles.length] = authRole;
         authRoles = results;
-        authConstraint = true;
 
     }
 
