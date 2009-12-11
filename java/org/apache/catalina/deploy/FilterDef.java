@@ -162,7 +162,8 @@ public class FilterDef implements Serializable {
      * @param value The initialization parameter value
      */
     public void addInitParameter(String name, String value) {
-        parameters.put(name, value);
+        if (!parameters.containsKey(name))
+            parameters.put(name, value);
     }
 
 

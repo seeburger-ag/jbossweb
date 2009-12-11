@@ -869,7 +869,8 @@ public class StandardWrapper
     public void addInitParameter(String name, String value) {
 
         synchronized (parameters) {
-            parameters.put(name, value);
+            if (!parameters.containsKey(name))
+                parameters.put(name, value);
         }
         fireContainerEvent("addInitParameter", name);
 
