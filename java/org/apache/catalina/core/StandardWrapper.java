@@ -868,10 +868,8 @@ public class StandardWrapper
      */
     public void addInitParameter(String name, String value) {
 
-        synchronized (parameters) {
-            if (!parameters.containsKey(name))
-                parameters.put(name, value);
-        }
+        if (!parameters.containsKey(name))
+            parameters.put(name, value);
         fireContainerEvent("addInitParameter", name);
 
     }
@@ -912,12 +910,8 @@ public class StandardWrapper
      * @param link Role name used within the web application
      */
     public void addSecurityReference(String name, String link) {
-
-        synchronized (references) {
-            references.put(name, link);
-        }
+        references.put(name, link);
         fireContainerEvent("addSecurityReference", name);
-
     }
 
 
@@ -1045,11 +1039,7 @@ public class StandardWrapper
      * @param name Name of the requested initialization parameter
      */
     public String findInitParameter(String name) {
-
-        synchronized (parameters) {
-            return ((String) parameters.get(name));
-        }
-
+        return ((String) parameters.get(name));
     }
 
 
@@ -1058,12 +1048,8 @@ public class StandardWrapper
      * servlet.
      */
     public String[] findInitParameters() {
-
-        synchronized (parameters) {
-            String results[] = new String[parameters.size()];
-            return ((String[]) parameters.keySet().toArray(results));
-        }
-
+        String results[] = new String[parameters.size()];
+        return ((String[]) parameters.keySet().toArray(results));
     }
 
 
@@ -1086,11 +1072,7 @@ public class StandardWrapper
      * @param name Security role reference used within this servlet
      */
     public String findSecurityReference(String name) {
-
-        synchronized (references) {
-            return ((String) references.get(name));
-        }
-
+        return ((String) references.get(name));
     }
 
 
@@ -1099,12 +1081,8 @@ public class StandardWrapper
      * this servlet, if any; otherwise return a zero-length array.
      */
     public String[] findSecurityReferences() {
-
-        synchronized (references) {
-            String results[] = new String[references.size()];
-            return ((String[]) references.keySet().toArray(results));
-        }
-
+        String results[] = new String[references.size()];
+        return ((String[]) references.keySet().toArray(results));
     }
 
 
@@ -1315,9 +1293,7 @@ public class StandardWrapper
      */
     public void removeInitParameter(String name) {
 
-        synchronized (parameters) {
-            parameters.remove(name);
-        }
+        parameters.remove(name);
         fireContainerEvent("removeInitParameter", name);
 
     }
@@ -1356,12 +1332,8 @@ public class StandardWrapper
      * @param name Security role used within this servlet to be removed
      */
     public void removeSecurityReference(String name) {
-
-        synchronized (references) {
-            references.remove(name);
-        }
+        references.remove(name);
         fireContainerEvent("removeSecurityReference", name);
-
     }
 
 
@@ -1535,11 +1507,7 @@ public class StandardWrapper
      * servlet.  If none are defined, an empty Enumeration is returned.
      */
     public Enumeration getInitParameterNames() {
-
-        synchronized (parameters) {
-            return (new Enumerator(parameters.keySet()));
-        }
-
+        return (new Enumerator(parameters.keySet()));
     }
 
 
