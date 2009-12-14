@@ -126,7 +126,7 @@ public final class AstValue extends SimpleNode {
                 if (this.children[i] instanceof AstDotSuffix) {
                     params = ((AstDotSuffix) this.children[i]).getParameters(ctx);
                 }
-                if (params.length > 0) {
+                if (params != null && params.length > 0) {
                     ctx.setPropertyResolved(false);
                     base = resolver.invoke(ctx, base, property, null, params);
                 } else {
@@ -186,7 +186,7 @@ public final class AstValue extends SimpleNode {
             params = ((AstDotSuffix) this.children[1]).getParameters(ctx);
         }
         Object result = null;
-        if (params.length > 0) {
+        if (params != null && params.length > 0) {
             ELResolver resolver = ctx.getELResolver();
             ctx.setPropertyResolved(false);
             result = resolver.invoke(ctx, t.base, t.property, null, params);
