@@ -78,6 +78,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestAttributeEvent;
 import javax.servlet.ServletRequestAttributeListener;
 import javax.servlet.ServletResponse;
+import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -1723,6 +1724,38 @@ public class Request
      */
     public void addParameter(String name, String values[]) {
         coyoteRequest.getParameters().addParameterValues(name, values);
+    }
+
+
+    /**
+     * Change the ID of the session that this request is associated with. There
+     * are several things that may trigger an ID change. These include mmoving
+     * between nodes in a cluster and session fixation prevention during the
+     * authentication process.
+     * 
+     * @param session   The session to change the session ID for
+     */
+    public void changeSessionId(String newSessionId) {
+        // This should only ever be called if there was an old session ID but
+        // double check to be sure
+        if (requestedSessionId != null && requestedSessionId.length() > 0) {
+            requestedSessionId = newSessionId;
+        }
+        
+        if (context != null && !context.getServletContext()
+                .getEffectiveSessionTrackingModes().contains(
+                        SessionTrackingMode.COOKIE))
+            return;
+        
+        if (response != null) {
+            String cookieName = context.getSessionCookie().getName();
+            if (cookieName == null) {
+                cookieName = Globals.SESSION_COOKIE_NAME;
+            }
+            Cookie cookie = new Cookie(cookieName, newSessionId);
+            configureSessionCookie(cookie);
+            response.addCookieInternal(cookie);
+        }
     }
 
 

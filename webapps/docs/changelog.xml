@@ -151,6 +151,12 @@
       <fix>
         <bug>47718</bug>: Resource leak when using the random stream, submitted by George Sexton. (markt)
       </fix>
+      <fix>
+        <bug>47537</bug>: Return an error page if forward fails during FORM auth. (markt)
+      </fix>
+      <update>
+        Change session id on successful auth, disabled by default. (markt)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -216,6 +222,9 @@
       <fix>
         <bug>42390</bug>: Correct JSP compilation error with nested tagfile tags with variables with "AT_BEGIN" scope.
         Patch provided by Konstantin Kolinko. (markt)
+      </fix>
+      <fix>
+        Avoid possible NPE handling JSP exceptions. (markt)
       </fix>
     </changelog>
   </subsection>

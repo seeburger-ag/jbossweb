@@ -228,7 +228,7 @@ public class JspServletWrapper {
 
     /**
      * Compile and load a prototype for the Tag file.  This is needed
-     * when compiling tag files with circular dependencies.  A prototpe
+     * when compiling tag files with circular dependencies.  A prototype
      * (skeleton) with no dependencies on other other tag files is
      * generated and compiled.
      */
@@ -473,12 +473,12 @@ public class JspServletWrapper {
                 }
             }
 
-            if (jspFrame == null) {
+            if (jspFrame == null || ctxt.getCompiler().getPageNodes() == null) {
                 // If we couldn't find a frame in the stack trace corresponding
-                // to the generated servlet class, we can't really add anything
+                // to the generated servlet class or we don't have a copy of the
+                // parsed JSP to hand, we can't really add anything
                 return new JasperException(ex);
-            }
-            else {
+            } else {
                 int javaLineNumber = jspFrame.getLineNumber();
                 JavacErrorDetail detail = ErrorDispatcher.createJavacError(
                         jspFrame.getMethodName(),

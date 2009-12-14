@@ -31,6 +31,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.Globals;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
@@ -305,15 +306,22 @@ public class FormAuthenticator
      * @param response Response we are creating
      * @param config    Login configuration describing how authentication
      *              should be performed
+     * @throws IOException  If the forward to the login page fails and the call
+     *                      to {@link HttpServletResponse#sendError(int, String)
+     *                      throws an {@link IOException}
      */
-    protected void forwardToLoginPage(Request request, HttpServletResponse response, LoginConfig config) {
+    protected void forwardToLoginPage(Request request, HttpServletResponse response, LoginConfig config)
+        throws IOException {
         RequestDispatcher disp =
-            context.getServletContext().getRequestDispatcher
-            (config.getLoginPage());
+            context.getServletContext().getRequestDispatcher(config.getLoginPage());
         try {
             disp.forward(request.getRequest(), response);
         } catch (Throwable t) {
-            log.warn("Unexpected error forwarding to login page", t);
+            String msg = sm.getString("formAuthenticator.forwardLoginFail");
+            log.warn(msg, t);
+            request.setAttribute(Globals.EXCEPTION_ATTR, t);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    msg);
         }
     }
 
@@ -325,15 +333,22 @@ public class FormAuthenticator
      * @param response Response we are creating
      * @param config    Login configuration describing how authentication
      *              should be performed
+     * @throws IOException  If the forward to the error page fails and the call
+     *                      to {@link HttpServletResponse#sendError(int, String)
+     *                      throws an {@link IOException}
      */
-    protected void forwardToErrorPage(Request request, HttpServletResponse response, LoginConfig config) {
+    protected void forwardToErrorPage(Request request, HttpServletResponse response, LoginConfig config)
+        throws IOException {
         RequestDispatcher disp =
-            context.getServletContext().getRequestDispatcher
-            (config.getErrorPage());
+            context.getServletContext().getRequestDispatcher(config.getErrorPage());
         try {
             disp.forward(request.getRequest(), response);
         } catch (Throwable t) {
-            log.warn("Unexpected error forwarding to error page", t);
+            String msg = sm.getString("formAuthenticator.forwardErrorFail");
+            log.warn(msg, t);
+            request.setAttribute(Globals.EXCEPTION_ATTR, t);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    msg);
         }
     }
 

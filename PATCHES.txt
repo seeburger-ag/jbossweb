@@ -80,3 +80,6 @@ Changes to APR init
 
 784083
 Useless alias feature, rather redundant with overlays, and has no place in the DirContext implementation
+
+890139
+EL coercion patch

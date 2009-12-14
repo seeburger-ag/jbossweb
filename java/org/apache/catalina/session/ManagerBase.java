@@ -774,6 +774,17 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
 
 
     /**
+     * Change the session ID of the current session to a new randomly generated
+     * session ID.
+     * 
+     * @param session   The session to change the session ID for
+     */
+    public void changeSessionId(Session session) {
+        session.setId(generateSessionId());
+    }
+
+
+    /**
      * Construct and return a new session object, based on the default
      * settings specified by this Manager's properties.  The session
      * id will be assigned by this method, and available via the getId()
