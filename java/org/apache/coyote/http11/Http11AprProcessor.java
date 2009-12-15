@@ -1246,16 +1246,20 @@ public class Http11AprProcessor implements ActionHook {
         } else if (actionCode == ActionCode.ACTION_EVENT_BEGIN) {
             event = true;
             // Set socket to non blocking mode
-            Socket.timeoutSet(socket, 0);
-            outputBuffer.setNonBlocking(true);
-            inputBuffer.setNonBlocking(true);
+            if (param == Boolean.TRUE) {
+                Socket.timeoutSet(socket, 0);
+                outputBuffer.setNonBlocking(true);
+                inputBuffer.setNonBlocking(true);
+            }
         } else if (actionCode == ActionCode.ACTION_EVENT_END) {
             event = false;
             // End non blocking mode
-            outputBuffer.setNonBlocking(false);
-            inputBuffer.setNonBlocking(false);
-            if (!error) {
-                Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
+            if (outputBuffer.getNonBlocking()) {
+                outputBuffer.setNonBlocking(false);
+                inputBuffer.setNonBlocking(false);
+                if (!error) {
+                    Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
+                }
             }
         } else if (actionCode == ActionCode.ACTION_EVENT_SUSPEND) {
             readNotifications = false;

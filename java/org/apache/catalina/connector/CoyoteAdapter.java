@@ -367,7 +367,8 @@ public class CoyoteAdapter
 
                 if (request.isEventMode()) {
                     if (!response.isClosed() && !response.isError()) {
-                        res.action(ActionCode.ACTION_EVENT_BEGIN, null);
+                        res.action(ActionCode.ACTION_EVENT_BEGIN, 
+                                (request.getAsyncContext() == null) ? Boolean.TRUE : Boolean.FALSE);
                         event = true;
                     }
                 } else if (request.getAsyncContext() != null) {
