@@ -182,7 +182,7 @@ public final class AstValue extends SimpleNode {
             Object[] paramValues) throws ELException {
         Target t = getTarget(ctx);
         Object[] params = null;
-        if (this.children[1] instanceof AstDotSuffix) {
+        if (jjtGetNumChildren() > 1 && this.children[1] instanceof AstDotSuffix) {
             params = ((AstDotSuffix) this.children[1]).getParameters(ctx);
         }
         Object result = null;
