@@ -22,9 +22,12 @@
       <update>
         Servlet 3.0 API. (remm)
       </update>
-      <fix>
-        Fix CVE-2009-3555, man-in-the-middle attack in TLS protocol. (markt)
-      </fix>
+      <update>
+        JSP 2.2 API. (remm)
+      </update>
+      <update>
+        EL 1.2 API. (remm)
+      </update>
       <update>
         Commons Pool 1.5.2. (markt)
       </update>
@@ -123,9 +126,6 @@
       <fix>
         <bug>37984</bug>: Strip {MD5} as well as {SHA} from digested passwords. (markt)
       </fix>
-      <add>
-        All other Servlet 3.0 features. (remm)
-      </add>
       <fix>
         <bug>41059</bug>: Reduce one possible source of errors if using ENABLE_CLEAR_REFERENCES=true.
         Patch by Curt Arnold. (markt)
@@ -188,10 +188,19 @@
       <fix>
         <bug>46950</bug>: Fix SSL renegociation problems. (jfclere)
       </fix>
+      <fix>
+        Fix CVE-2009-3555, man-in-the-middle attack in TLS protocol. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
     <changelog>
+      <add>
+        Embedded Jasper, TLDs are now processed by the Servlet container. (remm)
+      </add>
+      <update>
+        Remove Jasper JSP precompiler. (remm)
+      </update>
       <fix>
         <bug>46915</bug>: JSTL issues resolving resource bundle keys. (markt)
       </fix>
