@@ -31,8 +31,7 @@ import org.apache.jasper.JasperException;
  */
 
 public class ELFunctionMapper {
-    static private int currFunc = 0;
-    private ErrorDispatcher err;
+    private int currFunc = 0;
     StringBuilder ds;  // Contains codes to initialize the functions mappers.
     StringBuilder ss;  // Contains declarations of the functions mappers.
 
@@ -45,9 +44,7 @@ public class ELFunctionMapper {
     public static void map(Compiler compiler, Node.Nodes page) 
 		throws JasperException {
 
-	currFunc = 0;
 	ELFunctionMapper map = new ELFunctionMapper();
-	map.err = compiler.getErrorDispatcher();
 	map.ds = new StringBuilder();
 	map.ss = new StringBuilder();
 
