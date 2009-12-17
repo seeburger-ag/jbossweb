@@ -59,11 +59,11 @@ to <strong>$CATALINA_HOME</strong>:</p>
     the <code>*.bat</code> files (for Windows systems).  Since the Win32
     command-line lacks certain functionality, there are some additional
     files in here.</li>
-<li><strong>/conf</strong> - Configuration files and related DTDs.  The most
+<li><strong>/server/default/deploy/jbossweb.sar</strong> - Configuration files and related DTDs.  The most
     important file in here is server.xml.  It is the main configuration file
     for the container.</li>
-<li><strong>/logs</strong> - Log files are here by default.</li>
-<li><strong>/webapps</strong> - This is where your webapps go.</li>
+<li><strong>/server/default/log</strong> - Log files are here by default.</li>
+<li><strong>/server/default/deploy</strong> - This is where your webapps go.</li>
 </ul>
 
 </section>
@@ -87,7 +87,7 @@ meaning that any change to the files necessitates a restart of the container.
 written and easy to understand, we may have missed something.  Provided
 below are various web sites and mailing lists in case you get stuck.</p>
 
-<p>As JBoss Web 2.1 changes things over past Tomcat releases, keep in mind that some of the
+<p>As JBoss Web 3.0 changes things over past Tomcat releases, keep in mind that some of the
 issues and solutions vary between the major versions of Tomcat (4.x, 5.x and 6.x).</p>
 
 <ul>
