@@ -20,7 +20,7 @@
 <p>This is the top-level entry point of the documentation bundle for the
 <strong>JBoss Web</strong> Servlet/JSP container, which is based on the 
 Apache Tomcat 6.0 project developed by the Apache Software Foundation.
-JBoss Web implements the Servlet 2.5 and JavaServer Pages 2.1 specifications from the
+JBoss Web implements the Servlet 3.0 and JavaServer Pages 2.2 specifications from the
 <a href="http://www.jcp.org">Java Community Process</a>, and includes many
 additional features that make it a useful platform for developing and deploying
 web applications and web services.</p>
@@ -47,7 +47,7 @@ JBoss Web, and using many of its features.</p>
 <li><a href="appdev/index.html"><strong>First web application</strong></a>
     - An introduction to the concepts of a <em>web application</em> as defined
     in the <a href="http://java.sun.com/products/servlet/download.html">Servlet
-    2.4 Specification</a>.  Covers basic organization of your web application
+    3.0 Specification</a>.  Covers basic organization of your web application
     source tree, the structure of a web application archive, and an
     introduction to the web application deployment descriptor
     (<code>/WEB-INF/web.xml</code>).</li>
@@ -134,9 +134,9 @@ are responsible for installing, configuring, and operating a JBoss Web server.
       used to interface JBoss Web with servers like Apache HTTPd, IIS
       and others.</li>
 <li><a href="servletapi/index.html"><strong>Servlet API Javadocs</strong></a> -
-    The Servlet 2.4 API Javadocs.</li>
+    The Servlet 3.0 API Javadocs.</li>
 <li><a href="jspapi/index.html"><strong>JSP API Javadocs</strong></a> -
-    The JSP 2.0 API Javadocs.</li>
+    The JSP 2.2 API Javadocs.</li>
 </ul>
 
 </section>
@@ -155,9 +155,6 @@ the development of the <em>JBoss Web</em> project.</p>
 <li><a href="changelog.html"><strong>Changelog</strong></a> - Details the
     changes made to JBoss Web.
     </li>
-<li><a href="catalina/funcspecs/index.html"><strong>Functional Specifications</strong></a>
-    - Requirements specifications for features of the <em>Catalina</em> servlet
-    container portion of JBoss Web.</li>
 <li><a href="catalina/docs/api/index.html"><strong>Catalina Javadocs</strong></a>
     - Javadoc API documentation for the <em>Catalina</em> servlet
     container and its dependencies.</li>
