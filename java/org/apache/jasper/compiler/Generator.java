@@ -901,6 +901,54 @@ class Generator {
                 }
                 output.append(quote(tx.substring(mark, i)));
             }
+            if (expectedType != type && !expectedType.isAssignableFrom(type)) {
+                // Composite expression was evaluated to String
+                // We must coerce it to the expected type.
+                String className = JspUtil.getCanonicalName(expectedType);
+                String methodName = null;
+                if (expectedType.isPrimitive()) {
+                    if (expectedType == Boolean.TYPE) {
+                        className = "Boolean";
+                        methodName = ".booleanValue()";
+                    }
+                    else if (expectedType == Character.TYPE) {
+                        className = "Character";
+                        methodName = ".charValue()";
+                    }
+                    else if (expectedType == Byte.TYPE) {
+                        className = "Byte";
+                        methodName = ".byteValue()";
+                    }
+                    else if (expectedType == Short.TYPE) {
+                        className = "Short";
+                        methodName = ".shortValue()";
+                    }
+                    else if (expectedType == Integer.TYPE) {
+                        className = "Integer";
+                        methodName = ".intValue()";
+                    }
+                    else if (expectedType == Long.TYPE) {
+                        className = "Long";
+                        methodName = ".longValue()";
+                    }
+                    else if (expectedType == Float.TYPE) {
+                        className = "Float";
+                        methodName = ".floatValue()";
+                    }
+                    else if (expectedType == Double.TYPE) {
+                        className = "Double";
+                        methodName = ".doubleValue()";
+                    }
+                }
+                output.insert(0, "(("
+                        + className
+                        + ")org.apache.el.lang.ELSupport.coerceToType(");
+                output.append(",").append(className).append(".class))");
+                if (methodName != null) {
+                    output.insert(0, '(');
+                    output.append(methodName).append(')');
+                }
+            }
             return output.toString();
         }
 
@@ -1298,12 +1346,13 @@ class Generator {
                 }
             }
 
+            // JSP.5.1, Sematics, para 1 - lock not required for request or
+            // page scope
             String scopename = "PageContext.PAGE_SCOPE"; // Default to page
-            String lock = "_jspx_page_context";
+            String lock = null;
 
             if ("request".equals(scope)) {
                 scopename = "PageContext.REQUEST_SCOPE";
-                lock = "request";
             } else if ("session".equals(scope)) {
                 scopename = "PageContext.SESSION_SCOPE";
                 lock = "session";
@@ -1320,11 +1369,13 @@ class Generator {
             out.print(name);
             out.println(" = null;");
 
-            // Lock while getting or creating bean
-            out.printin("synchronized (");
-            out.print(lock);
-            out.println(") {");
-            out.pushIndent();
+            // Lock (if required) while getting or creating bean
+            if (lock != null) {
+                out.printin("synchronized (");
+                out.print(lock);
+                out.println(") {");
+                out.pushIndent();
+            }
 
             // Locate bean from context
             out.printin(name);
@@ -1427,8 +1478,10 @@ class Generator {
             out.printil("}");
 
             // End of lock block
-            out.popIndent();
-            out.printil("}");
+            if (lock != null) {
+                out.popIndent();
+                out.printil("}");
+            }
 
             n.setEndJavaLine(out.getJavaLine());
         }

@@ -173,7 +173,6 @@ public abstract class StoreBase
      *
      */
     public void processExpires() {
-        long timeNow = System.currentTimeMillis();
         String[] keys = null;
 
          if(!started) {
@@ -190,13 +189,16 @@ public abstract class StoreBase
             manager.getContainer().getLogger().debug(getStoreName()+ ": processExpires check number of " + keys.length + " sessions" );
         }
     
+        long timeNow = System.currentTimeMillis();
+
         for (int i = 0; i < keys.length; i++) {
             try {
                 StandardSession session = (StandardSession) load(keys[i]);
                 if (session == null) {
                     continue;
                 }
-                if (session.isValid()) {
+                int timeIdle = (int) ((timeNow - session.getThisAccessedTime()) / 1000L);
+                if (timeIdle < session.getMaxInactiveInterval()) {
                     continue;
                 }
                 if (manager.getContainer().getLogger().isDebugEnabled()) {
@@ -209,7 +211,7 @@ public abstract class StoreBase
                     // expire swapped out session
                     session.expire();
                 }
-                remove(session.getIdInternal());
+                remove(keys[i]);
             } catch (Exception e) {
                 manager.getContainer().getLogger().error("Session: "+keys[i]+"; ", e);
                 try {
