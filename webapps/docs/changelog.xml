@@ -16,7 +16,25 @@
 
 <body>
 
-<section name="JBoss Web 3.0.0.CR1 (remm)">
+<section name="JBoss Web 3.0.0.Beta2 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <bug>48516</bug>: Possible NPE in JNDI realm. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <bug>47977</bug>: Check empty body in tags. (markt)
+      </fix>
+      
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 3.0.0.Beta1 (remm)">
   <subsection name="General">
     <changelog>
       <update>
