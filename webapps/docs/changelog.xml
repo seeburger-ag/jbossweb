@@ -29,7 +29,9 @@
       <fix>
         <bug>47977</bug>: Check empty body in tags. (markt)
       </fix>
-      
+      <fix>
+        EL escaping fixes. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

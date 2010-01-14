@@ -202,4 +202,13 @@ public final class AstValue extends SimpleNode {
         }
         return result;
     }
+    
+    public boolean isParametersProvided() {
+        if (jjtGetNumChildren() > 1 && this.children[1] != null && 
+                this.children[1] instanceof AstDotSuffix) {
+            return (this.children[1].jjtGetNumChildren()) > 0;
+        }
+        return false;
+    }
+
 }
