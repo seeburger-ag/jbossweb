@@ -17,10 +17,27 @@
 <body>
 
 <section name="JBoss Web 2.1.7.GA (remm)">
+  <subsection name="General">
+    <changelog>
+      <update>
+        Add new PING method for mod_cluster. (jfclere)
+      </update>
+    </changelog>
+  </subsection>
   <subsection name="Coyote">
     <changelog>
       <fix>
         Fix incomplete write logic in APR. (jfclere)
+      </fix>
+      <fix> <jboss-jira>JBWEB-153</jboss-jira> <bug>43839</bug>
+        Parent context cookie overwriting URL encoded cookie. (markt/mmillson)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix> <jboss-jira>JBWEB-155</jboss-jira> <bug>42643</bug>
+        Duplicate JSP function mapper variables (markt/mmillson)
       </fix>
     </changelog>
   </subsection>
