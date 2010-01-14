@@ -31,7 +31,6 @@ package org.apache.jasper.compiler;
 public class ELParser {
 
     private Token curToken; // current token
-    private Token prevToken; // previous token
 
     private ELNode.Nodes expr;
 
@@ -87,7 +86,7 @@ public class ELParser {
      */
     private ELNode.Nodes parseEL() {
 
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         ELexpr = new ELNode.Nodes();
         while (hasNext()) {
             curToken = nextToken();
@@ -119,28 +118,27 @@ public class ELParser {
      * arguments
      */
     private boolean parseFunction() {
-        if (!(curToken instanceof Id) || isELReserved(curToken.toString()) ||
-                prevToken instanceof Char && prevToken.toChar() == '.') {
+        if (!(curToken instanceof Id) || isELReserved(curToken.toString())) {
             return false;
         }
         String s1 = null; // Function prefix
         String s2 = curToken.toString(); // Function name
         int mark = getIndex();
         if (hasNext()) {
-            curToken = nextToken();
-            if (curToken.toChar() == ':') {
+            Token t = nextToken();
+            if (t.toChar() == ':') {
                 if (hasNext()) {
                     Token t2 = nextToken();
                     if (t2 instanceof Id) {
                         s1 = s2;
                         s2 = t2.toString();
                         if (hasNext()) {
-                            curToken = nextToken();
+                            t = nextToken();
                         }
                     }
                 }
             }
-            if (curToken.toChar() == '(') {
+            if (t.toChar() == '(') {
                 ELexpr.add(new ELNode.Function(s1, s2));
                 return true;
             }
@@ -178,7 +176,7 @@ public class ELParser {
      */
     private String skipUntilEL() {
         char prev = 0;
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         while (hasNextChar()) {
             char ch = nextChar();
             if (prev == '\\') {
@@ -225,12 +223,11 @@ public class ELParser {
      * @return The next token in the EL expression buffer.
      */
     private Token nextToken() {
-        prevToken = curToken;
         skipSpaces();
         if (hasNextChar()) {
             char ch = nextChar();
             if (Character.isJavaIdentifierStart(ch)) {
-                StringBuilder buf = new StringBuilder();
+                StringBuffer buf = new StringBuffer();
                 buf.append(ch);
                 while ((ch = peekChar()) != -1
                         && Character.isJavaIdentifierPart(ch)) {
@@ -255,7 +252,7 @@ public class ELParser {
      * '\\', and ('\"', or "\'")
      */
     private Token parseQuotedChars(char quote) {
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         buf.append(quote);
         while (hasNextChar()) {
             char ch = nextChar();

@@ -851,7 +851,7 @@ abstract class Node implements TagConstants {
             String ret = text;
             if (ret == null) {
                 if (body != null) {
-                    StringBuilder buf = new StringBuilder();
+                    StringBuffer buf = new StringBuffer();
                     for (int i = 0; i < body.size(); i++) {
                         buf.append(body.getNode(i).getText());
                     }
@@ -1869,14 +1869,10 @@ abstract class Node implements TagConstants {
         private ChildInfo childInfo;
 
         private String name;
-        
-        private String omit;
 
         private String localName;
 
         private String prefix;
-
-        private JspAttribute omitAttribute;
 
         public NamedAttribute(Attributes attrs, Mark start, Node parent) {
             this(JSP_ATTRIBUTE_ACTION, attrs, null, null, start, parent);
@@ -1904,8 +1900,6 @@ abstract class Node implements TagConstants {
                     localName = name.substring(index + 1);
                 }
             }
-            if (parent instanceof JspElement)
-                omit = this.getAttributeValue("omit");
         }
 
         public void accept(Visitor v) throws JasperException {
@@ -1930,18 +1924,6 @@ abstract class Node implements TagConstants {
 
         public boolean isTrim() {
             return trim;
-        }
-
-        public String getOmit() {
-            return this.omit;
-        }
-
-        public JspAttribute getOmitAttribute() {
-            return omitAttribute;
-        }
-
-        public void setOmitAttribute(JspAttribute omitAttribute) {
-            this.omitAttribute = omitAttribute;
         }
 
         /**
@@ -2306,7 +2288,7 @@ abstract class Node implements TagConstants {
          *         time.
          */
         public boolean isLiteral() {
-            return !expression && (el == null) && !namedAttribute;
+            return !expression && (el != null) && !namedAttribute;
         }
 
         /**

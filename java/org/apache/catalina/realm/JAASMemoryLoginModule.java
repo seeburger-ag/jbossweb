@@ -36,7 +36,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Realm;
@@ -355,10 +354,10 @@ public class JAASMemoryLoginModule extends MemoryRealm implements LoginModule, R
         if (authMethod == null) {
             // BASIC or FORM
             principal = super.authenticate(username, password);
-        } else if (authMethod.equals(HttpServletRequest.DIGEST_AUTH)) {
+        } else if (authMethod.equals(Constants.DIGEST_METHOD)) {
             principal = super.authenticate(username, password, nonce, nc,
                     cnonce, qop, realmName, md5a2);
-        } else if (authMethod.equals(HttpServletRequest.CLIENT_CERT_AUTH)) {
+        } else if (authMethod.equals(Constants.CERT_METHOD)) {
             principal = super.getPrincipal(username);
         } else {
             throw new LoginException("Unknown authentication method");

@@ -31,7 +31,6 @@ import javax.security.auth.login.CredentialExpiredException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
@@ -346,7 +345,7 @@ public class JAASRealm
         return authenticate(username,
                 new JAASCallbackHandler(this, username, clientDigest, nonce,
                         nc, cnonce, qop, realmName, md5a2,
-                        HttpServletRequest.DIGEST_AUTH));
+                        Constants.DIGEST_METHOD));
     }
 
 
@@ -427,7 +426,7 @@ public class JAASRealm
             log.debug(sm.getString("jaasRealm.loginContextCreated", username));
 
         // Return the appropriate Principal for this authenticated Subject
-        Principal principal = createPrincipal(username, subject, loginContext);
+        Principal principal = createPrincipal(username, subject);
         if (principal == null) {
             log.debug(sm.getString("jaasRealm.authenticateFailure", username));
             return (null);
@@ -472,7 +471,7 @@ public class JAASRealm
 
         return authenticate(username,
                 new JAASCallbackHandler(this, username, null, null, null, null,
-                        null, null, null, HttpServletRequest.CLIENT_CERT_AUTH));
+                        null, null, null, Constants.CERT_METHOD));
 
     }
 
@@ -488,11 +487,8 @@ public class JAASRealm
      * roles, but only if their respective classes match one of the "role class" classes. 
      * If a user Principal cannot be constructed, return <code>null</code>.
      * @param subject The <code>Subject</code> representing the logged-in user
-     * @param loginContext Associated with th Princpal so
-     *                     {@link LoginContext#logout()} can be called later
      */
-    protected Principal createPrincipal(String username, Subject subject,
-            LoginContext loginContext) {
+    protected Principal createPrincipal(String username, Subject subject) {
         // Prepare to scan the Principals for this Subject
 
         List<String> roles = new ArrayList<String>();
@@ -539,8 +535,7 @@ public class JAASRealm
         }
 
         // Return the resulting Principal for our authenticated user
-        return new GenericPrincipal(this, username, null, roles, userPrincipal,
-                loginContext);
+        return new GenericPrincipal(this, username, null, roles, userPrincipal);
     }
 
      /**

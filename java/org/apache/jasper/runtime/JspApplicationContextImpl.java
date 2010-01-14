@@ -38,6 +38,7 @@ import javax.servlet.jsp.JspContext;
 import javax.servlet.jsp.el.ImplicitObjectELResolver;
 import javax.servlet.jsp.el.ScopedAttributeELResolver;
 
+import org.apache.el.ExpressionFactoryImpl;
 import org.apache.jasper.Constants;
 import org.apache.jasper.el.ELContextImpl;
 
@@ -50,8 +51,7 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 
 	private final static String KEY = JspApplicationContextImpl.class.getName();
 
-    private final static ExpressionFactory expressionFactory =
-        ExpressionFactory.newInstance();
+	private final static ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
 
 	private final List<ELContextListener> contextListeners = new ArrayList<ELContextListener>();
 

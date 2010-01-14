@@ -201,7 +201,7 @@ public class JMXProxyServlet extends HttpServlet  {
         if( idx < 0 ) return value;
 
         int prev=0;
-        StringBuilder sb=new StringBuilder();
+        StringBuffer sb=new StringBuffer();
         while( idx >= 0 ) {
             appendHead(sb, value, prev, idx);
 
@@ -215,7 +215,7 @@ public class JMXProxyServlet extends HttpServlet  {
         return sb.toString();
     }
 
-    private void appendHead( StringBuilder sb, String value, int start, int end) {
+    private void appendHead( StringBuffer sb, String value, int start, int end) {
         if (end < 1) return;
 
         int pos=start;

@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.compiler.TagPluginManager;
+import org.apache.jasper.compiler.TldLocationsCache;
 import org.apache.jasper.xmlparser.ParserUtils;
 import org.jboss.logging.Logger;
 
@@ -148,6 +149,11 @@ public final class EmbeddedServletOptions implements Options {
      * The compiler class name.
      */
     private String compilerClassName = null;
+    
+    /**
+     * Cache for the TLD locations
+     */
+    private TldLocationsCache tldLocationsCache = null;
     
     /**
      * Jsp config information
@@ -336,6 +342,14 @@ public final class EmbeddedServletOptions implements Options {
     
     public void setErrorOnUseBeanInvalidClassAttribute(boolean b) {
         errorOnUseBeanInvalidClassAttribute = b;
+    }
+    
+    public TldLocationsCache getTldLocationsCache() {
+        return tldLocationsCache;
+    }
+    
+    public void setTldLocationsCache( TldLocationsCache tldC ) {
+        tldLocationsCache = tldC;
     }
     
     public String getJavaEncoding() {
@@ -557,7 +571,7 @@ public final class EmbeddedServletOptions implements Options {
             scratchDir = new File(dir);
         } else {
             // First try the Servlet 2.2 javax.servlet.context.tempdir property
-            scratchDir = (File) context.getAttribute(ServletContext.TEMPDIR);
+            scratchDir = (File) context.getAttribute(Constants.TMP_DIR);
             if (scratchDir == null) {
                 // Not running in a Servlet 2.2 container.
                 // Try to get the JDK 1.2 java.io.tmpdir property
@@ -630,6 +644,10 @@ public final class EmbeddedServletOptions implements Options {
                 log.warn(Localizer.getMessage("jsp.warning.displaySourceFragment"));
             }
         }
+        
+        // Setup the global Tag Libraries location cache for this
+        // web-application.
+        tldLocationsCache = new TldLocationsCache(context);
         
         // Setup the jsp config info for this web app.
         jspConfig = new JspConfig(context);

@@ -30,7 +30,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.naming.Binding;
 import javax.naming.NamingEnumeration;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.UnavailableException;
@@ -47,6 +46,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Server;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardServer;
@@ -462,13 +462,14 @@ public class ManagerServlet
         }
 
         // Acquire global JNDI resources if available
-        Server server = ((Engine) host.getParent()).getService().getServer();
+        Server server = ServerFactory.getServer();
         if ((server != null) && (server instanceof StandardServer)) {
             global = ((StandardServer) server).getGlobalNamingContext();
         }
 
         // Calculate the directory into which we will be deploying applications
-        versioned = (File) getServletContext().getAttribute(ServletContext.TEMPDIR);
+        versioned = (File) getServletContext().getAttribute
+            ("javax.servlet.context.tempdir");
 
         // Identify the appBase of the owning Host of this Context
         // (if any)
@@ -520,7 +521,7 @@ public class ManagerServlet
      */
     protected synchronized void save(PrintWriter writer, String path) {
 
-        Server server = ((Engine) host.getParent()).getService().getServer();
+        Server server = ServerFactory.getServer();
 
         if (!(server instanceof StandardServer)) {
             writer.println(sm.getString("managerServlet.saveFail", server));
@@ -851,10 +852,10 @@ public class ManagerServlet
         Container[] contexts = host.findChildren();
         for (int i = 0; i < contexts.length; i++) {
             Context context = (Context) contexts[i];
+            String displayPath = context.getPath();
+            if( displayPath.equals("") )
+                displayPath = "/";
             if (context != null ) {
-                String displayPath = context.getPath();
-                if( displayPath.equals("") )
-                    displayPath = "/";
                 if (context.getAvailable()) {
                     writer.println(sm.getString("managerServlet.listitem",
                                                 displayPath,
@@ -1009,7 +1010,7 @@ public class ManagerServlet
         if (debug >= 1)
             log("serverinfo");
         try {
-            StringBuilder props = new StringBuilder();
+            StringBuffer props = new StringBuffer();
             props.append("OK - Server info");
             props.append("\nTomcat Version: ");
             props.append(ServerInfo.getServerInfo());
@@ -1074,8 +1075,6 @@ public class ManagerServlet
             int histoInterval = maxInactiveInterval / maxCount;
             if ( histoInterval * maxCount < maxInactiveInterval ) 
                 histoInterval++;
-            if (histoInterval == 0)
-                histoInterval = 1;
             maxCount = maxInactiveInterval / histoInterval;
             if ( histoInterval * maxCount < maxInactiveInterval ) 
                 maxCount++;

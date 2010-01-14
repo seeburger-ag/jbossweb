@@ -106,7 +106,7 @@ public class SetNextNamingRule extends Rule {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("SetNextRule[");
+        StringBuffer sb = new StringBuffer("SetNextRule[");
         sb.append("methodName=");
         sb.append(methodName);
         sb.append(", paramType=");

@@ -172,7 +172,7 @@ public class ErrorReportValve
         if (report == null)
             return;
 
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
 
         sb.append("<html><head><title>");
         sb.append(ServerInfo.getServerInfo()).append(" - ");
@@ -267,7 +267,7 @@ public class ErrorReportValve
      * occurrence of javax.servlet.).
      */
     protected String getPartialServletStackTrace(Throwable t) {
-        StringBuilder trace = new StringBuilder();
+        StringBuffer trace = new StringBuffer();
         trace.append(t.toString()).append('\n');
         StackTraceElement[] elements = t.getStackTrace();
         int pos = elements.length;

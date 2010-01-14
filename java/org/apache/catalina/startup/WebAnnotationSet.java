@@ -22,7 +22,7 @@ package org.apache.catalina.startup;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
 import javax.annotation.security.DeclareRoles;
-import javax.servlet.annotation.MultipartConfig;
+import javax.annotation.security.RunAs;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -33,7 +33,6 @@ import org.apache.catalina.deploy.ContextResourceEnvRef;
 import org.apache.catalina.deploy.ContextService;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.MessageDestinationRef;
-import org.apache.catalina.deploy.Multipart;
 
 /**
  * <p><strong>AnnotationSet</strong> for processing the annotations of the web application
@@ -58,6 +57,7 @@ public class WebAnnotationSet {
         loadApplicationFilterAnnotations(context);
         loadApplicationServletAnnotations(context);
         
+        
     }
     
     
@@ -81,7 +81,7 @@ public class WebAnnotationSet {
     protected static void loadApplicationFilterAnnotations(Context context) {
         FilterDef[] filterDefs = context.findFilterDefs();
         for (int i = 0; i < filterDefs.length; i++) {
-            loadClassAnnotation(context, filterDefs[i].getFilterClass());
+            loadClassAnnotation(context, (filterDefs[i]).getFilterClass());
         }
     }
     
@@ -93,7 +93,7 @@ public class WebAnnotationSet {
         
         ClassLoader classLoader = context.getLoader().getClassLoader();
         StandardWrapper wrapper = null;
-        Class<?> classClass = null;
+        Class classClass = null;
         
         Container[] children = context.findChildren();
         for (int i = 0; i < children.length; i++) {
@@ -117,153 +117,15 @@ public class WebAnnotationSet {
                 }
                 
                 loadClassAnnotation(context, wrapper.getServletClass());
-
-                // Multipart configuration annotation
-                if (classClass.isAnnotationPresent(MultipartConfig.class)) {
-                    MultipartConfig annotation = 
-                        (MultipartConfig) classClass.getAnnotation(MultipartConfig.class);
-                    Multipart multipartConfig = new Multipart();
-                    multipartConfig.setLocation(annotation.location());
-                    multipartConfig.setMaxRequestSize(annotation.maxRequestSize());
-                    multipartConfig.setMaxFileSize(annotation.maxFileSize());
-                    multipartConfig.setFileSizeThreshold(annotation.fileSizeThreshold());
-                    wrapper.setMultipartConfig(multipartConfig);
-                }
-
-                // Process JSR 250 access control annotations
-                // Process PermitAll, TransportProtected and RolesAllowed on the class
-                /*
-                boolean classPA = false, classTP = false;
-                String[] classRA = null;
-                ArrayList<String> methodOmissions = new ArrayList<String>();
-                if (classClass.isAnnotationPresent(PermitAll.class)) {
-                    classPA = true;
-                }
-                if (classClass.isAnnotationPresent(TransportProtected.class)) {
-                    TransportProtected annotation = (TransportProtected) 
-                        classClass.getAnnotation(TransportProtected.class);
-                    classTP = annotation.value();
-                }
-                if (classClass.isAnnotationPresent(RolesAllowed.class)) {
-                    RolesAllowed annotation = (RolesAllowed) 
-                        classClass.getAnnotation(RolesAllowed.class);
-                    classRA = annotation.value();
-                }
+                /* Process RunAs annotation which can be only on servlets.
+                 * Ref JSR 250, equivalent to the run-as element in
+                 * the deployment descriptor
+                 */
                 if (classClass.isAnnotationPresent(RunAs.class)) {
                     RunAs annotation = (RunAs) 
                         classClass.getAnnotation(RunAs.class);
                     wrapper.setRunAs(annotation.value());
                 }
-
-                // Process HttpServlet methods annotations
-                if (HttpServlet.class.isAssignableFrom(classClass)) {
-                    
-                    Method[] methods = null;
-                    final Class<?> classClass2 = classClass;
-                    if (Globals.IS_SECURITY_ENABLED) {
-                        methods = AccessController.doPrivileged(
-                                new PrivilegedAction<Method[]>(){
-                            public Method[] run(){
-                                return classClass2.getDeclaredMethods();
-                            }
-                        });
-                    } else {
-                        methods = classClass.getDeclaredMethods();
-                    }
-                    for (Method method : methods) {
-                        if (!((method.getParameterTypes().length == 2)
-                                && (method.getParameterTypes()[0] == HttpServletRequest.class)
-                                && (method.getParameterTypes()[1] == HttpServletResponse.class))) {
-                            continue;
-                        }
-                        String methodName = null;
-                        if (method.getName().startsWith("do")) {
-                            methodName = method.getName().substring(2).toUpperCase();
-                        }
-                        if (methodName == null) {
-                            continue;
-                        }
-                        boolean methodAnnotation = false;
-                        boolean methodPA = false, methodDA = false, methodTP = false;
-                        String[] methodRA = null;
-                        if (method.isAnnotationPresent(PermitAll.class)) {
-                            methodPA = true;
-                            methodAnnotation = true;
-                        }
-                        if (method.isAnnotationPresent(DenyAll.class)) {
-                            methodDA = true;
-                            methodAnnotation = true;
-                        }
-                        if (method.isAnnotationPresent(TransportProtected.class)) {
-                            TransportProtected annotation = (TransportProtected) 
-                                method.getAnnotation(TransportProtected.class);
-                            methodTP = annotation.value();
-                            methodAnnotation = true;
-                        }
-                        if (method.isAnnotationPresent(RolesAllowed.class)) {
-                            RolesAllowed annotation = (RolesAllowed) 
-                                method.getAnnotation(RolesAllowed.class);
-                            methodRA = annotation.value();
-                            methodAnnotation = true;
-                        }
-                        if (methodAnnotation) {
-                            methodOmissions.add(methodName);
-                            // Define a constraint specific for the method
-                            SecurityConstraint constraint = new SecurityConstraint();
-                            if (methodDA) {
-                                constraint.setAuthConstraint(true);
-                            }
-                            if (methodPA) {
-                                constraint.addAuthRole("*");
-                            }
-                            if (methodRA != null) {
-                                for (String role : methodRA) {
-                                    constraint.addAuthRole(role);
-                                }
-                            }
-                            if (methodTP) {
-                                constraint.setUserConstraint(org.apache.catalina.realm.Constants.CONFIDENTIAL_TRANSPORT);
-                            }
-                            SecurityCollection collection = new SecurityCollection();
-                            collection.addMethod(methodName);
-                            String[] urlPatterns = wrapper.findMappings();
-                            for (String urlPattern : urlPatterns) {
-                                collection.addPattern(urlPattern);
-                            }
-                            constraint.addCollection(collection);
-                            context.addConstraint(constraint);
-                        }
-                        
-                    }
-                    
-                }
-                
-                if (classPA || classTP || classRA != null) {
-                    // Define a constraint for the class
-                    SecurityConstraint constraint = new SecurityConstraint();
-                    if (classPA) {
-                        constraint.addAuthRole("*");
-                    }
-                    if (classRA != null) {
-                        for (String role : classRA) {
-                            constraint.addAuthRole(role);
-                        }
-                    }
-                    if (classTP) {
-                        constraint.setUserConstraint(org.apache.catalina.realm.Constants.CONFIDENTIAL_TRANSPORT);
-                    }
-                    SecurityCollection collection = new SecurityCollection();
-                    String[] urlPatterns = wrapper.findMappings();
-                    for (String urlPattern : urlPatterns) {
-                        collection.addPattern(urlPattern);
-                    }
-                    for (String methodOmission : methodOmissions) {
-                        collection.addMethodOmission(methodOmission);
-                    }
-                    constraint.addCollection(collection);
-                    context.addConstraint(constraint);
-                }
-                */
             }
         }
         
@@ -277,7 +139,7 @@ public class WebAnnotationSet {
     protected static void loadClassAnnotation(Context context, String fileString) {
         
         ClassLoader classLoader = context.getLoader().getClassLoader();
-        Class<?> classClass = null;
+        Class classClass = null;
         
         try {
             classClass = classLoader.loadClass(fileString);

@@ -18,6 +18,7 @@
 package org.apache.catalina.mbeans;
 
 import java.io.File;
+import java.util.Vector;
 
 import javax.management.MBeanException;
 import javax.management.MBeanServer;
@@ -28,6 +29,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.Server;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.Valve;
 import org.apache.catalina.authenticator.SingleSignOn;
@@ -100,20 +102,10 @@ public class MBeanFactory extends BaseModelMBean {
 
     // ------------------------------------------------------------- Attributes
 
-    /**
-     * The container (Server/Service) for which this factory was created.
-     */
-    private Object container;
+
 
 
     // ------------------------------------------------------------- Operations
-
-    /**
-     * Set the container that this factory was created for.
-     */
-    public void setContainer(Object container) {
-        this.container = container;
-    }
 
 
     /**
@@ -214,25 +206,18 @@ public class MBeanFactory extends BaseModelMBean {
 
     
     private Service getService(ObjectName oname) throws Exception {
-        
-        if (container instanceof Service) {
-            // Don't bother checking the domain - this is the only option
-            return (Service) container;
-        }
-
-        StandardService service = null;
+    
         String domain = oname.getDomain();
-        if (container instanceof Server) {
-            Service[] services = ((Server)container).findServices();
-            for (int i = 0; i < services.length; i++) {
-                service = (StandardService) services[i];
-                if (domain.equals(service.getObjectName().getDomain())) {
-                    break;
-                }
+        Server server = ServerFactory.getServer();
+        Service[] services = server.findServices();
+        StandardService service = null;
+        for (int i = 0; i < services.length; i++) {
+            service = (StandardService) services[i];
+            if (domain.equals(service.getObjectName().getDomain())) {
+                break;
             }
         }
-        if (service == null ||
-                !service.getObjectName().getDomain().equals(domain)) {
+        if (!service.getObjectName().getDomain().equals(domain)) {
             throw new Exception("Service with the domain is not found");
         }        
         return service;
@@ -619,6 +604,10 @@ public class MBeanFactory extends BaseModelMBean {
         path = getPathStr(path);
         context.setPath(path);
         context.setDocBase(docBase);
+        context.setXmlValidation(xmlValidation);
+        context.setXmlNamespaceAware(xmlNamespaceAware);
+        context.setTldValidation(tldValidation);
+        context.setTldNamespaceAware(tldNamespaceAware);
         
         ContextConfig contextConfig = new ContextConfig();
         context.addLifecycleListener(contextConfig);
@@ -660,6 +649,48 @@ public class MBeanFactory extends BaseModelMBean {
     }
 
 
+   /**
+     * Create a new StandardEngine.
+     *
+     * @param parent MBean Name of the associated parent component
+     * @param engineName Unique name of this Engine
+     * @param defaultHost Default hostname of this Engine
+     * @param serviceName Unique name of this Service
+     *
+     * @exception Exception if an MBean cannot be created or registered
+     */
+
+    public Vector createStandardEngineService(String parent, 
+            String engineName, String defaultHost, String serviceName)
+        throws Exception {
+
+        // Create a new StandardService instance
+        StandardService service = new StandardService();
+        service.setName(serviceName);
+        // Create a new StandardEngine instance
+        StandardEngine engine = new StandardEngine();
+        engine.setName(engineName);
+        engine.setDefaultHost(defaultHost);
+        // Need to set engine before adding it to server in order to set domain
+        service.setContainer(engine);
+        // Add the new instance to its parent component
+        Server server = ServerFactory.getServer();
+        server.addService(service);
+        Vector onames = new Vector();
+        // FIXME service & engine.getObjectName
+        //ObjectName oname = engine.getObjectName();
+        ObjectName oname = 
+            MBeanUtils.createObjectName(engineName, engine);
+        onames.add(0, oname);
+        //oname = service.getObjectName();
+        oname = 
+            MBeanUtils.createObjectName(engineName, service);
+        onames.add(1, oname);
+        return (onames);
+
+    }
+
+
     /**
      * Create a new StandardHost.
      *
@@ -693,6 +724,8 @@ public class MBeanFactory extends BaseModelMBean {
         host.setDeployOnStartup(deployOnStartup);
         host.setDeployXML(deployXML);
         host.setUnpackWARs(unpackWARs);
+        host.setXmlNamespaceAware(xmlNamespaceAware);
+        host.setXmlValidation(xmlValidation);
 	
         // add HostConfig for active reloading
         HostConfig hostConfig = new HostConfig();
@@ -740,6 +773,32 @@ public class MBeanFactory extends BaseModelMBean {
 
 
     /**
+     * Create a new StandardService.
+     *
+     * @param parent MBean Name of the associated parent component
+     * @param name Unique name of this StandardService
+     *
+     * @exception Exception if an MBean cannot be created or registered
+     */
+    public String createStandardService(String parent, String name, String domain)
+        throws Exception {
+
+        // Create a new StandardService instance
+        StandardService service = new StandardService();
+        service.setName(name);
+
+        // Add the new instance to its parent component
+        Server server = ServerFactory.getServer();
+        server.addService(service);
+
+        // Return the corresponding MBean name
+        return (service.getObjectName().toString());
+
+    }
+
+
+
+    /**
      * Create a new Web Application Loader.
      *
      * @param parent MBean Name of the associated parent component
@@ -778,6 +837,7 @@ public class MBeanFactory extends BaseModelMBean {
 
         // Acquire a reference to the component to be removed
         ObjectName oname = new ObjectName(name);
+        Server server = ServerFactory.getServer();
         Service service = getService(oname);
         String port = oname.getKeyProperty("port");
         //String address = oname.getKeyProperty("address");
@@ -931,6 +991,27 @@ public class MBeanFactory extends BaseModelMBean {
         // Acquire a reference to the component to be removed
         ContainerBase container = getParentContainerFromChild(oname); 
         container.setRealm(null);
+    }
+
+
+    /**
+     * Remove an existing Service.
+     *
+     * @param name MBean Name of the component to remove
+     *
+     * @exception Exception if a component cannot be removed
+     */
+    public void removeService(String name) throws Exception {
+
+        // Acquire a reference to the component to be removed
+        ObjectName oname = new ObjectName(name);
+        String serviceName = oname.getKeyProperty("serviceName");
+        Server server = ServerFactory.getServer();
+        Service service = server.findService(serviceName);
+
+        // Remove this component from its parent component
+        server.removeService(service);
+
     }
 
 

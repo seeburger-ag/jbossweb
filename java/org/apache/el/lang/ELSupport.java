@@ -143,19 +143,14 @@ public class ELSupport {
      * @param type
      * @return
      */
-    public final static Enum coerceToEnum(final Object obj, Class type) 
-        throws ELException {
+    public final static Enum coerceToEnum(final Object obj, Class type) {
         if (obj == null || "".equals(obj)) {
             return null;
         }
         if (obj.getClass().isEnum()) {
             return (Enum) obj;
         }
-        try {
-            return Enum.valueOf(type, obj.toString());
-        } catch (Exception e) {
-            throw new ELException(e);
-        }
+        return Enum.valueOf(type, obj.toString());
     }
 
     /**
@@ -163,7 +158,7 @@ public class ELSupport {
      * @return
      */
     public final static Boolean coerceToBoolean(final Object obj)
-            throws ELException {
+            throws IllegalArgumentException {
         if (obj == null || "".equals(obj)) {
             return Boolean.FALSE;
         }
@@ -174,12 +169,12 @@ public class ELSupport {
             return Boolean.valueOf((String) obj);
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
+        throw new IllegalArgumentException(MessageFactory.get("error.convert",
                 obj, obj.getClass(), Boolean.class));
     }
 
     public final static Character coerceToCharacter(final Object obj)
-            throws ELException {
+            throws IllegalArgumentException {
         if (obj == null || "".equals(obj)) {
             return new Character((char) 0);
         }
@@ -189,12 +184,12 @@ public class ELSupport {
         if (ELArithmetic.isNumber(obj)) {
             return new Character((char) ((Number) obj).shortValue());
         }
-        Class<?> objType = obj.getClass();
+        Class objType = obj.getClass();
         if (obj instanceof Character) {
             return (Character) obj;
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
+        throw new IllegalArgumentException(MessageFactory.get("error.convert",
                 obj, objType, Character.class));
     }
 
@@ -214,7 +209,7 @@ public class ELSupport {
     }
 
     protected final static Number coerceToNumber(final Number number,
-            final Class<?> type) throws ELException {
+            final Class type) throws IllegalArgumentException {
         if (Long.TYPE == type || Long.class.equals(type)) {
             return new Long(number.longValue());
         }
@@ -251,16 +246,13 @@ public class ELSupport {
         if (Float.TYPE == type || Float.class.equals(type)) {
             return new Float(number.floatValue());
         }
-        if (Number.class.equals(type)) {
-            return number;
-        }
 
-        throw new ELException(MessageFactory.get("error.convert",
+        throw new IllegalArgumentException(MessageFactory.get("error.convert",
                 number, number.getClass(), type));
     }
 
-    public final static Number coerceToNumber(final Object obj, final Class<?> type)
-            throws ELException {
+    public final static Number coerceToNumber(final Object obj, final Class type)
+            throws IllegalArgumentException {
         if (obj == null || "".equals(obj)) {
             return coerceToNumber(ZERO, type);
         }
@@ -276,43 +268,38 @@ public class ELSupport {
                     .charValue()), type);
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
+        throw new IllegalArgumentException(MessageFactory.get("error.convert",
                 obj, obj.getClass(), type));
     }
 
     protected final static Number coerceToNumber(final String val,
-            final Class<?> type) throws ELException {
-        try {
-            if (Long.TYPE == type || Long.class.equals(type)) {
-                return Long.valueOf(val);
-            }
-            if (Integer.TYPE == type || Integer.class.equals(type)) {
-                return Integer.valueOf(val);
-            }
-            if (Double.TYPE == type || Double.class.equals(type)) {
-                return Double.valueOf(val);
-            }
-            if (BigInteger.class.equals(type)) {
-                return new BigInteger(val);
-            }
-            if (BigDecimal.class.equals(type)) {
-                return new BigDecimal(val);
-            }
-            if (Byte.TYPE == type || Byte.class.equals(type)) {
-                return Byte.valueOf(val);
-            }
-            if (Short.TYPE == type || Short.class.equals(type)) {
-                return Short.valueOf(val);
-            }
-            if (Float.TYPE == type || Float.class.equals(type)) {
-                return Float.valueOf(val);
-            }
-        } catch (Exception e) {
-            throw new ELException(MessageFactory.get("error.convert",
-                    val, String.class, type), e);
+            final Class type) throws IllegalArgumentException {
+        if (Long.TYPE == type || Long.class.equals(type)) {
+            return Long.valueOf(val);
+        }
+        if (Integer.TYPE == type || Integer.class.equals(type)) {
+            return Integer.valueOf(val);
+        }
+        if (Double.TYPE == type || Double.class.equals(type)) {
+            return Double.valueOf(val);
+        }
+        if (BigInteger.class.equals(type)) {
+            return new BigInteger(val);
+        }
+        if (BigDecimal.class.equals(type)) {
+            return new BigDecimal(val);
+        }
+        if (Byte.TYPE == type || Byte.class.equals(type)) {
+            return Byte.valueOf(val);
+        }
+        if (Short.TYPE == type || Short.class.equals(type)) {
+            return Short.valueOf(val);
+        }
+        if (Float.TYPE == type || Float.class.equals(type)) {
+            return Float.valueOf(val);
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
+        throw new IllegalArgumentException(MessageFactory.get("error.convert",
                 val, String.class, type));
     }
 
@@ -332,8 +319,8 @@ public class ELSupport {
         }
     }
 
-    public final static void checkType(final Object obj, final Class<?> type)
-        throws ELException {
+    public final static void checkType(final Object obj, final Class type)
+        throws IllegalArgumentException {
         if (String.class.equals(type)) {
             coerceToString(obj);
         }
@@ -351,8 +338,8 @@ public class ELSupport {
         }
     }
 
-    public final static Object coerceToType(final Object obj, final Class<?> type)
-            throws ELException {
+    public final static Object coerceToType(final Object obj, final Class type)
+            throws IllegalArgumentException {
         if (type == null || Object.class.equals(type) ||
                 (obj != null && type.isAssignableFrom(obj.getClass()))) {
             return obj;
@@ -385,7 +372,7 @@ public class ELSupport {
                 return editor.getValue();
             }
         }
-        throw new ELException(MessageFactory.get("error.convert",
+        throw new IllegalArgumentException(MessageFactory.get("error.convert",
                 obj, obj.getClass(), type));
     }
 

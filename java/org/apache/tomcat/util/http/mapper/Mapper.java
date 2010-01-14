@@ -371,6 +371,7 @@ public final class Mapper {
      */
     protected void addWrapper(Context context, String path, Object wrapper,
                               boolean jspWildCard) {
+
         synchronized (context) {
             Wrapper newWrapper = new Wrapper();
             newWrapper.object = wrapper;
@@ -401,10 +402,6 @@ public final class Mapper {
                 // Default wrapper
                 newWrapper.name = "";
                 context.defaultWrapper = newWrapper;
-            } else if (path.equals("")) {
-                // Root wrapper
-                newWrapper.name = "";
-                context.rootWrapper = newWrapper;
             } else {
                 // Exact wrapper
                 newWrapper.name = path;
@@ -488,9 +485,6 @@ public final class Mapper {
             } else if (path.equals("/")) {
                 // Default wrapper
                 context.defaultWrapper = null;
-            } else if (path.equals("")) {
-                // Root wrapper
-                context.rootWrapper = null;
             } else {
                 // Exact wrapper
                 String name = path;
@@ -506,7 +500,7 @@ public final class Mapper {
 
     public String getWrappersString( String host, String context ) {
         String names[]=getWrapperNames(host, context);
-        StringBuilder sb=new StringBuilder();
+        StringBuffer sb=new StringBuffer();
         for( int i=0; i<names.length; i++ ) {
             sb.append(names[i]).append(":");
         }
@@ -525,15 +519,15 @@ public final class Mapper {
                     continue;
                 // found the context
                 Context ctx=hosts[i].contextList.contexts[j];
-                list.add( ctx.defaultWrapper.name);
+                list.add( ctx.defaultWrapper.path);
                 for( int k=0; k<ctx.exactWrappers.length; k++ ) {
-                    list.add( ctx.exactWrappers[k].name);
+                    list.add( ctx.exactWrappers[k].path);
                 }
                 for( int k=0; k<ctx.wildcardWrappers.length; k++ ) {
-                    list.add( ctx.wildcardWrappers[k].name + "*");
+                    list.add( ctx.wildcardWrappers[k].path + "*");
                 }
                 for( int k=0; k<ctx.extensionWrappers.length; k++ ) {
-                    list.add( "*." + ctx.extensionWrappers[k].name);
+                    list.add( "*." + ctx.extensionWrappers[k].path);
                 }
             }
         }
@@ -703,14 +697,7 @@ public final class Mapper {
 
         // Rule 1 -- Exact Match
         Wrapper[] exactWrappers = context.exactWrappers;
-        if (!noServletPath && (pathEnd - servletPath) == 1 && context.rootWrapper != null) {
-            mappingData.requestPath.setString("/");
-            mappingData.wrapperPath.setString("");
-            mappingData.pathInfo.setString("/");
-            mappingData.wrapper = context.rootWrapper.object;
-        } else {
-            internalMapExactWrapper(exactWrappers, path, mappingData);
-        }
+        internalMapExactWrapper(exactWrappers, path, mappingData);
 
         // Rule 2 -- Prefix Match
         boolean checkJspWelcomeFiles = false;
@@ -743,7 +730,7 @@ public final class Mapper {
         if(mappingData.wrapper == null && noServletPath) {
             // The path is empty, redirect to "/"
             mappingData.redirectPath.setChars
-                (path.getBuffer(), pathOffset, pathEnd - pathOffset);
+                (path.getBuffer(), pathOffset, pathEnd);
             path.setEnd(pathEnd - 1);
             return;
         }
@@ -816,6 +803,7 @@ public final class Mapper {
             }
                                         
         }
+
 
         // Rule 7 -- Default servlet
         if (mappingData.wrapper == null && !checkJspWelcomeFiles) {
@@ -1313,10 +1301,10 @@ public final class Mapper {
     protected static final class Context
         extends MapElement {
 
+        public String path = null;
         public String[] welcomeResources = new String[0];
         public javax.naming.Context resources = null;
         public Wrapper defaultWrapper = null;
-        public Wrapper rootWrapper = null;
         public Wrapper[] exactWrappers = new Wrapper[0];
         public Wrapper[] wildcardWrappers = new Wrapper[0];
         public Wrapper[] extensionWrappers = new Wrapper[0];
@@ -1330,8 +1318,121 @@ public final class Mapper {
 
     protected static class Wrapper
         extends MapElement {
+
+        public String path = null;
         public boolean jspWildCard = false;
     }
+
+
+    // -------------------------------------------------------- Testing Methods
+
+    // FIXME: Externalize this
+    /*
+    public static void main(String args[]) {
+
+        try {
+
+        Mapper mapper = new Mapper();
+        System.out.println("Start");
+
+        mapper.addHost("sjbjdvwsbvhrb", new String[0], "blah1");
+        mapper.addHost("sjbjdvwsbvhr/", new String[0], "blah1");
+        mapper.addHost("wekhfewuifweuibf", new String[0], "blah2");
+        mapper.addHost("ylwrehirkuewh", new String[0], "blah3");
+        mapper.addHost("iohgeoihro", new String[0], "blah4");
+        mapper.addHost("fwehoihoihwfeo", new String[0], "blah5");
+        mapper.addHost("owefojiwefoi", new String[0], "blah6");
+        mapper.addHost("iowejoiejfoiew", new String[0], "blah7");
+        mapper.addHost("iowejoiejfoiew", new String[0], "blah17");
+        mapper.addHost("ohewoihfewoih", new String[0], "blah8");
+        mapper.addHost("fewohfoweoih", new String[0], "blah9");
+        mapper.addHost("ttthtiuhwoih", new String[0], "blah10");
+        mapper.addHost("lkwefjwojweffewoih", new String[0], "blah11");
+        mapper.addHost("zzzuyopjvewpovewjhfewoih", new String[0], "blah12");
+        mapper.addHost("xxxxgqwiwoih", new String[0], "blah13");
+        mapper.addHost("qwigqwiwoih", new String[0], "blah14");
+
+        System.out.println("Map:");
+        for (int i = 0; i < mapper.hosts.length; i++) {
+            System.out.println(mapper.hosts[i].name);
+        }
+
+        mapper.setDefaultHostName("ylwrehirkuewh");
+
+        String[] welcomes = new String[2];
+        welcomes[0] = "boo/baba";
+        welcomes[1] = "bobou";
+
+        mapper.addContext("iowejoiejfoiew", "", "context0", new String[0], null);
+        mapper.addContext("iowejoiejfoiew", "/foo", "context1", new String[0], null);
+        mapper.addContext("iowejoiejfoiew", "/foo/bar", "context2", welcomes, null);
+        mapper.addContext("iowejoiejfoiew", "/foo/bar/bla", "context3", new String[0], null);
+
+        mapper.addWrapper("iowejoiejfoiew", "/foo/bar", "/fo/*", "wrapper0");
+        mapper.addWrapper("iowejoiejfoiew", "/foo/bar", "/", "wrapper1");
+        mapper.addWrapper("iowejoiejfoiew", "/foo/bar", "/blh", "wrapper2");
+        mapper.addWrapper("iowejoiejfoiew", "/foo/bar", "*.jsp", "wrapper3");
+        mapper.addWrapper("iowejoiejfoiew", "/foo/bar", "/blah/bou/*", "wrapper4");
+        mapper.addWrapper("iowejoiejfoiew", "/foo/bar", "/blah/bobou/*", "wrapper5");
+        mapper.addWrapper("iowejoiejfoiew", "/foo/bar", "*.htm", "wrapper6");
+
+        MappingData mappingData = new MappingData();
+        MessageBytes host = MessageBytes.newInstance();
+        host.setString("iowejoiejfoiew");
+        MessageBytes uri = MessageBytes.newInstance();
+        uri.setString("/foo/bar/blah/bobou/foo");
+        uri.toChars();
+        uri.getCharChunk().setLimit(-1);
+
+        mapper.map(host, uri, mappingData);
+        System.out.println("MD Host:" + mappingData.host);
+        System.out.println("MD Context:" + mappingData.context);
+        System.out.println("MD Wrapper:" + mappingData.wrapper);
+
+        System.out.println("contextPath:" + mappingData.contextPath);
+        System.out.println("wrapperPath:" + mappingData.wrapperPath);
+        System.out.println("pathInfo:" + mappingData.pathInfo);
+        System.out.println("redirectPath:" + mappingData.redirectPath);
+
+        mappingData.recycle();
+        mapper.map(host, uri, mappingData);
+        System.out.println("MD Host:" + mappingData.host);
+        System.out.println("MD Context:" + mappingData.context);
+        System.out.println("MD Wrapper:" + mappingData.wrapper);
+
+        System.out.println("contextPath:" + mappingData.contextPath);
+        System.out.println("wrapperPath:" + mappingData.wrapperPath);
+        System.out.println("pathInfo:" + mappingData.pathInfo);
+        System.out.println("redirectPath:" + mappingData.redirectPath);
+
+        for (int i = 0; i < 1000000; i++) {
+            mappingData.recycle();
+            mapper.map(host, uri, mappingData);
+        }
+
+        long time = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            mappingData.recycle();
+            mapper.map(host, uri, mappingData);
+        }
+        System.out.println("Elapsed:" + (System.currentTimeMillis() - time));
+
+        System.out.println("MD Host:" + mappingData.host);
+        System.out.println("MD Context:" + mappingData.context);
+        System.out.println("MD Wrapper:" + mappingData.wrapper);
+
+        System.out.println("contextPath:" + mappingData.contextPath);
+        System.out.println("wrapperPath:" + mappingData.wrapperPath);
+        System.out.println("requestPath:" + mappingData.requestPath);
+        System.out.println("pathInfo:" + mappingData.pathInfo);
+        System.out.println("redirectPath:" + mappingData.redirectPath);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    */
 
 
 }

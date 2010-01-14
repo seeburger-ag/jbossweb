@@ -113,7 +113,7 @@ public class MessageDestination {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("MessageDestination[");
+        StringBuffer sb = new StringBuffer("MessageDestination[");
         sb.append("name=");
         sb.append(name);
         if (displayName != null) {

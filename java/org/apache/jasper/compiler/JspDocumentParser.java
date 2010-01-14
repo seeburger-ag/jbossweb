@@ -69,7 +69,7 @@ class JspDocumentParser
     private JspCompilationContext ctxt;
     private PageInfo pageInfo;
     private String path;
-    private StringBuilder charBuffer;
+    private StringBuffer charBuffer;
 
     // Node representing the XML element currently being parsed
     private Node current;
@@ -110,8 +110,6 @@ class JspDocumentParser
     // Flag set to delay incrmenting tagDependentNesting until jsp:body
     // is first encountered
     private boolean tagDependentPending = false;
-    // Tag being parsed that should have an empty body 
-    private Node tagEmptyBody = null;
 
     /*
      * Constructor
@@ -270,8 +268,6 @@ class JspDocumentParser
         AttributesImpl taglibAttrs = null;
         AttributesImpl nonTaglibAttrs = null;
         AttributesImpl nonTaglibXmlnsAttrs = null;
-
-        checkEmptyBody();
 
         processChars();
 
@@ -433,10 +429,9 @@ class JspDocumentParser
                 if (scriptlessBodyNode == null
                         && bodyType.equalsIgnoreCase(TagInfo.BODY_CONTENT_SCRIPTLESS)) {
                     scriptlessBodyNode = node;
-                } else if (TagInfo.BODY_CONTENT_TAG_DEPENDENT.equalsIgnoreCase(bodyType)) {
+                }
+                else if (TagInfo.BODY_CONTENT_TAG_DEPENDENT.equalsIgnoreCase(bodyType)) {
                     tagDependentPending = true;
-                } else if (TagInfo.BODY_CONTENT_EMPTY.equals(bodyType)) {
-                    tagEmptyBody = node;
                 }
             }
         }
@@ -460,11 +455,10 @@ class JspDocumentParser
      *
      * @throws SAXException
      */
-    public void characters(char[] buf, int offset, int len)
-        throws SAXException {
-        checkEmptyBody();
+    public void characters(char[] buf, int offset, int len) {
+
         if (charBuffer == null) {
-            charBuffer = new StringBuilder();
+            charBuffer = new StringBuffer();
         }
         charBuffer.append(buf, offset, len);
     }
@@ -620,10 +614,6 @@ class JspDocumentParser
     public void endElement(String uri, String localName, String qName)
         throws SAXException {
 
-        if (tagEmptyBody != null) {
-            tagEmptyBody = null;
-        }
-        
         processChars();
 
         if (directivesOnly &&
@@ -713,7 +703,6 @@ class JspDocumentParser
      */
     public void startCDATA() throws SAXException {
 
-        checkEmptyBody();
         processChars();  // Flush char buffer and remove white spaces
         startMark = new Mark(ctxt, path, locator.getLineNumber(),
                              locator.getColumnNumber());
@@ -1262,33 +1251,29 @@ class JspDocumentParser
                 isPlainUri = true;
             }
 
-            if (ctxt.getOptions().isCaching()) {
-                result = (TagLibraryInfo) ctxt.getOptions().getCache().get(uri);
-            }
-            if (result == null) {
-                // Fallback to Jasper's legacy scanning if nothing was provided
-                // by the options' TLD cache
-                String[] location = ctxt.getTldLocation(uri);
-                if (location != null || !isPlainUri) {
-                    if (result == null) {
-                        /*
-                         * If the uri value is a plain uri, a translation error must
-                         * not be generated if the uri is not found in the taglib map.
-                         * Instead, any actions in the namespace defined by the uri
-                         * value must be treated as uninterpreted.
-                         */
-                        result =
-                            new TagLibraryInfoImpl(
-                                    ctxt,
-                                    parserController,
-                                    pageInfo,
-                                    prefix,
-                                    uri,
-                                    location,
-                                    err);
-                        if (ctxt.getOptions().isCaching()) {
-                            ctxt.getOptions().getCache().put(uri, result);
-                        }
+            String[] location = ctxt.getTldLocation(uri);
+            if (location != null || !isPlainUri) {
+                if (ctxt.getOptions().isCaching()) {
+                    result = (TagLibraryInfoImpl) ctxt.getOptions().getCache().get(uri);
+                }
+                if (result == null) {
+                    /*
+                     * If the uri value is a plain uri, a translation error must
+                     * not be generated if the uri is not found in the taglib map.
+                     * Instead, any actions in the namespace defined by the uri
+                     * value must be treated as uninterpreted.
+                     */
+                    result =
+                        new TagLibraryInfoImpl(
+                            ctxt,
+                            parserController,
+                            pageInfo,
+                            prefix,
+                            uri,
+                            location,
+                            err);
+                    if (ctxt.getOptions().isCaching()) {
+                        ctxt.getOptions().getCache().put(uri, result);
                     }
                 }
             }
@@ -1398,14 +1383,6 @@ class JspDocumentParser
             return qName.substring(0, index);
         }
         return "";
-    }
-
-    private void checkEmptyBody() throws SAXException {
-        if (tagEmptyBody != null) {
-            throw new SAXParseException(Localizer.getMessage(
-                    "jasper.error.emptybodycontent.nonempty",
-                    tagEmptyBody.qName), locator);
-        }
     }
 
     /*

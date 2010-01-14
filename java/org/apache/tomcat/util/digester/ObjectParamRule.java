@@ -112,7 +112,7 @@ public class ObjectParamRule extends Rule {
      * Render a printable version of this Rule.
      */
     public String toString() {
-        StringBuilder sb = new StringBuilder("ObjectParamRule[");
+        StringBuffer sb = new StringBuffer("ObjectParamRule[");
         sb.append("paramIndex=");
         sb.append(paramIndex);
         sb.append(", attributeName=");

@@ -29,10 +29,11 @@ import java.util.ArrayList;
 import javax.naming.Context;
 import javax.sql.DataSource;
 
+import org.apache.naming.ContextBindings;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.StringManager;
-import org.apache.naming.ContextBindings;
 
 /**
 *
@@ -395,7 +396,9 @@ public class DataSourceRealm
                 context = ContextBindings.getClassLoader();
                 context = (Context) context.lookup("comp/env");
             } else {
-                context = ((StandardServer) getServer()).getGlobalNamingContext();
+                StandardServer server = 
+                    (StandardServer) ServerFactory.getServer();
+                context = server.getGlobalNamingContext();
             }
             DataSource dataSource = (DataSource)context.lookup(dataSourceName);
 	    return dataSource.getConnection();
@@ -623,7 +626,7 @@ public class DataSourceRealm
         super.start();
 
         // Create the roles PreparedStatement string
-        StringBuilder temp = new StringBuilder("SELECT ");
+        StringBuffer temp = new StringBuffer("SELECT ");
         temp.append(roleNameCol);
         temp.append(" FROM ");
         temp.append(userRoleTable);
@@ -633,7 +636,7 @@ public class DataSourceRealm
         preparedRoles = temp.toString();
 
         // Create the credentials PreparedStatement string
-        temp = new StringBuilder("SELECT ");
+        temp = new StringBuffer("SELECT ");
         temp.append(userCredCol);
         temp.append(" FROM ");
         temp.append(userTable);

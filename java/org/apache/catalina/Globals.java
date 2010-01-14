@@ -139,32 +139,6 @@ public final class Globals {
 
 
     /**
-     * The servlet context attribute under which we record the set of
-     * JSP property groups (as an object of type HashMap<String, JspPropertyGroup>)
-     * for this application.
-     */
-    public static final String JSP_PROPERTY_GROUPS =
-        "org.apache.catalina.JSP_PROPERTY_GROUPS";
-
-
-    /**
-     * The servlet context attribute under which we record the set of
-     * JSP tag libraries (as an object of type HashMap<String, TagLibraryInfo>) 
-     * for this application.
-     */
-    public static final String JSP_TAG_LIBRARIES =
-        "org.apache.catalina.JSP_TAG_LIBRARIES";
-
-
-    /**
-     * The servlet context attribute under which we record the Servlet API version
-     * support declared for this webapp.
-     */
-    public static final String SERVLET_VERSION =
-        "org.apache.catalina.SERVLET_VERSION";
-
-
-    /**
      * The request attribute under which we store the key size being used for
      * this SSL connection (as an object of type java.lang.Integer).
      */
@@ -342,6 +316,15 @@ public final class Globals {
 
 
     /**
+     * The servlet context attribute under which we store a temporary
+     * working directory (as an object of type File) for use by servlets
+     * within this web application.
+     */
+    public static final String WORK_DIR_ATTR =
+        "javax.servlet.context.tempdir";
+
+
+    /**
      * The master flag which controls strict servlet specification 
      * compliance.
      */
@@ -354,42 +337,6 @@ public final class Globals {
      */
     public static final boolean IS_SECURITY_ENABLED =
         (System.getSecurityManager() != null);
-
-
-    /**
-     * The folder used for JAR overlays.
-     */
-    public static final String OVERLAY_PATH =
-        System.getProperty("org.apache.catalina.OVERLAY_PATH", "/META-INF/resources");
-
-
-    /**
-     * The path used for web fragments.
-     */
-    public static final String WEB_FRAGMENT_PATH =
-        System.getProperty("org.apache.catalina.WEB_FRAGMENT_PATH", "/META-INF/web-fragment.xml");
-
-
-    /**
-     * The path used for the ServletContainerInitializer service.
-     */
-    public static final String SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH =
-        System.getProperty("org.apache.catalina.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH", 
-                "/META-INF/services/javax.servlet.ServletContainerInitializer");
-
-
-    /**
-     * The master flag which controls XML validation.
-     */
-    public static final boolean XML_VALIDATION =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.XML_VALIDATION", "false")).booleanValue();
-
-
-    /**
-     * The master flag which controls namespace awareness when parsing XML.
-     */
-    public static final boolean XML_NAMESPACE_AWARE =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.XML_NAMESPACE_AWARE", "false")).booleanValue();
 
 
 }

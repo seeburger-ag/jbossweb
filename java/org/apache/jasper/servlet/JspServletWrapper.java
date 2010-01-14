@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.tagext.TagInfo;
 
+import org.apache.InstanceManager;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.Options;
@@ -40,7 +41,6 @@ import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.runtime.InstanceManagerFactory;
 import org.apache.jasper.runtime.JspSourceDependent;
-import org.apache.tomcat.InstanceManager;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
@@ -228,7 +228,7 @@ public class JspServletWrapper {
 
     /**
      * Compile and load a prototype for the Tag file.  This is needed
-     * when compiling tag files with circular dependencies.  A prototype
+     * when compiling tag files with circular dependencies.  A prototpe
      * (skeleton) with no dependencies on other other tag files is
      * generated and compiled.
      */
@@ -473,12 +473,12 @@ public class JspServletWrapper {
                 }
             }
 
-            if (jspFrame == null || ctxt.getCompiler().getPageNodes() == null) {
+            if (jspFrame == null) {
                 // If we couldn't find a frame in the stack trace corresponding
-                // to the generated servlet class or we don't have a copy of the
-                // parsed JSP to hand, we can't really add anything
+                // to the generated servlet class, we can't really add anything
                 return new JasperException(ex);
-            } else {
+            }
+            else {
                 int javaLineNumber = jspFrame.getLineNumber();
                 JavacErrorDetail detail = ErrorDispatcher.createJavacError(
                         jspFrame.getMethodName(),

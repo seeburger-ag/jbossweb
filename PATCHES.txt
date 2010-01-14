@@ -35,51 +35,11 @@ however)
 Executor modifications, very specialized work that breaks the Executor design (a single task can be submitted
 to the real executor more than once) to supposedly work better with the NIO connector. 
 
+728947
+Lame IE 6 and 7 cookie hack for expires.
+
 various
 New JDBC pool module
 
 733748
 SSL session tracking (may not be practical at all)
-
-733768 733769 733775
-Generics in Servlet API (not accepted yet)
-
-733771
-Deprecate some wrapper methods in Servlet API (not accepted yet)
-
-751502
-Per context validation (incomplete, and looks a bit useless anyway)
-
-752651, 752936
-XmlBase configuration
-
-757223
-AJP hack to pass remote port (the protocol does not do it, well, too bad)
-
-763654
-Specific hack to address some error condition in HTTP method
-
-765727 (reverted)
-ETag should normally be different if the content encoding changes; content-encoding is used because
-transfer-encoding does not work with IE, and is not normally appropriate for transparent compression
-
-770809
-Fix 47080: NPE in RealmBase.findSecurityConstraints when uri is null (normally useless, a redirection should always occur)
-
-770876
-Windows 64 bit stuff ... Zzzzz
-
-781036
-Some configBase creation flag
-
-781779 and all followups
-Useless syncing
-
-782000 782005 782007 782010 782013 782032
-Changes to APR init
-
-784083
-Useless alias feature, rather redundant with overlays, and has no place in the DirContext implementation
-
-890139
-EL coercion patch

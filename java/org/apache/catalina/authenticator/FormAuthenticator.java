@@ -28,19 +28,19 @@ import java.util.Locale;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.Globals;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.MimeHeaders;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -121,7 +121,7 @@ public class FormAuthenticator
      * @exception IOException if an input/output error occurs
      */
     public boolean authenticate(Request request,
-                                HttpServletResponse response,
+                                Response response,
                                 LoginConfig config)
         throws IOException {
 
@@ -174,7 +174,7 @@ public class FormAuthenticator
                     session.setNote(Constants.FORM_PRINCIPAL_NOTE, principal);
                     if (!matchRequest(request)) {
                         register(request, response, principal,
-                                 HttpServletRequest.FORM_AUTH,
+                                 Constants.FORM_METHOD,
                                  username, password);
                         return (true);
                     }
@@ -194,7 +194,7 @@ public class FormAuthenticator
                           + "'");
             principal = (Principal)
                 session.getNote(Constants.FORM_PRINCIPAL_NOTE);
-            register(request, response, principal, HttpServletRequest.FORM_AUTH,
+            register(request, response, principal, Constants.FORM_METHOD,
                      (String) session.getNote(Constants.SESS_USERNAME_NOTE),
                      (String) session.getNote(Constants.SESS_PASSWORD_NOTE));
             // If we're caching principals we no longer need the username
@@ -221,6 +221,7 @@ public class FormAuthenticator
         uriCC.setLimit(-1);
         String contextPath = request.getContextPath();
         String requestURI = request.getDecodedRequestURI();
+        response.setContext(request.getContext());
 
         // Is this the action request from the login page?
         boolean loginAction =
@@ -306,22 +307,16 @@ public class FormAuthenticator
      * @param response Response we are creating
      * @param config    Login configuration describing how authentication
      *              should be performed
-     * @throws IOException  If the forward to the login page fails and the call
-     *                      to {@link HttpServletResponse#sendError(int, String)
-     *                      throws an {@link IOException}
      */
-    protected void forwardToLoginPage(Request request, HttpServletResponse response, LoginConfig config)
-        throws IOException {
+    protected void forwardToLoginPage(Request request, Response response, LoginConfig config) {
         RequestDispatcher disp =
-            context.getServletContext().getRequestDispatcher(config.getLoginPage());
+            context.getServletContext().getRequestDispatcher
+            (config.getLoginPage());
         try {
-            disp.forward(request.getRequest(), response);
+            disp.forward(request.getRequest(), response.getResponse());
+            response.finishResponse();
         } catch (Throwable t) {
-            String msg = sm.getString("formAuthenticator.forwardLoginFail");
-            log.warn(msg, t);
-            request.setAttribute(Globals.EXCEPTION_ATTR, t);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    msg);
+            log.warn("Unexpected error forwarding to login page", t);
         }
     }
 
@@ -333,22 +328,15 @@ public class FormAuthenticator
      * @param response Response we are creating
      * @param config    Login configuration describing how authentication
      *              should be performed
-     * @throws IOException  If the forward to the error page fails and the call
-     *                      to {@link HttpServletResponse#sendError(int, String)
-     *                      throws an {@link IOException}
      */
-    protected void forwardToErrorPage(Request request, HttpServletResponse response, LoginConfig config)
-        throws IOException {
+    protected void forwardToErrorPage(Request request, Response response, LoginConfig config) {
         RequestDispatcher disp =
-            context.getServletContext().getRequestDispatcher(config.getErrorPage());
+            context.getServletContext().getRequestDispatcher
+            (config.getErrorPage());
         try {
-            disp.forward(request.getRequest(), response);
+            disp.forward(request.getRequest(), response.getResponse());
         } catch (Throwable t) {
-            String msg = sm.getString("formAuthenticator.forwardErrorFail");
-            log.warn(msg, t);
-            request.setAttribute(Globals.EXCEPTION_ATTR, t);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    msg);
+            log.warn("Unexpected error forwarding to error page", t);
         }
     }
 
@@ -563,7 +551,7 @@ public class FormAuthenticator
             (SavedRequest) session.getNote(Constants.FORM_REQUEST_NOTE);
         if (saved == null)
             return (null);
-        StringBuilder sb = new StringBuilder(saved.getRequestURI());
+        StringBuffer sb = new StringBuffer(saved.getRequestURI());
         if (saved.getQueryString() != null) {
             sb.append('?');
             sb.append(saved.getQueryString());

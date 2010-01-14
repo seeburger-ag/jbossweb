@@ -159,7 +159,7 @@ public class HandlerRef
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("HandlerRef[");
+        StringBuffer sb = new StringBuffer("HandlerRef[");
         sb.append("className=");
         sb.append(getClassName());
         sb.append(",factoryClassLocation=");

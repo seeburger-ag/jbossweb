@@ -19,7 +19,6 @@ package org.apache.catalina.mbeans;
 
 
 import java.util.Hashtable;
-import java.util.Set;
 
 import javax.management.DynamicMBean;
 import javax.management.MBeanException;
@@ -44,14 +43,10 @@ import org.apache.catalina.deploy.ContextResource;
 import org.apache.catalina.deploy.ContextResourceLink;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.coyote.ProtocolHandler;
-import org.apache.coyote.ajp.AjpAprProtocol;
-import org.apache.coyote.ajp.AjpProtocol;
-import org.apache.coyote.http11.Http11AprProtocol;
-import org.apache.coyote.http11.Http11Protocol;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.modeler.ManagedBean;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -611,26 +606,31 @@ public class MBeanUtils {
         throws MalformedObjectNameException {
 
         ObjectName name = null;
-        try {
-            String address = (String)
-            IntrospectionUtils.getProperty(connector, "address");
-            Integer port = (Integer)
-            IntrospectionUtils.getProperty(connector, "port");
-            Service service = connector.getService();
-            String serviceName = null;
-            if (service != null)
-                serviceName = service.getName();
-            StringBuilder sb = new StringBuilder(domain);
-            sb.append(":type=Connector");
-            sb.append(",port=" + port);
-            if ((address != null) && (address.length()>0)) {
-                sb.append(",address=" + address);
+        if (connector.getClass().getName().indexOf("CoyoteConnector") >= 0 ) {
+            try {
+                String address = (String)
+                    IntrospectionUtils.getProperty(connector, "address");
+                Integer port = (Integer)
+                    IntrospectionUtils.getProperty(connector, "port");
+                Service service = connector.getService();
+                String serviceName = null;
+                if (service != null)
+                    serviceName = service.getName();
+                StringBuffer sb = new StringBuffer(domain);
+                sb.append(":type=Connector");
+                sb.append(",port=" + port);
+                if ((address != null) && (address.length()>0)) {
+                    sb.append(",address=" + address);
+                }
+                name = new ObjectName(sb.toString());
+                return (name);
+            } catch (Exception e) {
+                throw new MalformedObjectNameException
+                    ("Cannot create object name for " + connector+e);
             }
-            name = new ObjectName(sb.toString());
-            return (name);
-        } catch (Exception e) {
+        } else {
             throw new MalformedObjectNameException
-            ("Cannot create object name for " + connector+e);
+                ("Cannot create object name for " + connector);
         }
 
     }
@@ -1205,24 +1205,6 @@ public class MBeanUtils {
         if( mserver.isRegistered( oname ))  {
             mserver.unregisterMBean(oname);
         }
-        // Unregister associated request processor
-        String worker = null;
-        ProtocolHandler handler = connector.getProtocolHandler();
-        if (handler instanceof Http11Protocol) {
-            worker = ((Http11Protocol)handler).getName();
-        } else if (handler instanceof Http11AprProtocol) {
-            worker = ((Http11AprProtocol)handler).getName();
-        } else if (handler instanceof AjpProtocol) {
-            worker = ((AjpProtocol)handler).getName();
-        } else if (handler instanceof AjpAprProtocol) {
-            worker = ((AjpAprProtocol)handler).getName();
-        }
-        ObjectName query = new ObjectName(
-                domain + ":type=RequestProcessor,worker=" + worker + ",*");
-        Set<ObjectName> results = mserver.queryNames(query, null);
-        for(ObjectName result : results) {
-            mserver.unregisterMBean(result);
-        }
     }
 
 
@@ -1505,16 +1487,6 @@ public class MBeanUtils {
         if (domain == null)
             domain = mserver.getDefaultDomain();
         ObjectName oname = createObjectName(domain, server);
-        if( mserver.isRegistered(oname) )
-            mserver.unregisterMBean(oname);
-
-        // Global String cache - fixed name
-        oname = new ObjectName("Catalina:type=StringCache");
-        if( mserver.isRegistered(oname) )
-            mserver.unregisterMBean(oname);
-
-        // MBean Factory - fixed name
-        oname = new ObjectName("Catalina:type=MBeanFactory");
         if( mserver.isRegistered(oname) )
             mserver.unregisterMBean(oname);
 

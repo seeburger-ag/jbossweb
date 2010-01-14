@@ -40,7 +40,7 @@ public final class AstCompositeExpression extends SimpleNode {
 
     public Object getValue(EvaluationContext ctx)
             throws ELException {
-        StringBuilder sb = new StringBuilder(16);
+        StringBuffer sb = new StringBuffer(16);
         Object obj = null;
         if (this.children != null) {
             for (int i = 0; i < this.children.length; i++) {

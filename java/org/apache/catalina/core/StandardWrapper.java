@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Stack;
 
 import javax.management.ListenerNotFoundException;
@@ -39,13 +38,12 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.ServletSecurityElement;
 import javax.servlet.SingleThreadModel;
 import javax.servlet.UnavailableException;
 
+import org.apache.PeriodicEventListener;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
 import org.apache.catalina.Context;
@@ -54,14 +52,10 @@ import org.apache.catalina.InstanceEvent;
 import org.apache.catalina.InstanceListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.deploy.Multipart;
-import org.apache.catalina.deploy.SecurityCollection;
-import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.InstanceManager;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
-import org.apache.tomcat.InstanceManager;
-import org.apache.tomcat.PeriodicEventListener;
 import org.apache.tomcat.util.log.SystemLogHandler;
 import org.apache.tomcat.util.modeler.Registry;
 
@@ -102,25 +96,7 @@ public class StandardWrapper
 
     // ----------------------------------------------------- Instance Variables
 
-    
-    /**
-     * Async supported flag.
-     */
-    protected boolean asyncSupported = false;
-    
-    
-    /**
-     * Dynamic flag.
-     */
-    protected boolean dynamic = false;
-    
-    
-    /**
-     * Enabled flag.
-     */
-    protected boolean enabled = true;
-    
-    
+
     /**
      * The date and time at which this servlet will become available (in
      * milliseconds since the epoch), or zero if the servlet is available.
@@ -139,12 +115,6 @@ public class StandardWrapper
      */
     protected int countAllocated = 0;
 
-    
-    /**
-     * Description.
-     */
-    protected String description = null;
-    
 
     /**
      * The facade associated with this wrapper.
@@ -167,12 +137,6 @@ public class StandardWrapper
 
 
     /**
-     * The (single) initialized instance of this servlet.
-     */
-    protected Servlet servletInstance = null;
-
-
-    /**
      * The support object for our instance listeners.
      */
     protected InstanceSupport instanceSupport = new InstanceSupport(this);
@@ -189,12 +153,6 @@ public class StandardWrapper
      * first call) for this servlet.
      */
     protected int loadOnStartup = -1;
-
-
-    /**
-     * The multipart config annotation configured on this servlet.
-     */
-    protected Multipart multipartConfig = null;
 
 
     /**
@@ -222,14 +180,7 @@ public class StandardWrapper
      * The run-as identity for this servlet.
      */
     protected String runAs = null;
-    
-    
-    /**
-     * Associated ServletSecurity.
-     */
-    protected ServletSecurityElement servletSecurity = null;
-    
-    
+
     /**
      * The notification sequence number.
      */
@@ -316,78 +267,6 @@ public class StandardWrapper
     
 
     // ------------------------------------------------------------- Properties
-
-
-    /**
-     * Return the async supported value.
-     */
-    public boolean getAsyncSupported() {
-        return asyncSupported;
-    }
-
-
-    /**
-     * Set the async supported value.
-     *
-     * @param value New async supported value
-     */
-    public void setAsyncSupported(boolean value) {
-        boolean oldAsyncSupported = this.asyncSupported;
-        this.asyncSupported = value;
-        support.firePropertyChange("asyncSupported", oldAsyncSupported, asyncSupported);
-    }
-
-
-    /**
-     * Return the Servlet description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-
-    /**
-     * Set the description.
-     */
-    public void setDescription(String description) {
-        String oldDescription = this.description;
-        this.description = description;
-        support.firePropertyChange("description", oldDescription, description);
-    }
-
-
-    public boolean isDynamic() {
-        return dynamic;
-    }
-
-
-    public void setDynamic(boolean dynamic) {
-        this.dynamic = dynamic;
-        if (dynamic) {
-            // Change the facade (normally, this happens when the Wrapper is created)
-            facade = new StandardWrapperFacade.Dynamic(this);
-        }
-    }
-
-
-    /**
-     * Return the enabled value.
-     */
-    public boolean getEnabled() {
-        return enabled;
-    }
-
-
-    /**
-     * Set the enabled value.
-     *
-     * @param value New enabled value
-     */
-    public void setEnabled(boolean value) {
-        boolean oldEnabled = this.enabled;
-        this.enabled = value;
-        support.firePropertyChange("enabled", oldEnabled, enabled);
-    }
 
 
     /**
@@ -553,22 +432,6 @@ public class StandardWrapper
 
 
     /**
-     * Multipart configuration for this Servlet.
-     */
-    public Multipart getMultipartConfig() {
-        return multipartConfig;
-    }
-    
-
-    /**
-     * Set the multipart configuration for this Servlet.
-     */
-    public void setMultipartConfig(Multipart multipartConfig) {
-        this.multipartConfig = multipartConfig;
-    }
-    
-
-    /**
      * Return maximum number of instances that will be allocated when a single
      * thread model servlet is used.
      */
@@ -638,47 +501,7 @@ public class StandardWrapper
 
     }
 
-    
-    /**
-     * Get an associated ServletSecurity, if any.
-     */
-    public ServletSecurityElement getServletSecurity() {
-        return servletSecurity;
-    }
-    
 
-    /**
-     * Set an associated ServletSecurity on mappings which are currently associated
-     * with the Servlet. This will not set security on patters which are currently
-     * defined in a security constraint.
-     * 
-     * @return the set of patterns for which the servlet security will not be defined
-     */
-    public Set<String> setServletSecurity(ServletSecurityElement servletSecurity) {
-        ServletSecurityElement oldServletSecurity = this.servletSecurity;
-        this.servletSecurity = servletSecurity;
-        support.firePropertyChange("servletSecurity", oldServletSecurity, this.servletSecurity);
-        // Now find to which mappings this servlet security will apply, and return the list
-        // for which is will not apply
-        Set<String> ignoredPatterns = new HashSet<String>();
-        HashSet<String> currentMappings = new HashSet<String>();
-        for (String mapping : findMappings()) {
-            currentMappings.add(mapping);
-        }
-        SecurityConstraint[] constraints = ((Context) getParent()).findConstraints();
-        for (SecurityConstraint constraint : constraints) {
-            for (SecurityCollection collection : constraint.findCollections()) {
-                for (String pattern : collection.findPatterns()) {
-                    if (currentMappings.contains(pattern)) {
-                        ignoredPatterns.add(pattern);
-                    }
-                }
-            }
-        }
-        return ignoredPatterns;
-    }
-    
-    
     /**
      * Return the fully qualified servlet class name for this servlet.
      */
@@ -753,14 +576,6 @@ public class StandardWrapper
 
     }
 
-    
-    /**
-     * Get the facade ServletRegistration.
-     */
-    public ServletRegistration getFacade() {
-        return facade;
-    }
-    
 
     /**
      * Gets the names of the methods supported by the underlying servlet.
@@ -868,8 +683,9 @@ public class StandardWrapper
      */
     public void addInitParameter(String name, String value) {
 
-        if (!parameters.containsKey(name))
+        synchronized (parameters) {
             parameters.put(name, value);
+        }
         fireContainerEvent("addInitParameter", name);
 
     }
@@ -910,8 +726,12 @@ public class StandardWrapper
      * @param link Role name used within the web application
      */
     public void addSecurityReference(String name, String link) {
-        references.put(name, link);
+
+        synchronized (references) {
+            references.put(name, link);
+        }
         fireContainerEvent("addSecurityReference", name);
+
     }
 
 
@@ -919,15 +739,7 @@ public class StandardWrapper
      * Return the associated servlet instance.
      */
     public Servlet getServlet() {
-        return (servletInstance != null) ? servletInstance : instance;
-    }
-    
-    
-    /**
-     * Set the associated servlet instance.
-     */
-    public void setServlet(Servlet servlet) {
-        servletInstance = servlet;
+        return instance;
     }
     
     
@@ -959,6 +771,9 @@ public class StandardWrapper
                 synchronized (this) {
                     if (instance == null) {
                         try {
+                            if (log.isDebugEnabled())
+                                log.debug("Allocating non-STM instance");
+
                             instance = loadServlet();
                         } catch (ServletException e) {
                             throw e;
@@ -971,6 +786,8 @@ public class StandardWrapper
             }
 
             if (!singleThreadModel) {
+                if (log.isTraceEnabled())
+                    log.trace("  Returning non-STM instance");
                 return (instance);
             }
 
@@ -998,6 +815,8 @@ public class StandardWrapper
                     }
                 }
             }
+            if (log.isTraceEnabled())
+                log.trace("  Returning allocated STM instance");
             countAllocated++;
             return (Servlet) instancePool.pop();
 
@@ -1039,7 +858,11 @@ public class StandardWrapper
      * @param name Name of the requested initialization parameter
      */
     public String findInitParameter(String name) {
-        return ((String) parameters.get(name));
+
+        synchronized (parameters) {
+            return ((String) parameters.get(name));
+        }
+
     }
 
 
@@ -1048,8 +871,12 @@ public class StandardWrapper
      * servlet.
      */
     public String[] findInitParameters() {
-        String results[] = new String[parameters.size()];
-        return ((String[]) parameters.keySet().toArray(results));
+
+        synchronized (parameters) {
+            String results[] = new String[parameters.size()];
+            return ((String[]) parameters.keySet().toArray(results));
+        }
+
     }
 
 
@@ -1072,7 +899,11 @@ public class StandardWrapper
      * @param name Security role reference used within this servlet
      */
     public String findSecurityReference(String name) {
-        return ((String) references.get(name));
+
+        synchronized (references) {
+            return ((String) references.get(name));
+        }
+
     }
 
 
@@ -1081,8 +912,12 @@ public class StandardWrapper
      * this servlet, if any; otherwise return a zero-length array.
      */
     public String[] findSecurityReferences() {
-        String results[] = new String[references.size()];
-        return ((String[]) references.keySet().toArray(results));
+
+        synchronized (references) {
+            String results[] = new String[references.size()];
+            return ((String[]) references.keySet().toArray(results));
+        }
+
     }
 
 
@@ -1166,31 +1001,26 @@ public class StandardWrapper
                     (sm.getString("standardWrapper.notClass", getName()));
             }
 
-            if (servletInstance == null) {
-                InstanceManager instanceManager = ((Context) getParent()).getInstanceManager();
-                try {
-                    servlet = (Servlet) instanceManager.newInstance(actualClass);
-                } catch (ClassCastException e) {
-                    unavailable(null);
-                    // Restore the context ClassLoader
-                    throw new ServletException
+            InstanceManager instanceManager = ((StandardContext)getParent()).getInstanceManager();
+            try {
+                servlet = (Servlet) instanceManager.newInstance(actualClass);
+            } catch (ClassCastException e) {
+                unavailable(null);
+                // Restore the context ClassLoader
+                throw new ServletException
                     (sm.getString("standardWrapper.notServlet", actualClass), e);
-                } catch (Throwable e) {
-                    unavailable(null);
+            } catch (Throwable e) {
+                unavailable(null);
 
-                    // Added extra log statement for Bugzilla 36630:
-                    // http://issues.apache.org/bugzilla/show_bug.cgi?id=36630
-                    if(log.isDebugEnabled()) {
-                        log.debug(sm.getString("standardWrapper.instantiate", actualClass), e);
-                    }
-
-                    // Restore the context ClassLoader
-                    throw new ServletException
-                    (sm.getString("standardWrapper.instantiate", actualClass), e);
+                // Added extra log statement for Bugzilla 36630:
+                // http://issues.apache.org/bugzilla/show_bug.cgi?id=36630
+                if(log.isDebugEnabled()) {
+                    log.debug(sm.getString("standardWrapper.instantiate", actualClass), e);
                 }
-            } else {
-                servlet = servletInstance;
-                servletInstance = null;
+
+                // Restore the context ClassLoader
+                throw new ServletException
+                    (sm.getString("standardWrapper.instantiate", actualClass), e);
             }
 
             // Special handling for ContainerServlet instances
@@ -1293,7 +1123,9 @@ public class StandardWrapper
      */
     public void removeInitParameter(String name) {
 
-        parameters.remove(name);
+        synchronized (parameters) {
+            parameters.remove(name);
+        }
         fireContainerEvent("removeInitParameter", name);
 
     }
@@ -1332,8 +1164,12 @@ public class StandardWrapper
      * @param name Security role used within this servlet to be removed
      */
     public void removeSecurityReference(String name) {
-        references.remove(name);
+
+        synchronized (references) {
+            references.remove(name);
+        }
         fireContainerEvent("removeSecurityReference", name);
+
     }
 
 
@@ -1342,7 +1178,7 @@ public class StandardWrapper
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         if (getParent() != null) {
             sb.append(getParent().toString());
             sb.append(".");
@@ -1419,7 +1255,7 @@ public class StandardWrapper
 
             // Annotation processing
             if (!((Context) getParent()).getIgnoreAnnotations()) {
-               ((Context) getParent()).getInstanceManager().destroyInstance(instance);
+               ((StandardContext)getParent()).getInstanceManager().destroyInstance(instance);
             }
 
         } catch (Throwable t) {
@@ -1462,7 +1298,7 @@ public class StandardWrapper
                     }
                     // Annotation processing
                     if (!((Context) getParent()).getIgnoreAnnotations()) {
-                       ((Context) getParent()).getInstanceManager().destroyInstance(s);
+                       ((StandardContext)getParent()).getInstanceManager().destroyInstance(s);
                     }
                 }
             } catch (Throwable t) {
@@ -1507,7 +1343,11 @@ public class StandardWrapper
      * servlet.  If none are defined, an empty Enumeration is returned.
      */
     public Enumeration getInitParameterNames() {
-        return (new Enumerator(parameters.keySet()));
+
+        synchronized (parameters) {
+            return (new Enumerator(parameters.keySet()));
+        }
+
     }
 
 

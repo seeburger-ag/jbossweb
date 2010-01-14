@@ -86,7 +86,7 @@ public class ContextLocalEjb extends ResourceBase implements Serializable {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("ContextLocalEjb[");
+        StringBuffer sb = new StringBuffer("ContextLocalEjb[");
         sb.append("name=");
         sb.append(getName());
         if (getDescription() != null) {

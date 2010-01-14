@@ -32,11 +32,13 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Service;
+import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
+import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 
@@ -62,10 +64,6 @@ public class Connector
     public static final boolean RECYCLE_FACADES =
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.RECYCLE_FACADES", "false")).booleanValue();
 
-    
-    protected static final boolean X_POWERED_BY = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.X_POWERED_BY", "false")).booleanValue();
-    
 
     // ------------------------------------------------------------ Constructor
 
@@ -117,10 +115,10 @@ public class Connector
     protected boolean enableLookups = false;
 
 
-    /**
+    /*
      * Is generation of X-Powered-By response header enabled/disabled?
      */
-    protected boolean xpoweredBy = X_POWERED_BY;
+    protected boolean xpoweredBy = false;
 
 
     /**
@@ -247,6 +245,18 @@ public class Connector
      * Coyote adapter.
      */
     protected Adapter adapter = null;
+
+
+     /**
+      * Mapper.
+      */
+     protected Mapper mapper = new Mapper();
+
+
+     /**
+      * Mapper listener.
+      */
+     protected MapperListener mapperListener = new MapperListener(mapper);
 
 
      /**
@@ -462,6 +472,16 @@ public class Connector
         return (info);
 
     }
+
+
+     /**
+      * Return the mapper.
+      */
+     public Mapper getMapper() {
+
+         return (mapper);
+
+     }
 
 
     /**
@@ -859,16 +879,6 @@ public class Connector
 
 
     /**
-     * Indicates if the protocol handler support IO events.
-     *
-     * @return true if IO events are supported
-     */
-    public boolean hasIoEvents() {
-        return protocolHandler.hasIoEvents();
-    }
-
-
-    /**
      * Enables or disables the generation of an X-Powered-By header (with value
      * Servlet/2.4) for all servlet-generated responses returned by this
      * Connector.
@@ -993,10 +1003,11 @@ public class Connector
 
         this.initialized = true;
 
-        if (oname == null) {
+        if( oname == null && (container instanceof StandardEngine)) {
             try {
                 // we are loaded directly, via API - and no name was given to us
-                oname = createObjectName(container.getName(), "Connector");
+                StandardEngine cb=(StandardEngine)container;
+                oname = createObjectName(cb.getName(), "Connector");
                 Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null);
                 controller=oname;
@@ -1100,6 +1111,22 @@ public class Connector
                  ("coyoteConnector.protocolHandlerStartFailed", e));
         }
 
+        if( this.domain != null ) {
+            mapperListener.setDomain( domain );
+            //mapperListener.setEngine( service.getContainer().getName() );
+            mapperListener.init();
+            try {
+                ObjectName mapperOname = createObjectName(this.domain,"Mapper");
+                if (log.isDebugEnabled())
+                    log.debug(sm.getString(
+                            "coyoteConnector.MapperRegistration", mapperOname));
+                Registry.getRegistry(null, null).registerComponent
+                    (mapper, mapperOname, "Mapper");
+            } catch (Exception ex) {
+                log.error(sm.getString
+                        ("coyoteConnector.protocolRegistrationFailed"), ex);
+            }
+        }
     }
 
 
@@ -1120,6 +1147,9 @@ public class Connector
         started = false;
 
         try {
+            mapperListener.destroy();
+            Registry.getRegistry(null, null).unregisterComponent
+                (createObjectName(this.domain,"Mapper"));
             Registry.getRegistry(null, null).unregisterComponent
                 (createObjectName(this.domain,"ProtocolHandler"));
         } catch (MalformedObjectNameException e) {

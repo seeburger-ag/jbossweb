@@ -202,7 +202,7 @@ public class SetRootRule extends Rule {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("SetRootRule[");
+        StringBuffer sb = new StringBuffer("SetRootRule[");
         sb.append("methodName=");
         sb.append(methodName);
         sb.append(", paramType=");

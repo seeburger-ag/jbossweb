@@ -74,6 +74,11 @@ class Parser implements TagConstants {
 
     private static final String JAVAX_BODY_CONTENT_TEMPLATE_TEXT = "JAVAX_BODY_CONTENT_TEMPLATE_TEXT";
 
+    private static final boolean STRICT_QUOTE_ESCAPING = Boolean.valueOf(
+            System.getProperty(
+                    "org.apache.jasper.compiler.Parser.STRICT_QUOTE_ESCAPING",
+            "true")).booleanValue();
+
     /**
      * The constructor
      */
@@ -213,7 +218,7 @@ class Parser implements TagConstants {
     private String parseName() throws JasperException {
         char ch = (char) reader.peekChar();
         if (Character.isLetter(ch) || ch == '_' || ch == ':') {
-            StringBuilder buf = new StringBuilder();
+            StringBuffer buf = new StringBuffer();
             buf.append(ch);
             reader.nextChar();
             ch = (char) reader.peekChar();
@@ -240,23 +245,64 @@ class Parser implements TagConstants {
             err.jspError(start, "jsp.error.attribute.unterminated", watch);
         }
 
-        String ret = null;
-        try {
-            char quote = 0;
-            if (watch.length() == 1) {
-                quote = watch.charAt(0);
-            }
-            ret = AttributeParser.getUnquoted(reader.getText(start, stop),
-                    quote, pageInfo.isELIgnored());
-        } catch (IllegalArgumentException iae) {
-            err.jspError(start, iae.getMessage());
-        }
+        String ret = parseQuoted(start, reader.getText(start, stop),
+                watch.charAt(watch.length() - 1));
         if (watch.length() == 1) // quote
             return ret;
 
-        // Put back delimiter '<%=' and '%>', since they are needed if the
+        // putback delimiter '<%=' and '%>', since they are needed if the
         // attribute does not allow RTexpression.
         return "<%=" + ret + "%>";
+    }
+
+    /**
+     * QuotedChar ::= '&apos;' | '&quot;' | '\\' | '\"' | "\'" | '\>' | '\$' |
+     * Char
+     */
+    private String parseQuoted(Mark start, String tx, char quote)
+            throws JasperException {
+        StringBuffer buf = new StringBuffer();
+        int size = tx.length();
+        int i = 0;
+        while (i < size) {
+            char ch = tx.charAt(i);
+            if (ch == '&') {
+                if (i + 5 < size && tx.charAt(i + 1) == 'a'
+                        && tx.charAt(i + 2) == 'p' && tx.charAt(i + 3) == 'o'
+                        && tx.charAt(i + 4) == 's' && tx.charAt(i + 5) == ';') {
+                    buf.append('\'');
+                    i += 6;
+                } else if (i + 5 < size && tx.charAt(i + 1) == 'q'
+                        && tx.charAt(i + 2) == 'u' && tx.charAt(i + 3) == 'o'
+                        && tx.charAt(i + 4) == 't' && tx.charAt(i + 5) == ';') {
+                    buf.append('"');
+                    i += 6;
+                } else {
+                    buf.append(ch);
+                    ++i;
+                }
+            } else if (ch == '\\' && i + 1 < size) {
+                ch = tx.charAt(i + 1);
+                if (ch == '\\' || ch == '\"' || ch == '\'' || ch == '>') {
+                    // \ " and ' are always unescaped regardless of if they are
+                    // inside or outside of an EL expression. JSP.1.6 takes
+                    // precedence over JSP.1.3.10 (confirmed with EG).
+                    buf.append(ch);
+                    i += 2;
+                } else {
+                    buf.append('\\');
+                    ++i;
+                }
+            } else if (ch == quote && STRICT_QUOTE_ESCAPING) {
+                // Unescaped quote character
+                err.jspError(start, "jsp.error.attribute.noescape", tx,
+                        "" + quote);
+            } else {
+                buf.append(ch);
+                ++i;
+            }
+        }
+        return buf.toString();
     }
 
     private String parseScriptText(String tx) {
@@ -1168,9 +1214,6 @@ class Parser implements TagConstants {
         // Check if this is a user-defined tag.
         String uri = pageInfo.getURI(prefix);
         if (uri == null) {
-            if (pageInfo.isErrorOnUndeclaredNamespace()) {
-                err.jspError(start, "jsp.error.bad_tag", shortTagName, prefix);
-            }
             reader.reset(start);
             // Remember the prefix for later error checking
             pageInfo.putNonCustomTagPrefix(prefix, reader.mark());
@@ -1734,21 +1777,11 @@ class Parser implements TagConstants {
         while (reader.hasMoreInput()) {
             start = reader.mark();
             if (reader.matches("%--")) {
-                // Comment
-                reader.skipUntil("--%>");
+                parseComment(parent);
             } else if (reader.matches("%@")) {
                 parseDirective(parent);
             } else if (reader.matches("jsp:directive.")) {
                 parseXMLDirective(parent);
-            } else if (reader.matches("%!")) {
-                // Declaration
-                reader.skipUntil("%>");
-            } else if (reader.matches("%=")) {
-                // Expression
-                reader.skipUntil("%>");
-            } else if (reader.matches("%")) {
-                // Scriptlet
-                reader.skipUntil("%>");
             }
             reader.skipUntil("<");
         }

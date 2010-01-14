@@ -29,7 +29,9 @@ import java.util.zip.ZipEntry;
 import javax.el.FunctionMapper;
 import javax.servlet.jsp.el.ExpressionEvaluator;
 
+
 import org.apache.el.ExpressionFactoryImpl;
+import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.el.ExpressionEvaluatorImpl;
@@ -100,7 +102,7 @@ public class JspUtil {
             int n = s.indexOf("%\\>");
             if (n < 0)
                 break;
-            StringBuilder sb = new StringBuilder(s.substring(0, n));
+            StringBuffer sb = new StringBuffer(s.substring(0, n));
             sb.append("%>");
             sb.append(s.substring(n + 3));
             s = sb.toString();
@@ -333,7 +335,7 @@ public class JspUtil {
      */
     public static String escapeXml(String s) {
         if (s == null) return null;
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         for(int i=0; i<s.length(); i++) {
             char c = s.charAt(i);
             if (c == '<') {
@@ -358,7 +360,7 @@ public class JspUtil {
      * string <tt>with</tt>.
      */
     public static String replace(String name, char replace, String with) {
-    StringBuilder buf = new StringBuilder();
+    StringBuffer buf = new StringBuffer();
     int begin = 0;
     int end;
     int last = name.length();
@@ -463,8 +465,6 @@ public class JspUtil {
         c = float.class;
     else if ("double".equals(type))
         c = double.class;
-    else if ("void".equals(type))
-        c = void.class;
     else if (type.indexOf('[') < 0)
         c = loader.loadClass(type);
 
@@ -506,7 +506,7 @@ public class JspUtil {
      * or, if it's a primitive, the name of its correspondent boxed
      * type.
          */
-    String targetType = getCanonicalName(expectedType);
+    String targetType = expectedType.getName();
     String primitiveConverterMethod = null;
     if (expectedType.isPrimitive()) {
         if (expectedType.equals(Boolean.TYPE)) {
@@ -555,7 +555,7 @@ public class JspUtil {
         // the generated Servlet/SimpleTag implements FunctionMapper, so
         // that machinery is already in place (mroth).
     targetType = toJavaSourceType(targetType);
-    StringBuilder call = new StringBuilder(
+    StringBuffer call = new StringBuffer(
              "(" + targetType + ") "
                + "org.apache.jasper.runtime.PageContextImpl.proprietaryEvaluate"
                + "(" + Generator.quote(expression) + ", "
@@ -907,7 +907,7 @@ public class JspUtil {
     }
 
     private static String getClassNameBase(String urn) {
-        StringBuilder base = new StringBuilder("org.apache.jsp.tag.meta.");
+        StringBuffer base = new StringBuffer("org.apache.jsp.tag.meta.");
         if (urn != null) {
             base.append(makeJavaPackage(urn));
             base.append('.');
@@ -924,7 +924,7 @@ public class JspUtil {
      */
     public static final String makeJavaPackage(String path) {
         String classNameComponents[] = split(path,"/");
-        StringBuilder legalClassNames = new StringBuilder();
+        StringBuffer legalClassNames = new StringBuffer();
         for (int i = 0; i < classNameComponents.length; i++) {
             legalClassNames.append(makeJavaIdentifier(classNameComponents[i]));
             if (i < classNameComponents.length - 1) {
@@ -970,8 +970,8 @@ public class JspUtil {
      * @return Legal Java identifier corresponding to the given identifier
      */
     public static final String makeJavaIdentifier(String identifier) {
-        StringBuilder modifiedIdentifier = 
-            new StringBuilder(identifier.length());
+        StringBuffer modifiedIdentifier = 
+            new StringBuffer(identifier.length());
         if (!Character.isJavaIdentifierStart(identifier.charAt(0))) {
             modifiedIdentifier.append('_');
         }
@@ -1123,7 +1123,7 @@ public class JspUtil {
         break;
         }
     }
-    StringBuilder resultType = new StringBuilder(t);
+    StringBuffer resultType = new StringBuffer(t);
     for (; dims > 0; dims--) {
         resultType.append("[]");
     }
@@ -1146,7 +1146,7 @@ public class JspUtil {
             return binaryName;
         }
 
-        StringBuilder buf = new StringBuilder(binaryName);
+        StringBuffer buf = new StringBuffer(binaryName);
         do {
             buf.setCharAt(c.getName().length(), '.');
             c = c.getDeclaringClass();

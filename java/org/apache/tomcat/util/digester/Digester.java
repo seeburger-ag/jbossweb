@@ -143,7 +143,7 @@ public class Digester extends DefaultHandler {
     /**
      * The body text of the current element.
      */
-    protected StringBuilder bodyText = new StringBuilder();
+    protected StringBuffer bodyText = new StringBuffer();
 
 
     /**
@@ -280,7 +280,19 @@ public class Digester extends DefaultHandler {
      */
     protected Rules rules = null;
 
-
+   /**
+     * The XML schema language to use for validating an XML instance. By
+     * default this value is set to <code>W3C_XML_SCHEMA</code>
+     */
+    protected String schemaLanguage = W3C_XML_SCHEMA;
+    
+        
+    /**
+     * The XML schema to use for validating an XML instance.
+     */
+    protected String schemaLocation = null;
+    
+    
     /**
      * The object stack being constructed.
      */
@@ -480,28 +492,13 @@ public class Digester extends DefaultHandler {
 
     /**
      * Return the SAXParserFactory we will use, creating one if necessary.
-     * @throws ParserConfigurationException 
-     * @throws SAXNotSupportedException 
-     * @throws SAXNotRecognizedException 
      */
-    public SAXParserFactory getFactory()
-    throws SAXNotRecognizedException, SAXNotSupportedException,
-    ParserConfigurationException {
+    public SAXParserFactory getFactory() {
 
         if (factory == null) {
             factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(namespaceAware);
             factory.setValidating(validating);
-            if (validating) {
-                // Enable DTD validation
-                factory.setFeature(
-                        "http://xml.org/sax/features/validation",
-                        true);
-                // Enable schema validation
-                factory.setFeature(
-                        "http://apache.org/xml/features/validation/schema",
-                        true);
-            }
         }
         return (factory);
 
@@ -696,7 +693,16 @@ public class Digester extends DefaultHandler {
 
         // Create a new parser
         try {
-            parser = getFactory().newSAXParser();
+            if (validating) {
+                Properties properties = new Properties();
+                properties.put("SAXParserFactory", getFactory());
+                if (schemaLocation != null) {
+                    properties.put("schemaLocation", schemaLocation);
+                    properties.put("schemaLanguage", schemaLanguage);
+                }
+                parser = ParserFeatureSetterFactory.newSAXParser(properties);               } else {
+                parser = getFactory().newSAXParser();
+            }
         } catch (Exception e) {
             log.error("Digester.getParser: ", e);
             return (null);
@@ -799,6 +805,50 @@ public class Digester extends DefaultHandler {
         this.rules.setDigester(this);
 
     }
+
+
+    /**
+     * Return the XML Schema URI used for validating an XML instance.
+     */
+    public String getSchema() {
+
+        return (this.schemaLocation);
+
+    }
+
+
+    /**
+     * Set the XML Schema URI used for validating a XML Instance.
+     *
+     * @param schemaLocation a URI to the schema.
+     */
+    public void setSchema(String schemaLocation){
+
+        this.schemaLocation = schemaLocation;
+
+    }   
+    
+
+    /**
+     * Return the XML Schema language used when parsing.
+     */
+    public String getSchemaLanguage() {
+
+        return (this.schemaLanguage);
+
+    }
+
+
+    /**
+     * Set the XML Schema language used when parsing. By default, we use W3C.
+     *
+     * @param schemaLanguage a URI to the schema language.
+     */
+    public void setSchemaLanguage(String schemaLanguage){
+
+        this.schemaLanguage = schemaLanguage;
+
+    }   
 
 
     /**
@@ -1069,7 +1119,7 @@ public class Digester extends DefaultHandler {
         }
 
         // Recover the body text from the surrounding element
-        bodyText = (StringBuilder) bodyTexts.pop();
+        bodyText = (StringBuffer) bodyTexts.pop();
         if (debug) {
             log.debug("  Popping body text '" + bodyText.toString() + "'");
         }
@@ -1271,7 +1321,7 @@ public class Digester extends DefaultHandler {
         if (debug) {
             log.debug("  Pushing body text '" + bodyText.toString() + "'");
         }
-        bodyText = new StringBuilder();
+        bodyText = new StringBuffer();
 
         // the actual element name is either in localName or qName, depending 
         // on whether the parser is namespace aware
@@ -1281,7 +1331,7 @@ public class Digester extends DefaultHandler {
         }
 
         // Compute the current matching rule
-        StringBuilder sb = new StringBuilder(match);
+        StringBuffer sb = new StringBuffer(match);
         if (match.length() > 0) {
             sb.append('/');
         }
@@ -1433,6 +1483,11 @@ public class Digester extends DefaultHandler {
             entityURL = (String) entityValidator.get(publicId);
         }
          
+        // Redirect the schema location to a local destination
+        if (schemaLocation != null && entityURL == null && systemId != null){
+            entityURL = (String)entityValidator.get(systemId);
+        } 
+
         if (entityURL == null) { 
             if (systemId == null) {
                 // cannot resolve
@@ -2825,11 +2880,11 @@ public class Digester extends DefaultHandler {
 
 
     /**
-     * Return a new StringBuilder containing the same contents as the
+     * Return a new StringBuffer containing the same contents as the
      * input buffer, except that data of form ${varname} have been
      * replaced by the value of that var as defined in the system property.
      */
-    private StringBuilder updateBodyText(StringBuilder bodyText) {
+    private StringBuffer updateBodyText(StringBuffer bodyText) {
         String in = bodyText.toString();
         String out;
         try {
@@ -2843,7 +2898,7 @@ public class Digester extends DefaultHandler {
             // a new buffer
             return bodyText;
         } else {
-            return new StringBuilder(out);
+            return new StringBuffer(out);
         }
     }
 

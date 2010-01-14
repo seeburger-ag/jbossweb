@@ -1,23 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.apache.tomcat.util.net;
@@ -43,13 +38,16 @@ import org.apache.tomcat.util.res.StringManager;
 import org.jboss.logging.Logger;
 
 /**
- * APR endpoint, providing the following services:
+ * APR tailored thread pool, providing the following services:
  * <ul>
  * <li>Socket acceptor thread</li>
  * <li>Socket poller thread</li>
  * <li>Sendfile thread</li>
- * <li>Simple Worker thread pool, with possible use of executors</li>
+ * <li>Worker threads pool</li>
  * </ul>
+ *
+ * When switching to Java 5, there's an opportunity to use the virtual
+ * machine's thread pool.
  *
  * @author Mladen Turk
  * @author Remy Maucherat
@@ -309,6 +307,14 @@ public class AprEndpoint {
 
 
     /**
+     * Allow comet request handling.
+     */
+    protected boolean useComet = true;
+    public void setUseComet(boolean useComet) { this.useComet = useComet; }
+    public boolean getUseComet() { return useComet; }
+
+
+    /**
      * The socket poller.
      */
     protected Poller poller = null;
@@ -318,11 +324,11 @@ public class AprEndpoint {
 
 
     /**
-     * The socket poller used for event support.
+     * The socket poller used for Comet support.
      */
-    protected Poller eventPoller = null;
-    public Poller getEventPoller() {
-        return eventPoller;
+    protected Poller cometPoller = null;
+    public Poller getCometPoller() {
+        return cometPoller;
     }
 
 
@@ -333,6 +339,18 @@ public class AprEndpoint {
     public Sendfile getSendfile() {
         return sendfile;
     }
+
+
+    /**
+     * Dummy maxSpareThreads property.
+     */
+    public int getMaxSpareThreads() { return 0; }
+
+
+    /**
+     * Dummy minSpareThreads property.
+     */
+    public int getMinSpareThreads() { return 0; }
 
 
     /**
@@ -692,13 +710,13 @@ public class AprEndpoint {
             pollerThread.setDaemon(true);
             pollerThread.start();
 
-            // Start event poller thread
-            eventPoller = new Poller(true);
-            eventPoller.init();
-            Thread eventPollerThread = new Thread(eventPoller, getName() + "-EventPoller");
-            eventPollerThread.setPriority(threadPriority);
-            eventPollerThread.setDaemon(true);
-            eventPollerThread.start();
+            // Start comet poller thread
+            cometPoller = new Poller(true);
+            cometPoller.init();
+            Thread cometPollerThread = new Thread(cometPoller, getName() + "-CometPoller");
+            cometPollerThread.setPriority(threadPriority);
+            cometPollerThread.setDaemon(true);
+            cometPollerThread.start();
 
             // Start sendfile thread
             if (useSendfile) {
@@ -751,8 +769,8 @@ public class AprEndpoint {
             unlockAccept();
             poller.destroy();
             poller = null;
-            eventPoller.destroy();
-            eventPoller = null;
+            cometPoller.destroy();
+            cometPoller = null;
             if (useSendfile) {
                 sendfile.destroy();
                 sendfile = null;
@@ -1355,9 +1373,9 @@ public class AprEndpoint {
         protected SocketList localAddList = null;
 
         /**
-         * Event mode flag.
+         * Comet mode flag.
          */
-        protected boolean event = true;
+        protected boolean comet = true;
 
         /**
          * Structure used for storing timeouts.
@@ -1377,8 +1395,8 @@ public class AprEndpoint {
         protected int connectionCount = 0;
         public int getConnectionCount() { return connectionCount; }
 
-        public Poller(boolean event) {
-            this.event = event;
+        public Poller(boolean comet) {
+            this.comet = comet;
         }
         
         /**
@@ -1395,6 +1413,10 @@ public class AprEndpoint {
                 // The maximum per poller to get reasonable performance is 1024
                 // Adjust poller size so that it won't reach the limit
                 actualPollerSize = 1024;
+            }
+            int timeout = keepAliveTimeout;
+            if (timeout < 0) {
+                timeout = soTimeout;
             }
             
             // At the moment, setting the timeout is useless, but it could get used
@@ -1448,7 +1470,7 @@ public class AprEndpoint {
             // Close all sockets in the add queue
             SocketInfo info = addList.get();
             while (info != null) {
-                if (!event || (event && !processSocket(info.socket, SocketStatus.STOP))) {
+                if (!comet || (comet && !processSocket(info.socket, SocketStatus.STOP))) {
                     Socket.destroy(info.socket);
                 }
                 info = addList.get();
@@ -1459,7 +1481,7 @@ public class AprEndpoint {
                 int rv = Poll.pollset(pollers[i], desc);
                 if (rv > 0) {
                     for (int n = 0; n < rv; n++) {
-                        if (!event || (event && !processSocket(desc[n*2+1], SocketStatus.STOP))) {
+                        if (!comet || (comet && !processSocket(desc[n*2+1], SocketStatus.STOP))) {
                             Socket.destroy(desc[n*2+1]);
                         }
                     }
@@ -1482,10 +1504,6 @@ public class AprEndpoint {
             if (timeout < 0) {
                 timeout = soTimeout;
             }
-            if (timeout <= 0) {
-                // Always put a timeout in
-                timeout = Integer.MAX_VALUE;
-            }
             boolean ok = false;
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
@@ -1497,7 +1515,7 @@ public class AprEndpoint {
             }
             if (!ok) {
                 // Can't do anything: close the socket right away
-                if (!event || (event && !processSocket(socket, SocketStatus.ERROR))) {
+                if (!comet || (comet && !processSocket(socket, SocketStatus.ERROR))) {
                     Socket.destroy(socket);
                 }
             }
@@ -1522,10 +1540,6 @@ public class AprEndpoint {
             if (timeout < 0) {
                 timeout = soTimeout;
             }
-            if (timeout <= 0) {
-                // Always put a timeout in
-                timeout = Integer.MAX_VALUE;
-            }
             boolean ok = false;
             synchronized (this) {
                 // Add socket to the list. Newly added sockets will wait
@@ -1539,7 +1553,7 @@ public class AprEndpoint {
             }
             if (!ok) {
                 // Can't do anything: close the socket right away
-                if (!event || (event && !processSocket(socket, SocketStatus.ERROR))) {
+                if (!comet || (comet && !processSocket(socket, SocketStatus.ERROR))) {
                     Socket.destroy(socket);
                 }
             }
@@ -1596,7 +1610,7 @@ public class AprEndpoint {
             long socket = timeouts.check(date);
             while (socket != 0) {
                 removeFromPoller(socket);
-                if (!event || (event && !processSocket(socket, SocketStatus.TIMEOUT))) {
+                if (!comet || (comet && !processSocket(socket, SocketStatus.TIMEOUT))) {
                     Socket.destroy(socket);
                 }
                 socket = timeouts.check(date);
@@ -1609,7 +1623,7 @@ public class AprEndpoint {
          */
         public String toString() {
             StringBuffer buf = new StringBuffer();
-            buf.append("Poller event=[").append(event).append("]");
+            buf.append("Poller comet=[").append(comet).append("]");
             long[] res = new long[actualPollerSize * 2];
             for (int i = 0; i < pollers.length; i++) {
                 int count = Poll.pollset(pollers[i], res);
@@ -1680,7 +1694,7 @@ public class AprEndpoint {
                                             | ((info.write()) ? Poll.APR_POLLOUT : 0);
                                         if (!addToPoller(info.socket, events)) {
                                             // Can't do anything: close the socket right away
-                                            if (!event || (event && !processSocket(info.socket, SocketStatus.ERROR))) {
+                                            if (!comet || (comet && !processSocket(info.socket, SocketStatus.ERROR))) {
                                                 Socket.destroy(info.socket);
                                             }
                                         } else {
@@ -1698,14 +1712,14 @@ public class AprEndpoint {
                                     }
                                 } else {
                                     // Store timeout
-                                    if (event) {
+                                    if (comet) {
                                         removeFromPoller(info.socket);
                                     }
                                     int events = ((info.read()) ? Poll.APR_POLLIN : 0)
                                         | ((info.write()) ? Poll.APR_POLLOUT : 0);
                                     if (!addToPoller(info.socket, events)) {
                                         // Can't do anything: close the socket right away
-                                        if (!event || (event && !processSocket(info.socket, SocketStatus.ERROR))) {
+                                        if (!comet || (comet && !processSocket(info.socket, SocketStatus.ERROR))) {
                                             Socket.destroy(info.socket);
                                         }
                                     } else {
@@ -1714,7 +1728,7 @@ public class AprEndpoint {
                                 }
                             } else {
                                 // This is either a resume or a suspend.
-                                if (event) {
+                                if (comet) {
                                     if (info.resume()) {
                                         // Resume event
                                         timeouts.remove(info.socket);
@@ -1727,7 +1741,7 @@ public class AprEndpoint {
                                         timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
                                     }
                                 } else {
-                                    // Should never happen, if not event, the socket is always put in
+                                    // Should never happen, if not Comet, the socket is always put in
                                     // the list with the read flag.
                                     timeouts.remove(info.socket);
                                     Socket.destroy(info.socket);
@@ -1743,7 +1757,7 @@ public class AprEndpoint {
                         
                         // Flags to ask to reallocate the pool
                         boolean reset = false;
-                        //ArrayList<Long> skip = null;
+                        ArrayList<Long> skip = null;
                         
                         int rv = 0;
                         // Iterate on each pollers, but no need to poll empty pollers
@@ -1756,15 +1770,24 @@ public class AprEndpoint {
                             for (int n = 0; n < rv; n++) {
                                 timeouts.remove(desc[n*2+1]);
                                 // Check for failed sockets and hand this socket off to a worker
-                                if (event) {
-                                    // Event processes either a read or a write depending on what the poller returns
+                                if (comet) {
+                                    // Comet processes either a read or a write depending on what the poller returns
                                     if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
-                                            || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)
-                                            || ((desc[n*2] & Poll.APR_POLLNVAL) == Poll.APR_POLLNVAL)) {
+                                            || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
                                         if (!processSocket(desc[n*2+1], SocketStatus.ERROR)) {
                                             // Close socket and clear pool
                                             Socket.destroy(desc[n*2+1]);
                                         }
+                                        // FIXME: decide vs destroy
+                                        /*
+                                        if ((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP) {
+                                            // Destroy and reallocate the poller
+                                            reset = true;
+                                            if (skip == null) {
+                                                skip = new ArrayList<Long>();
+                                            }
+                                            skip.add(desc[n*2+1]);
+                                        }*/
                                     } else if ((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) {
                                         if (!processSocket(desc[n*2+1], SocketStatus.OPEN_READ)) {
                                             // Close socket and clear pool
@@ -1775,27 +1798,22 @@ public class AprEndpoint {
                                             // Close socket and clear pool
                                             Socket.destroy(desc[n*2+1]);
                                         }
-                                    } else {
-                                        // Unknown event
-                                        log.warn(sm.getString("endpoint.poll.flags", "" + desc[n*2]));
-                                        if (!processSocket(desc[n*2+1], SocketStatus.ERROR)) {
-                                            // Close socket and clear pool
-                                            Socket.destroy(desc[n*2+1]);
-                                        }
                                     }
                                 } else if (((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP)
-                                        || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)
-                                        || ((desc[n*2] & Poll.APR_POLLNVAL) == Poll.APR_POLLNVAL)) {
+                                        || ((desc[n*2] & Poll.APR_POLLERR) == Poll.APR_POLLERR)) {
                                     // Close socket and clear pool
                                     Socket.destroy(desc[n*2+1]);
-                                } else if ((desc[n*2] & Poll.APR_POLLIN) == Poll.APR_POLLIN) {
-                                    if (!processSocket(desc[n*2+1])) {
-                                        // Close socket and clear pool
-                                        Socket.destroy(desc[n*2+1]);
-                                    }
-                                } else {
-                                    // Unknown event
-                                    log.warn(sm.getString("endpoint.poll.flags", "" + desc[n*2]));
+                                    // FIXME: decide vs destroy
+                                    /*
+                                    if ((desc[n*2] & Poll.APR_POLLHUP) == Poll.APR_POLLHUP) {
+                                        // Destroy and reallocate the poller
+                                        reset = true;
+                                        if (skip == null) {
+                                            skip = new ArrayList<Long>();
+                                        }
+                                        skip.add(desc[n*2+1]);
+                                    }*/
+                                } else if (!processSocket(desc[n*2+1])) {
                                     // Close socket and clear pool
                                     Socket.destroy(desc[n*2+1]);
                                 }
@@ -1817,9 +1835,21 @@ public class AprEndpoint {
                             // Reallocate the current poller
                             int count = Poll.pollset(pollers[i], desc);
                             long newPoller = allocatePoller(actualPollerSize, pool, -1);
-                            // Don't restore connections for now, since I have not tested it
+                            // FIXME: don't restore connections for now, since I have not tested it
                             pollerSpace[i] = actualPollerSize;
                             connectionCount -= count;
+                            /*
+                            for (int j = 0; j < count; j++) {
+                                int events = (int) desc[2*j];
+                                long socket = desc[2*j+1];
+                                Poll.remove(pollers[i], socket);
+                                if (skip != null && skip.contains(socket)) {
+                                    continue;
+                                }
+                                if (Poll.add(newPoller, socket, events) != Status.APR_SUCCESS) {
+                                    // Skip
+                                }
+                            }*/
                             Poll.destroy(pollers[i]);
                             pollers[i] = newPoller;
                         }
@@ -1829,7 +1859,7 @@ public class AprEndpoint {
                     // Process socket timeouts
                     if (soTimeout > 0 && maintain++ > 1000 && running) {
                         // This works and uses only one timeout mechanism for everything, but the
-                        // non event poller might be a bit faster by using the old maintain.
+                        // non Comet poller might be a bit faster by using the old maintain.
                         maintain = 0;
                         maintain();
                     }

@@ -140,7 +140,7 @@ public class ResourceRef
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("ResourceRef[");
+        StringBuffer sb = new StringBuffer("ResourceRef[");
         sb.append("className=");
         sb.append(getClassName());
         sb.append(",factoryClassLocation=");
