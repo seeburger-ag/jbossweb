@@ -37,7 +37,7 @@ public final class Cookies { // extends MultiMap {
 
     private static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger(Cookies.class );
-
+    
     // expected average number of cookies per request
     public static final int INITIAL_SIZE=4; 
     ServerCookie scookies[]=new ServerCookie[INITIAL_SIZE];
@@ -46,15 +46,21 @@ public final class Cookies { // extends MultiMap {
 
     MimeHeaders headers;
 
+    /**
+     * If true, cookie values are allowed to contain an equals character without
+     * being quoted.
+     */
+    public static final boolean ALLOW_EQUALS_IN_VALUE;
+    
     /*
     List of Separator Characters (see isSeparator())
     Excluding the '/' char violates the RFC, but 
     it looks like a lot of people put '/'
     in unquoted values: '/': ; //47 
-    '\t':9 ' ':32 '\"':34 '\'':39 '(':40 ')':41 ',':44 ':':58 ';':59 '<':60 
+    '\t':9 ' ':32 '\"':34 '(':40 ')':41 ',':44 ':':58 ';':59 '<':60 
     '=':61 '>':62 '?':63 '@':64 '[':91 '\\':92 ']':93 '{':123 '}':125
     */
-    public static final char SEPARATORS[] = { '\t', ' ', '\"', '\'', '(', ')', ',', 
+    public static final char SEPARATORS[] = { '\t', ' ', '\"', '(', ')', ',', 
         ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}' };
 
     protected static final boolean separators[] = new boolean[128];
@@ -65,6 +71,10 @@ public final class Cookies { // extends MultiMap {
         for (int i = 0; i < SEPARATORS.length; i++) {
             separators[SEPARATORS[i]] = true;
         }
+        
+        ALLOW_EQUALS_IN_VALUE = Boolean.valueOf(System.getProperty(
+                "org.apache.tomcat.util.http.ServerCookie.ALLOW_EQUALS_IN_VALUE",
+                "false")).booleanValue();
     }
 
     /**
@@ -367,7 +377,7 @@ public final class Cookies { // extends MultiMap {
 
             // Get the cookie name. This must be a token            
             valueEnd = valueStart = nameStart = pos; 
-            pos = nameEnd = getTokenEndPosition(bytes,pos,end);
+            pos = nameEnd = getTokenEndPosition(bytes,pos,end,true);
 
             // Skip whitespace
             while (pos < end && isWhiteSpace(bytes[pos])) {pos++; }; 
@@ -414,12 +424,14 @@ public final class Cookies { // extends MultiMap {
                     // The position is OK (On a delimiter)
                     break;
                 default:;
-                    if (!isSeparator(bytes[pos])) {
+                    if (!isSeparator(bytes[pos]) ||
+                            bytes[pos] == '=' && ALLOW_EQUALS_IN_VALUE) {
                         // Token
                         valueStart=pos;
                         // getToken returns the position at the delimeter
                         // or other non-token character
-                        valueEnd=getTokenEndPosition(bytes, valueStart, end);
+                        valueEnd = getTokenEndPosition(bytes, valueStart, end,
+                                false);
                         // We need pos to advance
                         pos = valueEnd;
                     } else  {
@@ -551,13 +563,26 @@ public final class Cookies { // extends MultiMap {
     }
 
     /**
+     * @deprecated - Use private method
+     * {@link #getTokenEndPosition(byte[], int, int, boolean)} instead
+     */
+    public static final int getTokenEndPosition(byte bytes[], int off, int end){
+        return getTokenEndPosition(bytes, off, end, true);
+    }
+    
+    /**
      * Given the starting position of a token, this gets the end of the
      * token, with no separator characters in between.
      * JVK
      */
-    public static final int getTokenEndPosition(byte bytes[], int off, int end){
+    private static final int getTokenEndPosition(byte bytes[], int off, int end,
+            boolean isName) {
         int pos = off;
-        while (pos < end && !isSeparator(bytes[pos])) {pos++; };
+        while (pos < end && 
+                (!isSeparator(bytes[pos]) ||
+                 bytes[pos]=='=' && ALLOW_EQUALS_IN_VALUE && !isName)) {
+            pos++;
+        }
         
         if (pos > end)
             return end;
