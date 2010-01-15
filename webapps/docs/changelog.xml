@@ -22,6 +22,9 @@
       <fix>
         <bug>48516</bug>: Possible NPE in JNDI realm. (markt)
       </fix>
+      <fix>
+        <jira>157</jira>: NPE on host with HTTP/1.0, submitted by Markus Grieder. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
