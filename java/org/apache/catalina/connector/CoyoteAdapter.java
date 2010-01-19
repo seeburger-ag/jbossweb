@@ -672,7 +672,7 @@ public class CoyoteAdapter
                     request.setRequestedSessionCookie(true);
                     request.setRequestedSessionURL(false);
                 } else {
-                    if (!checkSessionIdValid(request, request.getRequestedSessionId())) {
+                    if (!isSessionIdValid(request, request.getRequestedSessionId())) {
                         // Replace the session id until one is valid
                         convertMB(scookie.getValue());
                         request.setRequestedSessionId(scookie.getValue().toString());
@@ -688,7 +688,7 @@ public class CoyoteAdapter
      * Return <code>true</code> if the session identifier specified
      * identifies a valid session.
      */
-    public boolean checkSessionIdValid(Request request, String id) {
+    public boolean isSessionIdValid(Request request, String id) {
         if (id == null)
             return (false);
         Context context = request.getContext();
