@@ -222,6 +222,13 @@ public interface Session {
     public boolean isValid();
 
 
+    /**
+     * Return the <code>isValid</code> flag for this session without doing any 
+     * validity check.
+     */
+    public boolean isValidInternal();
+
+
     // --------------------------------------------------------- Public Methods
 
 

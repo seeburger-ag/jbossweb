@@ -54,6 +54,8 @@ import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.Manager;
+import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request.AsyncListenerRegistration;
 import org.apache.catalina.util.StringManager;
@@ -666,24 +668,45 @@ public class CoyoteAdapter
                 if (!request.isRequestedSessionIdFromCookie()) {
                     // Accept only the first session id cookie
                     convertMB(scookie.getValue());
-                    request.setRequestedSessionId
-                        (scookie.getValue().toString());
+                    request.setRequestedSessionId(scookie.getValue().toString());
                     request.setRequestedSessionCookie(true);
                     request.setRequestedSessionURL(false);
-                    if (log.isDebugEnabled())
-                        log.debug(" Requested cookie session id is " +
-                            request.getRequestedSessionId());
                 } else {
-                    if (!request.isRequestedSessionIdValid()) {
+                    if (!checkSessionIdValid(request, request.getRequestedSessionId())) {
                         // Replace the session id until one is valid
                         convertMB(scookie.getValue());
-                        request.setRequestedSessionId
-                            (scookie.getValue().toString());
+                        request.setRequestedSessionId(scookie.getValue().toString());
                     }
                 }
             }
         }
 
+    }
+
+    
+    /**
+     * Return <code>true</code> if the session identifier specified
+     * identifies a valid session.
+     */
+    public boolean checkSessionIdValid(Request request, String id) {
+        if (id == null)
+            return (false);
+        Context context = request.getContext();
+        if (context == null)
+            return (false);
+        Manager manager = context.getManager();
+        if (manager == null)
+            return (false);
+        Session session = null;
+        try {
+            session = manager.findSession(id);
+        } catch (IOException e) {
+            session = null;
+        }
+        if ((session != null) && session.isValidInternal())
+            return (true);
+        else
+            return (false);
     }
 
 

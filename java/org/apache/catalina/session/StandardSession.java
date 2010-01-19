@@ -45,7 +45,6 @@ import javax.servlet.http.HttpSessionContext;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
@@ -1384,7 +1383,7 @@ public class StandardSession
      * Return the <code>isValid</code> flag for this session without any expiration
      * check.
      */
-    protected boolean isValidInternal() {
+    public boolean isValidInternal() {
         return (this.isValid || this.expiring);
     }
 
