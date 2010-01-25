@@ -51,12 +51,20 @@ public final class Mapper {
      */
     protected String defaultHostName = null;
 
+
     /**
      * Context associated with this wrapper, used for wrapper mapping.
      */
     protected Context context = new Context();
 
 
+    /**
+     * Listeners for lazy loading of web applications.
+     */
+    protected final List<OnDemandContextMappingListener> lazyLoadListeners = 
+        new ArrayList<OnDemandContextMappingListener>();
+    
+    
     // --------------------------------------------------------- Public Methods
 
 
@@ -201,6 +209,46 @@ public final class Mapper {
 
 
     /**
+     * Add a new undeployed Context to an existing Host.
+     *
+     * @param hostName Virtual host name this context belongs to
+     * @param path Context path
+     */
+    public void addOnDemandContext(String hostName, String path) {
+
+        Host[] hosts = this.hosts;
+        int pos = find(hosts, hostName);
+        if( pos <0 ) {
+            addHost(hostName, new String[0], "");
+            hosts = this.hosts;
+            pos = find(hosts, hostName);
+        }
+        if (pos < 0) {
+            logger.error("No host found: " + hostName);
+        }
+        Host host = hosts[pos];
+        if (host.name.equals(hostName)) {
+            int slashCount = slashCount(path);
+            synchronized (host) {
+                Context[] contexts = host.contextList.contexts;
+                // Update nesting
+                if (slashCount > host.contextList.nesting) {
+                    host.contextList.nesting = slashCount;
+                }
+                Context[] newContexts = new Context[contexts.length + 1];
+                Context newContext = new Context();
+                newContext.name = path;
+                newContext.loaded = false;
+                if (insertMap(contexts, newContexts, newContext)) {
+                    host.contextList.contexts = newContexts;
+                }
+            }
+        }
+
+    }
+
+
+    /**
      * Add a new Context to an existing Host.
      *
      * @param hostName Virtual host name this context belongs to
@@ -240,6 +288,11 @@ public final class Mapper {
                 newContext.resources = resources;
                 if (insertMap(contexts, newContexts, newContext)) {
                     host.contextList.contexts = newContexts;
+                } else {
+                    newContexts = new Context[contexts.length];
+                    if (insertLazyLoadedContext(contexts, newContexts, newContext)) {
+                        host.contextList.contexts = newContexts;
+                    }
                 }
             }
         }
@@ -584,6 +637,23 @@ public final class Mapper {
     }
 
 
+    public void registerOnDemandContextMappingListener(OnDemandContextMappingListener listener) {
+        if (listener != null) {
+            synchronized (lazyLoadListeners) {
+                lazyLoadListeners.add(listener);
+            }
+        }
+    }
+
+    public void removeOnDemandContextMappingListener(OnDemandContextMappingListener listener) {
+        if (listener != null) {
+            synchronized (lazyLoadListeners) {
+                lazyLoadListeners.remove(listener);
+            }
+        }
+    }
+
+
     // -------------------------------------------------------- Private Methods
 
 
@@ -597,6 +667,7 @@ public final class Mapper {
         uri.setLimit(-1);
 
         Context[] contexts = null;
+        Host mappedHost = null;
         Context context = null;
         int nesting = 0;
 
@@ -605,18 +676,20 @@ public final class Mapper {
             Host[] hosts = this.hosts;
             int pos = findIgnoreCase(hosts, host);
             if ((pos != -1) && (host.equalsIgnoreCase(hosts[pos].name))) {
-                mappingData.host = hosts[pos].object;
-                contexts = hosts[pos].contextList.contexts;
-                nesting = hosts[pos].contextList.nesting;
+                mappedHost = hosts[pos];
+                mappingData.host = mappedHost.object;
+                contexts = mappedHost.contextList.contexts;
+                nesting = mappedHost.contextList.nesting;
             } else {
                 if (defaultHostName == null) {
                     return;
                 }
                 pos = find(hosts, defaultHostName);
                 if ((pos != -1) && (defaultHostName.equals(hosts[pos].name))) {
-                    mappingData.host = hosts[pos].object;
-                    contexts = hosts[pos].contextList.contexts;
-                    nesting = hosts[pos].contextList.nesting;
+                    mappedHost = hosts[pos];
+                    mappingData.host = mappedHost.object;
+                    contexts = mappedHost.contextList.contexts;
+                    nesting = mappedHost.contextList.nesting;
                 } else {
                     return;
                 }
@@ -625,46 +698,26 @@ public final class Mapper {
 
         // Context mapping
         if (mappingData.context == null) {
-            int pos = find(contexts, uri);
-            if (pos == -1) {
-                return;
-            }
-
-            int lastSlash = -1;
-            int uriEnd = uri.getEnd();
-            int length = -1;
-            boolean found = false;
-            while (pos >= 0) {
-                if (uri.startsWith(contexts[pos].name)) {
-                    length = contexts[pos].name.length();
-                    if (uri.getLength() == length) {
-                        found = true;
-                        break;
-                    } else if (uri.startsWithIgnoreCase("/", length)) {
-                        found = true;
-                        break;
+            context = findContext(uri, contexts, nesting);
+            if (context != null) {
+                if (!context.loaded) {
+                    notifyLazyLoadContextMappingListeners(mappedHost, context);
+                    // See if the notification resulted in deploying the context
+                    // First reestablish refs to the host fields as adding
+                    // the real context will have changed them
+                    contexts = mappedHost.contextList.contexts;
+                    nesting = mappedHost.contextList.nesting;
+                    context = findContext(uri, contexts, nesting);
+                    if (context != null && !context.loaded) {
+                        // notification did not result in deployment 
+                        // don't map to the unloaded context
+                        context = null;
                     }
                 }
-                if (lastSlash == -1) {
-                    lastSlash = nthSlash(uri, nesting + 1);
-                } else {
-                    lastSlash = lastSlash(uri);
+                if (context != null) {
+                    mappingData.context = context.object;
+                    mappingData.contextPath.setString(context.name);
                 }
-                uri.setEnd(lastSlash);
-                pos = find(contexts, uri);
-            }
-            uri.setEnd(uriEnd);
-
-            if (!found) {
-                if (contexts[0].name.equals("")) {
-                    context = contexts[0];
-                }
-            } else {
-                context = contexts[pos];
-            }
-            if (context != null) {
-                mappingData.context = context.object;
-                mappingData.contextPath.setString(context.name);
             }
         }
 
@@ -673,6 +726,63 @@ public final class Mapper {
             internalMapWrapper(context, uri, mappingData);
         }
 
+    }
+
+
+    private void notifyLazyLoadContextMappingListeners(Host mappedHost, Context context) {
+        synchronized (context) {
+            if (context.replaced)
+                return;
+            synchronized (lazyLoadListeners) {
+                for (OnDemandContextMappingListener listener : lazyLoadListeners)
+                    listener.onDemandContextMapped(mappedHost.name, context.name);
+            }
+        }
+
+    }
+
+
+    private Context findContext(CharChunk uri, Context[] contexts, int nesting) {
+        int pos = find(contexts, uri);
+        if (pos == -1) {
+            return null;
+        }
+
+        Context foundContext = null;
+
+        int lastSlash = -1;
+        int uriEnd = uri.getEnd();
+        int length = -1;
+        boolean found = false;
+        while (pos >= 0) {
+            if (uri.startsWith(contexts[pos].name)) {
+                length = contexts[pos].name.length();
+                if (uri.getLength() == length) {
+                    found = true;
+                    break;
+                } else if (uri.startsWithIgnoreCase("/", length)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (lastSlash == -1) {
+                lastSlash = nthSlash(uri, nesting + 1);
+            } else {
+                lastSlash = lastSlash(uri);
+            }
+            uri.setEnd(lastSlash);
+            pos = find(contexts, uri);
+        }
+        uri.setEnd(uriEnd);
+
+        if (!found) {
+            if (contexts[0].name.equals("")) {
+                foundContext = contexts[0];
+            }
+        } else {
+            foundContext = contexts[pos];
+        }
+        return foundContext;
     }
 
 
@@ -879,7 +989,6 @@ public final class Mapper {
          MappingData mappingData) {
 
         int pathEnd = path.getEnd();
-        int pathOffset = path.getOffset();
 
         int lastSlash = -1;
         int length = -1;
@@ -1274,6 +1383,27 @@ public final class Mapper {
     }
 
 
+    private static final boolean insertLazyLoadedContext(Context[] oldMap, Context[] newMap, Context newElement) {
+        int pos = find(oldMap, newElement.name);
+        if ((pos != -1) && (newElement.name.equals(oldMap[pos].name))) {
+            if (oldMap[pos].loaded || !newElement.loaded) {
+                return false;
+            }
+            else {
+                // We're going to replace the old context in the map, but mark
+                // it as replaced so anyone with a ref to it knows to look again
+                oldMap[pos].replaced = true;
+                System.arraycopy(oldMap, 0, newMap, 0, oldMap.length);
+                newMap[pos] = newElement;
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+
     // ------------------------------------------------- MapElement Inner Class
 
 
@@ -1321,6 +1451,8 @@ public final class Mapper {
         public Wrapper[] wildcardWrappers = new Wrapper[0];
         public Wrapper[] extensionWrappers = new Wrapper[0];
         public int nesting = 0;
+        private boolean loaded = true;
+        private volatile boolean replaced = false;
 
     }
 
