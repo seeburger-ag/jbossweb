@@ -238,7 +238,6 @@ public final class Mapper {
                 Context[] newContexts = new Context[contexts.length + 1];
                 Context newContext = new Context();
                 newContext.name = path;
-                newContext.loaded = false;
                 if (insertMap(contexts, newContexts, newContext)) {
                     host.contextList.contexts = newContexts;
                 }
@@ -700,7 +699,7 @@ public final class Mapper {
         if (mappingData.context == null) {
             context = findContext(uri, contexts, nesting);
             if (context != null) {
-                if (!context.loaded) {
+                if (context.object == null) {
                     notifyLazyLoadContextMappingListeners(mappedHost, context);
                     // See if the notification resulted in deploying the context
                     // First reestablish refs to the host fields as adding
@@ -708,7 +707,7 @@ public final class Mapper {
                     contexts = mappedHost.contextList.contexts;
                     nesting = mappedHost.contextList.nesting;
                     context = findContext(uri, contexts, nesting);
-                    if (context != null && !context.loaded) {
+                    if (context != null && context.object == null) {
                         // notification did not result in deployment 
                         // don't map to the unloaded context
                         context = null;
@@ -1386,10 +1385,9 @@ public final class Mapper {
     private static final boolean insertLazyLoadedContext(Context[] oldMap, Context[] newMap, Context newElement) {
         int pos = find(oldMap, newElement.name);
         if ((pos != -1) && (newElement.name.equals(oldMap[pos].name))) {
-            if (oldMap[pos].loaded || !newElement.loaded) {
+            if (oldMap[pos].object != null || newElement.object == null) {
                 return false;
-            }
-            else {
+            } else {
                 // We're going to replace the old context in the map, but mark
                 // it as replaced so anyone with a ref to it knows to look again
                 oldMap[pos].replaced = true;
@@ -1451,7 +1449,6 @@ public final class Mapper {
         public Wrapper[] wildcardWrappers = new Wrapper[0];
         public Wrapper[] extensionWrappers = new Wrapper[0];
         public int nesting = 0;
-        private boolean loaded = true;
         private volatile boolean replaced = false;
 
     }
