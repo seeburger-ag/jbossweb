@@ -836,7 +836,9 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
             return;
         }
 
-        log.debug( "Found " + dURL);
+        if (log.isDebugEnabled()) {
+            log.debug( "Found " + dURL);
+        }
         searchedPaths.put( packageName,  dURL );
         try {
             if( descriptors.endsWith(".xml" ))
