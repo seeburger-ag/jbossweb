@@ -56,7 +56,7 @@ import org.jboss.servlet.http.HttpEvent;
 
 public abstract class ValveBase
     implements Contained, Valve, MBeanRegistration {
-    private static Logger log = Logger.getLogger(ValveBase.class);
+
 
     //------------------------------------------------------ Instance Variables
 
@@ -303,7 +303,6 @@ public abstract class ValveBase
             parentName=",servlet=" + container.getName() +
                     ",path=" + path + ",host=" + host.getName();
         }
-        log.debug("valve parent=" + parentName + " " + parent);
 
         String className=this.getClass().getName();
         int period = className.lastIndexOf('.');
@@ -318,7 +317,6 @@ public abstract class ValveBase
             }
             if( valves[i]!=null &&
                     valves[i].getClass() == this.getClass() ) {
-                log.debug("Duplicate " + valves[i] + " " + this + " " + container);
                 seq++;
             }
         }
@@ -327,10 +325,7 @@ public abstract class ValveBase
             ext=",seq=" + seq;
         }
 
-        ObjectName objectName = 
-            new ObjectName( domain + ":type=Valve,name=" + className + ext + parentName);
-        log.debug("valve objectname = "+objectName);
-        return objectName;
+        return new ObjectName( domain + ":type=Valve,name=" + className + ext + parentName);
     }
 
     // -------------------- JMX data  --------------------
