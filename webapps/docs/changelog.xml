@@ -16,6 +16,34 @@
 
 <body>
 
+<section name="JBoss Web 3.0.0.Beta3 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <bug>48629</bug>: Nested role seach fix in JNDI realm, submitted by Gabriel. (markt)
+      </fix>
+      <fix>
+        Add LDAP connection timeout in JNDI realm. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <bug>48627</bug>: Don't convert literal attribute values to EL since EL attributes
+        may not accept EL. (markt)
+      </fix>
+      <fix>
+        <bug>48616</bug>: Another variable declaration fix. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 3.0.0.Beta2 (remm)">
   <subsection name="Catalina">
     <changelog>

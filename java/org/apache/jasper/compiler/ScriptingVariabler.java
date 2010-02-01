@@ -38,17 +38,17 @@ class ScriptingVariabler {
      */
     static class CustomTagCounter extends Node.Visitor {
 
-	private int count;
-	private Node.CustomTag parent;
+        private int count;
+        private Node.CustomTag parent;
 
-	public void visit(Node.CustomTag n) throws JasperException {
-	    n.setCustomTagParent(parent);
-	    Node.CustomTag tmpParent = parent;
-	    parent = n;
-	    visitBody(n);
-	    parent = tmpParent;
-	    n.setNumCount(new Integer(count++));
-	}
+        public void visit(Node.CustomTag n) throws JasperException {
+            n.setCustomTagParent(parent);
+            Node.CustomTag tmpParent = parent;
+            parent = n;
+            visitBody(n);
+            parent = tmpParent;
+            n.setNumCount(new Integer(count++));
+        }
     }
 
     /*
@@ -57,92 +57,113 @@ class ScriptingVariabler {
      */
     static class ScriptingVariableVisitor extends Node.Visitor {
 
-	private ErrorDispatcher err;
-	private Hashtable scriptVars;
-	
-	public ScriptingVariableVisitor(ErrorDispatcher err) {
-	    this.err = err;
-	    scriptVars = new Hashtable();
-	}
+        private ErrorDispatcher err;
+        private Hashtable scriptVars;
 
-	public void visit(Node.CustomTag n) throws JasperException {
-	    setScriptingVars(n, VariableInfo.AT_BEGIN);
-	    setScriptingVars(n, VariableInfo.NESTED);
-	    new ScriptingVariableVisitor(err).visitBody(n);
-	    setScriptingVars(n, VariableInfo.AT_END);
-	}
+        public ScriptingVariableVisitor(ErrorDispatcher err) {
+            this.err = err;
+            scriptVars = new Hashtable();
+        }
 
-	private void setScriptingVars(Node.CustomTag n, int scope)
-	        throws JasperException {
+        public void visit(Node.CustomTag n) throws JasperException {
+            setScriptingVars(n, VariableInfo.AT_BEGIN);
+            setScriptingVars(n, VariableInfo.NESTED);
+            visitBody(n);
+            setScriptingVars(n, VariableInfo.AT_END);
+        }
 
-	    TagVariableInfo[] tagVarInfos = n.getTagVariableInfos();
-	    VariableInfo[] varInfos = n.getVariableInfos();
-	    if (tagVarInfos.length == 0 && varInfos.length == 0) {
-		return;
-	    }
+        private void setScriptingVars(Node.CustomTag n, int scope)
+        throws JasperException {
 
-	    Vector vec = new Vector();
+            TagVariableInfo[] tagVarInfos = n.getTagVariableInfos();
+            VariableInfo[] varInfos = n.getVariableInfos();
+            if (tagVarInfos.length == 0 && varInfos.length == 0) {
+                return;
+            }
 
-	    Integer ownRange = null;
-	    if (scope == VariableInfo.AT_BEGIN
-		    || scope == VariableInfo.AT_END) {
-		Node.CustomTag parent = n.getCustomTagParent();
-		if (parent == null)
-		    ownRange = MAX_SCOPE;
-		else
-		    ownRange = parent.getNumCount();
-	    } else {
-		// NESTED
-		ownRange = n.getNumCount();
-	    }
+            Vector vec = new Vector();
 
-	    if (varInfos.length > 0) {
-		for (int i=0; i<varInfos.length; i++) {
-		    if (varInfos[i].getScope() != scope
-			    || !varInfos[i].getDeclare()) {
-			continue;
-		    }
-		    String varName = varInfos[i].getVarName();
-		    
-		    Integer currentRange = (Integer) scriptVars.get(varName);
-		    if (currentRange == null
-			    || ownRange.compareTo(currentRange) > 0) {
-			scriptVars.put(varName, ownRange);
-			vec.add(varInfos[i]);
-		    }
-		}
-	    } else {
-		for (int i=0; i<tagVarInfos.length; i++) {
-		    if (tagVarInfos[i].getScope() != scope
-			    || !tagVarInfos[i].getDeclare()) {
-			continue;
-		    }
-		    String varName = tagVarInfos[i].getNameGiven();
-		    if (varName == null) {
-			varName = n.getTagData().getAttributeString(
-		                        tagVarInfos[i].getNameFromAttribute());
-			if (varName == null) {
-			    err.jspError(n, "jsp.error.scripting.variable.missing_name",
-					 tagVarInfos[i].getNameFromAttribute());
-			}
-		    }
+            Node.CustomTag parent = n.getCustomTagParent();
+            Integer ownRange = null;
+            if (scope == VariableInfo.AT_BEGIN
+                    || scope == VariableInfo.AT_END) {
+                if (parent == null)
+                    ownRange = MAX_SCOPE;
+                else
+                    ownRange = parent.getNumCount();
+            } else {
+                // NESTED
+                ownRange = n.getNumCount();
+            }
 
-		    Integer currentRange = (Integer) scriptVars.get(varName);
-		    if (currentRange == null
-			    || ownRange.compareTo(currentRange) > 0) {
-			scriptVars.put(varName, ownRange);
-			vec.add(tagVarInfos[i]);
-		    }
-		}
-	    }
+            if (varInfos.length > 0) {
+                for (int i=0; i<varInfos.length; i++) {
+                    if (varInfos[i].getScope() != scope
+                            || !varInfos[i].getDeclare()) {
+                        continue;
+                    }
+                    String varName = varInfos[i].getVarName();
 
-	    n.setScriptingVars(vec, scope);
-	}
+                    Integer currentRange = (Integer) scriptVars.get(varName);
+                    // If a fragment helper has been used for the parent tag
+                    // the scripting variables always need to be declared
+                    if (currentRange == null ||
+                            ownRange.compareTo(currentRange) > 0 ||
+                            parent != null && isImplementedAsFragment(parent)) {
+                        scriptVars.put(varName, ownRange);
+                        vec.add(varInfos[i]);
+                    }
+                }
+            } else {
+                for (int i=0; i<tagVarInfos.length; i++) {
+                    if (tagVarInfos[i].getScope() != scope
+                            || !tagVarInfos[i].getDeclare()) {
+                        continue;
+                    }
+                    String varName = tagVarInfos[i].getNameGiven();
+                    if (varName == null) {
+                        varName = n.getTagData().getAttributeString(
+                                tagVarInfos[i].getNameFromAttribute());
+                        if (varName == null) {
+                            err.jspError(n, "jsp.error.scripting.variable.missing_name",
+                                    tagVarInfos[i].getNameFromAttribute());
+                        }
+                    }
+
+                    Integer currentRange = (Integer) scriptVars.get(varName);
+                    // If a fragment helper has been used for the parent tag
+                    // the scripting variables always need to be declared
+                    if (currentRange == null ||
+                            ownRange.compareTo(currentRange) > 0 ||
+                            parent != null && isImplementedAsFragment(parent)) {
+                        scriptVars.put(varName, ownRange);
+                        vec.add(tagVarInfos[i]);
+                    }
+                }
+            }
+
+            n.setScriptingVars(vec, scope);
+        }
+    }
+
+    private static boolean isImplementedAsFragment(Node.CustomTag n) {
+        // Replicates logic from Generator to determine if a fragment
+        // helper will be used
+        if (n.implementsSimpleTag()) {
+            if (Generator.findJspBody(n) == null) {
+                if (!n.hasEmptyBody()) {
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     public static void set(Node.Nodes page, ErrorDispatcher err)
-	    throws JasperException {
-	page.visit(new CustomTagCounter());
-	page.visit(new ScriptingVariableVisitor(err));
+    throws JasperException {
+        page.visit(new CustomTagCounter());
+        page.visit(new ScriptingVariableVisitor(err));
     }
 }

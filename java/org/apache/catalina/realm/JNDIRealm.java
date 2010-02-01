@@ -381,6 +381,13 @@ public class JNDIRealm extends RealmBase {
     protected String commonRole = null;
 
 
+    /**
+     * The timeout, in milliseconds, to use when trying to create a connection
+     * to the directory. The default is 5000 (5 seconds).
+     */
+    protected String connectionTimeout = "5000";
+    
+
     // ------------------------------------------------------------- Properties
 
     /**
@@ -443,6 +450,28 @@ public class JNDIRealm extends RealmBase {
     public void setConnectionPassword(String connectionPassword) {
 
         this.connectionPassword = connectionPassword;
+
+    }
+
+
+    /**
+     * Return the connection timeout.
+     */
+    public String getConnectionTimeout() {
+
+        return connectionTimeout;
+
+    }
+
+
+    /**
+     * Set the connection timeout.
+     *
+     * @param timeout The new connection timeout
+     */
+    public void setConnectionTimeout(String timeout) {
+
+        this.connectionTimeout = timeout;
 
     }
 
@@ -1644,7 +1673,7 @@ public class JNDIRealm extends RealmBase {
                 Set<String> newThisRound = new HashSet<String>(); // Stores the groups we find in this iteration
 
                 for (String groupDN : newGroupDNs) {
-                    filter = roleFormat.format(new String[] { groupDN });
+                    filter = roleFormat.format(new String[] { groupDN, groupDN });
 
                     if (containerLog.isTraceEnabled()) {
                         containerLog.trace("Perform a nested group search with base "+ roleBase + " and filter " + filter);
@@ -1962,6 +1991,8 @@ public class JNDIRealm extends RealmBase {
             env.put(Context.REFERRAL, referrals);
         if (derefAliases != null)
             env.put(JNDIRealm.DEREF_ALIASES, derefAliases);
+        if (connectionTimeout != null)
+            env.put("com.sun.jndi.ldap.connect.timeout", connectionTimeout);
 
         return env;
 
