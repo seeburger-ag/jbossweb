@@ -25,6 +25,10 @@
       <fix>
         Add LDAP connection timeout in JNDI realm. (markt)
       </fix>
+      <fix>
+        <bug>48050</bug>: createSubcontext method returns Context with wrong name. Based on a 
+        suggestion by gingyang.xu. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
