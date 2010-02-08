@@ -44,6 +44,9 @@
       <fix>
         <bug>48616</bug>: Another variable declaration fix. (markt)
       </fix>
+      <fix>
+        <bug>48668</bug>: Fix handling of EL like strings when EL is disabled. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
