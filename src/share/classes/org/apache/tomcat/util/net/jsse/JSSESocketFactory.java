@@ -42,6 +42,8 @@ import java.util.Collection;
 import java.util.Vector;
 
 import javax.net.ssl.CertPathTrustManagerParameters;
+import javax.net.ssl.HandshakeCompletedEvent;
+import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.ManagerFactoryParameters;
@@ -95,6 +97,7 @@ public class JSSESocketFactory
     protected String clientAuth = "false";
     protected SSLServerSocketFactory sslProxy = null;
     protected String[] enabledCiphers;
+    protected boolean allowUnsafeLegacyRenegotiation = false;
 
     /**
      * Flag to state that we require client authentication.
@@ -145,12 +148,35 @@ public class JSSESocketFactory
         SSLSocket asock = null;
         try {
              asock = (SSLSocket)socket.accept();
+             if (!allowUnsafeLegacyRenegotiation) {
+                 asock.addHandshakeCompletedListener(
+                         new DisableSslRenegotiation());
+             }
              configureClientAuth(asock);
         } catch (SSLException e){
           throw new SocketException("SSL handshake error" + e.toString());
         }
         return asock;
     }
+    
+    private static class DisableSslRenegotiation 
+            implements HandshakeCompletedListener {
+        private volatile boolean completed = false;
+
+        public void handshakeCompleted(HandshakeCompletedEvent event) {
+            if (completed) {
+                try {
+                    log.warn("SSL renegotiation is disabled, closing connection");
+                    event.getSession().invalidate();
+                    event.getSocket().close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            completed = true;
+        }
+    }
+
 
     public void handshake(Socket sock) throws IOException {
         ((SSLSocket)sock).startHandshake();
