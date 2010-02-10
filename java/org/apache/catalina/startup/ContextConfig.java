@@ -1618,9 +1618,8 @@ public class ContextConfig
         if (contextPath.equals("")) {
             contextPath = "ROOT";
         } else {
-            if (contextPath.lastIndexOf('/') > 0) {
-                contextPath = "/" + contextPath.substring(1).replace('/','#');
-            }
+            // Context path must start with '/'
+            contextPath = "/" + contextPath.substring(1).replace('/','#');
         }
         if (docBase.toLowerCase().endsWith(".war") && !file.isDirectory() && unpackWARs) {
             URL war = new URL("jar:" + (new File(docBase)).toURI().toURL() + "!/");
@@ -1630,18 +1629,24 @@ public class ContextConfig
             if (context instanceof StandardContext) {
                 ((StandardContext) context).setOriginalDocBase(origDocBase);
             }
+        } else if (docBase.toLowerCase().endsWith(".war") &&
+                !file.isDirectory() && !unpackWARs) {
+            URL war =
+                new URL("jar:" + (new File (docBase)).toURI().toURL() + "!/");
+            ExpandWar.validate(host, war, contextPath);
         } else {
             File docDir = new File(docBase);
             if (!docDir.exists()) {
                 File warFile = new File(docBase + ".war");
+                URL war = new URL("jar:" + warFile.toURI().toURL() + "!/");
                 if (warFile.exists()) {
                     if (unpackWARs) {
-                        URL war = new URL("jar:" + warFile.toURI().toURL() + "!/");
                         docBase = ExpandWar.expand(host, war, contextPath);
                         file = new File(docBase);
                         docBase = file.getCanonicalPath();
                     } else {
                         docBase = warFile.getCanonicalPath();
+                        ExpandWar.validate(host, war, contextPath);
                     }
                 }
                 if (context instanceof StandardContext) {
@@ -2055,7 +2060,8 @@ public class ContextConfig
             if (!docBaseFile.isAbsolute()) {
                 docBaseFile = new File(appBase, docBase);
             }
-            ExpandWar.delete(docBaseFile);
+            // No need to log failure - it is expected in this case
+            ExpandWar.delete(docBaseFile, false);
         }
         
         overlays.clear();
