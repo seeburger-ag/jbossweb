@@ -32,7 +32,7 @@ import org.apache.el.util.MessageFactory;
  * A helper class that implements the EL Specification
  * 
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
+ * @version $Change: 181177 $$Date$$Author$
  */
 public class ELSupport {
 
@@ -50,10 +50,33 @@ public class ELSupport {
     }
 
     /**
-     * @param obj0
-     * @param obj1
-     * @return
-     * @throws EvaluationException
+     * Compare two objects, after coercing to the same type if appropriate.
+     * 
+     * If the objects are identical, or they are equal according to 
+     * {@link #equals(Object, Object)} then return 0.
+     * 
+     * If either object is a BigDecimal, then coerce both to BigDecimal first.
+     * Similarly for Double(Float), BigInteger, and Long(Integer, Char, Short, Byte).
+     *  
+     * Otherwise, check that the first object is an instance of Comparable, and compare
+     * against the second object. If that is null, return 1, otherwise
+     * return the result of comparing against the second object.
+     * 
+     * Similarly, if the second object is Comparable, if the first is null, return -1,
+     * else return the result of comparing against the first object.
+     * 
+     * A null object is considered as:
+     * <ul>
+     * <li>ZERO when compared with Numbers</li>
+     * <li>the empty string for String compares</li>
+     * <li>Otherwise null is considered to be lower than anything else.</li>
+     * </ul>
+     * 
+     * @param obj0 first object
+     * @param obj1 second object
+     * @return -1, 0, or 1 if this object is less than, equal to, or greater than val.
+     * @throws ELException if neither object is Comparable
+     * @throws ClassCastException if the objects are not mutually comparable
      */
     public final static int compare(final Object obj0, final Object obj1)
             throws ELException {
@@ -83,20 +106,32 @@ public class ELSupport {
         if (obj0 instanceof String || obj1 instanceof String) {
             return coerceToString(obj0).compareTo(coerceToString(obj1));
         }
-        if (obj0 instanceof Comparable) {
-            return (obj1 != null) ? ((Comparable) obj0).compareTo(obj1) : 1;
+        if (obj0 instanceof Comparable<?>) {
+            @SuppressWarnings("unchecked") // checked above
+            final Comparable<Object> comparable = (Comparable<Object>) obj0;
+            return (obj1 != null) ? comparable.compareTo(obj1) : 1;
         }
-        if (obj1 instanceof Comparable) {
-            return (obj0 != null) ? -((Comparable) obj1).compareTo(obj0) : -1;
+        if (obj1 instanceof Comparable<?>) {
+            @SuppressWarnings("unchecked") // checked above
+            final Comparable<Object> comparable = (Comparable<Object>) obj1;
+            return (obj0 != null) ? -comparable.compareTo(obj0) : -1;
         }
         throw new ELException(MessageFactory.get("error.compare", obj0, obj1));
     }
 
     /**
-     * @param obj0
-     * @param obj1
-     * @return
-     * @throws EvaluationException
+     * Compare two objects for equality, after coercing to the same type if appropriate.
+     * 
+     * If the objects are identical (including both null) return true.
+     * If either object is null, return false.
+     * If either object is Boolean, coerce both to Boolean and check equality.
+     * Similarly for Enum, String, BigDecimal, Double(Float), Long(Integer, Short, Byte, Character)
+     * Otherwise default to using Object.equals().
+     * 
+     * @param obj0 the first object
+     * @param obj1 the second object
+     * @return true if the objects are equal
+     * @throws ELException
      */
     public final static boolean equals(final Object obj0, final Object obj1)
             throws ELException {
@@ -143,24 +178,35 @@ public class ELSupport {
      * @param type
      * @return
      */
-    public final static Enum coerceToEnum(final Object obj, Class type) 
-        throws ELException {
+    public final static Enum<?> coerceToEnum(final Object obj, Class type) {
         if (obj == null || "".equals(obj)) {
             return null;
         }
-        if (obj.getClass().isEnum()) {
-            return (Enum) obj;
+        if (type.isAssignableFrom(obj.getClass())) {
+            return (Enum<?>) obj;
         }
+        
+        if (!(obj instanceof String)) {
+            throw new ELException(MessageFactory.get("error.convert",
+                    obj, obj.getClass(), type));
+        }
+
+        Enum<?> result;
         try {
-            return Enum.valueOf(type, obj.toString());
-        } catch (Exception e) {
-            throw new ELException(e);
+             result = Enum.valueOf(type, (String) obj);
+        } catch (IllegalArgumentException iae) {
+            throw new ELException(MessageFactory.get("error.convert",
+                    obj, obj.getClass(), type));
         }
+        return result;
     }
 
     /**
-     * @param obj
-     * @return
+     * Convert an object to Boolean.
+     * Null and empty string are false.
+     * @param obj the object to convert
+     * @return the Boolean value of the object
+     * @throws ELException if object is not Boolean or String
      */
     public final static Boolean coerceToBoolean(final Object obj)
             throws ELException {
@@ -259,8 +305,8 @@ public class ELSupport {
                 number, number.getClass(), type));
     }
 
-    public final static Number coerceToNumber(final Object obj, final Class<?> type)
-            throws ELException {
+    public final static Number coerceToNumber(final Object obj,
+            final Class<?> type) throws ELException {
         if (obj == null || "".equals(obj)) {
             return coerceToNumber(ZERO, type);
         }
@@ -282,34 +328,69 @@ public class ELSupport {
 
     protected final static Number coerceToNumber(final String val,
             final Class<?> type) throws ELException {
-        try {
-            if (Long.TYPE == type || Long.class.equals(type)) {
+        if (Long.TYPE == type || Long.class.equals(type)) {
+            try {
                 return Long.valueOf(val);
+            } catch (NumberFormatException nfe) {
+                throw new ELException(MessageFactory.get("error.convert",
+                        val, String.class, type));
             }
-            if (Integer.TYPE == type || Integer.class.equals(type)) {
+        }
+        if (Integer.TYPE == type || Integer.class.equals(type)) {
+            try {
                 return Integer.valueOf(val);
+            } catch (NumberFormatException nfe) {
+                throw new ELException(MessageFactory.get("error.convert",
+                        val, String.class, type));
             }
-            if (Double.TYPE == type || Double.class.equals(type)) {
+        }
+        if (Double.TYPE == type || Double.class.equals(type)) {
+            try {
                 return Double.valueOf(val);
+            } catch (NumberFormatException nfe) {
+                throw new ELException(MessageFactory.get("error.convert",
+                        val, String.class, type));
             }
-            if (BigInteger.class.equals(type)) {
+        }
+        if (BigInteger.class.equals(type)) {
+            try {
                 return new BigInteger(val);
+            } catch (NumberFormatException nfe) {
+                throw new ELException(MessageFactory.get("error.convert",
+                        val, String.class, type));
             }
-            if (BigDecimal.class.equals(type)) {
+        }
+        if (BigDecimal.class.equals(type)) {
+            try {
                 return new BigDecimal(val);
+            } catch (NumberFormatException nfe) {
+                throw new ELException(MessageFactory.get("error.convert",
+                        val, String.class, type));
             }
-            if (Byte.TYPE == type || Byte.class.equals(type)) {
+        }
+        if (Byte.TYPE == type || Byte.class.equals(type)) {
+            try {
                 return Byte.valueOf(val);
+            } catch (NumberFormatException nfe) {
+                throw new ELException(MessageFactory.get("error.convert",
+                        val, String.class, type));
             }
-            if (Short.TYPE == type || Short.class.equals(type)) {
+        }
+        if (Short.TYPE == type || Short.class.equals(type)) {
+            try {
                 return Short.valueOf(val);
+            } catch (NumberFormatException nfe) {
+                throw new ELException(MessageFactory.get("error.convert",
+                        val, String.class, type));
             }
-            if (Float.TYPE == type || Float.class.equals(type)) {
+        }
+        if (Float.TYPE == type || Float.class.equals(type)) {
+            try {
                 return Float.valueOf(val);
+            } catch (NumberFormatException nfe) {
+                throw new ELException(MessageFactory.get("error.convert",
+                        val, String.class, type));
             }
-        } catch (Exception e) {
-            throw new ELException(MessageFactory.get("error.convert",
-                    val, String.class, type), e);
         }
 
         throw new ELException(MessageFactory.get("error.convert",
@@ -317,16 +398,17 @@ public class ELSupport {
     }
 
     /**
+     * Coerce an object to a string
      * @param obj
-     * @return
+     * @return the String value of the object
      */
     public final static String coerceToString(final Object obj) {
         if (obj == null) {
             return "";
         } else if (obj instanceof String) {
             return (String) obj;
-        } else if (obj instanceof Enum) {
-            return ((Enum) obj).name();
+        } else if (obj instanceof Enum<?>) {
+            return ((Enum<?>) obj).name();
         } else {
             return obj.toString();
         }
@@ -351,8 +433,8 @@ public class ELSupport {
         }
     }
 
-    public final static Object coerceToType(final Object obj, final Class<?> type)
-            throws ELException {
+    public final static Object coerceToType(final Object obj,
+            final Class<?> type) throws ELException {
         if (type == null || Object.class.equals(type) ||
                 (obj != null && type.isAssignableFrom(obj.getClass()))) {
             return obj;
@@ -390,8 +472,9 @@ public class ELSupport {
     }
 
     /**
-     * @param obj
-     * @return
+     * Check if an array contains any {@code null} entries.
+     * @param obj array to be checked
+     * @return true if the array contains a {@code null}
      */
     public final static boolean containsNulls(final Object[] obj) {
         for (int i = 0; i < obj.length; i++) {
