@@ -147,7 +147,11 @@ public class Request
         Globals.STRICT_SERVLET_COMPLIANCE
         || Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.CHECK_ASYNC", "true")).booleanValue();
 
-    
+
+    protected static final boolean USE_PRINCIPAL_FROM_SESSION = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.USE_PRINCIPAL_FROM_SESSION", "false")).booleanValue();
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -2379,7 +2383,8 @@ public class Request
     public boolean isUserInRole(String role) {
 
         // Have we got an authenticated principal at all?
-        if (userPrincipal == null)
+        Principal principal = doGetUserPrincipal();
+        if (principal == null)
             return (false);
 
         // Identify the Realm we will use for checking role assignmenets
@@ -2393,12 +2398,12 @@ public class Request
         if (wrapper != null) {
             String realRole = wrapper.findSecurityReference(role);
             if ((realRole != null) &&
-                realm.hasRole(userPrincipal, realRole))
+                realm.hasRole(principal, realRole))
                 return (true);
         }
 
         // Check for a role defined directly as a <security-role>
-        return (realm.hasRole(userPrincipal, role));
+        return (realm.hasRole(principal, role));
 
     }
 
@@ -2415,11 +2420,26 @@ public class Request
      * Return the principal that has been authenticated for this Request.
      */
     public Principal getUserPrincipal() {
-        if (userPrincipal instanceof GenericPrincipal) {
-            return ((GenericPrincipal) userPrincipal).getUserPrincipal();
+        Principal principal = doGetUserPrincipal();
+        if (principal instanceof GenericPrincipal) {
+            return ((GenericPrincipal) principal).getUserPrincipal();
         } else {
-            return (userPrincipal);
+            return (principal);
         }
+    }
+
+
+    /**
+     * Return the principal that has been authenticated for this Request.
+     */
+    protected Principal doGetUserPrincipal() {
+        if (USE_PRINCIPAL_FROM_SESSION && userPrincipal == null) {
+            Session session = doGetSession(false);
+            Principal principal = session.getPrincipal();
+            if (principal != null)
+            return principal;
+        }
+        return userPrincipal;
     }
 
 
