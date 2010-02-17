@@ -29,10 +29,22 @@
         <bug>48050</bug>: createSubcontext method returns Context with wrong name. Based on a 
         suggestion by gingyang.xu. (markt)
       </fix>
+      <fix>
+        <bug>48318</bug>: Handle unreadable resources in WebDAV. (markt)
+      </fix>
+      <fix>
+        <jira>19</jira>: Optionally expose principal from Session if present. (remm)
+      </fix>
+      <fix>
+        <bug>48384</bug>: Per directory XSLT for default servlet. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
     <changelog>
+      <fix>
+        <bug>48660</bug>: Add to vary header. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
@@ -46,6 +58,9 @@
       </fix>
       <fix>
         <bug>48668</bug>: Fix handling of EL like strings when EL is disabled. (markt)
+      </fix>
+      <fix>
+        Rebase ELSupport. (remm)
       </fix>
     </changelog>
   </subsection>

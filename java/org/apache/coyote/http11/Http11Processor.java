@@ -1605,7 +1605,7 @@ public class Http11Processor implements ActionHook {
             outputBuffer.addActiveFilter(outputFilters[Constants.GZIP_FILTER]);
             headers.setValue("Content-Encoding").setString("gzip");
             // Make Proxies happy via Vary (from mod_deflate)
-            headers.setValue("Vary").setString("Accept-Encoding");
+            headers.addValue("Vary").setString("Accept-Encoding");
         }
 
         // Add date header
