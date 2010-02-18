@@ -166,7 +166,7 @@ public class JspServletWrapper {
     }
 
     public ServletContext getServletContext() {
-        return config.getServletContext();
+        return ctxt.getServletContext();
     }
 
     /**

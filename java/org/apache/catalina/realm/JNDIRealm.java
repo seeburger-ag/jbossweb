@@ -24,6 +24,7 @@ import java.security.Principal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -1673,7 +1674,7 @@ public class JNDIRealm extends RealmBase {
                 Set<String> newThisRound = new HashSet<String>(); // Stores the groups we find in this iteration
 
                 for (String groupDN : newGroupDNs) {
-                    filter = roleFormat.format(new String[] { groupDN, groupDN });
+                    filter = roleFormat.format(new String[] { groupDN });
 
                     if (containerLog.isTraceEnabled()) {
                         containerLog.trace("Perform a nested group search with base "+ roleBase + " and filter " + filter);
@@ -2196,26 +2197,38 @@ public class JNDIRealm extends RealmBase {
     }
 
 
-}
+    /**
+     * A private class representing a User
+     */
+    protected static class User {
+        
+        private String username = null;
+        private String dn = null;
+        private String password = null;
+        private ArrayList<String> roles = null;
 
-// ------------------------------------------------------ Private Classes
-
-/**
- * A private class representing a User
- */
-class User {
-    String username = null;
-    String dn = null;
-    String password = null;
-    ArrayList<String> roles = null;
-
-
-    User(String username, String dn, String password,
-            ArrayList<String> roles) {
-        this.username = username;
-        this.dn = dn;
-        this.password = password;
-        this.roles = roles;
+        User(String username, String dn, String password,
+                ArrayList<String> roles) {
+            this.username = username;
+            this.dn = dn;
+            this.password = password;
+            this.roles = roles;
+        }
+   
+        public String getUserName() {
+            return username;
+        }
+        
+        public String getDN() {
+            return dn;
+        }
+        
+        public String getPassword() {
+            return password;
+        }
+        
+        public List<String> getRoles() {
+            return Collections.unmodifiableList(roles);
+        }
     }
-
 }

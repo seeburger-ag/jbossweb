@@ -71,17 +71,8 @@ public class JavacErrorDetail {
      * @param jspBeginLineNum The start line number of the JSP element
      * responsible for the compilation error
      * @param errMsg The compilation error message
+     * @param ctxt The compilation context
      */
-    public JavacErrorDetail(String javaFileName,
-                            int javaLineNum,
-                            String jspFileName,
-                            int jspBeginLineNum,
-                            StringBuilder errMsg) {
-
-        this(javaFileName, javaLineNum, jspFileName, jspBeginLineNum, errMsg,
-                null);
-    }
-
     public JavacErrorDetail(String javaFileName,
             int javaLineNum,
             String jspFileName,
@@ -94,14 +85,24 @@ public class JavacErrorDetail {
         this.jspBeginLineNum = jspBeginLineNum;
         
         if (jspBeginLineNum > 0 && ctxt != null) {
+            InputStream is = null;
+            FileInputStream  fis = null;
+            
             try {
                 // Read both files in, so we can inspect them
-                String[] jspLines = readFile
-                    (ctxt.getResourceAsStream(jspFileName));
+                is = ctxt.getResourceAsStream(jspFileName);
+                String[] jspLines = readFile(is);
     
-                String[] javaLines = readFile
-                    (new FileInputStream(ctxt.getServletJavaFileName()));
+                fis = new FileInputStream(ctxt.getServletJavaFileName());
+                String[] javaLines = readFile(fis);
     
+                if (jspLines.length < jspBeginLineNum) {
+                    // Avoid ArrayIndexOutOfBoundsException
+                    // Probably bug 48494 but could be some other cause
+                    jspExtract = Localizer.getMessage("jsp.error.bug48494");
+                    return;
+                }
+                
                 // If the line contains the opening of a multi-line scriptlet
                 // block, then the JSP line number we got back is probably
                 // faulty.  Scan forward to match the java line...
@@ -134,6 +135,21 @@ public class JavacErrorDetail {
     
             } catch (IOException ioe) {
                 // Can't read files - ignore
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ioe) {
+                        // Ignore
+                    }
+                }
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException ioe) {
+                        // Ignore
+                    }
+                }
             }
         }
     }
@@ -202,13 +218,13 @@ public class JavacErrorDetail {
      */
     private String[] readFile(InputStream s) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(s));
-        List lines = new ArrayList();
+        List<String> lines = new ArrayList<String>();
         String line;
 
         while ( (line = reader.readLine()) != null ) {
             lines.add(line);
         }
 
-        return (String[]) lines.toArray( new String[lines.size()] );
+        return lines.toArray( new String[lines.size()] );
     }
 }

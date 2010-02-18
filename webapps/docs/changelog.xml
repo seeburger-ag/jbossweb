@@ -20,9 +20,6 @@
   <subsection name="Catalina">
     <changelog>
       <fix>
-        <bug>48629</bug>: Nested role seach fix in JNDI realm, submitted by Gabriel. (markt)
-      </fix>
-      <fix>
         Add LDAP connection timeout in JNDI realm. (markt)
       </fix>
       <fix>
@@ -38,12 +35,18 @@
       <fix>
         <bug>48384</bug>: Per directory XSLT for default servlet. (markt)
       </fix>
+      <fix>
+        <bug>48589</bug>: JNDI realm extensibility. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
     <changelog>
       <fix>
         <bug>48660</bug>: Add to vary header. (markt)
+      </fix>
+      <fix>
+        <bug>48545</bug>: Optional password on truststores. (markt)
       </fix>
     </changelog>
   </subsection>
@@ -61,6 +64,18 @@
       </fix>
       <fix>
         Rebase ELSupport. (remm)
+      </fix>
+      <fix>
+        <bug>42314</bug>: More stream closing when reporting errors. (markt)
+      </fix>
+      <fix>
+        <bug>48498</bug>: Workaround for XML parser bug when reporting errors. (markt)
+      </fix>
+      <fix>
+        <bug>48580</bug>: Possible security exception on first JSP access. (markt)
+      </fix>
+      <fix>
+        <bug>48582</bug>: Avoid NPE on compilation errors of tag files. (markt)
       </fix>
     </changelog>
   </subsection>
