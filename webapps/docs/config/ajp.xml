@@ -119,12 +119,6 @@
       number specified here.</p>
     </attribute>
 
-    <attribute name="request.registerRequests" required="false">
-      <p>This attribute controls request registration for JMX monitoring
-      of the Connector.  It is enabled by default, but may be turned
-      it off to save a bit of memory.</p>
-    </attribute>
-
     <attribute name="scheme" required="false">
       <p>Set this attribute to the name of the protocol you wish to have
       returned by calls to <code>request.getScheme()</code>.  For
@@ -241,6 +235,11 @@
       will create a server socket and await incoming connections.  Your
       operating system will allow only one server application to listen
       to a particular port number on a particular IP address.</p>
+    </attribute>
+
+    <attribute name="requiredSecret" required="false">
+      <p>Only requests from workers with this secret keyword will be accepted.
+      Not used by default.</p>
     </attribute>
 
     <attribute name="tcpNoDelay" required="false">
