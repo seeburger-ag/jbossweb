@@ -748,19 +748,21 @@ public class InternalAprOutputBuffer
         
         int pos = 0;
         int end = bbuf.position();
-        int res = 0;
-        while (pos < end) {
-            res = Socket.sendibb(socket, pos, end - pos);
-            if (res > 0) {
-                pos += res;
-            } else {
-                break;
+        if (pos < end) {
+            int res = 0;
+            while (pos < end) {
+                res = Socket.sendibb(socket, pos, end - pos);
+                if (res > 0) {
+                    pos += res;
+                } else {
+                    break;
+                }
             }
+            if (res < 0) {
+                throw new IOException(sm.getString("oob.failedwrite"));
+            }
+            response.setLastWrite(res);
         }
-        if (res < 0) {
-            throw new IOException(sm.getString("oob.failedwrite"));
-        }
-        response.setLastWrite(res);
         if (pos < end) {
             leftover.allocate(end - pos, -1);
             bbuf.position(pos);
