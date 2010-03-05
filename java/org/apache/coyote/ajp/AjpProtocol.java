@@ -171,8 +171,8 @@ public class AjpProtocol
             log.error(sm.getString("ajpprotocol.endpoint.initerror"), ex);
             throw ex;
         }
-        if (log.isInfoEnabled()) {
-            log.info(sm.getString("ajpprotocol.init", getName()));
+        if (log.isDebugEnabled()) {
+            log.debug(sm.getString("ajpprotocol.init", getName()));
         }
     }
 

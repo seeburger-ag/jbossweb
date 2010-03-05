@@ -530,8 +530,8 @@ public class StandardService
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
-        if(log.isInfoEnabled())
-            log.info(sm.getString("standardService.start.name", this.name));
+        if(log.isDebugEnabled())
+            log.debug(sm.getString("standardService.start.name", this.name));
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -595,9 +595,8 @@ public class StandardService
         }
 
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
-        if(log.isInfoEnabled())
-            log.info
-                (sm.getString("standardService.stop.name", this.name));
+        if(log.isDebugEnabled())
+            log.debug(sm.getString("standardService.stop.name", this.name));
         started = false;
 
         // Stop our defined Container second

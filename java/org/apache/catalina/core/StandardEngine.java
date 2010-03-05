@@ -425,10 +425,6 @@ public class StandardEngine
             }
         }
             
-        // Log our server identification information
-        //System.out.println(ServerInfo.getServerInfo());
-        if(log.isInfoEnabled())
-            log.info( "Starting Servlet Engine: " + ServerInfo.getServerInfo());
         if( mbeans != null ) {
             try {
                 Registry.getRegistry(null, null)

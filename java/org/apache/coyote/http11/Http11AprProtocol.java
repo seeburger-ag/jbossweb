@@ -117,8 +117,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             log.error(sm.getString("http11protocol.endpoint.initerror"), ex);
             throw ex;
         }
-        if(log.isInfoEnabled())
-            log.info(sm.getString("http11protocol.init", getName()));
+        if(log.isDebugEnabled())
+            log.debug(sm.getString("http11protocol.init", getName()));
 
     }
 

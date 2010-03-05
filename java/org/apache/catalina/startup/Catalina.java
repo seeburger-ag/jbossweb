@@ -579,8 +579,8 @@ public class Catalina extends Embedded {
         }
 
         long t2 = System.nanoTime();
-        if(log.isInfoEnabled())
-            log.info("Server startup in " + ((t2 - t1) / 1000000) + " ms");
+        if (log.isDebugEnabled())
+            log.debug("Server startup in " + ((t2 - t1) / 1000000) + " ms");
 
         try {
             // Register shutdown hook
