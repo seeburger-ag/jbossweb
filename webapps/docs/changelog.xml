@@ -23,10 +23,6 @@
         Add LDAP connection timeout in JNDI realm. (markt)
       </fix>
       <fix>
-        <bug>48050</bug>: createSubcontext method returns Context with wrong name. Based on a 
-        suggestion by gingyang.xu. (markt)
-      </fix>
-      <fix>
         <bug>48318</bug>: Handle unreadable resources in WebDAV. (markt)
       </fix>
       <fix>

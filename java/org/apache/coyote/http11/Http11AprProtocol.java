@@ -101,7 +101,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
 
 
     public boolean hasIoEvents() {
-        return !isSSLEnabled();
+        return true;
     }
 
 
