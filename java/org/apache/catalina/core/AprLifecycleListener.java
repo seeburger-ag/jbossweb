@@ -178,17 +178,13 @@ public class AprLifecycleListener
                         TCN_RECOMMENDED_PV));
             }
         }
-        if (!log.isDebugEnabled()) {
-           log.info(sm.getString("aprListener.tcnValid", major + "."
+        if (log.isDebugEnabled()) {
+            log.debug(sm.getString("aprListener.tcnValid", major + "."
                     + minor + "." + patch));
+            // Log APR flags
+            log.debug(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
+                    Library.APR_HAS_RANDOM));
         }
-        else {
-           log.debug(sm.getString("aprListener.tcnValid", major + "."
-                     + minor + "." + patch));
-        }
-        // Log APR flags
-        log.info(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
-                Library.APR_HAS_RANDOM));
         return true;
     }
 
