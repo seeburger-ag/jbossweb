@@ -83,3 +83,9 @@ Useless alias feature, rather redundant with overlays, and has no place in the D
 
 890139
 EL coercion patch
+
+918851 919914 920055 920110
+Parser changes to "fix" EL processing when EL is disabled, likely to cause regressions
+
+920449
+Generating broken pages using included error pages
