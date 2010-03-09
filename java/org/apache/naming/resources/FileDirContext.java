@@ -920,7 +920,9 @@ public class FileDirContext extends BaseDirContext {
         public InputStream streamContent()
             throws IOException {
             if (binaryContent == null) {
-                inputStream = new FileInputStream(file);
+                FileInputStream fis = new FileInputStream(file);
+                inputStream = fis;
+                return fis;
             }
             return super.streamContent();
         }

@@ -34,6 +34,9 @@
       <fix>
         <bug>48589</bug>: JNDI realm extensibility. (markt)
       </fix>
+      <fix>
+        <bug>48760</bug>: Fix possible race condition reading resources. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
