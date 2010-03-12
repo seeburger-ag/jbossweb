@@ -747,7 +747,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         }
         
         if( sourceType==null ) {
-            sourceType="MbeansDescriptorsDigesterSource";
+            sourceType="MbeansDescriptorsDOMSource";
         }
         ModelerSource ds=getModelerSource(sourceType);
         List mbeans=ds.loadDescriptors(this, location, type, inputsource);
@@ -760,7 +760,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
             return "MbeansDescriptorsSerSource";
         }
         else if( s.endsWith(".xml")) {
-            return "MbeansDescriptorsDigesterSource";
+            return "MbeansDescriptorsDOMSource";
         }
         return null;
     }
@@ -842,7 +842,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         searchedPaths.put( packageName,  dURL );
         try {
             if( descriptors.endsWith(".xml" ))
-                loadDescriptors("MbeansDescriptorsDigesterSource", dURL, null);
+                loadDescriptors("MbeansDescriptorsDOMSource", dURL, null);
             else
                 loadDescriptors("MbeansDescriptorsSerSource", dURL, null);
             return;
@@ -914,7 +914,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
     private ModelerSource getModelerSource( String type )
             throws Exception
     {
-        if( type==null ) type="MbeansDescriptorsDigesterSource";
+        if( type==null ) type="MbeansDescriptorsDOMSource";
         if( type.indexOf( ".") < 0 ) {
             type="org.apache.tomcat.util.modeler.modules." + type;
         }
@@ -988,7 +988,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
     public void loadDescriptors( Object source )
             throws Exception
     {
-        loadDescriptors("MbeansDescriptorsDigesterSource", source, null );
+        loadDescriptors("MbeansDescriptorsDOMSource", source, null );
     }
 
     /** @deprecated - may still be used in code using pre-1.1 builds

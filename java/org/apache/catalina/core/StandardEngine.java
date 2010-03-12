@@ -30,10 +30,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Realm;
 import org.apache.catalina.Service;
-import org.apache.catalina.realm.JAASRealm;
-import org.apache.catalina.util.ServerInfo;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.modeler.modules.MbeansSource;
 import org.jboss.logging.Logger;
@@ -125,22 +122,6 @@ public class StandardEngine
 
 
     // ------------------------------------------------------------- Properties
-
-    /** Provide a default in case no explicit configuration is set
-     *
-     * @return configured realm, or a JAAS realm by default
-     */
-    public Realm getRealm() {
-        Realm configured=super.getRealm();
-        // If no set realm has been called - default to JAAS
-        // This can be overriden at engine, context and host level  
-        if( configured==null ) {
-            configured=new JAASRealm();
-            this.setRealm( configured );
-        }
-        return configured;
-    }
-
 
     /**
      * Return the default host.

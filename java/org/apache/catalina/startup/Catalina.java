@@ -24,12 +24,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import org.apache.catalina.Container;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Server;
-import org.apache.tomcat.util.digester.Rule;
-import org.xml.sax.Attributes;
 
 
 /**
@@ -435,38 +432,5 @@ public class Catalina extends Embedded {
     
     private static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger( Catalina.class );
-
-}
-
-
-// ------------------------------------------------------------ Private Classes
-
-
-/**
- * Rule that sets the parent class loader for the top object on the stack,
- * which must be a <code>Container</code>.
- */
-
-final class SetParentClassLoaderRule extends Rule {
-
-    public SetParentClassLoaderRule(ClassLoader parentClassLoader) {
-
-        this.parentClassLoader = parentClassLoader;
-
-    }
-
-    ClassLoader parentClassLoader = null;
-
-    public void begin(String namespace, String name, Attributes attributes)
-        throws Exception {
-
-        if (digester.getLogger().isDebugEnabled())
-            digester.getLogger().debug("Setting parent class loader");
-
-        Container top = (Container) digester.peek();
-        top.setParentClassLoader(parentClassLoader);
-
-    }
-
 
 }
