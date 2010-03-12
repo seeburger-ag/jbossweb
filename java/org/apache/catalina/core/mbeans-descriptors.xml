@@ -24,19 +24,6 @@
                     
   </mbean> 
 
-  <mbean name="NamingContextListener"
-         description="Helper class used to initialize and populate the JNDI context associated with each context and server"
-         domain="Catalina"
-         group="Listener"
-         type="org.apache.catalina.core.NamingContextListener">
-    
-    <attribute name="className"
-               description="Fully qualified class name of the managed object"
-               type="java.lang.String"
-               writeable="false"/>
-      
-  </mbean>
-
   <mbean name="StandardContext"
          description="Standard Context Component"
          domain="Catalina"
@@ -433,22 +420,9 @@
                description="The application root for this Host"
                type="java.lang.String"/>
       
-    <attribute name="autoDeploy"
-               description="The auto deploy flag for this Host"
-               type="boolean"/>
-                 
     <attribute name="configClass"
                description="The configuration class for contexts"
                type="java.lang.String"/>
-      
-    <attribute name="deployOnStartup"
-               description="The deploy on startup flag for this Host"
-               type="boolean"/>
-
-    <attribute name="deployXML"
-               description="deploy Context XML config files property"
-               is="true"
-               type="boolean"/>
       
     <attribute name="managedResource"
                description="The managed resource this MBean is associated with"
@@ -463,14 +437,6 @@
                is="true"
                type="boolean"/>
       
-    <attribute name="xmlNamespaceAware"
-               description="Attribute value used to turn on/off XML namespace awareness"
-               type="boolean"/>
-      
-    <attribute name="xmlValidation"
-               description="Attribute value used to turn on/off XML validation"
-               type="boolean"/>
-
     <attribute name="children"
                description="Object names of all children"
                type="[Ljavax.management.ObjectName;"/>
