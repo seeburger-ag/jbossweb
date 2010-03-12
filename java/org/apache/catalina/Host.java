@@ -84,22 +84,6 @@ public interface Host extends Container {
 
 
     /**
-     * Return the value of the auto deploy flag.  If true, it indicates that 
-     * this host's child webapps should be discovred and automatically 
-     * deployed dynamically.
-     */
-    public boolean getAutoDeploy();
-
-
-    /**
-     * Set the auto deploy flag value for this host.
-     * 
-     * @param autoDeploy The new auto deploy flag
-     */
-    public void setAutoDeploy(boolean autoDeploy);
-
-
-    /**
      * Return the Java class name of the context configuration class
      * for new web applications.
      */
@@ -115,22 +99,6 @@ public interface Host extends Container {
     public void setConfigClass(String configClass);
 
         
-    /**
-     * Return the value of the deploy on startup flag.  If true, it indicates 
-     * that this host's child webapps should be discovred and automatically 
-     * deployed.
-     */
-    public boolean getDeployOnStartup();
-
-
-    /**
-     * Set the deploy on startup flag value for this host.
-     * 
-     * @param deployOnStartup The new deploy on startup flag
-     */
-    public void setDeployOnStartup(boolean deployOnStartup);
-
-
     /**
      * Return the canonical, fully qualified, name of the virtual host
      * this Container represents.

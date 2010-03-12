@@ -47,40 +47,19 @@
 package org.apache.catalina.startup;
 
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 import javax.servlet.DispatcherType;
 import javax.servlet.HttpMethodConstraintElement;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.HandlesTypes;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebListener;
@@ -92,9 +71,7 @@ import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
-import org.apache.catalina.JarRepository;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
@@ -102,27 +79,15 @@ import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.ContainerBase;
-import org.apache.catalina.core.ContextJarRepository;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
-import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
-import org.apache.catalina.deploy.WebAbsoluteOrdering;
-import org.apache.catalina.deploy.WebOrdering;
-import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.util.StringManager;
-import org.apache.naming.resources.JARDirContext;
-import org.apache.naming.resources.ProxyDirContext;
-import org.apache.tomcat.util.digester.Digester;
-import org.apache.tomcat.util.digester.RuleSet;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXParseException;
 
 /**
  * Startup event listener for a <b>Context</b> that configures the properties
@@ -181,12 +146,6 @@ public class ContextConfig
 
 
     /**
-     * Any parse error which occurred while parsing XML descriptors.
-     */
-    protected SAXParseException parseException = null;
-
-    
-    /**
      * Original docBase.
      */
     protected String originalDocBase = null;
@@ -200,58 +159,6 @@ public class ContextConfig
 
 
     /**
-     * The <code>Digester</code> we will use to process web application
-     * context files.
-     */
-    protected static Digester contextDigester = null;
-    
-    
-    /**
-     * The <code>Digester</code> we will use to process web application
-     * deployment descriptor files.
-     */
-    protected static Digester webDigester = null;
-    
-    
-    /**
-     * The <code>Digester</code> we will use to process web application
-     * fragment descriptor files.
-     */
-    protected static Digester webFragmentDigester = null;
-    
-    
-    /**
-     * The <code>Digester</code> we will use to process tag library
-     * descriptor files.
-     */
-    protected static Digester tldDigester = null;
-    
-    
-    /**
-     * The <code>Digester</code> we will use to parse fragment ordering.
-     */
-    protected static Digester fragmentOrderingDigester = null;
-    
-    
-    /**
-     * The <code>Digester</code> we will use to parse absolute ordering in web.xml.
-     */
-    protected static Digester orderingDigester = null;
-    
-    
-    /**
-     * The <code>Rule</code> used to parse the web.xml.
-     */
-    protected static WebRuleSet webRuleSet = new WebRuleSet();
-
-
-    /**
-     * The <code>Rule</code> used to parse web-fragment.xml files.
-     */
-    protected static WebRuleSet webFragmentRuleSet = new WebRuleSet("", true);
-
-
-    /**
      * Deployment count.
      */
     protected static long deploymentCount = 0L;
@@ -259,21 +166,6 @@ public class ContextConfig
     
     protected static final LoginConfig DUMMY_LOGIN_CONFIG =
                                 new LoginConfig("NONE", null, null, null);
-
-
-    protected ArrayList<String> overlays = new ArrayList<String>();
-    protected ArrayList<String> webFragments = new ArrayList<String>();
-    protected Map<String, Set<String>> TLDs = new HashMap<String, Set<String>>();
-    protected Map<String, ServletContainerInitializerInfo> servletContainerInitializerInfos = 
-        new HashMap<String, ServletContainerInitializerInfo>();
-    protected LinkedList<String> order = new LinkedList<String>();
-    
-    /**
-     * Used to speed up scanning for the services interest classes.
-     */
-    protected Class<?>[] handlesTypesArray = null;
-    protected Map<Class<?>, ServletContainerInitializerInfo> handlesTypes = 
-        new HashMap<Class<?>, ServletContainerInitializerInfo>();
 
 
     // ------------------------------------------------------------- Properties
@@ -340,29 +232,6 @@ public class ContextConfig
     }
 
 
-    // -------------------------------------------------- WarComponents Methods
-
-
-    public Iterator<String> getOverlays() {
-        return overlays.iterator();
-    }
-
-
-    public Iterator<String> getWebFragments() {
-        return order.iterator();
-    }
-
-
-    public Map<String, Set<String>> getTLDs() {
-        return TLDs;
-    }
-    
-    
-    public Map<String, ServletContainerInitializerInfo> getServletContainerInitializerInfo() {
-        return servletContainerInitializerInfos;
-    }
-    
-    
     // --------------------------------------------------------- Public Methods
 
 
@@ -392,23 +261,6 @@ public class ContextConfig
                 String docBase = context.getDocBase();
                 context.setDocBase(originalDocBase);
                 originalDocBase = docBase;
-            }
-            // Invoke Servlet container initializer: instantiate and call onStartup
-            if (ok) {
-                Iterator<ServletContainerInitializerInfo> initializers = 
-                    getServletContainerInitializerInfo().values().iterator();
-                while (initializers.hasNext()) {
-                    ServletContainerInitializerInfo service = initializers.next();
-                    try {
-                        ServletContainerInitializer servletContainerInitializer = 
-                            (ServletContainerInitializer) service.getServletContainerInitializer().newInstance();
-                        servletContainerInitializer.onStartup(service.getStartupNotifySet(), context.getServletContext());
-                    } catch (Throwable t) {
-                        log.error(sm.getString("contextConfig.servletContainerInitializer", 
-                                service.getServletContainerInitializer().getName()), t);
-                        ok = false;
-                    }
-                }
             }
         } else if (event.getType().equals(Context.COMPLETE_CONFIG_EVENT)) {
             completeConfig();
@@ -501,91 +353,7 @@ public class ContextConfig
      * Process the application configuration file, if it exists.
      */
     protected void applicationWebConfig() {
-
-        String altDDName = null;
-
-        // Open the application web.xml file, if it exists
-        InputStream stream = null;
-        ServletContext servletContext = context.getServletContext();
-        if (servletContext != null) {
-            altDDName = (String)servletContext.getAttribute(
-                                                        Globals.ALT_DD_ATTR);
-            if (altDDName != null) {
-                try {
-                    stream = new FileInputStream(altDDName);
-                } catch (FileNotFoundException e) {
-                    log.error(sm.getString("contextConfig.altDDNotFound",
-                                           altDDName));
-                }
-            }
-            else {
-                stream = servletContext.getResourceAsStream
-                    (Constants.ApplicationWebXml);
-            }
-        }
-        if (stream == null) {
-            if (log.isDebugEnabled()) {
-                log.debug(sm.getString("contextConfig.applicationMissing") + " " + context);
-            }
-            return;
-        }
-        
-        URL url=null;
-        // Process the application web.xml file
-        synchronized (webDigester) {
-            try {
-                if (altDDName != null) {
-                    url = new File(altDDName).toURI().toURL();
-                } else {
-                    url = servletContext.getResource(
-                                                Constants.ApplicationWebXml);
-                }
-                if( url!=null ) {
-                    InputSource is = new InputSource(url.toExternalForm());
-                    is.setByteStream(stream);
-                    if (context instanceof StandardContext) {
-                        ((StandardContext) context).setReplaceWelcomeFiles(true);
-                    }
-                    webDigester.push(context);
-                    webDigester.setErrorHandler(new ContextErrorHandler());
-
-                    if(log.isDebugEnabled()) {
-                        log.debug("Parsing application web.xml file at " + url.toExternalForm());
-                    }
-
-                    webDigester.parse(is);
-
-                    if (parseException != null) {
-                        ok = false;
-                    }
-                } else {
-                    log.info("No web.xml, using defaults " + context );
-                }
-            } catch (SAXParseException e) {
-                log.error(sm.getString("contextConfig.applicationParse", url.toExternalForm()), e);
-                log.error(sm.getString("contextConfig.applicationPosition",
-                                 "" + e.getLineNumber(),
-                                 "" + e.getColumnNumber()));
-                ok = false;
-            } catch (Exception e) {
-                log.error(sm.getString("contextConfig.applicationParse", url.toExternalForm()), e);
-                ok = false;
-            } finally {
-                webDigester.reset();
-                webRuleSet.recycle();
-                parseException = null;
-                try {
-                    if (stream != null) {
-                        stream.close();
-                    }
-                } catch (IOException e) {
-                    log.error(sm.getString("contextConfig.applicationClose"), e);
-                }
-            }
-        }
-
     }
-    
     
     /**
      * Parse TLDs. This is separate, and is not subject to the order defined. Also,
@@ -593,126 +361,6 @@ public class ContextConfig
      */
     protected void applicationTldConfig() {
         
-        Map<String, Set<String>> TLDs = getTLDs();
-        Set<String> warTLDs = TLDs.get("");
-        ArrayList<TagLibraryInfo> tagLibraries = new ArrayList<TagLibraryInfo>();
-
-        // Parse all TLDs from the WAR
-        Iterator<String> warTLDsIterator = warTLDs.iterator();
-        InputStream stream = null;
-        while (warTLDsIterator.hasNext()) {
-            String tldPath = warTLDsIterator.next();
-            try {
-                stream = context.getServletContext().getResourceAsStream(tldPath);
-                if (stream == null) {
-                    log.error(sm.getString("contextConfig.tldResourcePath", tldPath));
-                    ok = false;
-                } else {
-                    synchronized (tldDigester) {
-                        TagLibraryInfo tagLibraryInfo = new TagLibraryInfo();
-                        try {
-                            tldDigester.push(tagLibraryInfo);
-                            tldDigester.parse(new InputSource(stream));
-                        } finally {
-                            tldDigester.reset();
-                        }
-                        tagLibraryInfo.setLocation("");
-                        tagLibraryInfo.setPath(tldPath);
-                        tagLibraries.add(tagLibraryInfo);
-                        context.addJspTagLibrary(tagLibraryInfo);
-                        context.addJspTagLibrary(tldPath, tagLibraryInfo);
-                    }
-                }
-            } catch (Exception e) {
-                log.error(sm.getString("contextConfig.tldFileException", tldPath,
-                        context.getPath()), e);
-                ok = false;
-            } finally {
-                if (stream != null) {
-                    try {
-                        stream.close();
-                    } catch (Throwable t) {
-                        // Ignore
-                    }
-                }
-            }
-
-        }
-
-        // Parse all TLDs from JARs
-        Iterator<String> jarPaths = TLDs.keySet().iterator();
-        while (jarPaths.hasNext()) {
-            String jarPath = jarPaths.next();
-            if (jarPath.equals("")) {
-                continue;
-            }
-            JarRepository jarRepository = context.getJarRepository();
-            JarFile jarFile = jarRepository.findJar(jarPath);
-            Iterator<String> jarTLDsIterator =  TLDs.get(jarPath).iterator();
-            while (jarTLDsIterator.hasNext()) {
-                try {
-                    String tldPath = jarTLDsIterator.next();
-                    stream = jarFile.getInputStream(jarFile.getEntry(tldPath));
-                    synchronized (tldDigester) {
-                        TagLibraryInfo tagLibraryInfo = new TagLibraryInfo();
-                        try {
-                            tldDigester.push(tagLibraryInfo);
-                            tldDigester.parse(new InputSource(stream));
-                        } finally {
-                            tldDigester.reset();
-                            if (stream != null) {
-                                try {
-                                    stream.close();
-                                } catch (Throwable t) {
-                                    // Ignore
-                                }
-                            }
-                        }
-                        tagLibraryInfo.setLocation(jarPath);
-                        tagLibraryInfo.setPath(tldPath);
-                        tagLibraries.add(tagLibraryInfo);
-                        context.addJspTagLibrary(tagLibraryInfo);
-                        if (tldPath.equals("META-INF/taglib.tld")) {
-                            context.addJspTagLibrary(jarPath, tagLibraryInfo);
-                        }
-                    }
-                } catch (Exception e) {
-                    log.error(sm.getString("contextConfig.tldJarException",
-                            jarPath, context.getPath()), e);
-                    ok = false;
-                } finally {
-                    if (stream != null) {
-                        try {
-                            stream.close();
-                        } catch (Throwable t) {
-                            // Ignore
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Add additional TLDs URIs from explicit web config
-        String taglibs[] = context.findTaglibs();
-        for (int i = 0; i < taglibs.length; i++) {
-            String uri = taglibs[i];
-            String path = context.findTaglib(taglibs[i]);
-            String location = "";
-            if (path.indexOf(':') == -1 && !path.startsWith("/")) {
-                path = "/WEB-INF/" + path;
-            }
-            if (path.endsWith(".jar")) {
-                location = path;
-                path = "META-INF/taglib.tld";
-            }
-            for (int j = 0; j < tagLibraries.size(); j++) {
-                TagLibraryInfo tagLibraryInfo = tagLibraries.get(j);
-                if (tagLibraryInfo.getLocation().equals(location) && tagLibraryInfo.getPath().equals(path)) {
-                    context.addJspTagLibrary(uri, tagLibraryInfo);
-                }
-            }
-        }
-
     }
     
 
@@ -832,57 +480,6 @@ public class ContextConfig
     }
 
 
-    /**
-     * Create (if necessary) and return a Digester configured to process the
-     * web application deployment descriptor (web.xml).
-     */
-    protected static Digester createWebDigester() {
-        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, Globals.XML_VALIDATION, webRuleSet);
-    }
-
-
-    /**
-     * Create (if necessary) and return a Digester configured to process the
-     * web application fragment descriptors (web-fragment.xml).
-     */
-    protected static Digester createWebFragmentDigester() {
-        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, Globals.XML_VALIDATION, webFragmentRuleSet);
-    }
-
-
-    /**
-     * Create (if necessary) and return a Digester configured to process tag 
-     * library descriptors.
-     */
-    protected static Digester createTldDigester() {
-        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, Globals.XML_VALIDATION, new TldRuleSet());
-    }
-
-
-    /**
-     * Create (if necessary) and return a Digester configured to process web fragments ordering.
-     */
-    protected static Digester createFragmentOrderingDigester() {
-        return DigesterFactory.newDigester(Globals.XML_NAMESPACE_AWARE, 
-                Globals.XML_VALIDATION, new WebOrderingRuleSet());
-    }
-
-
-    /**
-     * Create (if necessary) and return a Digester configured to process the
-     * context configuration descriptor for an application.
-     */
-    protected static Digester createContextDigester() {
-        Digester digester = new Digester();
-        digester.setValidating(false);
-        RuleSet contextRuleSet = new ContextRuleSet("", false);
-        digester.addRuleSet(contextRuleSet);
-        RuleSet namingRuleSet = new NamingRuleSet("Context/");
-        digester.addRuleSet(namingRuleSet);
-        return digester;
-    }
-
-
     protected String getBaseDir() {
         Container engineC=context.getParent().getParent();
         if( engineC instanceof StandardEngine ) {
@@ -897,270 +494,15 @@ public class ContextConfig
      * container servlets can be loaded
      */
     protected void defaultWebConfig() {
-        long t1=System.currentTimeMillis();
-
-        // Open the default web.xml file, if it exists
-        if( defaultWebXml==null && context instanceof StandardContext ) {
-            defaultWebXml=((StandardContext)context).getDefaultWebXml();
-        }
-        // set the default if we don't have any overrides
-        if( defaultWebXml==null ) getDefaultWebXml();
-
-        File file = new File(this.defaultWebXml);
-        if (!file.isAbsolute()) {
-            file = new File(getBaseDir(),
-                            this.defaultWebXml);
-        }
-
-        InputStream stream = null;
-        InputSource source = null;
-
-        try {
-            if ( ! file.exists() ) {
-                // Use getResource and getResourceAsStream
-                stream = getClass().getClassLoader()
-                    .getResourceAsStream(defaultWebXml);
-                if( stream != null ) {
-                    source = new InputSource
-                            (getClass().getClassLoader()
-                            .getResource(defaultWebXml).toString());
-                } 
-                if( stream== null ) { 
-                    // maybe embedded
-                    stream = getClass().getClassLoader()
-                        .getResourceAsStream("web-embed.xml");
-                    if( stream != null ) {
-                        source = new InputSource
-                        (getClass().getClassLoader()
-                                .getResource("web-embed.xml").toString());
-                    }                                         
-                }
-                
-                if( stream== null ) {
-                    log.info("No default web.xml");
-                }
-            } else {
-                source =
-                    new InputSource("file://" + file.getAbsolutePath());
-                stream = new FileInputStream(file);
-                context.addWatchedResource(file.getAbsolutePath());
-            }
-        } catch (Exception e) {
-            log.error(sm.getString("contextConfig.defaultMissing") 
-                      + " " + defaultWebXml + " " + file , e);
-        }
-
-        if (stream != null) {
-            processDefaultWebConfig(webDigester, stream, source);
-            webRuleSet.recycle();
-        }
-
-        long t2=System.currentTimeMillis();
-        if( (t2-t1) > 200 )
-            log.debug("Processed default web.xml " + file + " "  + ( t2-t1));
-
-        stream = null;
-        source = null;
-
-        String resourceName = getHostConfigPath(Constants.HostWebXml);
-        file = new File(getConfigBase(), resourceName);
         
-        try {
-            if ( ! file.exists() ) {
-                // Use getResource and getResourceAsStream
-                stream = getClass().getClassLoader()
-                    .getResourceAsStream(resourceName);
-                if( stream != null ) {
-                    source = new InputSource
-                            (getClass().getClassLoader()
-                            .getResource(resourceName).toString());
-                }
-            } else {
-                source =
-                    new InputSource("file://" + file.getAbsolutePath());
-                stream = new FileInputStream(file);
-            }
-        } catch (Exception e) {
-            log.error(sm.getString("contextConfig.defaultMissing") 
-                      + " " + resourceName + " " + file , e);
-        }
-
-        if (stream != null) {
-            processDefaultWebConfig(webDigester, stream, source);
-            webRuleSet.recycle();
-        }
-
     }
 
 
-    /**
-     * Process a default web.xml.
-     */
-    protected void processDefaultWebConfig(Digester digester, InputStream stream, 
-            InputSource source) {
-
-        if (log.isDebugEnabled())
-            log.debug("Processing context [" + context.getName() 
-                    + "] web configuration resource " + source.getSystemId());
-
-        // Process the default web.xml file
-        synchronized (digester) {
-            try {
-                source.setByteStream(stream);
-                
-                if (context instanceof StandardContext)
-                    ((StandardContext) context).setReplaceWelcomeFiles(true);
-                digester.setClassLoader(this.getClass().getClassLoader());
-                digester.setUseContextClassLoader(false);
-                digester.push(context);
-                digester.setErrorHandler(new ContextErrorHandler());
-                digester.parse(source);
-                if (parseException != null) {
-                    ok = false;
-                }
-            } catch (SAXParseException e) {
-                log.error(sm.getString("contextConfig.defaultParse"), e);
-                log.error(sm.getString("contextConfig.defaultPosition",
-                                 "" + e.getLineNumber(),
-                                 "" + e.getColumnNumber()));
-                ok = false;
-            } catch (Exception e) {
-                log.error(sm.getString("contextConfig.defaultParse"), e);
-                ok = false;
-            } finally {
-                digester.reset();
-                parseException = null;
-                try {
-                    if (stream != null) {
-                        stream.close();
-                    }
-                } catch (IOException e) {
-                    log.error(sm.getString("contextConfig.defaultClose"), e);
-                }
-            }
-        }
-    }
-
-    
     /**
      * Parse fragments order.
      */
     protected void createFragmentsOrder() {
         
-        WebAbsoluteOrdering absoluteOrdering = context.getWebAbsoluteOrdering();
-        List<WebOrdering> orderings = new ArrayList<WebOrdering>();
-        HashSet<String> jarsSet = new HashSet<String>();
-        boolean fragmentFound = false;
-        
-        // Parse the ordering defined in web fragments
-        JarRepository jarRepository = context.getJarRepository();
-        JarFile[] jars = jarRepository.findJars();
-        for (int i = 0; i < jars.length; i++) {
-            // Find webapp descriptor fragments
-            jarsSet.add(jars[i].getName());
-            JarFile jarFile = jars[i];
-            InputStream is = null;
-            ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
-            if (entry != null) {
-                fragmentFound = true;
-                try {
-                    webFragments.add(jars[i].getName());
-                    is = jarFile.getInputStream(entry);
-                    InputSource input = new InputSource((new File(jars[i].getName())).toURI().toURL().toExternalForm());
-                    input.setByteStream(is);
-                    synchronized (fragmentOrderingDigester) {
-                        try {
-                            fragmentOrderingDigester.parse(input);
-                            WebOrdering ordering = (WebOrdering) fragmentOrderingDigester.peek();
-                            if (ordering != null) {
-                                ordering.setJar(jars[i].getName());
-                                orderings.add(ordering);
-                            }
-                        } finally {
-                            fragmentOrderingDigester.reset();
-                        }
-                    }
-                } catch (Exception e) {
-                    log.error(sm.getString("contextConfig.fragmentOrderingParse", jars[i].getName()), e);
-                    ok = false;
-                } finally {
-                    try {
-                        if (is != null) {
-                            is.close();
-                        }
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                }
-            } else {
-                // If there is no fragment, still consider it for ordering as a
-                // fragment specifying no name and no order
-                WebOrdering ordering = new WebOrdering();
-                ordering.setJar(jars[i].getName());
-                orderings.add(ordering);
-            }
-        }
-        if (!fragmentFound) {
-            // Drop the order as there is no fragment in the webapp
-            orderings.clear();
-        }
-        
-        // Generate web fragments parsing order
-        if (absoluteOrdering != null) {
-            // Absolute ordering from web.xml, any relative fragment ordering is ignored
-            List<String> fragmentNames = absoluteOrdering.getOrder();
-            int otherPos = -1;
-            for (int i = 0; i < fragmentNames.size(); i++) {
-                String fragmentName = fragmentNames.get(i);
-                if (fragmentName.equals("*")) {
-                    if (otherPos >= 0) {
-                        log.error(sm.getString("contextConfig.invalidAbsoluteOrder"));
-                        ok = false;
-                    }
-                    otherPos = i;
-                } else {
-                    Iterator<WebOrdering> orderingsIterator = orderings.iterator();
-                    while (orderingsIterator.hasNext()) {
-                        WebOrdering ordering = orderingsIterator.next();
-                        if (fragmentName.equals(ordering.getName())) {
-                            order.add(ordering.getJar());
-                            jarsSet.remove(ordering.getJar());
-                            break;
-                        }
-                    }
-                }
-            }
-            if (otherPos >= 0) {
-                order.addAll(otherPos, jarsSet);
-            }
-        } else if (orderings.size() > 0) {
-            // Resolve relative ordering
-            try {
-                OrderingResolver.resolveOrder(orderings, order);
-            } catch (IllegalStateException e) {
-                log.error(e.getMessage(), e);
-                ok = false;
-            }
-        } else {
-            // No order specified
-            order.addAll(jarsSet);
-        }
-        
-    }
-    
-    
-    /**
-     * Get the jar name corresponding to the ordering name.
-     */
-    protected String getJarName(List<WebOrdering> orderings, String name) {
-        Iterator<WebOrdering> orderingsIterator = orderings.iterator();
-        while (orderingsIterator.hasNext()) {
-            WebOrdering ordering = orderingsIterator.next();
-            if (name.equals(ordering.getName())) {
-                return ordering.getJar();
-            }
-        }
-        return null;
     }
     
     
@@ -1169,196 +511,6 @@ public class ContextConfig
      */
     protected void applicationExtraDescriptorsConfig() {
         
-        JarRepository jarRepository = context.getJarRepository();
-
-        HashSet<String> warTLDs = new HashSet<String>();
-
-        // Find any TLD file in /WEB-INF
-        DirContext resources = context.getResources();
-        if (resources != null) {
-            tldScanResourcePathsWebInf(resources, "/WEB-INF", warTLDs);
-        }
-        TLDs.put("", warTLDs);
-        
-        File[] explodedJars = jarRepository.findExplodedJars();
-        for (int i = 0; i < explodedJars.length; i++) {
-            scanClasses(explodedJars[i], "", !context.getIgnoreAnnotations());
-        }
-        
-        // Parse web fragment according to order
-        Iterator<String> orderIterator = order.iterator();
-        while (orderIterator.hasNext()) {
-            String jar = orderIterator.next();
-            JarFile jarFile = jarRepository.findJar(jar);
-            InputStream is = null;
-            ZipEntry entry = jarFile.getEntry(Globals.WEB_FRAGMENT_PATH);
-            if (entry != null) {
-                try {
-                    is = jarFile.getInputStream(entry);
-                    InputSource input = new InputSource((new File(jar)).toURI().toURL().toExternalForm());
-                    input.setByteStream(is);
-                    synchronized (webFragmentDigester) {
-                        try {
-                            webFragmentDigester.push(context);
-                            webFragmentDigester.setErrorHandler(new ContextErrorHandler());
-                            webFragmentDigester.parse(input);
-                            if (parseException != null) {
-                                ok = false;
-                            }
-                        } finally {
-                            webFragmentDigester.reset();
-                            webFragmentRuleSet.recycle();
-                            parseException = null;
-                        }
-                    }
-                } catch (Exception e) {
-                    log.error(sm.getString("contextConfig.applicationParse", jar), e);
-                    ok = false;
-                } finally {
-                    try {
-                        if (is != null) {
-                            is.close();
-                        }
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                }
-            }
-            // Scan the JAR for TLDs and annotations
-            scanJar(jarFile, true);
-        }
-        
-        // Process any Jar not in the order
-        JarFile[] jarFiles = jarRepository.findJars();
-        for (int i = 0; i < jarFiles.length; i++) {
-            if (!order.contains(jarFiles[i].getName())) {
-                // Scan the JAR for TLDs only
-                scanJar(jarFiles[i], false);
-            }
-        }
-        
-    }
-    
-    
-    protected void scanJar(JarFile jarFile, boolean annotations) {
-        
-        // Scan Jar for annotations and TLDs
-        HashSet<String> jarTLDs = new HashSet<String>();
-        Enumeration<JarEntry> entries = jarFile.entries();
-        while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            String name = entry.getName();
-            if (name.endsWith(".class")) {
-                String className = getClassName(entry.getName());
-                scanClass(className, annotations);
-            } else if (name.startsWith("META-INF/") && name.endsWith(".tld")) {
-                jarTLDs.add(name);
-            }
-        }
-        if (jarTLDs.size() > 0) {
-            TLDs.put(jarFile.getName(), jarTLDs);
-        }
-
-    }
-    
-
-    /**
-     * Scans the web application's subdirectory identified by rootPath,
-     * along with its subdirectories, for TLDs.
-     *
-     * Initially, rootPath equals /WEB-INF. The /WEB-INF/classes and
-     * /WEB-INF/lib subdirectories are excluded from the search, as per the
-     * JSP 2.0 spec.
-     *
-     * @param resources The web application's resources
-     * @param rootPath The path whose subdirectories are to be searched for
-     * TLDs
-     * @param tldPaths The set of TLD resource paths to add to
-     */
-    protected void tldScanResourcePathsWebInf(DirContext resources,
-                                            String rootPath,
-                                            HashSet<String> tldPaths) {
-        try {
-            NamingEnumeration<NameClassPair> items = resources.list(rootPath);
-            while (items.hasMoreElements()) {
-                NameClassPair item = items.nextElement();
-                String resourcePath = rootPath + "/" + item.getName();
-                if (!resourcePath.endsWith(".tld")
-                        && (resourcePath.startsWith("/WEB-INF/classes")
-                            || resourcePath.startsWith("/WEB-INF/lib"))) {
-                    continue;
-                }
-                if (resourcePath.endsWith(".tld")) {
-                    tldPaths.add(resourcePath);
-                } else {
-                    tldScanResourcePathsWebInf(resources, resourcePath,
-                                               tldPaths);
-                }
-            }
-        } catch (NamingException e) {
-            ; // Silent catch: it's valid that no /WEB-INF directory exists
-        }
-    }
-
-
-    /**
-     * Scan folder containing class files.
-     */
-    protected void scanClasses(File folder, String path, boolean annotations) {
-        String[] files = folder.list();
-        for (int i = 0; i < files.length; i++) {
-            File file = new File(folder, files[i]);
-            if (file.isDirectory()) {
-                scanClasses(file, path + "/" + files[i], annotations);
-            } else if (files[i].endsWith(".class")) {
-                String className = getClassName(path + "/" + files[i]);
-                scanClass(className, annotations);
-            }
-        }
-    }
-    
-    
-    protected void scanClass(String className, boolean annotations) {
-        if (!annotations && (handlesTypesArray == null)) {
-            return;
-        }
-        try {
-            Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
-            if (handlesTypesArray != null) {
-                for (int i = 0; i < handlesTypesArray.length; i++) {
-                    if (handlesTypesArray[i].isAssignableFrom(clazz)) {
-                        ServletContainerInitializerInfo jarServletContainerInitializerService = 
-                            handlesTypes.get(handlesTypesArray[i]);
-                        jarServletContainerInitializerService.addStartupNotifyClass(clazz);
-                    }
-                }
-            }
-            if (annotations &&
-                    (clazz.isAnnotationPresent(MultipartConfig.class)
-                    || clazz.isAnnotationPresent(WebFilter.class)
-                    || clazz.isAnnotationPresent(WebInitParam.class)
-                    || clazz.isAnnotationPresent(WebListener.class)
-                    || clazz.isAnnotationPresent(WebServlet.class))) {
-                processConfigAnnotations(clazz);
-            }
-        } catch (Throwable t) {
-            // Ignore classloading errors here
-        }
-    }
-    
-    
-    /**
-     * Get class name given a path to a classfile.
-     * /my/class/MyClass.class -> my.class.MyClass
-     */
-    protected String getClassName(String filePath) {
-        if (filePath.startsWith("/")) {
-            filePath = filePath.substring(1);
-        }
-        if (filePath.endsWith(".class")) {
-            filePath = filePath.substring(0, filePath.length() - ".class".length());
-        }
-        return filePath.replace('/', '.');
     }
     
     
@@ -1366,307 +518,7 @@ public class ContextConfig
      * Find and parse ServletContainerInitializer service in specified JAR.
      */
     public void applicationServletContainerInitializerConfig() {
-        JarRepository jarRepository = context.getJarRepository();
-        if (jarRepository != null) {
-            JarFile[] jars = jarRepository.findJars();
-            for (int i = 0; i < jars.length; i++) {
-                scanJarForServletContainerInitializer(jars[i]);
-            }
-        }
-        // Do the same for the context parent
-        jarRepository = context.getParent().getJarRepository();
-        if (jarRepository != null) {
-            JarFile[] jars = jarRepository.findJars();
-            for (int i = 0; i < jars.length; i++) {
-                scanJarForServletContainerInitializer(jars[i]);
-            }
-        }
-    }
-    
-    
-    /**
-     * Find and parse ServletContainerInitializer service in specified JAR.
-     */
-    public void scanJarForServletContainerInitializer(JarFile file) {
-        // Find ServletContainerInitializer services
-        JarEntry servletContainerInitializerEntry = file.getJarEntry(Globals.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH);
-        String servletContainerInitializerClassName = null;
-        if (servletContainerInitializerEntry != null) {
-            // Read Servlet container initializer service file
-            InputStream is = null;
-            try {
-                is = file.getInputStream(servletContainerInitializerEntry);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                servletContainerInitializerClassName = reader.readLine();
-                int pos = servletContainerInitializerClassName.indexOf('#');
-                if (pos > 0) {
-                    servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
-                }
-                servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
-            } catch (Exception e) {
-                log.warn(sm.getString("contextConfig.servletContainerInitializer", file.getName()), e);
-                return;
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
-            // Load Servlet container initializer class and read HandlesTypes annotation
-            Class<?> servletContainerInitializerClass = null;
-            Class<?>[] typesArray = null;
-            if (servletContainerInitializerClassName != null) {
-                try {
-                    servletContainerInitializerClass = context.getLoader().getClassLoader()
-                        .loadClass(servletContainerInitializerClassName);
-                    if (servletContainerInitializerClass.isAnnotationPresent(HandlesTypes.class)) {
-                        HandlesTypes handlesTypes = servletContainerInitializerClass.getAnnotation(HandlesTypes.class);
-                        typesArray = handlesTypes.value();
-                    }
-                } catch (Throwable t) {
-                    log.warn(sm.getString("contextConfig.servletContainerInitializer", file.getName()), t);
-                    return;
-                }
-            }
-            // Add in jarService map, and add in the local map used to speed up lookups
-            ServletContainerInitializerInfo jarServletContainerInitializerService = 
-                new ServletContainerInitializerInfo(servletContainerInitializerClass, handlesTypesArray);
-            servletContainerInitializerInfos.put(file.getName(), jarServletContainerInitializerService);
-            if (typesArray != null) {
-                ArrayList<Class<?>> handlesTypesList = new ArrayList<Class<?>>();
-                if (handlesTypesArray != null) {
-                    for (int i = 0; i < handlesTypesArray.length; i++) {
-                        handlesTypesList.add(handlesTypesArray[i]);
-                    }
-                }
-                for (int i = 0; i < typesArray.length; i++) {
-                    handlesTypesList.add(typesArray[i]);
-                    handlesTypes.put(typesArray[i], jarServletContainerInitializerService);
-                }
-                handlesTypesArray = handlesTypesList.toArray(handlesTypesArray);
-            }
-        }
-    }
-    
-    
-    /**
-     * Process the default configuration file, if it exists.
-     */
-    protected void contextConfig() {
         
-        // Open the default web.xml file, if it exists
-        if( defaultContextXml==null && context instanceof StandardContext ) {
-            defaultContextXml = ((StandardContext)context).getDefaultContextXml();
-        }
-        // set the default if we don't have any overrides
-        if( defaultContextXml==null ) getDefaultContextXml();
-
-        if (!context.getOverride()) {
-            processContextConfig(new File(getBaseDir()), defaultContextXml);
-            processContextConfig(getConfigBase(), getHostConfigPath(Constants.HostContextXml));
-        }
-        if (context.getConfigFile() != null)
-            processContextConfig(new File(context.getConfigFile()), null);
-        
-        if (context.getJarRepository() == null) {
-            context.setJarRepository(new ContextJarRepository());
-        }
-
-    }
-
-    
-    /**
-     * Process a context.xml.
-     */
-    protected void processContextConfig(File baseDir, String resourceName) {
-        
-        if (log.isDebugEnabled())
-            log.debug("Processing context [" + context.getName() 
-                    + "] configuration file " + baseDir + " " + resourceName);
-
-        InputSource source = null;
-        InputStream stream = null;
-
-        File file = baseDir;
-        if (resourceName != null) {
-            file = new File(baseDir, resourceName);
-        }
-        
-        try {
-            if ( !file.exists() ) {
-                if (resourceName != null) {
-                    // Use getResource and getResourceAsStream
-                    stream = getClass().getClassLoader()
-                        .getResourceAsStream(resourceName);
-                    if( stream != null ) {
-                        source = new InputSource
-                            (getClass().getClassLoader()
-                            .getResource(resourceName).toString());
-                    }
-                }
-            } else {
-                source =
-                    new InputSource("file://" + file.getAbsolutePath());
-                stream = new FileInputStream(file);
-                // Add as watched resource so that cascade reload occurs if a default
-                // config file is modified/added/removed
-                context.addWatchedResource(file.getAbsolutePath());
-            }
-        } catch (Exception e) {
-            log.error(sm.getString("contextConfig.contextMissing",  
-                      resourceName + " " + file) , e);
-        }
-        
-        if (source == null)
-            return;
-        synchronized (contextDigester) {
-            try {
-                source.setByteStream(stream);
-                contextDigester.setClassLoader(this.getClass().getClassLoader());
-                contextDigester.setUseContextClassLoader(false);
-                contextDigester.push(context.getParent());
-                contextDigester.push(context);
-                contextDigester.setErrorHandler(new ContextErrorHandler());
-                contextDigester.parse(source);
-                if (parseException != null) {
-                    ok = false;
-                }
-                if (log.isDebugEnabled())
-                    log.debug("Successfully processed context [" + context.getName() 
-                            + "] configuration file " + baseDir + " " + resourceName);
-            } catch (SAXParseException e) {
-                log.error(sm.getString("contextConfig.contextParse",
-                        context.getName()), e);
-                log.error(sm.getString("contextConfig.defaultPosition",
-                                 "" + e.getLineNumber(),
-                                 "" + e.getColumnNumber()));
-                ok = false;
-            } catch (Exception e) {
-                log.error(sm.getString("contextConfig.contextParse",
-                        context.getName()), e);
-                ok = false;
-            } finally {
-                contextDigester.reset();
-                parseException = null;
-                try {
-                    if (stream != null) {
-                        stream.close();
-                    }
-                } catch (IOException e) {
-                    log.error(sm.getString("contextConfig.contextClose"), e);
-                }
-            }
-        }
-    }
-
-    
-    /**
-     * Adjust docBase.
-     */
-    protected void fixDocBase()
-        throws IOException {
-        
-        Host host = (Host) context.getParent();
-        String appBase = host.getAppBase();
-
-        boolean unpackWARs = true;
-        if (host instanceof StandardHost) {
-            unpackWARs = ((StandardHost) host).isUnpackWARs() 
-                && ((StandardContext) context).getUnpackWAR();
-        }
-
-        File canonicalAppBase = new File(appBase);
-        if (canonicalAppBase.isAbsolute()) {
-            canonicalAppBase = canonicalAppBase.getCanonicalFile();
-        } else {
-            canonicalAppBase = 
-                new File(System.getProperty("catalina.base"), appBase)
-                .getCanonicalFile();
-        }
-
-        String docBase = context.getDocBase();
-        if (docBase == null) {
-            // Trying to guess the docBase according to the path
-            String path = context.getPath();
-            if (path == null) {
-                return;
-            }
-            if (path.equals("")) {
-                docBase = "ROOT";
-            } else {
-                if (path.startsWith("/")) {
-                    docBase = path.substring(1).replace('/', '#');
-                } else {
-                    docBase = path.replace('/', '#');
-                }
-            }
-        }
-
-        File file = new File(docBase);
-        if (!file.isAbsolute()) {
-            docBase = (new File(canonicalAppBase, docBase)).getPath();
-        } else {
-            docBase = file.getCanonicalPath();
-        }
-        file = new File(docBase);
-        String origDocBase = docBase;
-        
-        String contextPath = context.getPath();
-        if (contextPath.equals("")) {
-            contextPath = "ROOT";
-        } else {
-            // Context path must start with '/'
-            contextPath = "/" + contextPath.substring(1).replace('/','#');
-        }
-        if (docBase.toLowerCase().endsWith(".war") && !file.isDirectory() && unpackWARs) {
-            URL war = new URL("jar:" + (new File(docBase)).toURI().toURL() + "!/");
-            docBase = ExpandWar.expand(host, war, contextPath);
-            file = new File(docBase);
-            docBase = file.getCanonicalPath();
-            if (context instanceof StandardContext) {
-                ((StandardContext) context).setOriginalDocBase(origDocBase);
-            }
-        } else if (docBase.toLowerCase().endsWith(".war") &&
-                !file.isDirectory() && !unpackWARs) {
-            URL war =
-                new URL("jar:" + (new File (docBase)).toURI().toURL() + "!/");
-            ExpandWar.validate(host, war, contextPath);
-        } else {
-            File docDir = new File(docBase);
-            if (!docDir.exists()) {
-                File warFile = new File(docBase + ".war");
-                URL war = new URL("jar:" + warFile.toURI().toURL() + "!/");
-                if (warFile.exists()) {
-                    if (unpackWARs) {
-                        docBase = ExpandWar.expand(host, war, contextPath);
-                        file = new File(docBase);
-                        docBase = file.getCanonicalPath();
-                    } else {
-                        docBase = warFile.getCanonicalPath();
-                        ExpandWar.validate(host, war, contextPath);
-                    }
-                }
-                if (context instanceof StandardContext) {
-                    ((StandardContext) context).setOriginalDocBase(origDocBase);
-                }
-            }
-        }
-
-        if (docBase.startsWith(canonicalAppBase.getPath() + File.separatorChar)) {
-            docBase = docBase.substring(canonicalAppBase.getPath().length());
-            docBase = docBase.replace(File.separatorChar, '/');
-            if (docBase.startsWith("/")) {
-                docBase = docBase.substring(1);
-            }
-        } else {
-            docBase = docBase.replace(File.separatorChar, '/');
-        }
-
-        context.setDocBase(docBase);
-
     }
     
     
@@ -1736,46 +588,10 @@ public class ContextConfig
      * Process a "init" event for this Context.
      */
     protected void init() {
-        // Called from StandardContext.init()
-
-        if (webDigester == null){
-            webDigester = createWebDigester();
-            webDigester.getParser();
-        }
-
-        if (webFragmentDigester == null){
-            webFragmentDigester = createWebFragmentDigester();
-            webFragmentDigester.getParser();
-        }
-
-        if (tldDigester == null){
-            tldDigester = createTldDigester();
-            tldDigester.getParser();
-        }
-
-        if (fragmentOrderingDigester == null){
-            fragmentOrderingDigester = createFragmentOrderingDigester();
-            fragmentOrderingDigester.getParser();
-        }
-
-        if (contextDigester == null){
-            contextDigester = createContextDigester();
-            contextDigester.getParser();
-        }
-
-        if (log.isDebugEnabled())
+            if (log.isDebugEnabled())
             log.debug(sm.getString("contextConfig.init"));
         context.setConfigured(false);
         ok = true;
-        
-        contextConfig();
-        
-        try {
-            fixDocBase();
-        } catch (IOException e) {
-            log.error(sm.getString("contextConfig.fixDocBase"), e);
-        }
-        
     }
     
     
@@ -1850,52 +666,7 @@ public class ContextConfig
      * Process a "start" event for this Context.
      */
     protected void completeConfig() {
-        // Called from StandardContext.start()
-
-        // Scan all Servlet API related annotations
-        if (ok && !context.getIgnoreAnnotations()) {
-            WebAnnotationSet.loadApplicationAnnotations(context);
-        }
-        // Resolve security
-        if (ok) {
-            resolveServletSecurity();
-        }
-        if (ok) {
-            validateSecurityRoles();
-        }
-
-        // Configure an authenticator if we need one
-        if (ok) {
-            authenticatorConfig();
-        }
-
-        // Find and configure overlays
-        if (ok) {
-            JarRepository jarRepository = context.getJarRepository();
-            JarFile[] jars = jarRepository.findJars();
-            for (int i = 0; i < jars.length; i++) {
-                if (jars[i].getEntry(Globals.OVERLAY_PATH) != null) {
-                    if (context.getResources() instanceof ProxyDirContext) {
-                        ProxyDirContext resources = (ProxyDirContext) context.getResources();
-                        JARDirContext overlay = new JARDirContext();
-                        overlay.setJarFile(jars[i], Globals.OVERLAY_PATH);
-                        resources.addOverlay(overlay);
-                    } else {
-                        // Error, overlays need a ProxyDirContext to compose results
-                        log.error(sm.getString("contextConfig.noOverlay", jars[i].getName()));
-                        ok = false;
-                    }
-                    overlays.add(jars[i].getName());
-                }
-            }
-        }
-
-        // Make our application unavailable if problems were encountered
-        if (!ok) {
-            log.error(sm.getString("contextConfig.unavailable"));
-            context.setConfigured(false);
-        }
-
+        
     }
 
     /**
@@ -1930,22 +701,6 @@ public class ContextConfig
             context.removeConstraint(securityConstraints[i]);
         }
 
-        // Removing Ejbs
-        /*
-        ContextEjb[] contextEjbs = context.findEjbs();
-        for (i = 0; i < contextEjbs.length; i++) {
-            context.removeEjb(contextEjbs[i].getName());
-        }
-        */
-
-        // Removing environments
-        /*
-        ContextEnvironment[] contextEnvironments = context.findEnvironments();
-        for (i = 0; i < contextEnvironments.length; i++) {
-            context.removeEnvironment(contextEnvironments[i].getName());
-        }
-        */
-
         // Removing errors pages
         ErrorPage[] errorPages = context.findErrorPages();
         for (i = 0; i < errorPages.length; i++) {
@@ -1964,14 +719,6 @@ public class ContextConfig
             context.removeFilterMap(filterMaps[i]);
         }
 
-        // Removing local ejbs
-        /*
-        ContextLocalEjb[] contextLocalEjbs = context.findLocalEjbs();
-        for (i = 0; i < contextLocalEjbs.length; i++) {
-            context.removeLocalEjb(contextLocalEjbs[i].getName());
-        }
-        */
-
         // Removing Mime mappings
         String[] mimeMappings = context.findMimeMappings();
         for (i = 0; i < mimeMappings.length; i++) {
@@ -1983,31 +730,6 @@ public class ContextConfig
         for (i = 0; i < parameters.length; i++) {
             context.removeParameter(parameters[i]);
         }
-
-        // Removing resource env refs
-        /*
-        String[] resourceEnvRefs = context.findResourceEnvRefs();
-        for (i = 0; i < resourceEnvRefs.length; i++) {
-            context.removeResourceEnvRef(resourceEnvRefs[i]);
-        }
-        */
-
-        // Removing resource links
-        /*
-        ContextResourceLink[] contextResourceLinks =
-            context.findResourceLinks();
-        for (i = 0; i < contextResourceLinks.length; i++) {
-            context.removeResourceLink(contextResourceLinks[i].getName());
-        }
-        */
-
-        // Removing resources
-        /*
-        ContextResource[] contextResources = context.findResources();
-        for (i = 0; i < contextResources.length; i++) {
-            context.removeResource(contextResources[i].getName());
-        }
-        */
 
         // Removing sercurity role
         String[] securityRoles = context.findSecurityRoles();
@@ -2063,14 +785,6 @@ public class ContextConfig
             // No need to log failure - it is expected in this case
             ExpandWar.delete(docBaseFile, false);
         }
-        
-        overlays.clear();
-        webFragments.clear();
-        TLDs.clear();
-        servletContainerInitializerInfos.clear();
-        order.clear();
-        handlesTypesArray = null;
-        handlesTypes.clear();
         
         ok = true;
 
@@ -2308,45 +1022,4 @@ public class ContextConfig
     }
 
 
-    protected class ContextErrorHandler
-        implements ErrorHandler {
-
-        public void error(SAXParseException exception) {
-            parseException = exception;
-        }
-
-        public void fatalError(SAXParseException exception) {
-            parseException = exception;
-        }
-
-        public void warning(SAXParseException exception) {
-            parseException = exception;
-        }
-
-    }
-
-
-    protected class ServletContainerInitializerInfo {
-        protected Class<?> servletContainerInitializer = null;
-        protected Class<?>[] interestClasses = null;
-        protected HashSet<Class<?>> startupNotifySet = new HashSet<Class<?>>();
-        protected ServletContainerInitializerInfo(Class<?> servletContainerInitializer, Class<?>[] interestClasses) {
-            this.servletContainerInitializer = servletContainerInitializer;
-            this.interestClasses = interestClasses;
-        }
-        public Class<?> getServletContainerInitializer() {
-            return servletContainerInitializer;
-        }
-        public Class<?>[] getInterestClasses() {
-            return interestClasses;
-        }
-        protected void addStartupNotifyClass(Class<?> clazz) {
-            startupNotifySet.add(clazz);
-        }
-        public Set<Class<?>> getStartupNotifySet() {
-            return startupNotifySet;
-        }
-    }
-    
-    
 }

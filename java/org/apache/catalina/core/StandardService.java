@@ -61,7 +61,7 @@ public class StandardService
      * Alternate flag to enable delaying startup of connectors in embedded mode.
      */
     public static final boolean DELAY_CONNECTOR_STARTUP =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "true")).booleanValue();
 
 
     // ----------------------------------------------------- Instance Variables

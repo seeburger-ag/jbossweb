@@ -82,7 +82,7 @@ public class DataSourceRealm
     /**
      * Context local datasource.
      */
-    protected boolean localDataSource = false;
+    protected boolean localDataSource = true;
 
 
     /**
@@ -395,7 +395,8 @@ public class DataSourceRealm
                 context = ContextBindings.getClassLoader();
                 context = (Context) context.lookup("comp/env");
             } else {
-                context = ((StandardServer) getServer()).getGlobalNamingContext();
+                // FIXME: no non local DS
+                context = null;//((StandardServer) getServer()).getGlobalNamingContext();
             }
             DataSource dataSource = (DataSource)context.lookup(dataSourceName);
 	    return dataSource.getConnection();

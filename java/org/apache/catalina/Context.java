@@ -29,10 +29,8 @@ import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.JspPropertyGroup;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
-import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.tomcat.InstanceManager;
@@ -85,21 +83,6 @@ public interface Context extends Container {
      * Add the given session tracking mode.
      */
     public void addSessionTrackingMode(String trackingMode);
-
-
-    /**
-     * Return the absolute ordering that is configured for this context, or
-     * null if no absolute ordering has been defined.
-     */
-    public WebAbsoluteOrdering getWebAbsoluteOrdering();
-
-
-    /**
-     * Set the absolute ordering for this context.
-     * 
-     * @param webAbsoluteOrdering the new absolute ordering for this context
-     */
-    public void setWebAbsoluteOrdering(WebAbsoluteOrdering webAbsoluteOrdering);
 
 
     /**
@@ -418,20 +401,6 @@ public interface Context extends Container {
      * Get the request dispatcher mapper.
      */
     public Mapper getMapper();
-
-
-    /**
-     * Return the naming resources associated with this web application.
-     */
-    public NamingResources getNamingResources();
-
-
-    /**
-     * Set the naming resources for this web application.
-     *
-     * @param namingResources The new naming resources
-     */
-    public void setNamingResources(NamingResources namingResources);
 
 
     /**

@@ -33,8 +33,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -51,7 +49,6 @@ import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
@@ -83,26 +80,18 @@ import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
-import org.apache.catalina.deploy.Injectable;
-import org.apache.catalina.deploy.InjectionTarget;
 import org.apache.catalina.deploy.JspPropertyGroup;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.deploy.MessageDestination;
-import org.apache.catalina.deploy.MessageDestinationRef;
-import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
-import org.apache.catalina.deploy.WebAbsoluteOrdering;
 import org.apache.catalina.deploy.jsp.TagLibraryInfo;
-import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.ExtensionValidator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.URLEncoder;
-import org.apache.naming.ContextBindings;
 import org.apache.naming.resources.BaseDirContext;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.FileDirContext;
@@ -129,7 +118,7 @@ public class StandardContext
     protected static Logger log = Logger.getLogger(StandardContext.class);
 
     public static final boolean CONFIGBASE_MKDIRS =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.CONFIGBASE_MKDIRS", "true")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.CONFIGBASE_MKDIRS", "false")).booleanValue();
 
 
     // ----------------------------------------------------------- Constructors
@@ -268,11 +257,6 @@ public class StandardContext
      * and the authenticator should still be set as a valve.
      */
     protected Authenticator authenticator = null;
-    
-    /**
-     * The absolute ordering used for this Context.
-     */
-    protected WebAbsoluteOrdering webAbsoluteOrdering = null;
     
     /**
      * The application available flag for this Context.
@@ -488,24 +472,6 @@ public class StandardContext
 
 
     /**
-     * The naming context listener for this web application.
-     */
-    protected NamingContextListener namingContextListener = null;
-
-
-    /**
-     * The naming resources for this web application.
-     */
-    protected NamingResources namingResources = null;
-
-
-    /**
-     * The message destinations for this web application.
-     */
-    protected HashMap<String, MessageDestination> messageDestinations = new HashMap<String, MessageDestination>();
-
-
-    /**
      * The MIME mappings for this web application, keyed by extension.
      */
     protected HashMap<String, String> mimeMappings = new HashMap<String, String>();
@@ -695,12 +661,6 @@ public class StandardContext
      */
     protected String wrapperClassName = StandardWrapper.class.getName();
     protected Class<?> wrapperClass = null;
-
-
-    /**
-     * JNDI use flag.
-     */
-    protected boolean useNaming = true;
 
 
     /**
@@ -913,22 +873,6 @@ public class StandardContext
 
 
     /**
-     * Returns true if the internal naming support is used.
-     */
-    public boolean isUseNaming() {
-        return (useNaming);
-    }
-
-
-    /**
-     * Enables or disables naming.
-     */
-    public void setUseNaming(boolean useNaming) {
-        this.useNaming = useNaming;
-    }
-
-
-    /**
      * Returns true if the resources associated with this context are
      * filesystem based.
      */
@@ -1062,28 +1006,6 @@ public class StandardContext
     }
 
 
-    /**
-     * Return the absolute ordering that is configured for this context, or
-     * null if no absolute ordering has been defined.
-     */
-    public WebAbsoluteOrdering getWebAbsoluteOrdering() {
-        return webAbsoluteOrdering;
-    }
-
-
-    /**
-     * Set the absolute ordering for this context.
-     * 
-     * @param webAbsoluteOrdering the new absolute ordering for this context
-     */
-    public void setWebAbsoluteOrdering(WebAbsoluteOrdering webAbsoluteOrdering) {
-        WebAbsoluteOrdering oldWebAbsoluteOrdering = this.webAbsoluteOrdering;
-        this.webAbsoluteOrdering = webAbsoluteOrdering;
-        support.firePropertyChange("webAbsoluteOrdering", oldWebAbsoluteOrdering, 
-                this.webAbsoluteOrdering);
-    }
-    
-    
     /**
      * Return the application authenticator for this Context.
      */
@@ -1606,32 +1528,6 @@ public class StandardContext
      */
     public org.apache.tomcat.util.http.mapper.Mapper getMapper() {
         return (mapper);
-    }
-
-
-    /**
-     * Return the naming resources associated with this web application.
-     */
-    public NamingResources getNamingResources() {
-        if (namingResources == null) {
-            setNamingResources(new NamingResources());
-        }
-        return (namingResources);
-    }
-
-
-    /**
-     * Set the naming resources for this web application.
-     *
-     * @param namingResources The new naming resources
-     */
-    public void setNamingResources(NamingResources namingResources) {
-        // Process the property setting change
-        NamingResources oldNamingResources = this.namingResources;
-        this.namingResources = namingResources;
-        namingResources.setContainer(this);
-        support.firePropertyChange("namingResources",
-                                   oldNamingResources, this.namingResources);
     }
 
 
@@ -2539,28 +2435,6 @@ public class StandardContext
 
 
     /**
-     * Add a message destination for this web application.
-     *
-     * @param md New message destination
-     */
-    public void addMessageDestination(MessageDestination md) {
-        messageDestinations.put(md.getName(), md);
-        fireContainerEvent("addMessageDestination", md.getName());
-    }
-
-
-    /**
-     * Add a message destination reference for this web application.
-     *
-     * @param mdr New message destination reference
-     */
-    public void addMessageDestinationRef(MessageDestinationRef mdr) {
-        namingResources.addMessageDestinationRef(mdr);
-        fireContainerEvent("addMessageDestinationRef", mdr.getName());
-    }
-
-
-    /**
      * Add a new MIME mapping, replacing any existing mapping for
      * the specified extension.
      *
@@ -2977,51 +2851,6 @@ public class StandardContext
     }
     
     
-    /**
-     * Return the message destination with the specified name, if any;
-     * otherwise, return <code>null</code>.
-     *
-     * @param name Name of the desired message destination
-     */
-    public MessageDestination findMessageDestination(String name) {
-        return ((MessageDestination) messageDestinations.get(name));
-    }
-
-
-    /**
-     * Return the set of defined message destinations for this web
-     * application.  If none have been defined, a zero-length array
-     * is returned.
-     */
-    public MessageDestination[] findMessageDestinations() {
-        MessageDestination results[] =
-            new MessageDestination[messageDestinations.size()];
-        return ((MessageDestination[])
-                messageDestinations.values().toArray(results));
-    }
-
-
-    /**
-     * Return the message destination ref with the specified name, if any;
-     * otherwise, return <code>null</code>.
-     *
-     * @param name Name of the desired message destination ref
-     */
-    public MessageDestinationRef findMessageDestinationRef(String name) {
-        return namingResources.findMessageDestinationRef(name);
-    }
-
-
-    /**
-     * Return the set of defined message destination refs for this web
-     * application.  If none have been defined, a zero-length array
-     * is returned.
-     */
-    public MessageDestinationRef[] findMessageDestinationRefs() {
-        return namingResources.findMessageDestinationRefs();
-    }
-
-
     /**
      * Return the MIME type to which the specified extension is mapped,
      * if any; otherwise return <code>null</code>.
@@ -3483,28 +3312,6 @@ public class StandardContext
         // Inform interested listeners
         fireContainerEvent("removeInstanceListener", listener);
 
-    }
-
-
-    /**
-     * Remove any message destination with the specified name.
-     *
-     * @param name Name of the message destination to remove
-     */
-    public void removeMessageDestination(String name) {
-        messageDestinations.remove(name);
-        fireContainerEvent("removeMessageDestination", name);
-    }
-
-
-    /**
-     * Remove any message destination ref with the specified name.
-     *
-     * @param name Name of the message destination ref to remove
-     */
-    public void removeMessageDestinationRef(String name) {
-        namingResources.removeMessageDestinationRef(name);
-        fireContainerEvent("removeMessageDestinationRef", name);
     }
 
 
@@ -4279,12 +4086,6 @@ public class StandardContext
             }
         }
         
-        if (getLoader() == null) {
-            WebappLoader webappLoader = new WebappLoader(getParentClassLoader());
-            webappLoader.setDelegate(getDelegate());
-            setLoader(webappLoader);
-        }
-
         // Initialize character set mapper
         getCharsetMapper();
 
@@ -4306,21 +4107,6 @@ public class StandardContext
             ok = false;
         }
 
-        // Reading the "catalina.useNaming" environment variable
-        String useNamingProperty = System.getProperty("catalina.useNaming");
-        if ((useNamingProperty != null)
-            && (useNamingProperty.equals("false"))) {
-            useNaming = false;
-        }
-
-        if (ok && isUseNaming()) {
-            if (namingContextListener == null) {
-                namingContextListener = new NamingContextListener();
-                namingContextListener.setName(getNamingContextName());
-                addLifecycleListener(namingContextListener);
-            }
-        }
-        
         // Standard container startup
         if (log.isDebugEnabled())
             log.debug("Processing standard container startup");
@@ -4336,8 +4122,6 @@ public class StandardContext
                 started = true;
 
                 // Start our subordinate components, if any
-                if ((jarRepository != null) && (jarRepository instanceof Lifecycle))
-                    ((Lifecycle) jarRepository).start();
                 if ((loader != null) && (loader instanceof Lifecycle))
                     ((Lifecycle) loader).start();
 
@@ -4415,20 +4199,6 @@ public class StandardContext
 
         // Binding thread
         oldCCL = bindThread();
-
-        // Annotation processor setup
-        if (ok) {
-            if (instanceManager == null) {
-                javax.naming.Context context = null;
-                if (isUseNaming() && namingContextListener != null) {
-                    context = namingContextListener.getEnvContext();
-                }
-                Map<String, Map<String, String>> injectionMap = 
-                	buildInjectionMap(getIgnoreAnnotations() ? new NamingResources(): getNamingResources());
-                instanceManager = new DefaultInstanceManager
-                	(context, injectionMap, this, this.getClass().getClassLoader());
-            }
-        }
 
         try {
             
@@ -4538,48 +4308,6 @@ public class StandardContext
         }
 
         //cacheContext();
-    }
-
-    protected Map<String, Map<String, String>> buildInjectionMap(NamingResources namingResources) {
-        Map<String, Map<String, String>> injectionMap = new HashMap<String, Map<String, String>>();
-        for (Injectable resource: namingResources.findLocalEjbs()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findEjbs()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findEnvironments()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findMessageDestinationRefs()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findResourceEnvRefs()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findResources()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        for (Injectable resource: namingResources.findServices()) {
-            addInjectionTarget(resource, injectionMap);
-        }
-        return injectionMap;
-    }
-
-    protected void addInjectionTarget(Injectable resource, Map<String, Map<String, String>> injectionMap) {
-        List<InjectionTarget> injectionTargets = resource.getInjectionTargets();
-        if (injectionTargets != null && injectionTargets.size() > 0) {
-            String jndiName = resource.getName();
-            for (InjectionTarget injectionTarget: injectionTargets) {
-                String clazz = injectionTarget.getTargetClass();
-                Map<String, String> injections = injectionMap.get(clazz);
-                if (injections == null) {
-                    injections = new HashMap<String, String>();
-                    injectionMap.put(clazz, injections);
-                }
-                injections.put(injectionTarget.getTargetName(), jndiName);
-            }
-        }
     }
 
     /**
@@ -4870,15 +4598,6 @@ public class StandardContext
 
         DirContextURLStreamHandler.bind(getResources());
 
-        if (isUseNaming()) {
-            try {
-                ContextBindings.bindThread(this, this);
-            } catch (NamingException e) {
-                // Silent catch, as this is a normal case during the early
-                // startup stages
-            }
-        }
-
         return oldContextClassLoader;
 
     }
@@ -4892,10 +4611,6 @@ public class StandardContext
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
 
         oldContextClassLoader = null;
-
-        if (isUseNaming()) {
-            ContextBindings.unbindThread(this, this);
-        }
 
         DirContextURLStreamHandler.unbind();
 
@@ -5064,22 +4779,6 @@ public class StandardContext
     }
 
     
-    /**
-     * Naming context listener accessor.
-     */
-    public NamingContextListener getNamingContextListener() {
-        return namingContextListener;
-    }
-    
-
-    /**
-     * Naming context listener setter.
-     */
-    public void setNamingContextListener(NamingContextListener namingContextListener) {
-        this.namingContextListener = namingContextListener;
-    }
-    
-
     /**
      * Return the request processing paused flag for this Context.
      */
@@ -5409,7 +5108,6 @@ public class StandardContext
                     log.debug("No host, creating one " + parentName);
                 StandardHost host=new StandardHost();
                 host.setName(hostName);
-                host.setAutoDeploy(false);
                 Registry.getRegistry(null, null)
                     .registerComponent(host, parentName, null);
                 // We could do it the hard way...

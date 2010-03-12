@@ -20,24 +20,16 @@ package org.apache.catalina.startup;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Server;
-import org.apache.catalina.core.StandardServer;
-import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.Rule;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 
 
 /**
@@ -179,8 +171,6 @@ public class Catalina extends Embedded {
     public void process(String args[]) {
 
         setAwait(true);
-        setCatalinaHome();
-        setCatalinaBase();
         try {
             if (arguments(args)) {
                 if (starting) {
@@ -256,131 +246,6 @@ public class Catalina extends Embedded {
     }
 
 
-    /**
-     * Create and configure the Digester we will be using for startup.
-     */
-    protected Digester createStartDigester() {
-        long t1=System.currentTimeMillis();
-        // Initialize the digester
-        Digester digester = new Digester();
-        digester.setValidating(false);
-        digester.setRulesValidation(true);
-        HashMap<Class, List<String>> fakeAttributes = new HashMap<Class, List<String>>();
-        ArrayList<String> attrs = new ArrayList<String>();
-        attrs.add("className");
-        fakeAttributes.put(Object.class, attrs);
-        digester.setFakeAttributes(fakeAttributes);
-        digester.setClassLoader(StandardServer.class.getClassLoader());
-
-        // Configure the actions we will be using
-        digester.addObjectCreate("Server",
-                                 "org.apache.catalina.core.StandardServer",
-                                 "className");
-        digester.addSetProperties("Server");
-        digester.addSetNext("Server",
-                            "setServer",
-                            "org.apache.catalina.Server");
-
-        digester.addObjectCreate("Server/GlobalNamingResources",
-                                 "org.apache.catalina.deploy.NamingResources");
-        digester.addSetProperties("Server/GlobalNamingResources");
-        digester.addSetNext("Server/GlobalNamingResources",
-                            "setGlobalNamingResources",
-                            "org.apache.catalina.deploy.NamingResources");
-
-        digester.addObjectCreate("Server/Listener",
-                                 null, // MUST be specified in the element
-                                 "className");
-        digester.addSetProperties("Server/Listener");
-        digester.addSetNext("Server/Listener",
-                            "addLifecycleListener",
-                            "org.apache.catalina.LifecycleListener");
-
-        digester.addObjectCreate("Server/Service",
-                                 "org.apache.catalina.core.StandardService",
-                                 "className");
-        digester.addSetProperties("Server/Service");
-        digester.addSetNext("Server/Service",
-                            "addService",
-                            "org.apache.catalina.Service");
-
-        digester.addObjectCreate("Server/Service/Listener",
-                                 null, // MUST be specified in the element
-                                 "className");
-        digester.addSetProperties("Server/Service/Listener");
-        digester.addSetNext("Server/Service/Listener",
-                            "addLifecycleListener",
-                            "org.apache.catalina.LifecycleListener");
-
-        //Executor
-        digester.addObjectCreate("Server/Service/Executor",
-                         "org.apache.catalina.core.StandardThreadExecutor",
-                         "className");
-        digester.addSetProperties("Server/Service/Executor");
-
-        digester.addSetNext("Server/Service/Executor",
-                            "addExecutor",
-                            "org.apache.catalina.Executor");
-
-        
-        digester.addRule("Server/Service/Connector",
-                         new ConnectorCreateRule());
-        digester.addRule("Server/Service/Connector", 
-                         new SetAllPropertiesRule(new String[]{"executor"}));
-        digester.addSetNext("Server/Service/Connector",
-                            "addConnector",
-                            "org.apache.catalina.connector.Connector");
-        
-
-        digester.addObjectCreate("Server/Service/Connector/Listener",
-                                 null, // MUST be specified in the element
-                                 "className");
-        digester.addSetProperties("Server/Service/Connector/Listener");
-        digester.addSetNext("Server/Service/Connector/Listener",
-                            "addLifecycleListener",
-                            "org.apache.catalina.LifecycleListener");
-
-        // Add RuleSets for nested elements
-        digester.addRuleSet(new NamingRuleSet("Server/GlobalNamingResources/"));
-        digester.addRuleSet(new EngineRuleSet("Server/Service/"));
-        digester.addRuleSet(new HostRuleSet("Server/Service/Engine/"));
-        digester.addRuleSet(new ContextRuleSet("Server/Service/Engine/Host/"));
-        digester.addRuleSet(new NamingRuleSet("Server/Service/Engine/Host/Context/"));
-
-        // When the 'engine' is found, set the parentClassLoader.
-        digester.addRule("Server/Service/Engine",
-                         new SetParentClassLoaderRule(parentClassLoader));
-
-        long t2=System.currentTimeMillis();
-        if (log.isDebugEnabled())
-            log.debug("Digester for server.xml created " + ( t2-t1 ));
-        return (digester);
-
-    }
-
-
-    /**
-     * Create and configure the Digester we will be using for shutdown.
-     */
-    protected Digester createStopDigester() {
-
-        // Initialize the digester
-        Digester digester = new Digester();
-
-        // Configure the rules we need for shutting down
-        digester.addObjectCreate("Server",
-                                 "org.apache.catalina.core.StandardServer",
-                                 "className");
-        digester.addSetProperties("Server");
-        digester.addSetNext("Server",
-                            "setServer",
-                            "org.apache.catalina.Server");
-
-        return (digester);
-
-    }
-
-
     public void stopServer() {
         stopServer(null);
     }
@@ -389,25 +254,6 @@ public class Catalina extends Embedded {
 
         if (arguments != null) {
             arguments(arguments);
-        }
-
-        if( server == null ) {
-            // Create and execute our Digester
-            Digester digester = createStopDigester();
-            digester.setClassLoader(Thread.currentThread().getContextClassLoader());
-            File file = configFile();
-            try {
-                InputSource is =
-                    new InputSource("file://" + file.getAbsolutePath());
-                FileInputStream fis = new FileInputStream(file);
-                is.setByteStream(fis);
-                digester.push(this);
-                digester.parse(is);
-                fis.close();
-            } catch (Exception e) {
-                log.error("Catalina.stop: ", e);
-                System.exit(1);
-            }
         }
 
         // Stop the existing server
@@ -432,91 +278,9 @@ public class Catalina extends Embedded {
 
 
     /**
-     * Set the <code>catalina.base</code> System property to the current
-     * working directory if it has not been set.
-     * @deprecated Use initDirs()
-     */
-    public void setCatalinaBase() {
-        initDirs();
-    }
-
-    /**
-     * Set the <code>catalina.home</code> System property to the current
-     * working directory if it has not been set.
-     * @deprecated Use initDirs()
-     */
-    public void setCatalinaHome() {
-        initDirs();
-    }
-
-    /**
      * Start a new server instance.
      */
     public void load() {
-
-        long t1 = System.nanoTime();
-
-        initDirs();
-
-        // Before digester - it may be needed
-
-        initNaming();
-
-        // Create and execute our Digester
-        Digester digester = createStartDigester();
-
-        InputSource inputSource = null;
-        InputStream inputStream = null;
-        File file = null;
-        try {
-            file = configFile();
-            inputStream = new FileInputStream(file);
-            inputSource = new InputSource("file://" + file.getAbsolutePath());
-        } catch (Exception e) {
-            ;
-        }
-        if (inputStream == null) {
-            try {
-                inputStream = getClass().getClassLoader()
-                    .getResourceAsStream(getConfigFile());
-                inputSource = new InputSource
-                    (getClass().getClassLoader()
-                     .getResource(getConfigFile()).toString());
-            } catch (Exception e) {
-                ;
-            }
-        }
-
-        // This should be included in catalina.jar
-        // Alternative: don't bother with xml, just create it manually.
-        if( inputStream==null ) {
-            try {
-                inputStream = getClass().getClassLoader()
-                .getResourceAsStream("server-embed.xml");
-                inputSource = new InputSource
-                (getClass().getClassLoader()
-                        .getResource("server-embed.xml").toString());
-            } catch (Exception e) {
-                ;
-            }
-        }
-        
-
-        if ((inputStream == null) && (file != null)) {
-            log.warn("Can't load server.xml from " + file.getAbsolutePath());
-            return;
-        }
-
-        try {
-            inputSource.setByteStream(inputStream);
-            digester.push(this);
-            digester.parse(inputSource);
-            inputStream.close();
-        } catch (Exception e) {
-            log.warn("Catalina.start using "
-                               + getConfigFile() + ": " , e);
-            return;
-        }
 
         // Stream redirection
         initStreams();
@@ -529,10 +293,6 @@ public class Catalina extends Embedded {
                 log.error("Catalina.start", e);
             }
         }
-
-        long t2 = System.nanoTime();
-        if(log.isInfoEnabled())
-            log.info("Initialization processed in " + ((t2 - t1) / 1000000) + " ms");
 
     }
 

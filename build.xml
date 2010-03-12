@@ -583,7 +583,6 @@
       	<!-- Temp EE class -->
         <include name="org/apache/catalina/**" />
         <include name="org/apache/catalina/ha/backend/**" />
-        <exclude name="org/apache/catalina/startup/catalina.properties" />
         <include name="org/apache/naming/**" />
         <include name="org/apache/comet/**" />
         <include name="org/apache/coyote/**" />
@@ -595,9 +594,6 @@
         <include name="org/jboss/web/**" />
         <!-- Javadoc and i18n exclusions -->
         <exclude name="**/package.html" />
-      </fileset>
-      <fileset dir="${basedir}/res/jboss">
-        <include name="org/apache/catalina/startup/catalina.properties" />
       </fileset>
     </jar>
 

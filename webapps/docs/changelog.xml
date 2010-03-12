@@ -37,6 +37,9 @@
       <fix>
         <bug>48760</bug>: Fix possible race condition reading resources. (markt)
       </fix>
+      <update>
+        Drop standalone code: XML parsing, webapp deployer, annotation processing, naming support. (remm)
+      </update>
     </changelog>
   </subsection>
   <subsection name="Coyote">

@@ -62,7 +62,7 @@ public class StandardHost
         super();
         pipeline.setBasic(new StandardHostValve());
         startChildren = 
-            Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.startChildren", "true")).booleanValue();
+            Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.startChildren", "false")).booleanValue();
 
     }
 
@@ -83,13 +83,6 @@ public class StandardHost
 
 
     /**
-     * The auto deploy flag for this Host.
-     */
-    private boolean autoDeploy = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.autoDeploy", "true")).booleanValue();
-
-
-    /**
      * The Java class name of the default context configuration class
      * for deployed web applications.
      */
@@ -103,20 +96,6 @@ public class StandardHost
      */
     private String contextClass =
         "org.apache.catalina.core.StandardContext";
-
-
-    /**
-     * The deploy on startup flag for this Host.
-     */
-    private boolean deployOnStartup = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.deployOnStartup", "true")).booleanValue();
-
-
-    /**
-     * deploy Context XML config files property.
-     */
-    private boolean deployXML = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.deployXML", "true")).booleanValue();
 
 
     /**
@@ -136,12 +115,6 @@ public class StandardHost
      */
     private static final String info =
         "org.apache.catalina.core.StandardHost/1.0";
-
-
-    /**
-     * Unpack WARs property.
-     */
-    private boolean unpackWARs = true;
 
 
     /**
@@ -175,32 +148,6 @@ public class StandardHost
         String oldAppBase = this.appBase;
         this.appBase = appBase;
         support.firePropertyChange("appBase", oldAppBase, this.appBase);
-
-    }
-
-
-    /**
-     * Return the value of the auto deploy flag.  If true, it indicates that 
-     * this host's child webapps will be dynamically deployed.
-     */
-    public boolean getAutoDeploy() {
-
-        return (this.autoDeploy);
-
-    }
-
-
-    /**
-     * Set the auto deploy flag value for this host.
-     * 
-     * @param autoDeploy The new auto deploy flag
-     */
-    public void setAutoDeploy(boolean autoDeploy) {
-
-        boolean oldAutoDeploy = this.autoDeploy;
-        this.autoDeploy = autoDeploy;
-        support.firePropertyChange("autoDeploy", oldAutoDeploy, 
-                                   this.autoDeploy);
 
     }
 
@@ -256,75 +203,6 @@ public class StandardHost
         support.firePropertyChange("contextClass",
                                    oldContextClass, this.contextClass);
 
-    }
-
-
-    /**
-     * Return the value of the deploy on startup flag.  If true, it indicates 
-     * that this host's child webapps should be discovred and automatically 
-     * deployed at startup time.
-     */
-    public boolean getDeployOnStartup() {
-
-        return (this.deployOnStartup);
-
-    }
-
-
-    /**
-     * Set the deploy on startup flag value for this host.
-     * 
-     * @param deployOnStartup The new deploy on startup flag
-     */
-    public void setDeployOnStartup(boolean deployOnStartup) {
-
-        boolean oldDeployOnStartup = this.deployOnStartup;
-        this.deployOnStartup = deployOnStartup;
-        support.firePropertyChange("deployOnStartup", oldDeployOnStartup, 
-                                   this.deployOnStartup);
-
-    }
-
-
-    /**
-     * Deploy XML Context config files flag accessor.
-     */
-    public boolean isDeployXML() {
-
-        return (deployXML);
-
-    }
-
-
-    /**
-     * Deploy XML Context config files flag mutator.
-     */
-    public void setDeployXML(boolean deployXML) {
-
-        this.deployXML = deployXML;
-
-    }
-
-
-    /**
-     * Return the value of the live deploy flag.  If true, it indicates that 
-     * a background thread should be started that looks for web application
-     * context files, WAR files, or unpacked directories being dropped in to
-     * the <code>appBase</code> directory, and deploys new ones as they are
-     * encountered.
-     */
-    public boolean getLiveDeploy() {
-        return (this.autoDeploy);
-    }
-
-
-    /**
-     * Set the live deploy flag value for this host.
-     * 
-     * @param liveDeploy The new live deploy flag
-     */
-    public void setLiveDeploy(boolean liveDeploy) {
-        setAutoDeploy(liveDeploy);
     }
 
 
@@ -389,25 +267,6 @@ public class StandardHost
 
     }
 
-
-    /**
-     * Unpack WARs flag accessor.
-     */
-    public boolean isUnpackWARs() {
-
-        return (unpackWARs);
-
-    }
-
-
-    /**
-     * Unpack WARs flag mutator.
-     */
-    public void setUnpackWARs(boolean unpackWARs) {
-
-        this.unpackWARs = unpackWARs;
-
-    }
 
     /**
      * Host work directory base.

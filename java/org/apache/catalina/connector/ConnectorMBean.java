@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.catalina.mbeans;
+package org.apache.catalina.connector;
 
 import javax.management.Attribute;
 import javax.management.AttributeNotFoundException;
@@ -27,6 +27,7 @@ import javax.management.modelmbean.InvalidTargetObjectTypeException;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.IntrospectionUtils;
+import org.apache.tomcat.util.modeler.BaseModelMBean;
 
 
 /**
@@ -34,10 +35,10 @@ import org.apache.tomcat.util.IntrospectionUtils;
  * <code>org.apache.coyote.tomcat5.CoyoteConnector</code> component.</p>
  *
  * @author Amy Roh
- * @version $Revision$ $Date$
+ * @version $Revision: 515 $ $Date: 2008-03-17 22:02:23 +0100 (Mon, 17 Mar 2008) $
  */
 
-public class ConnectorMBean extends ClassNameMBean {
+public class ConnectorMBean extends BaseModelMBean {
 
 
     // ----------------------------------------------------------- Constructors
@@ -78,7 +79,6 @@ public class ConnectorMBean extends ClassNameMBean {
     public Object getAttribute(String name) throws AttributeNotFoundException,
             MBeanException, ReflectionException {
 
-        Object attribute = null;
         // Validate the input parameters
         if (name == null)
             throw new RuntimeOperationsException(new IllegalArgumentException(
@@ -136,6 +136,17 @@ public class ConnectorMBean extends ClassNameMBean {
         }
   
     }
+
+
+     /**
+      * Return the fully qualified Java class name of the managed object
+      * for this MBean.
+      */
+     public String getClassName() {
+
+         return (this.resource.getClass().getName());
+
+     }
 
 
 }

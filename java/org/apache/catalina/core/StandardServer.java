@@ -39,7 +39,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
-import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
@@ -69,33 +68,10 @@ public final class StandardServer
      * Construct a default instance of this class.
      */
     public StandardServer() {
-
-        globalNamingResources = new NamingResources();
-        globalNamingResources.setContainer(this);
-
-        if (isUseNaming()) {
-            if (namingContextListener == null) {
-                namingContextListener = new NamingContextListener();
-                addLifecycleListener(namingContextListener);
-            }
-        }
-
     }
 
 
     // ----------------------------------------------------- Instance Variables
-
-
-    /**
-     * Global naming resources context.
-     */
-    private javax.naming.Context globalNamingContext = null;
-
-
-    /**
-     * Global naming resources.
-     */
-    private NamingResources globalNamingResources = null;
 
 
     /**
@@ -109,12 +85,6 @@ public final class StandardServer
      * The lifecycle event support for this component.
      */
     private LifecycleSupport lifecycle = new LifecycleSupport(this);
-
-
-    /**
-     * The naming context listener for this web application.
-     */
-    private NamingContextListener namingContextListener = null;
 
 
     /**
@@ -174,58 +144,6 @@ public final class StandardServer
     private boolean stopAwait = false;
 
     // ------------------------------------------------------------- Properties
-
-
-    /**
-     * Return the global naming resources context.
-     */
-    public javax.naming.Context getGlobalNamingContext() {
-
-        return (this.globalNamingContext);
-
-    }
-
-
-    /**
-     * Set the global naming resources context.
-     *
-     * @param globalNamingContext The new global naming resource context
-     */
-    public void setGlobalNamingContext
-        (javax.naming.Context globalNamingContext) {
-
-        this.globalNamingContext = globalNamingContext;
-
-    }
-
-
-    /**
-     * Return the global naming resources.
-     */
-    public NamingResources getGlobalNamingResources() {
-
-        return (this.globalNamingResources);
-
-    }
-
-
-    /**
-     * Set the global naming resources.
-     *
-     * @param globalNamingResources The new global naming resources
-     */
-    public void setGlobalNamingResources
-        (NamingResources globalNamingResources) {
-
-        NamingResources oldGlobalNamingResources =
-            this.globalNamingResources;
-        this.globalNamingResources = globalNamingResources;
-        this.globalNamingResources.setContainer(this);
-        support.firePropertyChange("globalNamingResources",
-                                   oldGlobalNamingResources,
-                                   this.globalNamingResources);
-
-    }
 
 
     /**
@@ -636,21 +554,6 @@ public final class StandardServer
             log.error(t);
         }
  
-    }
-
-
-    /**
-     * Return true if naming should be used.
-     */
-    private boolean isUseNaming() {
-        boolean useNaming = true;
-        // Reading the "catalina.useNaming" environment variable
-        String useNamingProperty = System.getProperty("catalina.useNaming");
-        if ((useNamingProperty != null)
-            && (useNamingProperty.equals("false"))) {
-            useNaming = false;
-        }
-        return useNaming;
     }
 
 
