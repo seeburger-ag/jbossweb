@@ -40,6 +40,9 @@
       <update>
         Drop standalone code: XML parsing, webapp deployer, annotation processing, naming support. (remm)
       </update>
+      <add>
+        Port over Tomcat utility filters. (markt)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Coyote">
