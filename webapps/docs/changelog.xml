@@ -53,6 +53,10 @@
       <fix>
         <bug>48545</bug>: Optional password on truststores. (markt)
       </fix>
+      <fix>
+        <jboss-jira>JBAS-7817</jboss-jira>: Use of position before setting the limit of a NIO buffer
+        is unsafe. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
