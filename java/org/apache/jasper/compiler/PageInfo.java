@@ -28,7 +28,6 @@ import java.util.Vector;
 import javax.el.ExpressionFactory;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 
-import org.apache.el.ExpressionFactoryImpl;
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 
@@ -77,7 +76,7 @@ class PageInfo {
     // JSP 2.1
     private String deferredSyntaxAllowedAsLiteralValue;
     private boolean deferredSyntaxAllowedAsLiteral = false;
-    private ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+    private ExpressionFactory expressionFactory = ExpressionFactory.newInstance();
     private String trimDirectiveWhitespacesValue;
     private boolean trimDirectiveWhitespaces = false;
     
