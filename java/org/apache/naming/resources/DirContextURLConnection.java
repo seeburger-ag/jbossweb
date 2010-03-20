@@ -115,6 +115,12 @@ public class DirContextURLConnection
      */
     protected Permission permission;
 
+    
+    /**
+     * Local path.
+     */
+    protected String localPath;
+    
 
     // ------------------------------------------------------------- Properties
     
@@ -152,6 +158,7 @@ public class DirContextURLConnection
                         }
                     }
                 }
+                localPath = path;
                 object = context.lookup(path);
                 attributes = context.getAttributes(path);
                 if (object instanceof Resource)
@@ -363,7 +370,7 @@ public class DirContextURLConnection
         } else {
             // Reopen resource
             try {
-                resource = (Resource) context.lookup(getURL().getFile());
+                resource = (Resource) context.lookup(localPath);
             } catch (NamingException e) {
             }
         }
@@ -404,7 +411,7 @@ public class DirContextURLConnection
         
         if (collection != null) {
             try {
-                NamingEnumeration enumeration = context.list(getURL().getFile());
+                NamingEnumeration enumeration = context.list(localPath);
                 while (enumeration.hasMoreElements()) {
                     NameClassPair ncp = (NameClassPair) enumeration.nextElement();
                     result.addElement(ncp.getName());
