@@ -17,14 +17,15 @@
 
 package org.apache.tomcat.util.http.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 
+import org.apache.tomcat.util.buf.Ascii;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
-import org.apache.tomcat.util.buf.Ascii;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Mapper, which implements the servlet API mapping rules (which are derived
@@ -35,8 +36,6 @@ import java.util.ArrayList;
 public final class Mapper {
 
 
-    private static org.jboss.logging.Logger logger =
-        org.jboss.logging.Logger.getLogger(Mapper.class);
     // ----------------------------------------------------- Instance Variables
 
 
@@ -224,7 +223,7 @@ public final class Mapper {
             pos = find(hosts, hostName);
         }
         if (pos < 0) {
-            logger.error("No host found: " + hostName);
+            throw new IllegalStateException("No host found: " + hostName);
         }
         Host host = hosts[pos];
         if (host.name.equals(hostName)) {
@@ -268,7 +267,7 @@ public final class Mapper {
             pos = find(hosts, hostName);
         }
         if (pos < 0) {
-            logger.error("No host found: " + hostName);
+            throw new IllegalStateException("No host found: " + hostName);
         }
         Host host = hosts[pos];
         if (host.name.equals(hostName)) {
@@ -341,18 +340,16 @@ public final class Mapper {
      * @return The context names
      */
     public String[] getContextNames() {
-        List list=new ArrayList();
-        for( int i=0; i<hosts.length; i++ ) {
-            for( int j=0; j<hosts[i].contextList.contexts.length; j++ ) {
-                String cname=hosts[i].contextList.contexts[j].name;
-                list.add("//" + hosts[i].name +
-                        (cname.startsWith("/") ? cname : "/"));
+        List<String> list = new ArrayList<String>();
+        for (int i = 0; i < hosts.length; i++) {
+            for (int j = 0; j < hosts[i].contextList.contexts.length; j++) {
+                String cname = hosts[i].contextList.contexts[j].name;
+                list.add("//" + hosts[i].name
+                        + (cname.startsWith("/") ? cname : "/"));
             }
         }
-        String res[] = new String[list.size()];
-        return (String[])list.toArray(res);
+        return list.toArray(new String[list.size()]);
     }
-
 
     /**
      * Add a new Wrapper to an existing Context.
@@ -380,8 +377,7 @@ public final class Mapper {
             Context[] contexts = host.contextList.contexts;
             int pos2 = find(contexts, contextPath);
             if( pos2<0 ) {
-                logger.error("No context found: " + contextPath );
-                return;
+                throw new IllegalStateException("No context found: " + contextPath );
             }
             Context context = contexts[pos2];
             if (context.name.equals(contextPath)) {
@@ -565,34 +561,34 @@ public final class Mapper {
         return sb.toString();
     }
 
-    public String[] getWrapperNames( String host, String context ) {
-        List list=new ArrayList();
-        if( host==null ) host="";
-        if( context==null ) context="";
-        for( int i=0; i<hosts.length; i++ ) {
-            if( ! host.equals( hosts[i].name ))
+    public String[] getWrapperNames(String host, String context) {
+        List<String> list = new ArrayList<String>();
+        if (host == null)
+            host = "";
+        if (context == null)
+            context = "";
+        for (int i = 0; i < hosts.length; i++) {
+            if (!host.equals(hosts[i].name))
                 continue;
-            for( int j=0; j<hosts[i].contextList.contexts.length; j++ ) {
-                if( ! context.equals( hosts[i].contextList.contexts[j].name))
+            for (int j = 0; j < hosts[i].contextList.contexts.length; j++) {
+                if (!context.equals(hosts[i].contextList.contexts[j].name))
                     continue;
                 // found the context
-                Context ctx=hosts[i].contextList.contexts[j];
-                list.add( ctx.defaultWrapper.name);
-                for( int k=0; k<ctx.exactWrappers.length; k++ ) {
-                    list.add( ctx.exactWrappers[k].name);
+                Context ctx = hosts[i].contextList.contexts[j];
+                list.add(ctx.defaultWrapper.name);
+                for (int k = 0; k < ctx.exactWrappers.length; k++) {
+                    list.add(ctx.exactWrappers[k].name);
                 }
-                for( int k=0; k<ctx.wildcardWrappers.length; k++ ) {
-                    list.add( ctx.wildcardWrappers[k].name + "*");
+                for (int k = 0; k < ctx.wildcardWrappers.length; k++) {
+                    list.add(ctx.wildcardWrappers[k].name + "*");
                 }
-                for( int k=0; k<ctx.extensionWrappers.length; k++ ) {
-                    list.add( "*." + ctx.extensionWrappers[k].name);
+                for (int k = 0; k < ctx.extensionWrappers.length; k++) {
+                    list.add("*." + ctx.extensionWrappers[k].name);
                 }
             }
         }
-        String res[]=new String[list.size()];
-        return (String[])list.toArray(res);
+        return list.toArray(new String[list.size()]);
     }
-
 
 
     /**
