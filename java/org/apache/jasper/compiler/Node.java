@@ -1425,11 +1425,11 @@ abstract class Node implements TagConstants {
 
         private boolean implementsDynamicAttributes;
 
-        private Vector atBeginScriptingVars;
+        private List<Object> atBeginScriptingVars;
 
-        private Vector atEndScriptingVars;
+        private List<Object> atEndScriptingVars;
 
-        private Vector nestedScriptingVars;
+        private List<Object> nestedScriptingVars;
 
         private Node.CustomTag customTagParent;
 
@@ -1661,7 +1661,7 @@ abstract class Node implements TagConstants {
             return this.numCount;
         }
 
-        public void setScriptingVars(Vector vec, int scope) {
+        public void setScriptingVars(List<Object> vec, int scope) {
             switch (scope) {
             case VariableInfo.AT_BEGIN:
                 this.atBeginScriptingVars = vec;
@@ -1679,8 +1679,8 @@ abstract class Node implements TagConstants {
          * Gets the scripting variables for the given scope that need to be
          * declared.
          */
-        public Vector getScriptingVars(int scope) {
-            Vector vec = null;
+        public List<Object> getScriptingVars(int scope) {
+            List<Object> vec = null;
 
             switch (scope) {
             case VariableInfo.AT_BEGIN:
