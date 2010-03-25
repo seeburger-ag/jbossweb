@@ -110,8 +110,6 @@ class JspDocumentParser
     // Flag set to delay incrmenting tagDependentNesting until jsp:body
     // is first encountered
     private boolean tagDependentPending = false;
-    // Tag being parsed that should have an empty body 
-    private Node tagEmptyBody = null;
 
     /*
      * Constructor
@@ -270,8 +268,6 @@ class JspDocumentParser
         AttributesImpl taglibAttrs = null;
         AttributesImpl nonTaglibAttrs = null;
         AttributesImpl nonTaglibXmlnsAttrs = null;
-
-        checkEmptyBody();
 
         processChars();
 
@@ -433,10 +429,9 @@ class JspDocumentParser
                 if (scriptlessBodyNode == null
                         && bodyType.equalsIgnoreCase(TagInfo.BODY_CONTENT_SCRIPTLESS)) {
                     scriptlessBodyNode = node;
-                } else if (TagInfo.BODY_CONTENT_TAG_DEPENDENT.equalsIgnoreCase(bodyType)) {
+                }
+                else if (TagInfo.BODY_CONTENT_TAG_DEPENDENT.equalsIgnoreCase(bodyType)) {
                     tagDependentPending = true;
-                } else if (TagInfo.BODY_CONTENT_EMPTY.equals(bodyType)) {
-                    tagEmptyBody = node;
                 }
             }
         }
@@ -460,9 +455,7 @@ class JspDocumentParser
      *
      * @throws SAXException
      */
-    public void characters(char[] buf, int offset, int len)
-        throws SAXException {
-        checkEmptyBody();
+    public void characters(char[] buf, int offset, int len) {
         if (charBuffer == null) {
             charBuffer = new StringBuilder();
         }
@@ -620,10 +613,6 @@ class JspDocumentParser
     public void endElement(String uri, String localName, String qName)
         throws SAXException {
 
-        if (tagEmptyBody != null) {
-            tagEmptyBody = null;
-        }
-        
         processChars();
 
         if (directivesOnly &&
@@ -675,6 +664,23 @@ class JspDocumentParser
             scriptlessBodyNode = null;
         }
 
+        if (current instanceof Node.CustomTag) {
+            String bodyType = getBodyType((Node.CustomTag) current);
+            if (TagInfo.BODY_CONTENT_EMPTY.equalsIgnoreCase(bodyType)) {
+                // Children - if any - must be JSP attributes
+                Node.Nodes children = current.getBody();
+                if (children != null && children.size() > 0) {
+                    for (int i = 0; i < children.size(); i++) {
+                        Node child = children.getNode(i);
+                        if (!(child instanceof Node.NamedAttribute)) {
+                            throw new SAXParseException(Localizer.getMessage(
+                                    "jasper.error.emptybodycontent.nonempty",
+                                    current.qName), locator); 
+                        }
+                    }
+                }
+            }
+        }
         if (current.getParent() != null) {
             current = current.getParent();
         }
@@ -713,7 +719,6 @@ class JspDocumentParser
      */
     public void startCDATA() throws SAXException {
 
-        checkEmptyBody();
         processChars();  // Flush char buffer and remove white spaces
         startMark = new Mark(ctxt, path, locator.getLineNumber(),
                              locator.getColumnNumber());
@@ -1398,14 +1403,6 @@ class JspDocumentParser
             return qName.substring(0, index);
         }
         return "";
-    }
-
-    private void checkEmptyBody() throws SAXException {
-        if (tagEmptyBody != null) {
-            throw new SAXParseException(Localizer.getMessage(
-                    "jasper.error.emptybodycontent.nonempty",
-                    tagEmptyBody.qName), locator);
-        }
     }
 
     /*

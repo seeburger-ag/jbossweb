@@ -23,12 +23,22 @@
   </subsection>
   <subsection name="Coyote">
     <changelog>
+      <fix>
+        Add back SSL renegotiation as an option. (mturk)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
     <changelog>
       <fix>
         <bug>48616</bug>: Additional variable declaration fixes. (kkolinko)
+      </fix>
+      <fix>
+        <bug>48827</bug>: Parser regression. (markt)
+      </fix>
+      <fix>
+        <bug>48668</bug>: Honor isELIgnored and isDeferredSyntaxAllowed in the Parser.
+        ELParser is now aware of the isDeferredAsLiteral option. (kkolinko)
       </fix>
     </changelog>
   </subsection>

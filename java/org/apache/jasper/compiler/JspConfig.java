@@ -106,6 +106,10 @@ public class JspConfig {
                     }
                     if (version < 2.4) {
                         defaultIsELIgnored = "true";
+                        defaultDeferedSyntaxAllowedAsLiteral = "true";
+                    }
+                    if (version < 2.5) {
+                        defaultDeferedSyntaxAllowedAsLiteral = "true";
                     }
 
                     jspProperties = new ArrayList<JspPropertyGroup>();
