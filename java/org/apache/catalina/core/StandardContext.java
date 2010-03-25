@@ -4066,26 +4066,6 @@ public class StandardContext
             }
         }
 
-        // Look for a realm - that may have been configured earlier. 
-        // If the realm is added after context - it'll set itself.
-        // TODO: what is the use case for this ? 
-        if( realm == null && mserver != null ) {
-            ObjectName realmName=null;
-            try {
-                realmName=new ObjectName( getEngineName() + ":type=Realm,host=" + 
-                        getHostname() + ",path=" + getPath());
-                if( mserver.isRegistered(realmName ) ) {
-                    mserver.invoke(realmName, "init", 
-                            new Object[] {},
-                            new String[] {}
-                    );            
-                }
-            } catch( Throwable t ) {
-                if(log.isDebugEnabled())
-                    log.debug("No realm for this host " + realmName);
-            }
-        }
-        
         // Initialize character set mapper
         getCharsetMapper();
 
