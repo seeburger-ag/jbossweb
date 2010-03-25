@@ -170,6 +170,11 @@ public interface Options {
     public int getModificationTestInterval();
     
     /**
+     * Re-compile on failure.
+     */
+    public boolean getRecompileOnFail();
+
+    /**
      * Is caching enabled (used for precompilation).
      */
     public boolean isCaching();

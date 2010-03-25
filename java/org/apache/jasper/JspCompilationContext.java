@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -305,6 +304,9 @@ public class JspCompilationContext {
             }
             if (jarUrl != null) {
                 result = new URL(jarUrl.toExternalForm() + res.substring(1));
+            } else {
+                // May not be in a JAR in some IDE environments
+                result = context.getResource(canonicalURI(res));
             }
         } else if (res.startsWith("jar:file:")) {
             // This is a tag file packaged in a jar that is being checked
@@ -608,6 +610,10 @@ public class JspCompilationContext {
             } catch (JasperException ex) {
                 // Cache compilation exception
                 jsw.setCompilationException(ex);
+                if (options.getDevelopment() && options.getRecompileOnFail()) {
+                    // Force a recompilation attempt on next access
+                    jsw.setLastModificationTest(-1);
+                }
                 throw ex;
             } catch (Exception ex) {
                 JasperException je = new JasperException(

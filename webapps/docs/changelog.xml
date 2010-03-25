@@ -40,6 +40,14 @@
         <bug>48668</bug>: Honor isELIgnored and isDeferredSyntaxAllowed in the Parser.
         ELParser is now aware of the isDeferredAsLiteral option. (kkolinko)
       </fix>
+      <fix>
+        <bug>48701</bug>: Allow TagVariableInfo as well as VariableInfo to introduce 
+        objects later used by jsp:getProperty. (markt)
+      </fix>
+      <update>
+        <bug>48795</bug>: Add a new property to control if the next request always 
+        triggers recompilation after a compilation failure. (markt)
+      </update>
     </changelog>
   </subsection>
 </section>
