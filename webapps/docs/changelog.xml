@@ -48,6 +48,9 @@
         <bug>48795</bug>: Add a new property to control if the next request always 
         triggers recompilation after a compilation failure. (markt)
       </update>
+      <fix>
+        <bug>45015</bug>: Fix regression. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
