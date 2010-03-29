@@ -61,12 +61,16 @@ import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.InstanceEvent;
+import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.connector.Request.AsyncListenerRegistration;
+import org.apache.catalina.util.InstanceSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.log.SystemLogHandler;
@@ -103,6 +107,7 @@ final class StandardWrapperValve
     private volatile int eventCount;
     private volatile int requestCount;
     private volatile int errorCount;
+    private InstanceSupport support;
 
 
     /**
@@ -115,6 +120,16 @@ final class StandardWrapperValve
     // --------------------------------------------------------- Public Methods
 
 
+    public void setContainer(Container container) {
+        super.setContainer(container);
+        if (container instanceof Wrapper) {
+            support = ((Wrapper) container).getInstanceSupport();
+        }
+        if (support == null) {
+            throw new IllegalStateException(sm.getString("standardWrapper.noInstanceSupport", container.getName()));
+        }
+    }
+    
     /**
      * Invoke the servlet we are managing, respecting the rules regarding
      * servlet lifecycle and SingleThreadModel support.
@@ -248,6 +263,8 @@ final class StandardWrapperValve
             	request.setAttribute(Globals.JSP_FILE_ATTR, jspFile);
             else
             	request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.BEFORE_REQUEST_EVENT,
+                    servlet, request, response);
             if ((servlet != null) && (filterChain != null)) {
                 // Swallow output if needed
                 if (context.getSwallowOutput()) {
@@ -282,16 +299,22 @@ final class StandardWrapperValve
             request.removeAttribute(Globals.JSP_FILE_ATTR);
         } catch (ClientAbortException e) {
         	request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             throwable = e;
             exception(request, response, e);
         } catch (IOException e) {
         	request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             throwable = e;
             exception(request, response, e);
         } catch (UnavailableException e) {
         	request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             //            throwable = e;
@@ -312,6 +335,8 @@ final class StandardWrapperValve
             // do not want to do exception(request, response, e) processing
         } catch (ServletException e) {
         	request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             Throwable rootCause = StandardWrapper.getRootCause(e);
             if (!(rootCause instanceof ClientAbortException)) {
                 container.getLogger().error(sm.getString("standardWrapper.serviceException",
@@ -321,6 +346,8 @@ final class StandardWrapperValve
             exception(request, response, e);
         } catch (Throwable e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             throwable = e;
@@ -460,8 +487,9 @@ final class StandardWrapperValve
                 request.setAttribute(Globals.JSP_FILE_ATTR, jspFile);
             else
                 request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.BEFORE_REQUEST_EVENT,
+                    servlet, request, response);
             if ((servlet != null) && (filterChain != null)) {
-
                 // Swallow output if needed
                 if (context.getSwallowOutput()) {
                     try {
@@ -476,27 +504,34 @@ final class StandardWrapperValve
                 } else {
                     filterChain.doFilterEvent(request.getEvent());
                 }
-
             }
             request.removeAttribute(Globals.JSP_FILE_ATTR);
         } catch (ClientAbortException e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             throwable = e;
             exception(request, response, e);
         } catch (IOException e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             throwable = e;
             exception(request, response, e);
         } catch (UnavailableException e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             // Do not save exception in 'throwable', because we
             // do not want to do exception(request, response, e) processing
         } catch (ServletException e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             Throwable rootCause = StandardWrapper.getRootCause(e);
             if (!(rootCause instanceof ClientAbortException)) {
                 container.getLogger().error(sm.getString("standardWrapper.serviceException",
@@ -506,6 +541,8 @@ final class StandardWrapperValve
             exception(request, response, e);
         } catch (Throwable e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
             container.getLogger().error(sm.getString("standardWrapper.serviceException",
                              wrapper.getName()), e);
             throwable = e;

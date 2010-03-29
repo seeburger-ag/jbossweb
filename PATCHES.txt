@@ -79,13 +79,10 @@ Useless syncing
 Changes to APR init
 
 784083
-Useless alias feature, rather redundant with overlays, and has no place in the DirContext implementation
+Useless alias feature, redundant with overlays
 
 890139
 EL coercion patch
-
-918851 919914 920055 920110
-Parser changes to "fix" EL processing when EL is disabled, likely to cause regressions
 
 920449
 Generating broken pages using included error pages

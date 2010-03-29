@@ -90,8 +90,8 @@ public final class InstanceEvent
 
 
     /**
-     * The event indicating that the <code>service()</code> method of a
-     * servlet accessed via a request dispatcher is about to be called.
+     * The event indicating that the <code>doFilter()</code> method of a
+     * filter chain accessed via a request dispatcher is about to be called.
      * The <code>servlet</code> property contains a reference to the
      * dispatched-to servlet instance, and the <code>request</code> and
      * <code>response</code> properties contain the current request and
@@ -102,8 +102,8 @@ public final class InstanceEvent
 
 
     /**
-     * The event indicating that the <code>service()</code> method of a
-     * servlet accessed via a request dispatcher has returned.  The
+     * The event indicating that the <code>doFilter()</code> method of a
+     * filter chain accessed via a request dispatcher has returned.  The
      * <code>servlet</code> property contains a reference to the
      * dispatched-to servlet instance, and the <code>request</code> and
      * <code>response</code> properties contain the current request and
@@ -111,6 +111,30 @@ public final class InstanceEvent
      * contain a reference to the dispatched-to Wrapper.
      */
     public static final String AFTER_DISPATCH_EVENT = "afterDispatch";
+
+
+    /**
+     * The event indicating that the <code>doFilter()</code> method of a
+     * filter chain is about to be called.
+     * The <code>servlet</code> property contains a reference to the
+     * associated servlet instance, and the <code>request</code> and
+     * <code>response</code> properties contain the current request and
+     * response being processed.  The <code>wrapper</code> property will
+     * contain a reference to the dispatched-to Wrapper.
+     */
+    public static final String BEFORE_REQUEST_EVENT = "beforeRequest";
+
+
+    /**
+     * The event indicating that the <code>doFilter()</code> method of a
+     * filter chain has returned.  The
+     * <code>servlet</code> property contains a reference to the
+     * associated servlet instance, and the <code>request</code> and
+     * <code>response</code> properties contain the current request and
+     * response being processed.  The <code>wrapper</code> property will
+     * contain a reference to the dispatched-to Wrapper.
+     */
+    public static final String AFTER_REQUEST_EVENT = "afterRequest";
 
 
     /**
