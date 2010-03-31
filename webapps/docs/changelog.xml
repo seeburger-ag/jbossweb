@@ -19,6 +19,9 @@
 <section name="JBoss Web 3.0.0.Beta4 (remm)">
   <subsection name="Catalina">
     <changelog>
+      <fix>
+        Add missing event for regular request processing to InstanceListener. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
