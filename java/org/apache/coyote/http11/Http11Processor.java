@@ -79,6 +79,10 @@ public class Http11Processor implements ActionHook {
         StringManager.getManager(Constants.Package);
 
     
+    protected static final boolean CHUNK_ON_CLOSE = 
+        Boolean.valueOf(System.getProperty("org.apache.coyote.http11.Http11Processor.CHUNK_ON_CLOSE", "false")).booleanValue();
+    
+
     // ------------------------------------------------------------ Constructor
 
 
@@ -1590,7 +1594,7 @@ public class Http11Processor implements ActionHook {
                 (outputFilters[Constants.IDENTITY_FILTER]);
             contentDelimitation = true;
         } else {
-            if (entityBody && http11 && keepAlive) {
+            if (entityBody && http11 && (keepAlive || CHUNK_ON_CLOSE)) {
                 outputBuffer.addActiveFilter
                     (outputFilters[Constants.CHUNKED_FILTER]);
                 contentDelimitation = true;
