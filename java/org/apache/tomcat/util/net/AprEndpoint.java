@@ -1497,7 +1497,7 @@ public class AprEndpoint {
          */
         public void add(long socket) {
             int timeout = keepAliveTimeout;
-            if (timeout < 0) {
+            if (timeout <= 0) {
                 timeout = soTimeout;
             }
             if (timeout <= 0) {
