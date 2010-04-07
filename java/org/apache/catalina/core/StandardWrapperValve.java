@@ -297,6 +297,8 @@ final class StandardWrapperValve
 
             }
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
         } catch (ClientAbortException e) {
         	request.removeAttribute(Globals.JSP_FILE_ATTR);
             support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
@@ -506,6 +508,8 @@ final class StandardWrapperValve
                 }
             }
             request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
+                    servlet, request, response);
         } catch (ClientAbortException e) {
             request.removeAttribute(Globals.JSP_FILE_ATTR);
             support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
