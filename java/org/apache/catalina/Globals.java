@@ -356,40 +356,4 @@ public final class Globals {
         (System.getSecurityManager() != null);
 
 
-    /**
-     * The folder used for JAR overlays.
-     */
-    public static final String OVERLAY_PATH =
-        System.getProperty("org.apache.catalina.OVERLAY_PATH", "/META-INF/resources");
-
-
-    /**
-     * The path used for web fragments.
-     */
-    public static final String WEB_FRAGMENT_PATH =
-        System.getProperty("org.apache.catalina.WEB_FRAGMENT_PATH", "/META-INF/web-fragment.xml");
-
-
-    /**
-     * The path used for the ServletContainerInitializer service.
-     */
-    public static final String SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH =
-        System.getProperty("org.apache.catalina.SERVLET_CONTAINER_INITIALIZER_SERVICE_PATH", 
-                "/META-INF/services/javax.servlet.ServletContainerInitializer");
-
-
-    /**
-     * The master flag which controls XML validation.
-     */
-    public static final boolean XML_VALIDATION =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.XML_VALIDATION", "false")).booleanValue();
-
-
-    /**
-     * The master flag which controls namespace awareness when parsing XML.
-     */
-    public static final boolean XML_NAMESPACE_AWARE =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.XML_NAMESPACE_AWARE", "false")).booleanValue();
-
-
 }

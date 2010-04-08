@@ -41,7 +41,6 @@ import org.apache.catalina.security.SecurityConfig;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.IntrospectionUtils;
-import org.apache.tomcat.util.log.SystemLogHandler;
 import org.jboss.logging.Logger;
 
 
@@ -131,18 +130,6 @@ public class Embedded  extends StandardService implements Lifecycle {
 
 
     /**
-     * Is naming enabled ?
-     */
-    protected boolean useNaming = true;
-
-
-    /**
-     * Is standard streams redirection enabled ?
-     */
-    protected boolean redirectStreams = true;
-
-
-    /**
      * The set of Engines that have been deployed in this server.  Normally
      * there will only be one.
      */
@@ -187,63 +174,7 @@ public class Embedded  extends StandardService implements Lifecycle {
      */
     protected boolean started = false;
 
-    /**
-     * Use await.
-     */
-    protected boolean await = false;
-
-
     // ------------------------------------------------------------- Properties
-
-
-    /**
-     * Return true if naming is enabled.
-     */
-    public boolean isUseNaming() {
-
-        return (this.useNaming);
-
-    }
-
-
-    /**
-     * Enables or disables naming support.
-     *
-     * @param useNaming The new use naming value
-     */
-    public void setUseNaming(boolean useNaming) {
-
-        boolean oldUseNaming = this.useNaming;
-        this.useNaming = useNaming;
-        support.firePropertyChange("useNaming", new Boolean(oldUseNaming),
-                                   new Boolean(this.useNaming));
-
-    }
-
-
-    /**
-     * Return true if redirction of standard streams is enabled.
-     */
-    public boolean isRedirectStreams() {
-
-        return (this.redirectStreams);
-
-    }
-
-
-    /**
-     * Enables or disables naming support.
-     *
-     * @param useNaming The new use naming value
-     */
-    public void setRedirectStreams(boolean redirectStreams) {
-
-        boolean oldRedirectStreams = this.redirectStreams;
-        this.redirectStreams = redirectStreams;
-        support.firePropertyChange("redirectStreams", new Boolean(oldRedirectStreams),
-                                   new Boolean(this.redirectStreams));
-
-    }
 
 
     /**
@@ -267,14 +198,6 @@ public class Embedded  extends StandardService implements Lifecycle {
         this.realm = realm;
         support.firePropertyChange("realm", oldRealm, this.realm);
 
-    }
-
-    public void setAwait(boolean b) {
-        await = b;
-    }
-
-    public boolean isAwait() {
-        return await;
     }
 
     public void setCatalinaHome( String s ) {
@@ -847,19 +770,6 @@ public class Embedded  extends StandardService implements Lifecycle {
 
     }
 
-
-    // ------------------------------------------------------ Protected Methods
-
-    
-    protected void initStreams() {
-        if (redirectStreams) {
-            // Replace System.out and System.err with a custom PrintStream
-            SystemLogHandler systemlog = new SystemLogHandler(System.out);
-            System.setOut(systemlog);
-            System.setErr(systemlog);
-        }
-    }
-    
 
     // -------------------------------------------------------- Private Methods
 

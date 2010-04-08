@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 3.0.0.Beta5 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <update>
+        More standalone code removal. (remm)
+      </update>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 3.0.0.Beta4 (remm)">
   <subsection name="Catalina">
     <changelog>

@@ -21,19 +21,11 @@ package org.apache.catalina.core;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.security.AccessControlException;
-import java.util.Random;
 
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
@@ -88,33 +80,9 @@ public final class StandardServer
 
 
     /**
-     * The port number on which we wait for shutdown commands.
-     */
-    private int port = 8005;
-
-    /**
-     * The address on which we wait for shutdown commands.
-     */
-    private String address = "localhost";
-
-
-    /**
-     * A random number generator that is <strong>only</strong> used if
-     * the shutdown command string is longer than 1024 characters.
-     */
-    private Random random = null;
-
-
-    /**
      * The set of Services associated with this Server.
      */
     private Service services[] = new Service[0];
-
-
-    /**
-     * The shutdown command string we are looking for.
-     */
-    private String shutdown = "SHUTDOWN";
 
 
     /**
@@ -141,7 +109,6 @@ public final class StandardServer
      */
     protected PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    private boolean stopAwait = false;
 
     // ------------------------------------------------------------- Properties
 
@@ -164,70 +131,6 @@ public final class StandardServer
     public String getServerInfo() {
 
         return ServerInfo.getServerInfo();
-    }
-
-    /**
-     * Return the port number we listen to for shutdown commands.
-     */
-    public int getPort() {
-
-        return (this.port);
-
-    }
-
-
-    /**
-     * Set the port number we listen to for shutdown commands.
-     *
-     * @param port The new port number
-     */
-    public void setPort(int port) {
-
-        this.port = port;
-
-    }
-
-
-    /**
-     * Return the address on which we listen to for shutdown commands.
-     */
-    public String getAddress() {
-
-        return (this.address);
-
-    }
-
-
-    /**
-     * Set the address on which we listen to for shutdown commands.
-     *
-     * @param address The new address
-     */
-    public void setAddress(String address) {
-
-        this.address = address;
-
-    }
-
-    /**
-     * Return the shutdown command string we are waiting for.
-     */
-    public String getShutdown() {
-
-        return (this.shutdown);
-
-    }
-
-
-    /**
-     * Set the shutdown command we are waiting for.
-     *
-     * @param shutdown The new shutdown command
-     */
-    public void setShutdown(String shutdown) {
-
-        this.shutdown = shutdown;
-
     }
 
 
@@ -270,112 +173,6 @@ public final class StandardServer
         }
 
     }
-
-    public void stopAwait() {
-        stopAwait=true;
-    }
-
-    /**
-     * Wait until a proper shutdown command is received, then return.
-     * This keeps the main thread alive - the thread pool listening for http 
-     * connections is daemon threads.
-     */
-    public void await() {
-        // Negative values - don't wait on port - tomcat is embedded or we just don't like ports
-        if( port == -2 ) {
-            // undocumented yet - for embedding apps that are around, alive.
-            return;
-        }
-        if( port==-1 ) {
-            while( true ) {
-                try {
-                    Thread.sleep(10000);
-                } catch( InterruptedException ex ) {
-                }
-                if( stopAwait ) return;
-            }
-        }
-        
-        // Set up a server socket to wait on
-        ServerSocket serverSocket = null;
-        try {
-            serverSocket =
-                new ServerSocket(port, 1,
-                                 InetAddress.getByName(address));
-        } catch (IOException e) {
-            log.error("StandardServer.await: create[" + address
-                               + ":" + port
-                               + "]: ", e);
-            System.exit(1);
-        }
-
-        // Loop waiting for a connection and a valid command
-        while (true) {
-
-            // Wait for the next connection
-            Socket socket = null;
-            InputStream stream = null;
-            try {
-                socket = serverSocket.accept();
-                socket.setSoTimeout(10 * 1000);  // Ten seconds
-                stream = socket.getInputStream();
-            } catch (AccessControlException ace) {
-                log.warn("StandardServer.accept security exception: "
-                                   + ace.getMessage(), ace);
-                continue;
-            } catch (IOException e) {
-                log.error("StandardServer.await: accept: ", e);
-                System.exit(1);
-            }
-
-            // Read a set of characters from the socket
-            StringBuilder command = new StringBuilder();
-            int expected = 1024; // Cut off to avoid DoS attack
-            while (expected < shutdown.length()) {
-                if (random == null)
-                    random = new Random();
-                expected += (random.nextInt() % 1024);
-            }
-            while (expected > 0) {
-                int ch = -1;
-                try {
-                    ch = stream.read();
-                } catch (IOException e) {
-                    log.warn("StandardServer.await: read: ", e);
-                    ch = -1;
-                }
-                if (ch < 32)  // Control character or EOF terminates loop
-                    break;
-                command.append((char) ch);
-                expected--;
-            }
-
-            // Close the socket now that we are done with it
-            try {
-                socket.close();
-            } catch (IOException e) {
-                ;
-            }
-
-            // Match against our command string
-            boolean match = command.toString().equals(shutdown);
-            if (match) {
-                break;
-            } else
-                log.warn("StandardServer.await: Invalid command '" +
-                                   command.toString() + "' received");
-
-        }
-
-        // Close the server socket and return
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            ;
-        }
-
-    }
-
 
     /**
      * Return the specified Service (if it exists); otherwise return
@@ -492,68 +289,7 @@ public final class StandardServer
      * Return a String representation of this component.
      */
     public String toString() {
-
-        StringBuilder sb = new StringBuilder("StandardServer[");
-        sb.append(getPort());
-        sb.append("]");
-        return (sb.toString());
-
-    }
-
-
-    /**
-     * Write the configuration information for this entire <code>Server</code>
-     * out to the server.xml configuration file.
-     *
-     * @exception javax.management.InstanceNotFoundException if the managed resource object
-     *  cannot be found
-     * @exception javax.management.MBeanException if the initializer of the object throws
-     *  an exception, or persistence is not supported
-     * @exception javax.management.RuntimeOperationsException if an exception is reported
-     *  by the persistence mechanism
-     */
-    public synchronized void storeConfig() throws Exception {
-
-        ObjectName sname = null;    
-        try {
-           sname = new ObjectName("Catalina:type=StoreConfig");
-           if(mserver.isRegistered(sname)) {
-               mserver.invoke(sname, "storeConfig", null, null);            
-           } else
-               log.error("StoreConfig mbean not registered" + sname);
-        } catch (Throwable t) {
-            log.error(t);
-        }
-
-    }
-
-
-    /**
-     * Write the configuration information for <code>Context</code>
-     * out to the specified configuration file.
-     *
-     * @exception javax.management.InstanceNotFoundException if the managed resource object
-     *  cannot be found
-     * @exception javax.management.MBeanException if the initializer of the object throws
-     *  an exception, or persistence is not supported
-     * @exception javax.management.RuntimeOperationsException if an exception is reported
-     *  by the persistence mechanism
-     */
-    public synchronized void storeContext(Context context) throws Exception {
-        
-        ObjectName sname = null;    
-        try {
-           sname = new ObjectName("Catalina:type=StoreConfig");
-           if(mserver.isRegistered(sname)) {
-               mserver.invoke(sname, "store",
-                   new Object[] {context}, 
-                   new String [] { "java.lang.String"});
-           } else
-               log.error("StoreConfig mbean not registered" + sname);
-        } catch (Throwable t) {
-            log.error(t);
-        }
- 
+        return ("StandardServer[]");
     }
 
 
@@ -661,9 +397,6 @@ public final class StandardServer
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
-
-        if (port == -1)
-            stopAwait();
 
     }
 

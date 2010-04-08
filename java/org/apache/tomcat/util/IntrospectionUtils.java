@@ -214,6 +214,56 @@ public final class IntrospectionUtils {
         return null;
     }
 
+    public static Object callMethod1(Object target, String methodN,
+            Object param1, String typeParam1, ClassLoader cl) throws Exception {
+        if (target == null || param1 == null) {
+            d("Assert: Illegal params " + target + " " + param1);
+        }
+        if (dbg > 0)
+            d("callMethod1 " + target.getClass().getName() + " "
+                    + param1.getClass().getName() + " " + typeParam1);
+
+        Class params[] = new Class[1];
+        if (typeParam1 == null)
+            params[0] = param1.getClass();
+        else
+            params[0] = cl.loadClass(typeParam1);
+        Method m = findMethod(target.getClass(), methodN, params);
+        if (m == null)
+            throw new NoSuchMethodException(target.getClass().getName() + " "
+                    + methodN);
+        return m.invoke(target, new Object[] { param1 });
+    }
+
+    public static Method findMethod(Class c, String name, Class params[]) {
+        Method methods[] = c.getMethods();
+        if (methods == null)
+            return null;
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].getName().equals(name)) {
+                Class methodParams[] = methods[i].getParameterTypes();
+                if (methodParams == null)
+                    if (params == null || params.length == 0)
+                        return methods[i];
+                if (params == null)
+                    if (methodParams == null || methodParams.length == 0)
+                        return methods[i];
+                if (params.length != methodParams.length)
+                    continue;
+                boolean found = true;
+                for (int j = 0; j < params.length; j++) {
+                    if (params[j] != methodParams[j]) {
+                        found = false;
+                        break;
+                    }
+                }
+                if (found)
+                    return methods[i];
+            }
+        }
+        return null;
+    }
+
     /**
      * Reverse of Introspector.decapitalize
      */
