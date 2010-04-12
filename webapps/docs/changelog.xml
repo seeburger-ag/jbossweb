@@ -24,6 +24,13 @@
       </update>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <bug>49081</bug>: EL parsing fix. (markt)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 3.0.0.Beta4 (remm)">
