@@ -134,7 +134,6 @@ public class CoyoteReader
         ib.reset();
     }
 
-
     public String readLine()
         throws IOException {
 
@@ -153,7 +152,7 @@ public class CoyoteReader
             while ((pos < MAX_LINE_LENGTH) && (end < 0)) {
                 int nRead = read(lineBuffer, pos, MAX_LINE_LENGTH - pos);
                 if (nRead < 0) {
-                    if (pos == 0) {
+                    if (pos == 0 && aggregator == null) {
                         return null;
                     }
                     end = pos;
@@ -203,6 +202,5 @@ public class CoyoteReader
         return result;
 
     }
-
 
 }
