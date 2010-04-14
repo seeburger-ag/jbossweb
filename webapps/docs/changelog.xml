@@ -29,8 +29,12 @@
       <fix>
         Fix incomplete write logic in APR. (jfclere)
       </fix>
-      <fix> <jboss-jira>JBWEB-153</jboss-jira> <bug>43839</bug>
+      <fix>
+        <jira>153</jira>: <bug>43839</bug>
         Parent context cookie overwriting URL encoded cookie. (markt/mmillson)
+      </fix>
+      <fix>
+        <jira>165</jira>: Correct fix for <bug>42727</bug>. (remm)
       </fix>
     </changelog>
   </subsection>
