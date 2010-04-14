@@ -22,6 +22,9 @@
       <update>
         More standalone code removal. (remm)
       </update>
+      <fix>
+        <jira>165</jira>: Correct fix for <bug>42727</bug>. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
