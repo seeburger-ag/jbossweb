@@ -34,7 +34,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeMap;
 
 import javax.management.AttributeNotFoundException;
@@ -188,18 +187,6 @@ public class StandardContext
 
     
     /**
-     * The antiJARLocking flag for this Context.
-     */
-    protected boolean antiJARLocking = false;
-
-    
-    /**
-     * The antiResourceLocking flag for this Context.
-     */
-    protected boolean antiResourceLocking = false;
-
-    
-    /**
      * The set of application listener class names configured for this
      * application, in the order they were encountered in the web.xml file.
      */
@@ -287,12 +274,6 @@ public class StandardContext
 
 
     /**
-     * The path to a file to save this Context information.
-     */
-    protected String configFile = null;
-
-
-    /**
      * The "correctly configured" flag for this Context.
      */
     protected boolean configured = false;
@@ -308,12 +289,6 @@ public class StandardContext
      * The ServletContext implementation associated with this Context.
      */
     protected ApplicationContext context = null;
-
-
-    /**
-     * Compiler classpath to use.
-     */
-    protected String compilerClasspath = null;
 
 
     /**
@@ -349,28 +324,9 @@ public class StandardContext
     
 
     /**
-     * The "follow standard delegation model" flag that will be used to
-     * configure our ClassLoader.
-     */
-    protected boolean delegate = false;
-
-
-    /**
      * The display name of this web application.
      */
     protected String displayName = null;
-
-
-    /** 
-     * Override the default context xml location.
-     */
-    protected String defaultContextXml;
-
-
-    /** 
-     * Override the default web xml location.
-     */
-    protected String defaultWebXml;
 
 
     /**
@@ -523,29 +479,11 @@ public class StandardContext
 
 
     /**
-     * The reloadable flag for this web application.
-     */
-    protected boolean reloadable = false;
-
-
-    /**
-     * Unpack WAR property.
-     */
-    protected boolean unpackWAR = true;
-
-
-    /**
-     * The DefaultContext override flag for this web application.
+     * The override flag for this web application.
      */
     protected boolean override = false;
 
 
-    /**
-     * The original document root for this web application.
-     */
-    protected String originalDocBase = null;
-    
-    
     /**
      * The privileged flag for this web application.
      */
@@ -624,12 +562,6 @@ public class StandardContext
 
 
     /**
-     * The watched resources for this application.
-     */
-    protected String watchedResources[] = new String[0];
-
-
-    /**
      * The welcome files for this application.
      */
     protected String welcomeFiles[] = new String[0];
@@ -670,12 +602,6 @@ public class StandardContext
 
 
     /**
-     * Name of the associated naming context.
-     */
-    protected String namingContextName = null;
-
-
-    /**
      * Caching allowed flag.
      */
     protected boolean cachingAllowed = true;
@@ -710,8 +636,6 @@ public class StandardContext
      */
     protected int cacheTTL = 5000;
 
-
-    protected boolean lazy=true;
 
     /**
      * Non proxied resources.
@@ -851,28 +775,6 @@ public class StandardContext
 
 
     /**
-     * Return the "follow standard delegation model" flag used to configure
-     * our ClassLoader.
-     */
-    public boolean getDelegate() {
-        return (this.delegate);
-    }
-
-
-    /**
-     * Set the "follow standard delegation model" flag used to configure
-     * our ClassLoader.
-     *
-     * @param delegate The new flag
-     */
-    public void setDelegate(boolean delegate) {
-        boolean oldDelegate = this.delegate;
-        this.delegate = delegate;
-        support.firePropertyChange("delegate", oldDelegate, this.delegate);
-    }
-
-
-    /**
      * Returns true if the resources associated with this context are
      * filesystem based.
      */
@@ -963,46 +865,6 @@ public class StandardContext
      */
     public void setApplicationLifecycleListeners(Object listeners[]) {
         applicationLifecycleListenersInstances = listeners;
-    }
-
-
-    /**
-     * Return the antiJARLocking flag for this Context.
-     */
-    public boolean getAntiJARLocking() {
-        return (this.antiJARLocking);
-    }
-
-
-    /**
-     * Return the antiResourceLocking flag for this Context.
-     */
-    public boolean getAntiResourceLocking() {
-        return (this.antiResourceLocking);
-    }
-
-
-    /**
-     * Set the antiJARLocking feature for this Context.
-     *
-     * @param antiJARLocking The new flag value
-     */
-    public void setAntiJARLocking(boolean antiJARLocking) {
-        boolean oldAntiJARLocking = this.antiJARLocking;
-        this.antiJARLocking = antiJARLocking;
-        support.firePropertyChange("antiJARLocking", oldAntiJARLocking, this.antiJARLocking);
-    }
-
-
-    /**
-     * Set the antiResourceLocking feature for this Context.
-     *
-     * @param antiResourceLocking The new flag value
-     */
-    public void setAntiResourceLocking(boolean antiResourceLocking) {
-        boolean oldAntiResourceLocking = this.antiResourceLocking;
-        this.antiResourceLocking = antiResourceLocking;
-        support.firePropertyChange("antiResourceLocking", oldAntiResourceLocking, this.antiResourceLocking);
     }
 
 
@@ -1100,24 +962,6 @@ public class StandardContext
     }
 
     /**
-     * Return the path to a file to save this Context information.
-     */
-    public String getConfigFile() {
-        return (this.configFile);
-    }
-
-
-    /**
-     * Set the path to a file to save this Context information.
-     *
-     * @param configFile The path to a file to save this Context information.
-     */
-    public void setConfigFile(String configFile) {
-        this.configFile = configFile;
-    }
-
-
-    /**
      * Return the class name of the context configurator.
      */
     public String getConfigClass() {
@@ -1203,36 +1047,6 @@ public class StandardContext
         support.firePropertyChange("crossContext", oldCrossContext, this.crossContext);
     }
 
-    public String getDefaultContextXml() {
-        return defaultContextXml;
-    }
-
-    /** 
-     * Set the location of the default context xml that will be used.
-     * If not absolute, it'll be made relative to the engine's base dir
-     * ( which defaults to catalina.base system property ).
-     *
-     * @param defaultContextXml The default web xml 
-     */
-    public void setDefaultContextXml(String defaultContextXml) {
-        this.defaultContextXml = defaultContextXml;
-    }
-
-    public String getDefaultWebXml() {
-        return defaultWebXml;
-    }
-
-    /** 
-     * Set the location of the default web xml that will be used.
-     * If not absolute, it'll be made relative to the engine's base dir
-     * ( which defaults to catalina.base system property ).
-     *
-     * @param defaultWebXml The default web xml 
-     */
-    public void setDefaultWebXml(String defaultWebXml) {
-        this.defaultWebXml = defaultWebXml;
-    }
-
     /**
      * Gets the time (in milliseconds) it took to start this context.
      *
@@ -1278,22 +1092,6 @@ public class StandardContext
         if (context != null) {
             context.setAttribute(Globals.ALT_DD_ATTR,altDDName);
         }
-    }
-
-
-    /**
-     * Return the compiler classpath.
-     */
-    public String getCompilerClasspath(){
-        return compilerClasspath;
-    }
-
-
-    /**
-     * Set the compiler classpath.
-     */
-    public void setCompilerClasspath(String compilerClasspath) {
-        this.compilerClasspath = compilerClasspath;
     }
 
 
@@ -1349,16 +1147,6 @@ public class StandardContext
     public void setDocBase(String docBase) {
         this.docBase = docBase;
     }
-
-    // experimental
-    public boolean isLazy() {
-        return lazy;
-    }
-
-    public void setLazy(boolean lazy) {
-        this.lazy = lazy;
-    }
-
 
     /**
      * Return descriptive information about this Container implementation and
@@ -1625,40 +1413,12 @@ public class StandardContext
 
 
     /**
-     * Return the reloadable flag for this web application.
-     */
-    public boolean getReloadable() {
-        return (this.reloadable);
-
-    }
-
-    /**
      * Return the DefaultContext override flag for this web application.
      */
     public boolean getOverride() {
         return (this.override);
     }
 
-
-    /**
-     * Return the original document root for this Context.  This can be an absolute
-     * pathname, a relative pathname, or a URL.
-     * Is only set as deployment has change docRoot!
-     */
-    public String getOriginalDocBase() {
-        return (this.originalDocBase);
-    }
-
-    /**
-     * Set the original document root for this Context.  This can be an absolute
-     * pathname, a relative pathname, or a URL.
-     *
-     * @param docBase The orginal document root
-     */
-    public void setOriginalDocBase(String docBase) {
-        this.originalDocBase = docBase;
-    }
-    
 
     /**
      * Return the parent class loader (if any) for this web application.
@@ -1698,19 +1458,7 @@ public class StandardContext
 
 
     /**
-     * Set the reloadable flag for this web application.
-     *
-     * @param reloadable The new reloadable flag
-     */
-    public void setReloadable(boolean reloadable) {
-        boolean oldReloadable = this.reloadable;
-        this.reloadable = reloadable;
-        support.firePropertyChange("reloadable", oldReloadable, this.reloadable);
-    }
-
-
-    /**
-     * Set the DefaultContext override flag for this web application.
+     * Set the override flag for this web application.
      *
      * @param override The new override flag
      */
@@ -1858,21 +1606,6 @@ public class StandardContext
         support.firePropertyChange("unloadDelay", oldUnloadDelay, this.unloadDelay);
     }
 
-
-    /**
-     * Unpack WAR flag accessor.
-     */
-    public boolean getUnpackWAR() {
-        return (unpackWAR);
-    }
-
-
-    /**
-     * Unpack WAR flag mutator.
-     */
-    public void setUnpackWAR(boolean unpackWAR) {
-        this.unpackWAR = unpackWAR;
-    }
 
     /**
      * Return the Java class name of the Wrapper implementation used
@@ -2573,21 +2306,6 @@ public class StandardContext
 
 
     /**
-     * Add a new watched resource to the set recognized by this Context.
-     *
-     * @param name New watched resource file name
-     */
-    public void addWatchedResource(String name) {
-        String results[] = new String[watchedResources.length + 1];
-        for (int i = 0; i < watchedResources.length; i++)
-            results[i] = watchedResources[i];
-        results[watchedResources.length] = name;
-        watchedResources = results;
-        fireContainerEvent("addWatchedResource", name);
-    }
-
-
-    /**
      * Add a new welcome file to the set recognized by this Context.
      *
      * @param name New welcome file name
@@ -3008,15 +2726,6 @@ public class StandardContext
 
 
     /**
-     * Return the set of watched resources for this Context. If none are 
-     * defined, a zero length array will be returned.
-     */
-    public String[] findWatchedResources() {
-        return watchedResources;
-    }
-    
-    
-    /**
      * Return the set of welcome files defined for this Context.  If none are
      * defined, a zero-length array is returned.
      */
@@ -3411,39 +3120,6 @@ public class StandardContext
     }
 
 
-    /**
-     * Remove the specified watched resource name from the list associated
-     * with this Context.
-     * 
-     * @param name Name of the watched resource to be removed
-     */
-    public void removeWatchedResource(String name) {
-        
-        // Make sure this watched resource is currently present
-        int n = -1;
-        for (int i = 0; i < watchedResources.length; i++) {
-            if (watchedResources[i].equals(name)) {
-                n = i;
-                break;
-            }
-        }
-        if (n < 0)
-            return;
-
-        // Remove the specified watched resource
-        int j = 0;
-        String results[] = new String[watchedResources.length - 1];
-        for (int i = 0; i < watchedResources.length; i++) {
-            if (i != n)
-                results[j++] = watchedResources[i];
-        }
-        watchedResources = results;
-
-        fireContainerEvent("removeWatchedResource", name);
-
-    }
-    
-    
     /**
      * Remove the specified welcome file name from the list recognized
      * by this Context.
@@ -4013,7 +3689,6 @@ public class StandardContext
      * @exception LifecycleException if a startup error occurs
      */
     public synchronized void start() throws LifecycleException {
-        //if (lazy ) return;
         if (started) {
             return;
         }
@@ -4733,32 +4408,6 @@ public class StandardContext
     }
 
 
-    /**
-     * Get naming context full name.
-     */
-    protected String getNamingContextName() {
-    if (namingContextName == null) {
-        Container parent = getParent();
-        if (parent == null) {
-        namingContextName = getName();
-        } else {
-        Stack stk = new Stack();
-        StringBuilder buff = new StringBuilder();
-        while (parent != null) {
-            stk.push(parent.getName());
-            parent = parent.getParent();
-        }
-        while (!stk.empty()) {
-            buff.append("/" + stk.pop());
-        }
-        buff.append(getName());
-        namingContextName = buff.toString();
-        }
-    }
-    return namingContextName;
-    }
-
-    
     /**
      * Return the request processing paused flag for this Context.
      */

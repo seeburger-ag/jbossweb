@@ -206,20 +206,6 @@ public interface Context extends Container {
 
 
     /**
-     * Return the path to a file to save this Context information.
-     */
-    public String getConfigFile();
-
-
-    /**
-     * Set the path to a file to save this Context information.
-     *
-     * @param configFile The path to a file to save this Context information.
-     */
-    public void setConfigFile(String configFile);
-
-
-    /**
      * Return the "correctly configured" flag for this Context.
      */
     public boolean getConfigured();
@@ -457,20 +443,6 @@ public interface Context extends Container {
      * @param version The version
      */
     public void setVersion(String version);
-
-
-    /**
-     * Return the reloadable flag for this web application.
-     */
-    public boolean getReloadable();
-
-
-    /**
-     * Set the reloadable flag for this web application.
-     *
-     * @param reloadable The new reloadable flag
-     */
-    public void setReloadable(boolean reloadable);
 
 
     /**
@@ -733,15 +705,6 @@ public interface Context extends Container {
 
     
     /**
-     * Add a resource which will be watched for reloading by the host auto
-     * deployer. Note: this will not be used in embedded mode.
-     * 
-     * @param name Path to the resource, relative to docBase
-     */
-    public void addWatchedResource(String name);
-    
-
-    /**
      * Add a new welcome file to the set recognized by this Context.
      *
      * @param name New welcome file name
@@ -957,13 +920,6 @@ public interface Context extends Container {
 
 
     /**
-     * Return the set of watched resources for this Context. If none are 
-     * defined, a zero length array will be returned.
-     */
-    public String[] findWatchedResources();
-    
-
-    /**
      * Return <code>true</code> if the specified welcome file is defined
      * for this Context; otherwise return <code>false</code>.
      *
@@ -1114,15 +1070,6 @@ public interface Context extends Container {
     public void removeTaglib(String uri);
 
     
-    /**
-     * Remove the specified watched resource name from the list associated
-     * with this Context.
-     * 
-     * @param name Name of the watched resource to be removed
-     */
-    public void removeWatchedResource(String name);
-    
-
     /**
      * Remove the specified welcome file name from the list recognized
      * by this Context.

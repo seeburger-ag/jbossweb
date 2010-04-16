@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.Part;
 
 import org.apache.catalina.deploy.Multipart;

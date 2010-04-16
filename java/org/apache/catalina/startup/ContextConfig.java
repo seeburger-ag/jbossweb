@@ -57,13 +57,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.HttpMethodConstraintElement;
 import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebListener;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
@@ -128,28 +123,10 @@ public class ContextConfig
 
 
     /**
-     * The default web application's context file location.
-     */
-    protected String defaultContextXml = null;
-    
-    
-    /**
-     * The default web application's deployment descriptor location.
-     */
-    protected String defaultWebXml = null;
-    
-    
-    /**
      * Track any fatal errors during startup configuration processing.
      */
     protected boolean ok = false;
 
-
-    /**
-     * Original docBase.
-     */
-    protected String originalDocBase = null;
-    
 
     /**
      * The string resources for this package.
@@ -169,56 +146,6 @@ public class ContextConfig
 
 
     // ------------------------------------------------------------- Properties
-
-
-    /**
-     * Return the location of the default deployment descriptor
-     */
-    public String getDefaultWebXml() {
-        if( defaultWebXml == null ) {
-            defaultWebXml=Constants.DefaultWebXml;
-        }
-
-        return (this.defaultWebXml);
-
-    }
-
-
-    /**
-     * Set the location of the default deployment descriptor
-     *
-     * @param path Absolute/relative path to the default web.xml
-     */
-    public void setDefaultWebXml(String path) {
-
-        this.defaultWebXml = path;
-
-    }
-
-
-    /**
-     * Return the location of the default context file
-     */
-    public String getDefaultContextXml() {
-        if( defaultContextXml == null ) {
-            defaultContextXml=Constants.DefaultContextXml;
-        }
-
-        return (this.defaultContextXml);
-
-    }
-
-
-    /**
-     * Set the location of the default context file
-     *
-     * @param path Absolute/relative path to the default context.xml
-     */
-    public void setDefaultContextXml(String path) {
-
-        this.defaultContextXml = path;
-
-    }
 
 
     /**
@@ -256,20 +183,10 @@ public class ContextConfig
         } else if (event.getType().equals(Lifecycle.BEFORE_START_EVENT)) {
             beforeStart();
         } else if (event.getType().equals(Lifecycle.AFTER_START_EVENT)) {
-            // Restore docBase for management tools
-            if (originalDocBase != null) {
-                String docBase = context.getDocBase();
-                context.setDocBase(originalDocBase);
-                originalDocBase = docBase;
-            }
+            
         } else if (event.getType().equals(Context.COMPLETE_CONFIG_EVENT)) {
             completeConfig();
         } else if (event.getType().equals(Lifecycle.STOP_EVENT)) {
-            if (originalDocBase != null) {
-                String docBase = context.getDocBase();
-                context.setDocBase(originalDocBase);
-                originalDocBase = docBase;
-            }
             stop();
         } else if (event.getType().equals(Lifecycle.INIT_EVENT)) {
             init();
@@ -281,72 +198,6 @@ public class ContextConfig
 
 
     // -------------------------------------------------------- Protected Methods
-
-
-    /**
-     * Process the application classes annotations, if it exists.
-     */
-    protected void processConfigAnnotations(Class<?> clazz) {
-
-        if (clazz.isAnnotationPresent(WebFilter.class)) {
-            WebFilter annotation = clazz.getAnnotation(WebFilter.class);
-            // Add servlet filter
-            String filterName = annotation.filterName();
-            FilterDef filterDef = new FilterDef();
-            filterDef.setFilterName(annotation.filterName());
-            filterDef.setFilterClass(clazz.getName());
-            WebInitParam[] params = annotation.initParams();
-            for (int i = 0; i < params.length; i++) {
-                filterDef.addInitParameter(params[i].name(), params[i].value());
-            }
-            context.addFilterDef(filterDef);
-            FilterMap filterMap = new FilterMap();
-            filterMap.setFilterName(filterName);
-            for (String urlPattern : annotation.urlPatterns()) {
-                filterMap.addURLPattern(urlPattern);
-            }
-            for (String urlPattern : annotation.value()) {
-                filterMap.addURLPattern(urlPattern);
-            }
-            String[] servletNames = annotation.servletNames();
-            if (servletNames != null) {
-                for (int i = 0; i < servletNames.length; i++) {
-                    filterMap.addServletName(servletNames[i]);
-                }
-            }
-            DispatcherType[] dispatcherTypes = annotation.dispatcherTypes();
-            if (dispatcherTypes != null) {
-                for (int i = 0; i < dispatcherTypes.length; i++) {
-                    filterMap.setDispatcher(dispatcherTypes[i].toString());
-                }
-            }
-            context.addFilterMap(filterMap);
-        }
-        if (clazz.isAnnotationPresent(WebServlet.class)) {
-            WebServlet annotation = clazz.getAnnotation(WebServlet.class);
-            // Add servlet
-            Wrapper wrapper = context.createWrapper();
-            wrapper.setName(annotation.name());
-            wrapper.setServletClass(clazz.getName());
-            wrapper.setLoadOnStartup(annotation.loadOnStartup());
-            WebInitParam[] params = annotation.initParams();
-            for (int i = 0; i < params.length; i++) {
-                wrapper.addInitParameter(params[i].name(), params[i].value());
-            }
-            context.addChild(wrapper);
-            for (String urlPattern : annotation.urlPatterns()) {
-                context.addServletMapping(urlPattern, annotation.name());
-            }
-            for (String urlPattern : annotation.value()) {
-                context.addServletMapping(urlPattern, annotation.name());
-            }
-        }
-        if (clazz.isAnnotationPresent(WebListener.class)) {
-            // Add listener
-            context.addApplicationListener(clazz.getName());
-        }
-
-    }
 
 
     /**
@@ -522,68 +373,6 @@ public class ContextConfig
     }
     
     
-    protected void antiLocking() {
-
-        if ((context instanceof StandardContext) 
-            && ((StandardContext) context).getAntiResourceLocking()) {
-            
-            Host host = (Host) context.getParent();
-            String appBase = host.getAppBase();
-            String docBase = context.getDocBase();
-            if (docBase == null)
-                return;
-            if (originalDocBase == null) {
-                originalDocBase = docBase;
-            } else {
-                docBase = originalDocBase;
-            }
-            File docBaseFile = new File(docBase);
-            if (!docBaseFile.isAbsolute()) {
-                File file = new File(appBase);
-                if (!file.isAbsolute()) {
-                    file = new File(System.getProperty("catalina.base"), appBase);
-                }
-                docBaseFile = new File(file, docBase);
-            }
-            
-            String path = context.getPath();
-            if (path == null) {
-                return;
-            }
-            if (path.equals("")) {
-                docBase = "ROOT";
-            } else {
-                if (path.startsWith("/")) {
-                    docBase = path.substring(1);
-                } else {
-                    docBase = path;
-                }
-            }
-
-            File file = null;
-            if (docBase.toLowerCase().endsWith(".war")) {
-                file = new File(System.getProperty("java.io.tmpdir"),
-                        deploymentCount++ + "-" + docBase + ".war");
-            } else {
-                file = new File(System.getProperty("java.io.tmpdir"), 
-                        deploymentCount++ + "-" + docBase);
-            }
-            
-            if (log.isDebugEnabled())
-                log.debug("Anti locking context[" + context.getPath() 
-                        + "] setting docBase to " + file);
-            
-            // Cleanup just in case an old deployment is lying around
-            ExpandWar.delete(file);
-            if (ExpandWar.copy(docBaseFile, file)) {
-                context.setDocBase(file.getAbsolutePath());
-            }
-            
-        }
-        
-    }
-    
-
     /**
      * Process a "init" event for this Context.
      */
@@ -599,7 +388,6 @@ public class ContextConfig
      * Process a "before start" event for this Context.
      */
     protected void beforeStart() {
-        antiLocking();
     }
     
     
@@ -773,19 +561,6 @@ public class ContextConfig
             context.removeWrapperListener(wrapperListeners[i]);
         }
 
-        // Remove (partially) folders and files created by antiLocking
-        Host host = (Host) context.getParent();
-        String appBase = host.getAppBase();
-        String docBase = context.getDocBase();
-        if ((docBase != null) && (originalDocBase != null)) {
-            File docBaseFile = new File(docBase);
-            if (!docBaseFile.isAbsolute()) {
-                docBaseFile = new File(appBase, docBase);
-            }
-            // No need to log failure - it is expected in this case
-            ExpandWar.delete(docBaseFile, false);
-        }
-        
         ok = true;
 
     }
@@ -985,20 +760,6 @@ public class ContextConfig
     }
 
 
-    /**
-     * Get config base.
-     */
-    protected File getConfigBase() {
-        File configBase = 
-            new File(System.getProperty("catalina.base"), "conf");
-        if (!configBase.exists()) {
-            return null;
-        } else {
-            return configBase;
-        }
-    }  
-
-    
     protected String getHostConfigPath(String resourceName) {
         StringBuilder result = new StringBuilder();
         Container container = context;

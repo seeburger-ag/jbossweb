@@ -39,14 +39,6 @@
                 description="Object that creates and destroys servlets, filters, and listeners. Include dependency injection and postConstruct/preDestory handling"
                 type="org.apache.catalina.instanceManagement.InstanceManager" />
 
-    <attribute name="antiJARLocking"
-               description="Take care to not lock jar files"
-               type="boolean" />
-
-    <attribute name="antiResourceLocking"
-               description="Take care to not lock resources"
-               type="boolean" />
-
     <attribute name="cacheMaxSize"
                description="Maximum cache size in KB"
                type="int"/>
@@ -73,35 +65,15 @@
                description="Object names of all children"
                type="[Ljavax.management.ObjectName;"/>
                
-    <attribute name="configFile"
-               description="Location of the context.xml resource or file"
-               type="java.lang.String"/>
-               
     <attribute   name="cookies"
                description="Should we attempt to use cookies for session id
                communication?"
                type="boolean"/>
       
-    <attribute name="compilerClasspath"
-               description="The compiler classpath to use"
-               type="java.lang.String"/>
-      
     <attribute name="crossContext"
                description="Should we allow the ServletContext.getContext() method to access the context of other web applications in this server?"
                type="boolean"/>
 
-    <attribute name="defaultContextXml"
-               description="Location of the default context.xml resource or file"
-               type="java.lang.String"/>
-               
-    <attribute name="defaultWebXml"
-               description="Location of the default web.xml resource or file"
-               type="java.lang.String"/>
-               
-    <attribute name="delegate"
-               description=""
-               type="boolean"/>
-               
     <attribute name="deploymentDescriptor"
                description="String deployment descriptor "
                type="java.lang.String"/>
@@ -171,15 +143,6 @@
                description="Associated realm."
                type="org.apache.catalina.Realm" />
       
-    <attribute name="reloadable"
-               description="The reloadable flag for this web application"
-               type="boolean"/>
-
-    <attribute name="saveConfig"
-               description="Should the configuration be written as needed on startup"
-               is="true"
-               type="boolean"/>
-      
     <attribute name="server"
                description="The J2EE Server this module is deployed on"
                type="java.lang.String"/>
@@ -233,11 +196,6 @@
                description="Time spend scanning jars for TLDs for this context"
                type="long"/>
 
-    <attribute name="useNaming"
-               description="Create a JNDI naming context for this application?"
-               is="true"
-               type="boolean"/>
-               
     <attribute name="valveObjectNames"
                description="ObjectNames for the valves associated with this container"
                type="[Ljavax.management.ObjectName;"
@@ -432,11 +390,6 @@
                description="Unique name of this Host"
                type="java.lang.String"/>
       
-    <attribute name="unpackWARs"
-               description="Unpack WARs property"
-               is="true"
-               type="boolean"/>
-      
     <attribute name="children"
                description="Object names of all children"
                type="[Ljavax.management.ObjectName;"/>
@@ -518,14 +471,6 @@
                description="The managed resource this MBean is associated with"
                type="java.lang.Object"/>
       
-    <attribute name="port"
-               description="TCP port for shutdown messages"
-               type="int"/>
-      
-    <attribute name="shutdown"
-               description="Shutdown password"
-               type="java.lang.String"/>
-      
     <attribute name="serviceNames"
                description="Object names of all services we know about"
                type="[Ljavax.management.ObjectName;"/>
@@ -535,18 +480,6 @@
                type="java.lang.String"
                writeable="false"/>
       
-    <operation name="await"
-               description="Wait for the shutdown message"
-               impact="ACTION"
-               returnType="void" />
-
-    <operation name="storeConfig"
-               description="Save current state to server.xml file"
-               impact="ACTION"
-               returnType="void">
-
-    </operation>
-    
   </mbean>
 
   
