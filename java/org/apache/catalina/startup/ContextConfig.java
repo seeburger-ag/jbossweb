@@ -413,7 +413,7 @@ public class ContextConfig
             applicationServletContainerInitializerConfig();
         }
         // Parse fragment order
-        if (ok && !context.getIgnoreAnnotations()) {
+        if (ok) {
             createFragmentsOrder();
         }
         // Scan fragments, TLDs and annotations

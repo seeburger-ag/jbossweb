@@ -1418,9 +1418,7 @@ public class StandardWrapper
               (InstanceEvent.AFTER_DESTROY_EVENT, instance);
 
             // Annotation processing
-            if (!((Context) getParent()).getIgnoreAnnotations()) {
-               ((Context) getParent()).getInstanceManager().destroyInstance(instance);
-            }
+            ((Context) getParent()).getInstanceManager().destroyInstance(instance);
 
         } catch (Throwable t) {
             instanceSupport.fireInstanceEvent
@@ -1461,9 +1459,7 @@ public class StandardWrapper
                         s.destroy();
                     }
                     // Annotation processing
-                    if (!((Context) getParent()).getIgnoreAnnotations()) {
-                       ((Context) getParent()).getInstanceManager().destroyInstance(s);
-                    }
+                    ((Context) getParent()).getInstanceManager().destroyInstance(s);
                 }
             } catch (Throwable t) {
                 instancePool = null;

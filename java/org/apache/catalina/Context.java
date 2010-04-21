@@ -327,21 +327,6 @@ public interface Context extends Container {
 
 
     /**
-     * Return the boolean on the annotations parsing.
-     */
-    public boolean getIgnoreAnnotations();
-    
-    
-    /**
-     * Set the boolean on the annotations parsing for this web 
-     * application.
-     * 
-     * @param ignoreAnnotations The boolean on the annotations parsing
-     */
-    public void setIgnoreAnnotations(boolean ignoreAnnotations);
-    
-    
-    /**
      * Used to create application instances.
      */
     public InstanceManager getInstanceManager();

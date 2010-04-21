@@ -384,12 +384,6 @@ public class StandardContext
 
 
     /**
-     * Ignore annotations.
-     */
-    protected boolean ignoreAnnotations = false;
-
-
-    /**
      * The set of classnames of InstanceListeners that will be added
      * to each newly created Wrapper by <code>createWrapper()</code>.
      */
@@ -1195,27 +1189,6 @@ public class StandardContext
     }
 
 
-    /**
-     * Return the boolean on the annotations parsing.
-     */
-    public boolean getIgnoreAnnotations() {
-        return this.ignoreAnnotations;
-    }
-    
-    
-    /**
-     * Set the boolean on the annotations parsing for this web 
-     * application.
-     * 
-     * @param ignoreAnnotations The boolean on the annotations parsing
-     */
-    public void setIgnoreAnnotations(boolean ignoreAnnotations) {
-        boolean oldIgnoreAnnotations = this.ignoreAnnotations;
-        this.ignoreAnnotations = ignoreAnnotations;
-        support.firePropertyChange("ignoreAnnotations", oldIgnoreAnnotations, this.ignoreAnnotations);
-    }
-    
-    
     /**
      * Set the session cookie configuration.
      *

@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -76,7 +75,6 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.log.SystemLogHandler;
 import org.apache.tomcat.util.modeler.Registry;
 
@@ -515,12 +513,10 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             } else {
                 filter.destroy();
             }
-            if (!context.getIgnoreAnnotations()) {
-                try {
-                    ((StandardContext) context).getInstanceManager().destroyInstance(this.filter);
-                } catch (Exception e) {
-                    context.getLogger().error("ApplicationFilterConfig.preDestroy", e);
-                }
+            try {
+                ((StandardContext) context).getInstanceManager().destroyInstance(this.filter);
+            } catch (Exception e) {
+                context.getLogger().error("ApplicationFilterConfig.preDestroy", e);
             }
         }
         this.filter = null;
