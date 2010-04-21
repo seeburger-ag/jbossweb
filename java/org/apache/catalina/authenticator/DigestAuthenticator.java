@@ -74,8 +74,7 @@ public class DigestAuthenticator
             if (md5Helper == null)
                 md5Helper = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            throw new IllegalStateException();
+            throw new IllegalStateException(e);
         }
     }
 
@@ -404,8 +403,7 @@ public class DigestAuthenticator
         // Get the realm name
         String realmName = config.getRealmName();
         if (realmName == null)
-            realmName = request.getServerName() + ":"
-                + request.getServerPort();
+            realmName = "Realm";
 
         byte[] buffer = null;
         synchronized (md5Helper) {

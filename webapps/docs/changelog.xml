@@ -25,6 +25,12 @@
       <fix>
         <jira>165</jira>: Correct fix for <bug>42727</bug>. (remm)
       </fix>
+      <fix>
+        Remove incorrect Context.annotationsIgnored field. (remm)
+      </fix>
+      <fix>
+        Default realm name with BASIC and DIGEST. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
