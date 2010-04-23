@@ -2963,7 +2963,7 @@ public class Request
         // a local collection, sorted by the quality value (so we can
         // add Locales in descending order).  The values will be ArrayLists
         // containing the corresponding Locales to be added
-        TreeMap locales = new TreeMap();
+        TreeMap<Double, ArrayList<Locale>> locales = new TreeMap<Double, ArrayList<Locale>>();
 
         // Preprocess the value to remove all whitespace
         int white = value.indexOf(' ');
@@ -3039,9 +3039,9 @@ public class Request
             // Add a new Locale to the list of Locales for this quality level
             Locale locale = new Locale(language, country, variant);
             Double key = new Double(-quality);  // Reverse the order
-            ArrayList values = (ArrayList) locales.get(key);
+            ArrayList<Locale> values = locales.get(key);
             if (values == null) {
-                values = new ArrayList();
+                values = new ArrayList<Locale>();
                 locales.put(key, values);
             }
             values.add(locale);
@@ -3050,13 +3050,8 @@ public class Request
 
         // Process the quality values in highest->lowest order (due to
         // negating the Double value when creating the key)
-        Iterator keys = locales.keySet().iterator();
-        while (keys.hasNext()) {
-            Double key = (Double) keys.next();
-            ArrayList list = (ArrayList) locales.get(key);
-            Iterator values = list.iterator();
-            while (values.hasNext()) {
-                Locale locale = (Locale) values.next();
+        for (ArrayList<Locale> list : locales.values()) {
+            for (Locale locale : list) {
                 addLocale(locale);
             }
         }

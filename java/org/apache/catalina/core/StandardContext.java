@@ -3618,29 +3618,25 @@ public class StandardContext
     public void loadOnStartup(Container children[]) {
 
         // Collect "load on startup" servlets that need to be initialized
-        TreeMap map = new TreeMap();
+        TreeMap<Integer, ArrayList<Wrapper>> map =
+            new TreeMap<Integer, ArrayList<Wrapper>>();
         for (int i = 0; i < children.length; i++) {
             Wrapper wrapper = (Wrapper) children[i];
             int loadOnStartup = wrapper.getLoadOnStartup();
             if (loadOnStartup < 0)
                 continue;
             Integer key = Integer.valueOf(loadOnStartup);
-            ArrayList list = (ArrayList) map.get(key);
+            ArrayList<Wrapper> list = map.get(key);
             if (list == null) {
-                list = new ArrayList();
+                list = new ArrayList<Wrapper>();
                 map.put(key, list);
             }
             list.add(wrapper);
         }
 
         // Load the collected "load on startup" servlets
-        Iterator keys = map.keySet().iterator();
-        while (keys.hasNext()) {
-            Integer key = (Integer) keys.next();
-            ArrayList list = (ArrayList) map.get(key);
-            Iterator wrappers = list.iterator();
-            while (wrappers.hasNext()) {
-                Wrapper wrapper = (Wrapper) wrappers.next();
+        for (ArrayList<Wrapper> list : map.values()) {
+            for (Wrapper wrapper : list) {
                 try {
                     wrapper.load();
                 } catch (ServletException e) {

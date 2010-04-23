@@ -638,16 +638,16 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
      *
      * @param orig Origin Map to be copied
      */
-    Map copyMap(Map orig) {
+    Map<String, String[]> copyMap(Map<String, String[]> orig) {
 
         if (orig == null)
-            return (new HashMap());
-        HashMap dest = new HashMap();
-        Iterator keys = orig.keySet().iterator();
-        while (keys.hasNext()) {
-            String key = (String) keys.next();
-            dest.put(key, orig.get(key));
+            return (new HashMap<String, String[]>());
+        HashMap<String, String[]> dest = new HashMap<String, String[]>();
+        
+        for (Map.Entry<String, String[]> entry : orig.entrySet()) {
+            dest.put(entry.getKey(), entry.getValue());
         }
+
         return (dest);
 
     }
