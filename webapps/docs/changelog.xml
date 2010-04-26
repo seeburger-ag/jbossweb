@@ -31,6 +31,9 @@
       <fix>
         Default realm name with BASIC and DIGEST. (markt)
       </fix>
+      <fix>
+        Add filter before method fix. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

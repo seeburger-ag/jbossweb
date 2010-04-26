@@ -2003,8 +2003,8 @@ public class StandardContext
         System.arraycopy(filterMaps, 0, results, 0, filterMapInsertPoint);
         results[filterMapInsertPoint] = filterMap;
         System.arraycopy(filterMaps, filterMapInsertPoint, results,
-                filterMaps.length - filterMapInsertPoint+1,
-                filterMapInsertPoint);
+                filterMaps.length - (filterMapInsertPoint + 1),
+                filterMaps.length - filterMapInsertPoint);
 
         filterMapInsertPoint++;
 
