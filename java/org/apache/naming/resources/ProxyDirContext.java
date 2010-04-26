@@ -519,26 +519,26 @@ public class ProxyDirContext implements DirContext {
                 NamingEnumeration<NameClassPair> overlay = null;
                 try {
                     overlay = overlays[i].list(parseName(name));
+                    if (main == null) {
+                        main = overlay;
+                    } else {
+                        // Merge that into the merged set
+                        if (merged == null) {
+                            merged = new HashMap<String, NameClassPair>();
+                            while (main.hasMore()) {
+                                NameClassPair pair = main.next();
+                                merged.put(pair.getName(), pair);
+                            }
+                        }
+                        while (overlay.hasMore()) {
+                            NameClassPair pair = overlay.next();
+                            if (merged.get(pair.getName()) == null) {
+                                merged.put(pair.getName(), pair);
+                            }
+                        }
+                    }
                 } catch (NamingException e) {
                     // Ignore
-                }
-                if (main == null) {
-                    main = overlay;
-                } else {
-                    // Merge that into the merged set
-                    if (merged == null) {
-                        merged = new HashMap<String, NameClassPair>();
-                        while (main.hasMore()) {
-                            NameClassPair pair = main.next();
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                    while (overlay.hasMore()) {
-                        NameClassPair pair = overlay.next();
-                        if (merged.get(pair.getName()) == null) {
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
                 }
             }
             if (main == null && merged == null) {
@@ -578,26 +578,26 @@ public class ProxyDirContext implements DirContext {
                 NamingEnumeration<NameClassPair> overlay = null;
                 try {
                     overlay = overlays[i].list(parseName(name));
+                    if (main == null) {
+                        main = overlay;
+                    } else {
+                        // Merge that into the merged set
+                        if (merged == null) {
+                            merged = new HashMap<String, NameClassPair>();
+                            while (main.hasMore()) {
+                                NameClassPair pair = main.next();
+                                merged.put(pair.getName(), pair);
+                            }
+                        }
+                        while (overlay.hasMore()) {
+                            NameClassPair pair = overlay.next();
+                            if (merged.get(pair.getName()) == null) {
+                                merged.put(pair.getName(), pair);
+                            }
+                        }
+                    }
                 } catch (NamingException e) {
                     // Ignore
-                }
-                if (main == null) {
-                    main = overlay;
-                } else {
-                    // Merge that into the merged set
-                    if (merged == null) {
-                        merged = new HashMap<String, NameClassPair>();
-                        while (main.hasMore()) {
-                            NameClassPair pair = main.next();
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                    while (overlay.hasMore()) {
-                        NameClassPair pair = overlay.next();
-                        if (merged.get(pair.getName()) == null) {
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
                 }
             }
             if (main == null && merged == null) {
@@ -641,26 +641,26 @@ public class ProxyDirContext implements DirContext {
                 NamingEnumeration<Binding> overlay = null;
                 try {
                     overlay = overlays[i].listBindings(parseName(name));
+                    if (main == null) {
+                        main = overlay;
+                    } else {
+                        // Merge that into the merged set
+                        if (merged == null) {
+                            merged = new HashMap<String, Binding>();
+                            while (main.hasMore()) {
+                                Binding pair = main.next();
+                                merged.put(pair.getName(), pair);
+                            }
+                        }
+                        while (overlay.hasMore()) {
+                            Binding pair = overlay.next();
+                            if (merged.get(pair.getName()) == null) {
+                                merged.put(pair.getName(), pair);
+                            }
+                        }
+                    }
                 } catch (NamingException e) {
                     // Ignore
-                }
-                if (main == null) {
-                    main = overlay;
-                } else {
-                    // Merge that into the merged set
-                    if (merged == null) {
-                        merged = new HashMap<String, Binding>();
-                        while (main.hasMore()) {
-                            Binding pair = main.next();
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                    while (overlay.hasMore()) {
-                        Binding pair = overlay.next();
-                        if (merged.get(pair.getName()) == null) {
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
                 }
             }
             if (main == null && merged == null) {
@@ -700,26 +700,26 @@ public class ProxyDirContext implements DirContext {
                 NamingEnumeration<Binding> overlay = null;
                 try {
                     overlay = overlays[i].listBindings(parseName(name));
+                    if (main == null) {
+                        main = overlay;
+                    } else {
+                        // Merge that into the merged set
+                        if (merged == null) {
+                            merged = new HashMap<String, Binding>();
+                            while (main.hasMore()) {
+                                Binding pair = main.next();
+                                merged.put(pair.getName(), pair);
+                            }
+                        }
+                        while (overlay.hasMore()) {
+                            Binding pair = overlay.next();
+                            if (merged.get(pair.getName()) == null) {
+                                merged.put(pair.getName(), pair);
+                            }
+                        }
+                    }
                 } catch (NamingException e) {
                     // Ignore
-                }
-                if (main == null) {
-                    main = overlay;
-                } else {
-                    // Merge that into the merged set
-                    if (merged == null) {
-                        merged = new HashMap<String, Binding>();
-                        while (main.hasMore()) {
-                            Binding pair = main.next();
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
-                    while (overlay.hasMore()) {
-                        Binding pair = overlay.next();
-                        if (merged.get(pair.getName()) == null) {
-                            merged.put(pair.getName(), pair);
-                        }
-                    }
                 }
             }
             if (main == null && merged == null) {
