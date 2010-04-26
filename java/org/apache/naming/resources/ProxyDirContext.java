@@ -263,6 +263,9 @@ public class ProxyDirContext implements DirContext {
      * Add overlay.
      */
     public void addOverlay(DirContext overlay) {
+        if (overlay == null) {
+            throw new IllegalArgumentException("Overlay cannot be null");
+        }
         if (overlays == null) {
             overlays = new DirContext[0];
         }
