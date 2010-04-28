@@ -32,7 +32,7 @@
         Default realm name with BASIC and DIGEST. (markt)
       </fix>
       <fix>
-        Add filter before method fix. (markt)
+        Add filter before method fix. (markt, kkolinko)
       </fix>
     </changelog>
   </subsection>
