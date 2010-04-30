@@ -22,10 +22,10 @@ package org.apache.catalina.valves;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.Globals;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.RequestUtil;
@@ -102,7 +102,7 @@ public class ErrorReportValve
         getNext().invoke(request, response);
 
         Throwable throwable =
-            (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
+            (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
 
         if (response.isCommitted()) {
             return;

@@ -55,6 +55,7 @@ import javax.management.ObjectName;
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -639,7 +640,7 @@ final class StandardWrapperValve
                                     asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
                             asyncListener.onTimeout(asyncEvent);
                         } else if (error) {
-                            Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
+                            Throwable t = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
                             AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
                                     asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse(), t);
                             asyncListener.onError(asyncEvent);
@@ -716,7 +717,7 @@ final class StandardWrapperValve
      */
     private void exception(Request request, Response response,
                            Throwable exception) {
-    	request.setAttribute(Globals.EXCEPTION_ATTR, exception);
+    	request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, exception);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
     }

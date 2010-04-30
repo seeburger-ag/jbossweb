@@ -50,6 +50,7 @@ import java.io.IOException;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
@@ -270,7 +271,7 @@ public class CoyoteAdapter
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
 
-                if (!error && (request.getAttribute(Globals.EXCEPTION_ATTR) != null)) {
+                if (!error && (request.getAttribute(RequestDispatcher.ERROR_EXCEPTION) != null)) {
                     // An unexpected exception occurred while processing the event, so
                     // error should be called
                     request.getEvent().setType(HttpEvent.EventType.ERROR);

@@ -21,6 +21,7 @@ package org.apache.catalina.core;
 
 import java.io.IOException;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestEvent;
@@ -28,7 +29,6 @@ import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Container;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
@@ -182,7 +182,7 @@ final class StandardContextValve
                     container.getLogger().error(sm.getString("standardContext.requestListener.requestInit",
                                      instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(Globals.EXCEPTION_ATTR,t);
+                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                     return;
                 }
             }
@@ -206,7 +206,7 @@ final class StandardContextValve
                     container.getLogger().error(sm.getString("standardContext.requestListener.requestDestroy",
                                      instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(Globals.EXCEPTION_ATTR,t);
+                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                 }
             }
         }
@@ -249,7 +249,7 @@ final class StandardContextValve
                     container.getLogger().error(sm.getString("requestListenerValve.requestInit",
                                      instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(Globals.EXCEPTION_ATTR,t);
+                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                     return;
                 }
             }
@@ -274,7 +274,7 @@ final class StandardContextValve
                     container.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
                                      instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(Globals.EXCEPTION_ATTR,t);
+                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                 }
             }
         }

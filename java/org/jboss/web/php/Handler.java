@@ -184,11 +184,6 @@ public class Handler extends HttpServlet
         throws ServletException, IOException
     {
 
-        // Verify that we were not accessed using the invoker servlet
-        if (req.getAttribute(Globals.INVOKED_ATTR) != null)
-            throw new UnavailableException
-                ("Cannot invoke PHP Gateway Handler through the invoker");
-
         ScriptEnvironment env = new ScriptEnvironment(req,
                                                       getServletContext(),
                                                       scriptPathPrefix);

@@ -1440,7 +1440,7 @@ public class Request
             return (context.getServletContext().getRequestDispatcher(path));
 
         // Convert a request-relative path to a context-relative one
-        String servletPath = (String) getAttribute(Globals.INCLUDE_SERVLET_PATH_ATTR);
+        String servletPath = (String) getAttribute(RequestDispatcher.INCLUDE_SERVLET_PATH);
         if (servletPath == null)
             servletPath = getServletPath();
 
@@ -1548,7 +1548,7 @@ public class Request
             } catch (Throwable t) {
                 context.getLogger().error(sm.getString("coyoteRequest.attributeEvent"), t);
                 // Error valve will pick this execption up and display it to user
-                attributes.put( Globals.EXCEPTION_ATTR, t );
+                attributes.put(RequestDispatcher.ERROR_EXCEPTION, t);
             }
         }
     }
@@ -1632,7 +1632,7 @@ public class Request
             } catch (Throwable t) {
                 context.getLogger().error(sm.getString("coyoteRequest.attributeEvent"), t);
                 // Error valve will pick this execption up and display it to user
-                attributes.put( Globals.EXCEPTION_ATTR, t );
+                attributes.put(RequestDispatcher.ERROR_EXCEPTION, t);
             }
         }
     }
