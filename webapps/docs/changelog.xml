@@ -16,6 +16,29 @@
 
 <body>
 
+<section name="JBoss Web 3.0.0.Beta6 (remm)">
+  <subsection name="General">
+    <changelog>
+      <update>
+        Eclipse JDT 3.5.2. (remm)
+      </update>
+    </changelog>
+  </subsection>
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        Default realm name with BASIC and DIGEST. (markt)
+      </fix>
+      <fix>
+        Add filter before method fix. (markt, kkolinko)
+      </fix>
+      <update>
+        More standalone code removal. (remm)
+      </update>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 3.0.0.Beta5 (remm)">
   <subsection name="Catalina">
     <changelog>
@@ -27,12 +50,6 @@
       </fix>
       <fix>
         Remove incorrect Context.annotationsIgnored field. (remm)
-      </fix>
-      <fix>
-        Default realm name with BASIC and DIGEST. (markt)
-      </fix>
-      <fix>
-        Add filter before method fix. (markt, kkolinko)
       </fix>
     </changelog>
   </subsection>
