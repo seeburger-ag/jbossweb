@@ -924,7 +924,7 @@ public class ApplicationContext
      * Internal class used as thread-local storage when doing path
      * mapping during dispatch.
      */
-    private final class DispatchData {
+    private static final class DispatchData {
 
         public MessageBytes uriMB;
         public MappingData mappingData;
