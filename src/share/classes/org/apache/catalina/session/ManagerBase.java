@@ -49,6 +49,7 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
+import org.apache.catalina.util.Base64;
 import org.apache.catalina.util.StringManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -386,7 +387,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
                 // Ignore
             }
             if (apr) {
-                setEntropy(new String(result));
+                setEntropy(new String(Base64.encode(result)));
             } else {
                 setEntropy(this.toString());
             }
