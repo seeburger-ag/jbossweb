@@ -184,10 +184,6 @@
                type="javax.naming.directory.DirContext"
                writeable="false"/>
       
-    <attribute   name="swallowOutput"
-               description="Flag to set to cause the system.out and system.err to be redirected to the logger when executing a servlet"
-               type="boolean"/>
-               
     <attribute name="unloadDelay"
                description="Amount of ms that the container will wait for servlets to unload"
                type="long"/>

@@ -75,7 +75,6 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.log.SystemLogHandler;
 import org.apache.tomcat.util.modeler.Registry;
 
 
@@ -445,20 +444,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             filterInstance = null;
         }
 
-        if (context instanceof StandardContext &&
-                context.getSwallowOutput()) {
-            try {
-                SystemLogHandler.startCapture();
-                filter.init(this);
-            } finally {
-                String log = SystemLogHandler.stopCapture();
-                if (log != null && log.length() > 0) {
-                    getServletContext().log(log);
-                }
-            }
-        } else {
-            filter.init(this);
-        }
+        filter.init(this);
         
         // Expose filter via JMX
         registerJMX();

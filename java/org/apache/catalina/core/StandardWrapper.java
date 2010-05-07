@@ -62,7 +62,6 @@ import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.PeriodicEventListener;
-import org.apache.tomcat.util.log.SystemLogHandler;
 import org.apache.tomcat.util.modeler.Registry;
 
 /**
@@ -288,11 +287,6 @@ public class StandardWrapper
      */
     protected ObjectName jspMonitorON;
 
-
-    /**
-     * Should we swallow System.out
-     */
-    protected boolean swallowOutput = false;
 
     // To support jmx attributes
     protected StandardWrapperValve swValve;
@@ -607,7 +601,6 @@ public class StandardWrapper
             throw new IllegalArgumentException
                 (sm.getString("standardWrapper.notContext"));
         if (container instanceof StandardContext) {
-            swallowOutput = ((StandardContext)container).getSwallowOutput();
             unloadDelay = ((StandardContext)container).getUnloadDelay();
         }
         super.setParent(container);
@@ -1129,12 +1122,9 @@ public class StandardWrapper
             return instance;
 
         PrintStream out = System.out;
-        if (swallowOutput) {
-            SystemLogHandler.startCapture();
-        }
 
         Servlet servlet;
-        try {
+
             long t1=System.currentTimeMillis();
             // If this "servlet" is really a JSP file, get the right class.
             // HOLD YOUR NOSE - this is a kludge that avoids having to do special
@@ -1269,18 +1259,7 @@ public class StandardWrapper
             fireContainerEvent("load", this);
 
             loadTime=System.currentTimeMillis() -t1;
-        } finally {
-            if (swallowOutput) {
-                String log = SystemLogHandler.stopCapture();
-                if (log != null && log.length() > 0) {
-                    if (getServletContext() != null) {
-                        getServletContext().log(log);
-                    } else {
-                        out.println(log);
-                    }
-                }
-            }
-        }
+
         return servlet;
 
     }
@@ -1397,9 +1376,6 @@ public class StandardWrapper
         unloading = true;
 
         PrintStream out = System.out;
-        if (swallowOutput) {
-            SystemLogHandler.startCapture();
-        }
 
         // Call the servlet destroy() method
         try {
@@ -1431,18 +1407,6 @@ public class StandardWrapper
             throw new ServletException
                 (sm.getString("standardWrapper.destroyException", getName()),
                  t);
-        } finally {
-            // Write captured output
-            if (swallowOutput) {
-                String log = SystemLogHandler.stopCapture();
-                if (log != null && log.length() > 0) {
-                    if (getServletContext() != null) {
-                        getServletContext().log(log);
-                    } else {
-                        out.println(log);
-                    }
-                }
-            }
         }
 
         // Deregister the destroyed instance

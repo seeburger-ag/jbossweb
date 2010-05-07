@@ -74,7 +74,6 @@ import org.apache.catalina.connector.Request.AsyncListenerRegistration;
 import org.apache.catalina.util.InstanceSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.apache.tomcat.util.log.SystemLogHandler;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
 import org.jboss.servlet.http.HttpEvent.EventType;
@@ -267,35 +266,14 @@ final class StandardWrapperValve
             support.fireInstanceEvent(InstanceEvent.BEFORE_REQUEST_EVENT,
                     servlet, request, response);
             if ((servlet != null) && (filterChain != null)) {
-                // Swallow output if needed
-                if (context.getSwallowOutput()) {
-                    try {
-                        SystemLogHandler.startCapture();
-                        if (event) {
-                            request.setEventMode(true);
-                            request.getSession(true);
-                            filterChain.doFilterEvent(request.getEvent());
-                        } else {
-                            filterChain.doFilter(request.getRequest(), 
-                                    response.getResponse());
-                        }
-                    } finally {
-                        String log = SystemLogHandler.stopCapture();
-                        if (log != null && log.length() > 0) {
-                            context.getLogger().info(log);
-                        }
-                    }
+                if (event) {
+                    request.setEventMode(true);
+                    request.getSession(true);
+                    filterChain.doFilterEvent(request.getEvent());
                 } else {
-                    if (event) {
-                        request.setEventMode(true);
-                        request.getSession(true);
-                        filterChain.doFilterEvent(request.getEvent());
-                    } else {
-                        filterChain.doFilter
-                            (request.getRequest(), response.getResponse());
-                    }
+                    filterChain.doFilter
+                    (request.getRequest(), response.getResponse());
                 }
-
             }
             request.removeAttribute(Globals.JSP_FILE_ATTR);
             support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,
@@ -493,20 +471,7 @@ final class StandardWrapperValve
             support.fireInstanceEvent(InstanceEvent.BEFORE_REQUEST_EVENT,
                     servlet, request, response);
             if ((servlet != null) && (filterChain != null)) {
-                // Swallow output if needed
-                if (context.getSwallowOutput()) {
-                    try {
-                        SystemLogHandler.startCapture();
-                        filterChain.doFilterEvent(request.getEvent());
-                    } finally {
-                        String log = SystemLogHandler.stopCapture();
-                        if (log != null && log.length() > 0) {
-                            context.getLogger().info(log);
-                        }
-                    }
-                } else {
-                    filterChain.doFilterEvent(request.getEvent());
-                }
+                filterChain.doFilterEvent(request.getEvent());
             }
             request.removeAttribute(Globals.JSP_FILE_ATTR);
             support.fireInstanceEvent(InstanceEvent.AFTER_REQUEST_EVENT,

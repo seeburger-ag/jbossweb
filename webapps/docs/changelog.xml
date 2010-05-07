@@ -33,7 +33,7 @@
         Add filter before method fix. (markt, kkolinko)
       </fix>
       <update>
-        More standalone code removal. (remm)
+        More standalone code removal (incl system streams swallowing). (remm)
       </update>
     </changelog>
   </subsection>

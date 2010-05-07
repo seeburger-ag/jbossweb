@@ -481,22 +481,6 @@ public interface Context extends Container {
 
 
     /**
-     * Return the value of the swallowOutput flag.
-     */
-    public boolean getSwallowOutput();
-
-
-    /**
-     * Set the value of the swallowOutput flag. If set to true, the system.out
-     * and system.err will be redirected to the logger during a servlet
-     * execution.
-     *
-     * @param swallowOutput The new value
-     */
-    public void setSwallowOutput(boolean swallowOutput);
-
-
-    /**
      * Return the Java class name of the Wrapper implementation used
      * for servlets registered in this Context.
      */
