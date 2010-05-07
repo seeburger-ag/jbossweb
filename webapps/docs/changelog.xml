@@ -35,6 +35,9 @@
       <update>
         More standalone code removal (incl system streams swallowing). (remm)
       </update>
+      <add>
+        Add csrf filter for compatibility with Tomcat. (markt)
+      </add>
     </changelog>
   </subsection>
 </section>
