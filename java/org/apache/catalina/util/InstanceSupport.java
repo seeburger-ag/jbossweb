@@ -26,6 +26,7 @@ import javax.servlet.ServletResponse;
 import org.apache.catalina.InstanceEvent;
 import org.apache.catalina.InstanceListener;
 import org.apache.catalina.Wrapper;
+import org.jboss.servlet.http.HttpEvent;
 
 
 /**
@@ -296,6 +297,106 @@ public final class InstanceSupport {
 
         InstanceEvent event = new InstanceEvent(wrapper, servlet, type,
                                                 request, response, exception);
+        InstanceListener interested[] = listeners;
+        for (int i = 0; i < interested.length; i++)
+            interested[i].instanceEvent(event);
+
+    }
+
+
+    /**
+     * Notify all lifecycle event listeners that a particular event has
+     * occurred for this Container.  The default implementation performs
+     * this notification synchronously using the calling thread.
+     *
+     * @param type Event type
+     * @param servlet The relevant Servlet for this event
+     * @param httpEvent The HTTP event we are processing
+     * @param exception Exception that occurred
+     */
+    public void fireInstanceEvent(String type, Servlet servlet,
+                                  HttpEvent httpEvent,
+                                  Throwable exception) {
+
+        if (listeners.length == 0)
+            return;
+
+        InstanceEvent event = new InstanceEvent(wrapper, servlet, type,
+                httpEvent, exception);
+        InstanceListener interested[] = listeners;
+        for (int i = 0; i < interested.length; i++)
+            interested[i].instanceEvent(event);
+
+    }
+
+
+    /**
+     * Notify all lifecycle event listeners that a particular event has
+     * occurred for this Container.  The default implementation performs
+     * this notification synchronously using the calling thread.
+     *
+     * @param type Event type
+     * @param servlet The relevant Servlet for this event
+     * @param httpEvent The HTTP event we are processing
+     */
+    public void fireInstanceEvent(String type, Servlet servlet,
+                                  HttpEvent httpEvent) {
+
+        if (listeners.length == 0)
+            return;
+
+        InstanceEvent event = new InstanceEvent(wrapper, servlet, type,
+                httpEvent);
+        InstanceListener interested[] = listeners;
+        for (int i = 0; i < interested.length; i++)
+            interested[i].instanceEvent(event);
+
+    }
+
+
+    /**
+     * Notify all lifecycle event listeners that a particular event has
+     * occurred for this Container.  The default implementation performs
+     * this notification synchronously using the calling thread.
+     *
+     * @param type Event type
+     * @param filter The relevant Filter for this event
+     * @param httpEvent The HTTP event we are processing
+     * @param exception Exception that occurred
+     */
+    public void fireInstanceEvent(String type, Filter filter,
+                                  HttpEvent httpEvent,
+                                  Throwable exception) {
+
+        if (listeners.length == 0)
+            return;
+
+        InstanceEvent event = new InstanceEvent(wrapper, filter, type,
+                httpEvent, exception);
+        InstanceListener interested[] = listeners;
+        for (int i = 0; i < interested.length; i++)
+            interested[i].instanceEvent(event);
+
+    }
+
+
+    /**
+     * Notify all lifecycle event listeners that a particular event has
+     * occurred for this Container.  The default implementation performs
+     * this notification synchronously using the calling thread.
+     *
+     * @param type Event type
+     * @param filter The relevant Filter for this event
+     * @param httpEvent The HTTP event we are processing
+     */
+    public void fireInstanceEvent(String type, Filter filter,
+                                  HttpEvent httpEvent) {
+
+        if (listeners.length == 0)
+            return;
+
+        InstanceEvent event = new InstanceEvent(wrapper, filter, type,
+                httpEvent);
         InstanceListener interested[] = listeners;
         for (int i = 0; i < interested.length; i++)
             interested[i].instanceEvent(event);

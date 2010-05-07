@@ -1121,7 +1121,7 @@ public class StandardWrapper
         if (!singleThreadModel && (instance != null))
             return instance;
 
-        PrintStream out = System.out;
+        Throwable throwable = null;
 
         Servlet servlet;
 
@@ -1227,27 +1227,25 @@ public class StandardWrapper
                         servlet.service(req, res);
                     }
                 }
-                instanceSupport.fireInstanceEvent(InstanceEvent.AFTER_INIT_EVENT,
-                                                  servlet);
             } catch (UnavailableException f) {
-                instanceSupport.fireInstanceEvent(InstanceEvent.AFTER_INIT_EVENT,
-                                                  servlet, f);
+                throwable = f;
                 unavailable(f);
                 throw f;
             } catch (ServletException f) {
-                instanceSupport.fireInstanceEvent(InstanceEvent.AFTER_INIT_EVENT,
-                                                  servlet, f);
+                throwable = f;
                 // If the servlet wanted to be unavailable it would have
                 // said so, so do not call unavailable(null).
                 throw f;
             } catch (Throwable f) {
+                throwable = f;
                 getServletContext().log("StandardWrapper.Throwable", f );
-                instanceSupport.fireInstanceEvent(InstanceEvent.AFTER_INIT_EVENT,
-                                                  servlet, f);
                 // If the servlet wanted to be unavailable it would have
                 // said so, so do not call unavailable(null).
                 throw new ServletException
                     (sm.getString("standardWrapper.initException", getName()), f);
+            } finally {
+                instanceSupport.fireInstanceEvent(InstanceEvent.AFTER_INIT_EVENT,
+                        servlet, throwable);
             }
 
             // Register our newly initialized instance

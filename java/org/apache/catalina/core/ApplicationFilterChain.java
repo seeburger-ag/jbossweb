@@ -248,6 +248,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
         throws IOException, ServletException {
 
         InstanceSupport support = wrapper.getInstanceSupport();
+        Throwable throwable = null;
 
         // Call the next filter if there is one
         if (pos < filterCount) {
@@ -258,7 +259,6 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                 filter = filterConfig.getFilter();
                 support.fireInstanceEvent(InstanceEvent.BEFORE_FILTER_EVENT,
                                           filter, request, response);
-                
                 if( Globals.IS_SECURITY_ENABLED ) {
                     final ServletRequest req = request;
                     final ServletResponse res = response;
@@ -273,35 +273,24 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                 } else {  
                     filter.doFilter(request, response, this);
                 }
-
-                support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                                          filter, request, response);
-                pointer--;
             } catch (IOException e) {
-                pointer--;
-                if (filter != null)
-                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                                              filter, request, response, e);
+                throwable = e;
                 throw e;
             } catch (ServletException e) {
-                pointer--;
-                if (filter != null)
-                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                                              filter, request, response, e);
+                throwable = e;
                 throw e;
             } catch (RuntimeException e) {
-                pointer--;
-                if (filter != null)
-                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                                              filter, request, response, e);
+                throwable = e;
                 throw e;
             } catch (Throwable e) {
+                throwable = e;
+                throw new ServletException(sm.getString("filterChain.filter"), e);
+            } finally {
                 pointer--;
-                if (filter != null)
+                if (filter != null) {
                     support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                                              filter, request, response, e);
-                throw new ServletException
-                  (sm.getString("filterChain.filter"), e);
+                                              filter, request, response, throwable);
+                }
             }
             return;
         }
@@ -310,13 +299,12 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
         Servlet servlet = wrapper.getServlet();
         pointer++;
         try {
+            support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
+                    servlet, request, response);
             if (Globals.STRICT_SERVLET_COMPLIANCE) {
                 lastServicedRequest.set(request);
                 lastServicedResponse.set(response);
             }
-
-            support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
-                                      servlet, request, response);
             if ((request instanceof HttpServletRequest) &&
                 (response instanceof HttpServletResponse)) {
                     
@@ -339,23 +327,17 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
             } else {
                 servlet.service(request, response);
             }
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                                      servlet, request, response);
         } catch (IOException e) {
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                                      servlet, request, response, e);
+            throwable = e;
             throw e;
         } catch (ServletException e) {
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                                      servlet, request, response, e);
+            throwable = e;
             throw e;
         } catch (RuntimeException e) {
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                                      servlet, request, response, e);
+            throwable = e;
             throw e;
         } catch (Throwable e) {
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                                      servlet, request, response, e);
+            throwable = e;
             throw new ServletException
               (sm.getString("filterChain.servlet"), e);
         } finally {
@@ -364,6 +346,8 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                 lastServicedRequest.set(null);
                 lastServicedResponse.set(null);
             }
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                    servlet, request, response, throwable);
         }
 
     }
@@ -437,6 +421,9 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
     private void internalDoFilterEvent(HttpEvent event)
         throws IOException, ServletException {
 
+        InstanceSupport support = wrapper.getInstanceSupport();
+        Throwable throwable = null;
+
         // Call the next filter if there is one
         if (pos < filterCount) {
             ApplicationFilterConfig filterConfig = filters[pos++];
@@ -444,12 +431,8 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
             HttpEventFilter filter = null;
             try {
                 filter = (HttpEventFilter) filterConfig.getFilter();
-                // FIXME: No instance listener processing for events for now
-                /*
                 support.fireInstanceEvent(InstanceEvent.BEFORE_FILTER_EVENT,
                         filter, event);
-                        */
-
                 if( Globals.IS_SECURITY_ENABLED ) {
                     final HttpEvent ev = event;
                     Principal principal = 
@@ -463,41 +446,25 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                 } else {  
                     filter.doFilterEvent(event, this);
                 }
-
-                /*support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                        filter, event);*/
-                pointer--;
             } catch (IOException e) {
-                pointer--;
-                /*
-                if (filter != null)
-                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                            filter, event, e);
-                            */
+                throwable = e;
                 throw e;
             } catch (ServletException e) {
-                pointer--;
-                /*
-                if (filter != null)
-                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                            filter, event, e);
-                            */
+                throwable = e;
                 throw e;
             } catch (RuntimeException e) {
-                pointer--;
-                /*
-                if (filter != null)
-                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                            filter, event, e);
-                            */
+                throwable = e;
                 throw e;
             } catch (Throwable e) {
-                pointer--;
-                /*if (filter != null)
-                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                            filter, event, e);*/
+                throwable = e;
                 throw new ServletException
                     (sm.getString("filterChain.filter"), e);
+            } finally {
+                pointer--;
+                if (filter != null) {
+                    support.fireInstanceEvent
+                        (InstanceEvent.AFTER_FILTER_EVENT, filter, event, throwable);
+                }
             }
             return;
         }
@@ -506,10 +473,8 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
         Servlet servlet = wrapper.getServlet();
         pointer++;
         try {
-            /*
             support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
-                    servlet, request, response);
-                    */
+                    servlet, event);
             if( Globals.IS_SECURITY_ENABLED ) {
                 final HttpEvent ev = event;
                 Principal principal = 
@@ -524,39 +489,23 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
             } else {  
                 ((HttpEventServlet) servlet).event(event);
             }
-            /*
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                    servlet, request, response);*/
-            pointer--;
         } catch (IOException e) {
-            pointer--;
-            /*
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                    servlet, request, response, e);
-                    */
+            throwable = e;
             throw e;
         } catch (ServletException e) {
-            pointer--;
-            /*
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                    servlet, request, response, e);
-                    */
+            throwable = e;
             throw e;
         } catch (RuntimeException e) {
-            pointer--;
-            /*
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                    servlet, request, response, e);
-                    */
+            throwable = e;
             throw e;
         } catch (Throwable e) {
-            pointer--;
-            /*
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                    servlet, request, response, e);
-                    */
+            throwable = e;
             throw new ServletException
                 (sm.getString("filterChain.servlet"), e);
+        } finally {
+            pointer--;
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                    servlet, event, throwable);
         }
 
     }

@@ -25,6 +25,8 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.jboss.servlet.http.HttpEvent;
+
 
 /**
  * General event for notifying listeners of significant events related to
@@ -344,6 +346,100 @@ public final class InstanceEvent
     }
 
 
+    /**
+     * Construct a new InstanceEvent with the specified parameters.  This
+     * constructor is used for processing servlet processing events.
+     *
+     * @param wrapper Wrapper managing this servlet instance
+     * @param servlet Servlet instance for which this event occurred
+     * @param type Event type (required)
+     * @param event Event we are processing
+     * @param exception Exception that occurred
+     */
+    public InstanceEvent(Wrapper wrapper, Servlet servlet, String type,
+                         HttpEvent event,
+                         Throwable exception) {
+
+      super(wrapper);
+      this.wrapper = wrapper;
+      this.filter = null;
+      this.servlet = servlet;
+      this.type = type;
+      this.event = event;
+      this.exception = exception;
+
+    }
+
+
+    /**
+     * Construct a new InstanceEvent with the specified parameters.  This
+     * constructor is used for processing servlet processing events.
+     *
+     * @param wrapper Wrapper managing this servlet instance
+     * @param servlet Servlet instance for which this event occurred
+     * @param type Event type (required)
+     * @param event Event we are processing
+     * @param exception Exception that occurred
+     */
+    public InstanceEvent(Wrapper wrapper, Servlet servlet, String type,
+                         HttpEvent event) {
+
+      super(wrapper);
+      this.wrapper = wrapper;
+      this.filter = null;
+      this.servlet = servlet;
+      this.type = type;
+      this.event = event;
+
+    }
+
+
+    /**
+     * Construct a new InstanceEvent with the specified parameters.  This
+     * constructor is used for processing servlet processing events.
+     *
+     * @param wrapper Wrapper managing this servlet instance
+     * @param filter Filter instance for which this event occurred
+     * @param type Event type (required)
+     * @param event Event we are processing
+     * @param exception Exception that occurred
+     */
+    public InstanceEvent(Wrapper wrapper, Filter filter, String type,
+                         HttpEvent event,
+                         Throwable exception) {
+
+      super(wrapper);
+      this.wrapper = wrapper;
+      this.filter = filter;
+      this.type = type;
+      this.event = event;
+      this.exception = exception;
+
+    }
+
+
+    /**
+     * Construct a new InstanceEvent with the specified parameters.  This
+     * constructor is used for processing servlet processing events.
+     *
+     * @param wrapper Wrapper managing this servlet instance
+     * @param servlet Servlet instance for which this event occurred
+     * @param type Event type (required)
+     * @param event Event we are processing
+     * @param exception Exception that occurred
+     */
+    public InstanceEvent(Wrapper wrapper, Filter filter, String type,
+                         HttpEvent event) {
+
+      super(wrapper);
+      this.wrapper = wrapper;
+      this.filter = filter;
+      this.type = type;
+      this.event = event;
+
+    }
+
+
     // ----------------------------------------------------- Instance Variables
 
 
@@ -374,6 +470,13 @@ public final class InstanceEvent
      * AFTER_FILTER_EVENT, BEFORE_SERVICE_EVENT, and AFTER_SERVICE_EVENT).
      */
     private ServletResponse response = null;
+
+
+    /**
+     * The event being processed (BEFORE_FILTER_EVENT,
+     * AFTER_FILTER_EVENT, BEFORE_SERVICE_EVENT, and AFTER_SERVICE_EVENT).
+     */
+    private HttpEvent event = null;
 
 
     /**
@@ -435,6 +538,16 @@ public final class InstanceEvent
     public ServletResponse getResponse() {
 
         return (this.response);
+
+    }
+
+
+    /**
+     * Return the event for which this event occurred.
+     */
+    public HttpEvent getEvent() {
+
+        return (this.event);
 
     }
 
