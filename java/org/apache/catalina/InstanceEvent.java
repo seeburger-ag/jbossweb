@@ -527,7 +527,11 @@ public final class InstanceEvent
      */
     public ServletRequest getRequest() {
 
-        return (this.request);
+        if (event != null) {
+            return this.event.getHttpServletRequest();
+        } else {
+            return (this.request);
+        }
 
     }
 
@@ -537,7 +541,11 @@ public final class InstanceEvent
      */
     public ServletResponse getResponse() {
 
-        return (this.response);
+        if (event != null) {
+            return this.event.getHttpServletResponse();
+        } else {
+            return (this.response);
+        }
 
     }
 
