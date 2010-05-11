@@ -38,6 +38,9 @@
       <add>
         Add csrf filter for compatibility with Tomcat. (markt)
       </add>
+      <fix>
+        Improve StandardWrapper.createWrapper error reporting. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

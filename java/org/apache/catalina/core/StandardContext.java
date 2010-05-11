@@ -2313,8 +2313,7 @@ public class StandardContext
             try {
                 wrapper = (Wrapper) wrapperClass.newInstance();
             } catch (Throwable t) {
-                log.error("createWrapper", t);
-                return (null);
+                throw new IllegalStateException(sm.getString("standardContext.createWrapper.failed"), t);
             }
         } else {
             wrapper = new StandardWrapper();
@@ -2327,8 +2326,7 @@ public class StandardContext
                     (InstanceListener) clazz.newInstance();
                 wrapper.addInstanceListener(listener);
             } catch (Throwable t) {
-                log.error("createWrapper", t);
-                return (null);
+                throw new IllegalStateException(sm.getString("standardContext.createWrapper.failed"), t);
             }
         }
 
@@ -2340,8 +2338,7 @@ public class StandardContext
                 if (wrapper instanceof Lifecycle)
                     ((Lifecycle) wrapper).addLifecycleListener(listener);
             } catch (Throwable t) {
-                log.error("createWrapper", t);
-                return (null);
+                throw new IllegalStateException(sm.getString("standardContext.createWrapper.failed"), t);
             }
         }
 
@@ -2352,8 +2349,7 @@ public class StandardContext
                     (ContainerListener) clazz.newInstance();
                 wrapper.addContainerListener(listener);
             } catch (Throwable t) {
-                log.error("createWrapper", t);
-                return (null);
+                throw new IllegalStateException(sm.getString("standardContext.createWrapper.failed"), t);
             }
         }
 
