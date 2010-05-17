@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Stack;
 import java.util.TimeZone;
 import java.util.Vector;
@@ -435,8 +436,8 @@ public class WebdavServlet
         if (path.endsWith("/"))
             path = path.substring(0, path.length() - 1);
 
-        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
-            (path.toUpperCase().startsWith("/META-INF"))) {
+        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
+            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return;
         }
@@ -711,8 +712,8 @@ public class WebdavServlet
 
         String path = getRelativePath(req);
 
-        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
-            (path.toUpperCase().startsWith("/META-INF"))) {
+        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
+            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return;
         }
@@ -1595,16 +1596,16 @@ public class WebdavServlet
         if (debug > 0)
             log("Dest path :" + destinationPath);
 
-        if ((destinationPath.toUpperCase().startsWith("/WEB-INF")) ||
-            (destinationPath.toUpperCase().startsWith("/META-INF"))) {
+        if ((destinationPath.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
+            (destinationPath.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return false;
         }
 
         String path = getRelativePath(req);
 
-        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
-            (path.toUpperCase().startsWith("/META-INF"))) {
+        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
+            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return false;
         }
@@ -1798,8 +1799,8 @@ public class WebdavServlet
                                    HttpServletResponse resp, boolean setStatus)
         throws ServletException, IOException {
 
-        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
-            (path.toUpperCase().startsWith("/META-INF"))) {
+        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
+            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return false;
         }
@@ -1883,8 +1884,8 @@ public class WebdavServlet
         if (debug > 1)
             log("Delete:" + path);
 
-        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
-            (path.toUpperCase().startsWith("/META-INF"))) {
+        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
+            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
             errorList.put(path, new Integer(WebdavStatus.SC_FORBIDDEN));
             return;
         }
@@ -2023,8 +2024,8 @@ public class WebdavServlet
 
         // Exclude any resource in the /WEB-INF and /META-INF subdirectories
         // (the "toUpperCase()" avoids problems on Windows systems)
-        if (path.toUpperCase().startsWith("/WEB-INF") ||
-            path.toUpperCase().startsWith("/META-INF"))
+        if (path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF") ||
+            path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))
             return;
 
         CacheEntry cacheEntry = resources.lookupCache(path);
@@ -2316,8 +2317,8 @@ public class WebdavServlet
 
         // Exclude any resource in the /WEB-INF and /META-INF subdirectories
         // (the "toUpperCase()" avoids problems on Windows systems)
-        if (path.toUpperCase().startsWith("/WEB-INF") ||
-            path.toUpperCase().startsWith("/META-INF"))
+        if (path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF") ||
+            path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))
             return;
 
         // Retrieving the lock associated with the lock-null resource

@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import org.apache.catalina.util.IOTools;
 /**
@@ -133,7 +134,7 @@ public class SSIProcessor {
                         // during the loop
                         String configErrMsg = ssiMediator.getConfigErrMsg();
                         SSICommand ssiCommand = (SSICommand)commands
-                                .get(strCmd.toLowerCase());
+                                .get(strCmd.toLowerCase(Locale.ENGLISH));
                         String errorMessage = null;
                         if (ssiCommand == null) {
                             errorMessage = "Unknown command: " + strCmd;

@@ -30,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -468,7 +469,7 @@ public class ScriptEnvironment {
 
         while (headers.hasMoreElements()) {
             header = null;
-            header = ((String)headers.nextElement()).toUpperCase();
+            header = ((String)headers.nextElement()).toUpperCase(Locale.ENGLISH);
             //REMIND: rewrite multiple headers as if received as single
             //REMIND: change character set
             //REMIND: I forgot what the previous REMIND means

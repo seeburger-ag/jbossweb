@@ -20,6 +20,7 @@ package org.apache.coyote.http11;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -1438,7 +1439,7 @@ public class Http11AprProcessor implements ActionHook {
             String encodingName = null;
             while (commaPos != -1) {
                 encodingName = transferEncodingValue.substring
-                    (startPos, commaPos).toLowerCase().trim();
+                    (startPos, commaPos).toLowerCase(Locale.ENGLISH).trim();
                 if (!addInputFilter(inputFilters, encodingName)) {
                     // Unsupported transfer encoding
                     error = true;
@@ -1449,7 +1450,7 @@ public class Http11AprProcessor implements ActionHook {
                 commaPos = transferEncodingValue.indexOf(',', startPos);
             }
             encodingName = transferEncodingValue.substring(startPos)
-                .toLowerCase().trim();
+                .toLowerCase(Locale.ENGLISH).trim();
             if (!addInputFilter(inputFilters, encodingName)) {
                 // Unsupported transfer encoding
                 error = true;

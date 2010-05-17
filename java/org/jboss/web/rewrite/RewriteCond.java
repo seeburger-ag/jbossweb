@@ -23,6 +23,7 @@
 
 package org.jboss.web.rewrite;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -197,7 +198,7 @@ public class RewriteCond {
     public boolean evaluate(Matcher rule, Matcher cond, Resolver resolver) {
         String value = test.evaluate(rule, cond, resolver);
         if (nocase) {
-            value = value.toLowerCase();
+            value = value.toLowerCase(Locale.ENGLISH);
         }
         Condition condition = this.condition.get();
         if (condition == null) {

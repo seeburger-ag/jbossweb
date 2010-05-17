@@ -18,6 +18,7 @@ package org.apache.tomcat.util.http.fileupload;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -61,7 +62,7 @@ public class ServletFileUpload extends FileUpload {
      */
     public static final boolean isMultipartContent(
             HttpServletRequest request) {
-        if (!"post".equals(request.getMethod().toLowerCase())) {
+        if (!"post".equals(request.getMethod().toLowerCase(Locale.ENGLISH))) {
             return false;
         }
         String contentType = request.getContentType();

@@ -21,6 +21,7 @@ package org.apache.catalina.core;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -144,7 +145,7 @@ public class StandardEngine
         if (host == null) {
             this.defaultHost = null;
         } else {
-            this.defaultHost = host.toLowerCase();
+            this.defaultHost = host.toLowerCase(Locale.ENGLISH);
         }
         support.firePropertyChange("defaultHost", oldDefaultHost,
                                    this.defaultHost);

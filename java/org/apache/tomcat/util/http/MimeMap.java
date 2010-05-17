@@ -137,7 +137,7 @@ public class MimeMap implements FileNameMap {
     private Hashtable map = new Hashtable();
 
     public void addContentType(String extn, String type) {
-        map.put(extn, type.toLowerCase());
+        map.put(extn, type.toLowerCase(Locale.ENGLISH));
     }
 
     public Enumeration getExtensions() {
@@ -149,13 +149,13 @@ public class MimeMap implements FileNameMap {
     }
     
     public String getContentType(String extn) {
-        String type = (String)map.get(extn.toLowerCase());
+        String type = (String)map.get(extn.toLowerCase(Locale.ENGLISH));
 	if( type == null ) type=(String)defaultMap.get( extn );
 	return type;
     }
 
     public void removeContentType(String extn) {
-        map.remove(extn.toLowerCase());
+        map.remove(extn.toLowerCase(Locale.ENGLISH));
     }
 
     /** Get extension of file, without fragment id

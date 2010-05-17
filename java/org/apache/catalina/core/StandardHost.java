@@ -19,6 +19,8 @@
 package org.apache.catalina.core;
 
 
+import java.util.Locale;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -259,7 +261,7 @@ public class StandardHost
             throw new IllegalArgumentException
                 (sm.getString("standardHost.nullName"));
 
-        name = name.toLowerCase();      // Internally all names are lower case
+        name = name.toLowerCase(Locale.ENGLISH);      // Internally all names are lower case
 
         String oldName = this.name;
         this.name = name;
@@ -296,7 +298,7 @@ public class StandardHost
      */
     public void addAlias(String alias) {
 
-        alias = alias.toLowerCase();
+        alias = alias.toLowerCase(Locale.ENGLISH);
 
         // Skip duplicate aliases
         for (int i = 0; i < aliases.length; i++) {
@@ -364,7 +366,7 @@ public class StandardHost
      */
     public void removeAlias(String alias) {
 
-        alias = alias.toLowerCase();
+        alias = alias.toLowerCase(Locale.ENGLISH);
 
         // Make sure this alias is currently present
         int n = -1;

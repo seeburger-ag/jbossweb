@@ -21,6 +21,7 @@ package org.apache.catalina.util;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.util.Locale;
 
 
 /**
@@ -111,7 +112,7 @@ public final class URL implements Serializable {
             for (i = start; !aRef && (i < limit) &&
                      ((c = spec.charAt(i)) != '/'); i++) {
                 if (c == ':') {
-                    String s = spec.substring(start, i).toLowerCase();
+                    String s = spec.substring(start, i).toLowerCase(Locale.ENGLISH);
                     // Assume all protocols are valid
                     newProtocol = s;
                     start = i + 1;
