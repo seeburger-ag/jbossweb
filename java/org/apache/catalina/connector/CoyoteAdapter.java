@@ -662,9 +662,13 @@ public class CoyoteAdapter
         if (count <= 0)
             return;
 
+        String cookieName = request.getContext().getSessionCookie().getName();
+        if (cookieName == null) {
+            cookieName = Globals.SESSION_COOKIE_NAME;
+        }
         for (int i = 0; i < count; i++) {
             ServerCookie scookie = serverCookies.getCookie(i);
-            if (scookie.getName().equals(Globals.SESSION_COOKIE_NAME)) {
+            if (scookie.getName().equals(cookieName)) {
                 // Override anything requested in the URL
                 if (!request.isRequestedSessionIdFromCookie()) {
                     // Accept only the first session id cookie
