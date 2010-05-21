@@ -36,7 +36,6 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -48,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.catalina.Globals;
 import org.apache.catalina.util.IOTools;
 
 
@@ -560,6 +560,11 @@ public final class CGIServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
         throws ServletException, IOException {
 
+        // Verify that we were not accessed using the invoker servlet
+        if (req.getAttribute(Globals.INVOKED_ATTR) != null)
+            throw new UnavailableException
+                ("Cannot invoke CGIServlet through the invoker");
+
         CGIEnvironment cgiEnv = new CGIEnvironment(req, getServletContext());
 
         if (cgiEnv.isValid()) {
@@ -710,7 +715,7 @@ public final class CGIServlet extends HttpServlet {
         protected void setupFromContext(ServletContext context) {
             this.context = context;
             this.webAppRootDir = context.getRealPath("/");
-            this.tmpDir = (File) context.getAttribute(ServletContext.TEMPDIR);
+            this.tmpDir = (File) context.getAttribute(Globals.WORK_DIR_ATTR);
         }
 
 
@@ -728,16 +733,16 @@ public final class CGIServlet extends HttpServlet {
             boolean isIncluded = false;
 
             // Look to see if this request is an include
-            if (req.getAttribute(RequestDispatcher.INCLUDE_REQUEST_URI) != null) {
+            if (req.getAttribute(Globals.INCLUDE_REQUEST_URI_ATTR) != null) {
                 isIncluded = true;
             }
             if (isIncluded) {
                 this.contextPath = (String) req.getAttribute(
-                        RequestDispatcher.INCLUDE_CONTEXT_PATH);
+                        Globals.INCLUDE_CONTEXT_PATH_ATTR);
                 this.servletPath = (String) req.getAttribute(
-                        RequestDispatcher.INCLUDE_SERVLET_PATH);
+                        Globals.INCLUDE_SERVLET_PATH_ATTR);
                 this.pathInfo = (String) req.getAttribute(
-                        RequestDispatcher.INCLUDE_PATH_INFO);
+                        Globals.INCLUDE_PATH_INFO_ATTR);
             } else {
                 this.contextPath = req.getContextPath();
                 this.servletPath = req.getServletPath();
@@ -759,7 +764,7 @@ public final class CGIServlet extends HttpServlet {
                 String qs;
                 if (isIncluded) {
                     qs = (String) req.getAttribute(
-                            RequestDispatcher.INCLUDE_QUERY_STRING);
+                            Globals.INCLUDE_QUERY_STRING_ATTR);
                 } else {
                     qs = req.getQueryString();
                 }
@@ -1063,7 +1068,7 @@ public final class CGIServlet extends HttpServlet {
             String header = null;
             while (headers.hasMoreElements()) {
                 header = null;
-                header = headers.nextElement().toUpperCase(Locale.ENGLISH);
+                header = headers.nextElement().toUpperCase();
                 //REMIND: rewrite multiple headers as if received as single
                 //REMIND: change character set
                 //REMIND: I forgot what the previous REMIND means
@@ -1094,8 +1099,8 @@ public final class CGIServlet extends HttpServlet {
          * directory to enable CGI script to be executed.
          */
         protected void expandCGIScript() {
-            StringBuilder srcPath = new StringBuilder();
-            StringBuilder destPath = new StringBuilder();
+            StringBuffer srcPath = new StringBuffer();
+            StringBuffer destPath = new StringBuffer();
             InputStream is = null;
 
             // paths depend on mapping
@@ -1186,7 +1191,7 @@ public final class CGIServlet extends HttpServlet {
          */
         public String toString() {
 
-            StringBuilder sb = new StringBuilder();
+            StringBuffer sb = new StringBuffer();
 
             sb.append("<TABLE border=2>");
 
@@ -1601,7 +1606,7 @@ public final class CGIServlet extends HttpServlet {
             int bufRead = -1;
 
             //create query arguments
-            StringBuilder cmdAndArgs = new StringBuilder();
+            StringBuffer cmdAndArgs = new StringBuffer();
             if (command.indexOf(" ") < 0) {
                 cmdAndArgs.append(command);
             } else {
@@ -1624,7 +1629,7 @@ public final class CGIServlet extends HttpServlet {
                 }
             }
 
-            StringBuilder command = new StringBuilder(cgiExecutable);
+            StringBuffer command = new StringBuffer(cgiExecutable);
             command.append(" ");
             command.append(cmdAndArgs.toString());
             cmdAndArgs = command;

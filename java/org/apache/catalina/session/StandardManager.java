@@ -34,19 +34,19 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import javax.servlet.ServletContext;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
+import org.apache.catalina.Globals;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Session;
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CustomObjectInputStream;
 import org.apache.catalina.util.LifecycleSupport;
+
+import org.apache.catalina.security.SecurityUtil;
 /**
  * Standard implementation of the <b>Manager</b> interface that provides
  * simple session persistence across restarts of this component (such as
@@ -393,11 +393,9 @@ public class StandardManager
                     StandardSession session = getNewSession();
                     session.readObjectData(ois);
                     session.setManager(this);
-                    if (session.isValidInternal()) {
-                        sessions.put(session.getIdInternal(), session);
-                        session.activate();
-                        sessionCounter++;
-                    }
+                    sessions.put(session.getIdInternal(), session);
+                    session.activate();
+                    sessionCounter++;
                 }
             } catch (ClassNotFoundException e) {
                 log.error(sm.getString("standardManager.loading.cnfe", e), e);
@@ -740,7 +738,7 @@ public class StandardManager
                 ServletContext servletContext =
                     ((Context) container).getServletContext();
                 File tempdir = (File)
-                    servletContext.getAttribute(ServletContext.TEMPDIR);
+                    servletContext.getAttribute(Globals.WORK_DIR_ATTR);
                 if (tempdir != null)
                     file = new File(tempdir, pathname);
             }

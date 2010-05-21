@@ -23,14 +23,14 @@ import java.io.IOException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.coyote.ActionCode;
 import org.apache.catalina.Globals;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.coyote.ActionCode;
 
 
 
@@ -82,7 +82,7 @@ public class SSLAuthenticator
      * @exception IOException if an input/output error occurs
      */
     public boolean authenticate(Request request,
-                                HttpServletResponse response,
+                                Response response,
                                 LoginConfig config)
         throws IOException {
 
@@ -156,7 +156,7 @@ public class SSLAuthenticator
         }
 
         // Cache the principal (if requested) and record this authentication
-        register(request, response, principal, HttpServletRequest.CLIENT_CERT_AUTH,
+        register(request, response, principal, Constants.CERT_METHOD,
                  null, null);
         return (true);
 

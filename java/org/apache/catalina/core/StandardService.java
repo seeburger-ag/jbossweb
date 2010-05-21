@@ -21,25 +21,24 @@ package org.apache.catalina.core;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
-import org.apache.catalina.Executor;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
+import java.util.ArrayList;
+import org.apache.catalina.Executor;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -61,7 +60,7 @@ public class StandardService
      * Alternate flag to enable delaying startup of connectors in embedded mode.
      */
     public static final boolean DELAY_CONNECTOR_STARTUP =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "true")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false")).booleanValue();
 
 
     // ----------------------------------------------------- Instance Variables
@@ -126,18 +125,6 @@ public class StandardService
      */
     protected Container container = null;
 
-    
-    /**
-     * Mapper.
-     */
-    protected Mapper mapper = new Mapper();
-
-
-    /**
-     * The associated mapper.
-     */
-    protected ServiceMapperListener mapperListener = new ServiceMapperListener(mapper);
-    
 
     /**
      * Has this component been initialized?
@@ -198,12 +185,6 @@ public class StandardService
         support.firePropertyChange("container", oldContainer, this.container);
 
     }
-
-
-    public Mapper getMapper() {
-        return mapper;
-    }
-
 
     public ObjectName getContainerName() {
         if( container instanceof ContainerBase ) {
@@ -401,7 +382,7 @@ public class StandardService
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("StandardService[");
+        StringBuffer sb = new StringBuffer("StandardService[");
         sb.append(getName());
         sb.append("]");
         return (sb.toString());
@@ -530,8 +511,8 @@ public class StandardService
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("standardService.start.name", this.name));
+        if(log.isInfoEnabled())
+            log.info(sm.getString("standardService.start.name", this.name));
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -595,8 +576,9 @@ public class StandardService
         }
 
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("standardService.stop.name", this.name));
+        if(log.isInfoEnabled())
+            log.info
+                (sm.getString("standardService.stop.name", this.name));
         started = false;
 
         // Stop our defined Container second
@@ -688,13 +670,13 @@ public class StandardService
             
         }
         if( server==null ) {
-            // If no server was defined - create one
-            server = new StandardServer();
-            server.addService(this);
+            // Register with the server 
+            // HACK: ServerFactory should be removed...
+            
+            ServerFactory.getServer().addService(this);
         }
                
-        addLifecycleListener(mapperListener);
-        
+
         // Initialize our defined Connectors
         synchronized (connectors) {
                 for (int i = 0; i < connectors.length; i++) {
@@ -706,7 +688,6 @@ public class StandardService
     public void destroy() throws LifecycleException {
         if( started ) stop();
         // FIXME unregister should be here probably -- stop doing that ?
-        removeLifecycleListener(mapperListener);
     }
 
     public void init() {

@@ -19,21 +19,17 @@
 package org.apache.catalina;
 
 
-import java.util.EventListener;
-
 import javax.servlet.ServletContext;
 
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
-import org.apache.catalina.deploy.JspPropertyGroup;
 import org.apache.catalina.deploy.LoginConfig;
+import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
-import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.util.CharsetMapper;
-import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.http.mapper.Mapper;
 
 
@@ -69,35 +65,7 @@ public interface Context extends Container {
     public static final String RELOAD_EVENT = "reload";
 
 
-    /**
-     * The LifecycleEvent type sent to complete the configuration 
-     * (called after running all listeners and other init callbacks).
-     */
-    public static final String COMPLETE_CONFIG_EVENT = "complete-config";
-
-
     // ------------------------------------------------------------- Properties
-
-
-    /**
-     * Add the given session tracking mode.
-     */
-    public void addSessionTrackingMode(String trackingMode);
-
-
-    /**
-     * Return the authenticator that is configured for this context, or
-     * null if no authenticator has been configured.
-     */
-    public Authenticator getAuthenticator();
-
-
-    /**
-     * Set the authenticator for this context.
-     * 
-     * @param authenticator the new Authenticator for this context
-     */
-    public void setAuthenticator(Authenticator authenticator);
 
 
     /**
@@ -143,27 +111,6 @@ public interface Context extends Container {
 
 
     /**
-     * Return the set of initialized application lifecycle listener objects,
-     * in the order they were specified in the web application deployment
-     * descriptor, for this application.
-     *
-     * @exception IllegalStateException if this method is called before
-     *  this application has started, or after it has been stopped
-     */
-    public Object[] getApplicationSessionLifecycleListeners();
-
-
-    /**
-     * Store the set of initialized application lifecycle listener objects,
-     * in the order they were specified in the web application deployment
-     * descriptor, for this application.
-     *
-     * @param listeners The set of instantiated listener objects.
-     */
-    public void setApplicationSessionLifecycleListeners(Object listeners[]);
-
-
-    /**
      * Return the application available flag for this Context.
      */
     public boolean getAvailable();
@@ -178,20 +125,6 @@ public interface Context extends Container {
 
 
     /**
-     * Return the application starting flag for this Context.
-     */
-    public boolean isStarting();
-
-
-    /**
-     * Set the application starting flag for this Context.
-     *
-     * @param starting The new application starting flag
-     */
-    public void setStarting(boolean starting);
-    
-    
-    /**
      * Return the Locale to character set mapper for this Context.
      */
     public CharsetMapper getCharsetMapper();
@@ -203,6 +136,20 @@ public interface Context extends Container {
      * @param mapper The new mapper
      */
     public void setCharsetMapper(CharsetMapper mapper);
+
+
+    /**
+     * Return the path to a file to save this Context information.
+     */
+    public String getConfigFile();
+
+
+    /**
+     * Set the path to a file to save this Context information.
+     *
+     * @param configFile The path to a file to save this Context information.
+     */
+    public void setConfigFile(String configFile);
 
 
     /**
@@ -327,33 +274,20 @@ public interface Context extends Container {
 
 
     /**
-     * Used to create application instances.
+     * Return the boolean on the annotations parsing.
      */
-    public InstanceManager getInstanceManager();
-
-
+    public boolean getIgnoreAnnotations();
+    
+    
     /**
-     * Set the instance manager associated with this Context.
-     *
-     * @param instanceManager The instance manager
+     * Set the boolean on the annotations parsing for this web 
+     * application.
+     * 
+     * @param ignoreAnnotations The boolean on the annotations parsing
      */
-    public void setInstanceManager(InstanceManager instanceManager);
-
-
-    /**
-     * Return the logical name for this web application.
-     */
-    public String getLogicalName();
-
-
-    /**
-     * Set the logical name for this web application.
-     *
-     * @param logicalName The new logical name
-     */
-    public void setLogicalName(String logicalName);
-
-
+    public void setIgnoreAnnotations(boolean ignoreAnnotations);
+    
+    
     /**
      * Return the login configuration descriptor for this web application.
      */
@@ -372,6 +306,20 @@ public interface Context extends Container {
      * Get the request dispatcher mapper.
      */
     public Mapper getMapper();
+
+
+    /**
+     * Return the naming resources associated with this web application.
+     */
+    public NamingResources getNamingResources();
+
+
+    /**
+     * Set the naming resources for this web application.
+     *
+     * @param namingResources The new naming resources
+     */
+    public void setNamingResources(NamingResources namingResources);
 
 
     /**
@@ -405,29 +353,17 @@ public interface Context extends Container {
 
 
     /**
-     * Return the Servlet API version defined for the webapp.
+     * Return the reloadable flag for this web application.
      */
-    public String getVersion();
+    public boolean getReloadable();
 
 
     /**
-     * Return the Servlet API version defined for the webapp.
-     */
-    public int getVersionMajor();
-
-
-    /**
-     * Return the Servlet API version defined for the webapp.
-     */
-    public int getVersionMinor();
-
-
-    /**
-     * Set the Servlet API version defined for the webapp.
+     * Set the reloadable flag for this web application.
      *
-     * @param version The version
+     * @param reloadable The new reloadable flag
      */
-    public void setVersion(String version);
+    public void setReloadable(boolean reloadable);
 
 
     /**
@@ -481,6 +417,22 @@ public interface Context extends Container {
 
 
     /**
+     * Return the value of the swallowOutput flag.
+     */
+    public boolean getSwallowOutput();
+
+
+    /**
+     * Set the value of the swallowOutput flag. If set to true, the system.out
+     * and system.err will be redirected to the logger during a servlet
+     * execution.
+     *
+     * @param swallowOutput The new value
+     */
+    public void setSwallowOutput(boolean swallowOutput);
+
+
+    /**
      * Return the Java class name of the Wrapper implementation used
      * for servlets registered in this Context.
      */
@@ -506,15 +458,6 @@ public interface Context extends Container {
      * @param listener Java class name of a listener class
      */
     public void addApplicationListener(String listener);
-
-
-    /**
-     * Add a new Listener instance to the set of Listeners
-     * configured for this application.
-     *
-     * @param listener Java instance of a listener
-     */
-    public <T extends EventListener> void addApplicationListenerInstance(T listener);
 
 
     /**
@@ -556,14 +499,6 @@ public interface Context extends Container {
 
 
     /**
-     * Add a filter mapping to this Context before current mappings.
-     *
-     * @param filterMap The filter mapping to be added
-     */
-    public void addFilterMapBefore(FilterMap filterMap);
-
-
-    /**
      * Add the classname of an InstanceListener to be added to each
      * Wrapper appended to this Context.
      *
@@ -582,30 +517,6 @@ public interface Context extends Container {
      * @param pattern URL pattern to be mapped 
      */
     public void addJspMapping(String pattern);
-
-
-    /**
-     * Add the given jsp-property-group.
-     *
-     * @param propertyGroup the property group which will be added
-     */
-    public void addJspPropertyGroup(JspPropertyGroup propertyGroup);
-
-
-    /**
-     * Add the given JSP tag library metadata.
-     *
-     * @param tagLibraryInfo the tag library info that will be added
-     */
-    public void addJspTagLibrary(TagLibraryInfo tagLibraryInfo);
-
-
-    /**
-     * Add the given JSP tag library metadata.
-     *
-     * @param tagLibraryInfo the tag library info that will be added
-     */
-    public void addJspTagLibrary(String uri, TagLibraryInfo tagLibraryInfo);
 
 
     /**
@@ -673,6 +584,15 @@ public interface Context extends Container {
     public void addTaglib(String uri, String location);
 
     
+    /**
+     * Add a resource which will be watched for reloading by the host auto
+     * deployer. Note: this will not be used in embedded mode.
+     * 
+     * @param name Path to the resource, relative to docBase
+     */
+    public void addWatchedResource(String name);
+    
+
     /**
      * Add a new welcome file to the set recognized by this Context.
      *
@@ -783,12 +703,6 @@ public interface Context extends Container {
 
 
     /**
-     * Return the set of JSP property groups.
-     */
-    public JspPropertyGroup[] findJspPropertyGroups();
-
-
-    /**
      * Return the MIME type to which the specified extension is mapped,
      * if any; otherwise return <code>null</code>.
      *
@@ -887,6 +801,13 @@ public interface Context extends Container {
      */
     public String[] findTaglibs();
 
+
+    /**
+     * Return the set of watched resources for this Context. If none are 
+     * defined, a zero length array will be returned.
+     */
+    public String[] findWatchedResources();
+    
 
     /**
      * Return <code>true</code> if the specified welcome file is defined
@@ -1040,6 +961,15 @@ public interface Context extends Container {
 
     
     /**
+     * Remove the specified watched resource name from the list associated
+     * with this Context.
+     * 
+     * @param name Name of the watched resource to be removed
+     */
+    public void removeWatchedResource(String name);
+    
+
+    /**
      * Remove the specified welcome file name from the list recognized
      * by this Context.
      *
@@ -1067,13 +997,70 @@ public interface Context extends Container {
 
 
     /**
-     * Return true if the Context has been initialized. This is lifecycle-ish, but
-     * needed by more and more Servlet API operations which are only permitted until
-     * the Context is initialized.
-     * @return true if the context is initialized.
+     * Get the server.xml <context> attribute's xmlNamespaceAware.
+     * @return true if namespace awarenes is enabled.
      *
      */
-    public boolean isInitialized();
+    public boolean getXmlNamespaceAware();
+
+
+    /**
+     * Get the server.xml <context> attribute's xmlValidation.
+     * @return true if validation is enabled.
+     *
+     */
+    public boolean getXmlValidation();
+
+
+    /**
+     * Set the validation feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlValidation true to enable xml instance validation
+     */
+    public void setXmlValidation(boolean xmlValidation);
+
+
+   /**
+     * Set the namespace aware feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlNamespaceAware true to enable namespace awareness
+     */
+    public void setXmlNamespaceAware(boolean xmlNamespaceAware);
+    /**
+     * Get the server.xml <context> attribute's xmlValidation.
+     * @return true if validation is enabled.
+     */
+     
+
+    /**
+     * Set the validation feature of the XML parser used when
+     * parsing tlds files. 
+     * @param tldValidation true to enable xml instance validation
+     */
+    public void setTldValidation(boolean tldValidation);
+
+
+    /**
+     * Get the server.xml <context> attribute's webXmlValidation.
+     * @return true if validation is enabled.
+     *
+     */
+    public boolean getTldValidation();
+
+
+    /**
+     * Get the server.xml <host> attribute's xmlNamespaceAware.
+     * @return true if namespace awarenes is enabled.
+     */
+    public boolean getTldNamespaceAware();
+
+
+    /**
+     * Set the namespace aware feature of the XML parser used when
+     * parsing xml instances.
+     * @param tldNamespaceAware true to enable namespace awareness
+     */
+    public void setTldNamespaceAware(boolean tldNamespaceAware);
 
 
 }

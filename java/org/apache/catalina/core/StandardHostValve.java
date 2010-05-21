@@ -33,11 +33,11 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.ErrorPage;
+import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
-import org.jboss.servlet.http.HttpEvent.EventType;
 
 
 /**
@@ -135,7 +135,7 @@ final class StandardHostValve
         // Error page processing
         response.setSuspended(false);
 
-        Throwable t = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+        Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
 
         if (t != null) {
             throwable(request, response, t);
@@ -154,8 +154,8 @@ final class StandardHostValve
      * Process Comet event.
      *
      * @param request Request to be processed
-     * @param response Response to be processed
-     * @param event The event to be processed
+     * @param response Response to be produced
+     * @param valveContext Valve context used to forward to the next Valve
      *
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
@@ -186,27 +186,12 @@ final class StandardHostValve
         // Error page processing
         response.setSuspended(false);
 
-        if (request.getAsyncContext() == null) {
-            Throwable t = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
-            if (t != null) {
-                throwable(request, response, t);
-            } else {
-                status(request, response);
-            }
+        Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
+
+        if (t != null) {
+            throwable(request, response, t);
         } else {
-            Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
-            if ((event.getType() == EventType.TIMEOUT || event.getType() == EventType.ERROR)
-                    && request.isEventMode() && asyncContext.getPath() == null) {
-                Throwable t = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
-                if (t != null) {
-                    throwable(request, response, t);
-                } else {
-                    status(request, response);
-                }
-            }
-            if (request.isEventMode() && asyncContext.getPath() == null) {
-                asyncContext.complete();
-            }
+            status(request, response);
         }
 
         // Restore the context classloader
@@ -266,21 +251,21 @@ final class StandardHostValve
                 (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                  errorPage.getLocation());
             request.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    ApplicationFilterFactory.ERROR_INTEGER);
+                              new Integer(ApplicationFilterFactory.ERROR));
             request.setAttribute
-                (RequestDispatcher.ERROR_STATUS_CODE,
-                        Integer.valueOf(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
-            request.setAttribute(RequestDispatcher.ERROR_MESSAGE,
+                (Globals.STATUS_CODE_ATTR,
+                 new Integer(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
+            request.setAttribute(Globals.ERROR_MESSAGE_ATTR,
                               throwable.getMessage());
-            request.setAttribute(RequestDispatcher.ERROR_EXCEPTION,
+            request.setAttribute(Globals.EXCEPTION_ATTR,
                               realError);
             Wrapper wrapper = request.getWrapper();
             if (wrapper != null)
-                request.setAttribute(RequestDispatcher.ERROR_SERVLET_NAME,
+                request.setAttribute(Globals.SERVLET_NAME_ATTR,
                                   wrapper.getName());
-            request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI,
+            request.setAttribute(Globals.EXCEPTION_PAGE_ATTR,
                                  request.getRequestURI());
-            request.setAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE,
+            request.setAttribute(Globals.EXCEPTION_TYPE_ATTR,
                               realError.getClass());
             if (custom(request, response, errorPage)) {
                 try {
@@ -334,25 +319,25 @@ final class StandardHostValve
         ErrorPage errorPage = context.findErrorPage(statusCode);
         if (errorPage != null) {
             response.setAppCommitted(false);
-            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
-                              Integer.valueOf(statusCode));
+            request.setAttribute(Globals.STATUS_CODE_ATTR,
+                              new Integer(statusCode));
 
-            String message = response.getMessage();
+            String message = RequestUtil.filter(response.getMessage());
             if (message == null)
                 message = "";
-            request.setAttribute(RequestDispatcher.ERROR_MESSAGE, message);
+            request.setAttribute(Globals.ERROR_MESSAGE_ATTR, message);
             request.setAttribute
                 (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                  errorPage.getLocation());
             request.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    ApplicationFilterFactory.ERROR_INTEGER);
+                              new Integer(ApplicationFilterFactory.ERROR));
 
 
             Wrapper wrapper = request.getWrapper();
             if (wrapper != null)
-                request.setAttribute(RequestDispatcher.ERROR_SERVLET_NAME,
+                request.setAttribute(Globals.SERVLET_NAME_ATTR,
                                   wrapper.getName());
-            request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI,
+            request.setAttribute(Globals.EXCEPTION_PAGE_ATTR,
                                  request.getRequestURI());
             if (custom(request, response, errorPage)) {
                 try {

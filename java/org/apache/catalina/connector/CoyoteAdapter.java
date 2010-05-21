@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -48,17 +20,9 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.SessionTrackingMode;
-
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
-import org.apache.catalina.Manager;
-import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.connector.Request.AsyncListenerRegistration;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.coyote.ActionCode;
@@ -96,10 +60,6 @@ public class CoyoteAdapter
 
     protected static final boolean ALLOW_BACKSLASH = 
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", "false")).booleanValue();
-
-
-    protected static final String X_POWERED_BY = 
-        System.getProperty("org.apache.catalina.connector.CoyoteAdapter.X_POWERED_BY", "Servlet/3.0; JBossWeb-3");
 
 
     // ----------------------------------------------------------- Constructors
@@ -188,12 +148,12 @@ public class CoyoteAdapter
                     // The response IO has been closed asynchronously, so call end 
                     // in most cases
                     request.getEvent().setType(HttpEvent.EventType.END);
-                    request.setEventMode(false);
+                    request.setComet(false);
                     close = true;
                 }
                 switch (status) {
                 case OPEN_READ:
-                    if (!request.isEventMode()) {
+                    if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
                         request.getEvent().setType(HttpEvent.EventType.END);
@@ -224,7 +184,7 @@ public class CoyoteAdapter
                     }
                     break;
                 case OPEN_WRITE:
-                    if (!request.isEventMode()) {
+                    if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
                         request.getEvent().setType(HttpEvent.EventType.END);
@@ -234,7 +194,7 @@ public class CoyoteAdapter
                     }
                     break;
                 case OPEN_CALLBACK:
-                    if (!request.isEventMode()) {
+                    if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
                         // In nearly all cases, the close does a resume which will end up
@@ -255,7 +215,7 @@ public class CoyoteAdapter
                     close = true;
                     break;
                 case TIMEOUT:
-                    if (!request.isEventMode()) {
+                    if (!request.isComet()) {
                         // The event has been closed asynchronously, so call end instead of
                         // read to cleanup the pipeline
                         request.getEvent().setType(HttpEvent.EventType.END);
@@ -271,7 +231,7 @@ public class CoyoteAdapter
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
 
-                if (!error && (request.getAttribute(RequestDispatcher.ERROR_EXCEPTION) != null)) {
+                if (!error && (request.getAttribute(Globals.EXCEPTION_ATTR) != null)) {
                     // An unexpected exception occurred while processing the event, so
                     // error should be called
                     request.getEvent().setType(HttpEvent.EventType.ERROR);
@@ -310,8 +270,9 @@ public class CoyoteAdapter
                 // Recycle the wrapper request and response
                 if (error || close || response.isClosed()) {
                     request.recycle();
+                    request.setFilterChain(null);
                     response.recycle();
-                    res.action(ActionCode.ACTION_EVENT_END, null);
+                    res.action(ActionCode.ACTION_COMET_END, null);
                 }
             }
             
@@ -354,10 +315,10 @@ public class CoyoteAdapter
         }
 
         if (connector.getXpoweredBy()) {
-            response.addHeader("X-Powered-By", X_POWERED_BY);
+            response.addHeader("X-Powered-By", "Servlet/2.5");
         }
 
-        boolean event = false;
+        boolean comet = false;
         try {
 
             // Parse and set Catalina and configuration specific 
@@ -368,31 +329,20 @@ public class CoyoteAdapter
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().invoke(request, response);
 
-                if (request.isEventMode()) {
+                if (request.isComet()) {
                     if (!response.isClosed() && !response.isError()) {
-                        res.action(ActionCode.ACTION_EVENT_BEGIN, 
-                                (request.getAsyncContext() == null) ? Boolean.TRUE : Boolean.FALSE);
-                        event = true;
-                    }
-                } else if (request.getAsyncContext() != null) {
-                    // The AC was closed right away, so call onComplete as no event callback
-                    // will occur in that case
-                    Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
-                    for (AsyncListenerRegistration asyncListenerRegistration : asyncContext.getAsyncListeners().values()) {
-                        AsyncListener asyncListener = asyncListenerRegistration.getListener();
-                        AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
-                                asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
-                        try {
-                            asyncListener.onComplete(asyncEvent);
-                        } catch (Throwable t) {
-                            log.error(sm.getString("coyoteAdapter.complete", asyncListener.getClass()), t);
-                        }
+                        res.action(ActionCode.ACTION_COMET_BEGIN, null);
+                        comet = true;
+                    } else {
+                        // Clear the filter chain, as otherwise it will not be reset elsewhere
+                        // since this is a Comet request
+                        request.setFilterChain(null);
                     }
                 }
 
             }
 
-            if (!event) {
+            if (!comet) {
                 response.finishResponse();
                 req.action(ActionCode.ACTION_POST_REQUEST , null);
             }
@@ -404,7 +354,7 @@ public class CoyoteAdapter
         } finally {
             req.getRequestProcessor().setWorkerThreadName(null);
             // Recycle the wrapper request and response
-            if (!event) {
+            if (!comet) {
                 request.recycle();
                 response.recycle();
             } else {
@@ -531,7 +481,7 @@ public class CoyoteAdapter
         } else {
             serverName = req.serverName();
         }
-        connector.getService().getMapper().map(serverName, decodedURI, 
+        connector.getMapper().map(serverName, decodedURI, 
                                   request.getMappingData());
         request.setContext((Context) request.getMappingData().context);
         request.setWrapper((Wrapper) request.getMappingData().wrapper);
@@ -573,12 +523,6 @@ public class CoyoteAdapter
             return false;
         }
 
-        // Discard session id if SessionTrackingMode.URL is disabled
-        if (!request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.URL)) {
-            request.setRequestedSessionId(null);
-            request.setRequestedSessionURL(false);
-        }
-        
         // Possible redirect
         MessageBytes redirectPathMB = request.getMappingData().redirectPath;
         if (!redirectPathMB.isNull()) {
@@ -598,11 +542,9 @@ public class CoyoteAdapter
             response.sendRedirect(redirectPath);
             return false;
         }
-        
-        // Parse session id if SessionTrackingMode.COOKIE is enabled
-        if (request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.COOKIE)) {
-            parseSessionCookiesId(req, request);
-        }
+
+        // Parse session Id
+        parseSessionCookiesId(req, request);
 
         return true;
     }
@@ -617,7 +559,7 @@ public class CoyoteAdapter
         int semicolon = uriBC.indexOf(match, 0, match.length(), 0);
 
         if (semicolon > 0) {
-            
+
             // Parse session ID, and extract it from the decoded request URI
             int start = uriBC.getStart();
             int end = uriBC.getEnd();
@@ -656,62 +598,44 @@ public class CoyoteAdapter
      */
     protected void parseSessionCookiesId(org.apache.coyote.Request req, Request request) {
 
+        // If session tracking via cookies has been disabled for the current
+        // context, don't go looking for a session ID in a cookie as a cookie
+        // from a parent context with a session ID may be present which would
+        // overwrite the valid session ID encoded in the URL
+        if (!((Context)request.getMappingData().context).getCookies())
+            return;
+
         // Parse session id from cookies
         Cookies serverCookies = req.getCookies();
         int count = serverCookies.getCookieCount();
         if (count <= 0)
             return;
 
-        String cookieName = request.getContext().getSessionCookie().getName();
-        if (cookieName == null) {
-            cookieName = Globals.SESSION_COOKIE_NAME;
-        }
         for (int i = 0; i < count; i++) {
             ServerCookie scookie = serverCookies.getCookie(i);
-            if (scookie.getName().equals(cookieName)) {
+            if (scookie.getName().equals(Globals.SESSION_COOKIE_NAME)) {
                 // Override anything requested in the URL
                 if (!request.isRequestedSessionIdFromCookie()) {
                     // Accept only the first session id cookie
                     convertMB(scookie.getValue());
-                    request.setRequestedSessionId(scookie.getValue().toString());
+                    request.setRequestedSessionId
+                        (scookie.getValue().toString());
                     request.setRequestedSessionCookie(true);
                     request.setRequestedSessionURL(false);
+                    if (log.isDebugEnabled())
+                        log.debug(" Requested cookie session id is " +
+                            request.getRequestedSessionId());
                 } else {
-                    if (!isSessionIdValid(request, request.getRequestedSessionId())) {
+                    if (!request.isRequestedSessionIdValid()) {
                         // Replace the session id until one is valid
                         convertMB(scookie.getValue());
-                        request.setRequestedSessionId(scookie.getValue().toString());
+                        request.setRequestedSessionId
+                            (scookie.getValue().toString());
                     }
                 }
             }
         }
 
-    }
-
-    
-    /**
-     * Return <code>true</code> if the session identifier specified
-     * identifies a valid session.
-     */
-    public boolean isSessionIdValid(Request request, String id) {
-        if (id == null)
-            return (false);
-        Context context = request.getContext();
-        if (context == null)
-            return (false);
-        Manager manager = context.getManager();
-        if (manager == null)
-            return (false);
-        Session session = null;
-        try {
-            session = manager.findSession(id);
-        } catch (IOException e) {
-            session = null;
-        }
-        if ((session != null) && session.isValidInternal())
-            return (true);
-        else
-            return (false);
     }
 
 
