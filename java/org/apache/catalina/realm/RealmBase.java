@@ -960,9 +960,7 @@ public abstract class RealmBase
         String requestedSessionId = request.getRequestedSessionId();
         if ((requestedSessionId != null) &&
             request.isRequestedSessionIdFromURL()) {
-            file.append(";");
-            file.append(Globals.SESSION_PARAMETER_NAME);
-            file.append("=");
+            file.append(request.getContext().getSessionCookie().getPathParameterName());
             file.append(requestedSessionId);
         }
         String queryString = request.getQueryString();

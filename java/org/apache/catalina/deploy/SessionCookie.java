@@ -21,6 +21,8 @@ import java.io.Serializable;
 
 import javax.servlet.SessionCookieConfig;
 
+import org.apache.catalina.Globals;
+
 public class SessionCookie implements SessionCookieConfig, Serializable {
 
     protected String domain = null;
@@ -29,7 +31,8 @@ public class SessionCookie implements SessionCookieConfig, Serializable {
     protected boolean httpOnly = false;
     protected boolean secure = false;
     protected int maxAge = -1;
-    protected String name = null;
+    protected String name = Globals.SESSION_COOKIE_NAME;
+    protected String pathParameterName = ";" + Globals.SESSION_PARAMETER_NAME + "=";
 
     public SessionCookie() {
     }
@@ -87,7 +90,14 @@ public class SessionCookie implements SessionCookieConfig, Serializable {
     }
 
     public void setName(String name) {
-        this.name = name;
+        if (name != null) {
+            this.name = name;
+            pathParameterName = ";" + name + "=";
+        }
+    }
+
+    public String getPathParameterName() {
+        return pathParameterName;
     }
 
 }

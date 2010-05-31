@@ -1752,11 +1752,7 @@ public class Request
             return;
         
         if (response != null) {
-            String cookieName = context.getSessionCookie().getName();
-            if (cookieName == null) {
-                cookieName = Globals.SESSION_COOKIE_NAME;
-            }
-            Cookie cookie = new Cookie(cookieName, newSessionId);
+            Cookie cookie = new Cookie(context.getSessionCookie().getName(), newSessionId);
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
         }
@@ -2594,11 +2590,7 @@ public class Request
         // If there was no cookie with the current session id, add a cookie to the response
         if ( (session != null) && context.getCookies()
                && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(getRequestedSessionId()))) ) {
-            String cookieName = context.getSessionCookie().getName();
-            if (cookieName == null) {
-                cookieName = Globals.SESSION_COOKIE_NAME;
-            }
-            Cookie cookie = new Cookie(cookieName, session.getIdInternal());
+            Cookie cookie = new Cookie(context.getSessionCookie().getName(), session.getIdInternal());
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
         }

@@ -824,6 +824,86 @@ public final class ByteChunk implements Cloneable, Serializable {
 
 
     /**
+     * Returns the first instance of the given byte in the byte array between
+     * the specified start and end.
+     * 
+     * @param bytes The byte array to search
+     * @param start The point to start searching from in the byte array
+     * @param end   The point to stop searching in the byte array
+     * @param b     The byte to search for 
+     * @return      The position of the first instance of the byte or -1 if the
+     *                  byte is not found.
+     */
+    public static int findByte(byte bytes[], int start, int end, byte b) {
+        int offset = start;
+        while (offset < end) {
+            if (bytes[offset] == b) {
+                return offset;
+            }
+            offset++;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the first instance of any of the given bytes in the byte array
+     * between the specified start and end.
+     * 
+     * @param bytes The byte array to search
+     * @param start The point to start searching from in the byte array
+     * @param end   The point to stop searching in the byte array
+     * @param b     The array of bytes to search for 
+     * @return      The position of the first instance of the byte or -1 if the
+     *                  byte is not found.
+     */
+    public static int findBytes(byte bytes[], int start, int end, byte b[]) {
+        int blen = b.length;
+        int offset = start;
+        while (offset < end) {
+            for (int i = 0;  i < blen; i++) 
+                if (bytes[offset] == b[i]) {
+                    return offset;
+                }
+            offset++;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the first instance of any byte that is not one of the given bytes
+     * in the byte array between the specified start and end.
+     * 
+     * @param bytes The byte array to search
+     * @param start The point to start searching from in the byte array
+     * @param end   The point to stop searching in the byte array
+     * @param c     The list of bytes to search for 
+     * @return      The position of the first instance a byte that is not
+     *                  in the list of bytes to search for or -1 if no such byte
+     *                  is found.
+     */
+    public static int findNotBytes(byte bytes[], int start, int end, byte b[]) {
+        int blen = b.length;
+        int offset = start;
+        boolean found;
+                
+        while (offset < end) {
+            found = true;
+            for (int i = 0; i < blen; i++) {
+                if (bytes[offset] == b[i]) {
+                    found=false;
+                    break;
+                }
+            }
+            if (found) {
+                return offset;
+            }
+            offset++;
+        }
+        return -1;
+    }
+
+
+    /**
      * Convert specified String to a byte array. This ONLY WORKS for ascii, UTF chars will be truncated.
      * 
      * @param value to convert to byte array

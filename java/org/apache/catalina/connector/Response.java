@@ -1513,7 +1513,7 @@ public class Response
             String file = url.getFile();
             if ((file == null) || !file.startsWith(contextPath))
                 return (false);
-            String tok = ";" + Globals.SESSION_PARAMETER_NAME + "=" + session.getIdInternal();
+            String tok = request.getContext().getSessionCookie().getPathParameterName() + session.getIdInternal();
             if (file.indexOf(tok, contextPath.length()) >= 0)
                 return (false);
         }
@@ -1649,9 +1649,7 @@ public class Response
         }
         StringBuilder sb = new StringBuilder(path);
         if( sb.length() > 0 ) { // jsessionid can't be first.
-            sb.append(";");
-            sb.append(Globals.SESSION_PARAMETER_NAME);
-            sb.append("=");
+            sb.append(request.getContext().getSessionCookie().getPathParameterName());
             sb.append(sessionId);
         }
         sb.append(anchor);

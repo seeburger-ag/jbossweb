@@ -128,13 +128,6 @@ public class CoyoteAdapter
 
 
     /**
-     * The match string for identifying a session ID parameter.
-     */
-    private static final String match =
-        ";" + Globals.SESSION_PARAMETER_NAME + "=";
-
-
-    /**
      * The string manager for this package.
      */
     protected StringManager sm =
@@ -457,9 +450,6 @@ public class CoyoteAdapter
             req.serverName().setString(proxyName);
         }
 
-        // Parse session Id
-        parseSessionId(req, request);
-
         // URI decoding
         MessageBytes decodedURI = req.decodedURI();
         decodedURI.duplicate(req.requestURI());
@@ -574,7 +564,10 @@ public class CoyoteAdapter
         }
 
         // Discard session id if SessionTrackingMode.URL is disabled
-        if (!request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.URL)) {
+        if (request.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.URL)) {
+            // Parse session Id
+            parseSessionId(req, request);
+        } else {
             request.setRequestedSessionId(null);
             request.setRequestedSessionURL(false);
         }
@@ -587,7 +580,7 @@ public class CoyoteAdapter
             if (request.isRequestedSessionIdFromURL()) {
                 // This is not optimal, but as this is not very common, it
                 // shouldn't matter
-                redirectPath = redirectPath + ";" + Globals.SESSION_PARAMETER_NAME + "="
+                redirectPath = redirectPath + request.getContext().getSessionCookie().getPathParameterName()
                     + request.getRequestedSessionId();
             }
             if (query != null) {
@@ -614,7 +607,8 @@ public class CoyoteAdapter
     protected void parseSessionId(org.apache.coyote.Request req, Request request) {
 
         ByteChunk uriBC = req.requestURI().getByteChunk();
-        int semicolon = uriBC.indexOf(match, 0, match.length(), 0);
+        String pathParameterName = request.getContext().getSessionCookie().getPathParameterName();
+        int semicolon = uriBC.indexOf(pathParameterName, 0, pathParameterName.length(), 0);
 
         if (semicolon > 0) {
             
@@ -622,7 +616,7 @@ public class CoyoteAdapter
             int start = uriBC.getStart();
             int end = uriBC.getEnd();
 
-            int sessionIdStart = semicolon + match.length();
+            int sessionIdStart = semicolon + pathParameterName.length();
             int semicolon2 = uriBC.indexOf(';', sessionIdStart);
             if (semicolon2 >= 0) {
                 request.setRequestedSessionId
@@ -663,9 +657,6 @@ public class CoyoteAdapter
             return;
 
         String cookieName = request.getContext().getSessionCookie().getName();
-        if (cookieName == null) {
-            cookieName = Globals.SESSION_COOKIE_NAME;
-        }
         for (int i = 0; i < count; i++) {
             ServerCookie scookie = serverCookies.getCookie(i);
             if (scookie.getName().equals(cookieName)) {
