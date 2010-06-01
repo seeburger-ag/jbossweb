@@ -297,6 +297,8 @@ public class OutputBuffer extends Writer
     protected void doFlush(boolean realFlush)
         throws IOException {
 
+        if (closed)
+            return;
         if (suspended)
             return;
 
