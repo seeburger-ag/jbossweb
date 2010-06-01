@@ -41,6 +41,12 @@
       <fix>
         Improve StandardWrapper.createWrapper error reporting. (remm)
       </fix>
+      <fix>
+        Implement session cookie name and path parameter configuration. (remm)
+      </fix>
+      <fix>
+        <jira>169</jira>: Don't allow flush() after close(). (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
