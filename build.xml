@@ -490,7 +490,7 @@
 		</copy>
 
 		<!-- Maven repository configuration -->
-		<property name="maven.repository.url" value="https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/"/>
+		<property name="maven.repository.url" value="https://repository.jboss.org/nexus/service/local/staging/deploy/maven2"/>
 		<property name="maven.repository.id" value="jboss-releases-repository"/>
 
 		<!-- Linux/Unix execs -->
