@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 3.0.0.Beta7 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        Fix NPE processing some POST. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 3.0.0.Beta6 (remm)">
   <subsection name="General">
     <changelog>
