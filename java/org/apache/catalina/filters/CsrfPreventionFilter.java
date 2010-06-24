@@ -18,7 +18,11 @@
 package org.apache.catalina.filters;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -42,6 +46,27 @@ public class CsrfPreventionFilter extends FilterBase {
 
     private final Random randomSource = new Random();
 
+    private final Set<String> entryPoints = new HashSet<String>();
+    
+    private final int nonceCacheSize = 5;
+
+    /**
+     * Entry points are URLs that will not be tested for the presence of a valid
+     * nonce. They are used to provide a way to navigate back to a protected
+     * application after navigating away from it. Entry points will be limited
+     * to HTTP GET requests and should not trigger any security sensitive
+     * actions.
+     * 
+     * @param entryPoints   Comma separated list of URLs to be configured as
+     *                      entry points.
+     */
+    public void setEntryPoints(String entryPoints) {
+        String values[] = entryPoints.split(",");
+        for (String value : values) {
+            this.entryPoints.add(value.trim());
+        }
+    }
+
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
 
@@ -53,20 +78,43 @@ public class CsrfPreventionFilter extends FilterBase {
             HttpServletRequest req = (HttpServletRequest) request;
             HttpServletResponse res = (HttpServletResponse) response;
 
-            String previousNonce =
-                req.getParameter(Constants.CSRF_NONCE_REQUEST_PARAM);
-            String expectedNonce = (String) req.getSession(true).getAttribute(
+            boolean skipNonceCheck = false;
+            
+            if (Constants.METHOD_GET.equals(req.getMethod())) {
+                String path = req.getServletPath();
+                if (req.getPathInfo() != null) {
+                    path = path + req.getPathInfo();
+                }
+                
+                if (entryPoints.contains(path)) {
+                    skipNonceCheck = true;
+                }
+            }
+
+            @SuppressWarnings("unchecked")
+            LruCache<String> nonceCache =
+                (LruCache<String>) req.getSession(true).getAttribute(
                     Constants.CSRF_NONCE_SESSION_ATTR_NAME);
             
-            if (expectedNonce != null && !expectedNonce.equals(previousNonce)) {
-                res.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
+            if (!skipNonceCheck) {
+                String previousNonce =
+                    req.getParameter(Constants.CSRF_NONCE_REQUEST_PARAM);
+
+                if (nonceCache != null && !nonceCache.contains(previousNonce)) {
+                    res.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
+            }
+            
+            if (nonceCache == null) {
+                nonceCache = new LruCache<String>(nonceCacheSize);
+                req.getSession().setAttribute(
+                        Constants.CSRF_NONCE_SESSION_ATTR_NAME, nonceCache);
             }
             
             String newNonce = generateNonce();
             
-            req.getSession(true).setAttribute(
-                    Constants.CSRF_NONCE_SESSION_ATTR_NAME, newNonce);
+            nonceCache.add(newNonce);
             
             wResponse = new CsrfResponseWrapper(res, newNonce);
         } else {
@@ -174,6 +222,34 @@ public class CsrfPreventionFilter extends FilterBase {
             sb.append('=');
             sb.append(nonce);
             return (sb.toString());
+        }
+    }
+    
+    private static class LruCache<T> {
+
+        // Although the internal implementation uses a Map, this cache
+        // implementation is only concerned with the keys.
+        private final Map<T,T> cache;
+        
+        public LruCache(final int cacheSize) {
+            cache = new LinkedHashMap<T,T>() {
+                private static final long serialVersionUID = 1L;
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<T,T> eldest) {
+                    if (size() > cacheSize) {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+        }
+        
+        public void add(T key) {
+            cache.put(key, null);
+        }
+        
+        public boolean contains(T key) {
+            return cache.containsKey(key);
         }
     }
 }

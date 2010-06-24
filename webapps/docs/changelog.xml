@@ -22,6 +22,9 @@
       <fix>
         Fix NPE processing some POST. (markt)
       </fix>
+      <fix>
+        Various CSRF filter updates. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
