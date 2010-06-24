@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="index.html"> &project; <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>JBossWeb Features</title>
+  </properties>
+  <body>
+
+    <section name="The Best of Tomcat and Apache">
+
+      <p>Many users of Tomcat in JBoss choose to place a native web server like Apache in front of Tomcat to handle
+        client requests on behalf of the Tomcat. Using a native server can yield better overall performance in many
+        cases. Native networking and SSL libraries can outperform the current Java implementations, and static content
+        can often be delivered to the clients in a much more efficient manner. Native web servers can provide more
+        advanced management options and also offer a variety of non-Java application options.</p>
+      <p>JBoss Web Server integrates the flexibility and power of the Apache web server into Tomcat. This integration
+        brings the most recent OS technologies for processing high volume data available to web applications in JBoss,
+        making the JBoss Web Server one of the fastest and most scalable web servers in the market. </p>
+
+      <subsection name="Full Java EE Support">The power of JBoss Web comes with full Java EE support. JBoss Web supports
+        the JSP 2.0 and Servlet 2.4 specifications, providing a complete web development environment. JBoss Web runs in
+        the same VM as the JBoss application server, providing a complete environment for everything from simple web
+        applications to complex high-end enterprise applications. </subsection>
+      <subsection name="Highly Scalable">JBoss Web scales to the levels required by the most demanding of applications.
+        The hybrid connection model can handle client loads of 10,000+ concurrent connections. </subsection>
+      <subsection name="Fast Static Content">JBoss Web takes advantage of fast OS-specific features to achieve zero-copy
+        transfer of static content. This decreases CPU load and improves application responsiveness. </subsection>
+      <subsection name="Clustering Support">JBoss Web can serve an amazing number of requests on a single machine, but
+        when you need to scale beyond that, JBoss Web is there. JBoss web offers full clustering support for web
+        applications. JBoss Web HTTP session replication is based on the powerful JBossCache technology, allowing your
+        application state to be efficiently shared between all the nodes in your application cluster. </subsection>
+      <subsection name="OpenSSL Support">The security of your web application matters. SSL is the cornerstone of web
+        security, but Java SSL engines are slow and can put a big burden on your CPU. JBossWeb integrates the native
+        OpenSSL libraries, the fastest and most secure open source SSL implementation. The highly-optimized OpenSSL
+        libraries also allow for hardware acceleration which yield a ten fold performance increase. </subsection>
+      <subsection name="URL Rewriting">JBoss Web provides a powerful URL rewriting module, similar to Apache
+        mod_rewrite. URLs can be rewritten to support legacy URLs, handle errors or rapidly respond to web application
+        issues that come up in the hectic day-to-day management of web applications. </subsection>
+
+      <subsection name="Integration">JBoss Web Server provides organizations with a single deployment platform for the
+        most common types of web applications. Not only does JBoss Web support the latest Java web technologies, but
+        JBoss web can also support applications running on Microsoft .NET, PHP, and CGI. There is no longer any need to
+        manage multiple servers for multiple web platforms. Legacy applications can maintained on JBoss Web, right along
+        side your other applications. New development can take advantage of powerful features of any of these web
+        platforms. JBoss Web gives you the power to choose the right platform for each task, and total flexibility to
+        make changes along the way. </subsection>
+    </section>
+
+  </body>
+</document>
