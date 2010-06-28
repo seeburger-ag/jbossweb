@@ -598,6 +598,9 @@ final class StandardWrapperValve
                         exception(request, response, e);
                     }
                 }
+                if (timeout && request.isEventMode() && asyncContext.getPath() == null) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                }
             } else if (asyncContext.getRunnable() != null) {
                 // Execute the runnable
                 try {
