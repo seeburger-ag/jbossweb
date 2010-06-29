@@ -1155,9 +1155,9 @@ public class Http11AprProcessor implements ActionHook {
             if (ssl && (socket != 0)) {
                  // Consume and buffer the request body, so that it does not
                  // interfere with the client's handshake messages
-                InputFilter[] inputFilters = inputBuffer.getFilters();
-                ((BufferedInputFilter) inputFilters[Constants.BUFFERED_FILTER]).setLimit(maxSavePostSize);
-                inputBuffer.addActiveFilter(inputFilters[Constants.BUFFERED_FILTER]);
+                BufferedInputFilter buffredInputFilter = new BufferedInputFilter();
+                buffredInputFilter.setLimit(maxSavePostSize);
+                inputBuffer.addActiveFilter(buffredInputFilter);
                 try {
                     // Renegociate certificates
                     SSLSocket.renegotiate(socket);
@@ -1698,9 +1698,6 @@ public class Http11AprProcessor implements ActionHook {
         // Create and add the void filters.
         inputBuffer.addFilter(new VoidInputFilter());
         outputBuffer.addFilter(new VoidOutputFilter());
-
-        // Create and add buffered input filter
-        inputBuffer.addFilter(new BufferedInputFilter());
 
         // Create and add the chunked filters.
         //inputBuffer.addFilter(new GzipInputFilter());
