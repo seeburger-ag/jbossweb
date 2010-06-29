@@ -1044,17 +1044,19 @@ public class AjpAprProcessor implements ActionHook {
         // Other headers
         int numHeaders = headers.size();
         responseHeaderMessage.appendInt(numHeaders);
-        for (int i = 0; i < numHeaders; i++) {            
+        for (int i = 0; i < numHeaders; i++) {
             MessageBytes hN = headers.getName(i);
-            int hC = Constants.getResponseAjpIndex(hN.toString());
-            if (hC > 0) {
-                responseHeaderMessage.appendInt(hC);
-            }
-            else {
-                responseHeaderMessage.appendBytes(hN);
-            }
             MessageBytes hV=headers.getValue(i);
-            responseHeaderMessage.appendBytes(hV);
+            if (hN.getLength() > 0 && !hV.isNull()) {
+                int hC = Constants.getResponseAjpIndex(hN.toString());
+                if (hC > 0) {
+                    responseHeaderMessage.appendInt(hC);
+                }
+                else {
+                    responseHeaderMessage.appendBytes(hN);
+                }
+                responseHeaderMessage.appendBytes(hV);
+            }
         }
 
         // Write to buffer
