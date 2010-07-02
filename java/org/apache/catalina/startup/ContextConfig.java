@@ -239,13 +239,17 @@ public class ContextConfig
             if (pipeline != null) {
                 Valve basic = pipeline.getBasic();
                 if ((basic != null) && (basic instanceof Authenticator)) {
-                    context.setAuthenticator((Authenticator) basic);
+                    if (context.getAuthenticator() == null) {
+                        context.setAuthenticator((Authenticator) basic);
+                    }
                     return;
                 }
                 Valve valves[] = pipeline.getValves();
                 for (int i = 0; i < valves.length; i++) {
                     if (valves[i] instanceof Authenticator) {
-                        context.setAuthenticator((Authenticator) valves[i]);
+                        if (context.getAuthenticator() == null) {
+                            context.setAuthenticator((Authenticator) valves[i]);
+                        }
                         return;
                     }
                 }
