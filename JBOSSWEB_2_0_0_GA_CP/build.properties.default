@@ -1,0 +1,69 @@
+# -----------------------------------------------------------------------------
+# build.properties.default
+#
+# This is an example "build.properties" file, used to customize building Tomcat
+# for your local environment.  It defines the location of all external
+# modules that Tomcat depends on.  Copy this file to "build.properties"
+# in the top-level source directory, and customize it as needed.
+#
+# $Id: build.properties.default 4783 2006-06-20 07:19:31Z mladen.turk@jboss.com $
+# -----------------------------------------------------------------------------
+
+# ----- Vesion Control Flags -----
+version.major=2
+version.minor=0
+version.build=0
+version.patch=GA_CP
+
+# ----- Vesion Control Flags -----
+jboss.version.major=4
+jboss.version.minor=2
+jboss.version.build=3
+jboss.version.patch=GA
+
+# ----- Compile Control Flags -----
+compile.debug=on
+compile.deprecation=off
+compile.optimize=off
+
+
+# ----- Build Control Flags
+
+#Build all components
+#full.dist=on
+
+#Hide configuration flags display
+#flags.hide=on
+
+
+# ----- Proxy setup -----
+#proxy.host=proxy.domain
+#proxy.port=8080
+#proxy.use=on
+
+
+# ----- Default Base Path for Dependent Packages -----
+base.path=/usr/share/java
+#base.path=C:/path/to/the/repository
+#base.path=/usr/local
+
+# ----- Jakarta files base location -----
+base-jakarta.loc=http://archive.apache.org/dist/jakarta
+
+# ----- Logging files base location -----
+base-logging.loc=http://archive.apache.org/dist/logging
+
+# ----- XML files base location -----
+base-xml.loc=http://archive.apache.org/dist/xml
+
+# ----- Struts files base location -----
+base-struts.loc=http://archive.apache.org/dist/struts
+
+# ----- Tomcat files base location -----
+base-tomcat.loc=http://archive.apache.org/dist/tomcat
+
+# ----- Sourceforge files base location -----
+#base-sf.loc=http://switch.dl.sourceforge.net/sourceforge
+base-sf.loc=http://heanet.dl.sourceforge.net/sourceforge
+#base-sf.loc=http://internap.dl.sourceforge.net/sourceforge
+

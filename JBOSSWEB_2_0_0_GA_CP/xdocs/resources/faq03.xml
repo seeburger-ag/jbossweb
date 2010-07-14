@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="faq03.html">
+
+  &project;
+
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>HTTPS FAQ's</title>
+  </properties>
+
+<body>
+
+<section name="About Certificates">
+ <br />
+ <subsection name="What are RSA Private Keys, CSRs and Certificates?">
+ The RSA private key file is a digital file that you can use to decrypt messages
+ sent to you. It has a public component which you distribute (via your Certificate file)
+ which allows people to encrypt those messages to you. A Certificate Signing Request
+ (CSR) is a digital file which contains your public key and your name.
+ You send the CSR to a Certifying Authority (CA) to be converted into a real Certificate.
+ A Certificate contains your RSA public key, your name, the name of the CA,
+ and is digitally signed by your CA. Browsers that know the CA can verify the
+ signature on that Certificate, thereby obtaining your RSA public key.
+ That enables them to send messages which only you can decrypt.
+ </subsection>
+ <br />
+ <todo>Copy some Apache httpd's mod_ssl FAQ's</todo>
+</section>
+</body>
+</document>
