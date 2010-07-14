@@ -60,7 +60,7 @@ public final class RequestUtil {
 
         char content[] = new char[message.length()];
         message.getChars(0, message.length(), content, 0);
-        StringBuilder result = new StringBuilder(content.length + 50);
+        StringBuffer result = new StringBuffer(content.length + 50);
         for (int i = 0; i < content.length; i++) {
             switch (content[i]) {
             case '<':
@@ -281,7 +281,7 @@ public final class RequestUtil {
      * by a valid 2-digit hexadecimal number
      */
     public static String URLDecode(byte[] bytes, String enc) {
-        return URLDecode(bytes, enc, false);
+        return URLDecode(bytes, null, false);
     }
 
     /**

@@ -25,8 +25,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Locale;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -146,8 +144,8 @@ public class SSIServlet extends HttpServlet {
                     + path + "'");
         // Exclude any resource in the /WEB-INF and /META-INF subdirectories
         // (the "toUpperCase()" avoids problems on Windows systems)
-        if (path == null || path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")
-                || path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF")) {
+        if (path == null || path.toUpperCase().startsWith("/WEB-INF")
+                || path.toUpperCase().startsWith("/META-INF")) {
             res.sendError(HttpServletResponse.SC_NOT_FOUND, path);
             log("Can't serve file: " + path);
             return;
@@ -212,6 +210,5 @@ public class SSIServlet extends HttpServlet {
             String text = stringWriter.toString();
             res.getWriter().write(text);
         }
-        bufferedReader.close();
     }
 }

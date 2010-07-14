@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.compiler.TagPluginManager;
+import org.apache.jasper.compiler.TldLocationsCache;
 import org.apache.jasper.xmlparser.ParserUtils;
 import org.jboss.logging.Logger;
 
@@ -150,6 +151,11 @@ public final class EmbeddedServletOptions implements Options {
     private String compilerClassName = null;
     
     /**
+     * Cache for the TLD locations
+     */
+    private TldLocationsCache tldLocationsCache = null;
+    
+    /**
      * Jsp config information
      */
     private JspConfig jspConfig = null;
@@ -170,11 +176,6 @@ public final class EmbeddedServletOptions implements Options {
      */
     private int modificationTestInterval = 4;
     
-    /**
-     * Is re-compilation attempted immediately after a failure?
-     */
-    private boolean recompileOnFail = false;
-
     /**
      * Is generation of X-Powered-By response header enabled/disabled?
      */
@@ -250,13 +251,6 @@ public final class EmbeddedServletOptions implements Options {
         return modificationTestInterval;
     }
     
-    /**
-     * Re-compile on failure.
-     */
-    public boolean getRecompileOnFail() {
-        return recompileOnFail;
-    }
-
     /**
      * Is Jasper being used in development mode?
      */
@@ -348,6 +342,14 @@ public final class EmbeddedServletOptions implements Options {
     
     public void setErrorOnUseBeanInvalidClassAttribute(boolean b) {
         errorOnUseBeanInvalidClassAttribute = b;
+    }
+    
+    public TldLocationsCache getTldLocationsCache() {
+        return tldLocationsCache;
+    }
+    
+    public void setTldLocationsCache( TldLocationsCache tldC ) {
+        tldLocationsCache = tldC;
     }
     
     public String getJavaEncoding() {
@@ -497,16 +499,6 @@ public final class EmbeddedServletOptions implements Options {
             }
         }
         
-        String recompileOnFail = config.getInitParameter("recompileOnFail"); 
-        if (recompileOnFail != null) {
-            if (recompileOnFail.equalsIgnoreCase("true")) {
-                this.recompileOnFail = true;
-            } else if (recompileOnFail.equalsIgnoreCase("false")) {
-                this.recompileOnFail = false;
-            } else {
-                log.warn(Localizer.getMessage("jsp.warning.recompileOnFail"));
-            }
-        }
         String development = config.getInitParameter("development");
         if (development != null) {
             if (development.equalsIgnoreCase("true")) {
@@ -579,7 +571,7 @@ public final class EmbeddedServletOptions implements Options {
             scratchDir = new File(dir);
         } else {
             // First try the Servlet 2.2 javax.servlet.context.tempdir property
-            scratchDir = (File) context.getAttribute(ServletContext.TEMPDIR);
+            scratchDir = (File) context.getAttribute(Constants.TMP_DIR);
             if (scratchDir == null) {
                 // Not running in a Servlet 2.2 container.
                 // Try to get the JDK 1.2 java.io.tmpdir property
@@ -652,6 +644,10 @@ public final class EmbeddedServletOptions implements Options {
                 log.warn(Localizer.getMessage("jsp.warning.displaySourceFragment"));
             }
         }
+        
+        // Setup the global Tag Libraries location cache for this
+        // web-application.
+        tldLocationsCache = new TldLocationsCache(context);
         
         // Setup the jsp config info for this web app.
         jspConfig = new JspConfig(context);

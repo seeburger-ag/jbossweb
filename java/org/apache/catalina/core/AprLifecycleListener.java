@@ -27,6 +27,7 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.jni.Library;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 
@@ -57,8 +58,8 @@ public class AprLifecycleListener
 
     protected static final int TCN_REQUIRED_MAJOR = 1;
     protected static final int TCN_REQUIRED_MINOR = 1;
-    protected static final int TCN_REQUIRED_PATCH = 8;
-    protected static final int TCN_RECOMMENDED_PV = 21;
+    protected static final int TCN_REQUIRED_PATCH = 17;
+    protected static final int TCN_RECOMMENDED_PV = 17;
 
 
     // ---------------------------------------------- Properties
@@ -178,13 +179,17 @@ public class AprLifecycleListener
                         TCN_RECOMMENDED_PV));
             }
         }
-        if (log.isDebugEnabled()) {
-            log.debug(sm.getString("aprListener.tcnValid", major + "."
+        if (!log.isDebugEnabled()) {
+           log.info(sm.getString("aprListener.tcnValid", major + "."
                     + minor + "." + patch));
-            // Log APR flags
-            log.debug(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
-                    Library.APR_HAS_RANDOM));
         }
+        else {
+           log.debug(sm.getString("aprListener.tcnValid", major + "."
+                     + minor + "." + patch));
+        }
+        // Log APR flags
+        log.info(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
+                Library.APR_HAS_RANDOM));
         return true;
     }
 

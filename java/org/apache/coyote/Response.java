@@ -412,7 +412,7 @@ public final class Response {
         contentLanguage = locale.getLanguage();
         if ((contentLanguage != null) && (contentLanguage.length() > 0)) {
             String country = locale.getCountry();
-            StringBuilder value = new StringBuilder(contentLanguage);
+            StringBuffer value = new StringBuffer(contentLanguage);
             if ((country != null) && (country.length() > 0)) {
                 value.append('-');
                 value.append(country);
