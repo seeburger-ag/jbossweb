@@ -292,11 +292,9 @@
       </fileset>
     </copy>
 
-  	<!-- Maven repository configuration -->
-  	<property name="maven.repository.url" value="file:///somepath"/>
-  	<property name="maven.repository.id" value="repository.jboss.org"/>
-  	<!--<property name="maven.repository.url" value="dav:https://snapshots.jboss.org/maven2"/>
-    <property name="maven.repository.id" value="snapshots.jboss.org"/>-->
+    <!-- Maven repository configuration -->
+    <property name="maven.repository.url" value="https://repository.jboss.org/nexus/service/local/staging/deploy/maven2"/>
+    <property name="maven.repository.id" value="jboss-releases-repository"/>
 
     <!-- Linux/Unix execs -->
     <exec dir="." executable="/bin/sh" os="Linux">
