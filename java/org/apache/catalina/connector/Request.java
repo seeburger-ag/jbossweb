@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -471,6 +472,12 @@ public class Request
     protected boolean canStartAsync = true;
     
 
+    /**
+     * Get SSL attributes.
+     */
+    protected boolean sslAttributes = false;
+    
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -492,6 +499,7 @@ public class Request
             event = null;
         }
         
+        sslAttributes = false;
         asyncContext = null;
         asyncTimeout = 300000;
         canStartAsync = true;
@@ -1071,7 +1079,8 @@ public class Request
         attr =  coyoteRequest.getAttribute(name);
         if(attr != null)
             return attr;
-        if( isSSLAttribute(name) ) {
+        if( !sslAttributes && isSSLAttribute(name) ) {
+            sslAttributes = true;
             coyoteRequest.action(ActionCode.ACTION_REQ_SSL_ATTRIBUTE, 
                                  coyoteRequest);
             attr = coyoteRequest.getAttribute(Globals.CERTIFICATES_ATTR);
@@ -1095,6 +1104,20 @@ public class Request
         return attr;
     }
 
+    
+    public X509Certificate[] getCertificateChain() {
+        X509Certificate certs[] = (X509Certificate[]) getAttribute(Globals.CERTIFICATES_ATTR);
+        if ((certs == null) || (certs.length < 1)) {
+            coyoteRequest.action(ActionCode.ACTION_REQ_SSL_CERTIFICATE, 
+                    coyoteRequest);
+            certs = (X509Certificate[]) coyoteRequest.getAttribute(Globals.CERTIFICATES_ATTR);
+            if (certs != null) {
+                attributes.put(Globals.CERTIFICATES_ATTR, certs);
+            }
+        }
+        return certs;
+    }
+    
 
     /**
      * Test if a given name is one of the special Servlet-spec SSL attributes.

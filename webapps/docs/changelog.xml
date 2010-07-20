@@ -25,6 +25,19 @@
       <fix>
         Various CSRF filter updates. (markt)
       </fix>
+      <fix>
+        <bug>49613</bug>: Improve getAttributeNames() performance when using SSL in some cases. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        Fix NPE recycling buffered input filter and reduce memory use. (remm)
+      </fix>
+      <fix>
+        Skip out invalid headers when writing the response. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

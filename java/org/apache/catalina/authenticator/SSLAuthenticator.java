@@ -129,14 +129,7 @@ public class SSLAuthenticator
         if (containerLog.isDebugEnabled())
             containerLog.debug(" Looking up certificates");
 
-        X509Certificate certs[] = (X509Certificate[])
-            request.getAttribute(Globals.CERTIFICATES_ATTR);
-        if ((certs == null) || (certs.length < 1)) {
-            request.getCoyoteRequest().action
-                              (ActionCode.ACTION_REQ_SSL_CERTIFICATE, null);
-            certs = (X509Certificate[])
-                request.getAttribute(Globals.CERTIFICATES_ATTR);
-        }
+        X509Certificate certs[] = request.getCertificateChain();
         if ((certs == null) || (certs.length < 1)) {
             if (containerLog.isDebugEnabled())
                 containerLog.debug("  No certificates included with this request");
