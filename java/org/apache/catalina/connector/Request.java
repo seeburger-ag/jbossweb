@@ -276,7 +276,7 @@ public class Request
     /**
      * Async timeout.
      */
-    protected long asyncTimeout = 600000L;
+    protected long asyncTimeout = -1;
     
     
     /**
@@ -501,7 +501,7 @@ public class Request
         
         sslAttributes = false;
         asyncContext = null;
-        asyncTimeout = 300000;
+        asyncTimeout = -1;
         canStartAsync = true;
         asyncListeners.clear();
         authType = null;
