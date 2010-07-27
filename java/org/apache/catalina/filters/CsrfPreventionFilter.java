@@ -18,6 +18,7 @@
 package org.apache.catalina.filters;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -44,11 +46,13 @@ import javax.servlet.http.HttpServletResponseWrapper;
  */
 public class CsrfPreventionFilter extends FilterBase {
 
-    private final Random randomSource = new Random();
+    private String randomClass = SecureRandom.class.getName();
+    
+    private Random randomSource;
 
     private final Set<String> entryPoints = new HashSet<String>();
     
-    private final int nonceCacheSize = 5;
+    private int nonceCacheSize = 5;
 
     /**
      * Entry points are URLs that will not be tested for the presence of a valid
@@ -64,6 +68,52 @@ public class CsrfPreventionFilter extends FilterBase {
         String values[] = entryPoints.split(",");
         for (String value : values) {
             this.entryPoints.add(value.trim());
+        }
+    }
+
+    /**
+     * Sets the number of previously issued nonces that will be cached on a LRU
+     * basis to support parallel requests, limited use of the refresh and back
+     * in the browser and similar behaviors that may result in the submission
+     * of a previous nonce rather than the current one. If not set, the default
+     * value of 5 will be used.
+     * 
+     * @param nonceCacheSize    The number of nonces to cache
+     */
+    public void setNonceCacheSize(int nonceCacheSize) {
+        this.nonceCacheSize = nonceCacheSize;
+    }
+    
+    /**
+     * Specify the class to use to generate the nonces. Must be in instance of
+     * {@link Random}.
+     * 
+     * @param randomClass   The name of the class to use
+     */
+    public void setRandomClass(String randomClass) {
+        this.randomClass = randomClass;
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // Set the parameters
+        super.init(filterConfig);
+        
+        try {
+            Class<?> clazz = Class.forName(randomClass);
+            randomSource = (Random) clazz.newInstance();
+        } catch (ClassNotFoundException e) {
+            ServletException se = new ServletException(sm.getString(
+                    "csrfPrevention.invalidRandomClass", randomClass), e);
+            throw se;
+        } catch (InstantiationException e) {
+            ServletException se = new ServletException(sm.getString(
+                    "csrfPrevention.invalidRandomClass", randomClass), e);
+            throw se;
+        } catch (IllegalAccessException e) {
+            ServletException se = new ServletException(sm.getString(
+                    "csrfPrevention.invalidRandomClass", randomClass), e);
+            throw se;
         }
     }
 

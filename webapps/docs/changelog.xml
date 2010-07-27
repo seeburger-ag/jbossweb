@@ -28,6 +28,12 @@
       <fix>
         <bug>49613</bug>: Improve getAttributeNames() performance when using SSL in some cases. (remm)
       </fix>
+      <add>
+        mod_expires clone submitted by Cyrille Le Clerc. (markt)
+      </add>
+      <fix>
+        CSRF filter updates. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
