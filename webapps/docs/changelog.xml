@@ -16,11 +16,28 @@
 
 <body>
 
-<section name="JBoss Web 2.1.8.GA (remm)">
+<section name="JBoss Web 2.1.9.GA (remm)">
   <subsection name="Catalina">
     <changelog>
       <fix>
         <jira>169</jira>: Don't allow flush() after close(). (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        Fix possible NPE (CVE 2010-2227). (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 2.1.8.GA (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        Info leak. (CVE 2010-1157) (remm)
       </fix>
     </changelog>
   </subsection>
