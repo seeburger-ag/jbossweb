@@ -1340,6 +1340,9 @@ public class Request
             return;
         }
         
+        if (context == null)
+            return;        	     
+        
         // Notify interested application event listeners
         Object listeners[] = context.getApplicationEventListeners();
         if ((listeners == null) || (listeners.length == 0))
@@ -1409,6 +1412,9 @@ public class Request
         if (name.startsWith("org.apache.tomcat.")) {
             coyoteRequest.setAttribute(name, value);
         }
+        
+        if (context == null)
+            return; 
         
         // Notify interested application event listeners
         Object listeners[] = context.getApplicationEventListeners();
@@ -2255,9 +2261,7 @@ public class Request
             return (session);
 
         // Return the requested session if it exists and is valid
-        Manager manager = null;
-        if (context != null)
-            manager = context.getManager();
+        Manager manager = context.getManager();
         if (manager == null)
             return (null);      // Sessions are not supported
         if (requestedSessionId != null) {
@@ -2277,7 +2281,7 @@ public class Request
         // Create a new session if requested and the response is not committed
         if (!create)
             return (null);
-        if ((context != null) && (response != null) &&
+        if ((response != null) &&
             context.getCookies() &&
             response.getResponse().isCommitted()) {
             throw new IllegalStateException
@@ -2295,8 +2299,7 @@ public class Request
         }
 
         // Creating a new session cookie based on that session
-        if ((session != null) && (getContext() != null)
-               && getContext().getCookies()) {
+        if ( (session != null) && context.getCookies() ) {
             Cookie cookie = new Cookie(Globals.SESSION_COOKIE_NAME,
                                        session.getIdInternal());
             configureSessionCookie(cookie);
@@ -2402,6 +2405,9 @@ public class Request
     protected void parseParameters() {
 
         parametersParsed = true;
+        
+        if (context == null)
+            return;
 
         Parameters parameters = coyoteRequest.getParameters();
 
