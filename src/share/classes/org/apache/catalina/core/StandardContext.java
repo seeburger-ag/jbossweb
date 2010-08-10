@@ -83,6 +83,7 @@ import org.apache.catalina.deploy.MessageDestinationRef;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.startup.ContextConfig;
@@ -514,6 +515,11 @@ public class StandardContext
      * The notification sequence number.
      */
     private long sequenceNumber = 0;
+    
+     /**
+     * The session cookie.
+     */
+    private SessionCookie sessionCookie = new SessionCookie(); 
     
     /**
      * The status code error pages for this web application, keyed by
@@ -1373,6 +1379,25 @@ public class StandardContext
                 Boolean.valueOf(this.ignoreAnnotations));
     }
     
+    
+    /**
+     * Set the session cookie configuration.
+     *
+     * @param sessionCookie The new value
+     */
+    public void setSessionCookie(SessionCookie sessionCookie) {
+        SessionCookie oldSessionCookie = this.sessionCookie;
+        this.sessionCookie = sessionCookie;
+        support.firePropertyChange("sessionCookie", oldSessionCookie, sessionCookie);
+    }
+
+
+    /**
+     * Return the session cookie configuration.
+     */
+    public SessionCookie getSessionCookie() {
+        return this.sessionCookie;
+    }
     
     /**
      * Return the login configuration descriptor for this web application.

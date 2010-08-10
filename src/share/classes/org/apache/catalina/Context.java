@@ -30,6 +30,7 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.util.CharsetMapper;
 
 
@@ -173,7 +174,20 @@ public interface Context extends Container {
      */
     public boolean getCookies();
 
+    /**
+     * Set the session cookie configuration.
+     *
+     * @param sessionCookie The new value
+     */
+    public void setSessionCookie(SessionCookie sessionCookie);
 
+
+    /**
+     * Return the session cookie configuration.
+     */
+    public SessionCookie getSessionCookie();   
+
+    
     /**
      * Set the "use cookies for session ids" flag.
      *

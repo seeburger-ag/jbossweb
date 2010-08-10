@@ -52,6 +52,7 @@ import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.Parameters;
 import org.apache.tomcat.util.http.ServerCookie;
+import org.apache.tomcat.util.http.TomcatCookie;
 import org.apache.tomcat.util.http.mapper.MappingData;
 
 import org.apache.coyote.ActionCode;
@@ -2296,7 +2297,7 @@ public class Request
         // Creating a new session cookie based on that session
         if ((session != null) && (getContext() != null)
                && getContext().getCookies()) {
-            Cookie cookie = new Cookie(Globals.SESSION_COOKIE_NAME,
+            TomcatCookie cookie = new TomcatCookie(Globals.SESSION_COOKIE_NAME,
                                        session.getIdInternal());
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
@@ -2316,7 +2317,7 @@ public class Request
      *
      * @param cookie The JSESSIONID cookie to be configured
      */
-    protected void configureSessionCookie(Cookie cookie) {
+    protected void configureSessionCookie(TomcatCookie cookie) {
         cookie.setMaxAge(-1);
         String contextPath = null;
         if (!connector.getEmptySessionPath() && (getContext() != null)) {
@@ -2326,6 +2327,9 @@ public class Request
             cookie.setPath(contextPath);
         } else {
             cookie.setPath("/");
+        }
+        if (context.getSessionCookie().isHttpOnly()) {
+            cookie.setHttpOnly(true);
         }
         if (isSecure()) {
             cookie.setSecure(true);
