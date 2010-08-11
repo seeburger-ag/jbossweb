@@ -163,6 +163,10 @@ public class JIoEndpoint {
     public void setThreadPriority(int threadPriority) { this.threadPriority = threadPriority; }
     public int getThreadPriority() { return threadPriority; }
 
+    /*
+     * wait for free worker when MaxThreads is reached.
+     */
+    protected boolean WAITFORWORKER = Boolean.valueOf(System.getProperty("org.apache.tomcat.util.net.WAITFORWORKER", "false")).booleanValue();
     
     /**
      * Server socket port.
@@ -700,7 +704,7 @@ public class JIoEndpoint {
     protected Worker getWorkerThread() {
         // Allocate a new worker thread
         Worker workerThread = createWorkerThread();
-        while (workerThread == null) {
+        while (workerThread == null && WAITFORWORKER) {
             try {
                 synchronized (workers) {
                     workers.wait();
@@ -734,7 +738,11 @@ public class JIoEndpoint {
     protected boolean processSocket(Socket socket) {
         try {
             if (executor == null) {
-                getWorkerThread().assign(socket);
+                Worker worker = getWorkerThread();
+                if (worker != null)
+                    worker.assign(socket);
+                else
+                    return false;
             } else {
                 executor.execute(new SocketProcessor(socket));
             }
