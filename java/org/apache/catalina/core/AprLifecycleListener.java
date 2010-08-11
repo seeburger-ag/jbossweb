@@ -95,7 +95,8 @@ public class AprLifecycleListener
                 return;
             }
             try {
-                terminateAPR();
+                // terminateAPR();
+                log.error("terminateAPR skipped for JBPAPP-4753");
             } catch (Throwable t) {
                 if (!log.isDebugEnabled()) {
                     log.info(sm.getString("aprListener.aprDestroy"));
