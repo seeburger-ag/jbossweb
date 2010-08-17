@@ -16,6 +16,21 @@
 
 <body>
 
+<section name="JBoss Web 2.1.10.GA (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        <jboss-jira>JBPAPP-4753</jboss-jira>: Avoid possible shutdown crash with native, 
+        caused by APR terminate. (jfclere)
+      </fix>
+      <fix>
+        <jboss-jira>JBPAPP-4779</jboss-jira>: Don't wait if no threads are immediately
+        available in the connector. (jfclere)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.9.GA (remm)">
   <subsection name="Catalina">
     <changelog>
