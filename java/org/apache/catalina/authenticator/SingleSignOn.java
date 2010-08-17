@@ -412,7 +412,7 @@ public class SingleSignOn
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("SingleSignOn[");
+        StringBuffer sb = new StringBuffer("SingleSignOn[");
         if (container == null )
             sb.append("Container is null");
         else

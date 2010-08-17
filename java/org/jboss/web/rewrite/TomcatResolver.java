@@ -56,7 +56,7 @@ public class TomcatResolver extends Resolver {
             return request.getHeader("forwarded");
         } else if (key.equals("HTTP_HOST")) {
             String host = request.getHeader("host");
-            int index = (host != null) ? host.indexOf(':') : -1;
+            int index = host.indexOf(':');
             if (index != -1)
                 host = host.substring(0, index);
             return host;
@@ -77,7 +77,7 @@ public class TomcatResolver extends Resolver {
         } else if (key.equals("REQUEST_METHOD")) {
             return request.getMethod();
         } else if (key.equals("SCRIPT_FILENAME")) {
-            return request.getRealPath(request.getServletPath());
+            return request.getRealPath(request.getServletPath()); //FIXME ?
         } else if (key.equals("REQUEST_PATH")) {
             return request.getRequestPathMB().toString();
         } else if (key.equals("CONTEXT_PATH")) {

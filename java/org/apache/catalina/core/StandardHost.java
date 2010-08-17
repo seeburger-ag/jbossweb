@@ -19,8 +19,6 @@
 package org.apache.catalina.core;
 
 
-import java.util.Locale;
-
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -64,7 +62,7 @@ public class StandardHost
         super();
         pipeline.setBasic(new StandardHostValve());
         startChildren = 
-            Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.startChildren", "false")).booleanValue();
+            Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.startChildren", "true")).booleanValue();
 
     }
 
@@ -85,6 +83,13 @@ public class StandardHost
 
 
     /**
+     * The auto deploy flag for this Host.
+     */
+    private boolean autoDeploy = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.autoDeploy", "true")).booleanValue();
+
+
+    /**
      * The Java class name of the default context configuration class
      * for deployed web applications.
      */
@@ -98,6 +103,20 @@ public class StandardHost
      */
     private String contextClass =
         "org.apache.catalina.core.StandardContext";
+
+
+    /**
+     * The deploy on startup flag for this Host.
+     */
+    private boolean deployOnStartup = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.deployOnStartup", "true")).booleanValue();
+
+
+    /**
+     * deploy Context XML config files property.
+     */
+    private boolean deployXML = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardHost.deployXML", "true")).booleanValue();
 
 
     /**
@@ -120,9 +139,27 @@ public class StandardHost
 
 
     /**
+     * Unpack WARs property.
+     */
+    private boolean unpackWARs = true;
+
+
+    /**
      * Work Directory base for applications.
      */
     private String workDir = null;
+
+
+    /**
+     * Attribute value used to turn on/off XML validation
+     */
+     private boolean xmlValidation = false;
+
+
+    /**
+     * Attribute value used to turn on/off XML namespace awarenes.
+     */
+     private boolean xmlNamespaceAware = false;
 
 
     // ------------------------------------------------------------- Properties
@@ -150,6 +187,32 @@ public class StandardHost
         String oldAppBase = this.appBase;
         this.appBase = appBase;
         support.firePropertyChange("appBase", oldAppBase, this.appBase);
+
+    }
+
+
+    /**
+     * Return the value of the auto deploy flag.  If true, it indicates that 
+     * this host's child webapps will be dynamically deployed.
+     */
+    public boolean getAutoDeploy() {
+
+        return (this.autoDeploy);
+
+    }
+
+
+    /**
+     * Set the auto deploy flag value for this host.
+     * 
+     * @param autoDeploy The new auto deploy flag
+     */
+    public void setAutoDeploy(boolean autoDeploy) {
+
+        boolean oldAutoDeploy = this.autoDeploy;
+        this.autoDeploy = autoDeploy;
+        support.firePropertyChange("autoDeploy", oldAutoDeploy, 
+                                   this.autoDeploy);
 
     }
 
@@ -209,6 +272,75 @@ public class StandardHost
 
 
     /**
+     * Return the value of the deploy on startup flag.  If true, it indicates 
+     * that this host's child webapps should be discovred and automatically 
+     * deployed at startup time.
+     */
+    public boolean getDeployOnStartup() {
+
+        return (this.deployOnStartup);
+
+    }
+
+
+    /**
+     * Set the deploy on startup flag value for this host.
+     * 
+     * @param deployOnStartup The new deploy on startup flag
+     */
+    public void setDeployOnStartup(boolean deployOnStartup) {
+
+        boolean oldDeployOnStartup = this.deployOnStartup;
+        this.deployOnStartup = deployOnStartup;
+        support.firePropertyChange("deployOnStartup", oldDeployOnStartup, 
+                                   this.deployOnStartup);
+
+    }
+
+
+    /**
+     * Deploy XML Context config files flag accessor.
+     */
+    public boolean isDeployXML() {
+
+        return (deployXML);
+
+    }
+
+
+    /**
+     * Deploy XML Context config files flag mutator.
+     */
+    public void setDeployXML(boolean deployXML) {
+
+        this.deployXML = deployXML;
+
+    }
+
+
+    /**
+     * Return the value of the live deploy flag.  If true, it indicates that 
+     * a background thread should be started that looks for web application
+     * context files, WAR files, or unpacked directories being dropped in to
+     * the <code>appBase</code> directory, and deploys new ones as they are
+     * encountered.
+     */
+    public boolean getLiveDeploy() {
+        return (this.autoDeploy);
+    }
+
+
+    /**
+     * Set the live deploy flag value for this host.
+     * 
+     * @param liveDeploy The new live deploy flag
+     */
+    public void setLiveDeploy(boolean liveDeploy) {
+        setAutoDeploy(liveDeploy);
+    }
+
+
+    /**
      * Return the Java class name of the error report valve class
      * for new web applications.
      */
@@ -261,7 +393,7 @@ public class StandardHost
             throw new IllegalArgumentException
                 (sm.getString("standardHost.nullName"));
 
-        name = name.toLowerCase(Locale.ENGLISH);      // Internally all names are lower case
+        name = name.toLowerCase();      // Internally all names are lower case
 
         String oldName = this.name;
         this.name = name;
@@ -270,6 +402,64 @@ public class StandardHost
     }
 
 
+    /**
+     * Unpack WARs flag accessor.
+     */
+    public boolean isUnpackWARs() {
+
+        return (unpackWARs);
+
+    }
+
+
+    /**
+     * Unpack WARs flag mutator.
+     */
+    public void setUnpackWARs(boolean unpackWARs) {
+
+        this.unpackWARs = unpackWARs;
+
+    }
+
+     /**
+     * Set the validation feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlValidation true to enable xml instance validation
+     */
+    public void setXmlValidation(boolean xmlValidation){
+        
+        this.xmlValidation = xmlValidation;
+
+    }
+
+    /**
+     * Get the server.xml <host> attribute's xmlValidation.
+     * @return true if validation is enabled.
+     *
+     */
+    public boolean getXmlValidation(){
+        return xmlValidation;
+    }
+
+    /**
+     * Get the server.xml <host> attribute's xmlNamespaceAware.
+     * @return true if namespace awarenes is enabled.
+     *
+     */
+    public boolean getXmlNamespaceAware(){
+        return xmlNamespaceAware;
+    }
+
+
+    /**
+     * Set the namespace aware feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlNamespaceAware true to enable namespace awareness
+     */
+    public void setXmlNamespaceAware(boolean xmlNamespaceAware){
+        this.xmlNamespaceAware=xmlNamespaceAware;
+    }    
+    
     /**
      * Host work directory base.
      */
@@ -298,7 +488,7 @@ public class StandardHost
      */
     public void addAlias(String alias) {
 
-        alias = alias.toLowerCase(Locale.ENGLISH);
+        alias = alias.toLowerCase();
 
         // Skip duplicate aliases
         for (int i = 0; i < aliases.length; i++) {
@@ -360,33 +550,86 @@ public class StandardHost
 
 
     /**
+     * Return the Context that would be used to process the specified
+     * host-relative request URI, if any; otherwise return <code>null</code>.
+     *
+     * @param uri Request URI to be mapped
+     */
+    public Context map(String uri) {
+
+        if (log.isDebugEnabled())
+            log.debug("Mapping request URI '" + uri + "'");
+        if (uri == null)
+            return (null);
+
+        // Match on the longest possible context path prefix
+        if (log.isTraceEnabled())
+            log.trace("  Trying the longest context path prefix");
+        Context context = null;
+        String mapuri = uri;
+        while (true) {
+            context = (Context) findChild(mapuri);
+            if (context != null)
+                break;
+            int slash = mapuri.lastIndexOf('/');
+            if (slash < 0)
+                break;
+            mapuri = mapuri.substring(0, slash);
+        }
+
+        // If no Context matches, select the default Context
+        if (context == null) {
+            if (log.isTraceEnabled())
+                log.trace("  Trying the default context");
+            context = (Context) findChild("");
+        }
+
+        // Complain if no Context has been selected
+        if (context == null) {
+            log.error(sm.getString("standardHost.mappingError", uri));
+            return (null);
+        }
+
+        // Return the mapped Context (if any)
+        if (log.isDebugEnabled())
+            log.debug(" Mapped to context '" + context.getPath() + "'");
+        return (context);
+
+    }
+
+
+    /**
      * Remove the specified alias name from the aliases for this Host.
      *
      * @param alias Alias name to be removed
      */
     public void removeAlias(String alias) {
 
-        alias = alias.toLowerCase(Locale.ENGLISH);
+        alias = alias.toLowerCase();
 
-        // Make sure this alias is currently present
-        int n = -1;
-        for (int i = 0; i < aliases.length; i++) {
-            if (aliases[i].equals(alias)) {
-                n = i;
-                break;
+        synchronized (aliases) {
+
+            // Make sure this alias is currently present
+            int n = -1;
+            for (int i = 0; i < aliases.length; i++) {
+                if (aliases[i].equals(alias)) {
+                    n = i;
+                    break;
+                }
             }
-        }
-        if (n < 0)
-            return;
+            if (n < 0)
+                return;
 
-        // Remove the specified alias
-        int j = 0;
-        String results[] = new String[aliases.length - 1];
-        for (int i = 0; i < aliases.length; i++) {
-            if (i != n)
-                results[j++] = aliases[i];
+            // Remove the specified alias
+            int j = 0;
+            String results[] = new String[aliases.length - 1];
+            for (int i = 0; i < aliases.length; i++) {
+                if (i != n)
+                    results[j++] = aliases[i];
+            }
+            aliases = results;
+
         }
-        aliases = results;
 
         // Inform interested listeners
         fireContainerEvent(REMOVE_ALIAS_EVENT, alias);
@@ -399,7 +642,7 @@ public class StandardHost
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         if (getParent() != null) {
             sb.append(getParent().toString());
             sb.append(".");
@@ -466,7 +709,12 @@ public class StandardHost
                      errorReportValveClass), t);
             }
         }
-
+        if(log.isDebugEnabled()) {
+            if (xmlValidation)
+                log.debug(sm.getString("standardHost.validationEnabled"));
+            else
+                log.debug(sm.getString("standardHost.validationDisabled"));
+        }
         super.start();
 
     }
@@ -499,7 +747,7 @@ public class StandardHost
 
     private boolean initialized=false;
     
-    public synchronized void init() {
+    public void init() {
         if( initialized ) return;
         initialized=true;
         
@@ -542,7 +790,7 @@ public class StandardHost
         }
     }
 
-    public synchronized void destroy() throws Exception {
+    public void destroy() throws Exception {
         // destroy our child containers, if any
         Container children[] = findChildren();
         super.destroy();

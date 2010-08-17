@@ -1,23 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.apache.coyote.http11;
@@ -27,7 +22,6 @@ import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +31,7 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
@@ -45,7 +40,6 @@ import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.net.JIoEndpoint;
 import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.ServerSocketFactory;
-import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.JIoEndpoint.Handler;
 import org.apache.tomcat.util.res.StringManager;
 
@@ -147,11 +141,6 @@ public class Http11Protocol
     public Adapter getAdapter() { return adapter; }
 
 
-    public boolean hasIoEvents() {
-        return false;
-    }
-
-
     public void init() throws Exception {
         endpoint.setName(getName());
         endpoint.setHandler(cHandler);
@@ -188,8 +177,8 @@ public class Http11Protocol
             log.error(sm.getString("http11protocol.endpoint.initerror"), ex);
             throw ex;
         }
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("http11protocol.init", getName()));
+        if (log.isInfoEnabled())
+            log.info(sm.getString("http11protocol.init", getName()));
 
     }
 
@@ -549,8 +538,6 @@ public class Http11Protocol
         protected AtomicLong registerCount = new AtomicLong(0);
         protected RequestGroupInfo global = new RequestGroupInfo();
 
-        protected ConcurrentHashMap<Socket, Http11Processor> connections =
-            new ConcurrentHashMap<Socket, Http11Processor>();
         protected ConcurrentLinkedQueue<Http11Processor> recycledProcessors = 
             new ConcurrentLinkedQueue<Http11Processor>() {
             protected AtomicInteger size = new AtomicInteger(0);
@@ -591,57 +578,15 @@ public class Http11Protocol
             this.proto = proto;
         }
 
-        public SocketState event(Socket socket, SocketStatus status) {
-            Http11Processor result = connections.get(socket);
-            SocketState state = SocketState.CLOSED; 
-            if (result != null) {
-                result.startProcessing();
-                // Call the appropriate event
-                try {
-                    state = result.event(status);
-                } catch (java.net.SocketException e) {
-                    // SocketExceptions are normal
-                    Http11Protocol.log.debug
-                        (sm.getString
-                            ("http11protocol.proto.socketexception.debug"), e);
-                } catch (java.io.IOException e) {
-                    // IOExceptions are normal
-                    Http11Protocol.log.debug
-                        (sm.getString
-                            ("http11protocol.proto.ioexception.debug"), e);
-                }
-                // Future developers: if you discover any other
-                // rare-but-nonfatal exceptions, catch them here, and log as
-                // above.
-                catch (Throwable e) {
-                    // any other exception or error is odd. Here we log it
-                    // with "ERROR" level, so it will show up even on
-                    // less-than-verbose logs.
-                    Http11Protocol.log.error
-                        (sm.getString("http11protocol.proto.error"), e);
-                } finally {
-                    if (state != SocketState.LONG) {
-                        connections.remove(socket);
-                        recycledProcessors.offer(result);
-                    } else {
-                        if (proto.endpoint.isRunning()) {
-                            proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
-                                    result.getResumeNotification(), false);
-                        }
-                    }
-                    result.endProcessing();
-                }
-            }
-            return state;
-        }
-        
-        public SocketState process(Socket socket) {
+        public boolean process(Socket socket) {
             Http11Processor processor = recycledProcessors.poll();
             try {
 
                 if (processor == null) {
                     processor = createProcessor();
                 }
+
+                processor.action(ActionCode.ACTION_START, null);
 
                 if (proto.secure && (proto.sslImplementation != null)) {
                     processor.setSSLSupport
@@ -650,18 +595,8 @@ public class Http11Protocol
                     processor.setSSLSupport(null);
                 }
                 
-                SocketState state = processor.process(socket);
-                if (state == SocketState.LONG) {
-                    // Associate the connection with the processor. The next request 
-                    // processed by this thread will use either a new or a recycled
-                    // processor.
-                    connections.put(socket, processor);
-                    proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), 
-                            processor.getResumeNotification(), false);
-                } else {
-                    recycledProcessors.offer(processor);
-                }
-                return state;
+                processor.process(socket);
+                return false;
 
             } catch(java.net.SocketException e) {
                 // SocketExceptions are normal
@@ -683,9 +618,14 @@ public class Http11Protocol
                 // less-than-verbose logs.
                 Http11Protocol.log.error
                     (sm.getString("http11protocol.proto.error"), e);
+            } finally {
+                //       if(proto.adapter != null) proto.adapter.recycle();
+                //                processor.recycle();
+
+                processor.action(ActionCode.ACTION_STOP, null);
+                recycledProcessors.offer(processor);
             }
-            recycledProcessors.offer(processor);
-            return SocketState.CLOSED;
+            return false;
         }
         
         protected Http11Processor createProcessor() {

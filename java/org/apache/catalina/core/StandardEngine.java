@@ -21,7 +21,6 @@ package org.apache.catalina.core;
 
 import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -31,9 +30,13 @@ import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.Realm;
 import org.apache.catalina.Service;
+import org.apache.catalina.realm.JAASRealm;
+import org.apache.catalina.util.ServerInfo;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.modeler.modules.MbeansSource;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 /**
@@ -124,6 +127,22 @@ public class StandardEngine
 
     // ------------------------------------------------------------- Properties
 
+    /** Provide a default in case no explicit configuration is set
+     *
+     * @return configured realm, or a JAAS realm by default
+     */
+    public Realm getRealm() {
+        Realm configured=super.getRealm();
+        // If no set realm has been called - default to JAAS
+        // This can be overriden at engine, context and host level  
+        if( configured==null ) {
+            configured=new JAASRealm();
+            this.setRealm( configured );
+        }
+        return configured;
+    }
+
+
     /**
      * Return the default host.
      */
@@ -145,7 +164,7 @@ public class StandardEngine
         if (host == null) {
             this.defaultHost = null;
         } else {
-            this.defaultHost = host.toLowerCase(Locale.ENGLISH);
+            this.defaultHost = host.toLowerCase();
         }
         support.firePropertyChange("defaultHost", oldDefaultHost,
                                    this.defaultHost);
@@ -407,6 +426,10 @@ public class StandardEngine
             }
         }
             
+        // Log our server identification information
+        //System.out.println(ServerInfo.getServerInfo());
+        if(log.isInfoEnabled())
+            log.info( "Starting Servlet Engine: " + ServerInfo.getServerInfo());
         if( mbeans != null ) {
             try {
                 Registry.getRegistry(null, null)
@@ -438,7 +461,7 @@ public class StandardEngine
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("StandardEngine[");
+        StringBuffer sb = new StringBuffer("StandardEngine[");
         sb.append(getName());
         sb.append("]");
         return (sb.toString());

@@ -48,7 +48,7 @@ public class C2BConverter {
         throws IOException {
         try {
             encoder = Charset.forName(charset).newEncoder();
-            encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+            encoder = encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }

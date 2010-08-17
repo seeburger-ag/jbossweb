@@ -5,16 +5,19 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+
 package org.apache.tomcat.util.http.fileupload;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -23,13 +26,14 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 
+
 /**
  * <p> This class represents a file or form item that was received within a
  * <code>multipart/form-data</code> POST request.
  *
  * <p> After retrieving an instance of this class from a {@link
- * org.apache.commons.fileupload.FileUpload FileUpload} instance (see
- * {@link org.apache.commons.fileupload.FileUpload
+ * org.apache.tomcat.util.http.fileupload.FileUpload FileUpload} instance (see
+ * {@link org.apache.tomcat.util.http.fileupload.FileUpload
  * #parseRequest(javax.servlet.http.HttpServletRequest)}), you may
  * either request all contents of the file at once using {@link #get()} or
  * request an {@link java.io.InputStream InputStream} with
@@ -50,7 +54,9 @@ import java.io.UnsupportedEncodingException;
  *
  * @version $Id$
  */
-public interface FileItem extends Serializable {
+public interface FileItem
+    extends Serializable
+{
 
 
     // ------------------------------- Methods from javax.activation.DataSource
@@ -63,9 +69,10 @@ public interface FileItem extends Serializable {
      * @return An {@link java.io.InputStream InputStream} that can be
      *         used to retrieve the contents of the file.
      *
-     * @throws IOException if an error occurs.
+     * @exception IOException if an error occurs.
      */
-    InputStream getInputStream() throws IOException;
+    InputStream getInputStream()
+        throws IOException;
 
 
     /**
@@ -127,10 +134,11 @@ public interface FileItem extends Serializable {
      *
      * @return The contents of the item, as a string.
      *
-     * @throws UnsupportedEncodingException if the requested character
-     *                                      encoding is not available.
+     * @exception UnsupportedEncodingException if the requested character
+     *                                         encoding is not available.
      */
-    String getString(String encoding) throws UnsupportedEncodingException;
+    String getString(String encoding)
+        throws UnsupportedEncodingException;
 
 
     /**
@@ -157,7 +165,7 @@ public interface FileItem extends Serializable {
      * @param file The <code>File</code> into which the uploaded item should
      *             be stored.
      *
-     * @throws Exception if an error occurs.
+     * @exception Exception if an error occurs.
      */
     void write(File file) throws Exception;
 
@@ -214,9 +222,9 @@ public interface FileItem extends Serializable {
      * be used for storing the contents of the file.
      *
      * @return An {@link java.io.OutputStream OutputStream} that can be used
-     *         for storing the contents of the file.
+     *         for storing the contensts of the file.
      *
-     * @throws IOException if an error occurs.
+     * @exception IOException if an error occurs.
      */
     OutputStream getOutputStream() throws IOException;
 

@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.jar.JarInputStream;
@@ -88,7 +87,7 @@ public final class ExtensionValidator {
         // build a list of jar files in the classpath
         while (strTok.hasMoreTokens()) {
             String classpathItem = strTok.nextToken();
-            if (classpathItem.toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
+            if (classpathItem.toLowerCase().endsWith(".jar")) {
                 File item = new File(classpathItem);
                 if (item.exists()) {
                     try {
@@ -143,7 +142,7 @@ public final class ExtensionValidator {
         try {
             NamingEnumeration wne = dirContext.listBindings("/META-INF/");
             Binding binding = (Binding) wne.nextElement();
-            if (binding.getName().toUpperCase(Locale.ENGLISH).equals("MANIFEST.MF")) {
+            if (binding.getName().toUpperCase().equals("MANIFEST.MF")) {
                 Resource resource = (Resource)dirContext.lookup
                                     ("/META-INF/" + binding.getName());
                 inputStream = resource.streamContent();
@@ -177,7 +176,7 @@ public final class ExtensionValidator {
             }
             while ((ne != null) && ne.hasMoreElements()) {
                 Binding binding = (Binding)ne.nextElement();
-                if (!binding.getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
+                if (!binding.getName().toLowerCase().endsWith(".jar")) {
                     continue;
                 }
                 Object resourceObject = dirContext.lookup("/WEB-INF/lib/" + binding.getName());
@@ -408,7 +407,7 @@ public final class ExtensionValidator {
                 }
                 File[] files = targetDir.listFiles();
                 for (int i = 0; i < files.length; i++) {
-                    if (files[i].getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
+                    if (files[i].getName().toLowerCase().endsWith(".jar")) {
                         try {
                             addSystemResource(files[i]);
                         } catch (IOException e) {
