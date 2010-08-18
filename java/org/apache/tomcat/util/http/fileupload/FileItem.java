@@ -28,8 +28,8 @@ import java.io.UnsupportedEncodingException;
  * <code>multipart/form-data</code> POST request.
  *
  * <p> After retrieving an instance of this class from a {@link
- * org.apache.commons.fileupload.FileUpload FileUpload} instance (see
- * {@link org.apache.commons.fileupload.FileUpload
+ * org.apache.tomcat.util.http.fileupload.FileUpload FileUpload} instance (see
+ * {@link org.apache.tomcat.util.http.fileupload.FileUpload
  * #parseRequest(javax.servlet.http.HttpServletRequest)}), you may
  * either request all contents of the file at once using {@link #get()} or
  * request an {@link java.io.InputStream InputStream} with
@@ -85,6 +85,10 @@ public interface FileItem extends Serializable {
      * the Opera browser, do include path information.
      *
      * @return The original filename in the client's filesystem.
+     * @throws InvalidFileNameException The file name contains a NUL character,
+     *   which might be an indicator of a security attack. If you intend to
+     *   use the file name anyways, catch the exception and use
+     *   InvalidFileNameException#getName().
      */
     String getName();
 

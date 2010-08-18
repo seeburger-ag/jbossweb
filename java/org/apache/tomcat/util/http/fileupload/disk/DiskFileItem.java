@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.tomcat.util.http.fileupload;
+package org.apache.tomcat.util.http.fileupload.disk;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -30,23 +30,38 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
+import org.apache.tomcat.util.http.fileupload.DeferredFileOutputStream;
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemHeaders;
+import org.apache.tomcat.util.http.fileupload.FileItemHeadersSupport;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.apache.tomcat.util.http.fileupload.InvalidFileNameException;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.apache.tomcat.util.http.fileupload.ParameterParser;
+import org.apache.tomcat.util.http.fileupload.RequestContext;
+import org.apache.tomcat.util.http.fileupload.util.Streams;
+
 
 /**
  * <p> The default implementation of the
- * {@link org.apache.commons.fileupload.FileItem FileItem} interface.
+ * {@link org.apache.tomcat.util.http.fileupload.FileItem FileItem} interface.
  *
  * <p> After retrieving an instance of this class from a {@link
- * org.apache.commons.fileupload.DiskFileUpload DiskFileUpload} instance (see
- * {@link org.apache.commons.fileupload.DiskFileUpload
- * #parseRequest(javax.servlet.http.HttpServletRequest)}), you may
+ * org.apache.tomcat.util.http.fileupload.FileUpload FileUpload} instance (see
+ * {@link org.apache.tomcat.util.http.fileupload.FileUpload
+ * #parseRequest(RequestContext)}), you may
  * either request all contents of file at once using {@link #get()} or
  * request an {@link java.io.InputStream InputStream} with
  * {@link #getInputStream()} and process the file without attempting to load
  * it into memory, which may come handy with large files.
  *
- * <p>When using the <code>DiskFileItemFactory</code>, then you should
- * consider the following: Temporary files are automatically deleted as
- * soon as they are no longer needed. (More precisely, when the
+ * <p>Temporary files, which are created for file items, should be
+ * deleted later on. The best way to do this is using a
+ * {@link org.apache.tomcat.util.http.fileupload.FileCleaningTracker
+ * FileCleaningTracker}, which you can set on the
+ * {@link DiskFileItemFactory}. However, if you do use such a tracker,
+ * then you must consider the following: Temporary files are automatically
+ * deleted as soon as they are no longer needed. (More precisely, when the
  * corresponding instance of {@link java.io.File} is garbage collected.)
  * This is done by the so-called reaper thread, which is started
  * automatically when the class {@link org.apache.commons.io.FileCleaner}
@@ -64,7 +79,7 @@ import java.util.Map;
  *
  * @since FileUpload 1.1
  *
- * @version $Id: DiskFileItem.java 881562 2009-11-17 22:03:22Z markt $
+ * @version $Id: DiskFileItem.java 981816 2010-08-03 10:44:58Z markt $
  */
 public class DiskFileItem
     implements FileItem, FileItemHeadersSupport {
@@ -261,9 +276,13 @@ public class DiskFileItem
      * Returns the original filename in the client's filesystem.
      *
      * @return The original filename in the client's filesystem.
+     * @throws InvalidFileNameException The file name contains a NUL character,
+     *   which might be an indicator of a security attack. If you intend to
+     *   use the file name anyways, catch the exception and use
+     *   InvalidFileNameException#getName().
      */
     public String getName() {
-        return fileName;
+        return Streams.checkFileName(fileName);
     }
 
 
@@ -365,7 +384,7 @@ public class DiskFileItem
      *
      * @return The contents of the file, as a string.
      *
-     * @todo Consider making this method throw UnsupportedEncodingException.
+     * TODO Consider making this method throw UnsupportedEncodingException.
      */
     public String getString() {
         byte[] rawdata = get();

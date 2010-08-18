@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.tomcat.util.http.fileupload;
+package org.apache.tomcat.util.http.fileupload.servlet;
 
 import java.io.InputStream;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.tomcat.util.http.fileupload.RequestContext;
 
 
 /**
@@ -29,7 +31,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @since FileUpload 1.1
  *
- * @version $Id: ServletRequestContext.java 881533 2009-11-17 21:21:41Z markt $
+ * @version $Id: ServletRequestContext.java 981187 2010-08-01 09:28:02Z markt $
  */
 public class ServletRequestContext implements RequestContext {
 

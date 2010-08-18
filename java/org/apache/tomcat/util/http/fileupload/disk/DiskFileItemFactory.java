@@ -14,15 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.tomcat.util.http.fileupload;
+package org.apache.tomcat.util.http.fileupload.disk;
 
 import java.io.File;
 
+import org.apache.tomcat.util.http.fileupload.FileCleaningTracker;
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+
 
 /**
- * <p>The default {@link org.apache.commons.fileupload.FileItemFactory}
+ * <p>The default {@link org.apache.tomcat.util.http.fileupload.FileItemFactory}
  * implementation. This implementation creates
- * {@link org.apache.commons.fileupload.FileItem} instances which keep their
+ * {@link org.apache.tomcat.util.http.fileupload.FileItem} instances which keep
+ * their
  * content either in memory, for smaller items, or in a temporary file on disk,
  * for larger items. The size threshold, above which content will be stored on
  * disk, is configurable, as is the directory in which temporary files will be
@@ -37,22 +42,25 @@ import java.io.File;
  * </ul>
  * </p>
  *
- * <p>When using the <code>DiskFileItemFactory</code>, then you should
- * consider the following: Temporary files are automatically deleted as
- * soon as they are no longer needed. (More precisely, when the
+ * <p>Temporary files, which are created for file items, should be
+ * deleted later on. The best way to do this is using a
+ * {@link FileCleaningTracker}, which you can set on the
+ * {@link DiskFileItemFactory}. However, if you do use such a tracker,
+ * then you must consider the following: Temporary files are automatically
+ * deleted as soon as they are no longer needed. (More precisely, when the
  * corresponding instance of {@link java.io.File} is garbage collected.)
- * Cleaning up those files is done by an instance of
- * {@link FileCleaningTracker}, and an associated thread. In a complex
- * environment, for example in a web application, you should consider
- * terminating this thread, for example, when your web application
- * ends. See the section on "Resource cleanup"
+ * This is done by the so-called reaper thread, which is started
+ * automatically when the class {@link org.apache.commons.io.FileCleaner}
+ * is loaded.
+ * It might make sense to terminate that thread, for example, if
+ * your web application ends. See the section on "Resource cleanup"
  * in the users guide of commons-fileupload.</p>
  *
  * @author <a href="mailto:martinc@apache.org">Martin Cooper</a>
  *
  * @since FileUpload 1.1
  *
- * @version $Id: DiskFileItemFactory.java 881493 2009-11-17 20:30:39Z markt $
+ * @version $Id: DiskFileItemFactory.java 981816 2010-08-03 10:44:58Z markt $
  */
 public class DiskFileItemFactory implements FileItemFactory {
 
@@ -174,7 +182,7 @@ public class DiskFileItemFactory implements FileItemFactory {
     // --------------------------------------------------------- Public Methods
 
     /**
-     * Create a new {@link org.apache.commons.fileupload.disk.DiskFileItem}
+     * Create a new {@link DiskFileItem}
      * instance from the supplied parameters and the local factory
      * configuration.
      *
@@ -202,20 +210,19 @@ public class DiskFileItemFactory implements FileItemFactory {
     /**
      * Returns the tracker, which is responsible for deleting temporary
      * files.
-     * @return An instance of {@link FileCleaningTracker}, defaults to
-     *   {@link org.apache.commons.io.FileCleaner#getInstance()}. Null,
-     *   if temporary files aren't tracked.
+     * @return An instance of {@link FileCleaningTracker}, or null
+     *   (default), if temporary files aren't tracked.
      */
     public FileCleaningTracker getFileCleaningTracker() {
         return fileCleaningTracker;
     }
 
     /**
-     * Returns the tracker, which is responsible for deleting temporary
+     * Sets the tracker, which is responsible for deleting temporary
      * files.
      * @param pTracker An instance of {@link FileCleaningTracker},
-     *   which will from now on track the created files. May be null
-     *   to disable tracking.
+     *   which will from now on track the created files, or null
+     *   (default), to disable tracking.
      */
     public void setFileCleaningTracker(FileCleaningTracker pTracker) {
         fileCleaningTracker = pTracker;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.tomcat.util.http.fileupload;
+package org.apache.tomcat.util.http.fileupload.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import org.apache.tomcat.util.http.fileupload.FileItemHeaders;
 
 
 /**
@@ -78,7 +80,7 @@ public class FileItemHeadersImpl implements FileItemHeaders, Serializable {
      * @param value value of this header
      */
     public synchronized void addHeader(String name, String value) {
-        String nameLower = name.toLowerCase(Locale.ENGLISH);
+        String nameLower = name.toLowerCase();
         List<String> headerValueList = headerNameToValueListMap.get(nameLower);
         if (null == headerValueList) {
             headerValueList = new ArrayList<String>();

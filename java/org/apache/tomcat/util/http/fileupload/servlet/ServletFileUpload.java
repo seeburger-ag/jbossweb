@@ -14,13 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.tomcat.util.http.fileupload;
+package org.apache.tomcat.util.http.fileupload.servlet;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.FileItemIterator;
+import org.apache.tomcat.util.http.fileupload.FileUpload;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 
 
 /**
@@ -30,7 +36,7 @@ import javax.servlet.http.HttpServletRequest;
  * <code>multipart/mixed</code> encoding type, as specified by
  * <a href="http://www.ietf.org/rfc/rfc1867.txt">RFC 1867</a>.  Use {@link
  * #parseRequest(HttpServletRequest)} to acquire a list of {@link
- * org.apache.commons.fileupload.FileItem}s associated with a given HTML
+ * org.apache.tomcat.util.http.fileupload.FileItem}s associated with a given HTML
  * widget.</p>
  *
  * <p>How the data for individual parts is stored is determined by the factory
@@ -44,7 +50,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author <a href="mailto:martinc@apache.org">Martin Cooper</a>
  * @author Sean C. Sullivan
  *
- * @version $Id: ServletFileUpload.java 881562 2009-11-17 22:03:22Z markt $
+ * @version $Id: ServletFileUpload.java 981816 2010-08-03 10:44:58Z markt $
  */
 public class ServletFileUpload extends FileUpload {
 
@@ -69,7 +75,7 @@ public class ServletFileUpload extends FileUpload {
         if (contentType == null) {
             return false;
         }
-        if (contentType.toLowerCase().startsWith(MULTIPART)) {
+        if (contentType.toLowerCase(Locale.ENGLISH).startsWith(MULTIPART)) {
             return true;
         }
         return false;

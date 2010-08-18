@@ -17,6 +17,13 @@
 <body>
 
 <section name="JBoss Web 3.0.0.Beta7 (remm)">
+  <subsection name="Genral">
+    <changelog>
+      <fix>
+        Use a more standard fileupload and update to 1.2. (markt)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Catalina">
     <changelog>
       <fix>
