@@ -44,6 +44,10 @@
       <fix>
         <bug>48960</bug>: Disable SSI exec by default, and add allowExec configuration. (markt)
       </fix>
+      <fix>
+        <bug>49428</bug>: Specify a namespace rather than use a default to please MS clients.
+        Submitted by Panagiotis Astithas. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
