@@ -41,7 +41,7 @@ import org.apache.catalina.Globals;
  * @author Amy Roh
  * @author Dan Sandberg
  * @author David Becker
- * @version $Revision$, $Date$
+ * @version $Id$
  */
 public class SSIServlet extends HttpServlet {
     /** Debug level for this servlet. */
@@ -56,6 +56,8 @@ public class SSIServlet extends HttpServlet {
     protected String inputEncoding = null;
     /** Output encoding. If not specified, uses platform default */
     protected String outputEncoding = "UTF-8";
+    /** Allow exec (normally blocked for security) */
+    protected boolean allowExec = false;
 
 
     //----------------- Public methods.
@@ -65,6 +67,7 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
+    @Override
     public void init() throws ServletException {
         
         if (getServletConfig().getInitParameter("debug") != null)
@@ -83,6 +86,9 @@ public class SSIServlet extends HttpServlet {
         if (getServletConfig().getInitParameter("outputEncoding") != null)
             outputEncoding = getServletConfig().getInitParameter("outputEncoding");
         
+        allowExec = Boolean.parseBoolean(
+                getServletConfig().getInitParameter("allowExec"));
+
         if (debug > 0)
             log("SSIServlet.init() SSI invoker started with 'debug'=" + debug);
 
@@ -101,6 +107,7 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
+    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException {
         if (debug > 0) log("SSIServlet.doGet()");
@@ -121,6 +128,7 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
+    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException {
         if (debug > 0) log("SSIServlet.doPost()");
@@ -137,7 +145,7 @@ public class SSIServlet extends HttpServlet {
      *            a value of type 'HttpServletResponse'
      */
     protected void requestHandler(HttpServletRequest req,
-            HttpServletResponse res) throws IOException, ServletException {
+            HttpServletResponse res) throws IOException {
         ServletContext servletContext = getServletContext();
         String path = SSIServletRequestUtil.getRelativePath(req);
         if (debug > 0)
@@ -178,7 +186,7 @@ public class SSIServlet extends HttpServlet {
             new SSIServletExternalResolver(getServletContext(), req, res,
                     isVirtualWebappRelative, debug, inputEncoding);
         SSIProcessor ssiProcessor = new SSIProcessor(ssiExternalResolver,
-                debug);
+                debug, allowExec);
         PrintWriter printWriter = null;
         StringWriter stringWriter = null;
         if (buffered) {

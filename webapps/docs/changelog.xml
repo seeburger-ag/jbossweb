@@ -41,6 +41,9 @@
       <fix>
         CSRF filter updates. (markt)
       </fix>
+      <fix>
+        <bug>48960</bug>: Disable SSI exec by default, and add allowExec configuration. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

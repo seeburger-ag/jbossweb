@@ -32,7 +32,7 @@ import org.apache.catalina.util.IOTools;
  * 
  * @author Dan Sandberg
  * @author David Becker
- * @version $Revision$, $Date$
+ * @version $Id$
  */
 public class SSIProcessor {
     /** The start pattern */
@@ -41,13 +41,17 @@ public class SSIProcessor {
     protected final static String COMMAND_END = "-->";
     protected final static int BUFFER_SIZE = 4096;
     protected SSIExternalResolver ssiExternalResolver;
-    protected HashMap commands = new HashMap();
+    protected HashMap<String,SSICommand> commands =
+        new HashMap<String,SSICommand>();
     protected int debug;
+    protected final boolean allowExec;
 
 
-    public SSIProcessor(SSIExternalResolver ssiExternalResolver, int debug) {
+    public SSIProcessor(SSIExternalResolver ssiExternalResolver, int debug,
+            boolean allowExec) {
         this.ssiExternalResolver = ssiExternalResolver;
         this.debug = debug;
+        this.allowExec = allowExec;
         addBuiltinCommands();
     }
 
@@ -55,7 +59,9 @@ public class SSIProcessor {
     protected void addBuiltinCommands() {
         addCommand("config", new SSIConfig());
         addCommand("echo", new SSIEcho());
-        addCommand("exec", new SSIExec());
+        if (allowExec) {
+            addCommand("exec", new SSIExec());
+        }
         addCommand("include", new SSIInclude());
         addCommand("flastmod", new SSIFlastmod());
         addCommand("fsize", new SSIFsize());
@@ -133,8 +139,8 @@ public class SSIProcessor {
                         // change
                         // during the loop
                         String configErrMsg = ssiMediator.getConfigErrMsg();
-                        SSICommand ssiCommand = (SSICommand)commands
-                                .get(strCmd.toLowerCase(Locale.ENGLISH));
+                        SSICommand ssiCommand =
+                            commands.get(strCmd.toLowerCase(Locale.ENGLISH));
                         String errorMessage = null;
                         if (ssiCommand == null) {
                             errorMessage = "Unknown command: " + strCmd;
