@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="arch02.html">
+
+  &project;
+
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>Hybrid connection model</title>
+  </properties>
+
+<body>
+
+<section name="Design">
+ <p>Hybrid connection model
+ </p>
+ <figure src="/images/design/acceptflowchart.png" name="Figure 4" text="Accept flowchart"/>
+ <br/>
+ <p>Sendfile Support
+ </p>
+ <figure src="/images/design/sendfileflowchart.png" name="Figure 5" text="Sendfile flowchart"/>
+</section>
+</body>
+</document>
