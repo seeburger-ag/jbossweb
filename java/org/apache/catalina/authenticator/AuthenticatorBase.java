@@ -821,6 +821,10 @@ public abstract class AuthenticatorBase
             // Bugzilla 41217
             cookie.setSecure(request.isSecure());
 
+            if (sso.isCookieHttpOnly()) {
+                cookie.setHttpOnly(true);
+            }
+
             // Bugzilla 34724
             String ssoDomain = sso.getCookieDomain();
             if(ssoDomain != null) {

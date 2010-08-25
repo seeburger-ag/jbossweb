@@ -121,7 +121,20 @@ public class SingleSignOn
      */
     protected String cookieDomain;
 
+    /**
+     * Optional SSO HTTP only.
+     */
+    protected boolean cookieHttpOnly = false;
+
     // ------------------------------------------------------------- Properties
+
+    public boolean isCookieHttpOnly() {
+        return cookieHttpOnly;
+    }
+
+    public void setCookieHttpOnly(boolean cookieHttpOnly) {
+        this.cookieHttpOnly = cookieHttpOnly;
+    }
 
     /**
      * Returns the optional cookie domain.
@@ -132,6 +145,7 @@ public class SingleSignOn
     public String getCookieDomain() {
         return cookieDomain;
     }
+    
     /**
      * Sets the domain to be used for sso cookies.
      *
