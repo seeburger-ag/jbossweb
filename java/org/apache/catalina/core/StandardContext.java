@@ -4202,7 +4202,7 @@ public class StandardContext
         if (getResources() == null)
             return oldContextClassLoader;
 
-        if (getLoader().getClassLoader() != null) {
+        if ((getLoader() != null) && getLoader().getClassLoader() != null) {
             Thread.currentThread().setContextClassLoader
                 (getLoader().getClassLoader());
         }
