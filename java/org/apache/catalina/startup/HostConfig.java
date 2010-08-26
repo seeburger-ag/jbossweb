@@ -85,12 +85,6 @@ public class HostConfig
 
     
     /**
-     * The JMX ObjectName of this component.
-     */
-    protected ObjectName oname = null;
-    
-
-    /**
      * The string resources for this package.
      */
     protected static final StringManager sm =
@@ -103,12 +97,6 @@ public class HostConfig
      */
     protected ArrayList<String> serviced = new ArrayList<String>();
     
-
-    /**
-     * The list of Wars in the appBase to be ignored because they are invalid
-     * (e.g. contain /../ sequences).
-     */
-    protected Set<String> invalidWars = new HashSet<String>();
 
     // ------------------------------------------------------------- Properties
 
@@ -167,6 +155,14 @@ public class HostConfig
      */
     public void lifecycleEvent(LifecycleEvent event) {
 
+        // Identify the context we are associated with
+        try {
+            host = (Host) event.getLifecycle();
+        } catch (ClassCastException e) {
+            log.error(sm.getString("hostConfig.cce", event.getLifecycle()), e);
+            return;
+        }
+        
         if (event.getType().equals(Lifecycle.PERIODIC_EVENT))
             check();
 
@@ -275,16 +271,6 @@ public class HostConfig
         if (log.isDebugEnabled())
             log.debug(sm.getString("hostConfig.start"));
 
-        try {
-            ObjectName hostON = new ObjectName(host.getObjectName());
-            oname = new ObjectName
-                (hostON.getDomain() + ":type=Deployer,host=" + host.getName());
-            Registry.getRegistry(null, null).registerComponent
-                (this, oname, this.getClass().getName());
-        } catch (Exception e) {
-            log.error(sm.getString("hostConfig.jmx.register", oname), e);
-        }
-
     }
 
 
@@ -298,14 +284,6 @@ public class HostConfig
 
         undeployApps();
 
-        if (oname != null) {
-            try {
-                Registry.getRegistry(null, null).unregisterComponent(oname);
-            } catch (Exception e) {
-                log.error(sm.getString("hostConfig.jmx.unregister", oname), e);
-            }
-        }
-        oname = null;
         appBase = null;
         configBase = null;
 
