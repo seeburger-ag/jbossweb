@@ -350,14 +350,14 @@
 		<copy file="${jasper-jdt.jar}" todir="${tomcat.jars}" />
 
 		<!-- Create a source jar of the jbossweb/servlet classes -->
-		<zip destfile="${tomcat.jars}/jbossweb-src.zip">
+		<jar destfile="${tomcat.jars}/jbossweb-src.jar" index="true">
 			<fileset dir="${basedir}/java">
 				<include name="org/**" />
 				<exclude name="org/jboss/logging/**" />
 				<exclude name="javax/servlet/**" />
 				<exclude name="javax/el/**" />
 			</fileset>
-		</zip>
+		</jar>
 
 	</target>
 
@@ -504,7 +504,7 @@
 		</exec>
 		<exec dir="." executable="/bin/sh" os="Linux">
 			<arg value="-c" />
-			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.zip -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=jboss.web -DartifactId=jbossweb -Dversion=${version} -Dclassifier=sources"/>
+			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jbossweb-src -Dversion=${version} -Dclassifier=sources"/>
 		</exec>
 
 		<!-- Windows exec -->
@@ -518,7 +518,7 @@
 		</exec>
 		<exec dir="." executable="cmd" os="Windows NT">
 			<arg value="/c" />
-			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.zip -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=jboss.web -DartifactId=jbossweb -Dversion=${version} -Dclassifier=sources"/>
+			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jbossweb-src -Dversion=${version} -Dclassifier=sources"/>
 		</exec>
 
 	</target>
