@@ -48,6 +48,10 @@
         <bug>49428</bug>: Specify a namespace rather than use a default to please MS clients.
         Submitted by Panagiotis Astithas. (markt)
       </fix>
+      <fix>
+        <bug>38113</bug>: Empty query Strings should be acceptable. This may be incompatible with
+        some old non compliant applications. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
