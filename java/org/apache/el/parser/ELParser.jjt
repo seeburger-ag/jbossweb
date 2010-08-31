@@ -259,7 +259,7 @@ void BracketSuffix() #BracketSuffix : {}
  */
 void Parameters() : {}
 {
-    Expression() (<COMMA> Expression())*
+    (Expression())? (<COMMA> Expression())*
 }
 
 /*

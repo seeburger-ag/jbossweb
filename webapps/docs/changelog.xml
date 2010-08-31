@@ -64,6 +64,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <jboss-jira>JBAS-8374</jboss-jira>: Allow empty parameters brackets for EL method calls. (remm)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 3.0.0.Beta6 (remm)">
