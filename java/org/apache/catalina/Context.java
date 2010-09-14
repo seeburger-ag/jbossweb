@@ -76,6 +76,18 @@ public interface Context extends Container {
     public static final String COMPLETE_CONFIG_EVENT = "complete-config";
 
 
+    /**
+     * The LifecycleEvent type sent to bind context information to the thread.
+     */
+    public static final String BIND_THREAD_EVENT = "bind-thread";
+
+
+    /**
+     * The LifecycleEvent type sent to unbind context information to the thread.
+     */
+    public static final String UNBIND_THREAD_EVENT = "unbind-thread";
+
+
     // ------------------------------------------------------------- Properties
 
 

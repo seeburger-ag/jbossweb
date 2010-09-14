@@ -4207,6 +4207,8 @@ public class StandardContext
                 (getLoader().getClassLoader());
         }
 
+        lifecycle.fireLifecycleEvent(BIND_THREAD_EVENT, null);
+        
         DirContextURLStreamHandler.bind(getResources());
 
         return oldContextClassLoader;
@@ -4218,6 +4220,8 @@ public class StandardContext
      * Unbind thread.
      */
     protected void unbindThread(ClassLoader oldContextClassLoader) {
+
+        lifecycle.fireLifecycleEvent(UNBIND_THREAD_EVENT, null);
 
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
 
