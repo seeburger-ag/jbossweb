@@ -62,12 +62,19 @@
       <fix>
         Skip out invalid headers when writing the response. (remm)
       </fix>
+      <fix>
+        Use production defaults for endpoints. (remm, jfclere)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
     <changelog>
       <fix>
         <jboss-jira>JBAS-8374</jboss-jira>: Allow empty parameters brackets for EL method calls. (remm)
+      </fix>
+      <fix>
+        <jira>180</jira>: Add system property to configure default buffer size.
+        Submitted by James Livingston. (remm)
       </fix>
     </changelog>
   </subsection>
