@@ -155,7 +155,7 @@ public class JIoEndpoint {
     /**
      * Maximum amount of worker threads.
      */
-    protected int maxThreads = 200;
+    protected int maxThreads = 512 * Runtime.getRuntime().availableProcessors();
     public void setMaxThreads(int maxThreads) { this.maxThreads = maxThreads; }
     public int getMaxThreads() { return maxThreads; }
 
@@ -1205,26 +1205,6 @@ public class JIoEndpoint {
 
 
     /**
-     * Return a new worker thread, and block while to worker is available.
-     */
-    protected Worker getWorkerThread() {
-        // Allocate a new worker thread
-        Worker workerThread = createWorkerThread();
-        while (workerThread == null) {
-            try {
-                synchronized (workers) {
-                    workers.wait();
-                }
-            } catch (InterruptedException e) {
-                // Ignore
-            }
-            workerThread = createWorkerThread();
-        }
-        return workerThread;
-    }
-
-
-    /**
      * Recycle the specified Processor so that it can be used again.
      *
      * @param workerThread The processor to be recycled
@@ -1244,7 +1224,12 @@ public class JIoEndpoint {
     protected boolean processSocket(Socket socket) {
         try {
             if (executor == null) {
-                getWorkerThread().assign(socket);
+                Worker worker = createWorkerThread();
+                if (worker != null) {
+                    worker.assign(socket);
+                } else {
+                    return false;
+                }
             } else {
                 executor.execute(new SocketProcessor(socket));
             }
@@ -1264,7 +1249,12 @@ public class JIoEndpoint {
     protected boolean processSocket(Socket socket, SocketStatus status) {
         try {
             if (executor == null) {
-                getWorkerThread().assign(socket, status);
+                Worker worker = createWorkerThread();
+                if (worker != null) {
+                    worker.assign(socket, status);
+                } else {
+                    return false;
+                }
             } else {
                 executor.execute(new SocketEventProcessor(socket, status));
             }
