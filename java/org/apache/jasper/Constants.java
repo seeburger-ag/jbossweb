@@ -84,7 +84,7 @@ public class Constants {
     /**
      * Default size of the JSP buffer.
      */
-    public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
+    public static final int DEFAULT_BUFFER_SIZE = Integer.parseInt(System.getProperty("org.apache.jasper.Constants.DEFAULT_BUFFER_SIZE", "8192"));
 
     /**
      * Default size for the tag buffers.
