@@ -29,6 +29,14 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <jira>180</jira>: Add system property to configure default buffer size.
+        Submitted by James Livingston. (remm)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 2.1.9.GA (remm)">
