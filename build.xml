@@ -498,13 +498,13 @@
 			<arg value="-c" />
 			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
 		</exec>
+        <exec dir="." executable="/bin/sh" os="Linux">
+            <arg value="-c" />
+            <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jbossweb -Dversion=${version} -Dclassifier=sources"/>
+        </exec>
 		<exec dir="." executable="/bin/sh" os="Linux">
 			<arg value="-c" />
 			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb.jar -DpomFile=${tomcat.jars}/jbossweb-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
-		</exec>
-		<exec dir="." executable="/bin/sh" os="Linux">
-			<arg value="-c" />
-			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jbossweb-src -Dversion=${version} -Dclassifier=sources"/>
 		</exec>
 
 		<!-- Windows exec -->
@@ -512,13 +512,13 @@
 			<arg value="/c" />
 			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
 		</exec>
+        <exec dir="." executable="cmd" os="Windows NT">
+            <arg value="/c" />
+            <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jbossweb -Dversion=${version} -Dclassifier=sources"/>
+        </exec>
 		<exec dir="." executable="cmd" os="Windows NT">
 			<arg value="/c" />
 			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb.jar -DpomFile=${tomcat.jars}/jbossweb-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
-		</exec>
-		<exec dir="." executable="cmd" os="Windows NT">
-			<arg value="/c" />
-			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jbossweb-src -Dversion=${version} -Dclassifier=sources"/>
 		</exec>
 
 	</target>
