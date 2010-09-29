@@ -64,6 +64,8 @@ import org.apache.tomcat.util.net.URL;
 public class Response
     implements HttpServletResponse {
 
+    protected static final boolean REWRITE_CONTEXT_CHECK =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Response.REWRITE_CONTEXT_CHECK", "true")).booleanValue();
 
     // ----------------------------------------------------------- Constructors
 
@@ -1511,7 +1513,7 @@ public class Response
         String contextPath = request.getContext().getPath();
         if (contextPath != null) {
             String file = url.getFile();
-            if ((file == null) || !file.startsWith(contextPath))
+            if ((file == null) || (REWRITE_CONTEXT_CHECK && !file.startsWith(contextPath)))
                 return (false);
             String tok = request.getContext().getSessionCookie().getPathParameterName() + session.getIdInternal();
             if (file.indexOf(tok, contextPath.length()) >= 0)
