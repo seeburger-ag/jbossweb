@@ -49,7 +49,6 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.util.Base64;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
@@ -222,13 +221,9 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     // ------------------------------------------------------------- Security classes
 
 
-    private class PrivilegedSetRandomFile implements PrivilegedAction<DataInputStream>{
+    private class PrivilegedSetRandomFile implements PrivilegedAction{
         
-        public PrivilegedSetRandomFile(String s) {
-            devRandomSource = s;
-        }
-        
-        public DataInputStream run(){
+        public Object run(){               
             try {
                 File f=new File( devRandomSource );
                 if( ! f.exists() ) return null;
@@ -238,18 +233,8 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
                     log.debug( "Opening " + devRandomSource );
                 return randomIS;
             } catch (IOException ex){
-                log.warn("Error reading " + devRandomSource, ex);
-                if (randomIS != null) {
-                    try {
-                        randomIS.close();
-                    } catch (Exception e) {
-                        log.warn("Failed to close randomIS.");
-                    }
-                }
-                devRandomSource = null;
-                randomIS=null;
                 return null;
-            }            
+            }
         }
     }
 
@@ -401,7 +386,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
                 // Ignore
             }
             if (apr) {
-                setEntropy(new String(Base64.encode(result)));
+                setEntropy(new String(result));
             } else {
                 setEntropy(this.toString());
             }
@@ -520,10 +505,10 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      *  - so use it if available.
      */
     public void setRandomFile( String s ) {
-        // as a hack, you can use a static file - and generate the same
+        // as a hack, you can use a static file - and genarate the same
         // session ids ( good for strange debugging )
         if (Globals.IS_SECURITY_ENABLED){
-            randomIS = AccessController.doPrivileged(new PrivilegedSetRandomFile(s));
+            randomIS = (DataInputStream)AccessController.doPrivileged(new PrivilegedSetRandomFile());          
         } else {
             try{
                 devRandomSource=s;
@@ -534,15 +519,12 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
                 if( log.isDebugEnabled() )
                     log.debug( "Opening " + devRandomSource );
             } catch( IOException ex ) {
-                log.warn("Error reading " + devRandomSource, ex);
-                if (randomIS != null) {
-                    try {
-                        randomIS.close();
-                    } catch (Exception e) {
-                        log.warn("Failed to close randomIS.");
-                    }
+                try {
+                    randomIS.close();
+                } catch (Exception e) {
+                    log.warn("Failed to close randomIS.");
                 }
-                devRandomSource = null;
+                
                 randomIS=null;
             }
         }
@@ -561,21 +543,30 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public Random getRandom() {
         if (this.random == null) {
             // Calculate the new random number generator seed
-            long seed = System.nanoTime();
+            long seed = System.currentTimeMillis();
+            long t1 = seed;
             char entropy[] = getEntropy().toCharArray();
             for (int i = 0; i < entropy.length; i++) {
                 long update = ((byte) entropy[i]) << ((i % 8) * 8);
                 seed ^= update;
             }
-            // Construct and seed a new random number generator
             try {
+                // Construct and seed a new random number generator
                 Class clazz = Class.forName(randomClass);
                 this.random = (Random) clazz.newInstance();
+                this.random.setSeed(seed);
             } catch (Exception e) {
-                log.warn(sm.getString("managerBase.random", randomClass), e);
+                // Fall back to the simple case
+                log.error(sm.getString("managerBase.random", randomClass),
+                        e);
                 this.random = new java.util.Random();
+                this.random.setSeed(seed);
             }
-            this.random.setSeed(seed);
+            if(log.isDebugEnabled()) {
+                long t2=System.currentTimeMillis();
+                if( (t2-t1) > 100 )
+                    log.debug(sm.getString("managerBase.seeding", randomClass) + " " + (t2-t1));
+            }
         }
         
         return (this.random);
@@ -702,14 +693,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public void destroy() {
         if( oname != null )
             Registry.getRegistry(null, null).unregisterComponent(oname);
-        if (randomIS!=null) {
-            try {
-                randomIS.close();
-            } catch (IOException ioe) {
-                log.warn("Failed to close randomIS.");
-            }
-            randomIS=null;
-        }
         initialized=false;
         oname = null;
     }
@@ -771,17 +754,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
 
         support.addPropertyChangeListener(listener);
 
-    }
-
-
-    /**
-     * Change the session ID of the current session to a new randomly generated
-     * session ID.
-     * 
-     * @param session   The session to change the session ID for
-     */
-    public void changeSessionId(Session session) {
-        session.setId(generateSessionId());
     }
 
 
@@ -978,11 +950,11 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         String result = null;
 
         // Render the result as a String of hexadecimal digits
-        StringBuilder buffer = new StringBuilder();
+        StringBuffer buffer = new StringBuffer();
         do {
             int resultLenBytes = 0;
             if (result != null) {
-                buffer = new StringBuilder();
+                buffer = new StringBuffer();
                 duplicates++;
             }
 
@@ -1156,7 +1128,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      *
      */
     public String listSessionIds() {
-        StringBuilder sb=new StringBuilder();
+        StringBuffer sb=new StringBuffer();
         Iterator keys = sessions.keySet().iterator();
         while (keys.hasNext()) {
             sb.append(keys.next()).append(" ");

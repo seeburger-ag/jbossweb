@@ -19,7 +19,6 @@
 package org.apache.catalina;
 
 import org.apache.catalina.connector.Connector;
-import org.apache.tomcat.util.http.mapper.Mapper;
 
 /**
  * A <strong>Service</strong> is a group of one or more
@@ -60,12 +59,6 @@ public interface Service {
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
     public String getInfo();
-
-    /**
-     * Return the <code>Mapper</code> that handles mapping for all
-     * <code>Connectors</code> associated with this Service.
-     */
-    public Mapper getMapper();
 
     /**
      * Return the name of this Service.

@@ -220,7 +220,7 @@ public final class Extension {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("Extension[");
+        StringBuffer sb = new StringBuffer("Extension[");
         sb.append(extensionName);
         if (implementationURL != null) {
             sb.append(", implementationURL=");

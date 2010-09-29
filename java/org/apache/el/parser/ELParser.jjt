@@ -19,11 +19,6 @@
     Author:    Jacob Hookom
     Email:    jacob at hookom.net
 */
-/*
-  Building:
-  jjtree ELParser.jjt
-  javacc ELParser.jj
-*/
 
 /* == Option Declaration == */
 options
@@ -241,7 +236,7 @@ void ValueSuffix() : {}
  */
 void DotSuffix() #DotSuffix : { Token t = null; }
 {
-    <DOT> t=<IDENTIFIER> { jjtThis.setImage(t.image); } (<LPAREN> Parameters() <RPAREN>)?
+    <DOT> t=<IDENTIFIER> { jjtThis.setImage(t.image); }
 }
 
 /*
@@ -250,16 +245,7 @@ void DotSuffix() #DotSuffix : { Token t = null; }
  */
 void BracketSuffix() #BracketSuffix : {}
 {
-    <LBRACK> Expression() <RBRACK> (<LPAREN> Parameters() <RPAREN>)?
-}
-
-/*
- * Parameters
- * Method parameters
- */
-void Parameters() : {}
-{
-    (Expression())? (<COMMA> Expression())*
+    <LBRACK> Expression() <RBRACK>
 }
 
 /*
@@ -367,15 +353,11 @@ void Null() #Null : {}
 /* ==================================================================================== */
 <DEFAULT> TOKEN :
 {
-  /*
-   * The following definition uses + rather than * in two places to prevent
-   * LITERAL_EXPRESSION matching the empty string that could result in the
-   * Parser entering an infinite loop.
-   */
   < LITERAL_EXPRESSION:
-    (   (~["$", "#", "\\"])* "\\" (["$", "#"])?
-      | (~["$", "#"])* (["$", "#"] ~["{", "$", "#"])
-      | (~["$", "#"])+
+    ((~["\\", "$", "#"])
+      | ("\\" ("\\" | "$" | "#"))
+      | ("$" ~["{", "$"])
+      | ("#" ~["{", "#"])
     )+
     | "$"
     | "#"
@@ -385,6 +367,8 @@ void Null() #Null : {}
 |
   < START_DEFERRED_EXPRESSION: "#{" > : IN_EXPRESSION
 }
+
+<DEFAULT> SKIP : { "\\" }
 
 <IN_EXPRESSION> SKIP : { " " | "\t" | "\n" | "\r" }
 
@@ -397,9 +381,12 @@ void Null() #Null : {}
     >
 |    < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
 |    < STRING_LITERAL: ("\"" ((~["\"","\\"])
-        | ("\\" ( ["\\","\"","\'"] )))* "\"")
+        | ("\\" ( ["\\","\""] )))* "\"")
         | ("\'" ((~["\'","\\"])
-        | ("\\" ( ["\\","\"","\'"] )))* "\'")
+        | ("\\" ( ["\\","\'"] )))* "\'")
+    >
+|    < BADLY_ESCAPED_STRING_LITERAL: ("\"" (~["\"","\\"])* ("\\" ( ~["\\","\""] )))
+        | ("\'" (~["\'","\\"])* ("\\" ( ~["\\","\'"] )))
     >
 |    < TRUE : "true" >
 |    < FALSE : "false" >

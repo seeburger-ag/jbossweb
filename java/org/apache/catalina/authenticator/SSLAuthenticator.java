@@ -23,14 +23,14 @@ import java.io.IOException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.coyote.ActionCode;
 import org.apache.catalina.Globals;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.coyote.ActionCode;
 
 
 
@@ -82,7 +82,7 @@ public class SSLAuthenticator
      * @exception IOException if an input/output error occurs
      */
     public boolean authenticate(Request request,
-                                HttpServletResponse response,
+                                Response response,
                                 LoginConfig config)
         throws IOException {
 
@@ -129,7 +129,14 @@ public class SSLAuthenticator
         if (containerLog.isDebugEnabled())
             containerLog.debug(" Looking up certificates");
 
-        X509Certificate certs[] = request.getCertificateChain();
+        X509Certificate certs[] = (X509Certificate[])
+            request.getAttribute(Globals.CERTIFICATES_ATTR);
+        if ((certs == null) || (certs.length < 1)) {
+            request.getCoyoteRequest().action
+                              (ActionCode.ACTION_REQ_SSL_CERTIFICATE, null);
+            certs = (X509Certificate[])
+                request.getAttribute(Globals.CERTIFICATES_ATTR);
+        }
         if ((certs == null) || (certs.length < 1)) {
             if (containerLog.isDebugEnabled())
                 containerLog.debug("  No certificates included with this request");
@@ -149,7 +156,7 @@ public class SSLAuthenticator
         }
 
         // Cache the principal (if requested) and record this authentication
-        register(request, response, principal, HttpServletRequest.CLIENT_CERT_AUTH,
+        register(request, response, principal, Constants.CERT_METHOD,
                  null, null);
         return (true);
 

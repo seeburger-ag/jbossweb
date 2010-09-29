@@ -27,8 +27,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -36,8 +34,8 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
-import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
+import org.apache.catalina.Manager;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
@@ -70,14 +68,11 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
      * The set of attribute names that are special for request dispatchers.
      */
     protected static final String specials[] =
-    { RequestDispatcher.INCLUDE_REQUEST_URI, RequestDispatcher.INCLUDE_CONTEXT_PATH,
-        RequestDispatcher.INCLUDE_SERVLET_PATH, RequestDispatcher.INCLUDE_PATH_INFO,
-        RequestDispatcher.INCLUDE_QUERY_STRING, RequestDispatcher.FORWARD_REQUEST_URI, 
-        RequestDispatcher.FORWARD_CONTEXT_PATH, RequestDispatcher.FORWARD_SERVLET_PATH, 
-        RequestDispatcher.FORWARD_PATH_INFO, RequestDispatcher.FORWARD_QUERY_STRING, 
-        AsyncContext.ASYNC_REQUEST_URI, AsyncContext.ASYNC_CONTEXT_PATH, 
-        AsyncContext.ASYNC_SERVLET_PATH, AsyncContext.ASYNC_PATH_INFO, 
-        AsyncContext.ASYNC_QUERY_STRING };
+    { Globals.INCLUDE_REQUEST_URI_ATTR, Globals.INCLUDE_CONTEXT_PATH_ATTR,
+      Globals.INCLUDE_SERVLET_PATH_ATTR, Globals.INCLUDE_PATH_INFO_ATTR,
+      Globals.INCLUDE_QUERY_STRING_ATTR, Globals.FORWARD_REQUEST_URI_ATTR, 
+      Globals.FORWARD_CONTEXT_PATH_ATTR, Globals.FORWARD_SERVLET_PATH_ATTR, 
+      Globals.FORWARD_PATH_INFO_ATTR, Globals.FORWARD_QUERY_STRING_ATTR };
 
 
     /**
@@ -113,8 +108,8 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
      * The context for this request.
      */
     protected Context context = null;
-    
-    
+
+
     /**
      * The context path for this request.
      */
@@ -240,25 +235,6 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
     }
 
 
-    public DispatcherType getDispatcherType() {
-        if (dispatcherType == null) {
-            return DispatcherType.REQUEST;
-        } else if (dispatcherType == ApplicationFilterFactory.REQUEST_INTEGER) {
-            return DispatcherType.REQUEST;
-        } else if (dispatcherType == ApplicationFilterFactory.ASYNC_INTEGER) {
-            return DispatcherType.ASYNC;
-        } else if (dispatcherType == ApplicationFilterFactory.ERROR_INTEGER) {
-            return DispatcherType.ERROR;
-        } else if (dispatcherType == ApplicationFilterFactory.FORWARD_INTEGER) {
-            return DispatcherType.FORWARD;
-        } else if (dispatcherType == ApplicationFilterFactory.INCLUDE_INTEGER) {
-            return DispatcherType.INCLUDE;
-        }
-        // Never happens
-        throw new IllegalStateException();
-    }
-
-
     /**
      * Override the <code>getAttributeNames()</code> method of the wrapped
      * request.
@@ -325,7 +301,7 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
 
         // Convert a request-relative path to a context-relative one
         String servletPath = 
-            (String) getAttribute(RequestDispatcher.INCLUDE_SERVLET_PATH);
+            (String) getAttribute(Globals.INCLUDE_SERVLET_PATH_ATTR);
         if (servletPath == null)
             servletPath = getServletPath();
 
@@ -552,8 +528,6 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
                 } catch (IOException e) {
                     // Ignore
                 }
-                if ((localSession != null) && !localSession.isValid())
-                    localSession = null;
                 if (localSession == null && create) {
                     localSession = 
                         context.getManager().createSession(other.getId());
@@ -638,16 +612,16 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
      *
      * @param orig Origin Map to be copied
      */
-    Map<String, String[]> copyMap(Map<String, String[]> orig) {
+    Map copyMap(Map orig) {
 
         if (orig == null)
-            return (new HashMap<String, String[]>());
-        HashMap<String, String[]> dest = new HashMap<String, String[]>();
-        
-        for (Map.Entry<String, String[]> entry : orig.entrySet()) {
-            dest.put(entry.getKey(), entry.getValue());
+            return (new HashMap());
+        HashMap dest = new HashMap();
+        Iterator keys = orig.keySet().iterator();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
+            dest.put(key, orig.get(key));
         }
-
         return (dest);
 
     }

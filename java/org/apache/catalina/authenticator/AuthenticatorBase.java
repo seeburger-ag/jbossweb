@@ -30,7 +30,6 @@ import java.util.Random;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;
@@ -38,7 +37,6 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Manager;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
@@ -51,6 +49,7 @@ import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -111,14 +110,6 @@ public abstract class AuthenticatorBase
      * an HTTP session?
      */
     protected boolean cache = true;
-
-
-    /**
-     * Should the session ID, if any, be changed upon a successful
-     * authentication to prevent a session fixation attack?
-     */
-    protected boolean changeSessionIdOnAuthentication = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.authenticator.AuthenticatorBase.CHANGE_SESSIONID_ON_AUTH", "false")).booleanValue();
 
 
     /**
@@ -253,17 +244,6 @@ public abstract class AuthenticatorBase
     }
 
 
-    public boolean isChangeSessionIdOnAuthentication() {
-        return changeSessionIdOnAuthentication;
-    }
-
-
-    public void setChangeSessionIdOnAuthentication(
-            boolean changeSessionIdOnAuthentication) {
-        this.changeSessionIdOnAuthentication = changeSessionIdOnAuthentication;
-    }
-
-
     /**
      * Return the Container to which this Valve is attached.
      */
@@ -390,54 +370,6 @@ public abstract class AuthenticatorBase
 
 
     /**
-     * API login.
-     *
-     * @param request Request we are processing
-     * @param response Response we are creating
-     * @param config    Login configuration describing how authentication
-     *              should be performed
-     *
-     * @exception IOException if an input/output error occurs
-     */
-    public boolean authenticate(Request request, HttpServletResponse response)
-        throws IOException, ServletException {
-        return authenticate(request, response, this.context.getLoginConfig());
-    }
-
-
-    public void login(Request request, String username, String password)
-        throws ServletException {
-        
-        // Is there an SSO session against which we can try to reauthenticate?
-        String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
-        if (ssoId != null) {
-            if (log.isDebugEnabled())
-                log.debug("SSO Id " + ssoId + " set; attempting " +
-                          "reauthentication");
-            /* Try to reauthenticate using data cached by SSO.  If this fails,
-               either the original SSO logon was of DIGEST or SSL (which
-               we can't reauthenticate ourselves because there is no
-               cached username and password), or the realm denied
-               the user's reauthentication for some reason.
-               In either case we have to prompt the user for a logon */
-            if (reauthenticateFromSSO(ssoId, request))
-                return;
-        }
-
-        Realm realm = context.getRealm();
-        Principal principal = realm.authenticate(username, password);
-        if (principal != null) {
-            register(request, request.getResponseFacade(), principal, Constants.LOGIN_METHOD,
-                     username, password);
-        }
-    }
-    
-    public void logout(Request request)
-        throws ServletException {
-        unregister(request, request.getResponseFacade());
-    }
-    
-    /**
      * Enforce the security restrictions in the web application deployment
      * descriptor of our associated Context.
      *
@@ -505,12 +437,12 @@ public abstract class AuthenticatorBase
         // Make sure that constrained resources are not cached by web proxies
         // or browsers as caching can provide a security hole
         if (disableProxyCaching && 
-            // Note: Disabled for Mozilla FORM support over SSL 
+            // FIXME: Disabled for Mozilla FORM support over SSL 
             // (improper caching issue)
             //!request.isSecure() &&
             !"POST".equalsIgnoreCase(request.getMethod())) {
             if (securePagesWithPragma) {
-                // Note: These cause problems with downloading office docs
+                // FIXME: These cause problems with downloading office docs
                 // from IE under SSL and may not be needed for newer Mozilla
                 // clients.
                 response.setHeader("Pragma", "No-cache");
@@ -630,7 +562,7 @@ public abstract class AuthenticatorBase
      * @exception IOException if an input/output error occurs
      */
     protected abstract boolean authenticate(Request request,
-                                            HttpServletResponse response,
+                                            Response response,
                                             LoginConfig config)
         throws IOException;
 
@@ -647,7 +579,7 @@ public abstract class AuthenticatorBase
         bytes = getDigest().digest(bytes);
 
         // Render the result as a String of hexadecimal digits
-        StringBuilder result = new StringBuilder();
+        StringBuffer result = new StringBuffer();
         for (int i = 0; i < bytes.length; i++) {
             byte b1 = (byte) ((bytes[i] & 0xf0) >> 4);
             byte b2 = (byte) (bytes[i] & 0x0f);
@@ -697,21 +629,19 @@ public abstract class AuthenticatorBase
     protected synchronized Random getRandom() {
 
         if (this.random == null) {
-            // Calculate the new random number generator seed
-            long seed = System.nanoTime();
-            char entropy[] = getEntropy().toCharArray();
-            for (int i = 0; i < entropy.length; i++) {
-                long update = ((byte) entropy[i]) << ((i % 8) * 8);
-                seed ^= update;
-            }
-            // Construct and seed a new random number generator
             try {
                 Class clazz = Class.forName(randomClass);
                 this.random = (Random) clazz.newInstance();
+                long seed = System.currentTimeMillis();
+                char entropy[] = getEntropy().toCharArray();
+                for (int i = 0; i < entropy.length; i++) {
+                    long update = ((byte) entropy[i]) << ((i % 8) * 8);
+                    seed ^= update;
+                }
+                this.random.setSeed(seed);
             } catch (Exception e) {
                 this.random = new java.util.Random();
             }
-            this.random.setSeed(seed);
         }
 
         return (this.random);
@@ -769,7 +699,7 @@ public abstract class AuthenticatorBase
      * @param username Username used to authenticate (if any)
      * @param password Password used to authenticate (if any)
      */
-    protected void register(Request request, HttpServletResponse response,
+    protected void register(Request request, Response response,
                             Principal principal, String authType,
                             String username, String password) {
 
@@ -782,11 +712,6 @@ public abstract class AuthenticatorBase
         request.setUserPrincipal(principal);
 
         Session session = request.getSessionInternal(false);
-        if (session != null && changeSessionIdOnAuthentication) {
-            Manager manager = request.getContext().getManager();
-            manager.changeSessionId(session);
-            request.changeSessionId(session.getId());
-        }
         // Cache the authentication information in our session, if any
         if (cache) {
             if (session != null) {
@@ -821,10 +746,6 @@ public abstract class AuthenticatorBase
             // Bugzilla 41217
             cookie.setSecure(request.isSecure());
 
-            if (sso.isCookieHttpOnly()) {
-                cookie.setHttpOnly(true);
-            }
-
             // Bugzilla 34724
             String ssoDomain = sso.getCookieDomain();
             if(ssoDomain != null) {
@@ -851,48 +772,6 @@ public abstract class AuthenticatorBase
         if (session == null)
             session = request.getSessionInternal(true);
         sso.associate(ssoId, session);
-
-    }
-
-
-    /**
-     * Register an authenticated Principal and authentication type in our
-     * request, in the current session (if there is one), and with our
-     * SingleSignOn valve, if there is one.  Set the appropriate cookie
-     * to be returned.
-     *
-     * @param request The servlet request we are processing
-     * @param response The servlet response we are generating
-     * @param principal The authenticated Principal to be registered
-     * @param authType The authentication type to be registered
-     * @param username Username used to authenticate (if any)
-     * @param password Password used to authenticate (if any)
-     */
-    protected void unregister(Request request, HttpServletResponse response) {
-
-        // Remove the authentication information from our request
-        request.setAuthType(null);
-        request.setUserPrincipal(null);
-
-        Session session = request.getSessionInternal(false);
-        // Cache the authentication information in our session, if any
-        if (cache && session != null) {
-            session.setAuthType(null);
-            session.setPrincipal(null);
-            session.removeNote(Constants.SESS_USERNAME_NOTE);
-            session.removeNote(Constants.SESS_PASSWORD_NOTE);
-        }
-
-        // Construct a cookie to be returned to the client
-        if (sso == null)
-            return;
-
-        String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
-        if (ssoId != null) {
-            // Update the SSO session with the latest authentication data
-            request.removeNote(Constants.REQ_SSOID_NOTE);
-            sso.deregister(ssoId);
-        }
 
     }
 

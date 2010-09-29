@@ -1,46 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -62,8 +34,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.InstanceEvent;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.InstanceSupport;
 import org.apache.catalina.util.StringManager;
@@ -83,7 +53,7 @@ import org.jboss.servlet.http.HttpEventServlet;
  * @version $Revision$ $Date$
  */
 
-public final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain {
+final class ApplicationFilterChain implements FilterChain, HttpEventFilterChain {
 
     // Used to enforce requirements of SRV.8.2 / SRV.14.2.5.1
     private final static ThreadLocal lastServicedRequest;
@@ -99,7 +69,6 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
         }
     }
 
-    
     // -------------------------------------------------------------- Constants
 
 
@@ -123,12 +92,6 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
 
 
     /**
-     * Associated request facade.
-     */
-    private RequestFacade requestFacade = null;
-    
-    
-    /**
      * Filters.
      */
     private ApplicationFilterConfig[] filters = 
@@ -136,12 +99,6 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
 
 
     /**
-     * The int which is used to track the component currently executed.
-     */
-    private int pointer = 0;
-
-
-   /**
      * The int which is used to maintain the current position 
      * in the filter chain.
      */
@@ -151,22 +108,29 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
     /**
      * The int which gives the current number of filters in the chain.
      */
-    private int filterCount = 0;
+    private int n = 0;
 
 
     /**
-     * The wrapper to be executed by this chain.
+     * The servlet instance to be executed by this chain.
      */
-    private Wrapper wrapper = null;
+    private Servlet servlet = null;
 
 
-   /**
+    /**
      * The string manager for our package.
      */
     private static final StringManager sm =
       StringManager.getManager(Constants.Package);
 
 
+    /**
+     * The InstanceSupport instance associated with our Wrapper (used to
+     * send "before filter" and "after filter" events.
+     */
+    private InstanceSupport support = null;
+
+    
     /**
      * Static class array used when the SecurityManager is turned on and 
      * <code>doFilter</code> is invoked.
@@ -247,18 +211,15 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                                   ServletResponse response)
         throws IOException, ServletException {
 
-        InstanceSupport support = wrapper.getInstanceSupport();
-        Throwable throwable = null;
-
         // Call the next filter if there is one
-        if (pos < filterCount) {
+        if (pos < n) {
             ApplicationFilterConfig filterConfig = filters[pos++];
-            pointer++;
             Filter filter = null;
             try {
                 filter = filterConfig.getFilter();
                 support.fireInstanceEvent(InstanceEvent.BEFORE_FILTER_EVENT,
                                           filter, request, response);
+                
                 if( Globals.IS_SECURITY_ENABLED ) {
                     final ServletRequest req = request;
                     final ServletResponse res = response;
@@ -273,38 +234,43 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                 } else {  
                     filter.doFilter(request, response, this);
                 }
+
+                support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                                          filter, request, response);
             } catch (IOException e) {
-                throwable = e;
+                if (filter != null)
+                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                                              filter, request, response, e);
                 throw e;
             } catch (ServletException e) {
-                throwable = e;
+                if (filter != null)
+                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                                              filter, request, response, e);
                 throw e;
             } catch (RuntimeException e) {
-                throwable = e;
+                if (filter != null)
+                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                                              filter, request, response, e);
                 throw e;
             } catch (Throwable e) {
-                throwable = e;
-                throw new ServletException(sm.getString("filterChain.filter"), e);
-            } finally {
-                pointer--;
-                if (filter != null) {
+                if (filter != null)
                     support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
-                                              filter, request, response, throwable);
-                }
+                                              filter, request, response, e);
+                throw new ServletException
+                  (sm.getString("filterChain.filter"), e);
             }
             return;
         }
 
         // We fell off the end of the chain -- call the servlet instance
-        Servlet servlet = wrapper.getServlet();
-        pointer++;
         try {
-            support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
-                    servlet, request, response);
             if (Globals.STRICT_SERVLET_COMPLIANCE) {
                 lastServicedRequest.set(request);
                 lastServicedResponse.set(response);
             }
+
+            support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
+                                      servlet, request, response);
             if ((request instanceof HttpServletRequest) &&
                 (response instanceof HttpServletResponse)) {
                     
@@ -327,27 +293,30 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
             } else {
                 servlet.service(request, response);
             }
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                                      servlet, request, response);
         } catch (IOException e) {
-            throwable = e;
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                                      servlet, request, response, e);
             throw e;
         } catch (ServletException e) {
-            throwable = e;
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                                      servlet, request, response, e);
             throw e;
         } catch (RuntimeException e) {
-            throwable = e;
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                                      servlet, request, response, e);
             throw e;
         } catch (Throwable e) {
-            throwable = e;
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                                      servlet, request, response, e);
             throw new ServletException
               (sm.getString("filterChain.servlet"), e);
         } finally {
-            pointer--;
             if (Globals.STRICT_SERVLET_COMPLIANCE) {
                 lastServicedRequest.set(null);
                 lastServicedResponse.set(null);
             }
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                    servlet, request, response, throwable);
         }
 
     }
@@ -421,18 +390,18 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
     private void internalDoFilterEvent(HttpEvent event)
         throws IOException, ServletException {
 
-        InstanceSupport support = wrapper.getInstanceSupport();
-        Throwable throwable = null;
-
         // Call the next filter if there is one
-        if (pos < filterCount) {
+        if (pos < n) {
             ApplicationFilterConfig filterConfig = filters[pos++];
-            pointer++;
             HttpEventFilter filter = null;
             try {
                 filter = (HttpEventFilter) filterConfig.getFilter();
+                // FIXME: No instance listener processing for events for now
+                /*
                 support.fireInstanceEvent(InstanceEvent.BEFORE_FILTER_EVENT,
                         filter, event);
+                        */
+
                 if( Globals.IS_SECURITY_ENABLED ) {
                     final HttpEvent ev = event;
                     Principal principal = 
@@ -446,35 +415,46 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                 } else {  
                     filter.doFilterEvent(event, this);
                 }
+
+                /*support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                        filter, event);*/
             } catch (IOException e) {
-                throwable = e;
+                /*
+                if (filter != null)
+                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                            filter, event, e);
+                            */
                 throw e;
             } catch (ServletException e) {
-                throwable = e;
+                /*
+                if (filter != null)
+                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                            filter, event, e);
+                            */
                 throw e;
             } catch (RuntimeException e) {
-                throwable = e;
+                /*
+                if (filter != null)
+                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                            filter, event, e);
+                            */
                 throw e;
             } catch (Throwable e) {
-                throwable = e;
+                /*if (filter != null)
+                    support.fireInstanceEvent(InstanceEvent.AFTER_FILTER_EVENT,
+                            filter, event, e);*/
                 throw new ServletException
                     (sm.getString("filterChain.filter"), e);
-            } finally {
-                pointer--;
-                if (filter != null) {
-                    support.fireInstanceEvent
-                        (InstanceEvent.AFTER_FILTER_EVENT, filter, event, throwable);
-                }
             }
             return;
         }
 
         // We fell off the end of the chain -- call the servlet instance
-        Servlet servlet = wrapper.getServlet();
-        pointer++;
         try {
+            /*
             support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
-                    servlet, event);
+                    servlet, request, response);
+                    */
             if( Globals.IS_SECURITY_ENABLED ) {
                 final HttpEvent ev = event;
                 Principal principal = 
@@ -489,23 +469,34 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
             } else {  
                 ((HttpEventServlet) servlet).event(event);
             }
+            /*
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                    servlet, request, response);*/
         } catch (IOException e) {
-            throwable = e;
+            /*
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                    servlet, request, response, e);
+                    */
             throw e;
         } catch (ServletException e) {
-            throwable = e;
+            /*
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                    servlet, request, response, e);
+                    */
             throw e;
         } catch (RuntimeException e) {
-            throwable = e;
+            /*
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                    servlet, request, response, e);
+                    */
             throw e;
         } catch (Throwable e) {
-            throwable = e;
+            /*
+            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
+                    servlet, request, response, e);
+                    */
             throw new ServletException
                 (sm.getString("filterChain.servlet"), e);
-        } finally {
-            pointer--;
-            support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,
-                    servlet, event, throwable);
         }
 
     }
@@ -522,13 +513,13 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
      */
     void addFilter(ApplicationFilterConfig filterConfig) {
 
-        if (filterCount == filters.length) {
+        if (n == filters.length) {
             ApplicationFilterConfig[] newFilters =
-                new ApplicationFilterConfig[filterCount + INCREMENT];
-            System.arraycopy(filters, 0, newFilters, 0, filterCount);
+                new ApplicationFilterConfig[n + INCREMENT];
+            System.arraycopy(filters, 0, newFilters, 0, n);
             filters = newFilters;
         }
-        filters[filterCount++] = filterConfig;
+        filters[n++] = filterConfig;
 
     }
 
@@ -538,14 +529,13 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
      */
     void release() {
 
-        for (int i = 0; i < filterCount; i++) {
+        for (int i = 0; i < n; i++) {
             filters[i] = null;
         }
-        filterCount = 0;
+        n = 0;
         pos = 0;
-        pointer = 0;
-        wrapper = null;
-        requestFacade.releaseFilterChain();
+        servlet = null;
+        support = null;
 
     }
 
@@ -555,49 +545,31 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
      */
     void reuse() {
         pos = 0;
-        pointer = 0;
     }
 
 
     /**
-     * Set the wrapper that will be executed at the end of this chain.
+     * Set the servlet that will be executed at the end of this chain.
      *
-     * @param servlet The Wrapper to be executed
+     * @param servlet The Wrapper for the servlet to be executed
      */
-    void setWrapper(Wrapper wrapper) {
+    void setServlet(Servlet servlet) {
 
-        this.wrapper = wrapper;
+        this.servlet = servlet;
 
     }
 
 
     /**
-     * Set the RequestFacade object used for removing the association of the
-     * chain from the request facade.
+     * Set the InstanceSupport object used for event notifications
+     * for this filter chain.
      *
-     * @param requestFacade The RequestFacade object
+     * @param support The InstanceSupport object for our Wrapper
      */
-    void setRequestFacade(RequestFacade requestFacade) {
+    void setSupport(InstanceSupport support) {
 
-        this.requestFacade = requestFacade;
+        this.support = support;
 
-    }
-
-    
-    public ApplicationFilterConfig[] getFilters() {
-        return filters;
-    }
-
-    public int getFilterCount() {
-        return filterCount;
-    }
-
-    public int getPointer() {
-        return pointer;
-    }
-
-    public Wrapper getWrapper() {
-        return wrapper;
     }
 
 

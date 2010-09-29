@@ -260,7 +260,7 @@ public class OutputBuffer extends Writer
 
 
     /**
-     * Clear cached encoders (to save memory for event requests).
+     * Clear cached encoders (to save memory for Comet requests).
      */
     public void clearEncoders() {
         encoders.clear();
@@ -323,8 +323,6 @@ public class OutputBuffer extends Writer
     protected void doFlush(boolean realFlush)
         throws IOException {
 
-        if (closed)
-            return;
         if (suspended)
             return;
 
@@ -361,7 +359,7 @@ public class OutputBuffer extends Writer
     protected int lastWrite() {
         int res = coyoteResponse.getLastWrite();
         if (res == 0) {
-            coyoteResponse.action(ActionCode.ACTION_EVENT_WRITE, null);
+            coyoteResponse.action(ActionCode.ACTION_COMET_WRITE, null);
         }
         return res;
     }

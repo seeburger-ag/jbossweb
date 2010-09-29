@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;
@@ -208,13 +205,6 @@ public abstract class PersistentManagerBase
     protected long processingTime = 0;
 
 
-    /**
-     * Sessions currently being swapped in and the associated locks
-     */
-    private final Map<String,Object> sessionSwapInLocks =
-        new HashMap<String,Object>();
-
-
     // ------------------------------------------------------------- Properties
 
     
@@ -392,7 +382,7 @@ public abstract class PersistentManagerBase
 
 
     /**
-     * Set the maximum number of active Sessions allowed, or -1 for
+     * Set the maximum number of actives Sessions allowed, or -1 for
      * no limit.
      *
      * @param max The new maximum number of sessions
@@ -781,88 +771,50 @@ public abstract class PersistentManagerBase
         if (store == null)
             return null;
 
-        Object swapInLock = null;
-
-        /*
-         * The purpose of this sync and these locks is to make sure that a
-         * session is only loaded once. It doesn't matter if the lock is removed
-         * and then another thread enters this method and tries to load the same
-         * session. That thread will re-create a swapIn lock for that session,
-         * quickly find that the session is already in sessions, use it and
-         * carry on.
-         */
-        synchronized (this) {
-            swapInLock = sessionSwapInLocks.get(id);
-            if (swapInLock == null) {
-                swapInLock = new Object();
-                sessionSwapInLocks.put(id, swapInLock);
-            }
-        }
-
         Session session = null;
-
-        synchronized (swapInLock) {
-            // First check to see if another thread has loaded the session into
-            // the manager
-            session = sessions.get(id);
-
-            if (session == null) {
-                try {
-                    if (SecurityUtil.isPackageProtectionEnabled()){
-                        try {
-                            session = (Session) AccessController.doPrivileged(
-                                    new PrivilegedStoreLoad(id));
-                        } catch (PrivilegedActionException ex) {
-                            Exception e = ex.getException();
-                            log.error(sm.getString(
-                                    "persistentManager.swapInException", id),
-                                    e);
-                            if (e instanceof IOException){
-                                throw (IOException)e;
-                            } else if (e instanceof ClassNotFoundException) {
-                                throw (ClassNotFoundException)e;
-                            }
-                        }
-                    } else {
-                         session = store.load(id);
+        try {
+            if (SecurityUtil.isPackageProtectionEnabled()){
+                try{
+                    session = (Session) 
+                      AccessController.doPrivileged(new PrivilegedStoreLoad(id));
+                }catch(PrivilegedActionException ex){
+                    Exception exception = ex.getException();
+                    log.error("Exception in the Store during swapIn: "
+                              + exception);
+                    if (exception instanceof IOException){
+                        throw (IOException)exception;
+                    } else if (exception instanceof ClassNotFoundException) {
+                        throw (ClassNotFoundException)exception;
                     }
-                } catch (ClassNotFoundException e) {
-                    String msg = sm.getString(
-                            "persistentManager.deserializeError", id);
-                    log.error(msg, e);
-                    throw new IllegalStateException(msg, e);
                 }
-
-                if (session != null && !session.isValid()) {
-                    log.error(sm.getString(
-                            "persistentManager.swapInInvalid", id));
-                    session.expire();
-                    removeSession(id);
-                    session = null;
-                }
-
-                if (session != null) {
-                    if(log.isDebugEnabled())
-                        log.debug(sm.getString("persistentManager.swapIn", id));
-
-                    session.setManager(this);
-                    // make sure the listeners know about it.
-                    ((StandardSession)session).tellNew();
-                    add(session);
-                    ((StandardSession)session).activate();
-                    // endAccess() to ensure timeouts happen correctly.
-                    // access() to keep access count correct or it will end up
-                    // negative
-                    session.access();
-                    session.endAccess();
-                }
-            }
+            } else {
+                 session = store.load(id);
+            }   
+        } catch (ClassNotFoundException e) {
+            log.error(sm.getString("persistentManager.deserializeError", id, e));
+            throw new IllegalStateException
+                (sm.getString("persistentManager.deserializeError", id, e));
         }
 
-        // Make sure the lock is removed
-        synchronized (this) {
-            sessionSwapInLocks.remove(id);
+        if (session == null)
+            return (null);
+
+        if (!session.isValid()) {
+            log.error("session swapped in is invalid or expired");
+            session.expire();
+            removeSession(id);
+            return (null);
         }
+
+        if(log.isDebugEnabled())
+            log.debug(sm.getString("persistentManager.swapIn", id));
+
+        session.setManager(this);
+        // make sure the listeners know about it.
+        ((StandardSession)session).tellNew();
+        add(session);
+        ((StandardSession)session).activate();
+        session.endAccess();
 
         return (session);
 
@@ -1098,11 +1050,6 @@ public abstract class PersistentManagerBase
                     int timeIdle = // Truncate, do not round up
                         (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
                     if (timeIdle > maxIdleSwap && timeIdle > minIdleSwap) {
-                        if (session.accessCount != null &&
-                                session.accessCount.get() > 0) {
-                            // Session is currently being accessed - skip it
-                            continue;
-                        }
                         if (log.isDebugEnabled())
                             log.debug(sm.getString
                                 ("persistentManager.swapMaxIdle",
@@ -1143,24 +1090,18 @@ public abstract class PersistentManagerBase
         long timeNow = System.currentTimeMillis();
 
         for (int i = 0; i < sessions.length && toswap > 0; i++) {
-            StandardSession session =  (StandardSession) sessions[i];
-            synchronized (session) {
+            synchronized (sessions[i]) {
                 int timeIdle = // Truncate, do not round up
-                    (int) ((timeNow - session.getThisAccessedTimeInternal()) / 1000L);
+                    (int) ((timeNow - sessions[i].getLastAccessedTime()) / 1000L);
                 if (timeIdle > minIdleSwap) {
-                    if (session.accessCount != null &&
-                            session.accessCount.get() > 0) {
-                        // Session is currently being accessed - skip it
-                        continue;
-                    }
                     if(log.isDebugEnabled())
                         log.debug(sm.getString
                             ("persistentManager.swapTooManyActive",
-                             session.getIdInternal(), new Integer(timeIdle)));
+                             sessions[i].getIdInternal(), new Integer(timeIdle)));
                     try {
-                        swapOut(session);
+                        swapOut(sessions[i]);
                     } catch (IOException e) {
-                        // This is logged in writeSession()
+                        ;   // This is logged in writeSession()
                     }
                     toswap--;
                 }
