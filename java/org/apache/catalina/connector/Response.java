@@ -64,8 +64,6 @@ import org.apache.tomcat.util.net.URL;
 public class Response
     implements HttpServletResponse {
 
-    protected static final boolean REWRITE_CONTEXT_CHECK =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Response.REWRITE_CONTEXT_CHECK", "true")).booleanValue();
 
     // ----------------------------------------------------------- Constructors
 
@@ -1510,15 +1508,12 @@ public class Response
         if (serverPort != urlPort)
             return (false);
 
-        String contextPath = request.getContext().getPath();
-        if (contextPath != null) {
-            String file = url.getFile();
-            if ((file == null) || (REWRITE_CONTEXT_CHECK && !file.startsWith(contextPath)))
-                return (false);
-            String tok = request.getContext().getSessionCookie().getPathParameterName() + session.getIdInternal();
-            if (file.indexOf(tok, contextPath.length()) >= 0)
-                return (false);
-        }
+        String file = url.getFile();
+        if (file == null)
+            return (false);
+        String tok = request.getContext().getSessionCookie().getPathParameterName() + session.getIdInternal();
+        if (file.indexOf(tok) >= 0)
+            return (false);
 
         // This URL belongs to our web application, so it is encodeable
         return (true);
