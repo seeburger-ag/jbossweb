@@ -79,8 +79,8 @@ public class ServiceMapperListener
                 }
             } else if (container instanceof Engine) {
                 // Deploying a host
-                container.addContainerListener(this);
                 Host host = (Host) event.getData();
+                host.addContainerListener(this);
                 mapper.addHost(host.getName(), host.findAliases(), host);
             }
         } else if (type.equals(Container.REMOVE_CHILD_EVENT)) {
@@ -91,8 +91,8 @@ public class ServiceMapperListener
                 mapper.removeContext(container.getName(), context.getName());
             } else if (container instanceof Engine) {
                 // Undeploying a host
-                container.removeContainerListener(this);
                 Host host = (Host) event.getData();
+                host.removeContainerListener(this);
                 mapper.removeHost(host.getName());
             }
         } else if (type == Host.ADD_ALIAS_EVENT) {
