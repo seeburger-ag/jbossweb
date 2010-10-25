@@ -57,6 +57,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -2874,6 +2875,8 @@ public class Request
     protected void parseMultipart()
         throws IOException, ServletException {
         
+        parts = Collections.emptyMap();
+
         if (context == null)
             return;
 
