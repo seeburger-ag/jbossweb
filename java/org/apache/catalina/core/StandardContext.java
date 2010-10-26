@@ -310,7 +310,8 @@ public class StandardContext
      * Should we allow the <code>ServletContext.getContext()</code> method
      * to access the context of other web applications in this server?
      */
-    protected boolean crossContext = false;
+    protected boolean crossContext = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardContext.CROSS_CONTEXT", "false")).booleanValue();
 
     
     /**
@@ -4716,14 +4717,14 @@ public class StandardContext
                 if (configClassName != null) {
                     Class clazz = Class.forName(configClassName);
                     config = (LifecycleListener) clazz.newInstance();
-                } else {
-                    config = new ContextConfig();
                 }
             } catch (Exception e) {
                 log.warn("Error creating ContextConfig for " + parentName, e);
                 throw e;
             }
-            this.addLifecycleListener(config);
+            if (config != null) {
+                this.addLifecycleListener(config);
+            }
 
             if (log.isDebugEnabled()) {
                 log.debug("AddChild " + parentName + " " + this);
