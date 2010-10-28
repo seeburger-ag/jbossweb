@@ -89,7 +89,7 @@ public class StandardHost
      * for deployed web applications.
      */
     private String configClass =
-        System.getProperty("org.apache.catalina.core.StandardHost.configClass", "org.apache.catalina.startup.ContextConfig");
+        System.getProperty("org.apache.catalina.core.StandardHost.configClass", null);
 
 
     /**
