@@ -17,6 +17,13 @@
 <body>
 
 <section name="JBoss Web 3.0.0.Beta8 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <jboss-jira>JBAS-8571</jboss-jira>: Allow a Servlet 3.0 login to reauthenticate with SSO. (remm)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Jasper">
     <changelog>
       <fix>
