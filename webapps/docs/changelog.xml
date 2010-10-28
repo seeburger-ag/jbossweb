@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 3.0.0.Beta8 (remm)">
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <jboss-jira>JBAS-8579</jboss-jira>: Fix default for tag body content. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 3.0.0.Beta7 (remm)">
   <subsection name="Genral">
     <changelog>

@@ -86,7 +86,6 @@ import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.session.StandardManager;
-import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.ExtensionValidator;
 import org.apache.catalina.util.RequestUtil;
