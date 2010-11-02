@@ -29,6 +29,14 @@
       <fix>
         <jboss-jira>JBAS-8579</jboss-jira>: Fix default for tag body content. (remm)
       </fix>
+      <fix>
+        <jira>185</jira>: Fix cache thread safety issue for EL expression builder.
+        Patch submitted by Takayoshi Kimura. (remm)
+      </fix>
+      <fix>
+        <bug>50192</bug>: Fix regression getting the EL resolver. Tighter security can
+        be enabled back. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
