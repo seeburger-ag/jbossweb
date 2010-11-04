@@ -22,6 +22,9 @@
       <fix>
         <jboss-jira>JBAS-8571</jboss-jira>: Allow a Servlet 3.0 login to reauthenticate with SSO. (remm)
       </fix>
+      <fix>
+        <jira>189</jira>: Overlay timestamps need special treatment. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

@@ -1686,7 +1686,7 @@ public class ProxyDirContext implements DirContext {
         if (((!entry.exists)
              || (entry.context != null)
              || ((entry.resource != null) 
-                 && (entry.resource.getContent() != null)))
+                 && (entry.resource.getContent() != null || entry.timestamp == Long.MAX_VALUE)))
             && (System.currentTimeMillis() < entry.timestamp)) {
             return true;
         }
