@@ -60,13 +60,20 @@ public final class Cookies { // extends MultiMap {
     '\t':9 ' ':32 '\"':34 '\'':39 '(':40 ')':41 ',':44 ':':58 ';':59 '<':60 
     '=':61 '>':62 '?':63 '@':64 '[':91 '\\':92 ']':93 '{':123 '}':125
     */
-    public static final char SEPARATORS[] = { '\t', ' ', '\"', '\'', '(', ')', ',', 
-        ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}' };
+    public static final char SEPARATORS[];
 
     protected static final boolean separators[] = new boolean[128];
     static {
         for (int i = 0; i < 128; i++) {
             separators[i] = false;
+        }
+        if (Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.ServerCookie.VERSION_SWITCH", "false")).booleanValue()) {
+            /* Version 1 separators */
+            SEPARATORS = new char[] { '\t', ' ', '\"', '\'', '(', ')', ',', 
+            ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}' };
+        } else {
+            /* Version 0 separators */
+            SEPARATORS = new char[] { ',', ';', ' ', '\t', '='};
         }
         for (int i = 0; i < SEPARATORS.length; i++) {
             separators[SEPARATORS[i]] = true;
