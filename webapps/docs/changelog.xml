@@ -25,6 +25,9 @@
       <fix>
         <jira>189</jira>: Overlay timestamps need special treatment. (remm)
       </fix>
+      <fix>
+        Improve session id creation. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
@@ -168,7 +170,7 @@ public class Request
         formats[0].setTimeZone(GMT_ZONE);
         formats[1].setTimeZone(GMT_ZONE);
         formats[2].setTimeZone(GMT_ZONE);
-
+        
     }
 
 
@@ -479,6 +481,12 @@ public class Request
     protected boolean sslAttributes = false;
     
 
+    /**
+     * Random generator.
+     */
+    protected Random random = null;
+    
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -622,6 +630,10 @@ public class Request
      */
     public void setConnector(Connector connector) {
         this.connector = connector;
+        SecureRandom seedRandom = connector.getService().getRandom();
+        synchronized (seedRandom) {
+            random = new SecureRandom(seedRandom.generateSeed(16));
+        }
     }
 
 
@@ -650,6 +662,13 @@ public class Request
         this.context = context;
     }
 
+
+    /**
+     * Return the Random.
+     */
+    public Random getRandom() {
+        return (this.random);
+    }
 
     /**
      * Filter chains associated with the request.
@@ -2603,7 +2622,7 @@ public class Request
                 sessionId = null;
             }
         }
-        session = manager.createSession(sessionId);
+        session = manager.createSession(sessionId, random);
 
         // Creating a new session cookie based on that session
         // If there was no cookie with the current session id, add a cookie to the response

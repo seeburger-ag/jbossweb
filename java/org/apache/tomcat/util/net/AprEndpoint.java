@@ -186,7 +186,7 @@ public class AprEndpoint {
     /**
      * Size of the socket poller.
      */
-    protected int pollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
+    protected int pollerSize = -1;
     public void setPollerSize(int pollerSize) { this.pollerSize = pollerSize; }
     public int getPollerSize() { return pollerSize; }
 
@@ -194,7 +194,7 @@ public class AprEndpoint {
     /**
      * Size of the sendfile (= concurrent files which can be served).
      */
-    protected int sendfileSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
+    protected int sendfileSize = -1;
     public void setSendfileSize(int sendfileSize) { this.sendfileSize = sendfileSize; }
     public int getSendfileSize() { return sendfileSize; }
 
@@ -580,6 +580,14 @@ public class AprEndpoint {
         // Sendfile usage on systems which don't support it cause major problems
         if (useSendfile && !Library.APR_HAS_SENDFILE) {
             useSendfile = false;
+        }
+
+        // Poller size defaults
+        if (pollerSize <= 0) {
+            pollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
+        }
+        if (sendfileSize <= 0) {
+            sendfileSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
         }
 
         long inetAddress = Address.info(addressStr, family,

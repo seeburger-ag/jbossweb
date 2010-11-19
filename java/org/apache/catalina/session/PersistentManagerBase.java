@@ -34,10 +34,8 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Session;
 import org.apache.catalina.Store;
-import org.apache.catalina.util.LifecycleSupport;
-
 import org.apache.catalina.security.SecurityUtil;
-import org.jboss.logging.Logger;
+import org.apache.catalina.util.LifecycleSupport;
 import org.jboss.logging.Logger;
 /**
  * Extends the <b>ManagerBase</b> class to implement most of the
@@ -983,13 +981,6 @@ public abstract class PersistentManagerBase
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
-        // Force initialization of the random number generator
-        if (log.isDebugEnabled())
-            log.debug("Force random number initialization starting");
-        String dummy = generateSessionId();
-        if (log.isDebugEnabled())
-            log.debug("Force random number initialization completed");
-
         if (store == null)
             log.error("No Store configured, persistence disabled");
         else if (store instanceof Lifecycle)
@@ -1035,9 +1026,6 @@ public abstract class PersistentManagerBase
 
         if (getStore() != null && getStore() instanceof Lifecycle)
             ((Lifecycle)getStore()).stop();
-
-        // Require a new random number generator if we are restarted
-        this.random = null;
 
         if( initialized )
             destroy();
