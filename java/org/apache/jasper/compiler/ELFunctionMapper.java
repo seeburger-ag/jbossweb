@@ -17,8 +17,12 @@
 
 package org.apache.jasper.compiler;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 import javax.servlet.jsp.tagext.FunctionInfo;
+
+import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 
 /**
@@ -201,9 +205,9 @@ public class ELFunctionMapper {
 		FunctionInfo funcInfo = f.getFunctionInfo();
 		String key = f.getPrefix()+ ":" + f.getName();
 		ds.append(funcMethod + "(\"" + key + "\", " +
-			funcInfo.getFunctionClass() + ".class, " +
-			'\"' + f.getMethodName() + "\", " +
-			"new Class[] {");
+		        getCanonicalName(funcInfo.getFunctionClass()) +
+		        ".class, " + '\"' + f.getMethodName() + "\", " +
+		        "new Class[] {");
 		String params[] = f.getParameters();
 		for (int k = 0; k < params.length; k++) {
 		    if (k != 0) {
@@ -241,7 +245,42 @@ public class ELFunctionMapper {
 	    el.setMapName(decName);
 	}
 
-        /**
+	/**
+	 * Convert a binary class name into a canonical one that can be used
+	 * when generating Java source code.
+	 * 
+	 * @param className Binary class name
+	 * @return          Canonical equivalent
+	 */
+	private String getCanonicalName(String className) throws JasperException {
+	    Class<?> clazz;
+
+	    ClassLoader tccl;
+	    if (Constants.IS_SECURITY_ENABLED) {
+	        PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
+	        tccl = AccessController.doPrivileged(pa);
+	    } else {
+	        tccl = Thread.currentThread().getContextClassLoader();
+	    }
+
+	    try {
+	        clazz = Class.forName(className, true, tccl);
+	    } catch (ClassNotFoundException e) {
+	        throw new JasperException(e);
+	    }
+	    return clazz.getCanonicalName();
+	}
+    }
+
+    private static class PrivilegedGetTccl
+    implements PrivilegedAction<ClassLoader> {
+
+        public ClassLoader run() {
+            return Thread.currentThread().getContextClassLoader();
+        }
+    }
+
+	/**
          * Find the name of the function mapper for an EL.  Reuse a
          * previously generated one if possible.
          * @param functions An ArrayList of ELNode.Function instances that
