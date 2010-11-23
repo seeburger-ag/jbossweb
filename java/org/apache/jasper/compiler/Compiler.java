@@ -139,9 +139,7 @@ public abstract class Compiler {
             pageInfo.setTrimDirectiveWhitespaces(JspUtil.booleanValue(jspProperty
                     .isTrimDirectiveWhitespaces()));
         }
-        if (jspProperty.getDefaultContentType() != null && pageInfo.getContentType() == null) {
-            pageInfo.setContentType(jspProperty.getDefaultContentType());
-        }
+        // Default ContentType processing is deferred until after the page has been parsed
         if (jspProperty.getBuffer() != null && pageInfo.getBufferValue() == null) {
             pageInfo.setBufferValue(jspProperty.getBuffer(), errDispatcher);
         }
@@ -194,6 +192,10 @@ public abstract class Compiler {
             
             // Pass 2 - the whole translation unit
             pageNodes = parserCtl.parse(ctxt.getJspFile());
+
+            if (jspProperty.getDefaultContentType() != null && pageInfo.getContentType() == null) {
+                pageInfo.setContentType(jspProperty.getDefaultContentType());
+            }
 
             if (ctxt.isPrototypeMode()) {
                 // generate prototype .java file for the tag file
