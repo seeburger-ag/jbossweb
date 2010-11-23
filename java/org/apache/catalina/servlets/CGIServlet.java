@@ -41,7 +41,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.UnavailableException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -123,7 +122,7 @@ import org.apache.catalina.util.IOTools;
  * or an instance where the specification cited differs from Best
  * Community Practice (BCP).
  * Such instances should be well-documented here.  Please email the
- * <a href="mailto:tomcat-dev@jakarta.apache.org">Jakarta Tomcat group [tomcat-dev@jakarta.apache.org]</a>
+ * <a href="mailto:dev@tomcat.apache.org">Tomcat group [dev@tomcat.apache.org]</a>
  * with amendments.
  *
  * </p>
@@ -179,7 +178,7 @@ import org.apache.catalina.util.IOTools;
  * </p>
  * <p>
  *
- * <b>Metavariable Values</b>: According to the CGI specificion,
+ * <b>Metavariable Values</b>: According to the CGI specification,
  * implementations may choose to represent both null or missing values in an
  * implementation-specific manner, but must define that manner.  This
  * implementation chooses to always define all required metavariables, but
@@ -192,7 +191,7 @@ import org.apache.catalina.util.IOTools;
  *
  * <b>NPH --  Non-parsed-header implementation</b>:  This implementation does
  * not support the CGI NPH concept, whereby server ensures that the data
- * supplied to the script are preceisely as supplied by the client and
+ * supplied to the script are precisely as supplied by the client and
  * unaltered by the server.
  * </p>
  * <p>
@@ -227,15 +226,13 @@ import org.apache.catalina.util.IOTools;
  * <li> Better documentation
  * <li> Confirm use of ServletInputStream.available() in CGIRunner.run() is
  *      not needed
- * <li> Make checking for "." and ".." in servlet & cgi PATH_INFO less
- *      draconian
  * <li> [add more to this TODO list]
  * </ul>
  * </p>
  *
  * @author Martin T Dengler [root@martindengler.com]
  * @author Amy Roh
- * @version $Revision$, $Date$
+ * @version $Id$
  * @since Tomcat 4.0
  *
  */
@@ -244,6 +241,8 @@ import org.apache.catalina.util.IOTools;
 public final class CGIServlet extends HttpServlet {
 
     /* some vars below copied from Craig R. McClanahan's InvokerServlet */
+
+    private static final long serialVersionUID = 1L;
 
     /** the debugging detail level for this servlet. */
     private int debug = 0;
@@ -260,8 +259,14 @@ public final class CGIServlet extends HttpServlet {
     private String cgiExecutable = "perl";
     
     /** the encoding to use for parameters */
-    private String parameterEncoding = System.getProperty("file.encoding",
-                                                          "UTF-8");
+    private String parameterEncoding =
+        System.getProperty("file.encoding", "UTF-8");
+
+    /**
+     * The time (in milliseconds) to wait for the reading of stderr to complete
+     * before terminating the CGI process.
+     */
+    private long stderrTimeout = 2000;
 
     /** object used to ensure multiple threads don't try to expand same file */
     static Object expandFileLock = new Object();
@@ -284,18 +289,11 @@ public final class CGIServlet extends HttpServlet {
      *                                  interferes with the servlet's normal
      *                                  operation
      */
+    @Override
     public void init(ServletConfig config) throws ServletException {
 
         super.init(config);
 
-        // Verify that we were not accessed using the invoker servlet
-        String servletName = getServletConfig().getServletName();
-        if (servletName == null)
-            servletName = "";
-        if (servletName.startsWith("org.apache.catalina.INVOKER."))
-            throw new UnavailableException
-                ("Cannot invoke CGIServlet through the invoker");
-        
         // Set our properties from the initialization parameters
         if (getServletConfig().getInitParameter("debug") != null)
             debug = Integer.parseInt(getServletConfig().getInitParameter("debug"));
@@ -315,8 +313,12 @@ public final class CGIServlet extends HttpServlet {
             parameterEncoding = getServletConfig().getInitParameter("parameterEncoding");
         }
 
-    }
+        if (getServletConfig().getInitParameter("stderrTimeout") != null) {
+            stderrTimeout = Long.parseLong(getServletConfig().getInitParameter(
+                    "stderrTimeout"));
+        }
 
+    }
 
 
     /**
@@ -335,7 +337,9 @@ public final class CGIServlet extends HttpServlet {
      *
      */
     protected void printServletEnvironment(ServletOutputStream out,
-        HttpServletRequest req, HttpServletResponse res) throws IOException {
+        HttpServletRequest req,
+        @SuppressWarnings("unused") HttpServletResponse res)
+    throws IOException {
 
         // Document the properties from ServletRequest
         out.println("<h1>ServletRequest Properties</h1>");
@@ -521,9 +525,7 @@ public final class CGIServlet extends HttpServlet {
         out.println("<hr>");
 
 
-
     }
-
 
 
     /**
@@ -538,11 +540,11 @@ public final class CGIServlet extends HttpServlet {
      * @see javax.servlet.http.HttpServlet
      *
      */
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
         doGet(req, res);
     }
-
 
 
     /**
@@ -557,6 +559,7 @@ public final class CGIServlet extends HttpServlet {
      * @see javax.servlet.http.HttpServlet
      *
      */
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
         throws ServletException, IOException {
 
@@ -620,13 +623,6 @@ public final class CGIServlet extends HttpServlet {
     } //doGet
 
 
-
-    /** For future testing use only; does nothing right now */
-    public static void main(String[] args) {
-        System.out.println("$Header$");
-    }
-
-
     /**
      * Encapsulates the CGI environment and rules to derive
      * that environment from the servlet container and request information.
@@ -634,7 +630,7 @@ public final class CGIServlet extends HttpServlet {
      * <p>
      * </p>
      *
-     * @version  $Revision$, $Date$
+     * @version  $Id$
      * @since    Tomcat 4.0
      *
      */
@@ -700,7 +696,6 @@ public final class CGIServlet extends HttpServlet {
         }
 
 
-
         /**
          * Uses the ServletContext to set some CGI variables
          *
@@ -712,7 +707,6 @@ public final class CGIServlet extends HttpServlet {
             this.webAppRootDir = context.getRealPath("/");
             this.tmpDir = (File) context.getAttribute(ServletContext.TEMPDIR);
         }
-
 
 
         /**
@@ -880,21 +874,21 @@ public final class CGIServlet extends HttpServlet {
             }
             if (!currentLocation.isFile()) {
                 return new String[] { null, null, null, null };
-            } else {
-                if (debug >= 2) {
-                    log("findCGI: FOUND cgi at " + currentLocation);
-                }
-                path = currentLocation.getAbsolutePath();
-                name = currentLocation.getName();
+            }
 
-                if (".".equals(contextPath)) {
-                    scriptname = servletPath;
-                } else {
-                    scriptname = contextPath + servletPath;
-                }
-                if (!servletPath.equals(cginame)) {
-                    scriptname = scriptname + cginame;
-                }
+            if (debug >= 2) {
+                log("findCGI: FOUND cgi at " + currentLocation);
+            }
+            path = currentLocation.getAbsolutePath();
+            name = currentLocation.getName();
+
+            if (".".equals(contextPath)) {
+                scriptname = servletPath;
+            } else {
+                scriptname = contextPath + servletPath;
+            }
+            if (!servletPath.equals(cginame)) {
+                scriptname = scriptname + cginame;
             }
 
             if (debug >= 1) {
@@ -906,10 +900,10 @@ public final class CGIServlet extends HttpServlet {
 
         /**
          * Constructs the CGI environment to be supplied to the invoked CGI
-         * script; relies heavliy on Servlet API methods and findCGI
+         * script; relies heavily on Servlet API methods and findCGI
          *
          * @param    req request associated with the CGI
-         *           invokation
+         *           Invocation
          *
          * @return   true if environment was set OK, false if there
          *           was a problem and no environment was set
@@ -1184,6 +1178,7 @@ public final class CGIServlet extends HttpServlet {
          * @return  HTML string containing CGI environment info
          *
          */
+        @Override
         public String toString() {
 
             StringBuilder sb = new StringBuilder();
@@ -1241,7 +1236,6 @@ public final class CGIServlet extends HttpServlet {
         }
 
 
-
         /**
          * Gets derived command string
          *
@@ -1251,7 +1245,6 @@ public final class CGIServlet extends HttpServlet {
         protected String getCommand() {
             return command;
         }
-
 
 
         /**
@@ -1265,7 +1258,6 @@ public final class CGIServlet extends HttpServlet {
         }
 
 
-
         /**
          * Gets derived CGI environment
          *
@@ -1277,7 +1269,6 @@ public final class CGIServlet extends HttpServlet {
         }
 
 
-
         /**
          * Gets derived CGI query parameters
          *
@@ -1287,7 +1278,6 @@ public final class CGIServlet extends HttpServlet {
         protected ArrayList<String> getParameters() {
             return cmdLineParameters;
         }
-
 
 
         /**
@@ -1302,7 +1292,6 @@ public final class CGIServlet extends HttpServlet {
         }
 
 
-
         /**
          * Converts null strings to blank strings ("")
          *
@@ -1313,7 +1302,6 @@ public final class CGIServlet extends HttpServlet {
         protected String nullsToBlanks(String s) {
             return nullsToString(s, "");
         }
-
 
 
         /**
@@ -1328,7 +1316,6 @@ public final class CGIServlet extends HttpServlet {
                                        String subForNulls) {
             return (couldBeNull == null ? subForNulls : couldBeNull);
         }
-
 
 
         /**
@@ -1347,12 +1334,7 @@ public final class CGIServlet extends HttpServlet {
         }
 
 
-
     } //class CGIEnvironment
-
-
-
-
 
 
     /**
@@ -1368,7 +1350,7 @@ public final class CGIServlet extends HttpServlet {
      * <p>
      *
      * The CGI environment and settings are derived from the information
-     * passed to the constuctor.
+     * passed to the constructor.
      *
      * </p>
      * <p>
@@ -1377,7 +1359,7 @@ public final class CGIServlet extends HttpServlet {
      * and <code>setResponse</code> methods, respectively.
      * </p>
      *
-     * @version   $Revision$, $Date$
+     * @version $Id$
      */
 
     protected class CGIRunner {
@@ -1404,8 +1386,6 @@ public final class CGIServlet extends HttpServlet {
         private boolean readyToRun = false;
 
 
-
-
         /**
          *  Creates a CGIRunner and initializes its environment, working
          *  directory, and query parameters.
@@ -1418,7 +1398,7 @@ public final class CGIServlet extends HttpServlet {
          * @param  env      Hashtable with the desired script environment
          * @param  wd       File with the script's desired working directory
          * @param  params   ArrayList with the script's query command line
-         *                  paramters as strings
+         *                  parameters as strings
          */
         protected CGIRunner(String command, Hashtable<String,String> env,
                             File wd, ArrayList<String> params) {
@@ -1428,7 +1408,6 @@ public final class CGIServlet extends HttpServlet {
             this.params = params;
             updateReadyStatus();
         }
-
 
 
         /**
@@ -1447,7 +1426,6 @@ public final class CGIServlet extends HttpServlet {
         }
 
 
-
         /**
          * Gets ready status
          *
@@ -1457,7 +1435,6 @@ public final class CGIServlet extends HttpServlet {
         protected boolean isReady() {
             return readyToRun;
         }
-
 
 
         /**
@@ -1473,7 +1450,6 @@ public final class CGIServlet extends HttpServlet {
         }
 
 
-
         /**
          * Sets standard input to be passed on to the invoked cgi script
          *
@@ -1484,7 +1460,6 @@ public final class CGIServlet extends HttpServlet {
             this.stdin = stdin;
             updateReadyStatus();
         }
-
 
 
         /**
@@ -1511,7 +1486,6 @@ public final class CGIServlet extends HttpServlet {
             v.copyInto(strArr);
             return strArr;
         }
-
 
 
         /**
@@ -1546,7 +1520,10 @@ public final class CGIServlet extends HttpServlet {
          *             segments</u>:
          *             This implementation does not allow "<code>.</code>" and
          *             "<code>..</code>" in the the path, and such characters
-         *             will result in an IOException being thrown;
+         *             will result in an IOException being thrown (this should
+         *             never happen since Tomcat normalises the requestURI
+         *             before determining the contextPath, servletPath and
+         *             pathInfo);
          *     <LI> <u>Implementation limitations</u>: This implementation
          *             does not impose any limitations except as documented
          *             above.  This implementation may be limited by the
@@ -1588,50 +1565,32 @@ public final class CGIServlet extends HttpServlet {
             }
 
             /* original content/structure of this section taken from
-             * http://developer.java.sun.com/developer/
-             *                               bugParade/bugs/4216884.html
+             * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4216884
              * with major modifications by Martin Dengler
              */
             Runtime rt = null;
             BufferedReader cgiHeaderReader = null;
             InputStream cgiOutput = null;
             BufferedReader commandsStdErr = null;
+            Thread errReaderThread = null;
             BufferedOutputStream commandsStdIn = null;
             Process proc = null;
             int bufRead = -1;
 
+            String[] cmdAndArgs = new String[params.size() + 2];
+            
+            cmdAndArgs[0] = cgiExecutable;
+            
+            cmdAndArgs[1] = command;
+
             //create query arguments
-            StringBuilder cmdAndArgs = new StringBuilder();
-            if (command.indexOf(" ") < 0) {
-                cmdAndArgs.append(command);
-            } else {
-                // Spaces used as delimiter, so need to use quotes
-                cmdAndArgs.append("\"");
-                cmdAndArgs.append(command);
-                cmdAndArgs.append("\"");
-            }
-
             for (int i=0; i < params.size(); i++) {
-                cmdAndArgs.append(" ");
-                String param = params.get(i);
-                if (param.indexOf(" ") < 0) {
-                    cmdAndArgs.append(param);
-                } else {
-                    // Spaces used as delimiter, so need to use quotes
-                    cmdAndArgs.append("\"");
-                    cmdAndArgs.append(param);
-                    cmdAndArgs.append("\"");
-                }
+                cmdAndArgs[i + 2] = params.get(i);
             }
-
-            StringBuilder command = new StringBuilder(cgiExecutable);
-            command.append(" ");
-            command.append(cmdAndArgs.toString());
-            cmdAndArgs = command;
 
             try {
                 rt = Runtime.getRuntime();
-                proc = rt.exec(cmdAndArgs.toString(), hashToStringArray(env), wd);
+                proc = rt.exec(cmdAndArgs, hashToStringArray(env), wd);
     
                 String sContentLength = env.get("CONTENT_LENGTH");
 
@@ -1644,8 +1603,7 @@ public final class CGIServlet extends HttpServlet {
 
                 /* we want to wait for the process to exit,  Process.waitFor()
                  * is useless in our situation; see
-                 * http://developer.java.sun.com/developer/
-                 *                               bugParade/bugs/4223650.html
+                 * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4223650
                  */
 
                 boolean isRunning = true;
@@ -1653,11 +1611,13 @@ public final class CGIServlet extends HttpServlet {
                     (new InputStreamReader(proc.getErrorStream()));
                 final BufferedReader stdErrRdr = commandsStdErr ;
 
-                new Thread() {
+                errReaderThread = new Thread() {
+                    @Override
                     public void run () {
                         sendToLog(stdErrRdr) ;
                     }
-                }.start() ;
+                };
+                errReaderThread.start();
 
                 InputStream cgiHeaderStream =
                     new HTTPHeaderInputStream(proc.getInputStream());
@@ -1709,7 +1669,9 @@ public final class CGIServlet extends HttpServlet {
                             // such as a socket disconnect on the servlet side; otherwise, the
                             // external process could hang
                             if (bufRead != -1) {
-                                while ((bufRead = cgiOutput.read(bBuf)) != -1) {}
+                                while ((bufRead = cgiOutput.read(bBuf)) != -1) {
+                                    // NOOP - just read the data
+                                }
                             }
                         }
         
@@ -1721,6 +1683,7 @@ public final class CGIServlet extends HttpServlet {
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException ignored) {
+                            // Ignore
                         }
                     }
                 } //replacement for Process.waitFor()
@@ -1745,6 +1708,14 @@ public final class CGIServlet extends HttpServlet {
                         cgiOutput.close();
                     } catch (IOException ioe) {
                         log ("Exception closing output stream " + ioe);
+                    }
+                }
+                // Make sure the error stream reader has finished
+                if (errReaderThread != null) {
+                    try {
+                        errReaderThread.join(stderrTimeout);
+                    } catch (InterruptedException e) {
+                        log ("Interupted waiting for stderr reader thread");
                     }
                 }
                 if (debug > 4) {
@@ -1862,6 +1833,7 @@ public final class CGIServlet extends HttpServlet {
         /**
          * @see java.io.InputStream#read()
          */
+        @Override
         public int read() throws IOException {
             if (state == STATE_HEADER_END) {
                 return -1;
