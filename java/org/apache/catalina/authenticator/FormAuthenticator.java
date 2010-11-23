@@ -243,8 +243,9 @@ public class FormAuthenticator
             return (false);
         }
 
-        // Yes -- Validate the specified credentials and redirect
-        // to the error page if they are not correct
+        // Yes -- Acknowledge the request, validate the specified credentials
+        // and redirect to the error page if they are not correct
+        request.getResponse().sendAcknowledgement();
         Realm realm = context.getRealm();
         if (characterEncoding != null) {
             request.setCharacterEncoding(characterEncoding);
@@ -440,6 +441,13 @@ public class FormAuthenticator
         
         request.getCoyoteRequest().getParameters().setQueryStringEncoding(request.getConnector().getURIEncoding());
         
+        // Swallow any request body since we will be replacing it
+        byte[] buffer = new byte[4096];
+        InputStream is = request.getInputStream();
+        while (is.read(buffer) >= 0) {
+            // Ignore request body
+        }
+
         if ("POST".equalsIgnoreCase(saved.getMethod())) {
             ByteChunk body = saved.getBody();
             
@@ -516,6 +524,8 @@ public class FormAuthenticator
         }
 
         if ("POST".equalsIgnoreCase(request.getMethod())) {
+            // May need to acknowledge a 100-continue expectation
+            request.getResponse().sendAcknowledgement();
             ByteChunk body = new ByteChunk();
             body.setLimit(request.getConnector().getMaxSavePostSize());
 
