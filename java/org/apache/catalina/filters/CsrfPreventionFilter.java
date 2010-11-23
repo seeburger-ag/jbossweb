@@ -117,6 +117,7 @@ public class CsrfPreventionFilter extends FilterBase {
         }
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
 
@@ -204,7 +205,7 @@ public class CsrfPreventionFilter extends FilterBase {
         return buffer.toString();
     }
 
-    private static class CsrfResponseWrapper
+    protected static class CsrfResponseWrapper
             extends HttpServletResponseWrapper {
 
         private String nonce;
@@ -237,7 +238,7 @@ public class CsrfPreventionFilter extends FilterBase {
         }
         
         /**
-         * Return the specified URL with the nonce added to the query string
+         * Return the specified URL with the nonce added to the query string. 
          *
          * @param url URL to be modified
          * @param nonce The nonce to add
@@ -250,18 +251,17 @@ public class CsrfPreventionFilter extends FilterBase {
             String path = url;
             String query = "";
             String anchor = "";
-            int question = url.indexOf('?');
-            if (question >= 0) {
-                path = url.substring(0, question);
-                query = url.substring(question);
-            }
             int pound = path.indexOf('#');
             if (pound >= 0) {
                 anchor = path.substring(pound);
                 path = path.substring(0, pound);
             }
+            int question = path.indexOf('?');
+            if (question >= 0) {
+                query = path.substring(question);
+                path = path.substring(0, question);
+            }
             StringBuilder sb = new StringBuilder(path);
-            sb.append(anchor);
             if (query.length() >0) {
                 sb.append(query);
                 sb.append('&');
@@ -271,6 +271,7 @@ public class CsrfPreventionFilter extends FilterBase {
             sb.append(Constants.CSRF_NONCE_REQUEST_PARAM);
             sb.append('=');
             sb.append(nonce);
+            sb.append(anchor);
             return (sb.toString());
         }
     }
