@@ -156,6 +156,10 @@ public class Request
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.USE_PRINCIPAL_FROM_SESSION", "false")).booleanValue();
 
 
+    protected static final boolean LOCAL_RANDOM = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.LOCAL_RANDOM", "true")).booleanValue();
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -630,9 +634,10 @@ public class Request
      */
     public void setConnector(Connector connector) {
         this.connector = connector;
-        SecureRandom seedRandom = connector.getService().getRandom();
-        synchronized (seedRandom) {
-            random = new SecureRandom(seedRandom.generateSeed(16));
+        if (LOCAL_RANDOM) {
+            random = new SecureRandom(connector.getService().getRandom().generateSeed(16));
+        } else {
+            random = connector.getService().getRandom();
         }
     }
 
