@@ -61,6 +61,9 @@
         <bug>50066</bug>: Fix building of recursive tag files when the file depends on a JAR file. 
         Patch provided by Sylvain Laurent. (markt)
       </fix>
+      <fix>
+        <bug>50105</bug>: Use Enum.name() rather than Enum.toString() in composite expressions. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
