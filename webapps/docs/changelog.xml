@@ -35,6 +35,9 @@
         <bug>49991</bug>: Actually call Request listener when entering and exiting the application scope, not simply just before
         calling the filter chain. (remm)
       </fix>
+      <fix>
+        Allow a landing page for FORM. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
