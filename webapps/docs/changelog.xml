@@ -49,9 +49,13 @@
       <fix>
         <bug>49555</bug>: Fix use of static inner classes in taglibs. (markt)
       </fix>
-       <fix>
+      <fix>
         <bug>49726</bug>: Specifying a default content type via a JSP property group 
         should not prevent a page from setting some other content type. (markt)
+      </fix>
+      <fix>
+        <bug>49998</bug>: Handle single quoted attributes in detection of jsp:root 
+        element in XML syntax JSP files. (markt)
       </fix>
     </changelog>
   </subsection>
