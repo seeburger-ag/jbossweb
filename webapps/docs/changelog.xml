@@ -57,6 +57,10 @@
         <bug>49998</bug>: Handle single quoted attributes in detection of jsp:root 
         element in XML syntax JSP files. (markt)
       </fix>
+      <fix>
+        <bug>50066</bug>: Fix building of recursive tag files when the file depends on a JAR file. 
+        Patch provided by Sylvain Laurent. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
