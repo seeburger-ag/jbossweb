@@ -309,8 +309,6 @@ public class StandardService
             }
             if (apr) {
                 setEntropy(new String(Base64.encode(result)));
-            } else {
-                setEntropy(this.toString());
             }
         }
         return (this.entropy);
@@ -763,7 +761,12 @@ public class StandardService
         }
 
         // Construct and seed a new random number generator
-        random = new SecureRandom(getEntropy().getBytes());
+        String entropy = getEntropy();
+        if (entropy != null) {
+            random = new SecureRandom(getEntropy().getBytes());
+        } else {
+            random = new SecureRandom();
+        }
     }
     
     public void destroy() throws LifecycleException {
