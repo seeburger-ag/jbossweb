@@ -68,4 +68,7 @@ public final class Constants {
                 "org.apache.coyote.USE_CUSTOM_STATUS_MSG_IN_HEADER",
         "false")).booleanValue();
 
+    public static final int MAX_PAUSE_WAIT =
+        Integer.valueOf(System.getProperty("org.apache.coyote.MAX_PAUSE_WAIT", "60")).intValue();
+
 }
