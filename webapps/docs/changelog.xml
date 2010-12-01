@@ -17,13 +17,6 @@
 <body>
 
 <section name="JBoss Web 3.0.0.Beta8 (remm)">
-  <subsection name="Coyote">
-    <changelog>
-      <fix>
-        <jboss-jira>JBPAPP-5293</jboss-jira>: ConcurrentModificationException in HandshakeCompletedNotify-Thread. (remm)
-      </fix>
-    </changelog>
-  </subsection>
   <subsection name="Catalina">
     <changelog>
       <fix>
@@ -44,6 +37,16 @@
       </fix>
       <fix>
         Allow a landing page for FORM. (markt)
+      </fix>
+      <fix>
+        <jira>190</jira>: The rewrite resolver should look at request attributes. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        <jboss-jira>JBPAPP-5293</jboss-jira>: ConcurrentModificationException in HandshakeCompletedNotify-Thread. (remm)
       </fix>
     </changelog>
   </subsection>
