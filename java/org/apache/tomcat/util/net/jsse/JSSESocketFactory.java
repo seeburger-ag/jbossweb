@@ -52,6 +52,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSessionContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
@@ -153,38 +154,22 @@ public class JSSESocketFactory
         SSLSocket asock = null;
         try {
              asock = (SSLSocket)socket.accept();
-             if (!allowUnsafeLegacyRenegotiation) {
-                 asock.addHandshakeCompletedListener(
-                         new DisableSslRenegotiation());
-             }
-             configureClientAuth(asock);
         } catch (SSLException e){
           throw new SocketException("SSL handshake error" + e.toString());
         }
         return asock;
     }
     
-    private static class DisableSslRenegotiation 
-            implements HandshakeCompletedListener {
-        private volatile boolean completed = false;
-
-        public void handshakeCompleted(HandshakeCompletedEvent event) {
-            if (completed) {
-                try {
-                    log.warn("SSL renegotiation is disabled, closing connection");
-                    event.getSession().invalidate();
-                    event.getSocket().close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
-            completed = true;
-        }
-    }
-
-
     public void handshake(Socket sock) throws IOException {
-        ((SSLSocket)sock).startHandshake();
+        // We do getSession instead of startHandshake() so we can call this multiple times
+        SSLSession session = ((SSLSocket)sock).getSession();
+        if (session.getCipherSuite().equals("SSL_NULL_WITH_NULL_NULL"))
+            throw new IOException("SSL handshake failed. Ciper suite in SSL Session is SSL_NULL_WITH_NULL_NULL");
+
+        if (!allowUnsafeLegacyRenegotiation) {
+            // Prevent futher handshakes by removing all cipher suites
+            ((SSLSocket) sock).setEnabledCipherSuites(new String[0]);
+        }
     }
 
     /*
