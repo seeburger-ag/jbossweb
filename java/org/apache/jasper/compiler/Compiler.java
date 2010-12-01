@@ -237,7 +237,7 @@ public abstract class Compiler {
             TextOptimizer.concatenate(this, pageNodes);
 
             // Generate static function mapper codes.
-            ELFunctionMapper.map(this, pageNodes);
+            ELFunctionMapper.map(pageNodes);
 
             // generate servlet .java file
             writer = setupContextWriter(javaFileName);
