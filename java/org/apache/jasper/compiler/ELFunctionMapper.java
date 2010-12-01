@@ -269,15 +269,6 @@ public class ELFunctionMapper {
 	        throw new JasperException(e);
 	    }
 	    return clazz.getCanonicalName();
-	}
-    }
-
-    private static class PrivilegedGetTccl
-    implements PrivilegedAction<ClassLoader> {
-
-        public ClassLoader run() {
-            return Thread.currentThread().getContextClassLoader();
-        }
     }
 
 	/**
@@ -315,5 +306,14 @@ public class ELFunctionMapper {
 	    return "_jspx_fnmap_" + currFunc++;
 	}
     }
+
+    private static class PrivilegedGetTccl
+    implements PrivilegedAction<ClassLoader> {
+
+        public ClassLoader run() {
+            return Thread.currentThread().getContextClassLoader();
+        }
+    }
+
 }
 
