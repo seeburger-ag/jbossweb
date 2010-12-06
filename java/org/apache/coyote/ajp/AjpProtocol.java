@@ -204,8 +204,9 @@ public class AjpProtocol
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
         boolean done = false;
-        while (!done && retry < 20) {
+        while (!done && retry < org.apache.coyote.Constants.MAX_PAUSE_WAIT) {
             retry++;
+            done = true;
             for (int i = 0; i < states.length; i++) {
                 if (states[i].getStage() == org.apache.coyote.Constants.STAGE_SERVICE) {
                     try {
@@ -213,10 +214,10 @@ public class AjpProtocol
                     } catch (InterruptedException e) {
                         ;
                     }
-                    continue;
+                    done = false;
+                    break;
                 }
             }
-            done = true;
         }
         if (log.isInfoEnabled())
             log.info(sm.getString("ajpprotocol.pause", getName()));
