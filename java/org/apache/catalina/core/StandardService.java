@@ -21,28 +21,24 @@ package org.apache.catalina.core;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Method;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
-import org.apache.catalina.Executor;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.connector.Connector;
-import org.apache.catalina.util.Base64;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
+import java.util.ArrayList;
+import org.apache.catalina.Executor;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -64,7 +60,7 @@ public class StandardService
      * Alternate flag to enable delaying startup of connectors in embedded mode.
      */
     public static final boolean DELAY_CONNECTOR_STARTUP =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "true")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false")).booleanValue();
 
 
     // ----------------------------------------------------- Instance Variables
@@ -129,36 +125,11 @@ public class StandardService
      */
     protected Container container = null;
 
-    
-    /**
-     * Mapper.
-     */
-    protected Mapper mapper = new Mapper();
-
-
-    /**
-     * The associated mapper.
-     */
-    protected ServiceMapperListener mapperListener = new ServiceMapperListener(mapper);
-    
 
     /**
      * Has this component been initialized?
      */
     protected boolean initialized = false;
-
-
-    /**
-     * A String initialization parameter used to increase the entropy of
-     * the initialization of our random number generator.
-     */
-    protected String entropy = null;
-
-    
-    /**
-     * The random associated with this service.
-     */
-    protected SecureRandom random = null;
 
 
     // ------------------------------------------------------------- Properties
@@ -214,12 +185,6 @@ public class StandardService
         support.firePropertyChange("container", oldContainer, this.container);
 
     }
-
-
-    public Mapper getMapper() {
-        return mapper;
-    }
-
 
     public ObjectName getContainerName() {
         if( container instanceof ContainerBase ) {
@@ -285,49 +250,7 @@ public class StandardService
     }
 
 
-    @Override
-    public String getEntropy() {
-        // Calculate a semi-useful value if this has not been set
-        if (this.entropy == null) {
-            // Use APR to get a crypto secure entropy value
-            byte[] result = new byte[32];
-            boolean apr = false;
-            try {
-                String methodName = "random";
-                Class paramTypes[] = new Class[2];
-                paramTypes[0] = result.getClass();
-                paramTypes[1] = int.class;
-                Object paramValues[] = new Object[2];
-                paramValues[0] = result;
-                paramValues[1] = new Integer(32);
-                Method method = Class.forName("org.apache.tomcat.jni.OS")
-                    .getMethod(methodName, paramTypes);
-                method.invoke(null, paramValues);
-                apr = true;
-            } catch (Throwable t) {
-                // Ignore
-            }
-            if (apr) {
-                setEntropy(new String(Base64.encode(result)));
-            }
-        }
-        return (this.entropy);
-    }
-
-
-    @Override
-    public void setEntropy(String entropy) {
-        this.entropy = entropy;
-    }
-
-
     // --------------------------------------------------------- Public Methods
-
-
-    @Override
-    public SecureRandom getRandom() {
-        return random;
-    }
 
 
     /**
@@ -459,7 +382,7 @@ public class StandardService
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("StandardService[");
+        StringBuffer sb = new StringBuffer("StandardService[");
         sb.append(getName());
         sb.append("]");
         return (sb.toString());
@@ -588,8 +511,8 @@ public class StandardService
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("standardService.start.name", this.name));
+        if(log.isInfoEnabled())
+            log.info(sm.getString("standardService.start.name", this.name));
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -653,8 +576,9 @@ public class StandardService
         }
 
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("standardService.stop.name", this.name));
+        if(log.isInfoEnabled())
+            log.info
+                (sm.getString("standardService.stop.name", this.name));
         started = false;
 
         // Stop our defined Container second
@@ -746,33 +670,24 @@ public class StandardService
             
         }
         if( server==null ) {
-            // If no server was defined - create one
-            server = new StandardServer();
-            server.addService(this);
+            // Register with the server 
+            // HACK: ServerFactory should be removed...
+            
+            ServerFactory.getServer().addService(this);
         }
                
-        addLifecycleListener(mapperListener);
-        
+
         // Initialize our defined Connectors
         synchronized (connectors) {
-            for (int i = 0; i < connectors.length; i++) {
-                connectors[i].initialize();
-            }
-        }
-
-        // Construct and seed a new random number generator
-        String entropy = getEntropy();
-        if (entropy != null) {
-            random = new SecureRandom(getEntropy().getBytes());
-        } else {
-            random = new SecureRandom();
+                for (int i = 0; i < connectors.length; i++) {
+                    connectors[i].initialize();
+                }
         }
     }
     
     public void destroy() throws LifecycleException {
         if( started ) stop();
         // FIXME unregister should be here probably -- stop doing that ?
-        removeLifecycleListener(mapperListener);
     }
 
     public void init() {
@@ -814,6 +729,5 @@ public class StandardService
 
     public void postDeregister() {
     }
-
 
 }

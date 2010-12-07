@@ -186,9 +186,7 @@ public class BaseModelMBean implements DynamicMBean, MBeanRegistration, ModelMBe
             if( declaring.isAssignableFrom(this.getClass()) ) {
                 result = m.invoke(this, NO_ARGS_PARAM );
             } else {
-                synchronized (resource) {
-                    result = m.invoke(resource, NO_ARGS_PARAM );
-                }
+                result = m.invoke(resource, NO_ARGS_PARAM );
             }
         } catch (InvocationTargetException e) {
             Throwable t = e.getTargetException();
@@ -296,9 +294,7 @@ public class BaseModelMBean implements DynamicMBean, MBeanRegistration, ModelMBe
             if( method.getDeclaringClass().isAssignableFrom( this.getClass()) ) {
                 result = method.invoke(this, params );
             } else {
-                synchronized (resource) {
-                    result = method.invoke(resource, params);
-                }
+                result = method.invoke(resource, params);
             }
         } catch (InvocationTargetException e) {
             Throwable t = e.getTargetException();
@@ -415,9 +411,7 @@ public class BaseModelMBean implements DynamicMBean, MBeanRegistration, ModelMBe
             if( m.getDeclaringClass().isAssignableFrom( this.getClass()) ) {
                 m.invoke(this, new Object[] { value });
             } else {
-                synchronized (resource) {
-                    m.invoke(resource, new Object[] { value });
-                }
+                m.invoke(resource, new Object[] { value });
             }
         } catch (InvocationTargetException e) {
             Throwable t = e.getTargetException();

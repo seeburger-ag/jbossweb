@@ -37,26 +37,23 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
-import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Realm;
-import org.apache.catalina.Server;
-import org.apache.catalina.Service;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.util.HexUtils;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.MD5Encoder;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 /**
@@ -493,9 +490,6 @@ public abstract class RealmBase
 	    }
 
             for(int j=0; j < collection.length; j++){
-                if(collection[j].findMethodOmission(method)) {
-                    continue;
-                }
                 String [] patterns = collection[j].findPatterns();
  
                 // If patterns is null, continue to avoid an NPE
@@ -540,9 +534,6 @@ public abstract class RealmBase
 	    }
 
             for(int j=0; j < collection.length; j++){
-                if(collection[j].findMethodOmission(method)) {
-                    continue;
-                }
                 String [] patterns = collection[j].findPatterns();
 
                 // If patterns is null, continue to avoid an NPE
@@ -612,9 +603,6 @@ public abstract class RealmBase
             int pos = -1;
             for(int j=0; j < collection.length; j++){
                 String [] patterns = collection[j].findPatterns();
-                if(collection[j].findMethodOmission(method)) {
-                    continue;
-                }
 
                 // If patterns is null, continue to avoid an NPE
                 // See Bugzilla 30624
@@ -946,7 +934,7 @@ public abstract class RealmBase
         }
 
         // Redirect to the corresponding SSL port
-        StringBuilder file = new StringBuilder();
+        StringBuffer file = new StringBuffer();
         String protocol = "https";
         String host = request.getServerName();
         // Protocol
@@ -960,7 +948,9 @@ public abstract class RealmBase
         String requestedSessionId = request.getRequestedSessionId();
         if ((requestedSessionId != null) &&
             request.isRequestedSessionIdFromURL()) {
-            file.append(request.getContext().getSessionCookie().getPathParameterName());
+            file.append(";");
+            file.append(Globals.SESSION_PARAMETER_NAME);
+            file.append("=");
             file.append(requestedSessionId);
         }
         String queryString = request.getQueryString();
@@ -1220,30 +1210,6 @@ public abstract class RealmBase
      * Return the Principal associated with the given user name.
      */
     protected abstract Principal getPrincipal(String username);
-
-
-    /**
-     * Return the Server object that is the ultimate parent for the container
-     * with which this Realm is associated. If the server cannot be found (eg
-     * because the container hierarchy is not complete), <code>null</code> is
-     * returned.
-     */
-    protected Server getServer() {
-        Container c = container;
-        if (c instanceof Context) {
-            c = c.getParent();
-        }
-        if (c instanceof Host) {
-            c = c.getParent();
-        }
-        if (c instanceof Engine) {
-            Service s = ((Engine)c).getService();
-            if (s != null) {
-                return s.getServer();
-            }
-        }
-        return null;
-    }
 
 
     // --------------------------------------------------------- Static Methods

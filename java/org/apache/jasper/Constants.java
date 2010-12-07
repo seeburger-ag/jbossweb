@@ -58,12 +58,6 @@ public class Constants {
     };
 
     /**
-     * ServletContext attribute for the JSP Servlet options.
-     */
-    public static final String SERVLET_OPTIONS = 
-        System.getProperty("org.apache.jasper.Constants.SERVLET_OPTIONS", "org.apache.catalina.jsp_options");
-
-    /**
      * ServletContext attribute for classpath. This is tomcat specific. 
      * Other servlet engines may choose to support this attribute if they 
      * want to have this JSP engine running on them. 
@@ -84,7 +78,7 @@ public class Constants {
     /**
      * Default size of the JSP buffer.
      */
-    public static final int DEFAULT_BUFFER_SIZE = Integer.parseInt(System.getProperty("org.apache.jasper.Constants.DEFAULT_BUFFER_SIZE", "8192"));
+    public static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
 
     /**
      * Default size for the tag buffers.
@@ -120,6 +114,7 @@ public class Constants {
      * uses. 
      */
     public static final String INC_SERVLET_PATH = "javax.servlet.include.servlet_path";
+    public static final String TMP_DIR = "javax.servlet.context.tempdir";
 
     // Must be kept in sync with org/apache/catalina/Globals.java
     public static final String ALT_DD_ATTR = 

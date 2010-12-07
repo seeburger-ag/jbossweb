@@ -21,7 +21,6 @@ package org.apache.el.parser;
 import javax.el.ELException;
 import javax.el.MethodInfo;
 import javax.el.PropertyNotWritableException;
-import javax.el.ValueReference;
 
 import org.apache.el.lang.ELSupport;
 import org.apache.el.lang.EvaluationContext;
@@ -132,10 +131,6 @@ public abstract class SimpleNode extends ELSupport implements Node {
         throw new UnsupportedOperationException();
     }
 
-    public ValueReference getValueReference(EvaluationContext ctx) {
-        return null;
-    }
-
     public boolean isReadOnly(EvaluationContext ctx)
             throws ELException {
         return true;
@@ -162,9 +157,4 @@ public abstract class SimpleNode extends ELSupport implements Node {
     public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes) throws ELException {
         throw new UnsupportedOperationException();
     }
-    
-    public boolean isParametersProvided() {
-        return false;
-    }
-
 }

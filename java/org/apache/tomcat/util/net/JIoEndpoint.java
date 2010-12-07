@@ -1,23 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.apache.tomcat.util.net;
@@ -30,6 +25,7 @@ import java.net.Socket;
 import java.util.concurrent.Executor;
 
 import org.apache.tomcat.util.res.StringManager;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 /**
@@ -155,7 +151,7 @@ public class JIoEndpoint {
     /**
      * Maximum amount of worker threads.
      */
-    protected int maxThreads = 512 * Runtime.getRuntime().availableProcessors();
+    protected int maxThreads = 200;
     public void setMaxThreads(int maxThreads) { this.maxThreads = maxThreads; }
     public int getMaxThreads() { return maxThreads; }
 
@@ -167,23 +163,11 @@ public class JIoEndpoint {
     public void setThreadPriority(int threadPriority) { this.threadPriority = threadPriority; }
     public int getThreadPriority() { return threadPriority; }
 
+    /*
+     * wait for free worker when MaxThreads is reached.
+     */
+    protected boolean WAITFORWORKER = Boolean.valueOf(System.getProperty("org.apache.tomcat.util.net.WAITFORWORKER", "false")).booleanValue();
     
-    /**
-     * Size of the socket poller.
-     */
-    protected int pollerSize = 32 * 1024;
-    public void setPollerSize(int pollerSize) { this.pollerSize = pollerSize; }
-    public int getPollerSize() { return pollerSize; }
-
-
-    /**
-     * Keep-Alive timeout.
-     */
-    protected int keepAliveTimeout = -1;
-    public int getKeepAliveTimeout() { return keepAliveTimeout; }
-    public void setKeepAliveTimeout(int keepAliveTimeout) { this.keepAliveTimeout = keepAliveTimeout; }
-
-
     /**
      * Server socket port.
      */
@@ -268,15 +252,6 @@ public class JIoEndpoint {
     public ServerSocketFactory getServerSocketFactory() { return serverSocketFactory; }
 
 
-    /**
-     * The socket poller used for event support.
-     */
-    protected Poller eventPoller = null;
-    public Poller getEventPoller() {
-        return eventPoller;
-    }
-
-
     public boolean isRunning() {
         return running;
     }
@@ -303,11 +278,7 @@ public class JIoEndpoint {
      * thread local fields.
      */
     public interface Handler {
-        public enum SocketState {
-            OPEN, CLOSED, LONG
-        }
-        public SocketState process(Socket socket);
-        public SocketState event(Socket socket, SocketStatus status);
+        public boolean process(Socket socket);
     }
 
 
@@ -345,7 +316,11 @@ public class JIoEndpoint {
                     // Hand this socket off to an appropriate processor
                     if (!processSocket(socket)) {
                         // Close socket right away
-                        try { socket.close(); } catch (IOException e) { }
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            // Ignore
+                        }
                     }
                 }catch ( IOException x ) {
                     if ( running ) log.error(sm.getString("endpoint.accept.fail"), x);
@@ -362,163 +337,6 @@ public class JIoEndpoint {
     }
 
 
-    // ------------------------------------------------- SocketInfo Inner Class
-
-
-    /**
-     * Socket list class, used to avoid using a possibly large amount of objects
-     * with very little actual use.
-     */
-    public static class SocketInfo {
-        public static final int RESUME = 4;
-        public static final int WAKEUP = 8;
-        public Socket socket;
-        public int timeout;
-        public int flags;
-        public boolean resume() {
-            return (flags & RESUME) == RESUME;
-        }
-        public boolean wakeup() {
-            return (flags & WAKEUP) == WAKEUP;
-        }
-        public static int merge(int flag1, int flag2) {
-            return ((flag1 & RESUME) | (flag2 & RESUME)) 
-                | ((flag1 & WAKEUP) & (flag2 & WAKEUP));
-        }
-    }
-    
-    
-    // --------------------------------------------- SocketTimeouts Inner Class
-
-
-    /**
-     * Socket list class, used to avoid using a possibly large amount of objects
-     * with very little actual use.
-     */
-    public class SocketTimeouts {
-        protected int size;
-
-        protected Socket[] sockets;
-        protected long[] timeouts;
-        protected int pos = 0;
-
-        public SocketTimeouts(int size) {
-            this.size = 0;
-            sockets = new Socket[size];
-            timeouts = new long[size];
-        }
-
-        public void add(Socket socket, long timeout) {
-            sockets[size] = socket;
-            timeouts[size] = timeout;
-            size++;
-        }
-        
-        public boolean remove(Socket socket) {
-            for (int i = 0; i < size; i++) {
-                if (sockets[i] == socket) {
-                    sockets[i] = sockets[size - 1];
-                    timeouts[i] = timeouts[size - 1];
-                    size--;
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        public Socket check(long date) {
-            while (pos < size) {
-                if (date >= timeouts[pos]) {
-                    Socket result = sockets[pos];
-                    sockets[pos] = sockets[size - 1];
-                    timeouts[pos] = timeouts[size - 1];
-                    size--;
-                    return result;
-                }
-                pos++;
-            }
-            pos = 0;
-            return null;
-        }
-        
-    }
-    
-    
-    // ------------------------------------------------- SocketList Inner Class
-
-
-    /**
-     * Socket list class, used to avoid using a possibly large amount of objects
-     * with very little actual use.
-     */
-    public class SocketList {
-        protected int size;
-        protected int pos;
-
-        protected Socket[] sockets;
-        protected int[] timeouts;
-        protected int[] flags;
-        
-        protected SocketInfo info = new SocketInfo();
-        
-        public SocketList(int size) {
-            this.size = 0;
-            pos = 0;
-            sockets = new Socket[size];
-            timeouts = new int[size];
-            flags = new int[size];
-        }
-        
-        public int size() {
-            return this.size;
-        }
-        
-        public SocketInfo get() {
-            if (pos == size) {
-                return null;
-            } else {
-                info.socket = sockets[pos];
-                info.timeout = timeouts[pos];
-                info.flags = flags[pos];
-                pos++;
-                return info;
-            }
-        }
-        
-        public void clear() {
-            size = 0;
-            pos = 0;
-        }
-        
-        public boolean add(Socket socket, int timeout, int flag) {
-            if (size == sockets.length) {
-                return false;
-            } else {
-                for (int i = 0; i < size; i++) {
-                    if (sockets[i] == socket) {
-                        flags[i] = SocketInfo.merge(flags[i], flag);
-                        return true;
-                    }
-                }
-                sockets[size] = socket;
-                timeouts[size] = timeout;
-                flags[size] = flag;
-                size++;
-                return true;
-            }
-        }
-        
-        public void duplicate(SocketList copy) {
-            copy.size = size;
-            copy.pos = pos;
-            System.arraycopy(sockets, 0, copy.sockets, 0, size);
-            System.arraycopy(timeouts, 0, copy.timeouts, 0, size);
-            System.arraycopy(flags, 0, copy.flags, 0, size);
-        }
-        
-    }
-    
-    
     // ------------------------------------------- SocketProcessor Inner Class
 
 
@@ -537,9 +355,12 @@ public class JIoEndpoint {
         public void run() {
 
             // Process the request from this socket
-            if (!setSocketOptions(socket) || (handler.process(socket) == Handler.SocketState.CLOSED)) {
+            if (!setSocketOptions(socket) || !handler.process(socket)) {
                 // Close socket
-                try { socket.close(); } catch (IOException e) { }
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                }
             }
 
             // Finish up this request
@@ -550,292 +371,6 @@ public class JIoEndpoint {
     }
     
     
-    // --------------------------------------- SocketEventProcessor Inner Class
-
-
-    /**
-     * This class is the equivalent of the Worker, but will simply use in an
-     * external Executor thread pool.
-     */
-    protected class SocketEventProcessor implements Runnable {
-        
-        protected Socket socket = null;
-        protected SocketStatus status = null; 
-        
-        public SocketEventProcessor(Socket socket, SocketStatus status) {
-            this.socket = socket;
-            this.status = status;
-        }
-
-        public void run() {
-
-            Handler.SocketState socketState = handler.event(socket, status);
-            if (socketState == Handler.SocketState.CLOSED) {
-                // Close socket
-                try { socket.close(); } catch (IOException e) { }
-            } else if (socketState == Handler.SocketState.OPEN) {
-                // Process the keepalive after the event processing
-                // This is the main behavior difference with endpoint with pollers, which
-                // will add the socket to the poller
-                if (handler.process(socket) == Handler.SocketState.CLOSED) {
-                    // Close socket
-                    try { socket.close(); } catch (IOException e) { }
-                }
-            }
-            socket = null;
-
-        }
-        
-    }
-    
-    
-    // ----------------------------------------------------- Poller Inner Class
-
-
-    /**
-     * Poller class.
-     */
-    public class Poller implements Runnable {
-
-        /**
-         * List of sockets to be added to the poller.
-         */
-        protected SocketList addList = null;
-
-        /**
-         * List of sockets to be added to the poller.
-         */
-        protected SocketList localAddList = null;
-
-        /**
-         * Structure used for storing timeouts.
-         */
-        protected SocketTimeouts timeouts = null;
-        
-        
-        /**
-         * Last run of maintain. Maintain will run usually every 5s.
-         */
-        protected long lastMaintain = System.currentTimeMillis();
-        
-        
-        /**
-         * Amount of connections inside this poller.
-         */
-        protected int connectionCount = 0;
-        public int getConnectionCount() { return connectionCount; }
-
-        public Poller() {
-        }
-        
-        /**
-         * Create the poller. The java.io poller only deals with timeouts.
-         */
-        protected void init() {
-
-            timeouts = new SocketTimeouts(pollerSize);
-            
-            connectionCount = 0;
-            addList = new SocketList(pollerSize);
-            localAddList = new SocketList(pollerSize);
-
-        }
-
-        /**
-         * Destroy the poller.
-         */
-        protected void destroy() {
-            // Wait for pollerTime before doing anything, so that the poller threads
-            // exit, otherwise parallel destruction of sockets which are still
-            // in the poller can cause problems
-            try {
-                synchronized (this) {
-                    this.wait(2);
-                }
-            } catch (InterruptedException e) {
-                // Ignore
-            }
-            // Close all sockets in the add queue
-            SocketInfo info = addList.get();
-            while (info != null) {
-                if (!processSocket(info.socket, SocketStatus.STOP)) {
-                    try { info.socket.close(); } catch (IOException e) { }
-                }
-                info = addList.get();
-            }
-            addList.clear();
-            // Close all sockets still in the poller
-            long future = System.currentTimeMillis() + Integer.MAX_VALUE;
-            Socket socket = timeouts.check(future);
-            while (socket != null) {
-                if (!processSocket(socket, SocketStatus.TIMEOUT)) {
-                    try { socket.close(); } catch (IOException e) { }
-                }
-                socket = timeouts.check(future);
-            }
-            connectionCount = 0;
-        }
-
-        /**
-         * Add specified socket and associated pool to the poller. The socket will
-         * be added to a temporary array, and polled first after a maximum amount
-         * of time equal to pollTime (in most cases, latency will be much lower,
-         * however).
-         *
-         * @param socket to add to the poller
-         */
-        public void add(Socket socket, int timeout, boolean resume, boolean wakeup) {
-            if (timeout < 0) {
-                timeout = keepAliveTimeout;
-            }
-            if (timeout < 0) {
-                timeout = soTimeout;
-            }
-            if (timeout <= 0) {
-                // Always put a timeout in
-                timeout = Integer.MAX_VALUE;
-            }
-            boolean ok = false;
-            synchronized (this) {
-                // Add socket to the list. Newly added sockets will wait
-                // at most for pollTime before being polled
-                if (addList.add(socket, timeout, (resume ? SocketInfo.RESUME : 0)
-                        | (wakeup ? SocketInfo.WAKEUP : 0))) {
-                    ok = true;
-                    this.notify();
-                }
-            }
-            if (!ok) {
-                // Can't do anything: close the socket right away
-                if (!processSocket(socket, SocketStatus.ERROR)) {
-                    try { socket.close(); } catch (IOException e) { }
-                }
-            }
-        }
-
-        /**
-         * Timeout checks.
-         */
-        protected void maintain() {
-
-            long date = System.currentTimeMillis();
-            // Maintain runs at most once every 5s, although it will likely get called more
-            if ((date - lastMaintain) < 5000L) {
-                return;
-            } else {
-                lastMaintain = date;
-            }
-            Socket socket = timeouts.check(date);
-            while (socket != null) {
-                if (!processSocket(socket, SocketStatus.TIMEOUT)) {
-                    try { socket.close(); } catch (IOException e) { }
-                }
-                socket = timeouts.check(date);
-            }
-
-        }
-        
-        /**
-         * The background thread that listens for incoming TCP/IP connections and
-         * hands them off to an appropriate processor.
-         */
-        public void run() {
-
-            int maintain = 0;
-            // Loop until we receive a shutdown command
-            while (running) {
-
-                // Loop if endpoint is paused
-                while (paused) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    }
-                }
-                // Check timeouts for suspended connections if the poller is empty
-                while (connectionCount < 1 && addList.size() < 1) {
-                    // Reset maintain time.
-                    try {
-                        if (soTimeout > 0 && running) {
-                            maintain();
-                        }
-                        synchronized (this) {
-                            this.wait(10000);
-                        }
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    } catch (Throwable t) {
-                        log.error(sm.getString("endpoint.maintain.error"), t);
-                    }
-                }
-
-                try {
-                    
-                    // Add sockets which are waiting to the poller
-                    if (addList.size() > 0) {
-                        synchronized (this) {
-                            // Duplicate to another list, so that the syncing is minimal
-                            addList.duplicate(localAddList);
-                            addList.clear();
-                        }
-                        SocketInfo info = localAddList.get();
-                        while (info != null) {
-                            if (info.wakeup()) {
-                                // Resume event if socket is present in the poller
-                                if (timeouts.remove(info.socket)) {
-                                    if (info.resume()) {
-                                        if (!processSocket(info.socket, SocketStatus.OPEN_CALLBACK)) {
-                                            try { info.socket.close(); } catch (IOException e) { }
-                                        }
-                                    } else {
-                                        timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
-                                    }
-                                }
-                            } else {
-                                if (info.resume()) {
-                                    if (!processSocket(info.socket, SocketStatus.OPEN_CALLBACK)) {
-                                        try { info.socket.close(); } catch (IOException e) { }
-                                    }
-                                } else {
-                                    timeouts.add(info.socket, System.currentTimeMillis() + info.timeout);
-                                }
-                            }
-                            info = localAddList.get();
-                        }
-                    }
-
-                    try {
-                        Thread.sleep(2);
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    }
-
-                    // Process socket timeouts
-                    if (soTimeout > 0 && maintain++ > 1000 && running) {
-                        maintain = 0;
-                        maintain();
-                    }
-
-                } catch (Throwable t) {
-                    if (maintain == 0) {
-                        log.error(sm.getString("endpoint.maintain.error"), t);
-                    } else {
-                        log.error(sm.getString("endpoint.poll.error"), t);
-                    }
-                }
-
-            }
-
-            synchronized (this) {
-                this.notifyAll();
-            }
-
-        }
-        
-    }
-
-
     // ----------------------------------------------------- Worker Inner Class
 
 
@@ -844,7 +379,6 @@ public class JIoEndpoint {
         protected Thread thread = null;
         protected boolean available = false;
         protected Socket socket = null;
-        protected SocketStatus status = null;
 
         
         /**
@@ -856,7 +390,7 @@ public class JIoEndpoint {
          *
          * @param socket TCP socket to process
          */
-        protected synchronized void assign(Socket socket) {
+        synchronized void assign(Socket socket) {
 
             // Wait for the Processor to get the previous Socket
             while (available) {
@@ -868,32 +402,12 @@ public class JIoEndpoint {
 
             // Store the newly available Socket and notify our thread
             this.socket = socket;
-            this.status = null;
             available = true;
             notifyAll();
 
         }
 
         
-        protected synchronized void assign(Socket socket, SocketStatus status) {
-
-            // Wait for the Processor to get the previous Socket
-            while (available) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                }
-            }
-
-            // Store the newly available Socket and notify our thread
-            this.socket = socket;
-            this.status = status;
-            available = true;
-            notifyAll();
-
-        }
-
-
         /**
          * Await a newly assigned Socket from our Connector, or <code>null</code>
          * if we are supposed to shut down.
@@ -934,26 +448,16 @@ public class JIoEndpoint {
                     continue;
 
                 // Process the request from this socket
-                if (status != null){
-                    Handler.SocketState socketState = handler.event(socket, status);
-                    if (socketState == Handler.SocketState.CLOSED) {
-                        // Close socket
-                        try { socket.close(); } catch (IOException e) { }
-                    } else if (socketState == Handler.SocketState.OPEN) {
-                        // Process the keepalive after the event processing
-                        // This is the main behavior difference with endpoint with pollers, which
-                        // will add the socket to the poller
-                        if (handler.process(socket) == Handler.SocketState.CLOSED) {
-                            // Close socket
-                            try { socket.close(); } catch (IOException e) { }
-                        }
-                    }
-                } else if ((status == null) && (!setSocketOptions(socket) || (handler.process(socket) == Handler.SocketState.CLOSED))) {
+                if (!setSocketOptions(socket) || !handler.process(socket)) {
                     // Close socket
-                    try { socket.close(); } catch (IOException e) { }
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                    }
                 }
 
                 // Finish up this request
+                socket = null;
                 recycleWorkerThread(this);
 
             }
@@ -1028,14 +532,6 @@ public class JIoEndpoint {
                 workers = new WorkerStack(maxThreads);
             }
 
-            // Start event poller thread
-            eventPoller = new Poller();
-            eventPoller.init();
-            Thread pollerThread = new Thread(eventPoller, getName() + "-Poller");
-            pollerThread.setPriority(threadPriority);
-            pollerThread.setDaemon(true);
-            pollerThread.start();
-
             // Start acceptor threads
             for (int i = 0; i < acceptorThreadCount; i++) {
                 Thread acceptorThread = new Thread(new Acceptor(), getName() + "-Acceptor-" + i);
@@ -1063,8 +559,6 @@ public class JIoEndpoint {
         if (running) {
             running = false;
             unlockAccept();
-            eventPoller.destroy();
-            eventPoller = null;
         }
     }
 
@@ -1205,6 +699,26 @@ public class JIoEndpoint {
 
 
     /**
+     * Return a new worker thread, and block while to worker is available.
+     */
+    protected Worker getWorkerThread() {
+        // Allocate a new worker thread
+        Worker workerThread = createWorkerThread();
+        while (workerThread == null && WAITFORWORKER) {
+            try {
+                synchronized (workers) {
+                    workers.wait();
+                }
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+            workerThread = createWorkerThread();
+        }
+        return workerThread;
+    }
+
+
+    /**
      * Recycle the specified Processor so that it can be used again.
      *
      * @param workerThread The processor to be recycled
@@ -1224,39 +738,13 @@ public class JIoEndpoint {
     protected boolean processSocket(Socket socket) {
         try {
             if (executor == null) {
-                Worker worker = createWorkerThread();
-                if (worker != null) {
+                Worker worker = getWorkerThread();
+                if (worker != null)
                     worker.assign(socket);
-                } else {
+                else
                     return false;
-                }
             } else {
                 executor.execute(new SocketProcessor(socket));
-            }
-        } catch (Throwable t) {
-            // This means we got an OOM or similar creating a thread, or that
-            // the pool and its queue are full
-            log.error(sm.getString("endpoint.process.fail"), t);
-            return false;
-        }
-        return true;
-    }
-    
-
-    /**
-     * Process given socket for an event.
-     */
-    protected boolean processSocket(Socket socket, SocketStatus status) {
-        try {
-            if (executor == null) {
-                Worker worker = createWorkerThread();
-                if (worker != null) {
-                    worker.assign(socket, status);
-                } else {
-                    return false;
-                }
-            } else {
-                executor.execute(new SocketEventProcessor(socket, status));
             }
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that

@@ -22,29 +22,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 
 import org.apache.catalina.Globals;
-import org.apache.catalina.core.ApplicationFilterChain;
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.StringManager;
+
+
+import org.apache.catalina.security.SecurityUtil;
 
 /**
  * Facade class that wraps a Coyote request object.  
@@ -938,178 +930,6 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return request.getRemotePort();
-    }
-
-
-    public AsyncContext getAsyncContext() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.getAsyncContext();
-    }
-
-
-    public ServletContext getServletContext() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.getServletContext();
-    }
-
-
-    public boolean isAsyncStarted() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.isAsyncStarted();
-    }
-
-
-    public boolean isAsyncSupported() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.isAsyncSupported();
-    }
-
-
-    public AsyncContext startAsync() throws IllegalStateException {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.startAsync();
-    }
-
-
-    public AsyncContext startAsync(ServletRequest servletRequest,
-            ServletResponse servletResponse) throws IllegalStateException {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.startAsync(servletRequest, servletResponse);
-    }
-
-
-    public DispatcherType getDispatcherType() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.getDispatcherType();
-    }
-
-
-    /**
-     * Get filter chain associated with the request.
-     */
-    public ApplicationFilterChain getFilterChain() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        return request.getFilterChain();
-    }
-
-
-    /**
-     * Set filter chain associated with the request.
-     * 
-     * @param filterChain new filter chain
-     */
-    public void setFilterChain(ApplicationFilterChain filterChain) {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        request.setFilterChain(filterChain);
-    }
-
-
-    /**
-     * Next filter chain.
-     */
-    public void nextFilterChain() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        request.nextFilterChain();
-    }
-
-
-    /**
-     * Release the current filter chain.
-     */
-    public void releaseFilterChain() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        request.releaseFilterChain();
-    }
-
-
-    public boolean authenticate(HttpServletResponse response) throws IOException,
-            ServletException {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.authenticate(response);
-    }
-
-
-    public void login(String username, String password) throws ServletException {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        request.login(username, password);
-    }
-
-
-    public void logout() throws ServletException {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        request.logout();
-    }
-
-
-    public Part getPart(String name) throws IOException, ServletException {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.getPart(name);
-    }
-
-
-    public Collection<Part> getParts() throws IOException, ServletException {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.getParts();
     }
 
 }

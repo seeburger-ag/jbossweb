@@ -19,7 +19,6 @@
 package org.apache.catalina.servlets;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -30,7 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.Stack;
 import java.util.TimeZone;
 import java.util.Vector;
@@ -39,7 +37,6 @@ import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
@@ -49,6 +46,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.catalina.Globals;
 import org.apache.catalina.util.DOMWriter;
 import org.apache.catalina.util.MD5Encoder;
 import org.apache.catalina.util.RequestUtil;
@@ -376,9 +374,9 @@ public class WebdavServlet
      */
     protected String getRelativePath(HttpServletRequest request) {
         // Are we being processed by a RequestDispatcher.include()?
-        if (request.getAttribute(RequestDispatcher.INCLUDE_REQUEST_URI) != null) {
+        if (request.getAttribute(Globals.INCLUDE_REQUEST_URI_ATTR) != null) {
             String result = (String) request.getAttribute(
-                    RequestDispatcher.INCLUDE_PATH_INFO);
+                                            Globals.INCLUDE_PATH_INFO_ATTR);
             if ((result == null) || (result.equals("")))
                 result = "/";
             return (result);
@@ -407,7 +405,7 @@ public class WebdavServlet
 
         resp.addHeader("DAV", "1,2");
 
-        StringBuilder methodsAllowed = determineMethodsAllowed(resources,
+        StringBuffer methodsAllowed = determineMethodsAllowed(resources,
                                                               req);
 
         resp.addHeader("Allow", methodsAllowed.toString());
@@ -424,7 +422,7 @@ public class WebdavServlet
 
         if (!listings) {
             // Get allowed methods
-            StringBuilder methodsAllowed = determineMethodsAllowed(resources,
+            StringBuffer methodsAllowed = determineMethodsAllowed(resources,
                                                                   req);
 
             resp.addHeader("Allow", methodsAllowed.toString());
@@ -436,8 +434,8 @@ public class WebdavServlet
         if (path.endsWith("/"))
             path = path.substring(0, path.length() - 1);
 
-        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
-            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
+        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
+            (path.toUpperCase().startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return;
         }
@@ -465,7 +463,7 @@ public class WebdavServlet
 
         Node propNode = null;
         
-        if (req.getContentLength() > 0) {
+        if (req.getInputStream().available() > 0) {
             DocumentBuilder documentBuilder = getDocumentBuilder();
     
             try {
@@ -496,11 +494,9 @@ public class WebdavServlet
                     }
                 }
             } catch (SAXException e) {
-                // Something went wrong - bad request
-                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                // Something went wrong - use the defaults.
             } catch (IOException e) {
-                // Something went wrong - bad request
-                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                // Something went wrong - use the defaults.
             }
         }
 
@@ -712,8 +708,8 @@ public class WebdavServlet
 
         String path = getRelativePath(req);
 
-        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
-            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
+        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
+            (path.toUpperCase().startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return;
         }
@@ -729,7 +725,7 @@ public class WebdavServlet
         // path
         if (exists) {
             // Get allowed methods
-            StringBuilder methodsAllowed = determineMethodsAllowed(resources,
+            StringBuffer methodsAllowed = determineMethodsAllowed(resources,
                                                                   req);
 
             resp.addHeader("Allow", methodsAllowed.toString());
@@ -738,7 +734,7 @@ public class WebdavServlet
             return;
         }
 
-        if (req.getContentLength() > 0) {
+        if (req.getInputStream().available() > 0) {
             DocumentBuilder documentBuilder = getDocumentBuilder();
             try {
                 // Document document =
@@ -749,7 +745,7 @@ public class WebdavServlet
 
             } catch(SAXException saxe) {
                 // Parse error - assume invalid content
-                resp.sendError(WebdavStatus.SC_UNSUPPORTED_MEDIA_TYPE);
+                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
                 return;
             }
         }
@@ -1596,16 +1592,16 @@ public class WebdavServlet
         if (debug > 0)
             log("Dest path :" + destinationPath);
 
-        if ((destinationPath.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
-            (destinationPath.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
+        if ((destinationPath.toUpperCase().startsWith("/WEB-INF")) ||
+            (destinationPath.toUpperCase().startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return false;
         }
 
         String path = getRelativePath(req);
 
-        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
-            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
+        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
+            (path.toUpperCase().startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return false;
         }
@@ -1666,20 +1662,14 @@ public class WebdavServlet
                                       path, destinationPath);
 
         if ((!result) || (!errorList.isEmpty())) {
-            if (errorList.size() == 1) {
-                resp.sendError(errorList.elements().nextElement().intValue());
-            } else {
-                sendReport(req, resp, errorList);
-            }
+
+            sendReport(req, resp, errorList);
             return false;
+
         }
 
         // Copy was successful
-        if (exists) {
-            resp.setStatus(WebdavStatus.SC_NO_CONTENT);
-        } else {
-            resp.setStatus(WebdavStatus.SC_CREATED);
-        }
+        resp.setStatus(WebdavStatus.SC_CREATED);
 
         // Removing any lock-null resource which would be present at
         // the destination path
@@ -1717,7 +1707,8 @@ public class WebdavServlet
             try {
                 resources.createSubcontext(dest);
             } catch (NamingException e) {
-                errorList.put(dest, WebdavStatus.SC_CONFLICT);
+                errorList.put
+                    (dest, new Integer(WebdavStatus.SC_CONFLICT));
                 return false;
             }
 
@@ -1737,7 +1728,8 @@ public class WebdavServlet
                     copyResource(resources, errorList, childSrc, childDest);
                 }
             } catch (NamingException e) {
-                errorList.put(dest, WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                errorList.put
+                    (dest, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
                 return false;
             }
 
@@ -1747,17 +1739,15 @@ public class WebdavServlet
                 try {
                     resources.bind(dest, object);
                 } catch (NamingException e) {
-                    if (e.getCause() instanceof FileNotFoundException) {
-                        // We know the source exists so it must be the
-                        // destination dir that can't be found
-                        errorList.put(source, WebdavStatus.SC_CONFLICT);
-                    } else {
-                        errorList.put(source, WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-                    }
+                    errorList.put
+                        (source,
+                         new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
                     return false;
                 }
             } else {
-                errorList.put(source, WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                errorList.put
+                    (source,
+                     new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
                 return false;
             }
 
@@ -1799,8 +1789,8 @@ public class WebdavServlet
                                    HttpServletResponse resp, boolean setStatus)
         throws ServletException, IOException {
 
-        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
-            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
+        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
+            (path.toUpperCase().startsWith("/META-INF"))) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
             return false;
         }
@@ -1884,8 +1874,8 @@ public class WebdavServlet
         if (debug > 1)
             log("Delete:" + path);
 
-        if ((path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")) ||
-            (path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))) {
+        if ((path.toUpperCase().startsWith("/WEB-INF")) ||
+            (path.toUpperCase().startsWith("/META-INF"))) {
             errorList.put(path, new Integer(WebdavStatus.SC_FORBIDDEN));
             return;
         }
@@ -2024,16 +2014,11 @@ public class WebdavServlet
 
         // Exclude any resource in the /WEB-INF and /META-INF subdirectories
         // (the "toUpperCase()" avoids problems on Windows systems)
-        if (path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF") ||
-            path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))
+        if (path.toUpperCase().startsWith("/WEB-INF") ||
+            path.toUpperCase().startsWith("/META-INF"))
             return;
 
         CacheEntry cacheEntry = resources.lookupCache(path);
-        if (!cacheEntry.exists) {
-            // File is in directory listing but doesn't appear to exist
-            // Broken symlink or odd permission settings?
-            return;
-        }
 
         generatedXML.writeElement(null, "response", XMLWriter.OPENING);
         String status = new String("HTTP/1.1 " + WebdavStatus.SC_OK + " "
@@ -2317,8 +2302,8 @@ public class WebdavServlet
 
         // Exclude any resource in the /WEB-INF and /META-INF subdirectories
         // (the "toUpperCase()" avoids problems on Windows systems)
-        if (path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF") ||
-            path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF"))
+        if (path.toUpperCase().startsWith("/WEB-INF") ||
+            path.toUpperCase().startsWith("/META-INF"))
             return;
 
         // Retrieving the lock associated with the lock-null resource
@@ -2600,7 +2585,7 @@ public class WebdavServlet
      * Get creation date in ISO format.
      */
     private String getISOCreationDate(long creationDate) {
-        StringBuilder creationDateValue = new StringBuilder
+        StringBuffer creationDateValue = new StringBuffer
             (creationDateFormat.format
              (new Date(creationDate)));
         /*
@@ -2627,10 +2612,10 @@ public class WebdavServlet
      * Determines the methods normally allowed for the resource.
      *
      */
-    private StringBuilder determineMethodsAllowed(DirContext resources,
+    private StringBuffer determineMethodsAllowed(DirContext resources,
                                                  HttpServletRequest req) {
 
-        StringBuilder methodsAllowed = new StringBuilder();
+        StringBuffer methodsAllowed = new StringBuffer();
         boolean exists = true;
         Object object = null;
         try {
