@@ -48,6 +48,9 @@
       <fix>
         <jboss-jira>JBPAPP-5293</jboss-jira>: ConcurrentModificationException in HandshakeCompletedNotify-Thread. (remm)
       </fix>
+      <fix>
+        <jira>186</jira>: Fix wait logic in pause() and add configuration. (jfclere)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
