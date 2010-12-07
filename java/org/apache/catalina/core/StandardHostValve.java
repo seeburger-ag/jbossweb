@@ -119,11 +119,8 @@ final class StandardHostValve
         }
 
         // Bind the context CL to the current thread
-        if( context.getLoader() != null ) {
-            // Not started - it should check for availability first
-            // This should eventually move to Engine, it's generic.
-            Thread.currentThread().setContextClassLoader
-                    (context.getLoader().getClassLoader());
+        if (context.getLoader() != null) {
+            Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
         }
 
         // Enter application scope
@@ -133,17 +130,14 @@ final class StandardHostValve
 
         if ((instances != null) 
                 && (instances.length > 0)) {
-            event = new ServletRequestEvent
-                (((StandardContext) container).getServletContext(), 
-                 request.getRequest());
+            event = new ServletRequestEvent(context.getServletContext(), request.getRequest());
             // create pre-service event
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i] == null)
                     continue;
                 if (!(instances[i] instanceof ServletRequestListener))
                     continue;
-                ServletRequestListener listener =
-                    (ServletRequestListener) instances[i];
+                ServletRequestListener listener = (ServletRequestListener) instances[i];
                 try {
                     listener.requestInitialized(event);
                 } catch (Throwable t) {
@@ -185,8 +179,7 @@ final class StandardHostValve
                     continue;
                 if (!(instances[i] instanceof ServletRequestListener))
                     continue;
-                ServletRequestListener listener =
-                    (ServletRequestListener) instances[i];
+                ServletRequestListener listener = (ServletRequestListener) instances[i];
                 try {
                     listener.requestDestroyed(event);
                 } catch (Throwable t2) {
@@ -197,10 +190,9 @@ final class StandardHostValve
                 }
             }
         }
-                
+
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader
-            (StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
 
     }
 
@@ -222,28 +214,22 @@ final class StandardHostValve
         Context context = request.getContext();
 
         // Bind the context CL to the current thread
-        if( context.getLoader() != null ) {
-            // Not started - it should check for availability first
-            // This should eventually move to Engine, it's generic.
-            Thread.currentThread().setContextClassLoader
-                    (context.getLoader().getClassLoader());
+        if (context.getLoader() != null) {
+            Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
         }
 
         // Enter application scope
         Object instances[] = context.getApplicationEventListeners();
         ServletRequestEvent event2 = null;
         if (instances != null && (instances.length > 0)) {
-            event2 = new ServletRequestEvent
-                (((StandardContext) container).getServletContext(), 
-                 request.getRequest());
+            event2 = new ServletRequestEvent(context.getServletContext(), request.getRequest());
             // create pre-service event
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i] == null)
                     continue;
                 if (!(instances[i] instanceof ServletRequestListener))
                     continue;
-                ServletRequestListener listener =
-                    (ServletRequestListener) instances[i];
+                ServletRequestListener listener = (ServletRequestListener) instances[i];
                 try {
                     listener.requestInitialized(event2);
                 } catch (Throwable t) {
@@ -299,8 +285,7 @@ final class StandardHostValve
                     continue;
                 if (!(instances[i] instanceof ServletRequestListener))
                     continue;
-                ServletRequestListener listener =
-                    (ServletRequestListener) instances[i];
+                ServletRequestListener listener = (ServletRequestListener) instances[i];
                 try {
                     listener.requestDestroyed(event2);
                 } catch (Throwable t) {
@@ -311,10 +296,9 @@ final class StandardHostValve
                 }
             }
         }
-      
+
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader
-            (StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
 
     }
 
