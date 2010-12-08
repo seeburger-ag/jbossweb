@@ -4541,17 +4541,25 @@ public class StandardContext
         if (stream == null) {
             return "";
         }
-        BufferedReader br = new BufferedReader(
-                                new InputStreamReader(stream));
+        BufferedReader br = null;
         StringBuilder sb = new StringBuilder();
-        String strRead = "";
         try {
+            br = new BufferedReader(new InputStreamReader(stream));
+            String strRead = "";
             while (strRead != null) {
                 sb.append(strRead);
                 strRead = br.readLine();
             }
         } catch (IOException e) {
             return "";
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
 
         return sb.toString(); 
