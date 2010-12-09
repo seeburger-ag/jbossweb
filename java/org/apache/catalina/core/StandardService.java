@@ -21,8 +21,6 @@ package org.apache.catalina.core;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Method;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 
 import javax.management.MBeanRegistration;
@@ -38,7 +36,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
-import org.apache.catalina.util.Base64;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.http.mapper.Mapper;
@@ -146,19 +143,6 @@ public class StandardService
      * Has this component been initialized?
      */
     protected boolean initialized = false;
-
-
-    /**
-     * A String initialization parameter used to increase the entropy of
-     * the initialization of our random number generator.
-     */
-    protected String entropy = null;
-
-    
-    /**
-     * The random associated with this service.
-     */
-    protected SecureRandom random = null;
 
 
     // ------------------------------------------------------------- Properties
@@ -285,49 +269,7 @@ public class StandardService
     }
 
 
-    @Override
-    public String getEntropy() {
-        // Calculate a semi-useful value if this has not been set
-        if (this.entropy == null) {
-            // Use APR to get a crypto secure entropy value
-            byte[] result = new byte[32];
-            boolean apr = false;
-            try {
-                String methodName = "random";
-                Class paramTypes[] = new Class[2];
-                paramTypes[0] = result.getClass();
-                paramTypes[1] = int.class;
-                Object paramValues[] = new Object[2];
-                paramValues[0] = result;
-                paramValues[1] = new Integer(32);
-                Method method = Class.forName("org.apache.tomcat.jni.OS")
-                    .getMethod(methodName, paramTypes);
-                method.invoke(null, paramValues);
-                apr = true;
-            } catch (Throwable t) {
-                // Ignore
-            }
-            if (apr) {
-                setEntropy(new String(Base64.encode(result)));
-            }
-        }
-        return (this.entropy);
-    }
-
-
-    @Override
-    public void setEntropy(String entropy) {
-        this.entropy = entropy;
-    }
-
-
     // --------------------------------------------------------- Public Methods
-
-
-    @Override
-    public SecureRandom getRandom() {
-        return random;
-    }
 
 
     /**
@@ -755,17 +697,9 @@ public class StandardService
         
         // Initialize our defined Connectors
         synchronized (connectors) {
-            for (int i = 0; i < connectors.length; i++) {
-                connectors[i].initialize();
-            }
-        }
-
-        // Construct and seed a new random number generator
-        String entropy = getEntropy();
-        if (entropy != null) {
-            random = new SecureRandom(getEntropy().getBytes());
-        } else {
-            random = new SecureRandom();
+                for (int i = 0; i < connectors.length; i++) {
+                    connectors[i].initialize();
+                }
         }
     }
     
@@ -814,6 +748,5 @@ public class StandardService
 
     public void postDeregister() {
     }
-
 
 }

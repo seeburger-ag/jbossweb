@@ -158,7 +158,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             log.error(sm.getString("http11protocol.endpoint.pauseerror"), ex);
             throw ex;
         }
-        // Wait for a while until all the processors are idle
+        // Wait for a while until all the processors are no longer processing requests
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
         boolean done = false;

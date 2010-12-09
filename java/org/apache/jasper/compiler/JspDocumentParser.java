@@ -793,7 +793,7 @@ class JspDocumentParser
             taglibInfo = getTaglibInfo(prefix, uri);
         } catch (JasperException je) {
             throw new SAXParseException(
-                Localizer.getMessage("jsp.error.could.not.add.taglibraries", je.getMessage()),
+                Localizer.getMessage("jsp.error.could.not.add.taglibraries"),
                 locator,
                 je);
         }

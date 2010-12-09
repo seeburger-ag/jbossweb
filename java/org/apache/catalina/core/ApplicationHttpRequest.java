@@ -556,7 +556,7 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
                     localSession = null;
                 if (localSession == null && create) {
                     localSession = 
-                        context.getManager().createSession(other.getId(), null);
+                        context.getManager().createSession(other.getId());
                 }
                 if (localSession != null) {
                     localSession.access();

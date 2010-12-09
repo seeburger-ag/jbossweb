@@ -16,77 +16,21 @@
 
 <body>
 
-<section name="JBoss Web 7.0.0.Beta1 (remm)">
+<section name="JBoss Web 3.0.0.CR1 (remm)">
   <subsection name="Catalina">
     <changelog>
-      <fix>
-        <jboss-jira>JBAS-8571</jboss-jira>: Allow a Servlet 3.0 login to reauthenticate with SSO. (remm)
-      </fix>
       <fix>
         <jira>189</jira>: Overlay timestamps need special treatment. (remm)
       </fix>
       <fix>
-        Improve session id creation. (remm)
-      </fix>
-      <fix>
-        <bug>49779</bug>: Interaction between continue and FORM. (markt)
-      </fix>
-      <fix>
-        Allow a landing page for FORM. (markt)
-      </fix>
-      <fix>
         <jira>190</jira>: The rewrite resolver should look at request attributes. (remm)
-      </fix>
-      <fix>
-        <bug>49991</bug>: Fix calling Request listeners when entering and exiting 
-        the application scope in the main host valve, not simply just before 
-        calling the filter chain. (remm)
       </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
     <changelog>
       <fix>
-        <jboss-jira>JBPAPP-5293</jboss-jira>: ConcurrentModificationException in HandshakeCompletedNotify-Thread. (remm)
-      </fix>
-      <fix>
         <jira>186</jira>: Fix wait logic in pause() and add configuration. (jfclere)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Jasper">
-    <changelog>
-      <fix>
-        <jboss-jira>JBAS-8579</jboss-jira>: Fix default for tag body content. (remm)
-      </fix>
-      <fix>
-        <jira>185</jira>: Fix cache thread safety issue for EL expression builder.
-        Patch submitted by Takayoshi Kimura. (remm)
-      </fix>
-      <fix>
-        <bug>50192</bug>: Fix regression getting the EL resolver. Tighter security can
-        be enabled back. (remm)
-      </fix>
-      <fix>
-        <bug>49555</bug>: Fix use of static inner classes in taglibs. (markt)
-      </fix>
-      <fix>
-        <bug>49726</bug>: Specifying a default content type via a JSP property group 
-        should not prevent a page from setting some other content type. (markt)
-      </fix>
-      <fix>
-        <bug>49998</bug>: Handle single quoted attributes in detection of jsp:root 
-        element in XML syntax JSP files. (markt)
-      </fix>
-      <fix>
-        <bug>50066</bug>: Fix building of recursive tag files when the file depends on a JAR file. 
-        Patch provided by Sylvain Laurent. (markt)
-      </fix>
-      <fix>
-        <bug>50105</bug>: Use Enum.name() rather than Enum.toString() in composite expressions. (markt)
-      </fix>
-      <fix>
-        Close reader in JDT compiler. (markt)
       </fix>
     </changelog>
   </subsection>

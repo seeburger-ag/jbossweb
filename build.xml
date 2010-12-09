@@ -13,12 +13,12 @@
 	<!-- Project Properties -->
 	<property name="name"                  value="JBoss Web" />
 	<property name="year"                  value="2010" />
-	<property name="version.major"         value="7" />
+	<property name="version.major"         value="3" />
 	<property name="version.minor"         value="0" />
 	<property name="version.build"         value="0" />
 	<property name="version.patch"         value="0" />
 	<property name="version.tag"           value="SNAPSHOT" />
-	<property name="version"               value="${version.major}.${version.minor}.${version.build}.${version.tag}" />
+	<property name="version"               value="${version.major}.${version.minor}.${version.build}-${version.tag}" />
 	<property name="version.number"        value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
 
 	<property name="project"               value="jboss-web" />

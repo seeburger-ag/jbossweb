@@ -34,7 +34,6 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Random;
 
 import javax.servlet.ServletContext;
 
@@ -280,7 +279,7 @@ public class StandardManager
      * @exception IllegalStateException if a new session cannot be
      *  instantiated for any reason
      */
-    public Session createSession(String sessionId, Random random) {
+    public Session createSession(String sessionId) {
 
         if ((maxActiveSessions >= 0) &&
             (sessions.size() >= maxActiveSessions)) {
@@ -289,7 +288,7 @@ public class StandardManager
                 (sm.getString("standardManager.createSession.ise"));
         }
 
-        return (super.createSession(sessionId, random));
+        return (super.createSession(sessionId));
 
     }
 
@@ -628,6 +627,13 @@ public class StandardManager
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
+        // Force initialization of the random number generator
+        if (log.isDebugEnabled())
+            log.debug("Force random number initialization starting");
+        String dummy = generateSessionId();
+        if (log.isDebugEnabled())
+            log.debug("Force random number initialization completed");
+
         // Load unloaded sessions, if any
         try {
             load();
@@ -678,6 +684,9 @@ public class StandardManager
                 session.recycle();
             }
         }
+
+        // Require a new random number generator if we are restarted
+        this.random = null;
 
         if( initialized ) {
             destroy();

@@ -210,7 +210,7 @@ public class AjpProtocol
             log.error(sm.getString("ajpprotocol.endpoint.pauseerror"), ex);
             throw ex;
         }
-        // Wait for a while until all the processors are idle
+        // Wait for a while until all the processors are no longer processing requests
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
         boolean done = false;

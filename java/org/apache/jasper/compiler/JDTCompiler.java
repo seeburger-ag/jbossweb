@@ -100,10 +100,10 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
             public char[] getContents() {
                 char[] result = null;
                 FileInputStream is = null;
-                Reader reader = null;
                 try {
                     is = new FileInputStream(sourceFile);
-                    reader = new BufferedReader(new InputStreamReader(is, ctxt.getOptions().getJavaEncoding()));
+                    Reader reader = 
+                        new BufferedReader(new InputStreamReader(is, ctxt.getOptions().getJavaEncoding()));
                     if (reader != null) {
                         char[] chars = new char[8192];
                         StringBuilder buf = new StringBuilder();
@@ -118,13 +118,6 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                 } catch (IOException e) {
                     log.error("Compilation error", e);
                 } finally {
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException exc) {
-                            // Ignore
-                        }
-                    }
                     if (is != null) {
                         try {
                             is.close();
