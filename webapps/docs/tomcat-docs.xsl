@@ -30,8 +30,8 @@
   <xsl:param    name="usehead"          select="'false'"/>
   <xsl:param    name="standalone"       select="''"/>
   <xsl:param    name="buglink"          select="'http://issues.apache.org/bugzilla/show_bug.cgi?id='"/>
-  <xsl:param    name="jiralink"         select="'http://jira.jboss.com/jira/browse/JBWEB-'"/>
-  <xsl:param    name="jbossjiralink"    select="'http://jira.jboss.com/jira/browse/'"/>
+  <xsl:param    name="jiralink"         select="'http://issues.jboss.org/browse/JBWEB-'"/>
+  <xsl:param    name="jbossjiralink"    select="'http://issues.jboss.org/browse/'"/>
 
   <!-- Defined variables (non-overrideable) -->
   <xsl:variable name="body-bg"          select="'#ffffff'"/>
