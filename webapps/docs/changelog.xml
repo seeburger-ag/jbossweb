@@ -16,26 +16,7 @@
 
 <body>
 
-<section name="JBoss Web 3.0.0.Beta9 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        <bug>49991</bug>: Fix calling Request listeners when entering and exiting 
-        the application scope in the main host valve, not simply just before 
-        calling the filter chain. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Jasper">
-    <changelog>
-      <fix>
-        Close reader in JDT compiler. (markt)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 3.0.0.Beta8 (remm)">
+<section name="JBoss Web 7.0.0.Beta1 (remm)">
   <subsection name="Catalina">
     <changelog>
       <fix>
@@ -55,6 +36,11 @@
       </fix>
       <fix>
         <jira>190</jira>: The rewrite resolver should look at request attributes. (remm)
+      </fix>
+      <fix>
+        <bug>49991</bug>: Fix calling Request listeners when entering and exiting 
+        the application scope in the main host valve, not simply just before 
+        calling the filter chain. (remm)
       </fix>
     </changelog>
   </subsection>
@@ -98,6 +84,9 @@
       </fix>
       <fix>
         <bug>50105</bug>: Use Enum.name() rather than Enum.toString() in composite expressions. (markt)
+      </fix>
+      <fix>
+        Close reader in JDT compiler. (markt)
       </fix>
     </changelog>
   </subsection>
