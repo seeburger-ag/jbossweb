@@ -132,8 +132,7 @@ public class TomcatResolver extends Resolver {
     }
 
     public String resolveEnv(String key) {
-        Object result = request.getAttribute(key);
-        return (result != null) ? result.toString() : System.getProperty(key);
+        return System.getProperty(key);
     }
     
     public String resolveSsl(String key) {

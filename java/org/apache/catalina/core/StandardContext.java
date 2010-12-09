@@ -86,6 +86,7 @@ import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.session.StandardManager;
+import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.ExtensionValidator;
 import org.apache.catalina.util.RequestUtil;
@@ -309,8 +310,7 @@ public class StandardContext
      * Should we allow the <code>ServletContext.getContext()</code> method
      * to access the context of other web applications in this server?
      */
-    protected boolean crossContext = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardContext.CROSS_CONTEXT", "false")).booleanValue();
+    protected boolean crossContext = false;
 
     
     /**
@@ -4541,25 +4541,17 @@ public class StandardContext
         if (stream == null) {
             return "";
         }
-        BufferedReader br = null;
+        BufferedReader br = new BufferedReader(
+                                new InputStreamReader(stream));
         StringBuilder sb = new StringBuilder();
+        String strRead = "";
         try {
-            br = new BufferedReader(new InputStreamReader(stream));
-            String strRead = "";
             while (strRead != null) {
                 sb.append(strRead);
                 strRead = br.readLine();
             }
         } catch (IOException e) {
             return "";
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
         }
 
         return sb.toString(); 
@@ -4724,14 +4716,14 @@ public class StandardContext
                 if (configClassName != null) {
                     Class clazz = Class.forName(configClassName);
                     config = (LifecycleListener) clazz.newInstance();
+                } else {
+                    config = new ContextConfig();
                 }
             } catch (Exception e) {
                 log.warn("Error creating ContextConfig for " + parentName, e);
                 throw e;
             }
-            if (config != null) {
-                this.addLifecycleListener(config);
-            }
+            this.addLifecycleListener(config);
 
             if (log.isDebugEnabled()) {
                 log.debug("AddChild " + parentName + " " + this);

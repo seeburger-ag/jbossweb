@@ -230,9 +230,8 @@ public class Http11Protocol
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
         boolean done = false;
-        while (!done && retry < org.apache.coyote.Constants.MAX_PAUSE_WAIT) {
+        while (!done && retry < 20) {
             retry++;
-            done = true;
             for (int i = 0; i < states.length; i++) {
                 if (states[i].getStage() == org.apache.coyote.Constants.STAGE_SERVICE) {
                     try {
@@ -240,10 +239,10 @@ public class Http11Protocol
                     } catch (InterruptedException e) {
                         ;
                     }
-                    done = false;
-                    break;
+                    continue;
                 }
             }
+            done = true;
         }
         if (log.isInfoEnabled())
             log.info(sm.getString("http11protocol.pause", getName()));

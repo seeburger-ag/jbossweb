@@ -73,13 +73,6 @@ public class FormAuthenticator
      */
     protected String characterEncoding = null;
 
-    /**
-     * Landing page to use if a user tries to access the login page directly or
-     * if the session times out during login. If not set, error responses will
-     * be sent instead.
-     */
-    protected String landingPage = null;
-
 
     // ------------------------------------------------------------- Properties
 
@@ -107,22 +100,6 @@ public class FormAuthenticator
      */
     public void setCharacterEncoding(String encoding) {
         characterEncoding = encoding;
-    }
-
-
-    /**
-     * Return the landing page to use when FORM auth is mis-used.
-     */
-    public String getLandingPage() {
-        return landingPage;
-    }
-
-
-    /**
-     * Set the landing page to use when the FORM auth is mis-used.
-     */
-    public void setLandingPage(String landingPage) {
-        this.landingPage = landingPage;
     }
 
 
@@ -266,9 +243,8 @@ public class FormAuthenticator
             return (false);
         }
 
-        // Yes -- Acknowledge the request, validate the specified credentials
-        // and redirect to the error page if they are not correct
-        request.getResponse().sendAcknowledgement();
+        // Yes -- Validate the specified credentials and redirect
+        // to the error page if they are not correct
         Realm realm = context.getRealm();
         if (characterEncoding != null) {
             request.setCharacterEncoding(characterEncoding);
@@ -292,19 +268,8 @@ public class FormAuthenticator
             if (containerLog.isDebugEnabled())
                 containerLog.debug
                     ("User took so long to log on the session expired");
-            if (landingPage == null) {
-                response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT,
-                        sm.getString("authenticator.sessionExpired"));
-            } else {
-                // Make the authenticator think the user originally requested
-                // the landing page
-                String uri = request.getContextPath() + landingPage;
-                SavedRequest saved = new SavedRequest();
-                saved.setRequestURI(uri);
-                request.getSessionInternal(true).setNote(
-                        Constants.FORM_REQUEST_NOTE, saved);
-                response.sendRedirect(response.encodeRedirectURL(uri));
-            }
+            response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT,
+                               sm.getString("authenticator.sessionExpired"));
             return (false);
         }
 
@@ -321,18 +286,8 @@ public class FormAuthenticator
         if (log.isDebugEnabled())
             log.debug("Redirecting to original '" + requestURI + "'");
         if (requestURI == null)
-            if (landingPage == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        sm.getString("authenticator.formlogin"));
-            } else {
-                // Make the authenticator think the user originally requested
-                // the landing page
-                String uri = request.getContextPath() + landingPage;
-                SavedRequest saved = new SavedRequest();
-                saved.setRequestURI(uri);
-                session.setNote(Constants.FORM_REQUEST_NOTE, saved);
-                response.sendRedirect(response.encodeRedirectURL(uri));
-            }
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                               sm.getString("authenticator.formlogin"));
         else
             response.sendRedirect(response.encodeRedirectURL(requestURI));
         return (false);
@@ -485,13 +440,6 @@ public class FormAuthenticator
         
         request.getCoyoteRequest().getParameters().setQueryStringEncoding(request.getConnector().getURIEncoding());
         
-        // Swallow any request body since we will be replacing it
-        byte[] buffer = new byte[4096];
-        InputStream is = request.getInputStream();
-        while (is.read(buffer) >= 0) {
-            // Ignore request body
-        }
-
         if ("POST".equalsIgnoreCase(saved.getMethod())) {
             ByteChunk body = saved.getBody();
             
@@ -568,8 +516,6 @@ public class FormAuthenticator
         }
 
         if ("POST".equalsIgnoreCase(request.getMethod())) {
-            // May need to acknowledge a 100-continue expectation
-            request.getResponse().sendAcknowledgement();
             ByteChunk body = new ByteChunk();
             body.setLimit(request.getConnector().getMaxSavePostSize());
 

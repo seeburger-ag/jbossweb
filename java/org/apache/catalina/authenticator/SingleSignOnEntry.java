@@ -185,8 +185,7 @@ public class SingleSignOnEntry
         this.password = password;
         this.canReauthenticate =
             (HttpServletRequest.BASIC_AUTH.equals(authType)
-                || HttpServletRequest.FORM_AUTH.equals(authType)
-                || Constants.LOGIN_METHOD.equals(authType));
+                || HttpServletRequest.FORM_AUTH.equals(authType));
     }
 
 }

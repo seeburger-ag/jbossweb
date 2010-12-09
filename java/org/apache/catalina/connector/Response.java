@@ -1508,12 +1508,15 @@ public class Response
         if (serverPort != urlPort)
             return (false);
 
-        String file = url.getFile();
-        if (file == null)
-            return (false);
-        String tok = request.getContext().getSessionCookie().getPathParameterName() + session.getIdInternal();
-        if (file.indexOf(tok) >= 0)
-            return (false);
+        String contextPath = request.getContext().getPath();
+        if (contextPath != null) {
+            String file = url.getFile();
+            if ((file == null) || !file.startsWith(contextPath))
+                return (false);
+            String tok = request.getContext().getSessionCookie().getPathParameterName() + session.getIdInternal();
+            if (file.indexOf(tok, contextPath.length()) >= 0)
+                return (false);
+        }
 
         // This URL belongs to our web application, so it is encodeable
         return (true);

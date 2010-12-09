@@ -53,19 +53,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
@@ -156,10 +153,6 @@ public class Request
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.USE_PRINCIPAL_FROM_SESSION", "false")).booleanValue();
 
 
-    protected static final boolean LOCAL_RANDOM = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.LOCAL_RANDOM", "true")).booleanValue();
-
-
     // ----------------------------------------------------------- Constructors
 
 
@@ -174,7 +167,7 @@ public class Request
         formats[0].setTimeZone(GMT_ZONE);
         formats[1].setTimeZone(GMT_ZONE);
         formats[2].setTimeZone(GMT_ZONE);
-        
+
     }
 
 
@@ -485,12 +478,6 @@ public class Request
     protected boolean sslAttributes = false;
     
 
-    /**
-     * Random generator.
-     */
-    protected Random random = null;
-    
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -634,11 +621,6 @@ public class Request
      */
     public void setConnector(Connector connector) {
         this.connector = connector;
-        if (LOCAL_RANDOM) {
-            random = new SecureRandom(connector.getService().getRandom().generateSeed(16));
-        } else {
-            random = connector.getService().getRandom();
-        }
     }
 
 
@@ -667,13 +649,6 @@ public class Request
         this.context = context;
     }
 
-
-    /**
-     * Return the Random.
-     */
-    public Random getRandom() {
-        return (this.random);
-    }
 
     /**
      * Filter chains associated with the request.
@@ -2627,7 +2602,7 @@ public class Request
                 sessionId = null;
             }
         }
-        session = manager.createSession(sessionId, random);
+        session = manager.createSession(sessionId);
 
         // Creating a new session cookie based on that session
         // If there was no cookie with the current session id, add a cookie to the response
@@ -2899,8 +2874,6 @@ public class Request
     protected void parseMultipart()
         throws IOException, ServletException {
         
-        parts = Collections.emptyMap();
-
         if (context == null)
             return;
 

@@ -89,8 +89,31 @@ public class AprLifecycleListener
                     }
                 }
             }
+        } else if (Lifecycle.AFTER_STOP_EVENT.equals(event.getType())) {
+            if (!aprInitialized) {
+                return;
+            }
+            try {
+                terminateAPR();
+            } catch (Throwable t) {
+                if (!log.isDebugEnabled()) {
+                    log.info(sm.getString("aprListener.aprDestroy"));
+                } else {
+                    log.debug(sm.getString("aprListener.aprDestroy"), t);
+                }
+            }
         }
 
+    }
+
+    private static synchronized void terminateAPR()
+        throws ClassNotFoundException, NoSuchMethodException,
+               IllegalAccessException, InvocationTargetException
+    {
+        String methodName = "terminate";
+        Method method = Class.forName("org.apache.tomcat.jni.Library")
+            .getMethod(methodName, (Class [])null);
+        method.invoke(null, (Object []) null);
     }
 
     private boolean init()
@@ -131,6 +154,13 @@ public class AprLifecycleListener
                     TCN_REQUIRED_MAJOR + "." +
                     TCN_REQUIRED_MINOR + "." +
                     TCN_REQUIRED_PATCH));
+            try {
+                // Terminate the APR in case the version
+                // is below required.                
+                terminateAPR();
+            } catch (Throwable t) {
+                // Ignore
+            }
             return false;
         }
         if (patch <  TCN_RECOMMENDED_PV) {
