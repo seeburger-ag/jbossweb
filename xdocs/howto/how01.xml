@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="how01.html">
+
+  &project;
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>Quick start HowTo</title>
+  </properties>
+
+  <body>
+<section name="Introduction">
+<p>
+  This document describes the configuration files used by JBossWeb
+  for the 'impatients' :
+    <ul>
+    <li>
+    WebServers add-ons to be set on the JBossWeb server.
+    </li>
+    </ul>
+</p>
+</section>
+
+<section name="Test your configuration">
+<p>
+	(Re)start the Web server and browse to the <a href="http://localhost/examples/">http://localhost/examples/</a>
+</p>
+
+</section>
+</body>
+</document>
