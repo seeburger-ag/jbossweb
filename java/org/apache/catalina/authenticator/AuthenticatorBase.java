@@ -20,8 +20,6 @@ package org.apache.catalina.authenticator;
 
 
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,6 +45,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
@@ -85,25 +84,10 @@ public abstract class AuthenticatorBase
 
 
     /**
-     * The default message digest algorithm to use if we cannot use
-     * the requested one.
-     */
-    protected static final String DEFAULT_ALGORITHM = "MD5";
-
-
-    /**
      * The number of random bytes to include when generating a
      * session identifier.
      */
-    protected static final int SESSION_ID_BYTES = 16;
-
-
-    /**
-     * The message digest algorithm to be used when generating session
-     * identifiers.  This must be an algorithm supported by the
-     * <code>java.security.MessageDigest</code> class on your platform.
-     */
-    protected String algorithm = DEFAULT_ALGORITHM;
+    protected static final int SESSION_ID_BYTES = 18;
 
 
     /**
@@ -128,20 +112,6 @@ public abstract class AuthenticatorBase
 
 
     /**
-     * Return the MessageDigest implementation to be used when
-     * creating session identifiers.
-     */
-    protected MessageDigest digest = null;
-
-
-    /**
-     * A String initialization parameter used to increase the entropy of
-     * the initialization of our random number generator.
-     */
-    protected String entropy = null;
-
-
-    /**
      * Descriptive information about this implementation.
      */
     protected static final String info =
@@ -163,19 +133,6 @@ public abstract class AuthenticatorBase
      * The lifecycle event support for this component.
      */
     protected LifecycleSupport lifecycle = new LifecycleSupport(this);
-
-
-    /**
-     * A random number generator to use when generating session identifiers.
-     */
-    protected Random random = null;
-
-
-    /**
-     * The Java class name of the random number generator class to be used
-     * when generating session identifiers.
-     */
-    protected String randomClass = "java.security.SecureRandom";
 
 
     /**
@@ -207,28 +164,6 @@ public abstract class AuthenticatorBase
 
 
     // ------------------------------------------------------------- Properties
-
-
-    /**
-     * Return the message digest algorithm for this Manager.
-     */
-    public String getAlgorithm() {
-
-        return (this.algorithm);
-
-    }
-
-
-    /**
-     * Set the message digest algorithm for this Manager.
-     *
-     * @param algorithm The new message digest algorithm
-     */
-    public void setAlgorithm(String algorithm) {
-
-        this.algorithm = algorithm;
-
-    }
 
 
     /**
@@ -292,33 +227,6 @@ public abstract class AuthenticatorBase
 
 
     /**
-     * Return the entropy increaser value, or compute a semi-useful value
-     * if this String has not yet been set.
-     */
-    public String getEntropy() {
-
-        // Calculate a semi-useful value if this has not been set
-        if (this.entropy == null)
-            setEntropy(this.toString());
-
-        return (this.entropy);
-
-    }
-
-
-    /**
-     * Set the entropy increaser value.
-     *
-     * @param entropy The new entropy increaser value
-     */
-    public void setEntropy(String entropy) {
-
-        this.entropy = entropy;
-
-    }
-
-
-    /**
      * Return descriptive information about this Valve implementation.
      */
     public String getInfo() {
@@ -327,27 +235,6 @@ public abstract class AuthenticatorBase
 
     }
 
-
-    /**
-     * Return the random number generator class name.
-     */
-    public String getRandomClass() {
-
-        return (this.randomClass);
-
-    }
-
-
-    /**
-     * Set the random number generator class name.
-     *
-     * @param randomClass The new random number generator class name
-     */
-    public void setRandomClass(String randomClass) {
-
-        this.randomClass = randomClass;
-
-    }
 
     /**
      * Return the flag that states if we add headers to disable caching by
@@ -639,82 +526,13 @@ public abstract class AuthenticatorBase
      * Generate and return a new session identifier for the cookie that
      * identifies an SSO principal.
      */
-    protected synchronized String generateSessionId() {
+    protected synchronized String generateSessionId(Random random) {
 
-        // Generate a byte array containing a session identifier
-        byte bytes[] = new byte[SESSION_ID_BYTES];
-        getRandom().nextBytes(bytes);
-        bytes = getDigest().digest(bytes);
-
-        // Render the result as a String of hexadecimal digits
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < bytes.length; i++) {
-            byte b1 = (byte) ((bytes[i] & 0xf0) >> 4);
-            byte b2 = (byte) (bytes[i] & 0x0f);
-            if (b1 < 10)
-                result.append((char) ('0' + b1));
-            else
-                result.append((char) ('A' + (b1 - 10)));
-            if (b2 < 10)
-                result.append((char) ('0' + b2));
-            else
-                result.append((char) ('A' + (b2 - 10)));
-        }
-        return (result.toString());
-
-    }
-
-
-    /**
-     * Return the MessageDigest object to be used for calculating
-     * session identifiers.  If none has been created yet, initialize
-     * one the first time this method is called.
-     */
-    protected synchronized MessageDigest getDigest() {
-
-        if (this.digest == null) {
-            try {
-                this.digest = MessageDigest.getInstance(algorithm);
-            } catch (NoSuchAlgorithmException e) {
-                try {
-                    this.digest = MessageDigest.getInstance(DEFAULT_ALGORITHM);
-                } catch (NoSuchAlgorithmException f) {
-                    this.digest = null;
-                }
-            }
-        }
-
-        return (this.digest);
-
-    }
-
-
-    /**
-     * Return the random number generator instance we should use for
-     * generating session identifiers.  If there is no such generator
-     * currently defined, construct and seed a new one.
-     */
-    protected synchronized Random getRandom() {
-
-        if (this.random == null) {
-            // Calculate the new random number generator seed
-            long seed = System.nanoTime();
-            char entropy[] = getEntropy().toCharArray();
-            for (int i = 0; i < entropy.length; i++) {
-                long update = ((byte) entropy[i]) << ((i % 8) * 8);
-                seed ^= update;
-            }
-            // Construct and seed a new random number generator
-            try {
-                Class clazz = Class.forName(randomClass);
-                this.random = (Random) clazz.newInstance();
-            } catch (Exception e) {
-                this.random = new java.util.Random();
-            }
-            this.random.setSeed(seed);
-        }
-
-        return (this.random);
+        byte[] bytes = new byte[SESSION_ID_BYTES];
+        random.nextBytes(bytes);
+        // Encode the result
+        char[] id = ManagerBase.encode(bytes);
+        return String.valueOf(id);
 
     }
 
@@ -813,7 +631,7 @@ public abstract class AuthenticatorBase
         String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
         if (ssoId == null) {
             // Construct a cookie to be returned to the client
-            ssoId = generateSessionId();
+            ssoId = generateSessionId(request.getRandom());
             Cookie cookie = new Cookie(Constants.SINGLE_SIGN_ON_COOKIE, ssoId);
             cookie.setMaxAge(-1);
             cookie.setPath("/");

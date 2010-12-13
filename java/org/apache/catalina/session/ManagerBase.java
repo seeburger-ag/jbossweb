@@ -613,7 +613,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      * @param data The bytes you want to encode
      * @return the encoded String
      */
-    protected static char[] encode(byte[] data) {
+    public static char[] encode(byte[] data) {
        char[] out = new char[((data.length + 2) / 3) * 4];
        char[] alphabet = SESSION_ID_ALPHABET;
        //
