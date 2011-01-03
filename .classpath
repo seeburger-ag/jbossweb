@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry excluding="**/.svn/**" kind="src" path="java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/xnio-api-2.0.1.GA.jar" sourcepath="lib/xnio-api-2.0.1.GA-sources.jar"/>
-	<classpathentry kind="lib" path="lib/xnio-nio-2.0.1.GA.jar" sourcepath="lib/xnio-nio-2.0.1.GA-sources.jar"/>
+	<classpathentry kind="lib" path="output/jars/jasper-jdt.jar"/>
 	<classpathentry kind="output" path=".settings/output"/>
 </classpath>
