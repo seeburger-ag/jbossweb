@@ -301,8 +301,13 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                         e);
             }
         }
-        
-        return new TagInfo(tagInfo.getTagName(), tagInfo.getTagClassName(), tagInfo.getBodyContent(), 
+
+        String tagBodyContent = tagInfo.getBodyContent();
+        if (tagBodyContent == null) {
+            tagBodyContent = TagInfo.BODY_CONTENT_JSP;
+        }
+
+        return new TagInfo(tagInfo.getTagName(), tagInfo.getTagClassName(), tagBodyContent, 
                 tagInfo.getInfoString(), this, tei, attributeInfos.toArray(new TagAttributeInfo[0]), 
                 tagInfo.getDisplayName(), tagInfo.getSmallIcon(), tagInfo.getLargeIcon(),
                 variableInfos.toArray(new TagVariableInfo[0]), dynamicAttributes);

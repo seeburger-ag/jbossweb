@@ -69,7 +69,7 @@ public final class ELContextImpl extends ELContext {
 
     public ELContextImpl() {
         this(ELResolverImpl.getDefaultResolver());
-        if (Constants.IS_SECURITY_ENABLED) {
+        if (ELResolverImpl.NEW_RESOLVER_INSTANCE && Constants.IS_SECURITY_ENABLED) {
             functionMapper = new FunctionMapper() {
                 public Method resolveFunction(String prefix, String localName) {
                     return null;

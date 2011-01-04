@@ -36,8 +36,11 @@ import org.apache.jasper.Constants;
 
 
 public final class ELResolverImpl extends ELResolver {
-    /** @deprecated - Use getDefaultResolver(). Needs to be made private */
-    public final static ELResolver DefaultResolver = new CompositeELResolver();
+
+    public static final boolean NEW_RESOLVER_INSTANCE = 
+        Boolean.valueOf(System.getProperty("org.apache.jasper.el.ELResolverImpl.NEW_RESOLVER_INSTANCE", "false")).booleanValue();
+
+    private final static ELResolver DefaultResolver = new CompositeELResolver();
 
     static {
         ((CompositeELResolver) DefaultResolver).add(new MapELResolver());
@@ -147,7 +150,7 @@ public final class ELResolverImpl extends ELResolver {
     }
 
     public static ELResolver getDefaultResolver() {
-        if (Constants.IS_SECURITY_ENABLED) {
+        if (NEW_RESOLVER_INSTANCE && Constants.IS_SECURITY_ENABLED) {
             CompositeELResolver defaultResolver = new CompositeELResolver();
             defaultResolver.add(new MapELResolver());
             defaultResolver.add(new ResourceBundleELResolver());

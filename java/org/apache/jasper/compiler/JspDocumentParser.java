@@ -60,11 +60,6 @@ class JspDocumentParser
         "http://xml.org/sax/properties/lexical-handler";
     private static final String JSP_URI = "http://java.sun.com/JSP/Page";
 
-    private static final EnableDTDValidationException ENABLE_DTD_VALIDATION_EXCEPTION =
-        new EnableDTDValidationException(
-            "jsp.error.enable_dtd_validation",
-            null);
-
     private ParserController parserController;
     private JspCompilationContext ctxt;
     private PageInfo pageInfo;
@@ -751,7 +746,7 @@ class JspDocumentParser
     public void startDTD(String name, String publicId, String systemId)
         throws SAXException {
         if (!isValidating) {
-            fatalError(ENABLE_DTD_VALIDATION_EXCEPTION);
+            fatalError(new EnableDTDValidationException("jsp.error.enable_dtd_validation", null));
         }
 
         inDTD = true;
@@ -793,7 +788,7 @@ class JspDocumentParser
             taglibInfo = getTaglibInfo(prefix, uri);
         } catch (JasperException je) {
             throw new SAXParseException(
-                Localizer.getMessage("jsp.error.could.not.add.taglibraries"),
+                Localizer.getMessage("jsp.error.could.not.add.taglibraries", je.getMessage()),
                 locator,
                 je);
         }
@@ -1449,6 +1444,11 @@ class JspDocumentParser
 
         EnableDTDValidationException(String message, Locator loc) {
             super(message, loc);
+        }
+        
+        public synchronized Throwable fillInStackTrace() {
+            // No stack trace
+            return this;
         }
     }
 
