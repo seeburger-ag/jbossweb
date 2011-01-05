@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="JBossWeb Documentation - Features">
+    <title>Installation</title>
+    <logo href="/images/jbossweblogo.gif">JBossWeb @ JBoss labs</logo>
+<body>
+
+    <menu name="Installation">
+        <item name="Overview"                href="index.html"/>
+        <item name="Windows service"         href="service.html"/>
+    </menu>
+    <menu name="Links">
+        <item name="Documentation Home"      href="../index.html"/>
+    </menu>
+</body>
+</project>
