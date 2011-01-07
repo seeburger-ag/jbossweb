@@ -23,6 +23,12 @@
   </subsection>
   <subsection name="Coyote">
     <changelog>
+      <fix>
+        <bug>49000</bug>: Improve name only cookie handling. (markt)
+      </fix>
+      <fix>
+        <bug>47319</bug>: Fix getRemoteHost() with APR when name cannot be resolved. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

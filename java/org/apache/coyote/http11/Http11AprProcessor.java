@@ -1109,6 +1109,10 @@ public class Http11AprProcessor implements ActionHook {
                 try {
                     long sa = Address.get(Socket.APR_REMOTE, socket);
                     remoteHost = Address.getnameinfo(sa, 0);
+                    if (remoteHost == null) {
+                        remoteAddr = Address.getip(sa);
+                        remoteHost = remoteAddr;
+                    }
                 } catch (Exception e) {
                     log.warn(sm.getString("http11processor.socket.info"), e);
                 }
