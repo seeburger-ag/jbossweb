@@ -76,6 +76,9 @@
       <fix>
         <jira>186</jira>: Fix wait logic in pause() and add configuration. (jfclere)
       </fix>
+      <fix>
+        Allow using the new TLS renegotiation (RFC 5746) if available. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

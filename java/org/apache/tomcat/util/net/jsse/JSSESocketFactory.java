@@ -26,7 +26,9 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
@@ -85,7 +87,7 @@ public class JSSESocketFactory
 
     private static StringManager sm =
         StringManager.getManager("org.apache.tomcat.util.net.jsse.res");
-
+    private static final boolean RFC_5746_SUPPORTED;
     // defaults
     static String defaultProtocol = "TLS";
     static boolean defaultClientAuth = false;
@@ -98,6 +100,28 @@ public class JSSESocketFactory
 
     static org.jboss.logging.Logger log =
         org.jboss.logging.Logger.getLogger(JSSESocketFactory.class);
+
+    static {
+        boolean result = false;
+        SSLContext context;
+        try {
+            context = SSLContext.getInstance("TLS");
+            context.init(null, null, new SecureRandom());
+            SSLServerSocketFactory ssf = context.getServerSocketFactory();
+            String ciphers[] = ssf.getSupportedCipherSuites();
+            for (String cipher : ciphers) {
+                if ("TLS_EMPTY_RENEGOTIATION_INFO_SCSV".equals(cipher)) {
+                    result = true;
+                    break;
+                }
+            }
+        } catch (NoSuchAlgorithmException e) {
+            // Assume no RFC 5746 support
+        } catch (KeyManagementException e) {
+            // Assume no RFC 5746 support
+        }
+        RFC_5746_SUPPORTED = result;
+    }
 
     protected boolean initialized;
     protected String clientAuth = "false";
@@ -166,8 +190,8 @@ public class JSSESocketFactory
         if (session.getCipherSuite().equals("SSL_NULL_WITH_NULL_NULL"))
             throw new IOException("SSL handshake failed. Ciper suite in SSL Session is SSL_NULL_WITH_NULL_NULL");
 
-        if (!allowUnsafeLegacyRenegotiation) {
-            // Prevent futher handshakes by removing all cipher suites
+        if (!allowUnsafeLegacyRenegotiation && !RFC_5746_SUPPORTED) {
+            // Prevent further handshakes by removing all cipher suites
             ((SSLSocket) sock).setEnabledCipherSuites(new String[0]);
         }
     }
