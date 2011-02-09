@@ -168,7 +168,7 @@ public class AprEndpoint {
     /**
      * Maximum amount of worker threads.
      */
-    protected int maxThreads = 200;
+    protected int maxThreads = 32 * Runtime.getRuntime().availableProcessors();
     public void setMaxThreads(int maxThreads) { this.maxThreads = maxThreads; }
     public int getMaxThreads() { return maxThreads; }
 
@@ -184,7 +184,7 @@ public class AprEndpoint {
     /**
      * Size of the socket poller.
      */
-    protected int pollerSize = 8 * 1024;
+    protected int pollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
     public void setPollerSize(int pollerSize) { this.pollerSize = pollerSize; }
     public int getPollerSize() { return pollerSize; }
 
@@ -192,7 +192,7 @@ public class AprEndpoint {
     /**
      * Size of the sendfile (= concurrent files which can be served).
      */
-    protected int sendfileSize = 1 * 1024;
+    protected int sendfileSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
     public void setSendfileSize(int sendfileSize) { this.sendfileSize = sendfileSize; }
     public int getSendfileSize() { return sendfileSize; }
 
