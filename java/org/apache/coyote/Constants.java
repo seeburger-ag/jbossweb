@@ -69,6 +69,6 @@ public final class Constants {
         "false")).booleanValue();
 
     public static final int MAX_PAUSE_WAIT =
-        Integer.valueOf(System.getProperty("org.apache.coyote.MAX_PAUSE_WAIT", "60")).intValue();
+        Integer.valueOf(System.getProperty("org.apache.coyote.MAX_PAUSE_WAIT", "300")).intValue();
 
 }
