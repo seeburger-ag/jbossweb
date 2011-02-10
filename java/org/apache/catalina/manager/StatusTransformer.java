@@ -623,7 +623,7 @@ public class StatusTransformer {
                 }
 
                 writer.print("<a href=\"#" + (count++) + ".0\">");
-                writer.print(webModuleName);
+                writer.print(filter(webModuleName));
                 writer.print("</a>");
                 writer.print("</dd>");
             }
@@ -684,7 +684,7 @@ public class StatusTransformer {
             }
 
             writer.print("<h3>");
-            writer.print(name);
+            writer.print(filter(name));
             writer.print("</h3>");
             writer.print("</a>");
 
@@ -810,11 +810,11 @@ public class StatusTransformer {
                 mBeanServer.invoke(objectName, "findMappings", null, null);
             
             writer.print("<h2>");
-            writer.print(servletName);
+            writer.print(filter(servletName));
             if ((mappings != null) && (mappings.length > 0)) {
                 writer.print(" [ ");
                 for (int i = 0; i < mappings.length; i++) {
-                    writer.print(mappings[i]);
+                    writer.print(filter(mappings[i]));
                     if (i < mappings.length - 1) {
                         writer.print(" , ");
                     }
