@@ -306,6 +306,9 @@ public final class RequestUtil {
             if (b == '+' && isQuery) {
                 b = (byte)' ';
             } else if (b == '%') {
+                if (ix + 2 > len) {
+                    throw new IllegalArgumentException("%xx URL decode missing digit");
+                }
                 b = (byte) ((convertHexDigit(bytes[ix++]) << 4)
                             + convertHexDigit(bytes[ix++]));
             }
@@ -314,8 +317,8 @@ public final class RequestUtil {
         if (enc != null) {
             try {
                 return new String(bytes, 0, ox, enc);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                return null;
             }
         }
         return new String(bytes, 0, ox);
