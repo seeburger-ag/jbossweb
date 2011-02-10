@@ -38,6 +38,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="General">
+    <changelog>
+      <fix>
+        filter input of manager app servlets. (kkolinko)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 2.1.10.GA (remm)">
