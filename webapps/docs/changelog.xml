@@ -23,7 +23,10 @@
         <bug>50747</bug>: Allow setting content-length when using a writer, as the previous check 
         was incomplete. (markt)
       </fix>
-     </changelog>
+      <fix>
+        Work directory was not set as a read only attribute. (markt)
+      </fix>
+    </changelog>
   </subsection>
   <subsection name="Coyote">
     <changelog>
