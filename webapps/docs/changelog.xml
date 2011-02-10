@@ -19,6 +19,10 @@
 <section name="JBoss Web 7.0.0.Beta2 (remm)">
   <subsection name="Catalina">
     <changelog>
+      <fix>
+        <bug>50747</bug>: Allow setting content-length when using a writer, as the previous check 
+        was incomplete. (markt)
+      </fix>
      </changelog>
   </subsection>
   <subsection name="Coyote">
