@@ -25,13 +25,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.StringTokenizer;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 
 import org.apache.catalina.Realm;
 import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.util.MD5Encoder;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -74,7 +76,8 @@ public class DigestAuthenticator
             if (md5Helper == null)
                 md5Helper = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
+            e.printStackTrace();
+            throw new IllegalStateException();
         }
     }
 
@@ -124,7 +127,7 @@ public class DigestAuthenticator
      * @exception IOException if an input/output error occurs
      */
     public boolean authenticate(Request request,
-                                HttpServletResponse response,
+                                Response response,
                                 LoginConfig config)
         throws IOException {
 
@@ -174,7 +177,7 @@ public class DigestAuthenticator
             if (principal != null) {
                 String username = parseUsername(authorization);
                 register(request, response, principal,
-                         HttpServletRequest.DIGEST_AUTH,
+                         Constants.DIGEST_METHOD,
                          username, null);
                 return (true);
             }
@@ -396,7 +399,7 @@ public class DigestAuthenticator
      * @param nOnce nonce token
      */
     protected void setAuthenticateHeader(Request request,
-                                         HttpServletResponse response,
+                                         Response response,
                                          LoginConfig config,
                                          String nOnce) {
 

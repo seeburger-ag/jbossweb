@@ -19,9 +19,6 @@ package org.apache.el.lang;
 
 import java.io.StringReader;
 import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -53,35 +50,7 @@ import org.apache.el.util.MessageFactory;
  */
 public final class ExpressionBuilder implements NodeVisitor {
 
-    private static final int CACHE_SIZE;
-    private static final String CACHE_SIZE_PROP =
-        "org.apache.el.lang.ExpressionBuilder.CACHE_SIZE";
-
-    static {
-        if (System.getSecurityManager() == null) {
-            CACHE_SIZE = Integer.parseInt(
-                    System.getProperty(CACHE_SIZE_PROP, "-1"));
-        } else {
-            CACHE_SIZE = AccessController.doPrivileged(
-                    new PrivilegedAction<Integer>() {
-                    @Override
-                    public Integer run() {
-                        return Integer.valueOf(
-                                System.getProperty(CACHE_SIZE_PROP, "-1"));
-                    }
-                }).intValue();
-        }
-        if (CACHE_SIZE > 0) {
-            unlimitedCache = null;
-            cache = new ConcurrentCache<String, Node>(CACHE_SIZE);
-        } else {
-            cache = null;
-            unlimitedCache = new ConcurrentHashMap<String, Node>(1024);
-        }
-    }
-
-    private static final ConcurrentCache<String, Node> cache;
-    private static final ConcurrentHashMap<String, Node> unlimitedCache;
+	private static final ConcurrentCache cache = new ConcurrentCache(10000);
 
 	private FunctionMapper fnMapper;
 
@@ -118,7 +87,7 @@ public final class ExpressionBuilder implements NodeVisitor {
 			throw new ELException(MessageFactory.get("error.null"));
 		}
 
-		Node n = (cache != null) ? cache.get(expr) : unlimitedCache.get(expr);
+		Node n = (Node) cache.get(expr);
 		if (n == null) {
 			try {
 				n = (new ELParser(new StringReader(expr)))
@@ -151,11 +120,7 @@ public final class ExpressionBuilder implements NodeVisitor {
 						|| n instanceof AstDynamicExpression) {
 					n = n.jjtGetChild(0);
 				}
-				if (cache != null) {
-				    cache.put(expr, n);
-				} else {
-				    unlimitedCache.put(expr, n);
-				}
+				cache.put(expr, n);
 			} catch (ParseException pe) {
 				throw new ELException("Error Parsing: " + expr, pe);
 			}
