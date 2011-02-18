@@ -43,6 +43,10 @@
       <fix>
         <bug>47319</bug>: Fix getRemoteHost() with APR when name cannot be resolved. (markt)
       </fix>
+      <fix>
+        <bug>50189</bug>: Fix AJP protocol corruption if a webapp reads from the request after closing 
+        the response. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

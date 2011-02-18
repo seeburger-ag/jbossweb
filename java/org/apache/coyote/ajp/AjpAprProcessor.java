@@ -1214,6 +1214,9 @@ public class AjpAprProcessor implements ActionHook {
         if (endOfStream) {
             return false;
         }
+        if (finished) {
+            return false;
+        }
 
         // Request more data immediately
         Socket.sendb(socket, getBodyMessageBuffer, 0,
