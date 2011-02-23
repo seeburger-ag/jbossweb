@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.Beta3 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <update>
+        Drop extension validator, now taken over in the embedding application server. (markt)
+      </update>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.Beta2 (remm)">
   <subsection name="General">
     <changelog>

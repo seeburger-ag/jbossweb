@@ -87,7 +87,6 @@ import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.util.CharsetMapper;
-import org.apache.catalina.util.ExtensionValidator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.naming.resources.BaseDirContext;
@@ -3703,26 +3702,10 @@ public class StandardContext
         // Post work directory
         postWorkDirectory();
 
-        // Validate required extensions
-        boolean dependencyCheck = true;
-        try {
-            dependencyCheck = ExtensionValidator.validateApplication
-                (getResources(), this);
-        } catch (IOException ioe) {
-            log.error("Error in dependencyCheck", ioe);
-            dependencyCheck = false;
-        }
-
-        if (!dependencyCheck) {
-            // do not make application available if depency check fails
-            ok = false;
-        }
-
         // Standard container startup
         if (log.isDebugEnabled())
             log.debug("Processing standard container startup");
 
-        
         // Binding thread
         ClassLoader oldCCL = bindThread();
 
