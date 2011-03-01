@@ -139,7 +139,7 @@ public class Request
 
 
     protected static final boolean SESSION_ID_CHECK = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SESSION_ID_CHECK", "false")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SESSION_ID_CHECK", "true")).booleanValue();
 
 
     protected static final boolean WRAPPED_RESPONSE_IN_LOGIN = 

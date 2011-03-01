@@ -20,7 +20,11 @@
   <subsection name="Catalina">
     <changelog>
       <fix>
-        Revert allow setting content-length when using a writer. (markt)
+        Revert allow setting content-length when using a writer. (remm)
+      </fix>
+      <fix>
+        The various defaults for system properties will be the desired AS 
+        defaults, while standalone will use a custom config. (remm)
       </fix>
     </changelog>
   </subsection>

@@ -49,11 +49,11 @@ public class StringCache {
 
     
     protected static int trainThreshold = 
-        Integer.parseInt(System.getProperty("org.apache.tomcat.util.buf.StringCache.trainThreshold", "20000"));
+        Integer.parseInt(System.getProperty("org.apache.tomcat.util.buf.StringCache.trainThreshold", "100000"));
     
 
     protected static int cacheSize = 
-        Integer.parseInt(System.getProperty("org.apache.tomcat.util.buf.StringCache.cacheSize", "200"));
+        Integer.parseInt(System.getProperty("org.apache.tomcat.util.buf.StringCache.cacheSize", "5000"));
     
 
     protected static int maxStringSize = 
