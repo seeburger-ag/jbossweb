@@ -725,6 +725,9 @@ public class Response
         if (included)
             return;
         
+        if (usingWriter)
+            return;
+        
         coyoteResponse.setContentLength(length);
 
     }
