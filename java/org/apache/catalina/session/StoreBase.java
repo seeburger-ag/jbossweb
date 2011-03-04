@@ -197,7 +197,7 @@ public abstract class StoreBase
                 if (session == null) {
                     continue;
                 }
-                int timeIdle = (int) ((timeNow - session.getThisAccessedTime()) / 1000L);
+                int timeIdle = (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
                 if (timeIdle < session.getMaxInactiveInterval()) {
                     continue;
                 }
