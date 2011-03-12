@@ -333,7 +333,7 @@ public class Http11Protocol
      * Maximum number of requests which can be performed over a keepalive 
      * connection. The default is the same as for Apache HTTP Server.
      */
-    protected int maxKeepAliveRequests = 100;
+    protected int maxKeepAliveRequests = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 1 : 100;
     public int getMaxKeepAliveRequests() { return maxKeepAliveRequests; }
     public void setMaxKeepAliveRequests(int mkar) { maxKeepAliveRequests = mkar; }
 
@@ -550,12 +550,13 @@ public class Http11Protocol
     protected static class Http11ConnectionHandler implements Handler {
 
         protected Http11Protocol proto;
-        protected AtomicLong registerCount = new AtomicLong(0);
+        protected AtomicLong registerCount = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? null : new AtomicLong(0);
         protected RequestGroupInfo global = new RequestGroupInfo();
 
         protected ConcurrentHashMap<Socket, Http11Processor> connections =
             new ConcurrentHashMap<Socket, Http11Processor>();
         protected ConcurrentLinkedQueue<Http11Processor> recycledProcessors = 
+            (org.apache.tomcat.util.Constants.LOW_MEMORY) ? null :
             new ConcurrentLinkedQueue<Http11Processor>() {
             protected AtomicInteger size = new AtomicInteger(0);
             public boolean offer(Http11Processor processor) {
@@ -626,7 +627,9 @@ public class Http11Protocol
                 } finally {
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
-                        recycledProcessors.offer(result);
+                        if (recycledProcessors != null) {
+                            recycledProcessors.offer(result);
+                        }
                     } else {
                         if (proto.endpoint.isRunning()) {
                             proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
@@ -640,7 +643,7 @@ public class Http11Protocol
         }
         
         public SocketState process(Socket socket) {
-            Http11Processor processor = recycledProcessors.poll();
+            Http11Processor processor = (recycledProcessors != null) ? recycledProcessors.poll() : null;
             try {
 
                 if (processor == null) {
@@ -662,7 +665,7 @@ public class Http11Protocol
                     connections.put(socket, processor);
                     proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), 
                             processor.getResumeNotification(), false);
-                } else {
+                } else if (recycledProcessors != null) {
                     recycledProcessors.offer(processor);
                 }
                 return state;
@@ -688,7 +691,9 @@ public class Http11Protocol
                 Http11Protocol.log.error
                     (sm.getString("http11protocol.proto.error"), e);
             }
-            recycledProcessors.offer(processor);
+            if (recycledProcessors != null) {
+                recycledProcessors.offer(processor);
+            }
             return SocketState.CLOSED;
         }
         
@@ -708,7 +713,9 @@ public class Http11Protocol
             processor.setSocketBuffer(proto.socketBuffer);
             processor.setMaxSavePostSize(proto.maxSavePostSize);
             processor.setServer(proto.server);
-            register(processor);
+            if (!org.apache.tomcat.util.Constants.LOW_MEMORY) {
+                register(processor);
+            }
             return processor;
         }
         

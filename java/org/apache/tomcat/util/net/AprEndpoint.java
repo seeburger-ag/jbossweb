@@ -170,7 +170,7 @@ public class AprEndpoint {
     /**
      * Maximum amount of worker threads.
      */
-    protected int maxThreads = 32 * Runtime.getRuntime().availableProcessors();
+    protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 32 : 32 * Runtime.getRuntime().availableProcessors();
     public void setMaxThreads(int maxThreads) { this.maxThreads = maxThreads; }
     public int getMaxThreads() { return maxThreads; }
 
@@ -584,10 +584,18 @@ public class AprEndpoint {
 
         // Poller size defaults
         if (pollerSize <= 0) {
-            pollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
+            if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
+                pollerSize = (1 * 1024);
+            } else {
+                pollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
+            }
         }
         if (sendfileSize <= 0) {
-            sendfileSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
+            if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
+                sendfileSize = 128;
+            } else {
+                sendfileSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
+            }
         }
 
         long inetAddress = Address.info(addressStr, family,

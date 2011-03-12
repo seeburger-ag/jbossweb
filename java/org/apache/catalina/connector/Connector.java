@@ -60,7 +60,8 @@ public class Connector
      * Alternate flag to enable recycling of facades.
      */
     public static final boolean RECYCLE_FACADES =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.RECYCLE_FACADES", "false")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.RECYCLE_FACADES", 
+                (org.apache.tomcat.util.Constants.LOW_MEMORY) ? "true" : "false")).booleanValue();
 
     
     protected static final boolean X_POWERED_BY = 

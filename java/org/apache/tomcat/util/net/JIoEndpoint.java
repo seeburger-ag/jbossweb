@@ -155,7 +155,7 @@ public class JIoEndpoint {
     /**
      * Maximum amount of worker threads.
      */
-    protected int maxThreads = 512 * Runtime.getRuntime().availableProcessors();
+    protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 256 : 512 * Runtime.getRuntime().availableProcessors();
     public void setMaxThreads(int maxThreads) { this.maxThreads = maxThreads; }
     public int getMaxThreads() { return maxThreads; }
 
@@ -171,7 +171,7 @@ public class JIoEndpoint {
     /**
      * Size of the socket poller.
      */
-    protected int pollerSize = 32 * 1024;
+    protected int pollerSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? (1 * 1024) : (32 * 1024);
     public void setPollerSize(int pollerSize) { this.pollerSize = pollerSize; }
     public int getPollerSize() { return pollerSize; }
 
