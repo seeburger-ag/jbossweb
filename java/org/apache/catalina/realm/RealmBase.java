@@ -1091,15 +1091,17 @@ public abstract class RealmBase
     
     public void destroy() {
     
-        // unregister this realm
-        if ( oname!=null ) {   
-            try {   
-                Registry.getRegistry(null, null).unregisterComponent(oname); 
-                if(log.isDebugEnabled())
-                    log.debug( "unregistering realm " + oname );   
-            } catch( Exception ex ) {   
-                log.error( "Can't unregister realm " + oname, ex);   
-            }      
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            // unregister this realm
+            if ( oname!=null ) {   
+                try {   
+                    Registry.getRegistry(null, null).unregisterComponent(oname); 
+                    if(log.isDebugEnabled())
+                        log.debug( "unregistering realm " + oname );   
+                } catch( Exception ex ) {   
+                    log.error( "Can't unregister realm " + oname, ex);   
+                }      
+            }
         }
           
     }
@@ -1380,44 +1382,46 @@ public abstract class RealmBase
         if( initialized && container != null ) return;
         
         initialized=true;
-        if( container== null ) {
-            ObjectName parent=null;
-            // Register with the parent
-            try {
-                if( host == null ) {
-                    // global
-                    parent=new ObjectName(domain +":type=Engine");
-                } else if( path==null ) {
-                    parent=new ObjectName(domain +
-                            ":type=Host,host=" + host);
-                } else {
-                    parent=new ObjectName(domain +":j2eeType=WebModule,name=//" +
-                            host + path);
-                }
-                if( mserver.isRegistered(parent ))  {
-                    if(log.isDebugEnabled())
-                        log.debug("Register with " + parent);
-                    mserver.setAttribute(parent, new Attribute("realm", this));
-                }
-            } catch (Exception e) {
-                log.error("Parent not available yet: " + parent);  
-            }
-        }
-        
-        if( oname==null ) {
-            // register
-            try {
-                ContainerBase cb=(ContainerBase)container;
-                oname=new ObjectName(cb.getDomain()+":type=Realm" +
-                        getRealmSuffix() + cb.getContainerSuffix());
-                Registry.getRegistry(null, null).registerComponent(this, oname, null );
-                if(log.isDebugEnabled())
-                    log.debug("Register Realm "+oname);
-            } catch (Throwable e) {
-                log.error( "Can't register " + oname, e);
-            }
-        }
 
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( container== null ) {
+                ObjectName parent=null;
+                // Register with the parent
+                try {
+                    if( host == null ) {
+                        // global
+                        parent=new ObjectName(domain +":type=Engine");
+                    } else if( path==null ) {
+                        parent=new ObjectName(domain +
+                                ":type=Host,host=" + host);
+                    } else {
+                        parent=new ObjectName(domain +":j2eeType=WebModule,name=//" +
+                                host + path);
+                    }
+                    if( mserver.isRegistered(parent ))  {
+                        if(log.isDebugEnabled())
+                            log.debug("Register with " + parent);
+                        mserver.setAttribute(parent, new Attribute("realm", this));
+                    }
+                } catch (Exception e) {
+                    log.error("Parent not available yet: " + parent);  
+                }
+            }
+
+            if( oname==null ) {
+                // register
+                try {
+                    ContainerBase cb=(ContainerBase)container;
+                    oname=new ObjectName(cb.getDomain()+":type=Realm" +
+                            getRealmSuffix() + cb.getContainerSuffix());
+                    Registry.getRegistry(null, null).registerComponent(this, oname, null );
+                    if(log.isDebugEnabled())
+                        log.debug("Register Realm "+oname);
+                } catch (Throwable e) {
+                    log.error( "Can't register " + oname, e);
+                }
+            }
+        }
     }
 
     protected String getRealmSuffix() {

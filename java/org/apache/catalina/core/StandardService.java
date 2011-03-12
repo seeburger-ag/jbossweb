@@ -348,7 +348,7 @@ public class StandardService
 
             if (initialized) {
                 try {
-                    connector.initialize();
+                    connector.init();
                 } catch (LifecycleException e) {
                     log.error("Connector.initialize", e);
                 }
@@ -682,23 +682,24 @@ public class StandardService
             }
         }
 
-        if( oname==controller ) {
-            // we registered ourself on init().
-            // That should be the typical case - this object is just for
-            // backward compat, nobody should bother to load it explicitely
-            Registry.getRegistry(null, null).unregisterComponent(oname);
-            Executor[] executors = findExecutors();
-            for (int i = 0; i < executors.length; i++) {
-                try {
-                    ObjectName executorObjectName = 
-                        new ObjectName(domain + ":type=Executor,name=" + executors[i].getName());
-                    Registry.getRegistry(null, null).unregisterComponent(executorObjectName);
-                } catch (Exception e) {
-                    // Ignore (invalid ON, which cannot happen)
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname==controller ) {
+                // we registered ourself on init().
+                // That should be the typical case - this object is just for
+                // backward compat, nobody should bother to load it explicitely
+                Registry.getRegistry(null, null).unregisterComponent(oname);
+                Executor[] executors = findExecutors();
+                for (int i = 0; i < executors.length; i++) {
+                    try {
+                        ObjectName executorObjectName = 
+                            new ObjectName(domain + ":type=Executor,name=" + executors[i].getName());
+                        Registry.getRegistry(null, null).unregisterComponent(executorObjectName);
+                    } catch (Exception e) {
+                        // Ignore (invalid ON, which cannot happen)
+                    }
                 }
             }
-        }
-        
+        }        
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
@@ -721,29 +722,29 @@ public class StandardService
         }
         initialized = true;
 
-        if( oname==null ) {
-            try {
-                // Hack - Server should be deprecated...
-                Container engine=this.getContainer();
-                domain=engine.getName();
-                oname=new ObjectName(domain + ":type=Service,serviceName="+name);
-                this.controller=oname;
-                Registry.getRegistry(null, null)
-                    .registerComponent(this, oname, null);
-                
-                Executor[] executors = findExecutors();
-                for (int i = 0; i < executors.length; i++) {
-                    ObjectName executorObjectName = 
-                        new ObjectName(domain + ":type=Executor,name=" + executors[i].getName());
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname==null ) {
+                try {
+                    // Hack - Server should be deprecated...
+                    Container engine=this.getContainer();
+                    domain=engine.getName();
+                    oname=new ObjectName(domain + ":type=Service,serviceName="+name);
+                    this.controller=oname;
                     Registry.getRegistry(null, null)
+                    .registerComponent(this, oname, null);
+
+                    Executor[] executors = findExecutors();
+                    for (int i = 0; i < executors.length; i++) {
+                        ObjectName executorObjectName = 
+                            new ObjectName(domain + ":type=Executor,name=" + executors[i].getName());
+                        Registry.getRegistry(null, null)
                         .registerComponent(executors[i], executorObjectName, null);
+                    }
+
+                } catch (Exception e) {
+                    log.error(sm.getString("standardService.register.failed",domain),e);
                 }
-                
-            } catch (Exception e) {
-                log.error(sm.getString("standardService.register.failed",domain),e);
             }
-            
-            
         }
         if( server==null ) {
             // If no server was defined - create one
@@ -756,7 +757,7 @@ public class StandardService
         // Initialize our defined Connectors
         synchronized (connectors) {
             for (int i = 0; i < connectors.length; i++) {
-                connectors[i].initialize();
+                connectors[i].init();
             }
         }
 

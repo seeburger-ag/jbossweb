@@ -3536,13 +3536,15 @@ public class StandardContext
                 ((BaseDirContext) webappResources).allocate();
             }
             // Register the cache in JMX
-            if (isCachingAllowed()) {
-                ObjectName resourcesName = 
-                    new ObjectName(this.getDomain() + ":type=Cache,host=" 
-                                   + getHostname() + ",path=" 
-                                   + (("".equals(getPath()))?"/":getPath()));
-                Registry.getRegistry(null, null).registerComponent
-                    (proxyDirContext.getCache(), resourcesName, null);
+            if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+                if (isCachingAllowed()) {
+                    ObjectName resourcesName = 
+                        new ObjectName(this.getDomain() + ":type=Cache,host=" 
+                                + getHostname() + ",path=" 
+                                + (("".equals(getPath()))?"/":getPath()));
+                    Registry.getRegistry(null, null).registerComponent
+                        (proxyDirContext.getCache(), resourcesName, null);
+                }
             }
             this.resources = proxyDirContext;
         } catch (Throwable t) {
@@ -3571,15 +3573,17 @@ public class StandardContext
                     ((BaseDirContext) webappResources).release();
                 }
                 // Unregister the cache in JMX
-                if (isCachingAllowed()) {
-                    ObjectName resourcesName = 
-                        new ObjectName(this.getDomain()
-                                       + ":type=Cache,host=" 
-                                       + getHostname() + ",path=" 
-                                       + (("".equals(getPath()))?"/"
-                                          :getPath()));
-                    Registry.getRegistry(null, null)
+                if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+                    if (isCachingAllowed()) {
+                        ObjectName resourcesName = 
+                            new ObjectName(this.getDomain()
+                                    + ":type=Cache,host=" 
+                                    + getHostname() + ",path=" 
+                                    + (("".equals(getPath()))?"/"
+                                            :getPath()));
+                        Registry.getRegistry(null, null)
                         .unregisterComponent(resourcesName);
+                    }
                 }
             }
         } catch (Throwable t) {
@@ -3657,14 +3661,16 @@ public class StandardContext
         if(log.isDebugEnabled())
             log.debug("Starting " + ("".equals(getName()) ? "ROOT" : getName()));
 
-        // Set JMX object name for proper pipeline registration
-        preRegisterJMX();
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            // Set JMX object name for proper pipeline registration
+            preRegisterJMX();
 
-        if ((oname != null) && 
-            (Registry.getRegistry(null, null).getMBeanServer().isRegistered(oname))) {
-            // As things depend on the JMX registration, the context
-            // must be reregistered again once properly initialized
-            Registry.getRegistry(null, null).unregisterComponent(oname);
+            if ((oname != null) && 
+                    (Registry.getRegistry(null, null).getMBeanServer().isRegistered(oname))) {
+                // As things depend on the JMX registration, the context
+                // must be reregistered again once properly initialized
+                Registry.getRegistry(null, null).unregisterComponent(oname);
+            }
         }
 
         // Notify our interested LifecycleListeners
@@ -3884,7 +3890,9 @@ public class StandardContext
         setStarting(false);
 
         // JMX registration
-        registerJMX();
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            registerJMX();
+        }
 
         startTime=System.currentTimeMillis();
         
@@ -4676,60 +4684,6 @@ public class StandardContext
 
     public synchronized void init() throws Exception {
 
-        if( this.getParent() == null ) {
-            ObjectName parentName=getParentName();
-            
-            if( ! mserver.isRegistered(parentName)) {
-                if(log.isDebugEnabled())
-                    log.debug("No host, creating one " + parentName);
-                StandardHost host=new StandardHost();
-                host.setName(hostName);
-                Registry.getRegistry(null, null)
-                    .registerComponent(host, parentName, null);
-                // We could do it the hard way...
-                //mserver.invoke(parentName, "init", new Object[] {}, new String[] {} );
-                // or same thing easier:
-                host.init();
-            }
-            
-            // Add the main configuration listener
-            LifecycleListener config = null;
-            try {
-                String configClassName = getConfigClass();
-                if (configClassName == null) {
-                    try {
-                        configClassName = String.valueOf(mserver.getAttribute(parentName, "configClass"));
-                    } catch (AttributeNotFoundException e) {
-                        // Ignore, it's normal a host may not have this optional attribute
-                    }
-                }
-                if (configClassName != null) {
-                    Class clazz = Class.forName(configClassName);
-                    config = (LifecycleListener) clazz.newInstance();
-                }
-            } catch (Exception e) {
-                log.warn("Error creating ContextConfig for " + parentName, e);
-                throw e;
-            }
-            if (config != null) {
-                this.addLifecycleListener(config);
-            }
-
-            if (log.isDebugEnabled()) {
-                log.debug("AddChild " + parentName + " " + this);
-            }
-            try {
-                mserver.invoke(parentName, "addChild", new Object[] { this },
-                        new String[] {"org.apache.catalina.Container"});
-            } catch (Exception e) {
-                destroy();
-                throw e;
-            }
-            // It's possible that addChild may have started us
-            if( initialized ) {
-                return;
-            }
-        }
         super.init();
         
         // Notify our interested LifecycleListeners

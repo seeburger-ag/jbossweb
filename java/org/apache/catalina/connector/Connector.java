@@ -409,10 +409,6 @@ public class Connector
      * Connector.
      */
     public Container getContainer() {
-        if( container==null ) {
-            // Lazy - maybe it was added later
-            findContainer();
-        }
         return (container);
 
     }
@@ -982,7 +978,7 @@ public class Connector
     /**
      * Initialize this connector (create ServerSocket here!)
      */
-    public void initialize()
+    public void init()
         throws LifecycleException
     {
         if (initialized) {
@@ -993,18 +989,20 @@ public class Connector
 
         this.initialized = true;
 
-        if (oname == null) {
-            try {
-                // we are loaded directly, via API - and no name was given to us
-                oname = createObjectName(container.getName(), "Connector");
-                Registry.getRegistry(null, null)
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if (oname == null) {
+                try {
+                    // we are loaded directly, via API - and no name was given to us
+                    oname = createObjectName(container.getName(), "Connector");
+                    Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null);
-                controller=oname;
-            } catch (Exception e) {
-                log.error( "Error registering connector ", e);
+                    controller=oname;
+                } catch (Exception e) {
+                    log.error( "Error registering connector ", e);
+                }
+                if(log.isDebugEnabled())
+                    log.debug("Creating name for connector " + oname);
             }
-            if(log.isDebugEnabled())
-                log.debug("Creating name for connector " + oname);
         }
 
         // Initializa adapter
@@ -1059,7 +1057,7 @@ public class Connector
      */
     public void start() throws LifecycleException {
         if( !initialized )
-            initialize();
+            init();
 
         // Validate and update our current state
         if (started ) {
@@ -1072,19 +1070,21 @@ public class Connector
 
         // We can't register earlier - the JMX registration of this happens
         // in Server.start callback
-        if ( this.oname != null ) {
-            // We are registred - register the adapter as well.
-            try {
-                Registry.getRegistry(null, null).registerComponent
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if ( this.oname != null ) {
+                // We are registred - register the adapter as well.
+                try {
+                    Registry.getRegistry(null, null).registerComponent
                     (protocolHandler, createObjectName(this.domain,"ProtocolHandler"), null);
-            } catch (Exception ex) {
-                log.error(sm.getString
-                          ("coyoteConnector.protocolRegistrationFailed"), ex);
+                } catch (Exception ex) {
+                    log.error(sm.getString
+                            ("coyoteConnector.protocolRegistrationFailed"), ex);
+                }
+            } else {
+                if(log.isInfoEnabled())
+                    log.info(sm.getString
+                            ("coyoteConnector.cannotRegisterProtocol"));
             }
-        } else {
-            if(log.isInfoEnabled())
-                log.info(sm.getString
-                     ("coyoteConnector.cannotRegisterProtocol"));
         }
 
         try {
@@ -1119,12 +1119,14 @@ public class Connector
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
-        try {
-            Registry.getRegistry(null, null).unregisterComponent
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            try {
+                Registry.getRegistry(null, null).unregisterComponent
                 (createObjectName(this.domain,"ProtocolHandler"));
-        } catch (MalformedObjectNameException e) {
-            log.error( sm.getString
-                    ("coyoteConnector.protocolUnregistrationFailed"), e);
+            } catch (MalformedObjectNameException e) {
+                log.error( sm.getString
+                        ("coyoteConnector.protocolUnregistrationFailed"), e);
+            }
         }
         try {
             protocolHandler.destroy();
@@ -1183,61 +1185,13 @@ public class Connector
         }
     }
 
-    protected void findContainer() {
-        try {
-            // Register to the service
-            ObjectName parentName=new ObjectName( domain + ":" +
-                    "type=Service");
-
-            if(log.isDebugEnabled())
-                log.debug("Adding to " + parentName );
-            if( mserver.isRegistered(parentName )) {
-                mserver.invoke(parentName, "addConnector", new Object[] { this },
-                        new String[] {"org.apache.catalina.connector.Connector"});
-                // As a side effect we'll get the container field set
-                // Also initialize will be called
-                //return;
-            }
-            // XXX Go directly to the Engine
-            // initialize(); - is called by addConnector
-            ObjectName engName=new ObjectName( domain + ":" + "type=Engine");
-            if( mserver.isRegistered(engName )) {
-                Object obj=mserver.getAttribute(engName, "managedResource");
-                if(log.isDebugEnabled())
-                      log.debug("Found engine " + obj + " " + obj.getClass());
-                container=(Container)obj;
-
-                // Internal initialize - we now have the Engine
-                initialize();
-
-                if(log.isDebugEnabled())
-                    log.debug("Initialized");
-                // As a side effect we'll get the container field set
-                // Also initialize will be called
-                return;
-            }
-        } catch( Exception ex ) {
-            log.error( "Error finding container " + ex);
-        }
-    }
-
-    public void init() throws Exception {
-
-        if( this.getService() != null ) {
-            if(log.isDebugEnabled())
-                 log.debug( "Already configured" );
-            return;
-        }
-        if( container==null ) {
-            findContainer();
-        }
-    }
-
     public void destroy() throws Exception {
-        if( oname!=null && controller==oname ) {
-            if(log.isDebugEnabled())
-                 log.debug("Unregister itself " + oname );
-            Registry.getRegistry(null, null).unregisterComponent(oname);
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname!=null && controller==oname ) {
+                if(log.isDebugEnabled())
+                    log.debug("Unregister itself " + oname );
+                Registry.getRegistry(null, null).unregisterComponent(oname);
+            }
         }
         if( getService() == null)
             return;

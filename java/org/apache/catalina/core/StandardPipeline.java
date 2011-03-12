@@ -233,7 +233,9 @@ public class StandardPipeline
         while (current != null) {
             if (current instanceof Lifecycle)
                 ((Lifecycle) current).start();
-            registerValve(current);
+            if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+                registerValve(current);
+            }
         	current = current.getNext();
         }
 
@@ -315,20 +317,22 @@ public class StandardPipeline
     }
     
     private void unregisterValve(Valve valve) {
-        if( valve instanceof ValveBase ) {
-            try {
-                ValveBase vb=(ValveBase)valve;
-                if( vb.getController()!=null &&
-                        vb.getController() == 
-                        ((ContainerBase)container).getJmxName() ) {
-                    
-                    ObjectName vname=vb.getObjectName();
-                    Registry.getRegistry(null, null).getMBeanServer()
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( valve instanceof ValveBase ) {
+                try {
+                    ValveBase vb=(ValveBase)valve;
+                    if( vb.getController()!=null &&
+                            vb.getController() == 
+                                ((ContainerBase)container).getJmxName() ) {
+
+                        ObjectName vname=vb.getObjectName();
+                        Registry.getRegistry(null, null).getMBeanServer()
                         .unregisterMBean(vname);
-                    ((ValveBase)valve).setObjectName(null);
+                        ((ValveBase)valve).setObjectName(null);
+                    }
+                } catch( Throwable t ) {
+                    log.info( "Can't unregister valve " + valve , t );
                 }
-            } catch( Throwable t ) {
-                log.info( "Can't unregister valve " + valve , t );
             }
         }
     }    
@@ -449,7 +453,9 @@ public class StandardPipeline
                 }
             }
             // Register the newly added valve
-            registerValve(valve);
+            if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+                registerValve(valve);
+            }
         }
 
         // Add this Valve to the set associated with this Pipeline

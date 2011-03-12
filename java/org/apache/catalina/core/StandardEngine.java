@@ -276,36 +276,38 @@ public class StandardEngine
         if( initialized ) return;
         initialized=true;
 
-        if( oname==null ) {
-            // not registered in JMX yet - standalone mode
-            try {
-                if (domain==null) {
-                    domain=getName();
-                }
-                if(log.isDebugEnabled())
-                    log.debug( "Register " + domain );
-                oname=new ObjectName(domain + ":type=Engine");
-                controller=oname;
-                Registry.getRegistry(null, null)
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname==null ) {
+                // not registered in JMX yet - standalone mode
+                try {
+                    if (domain==null) {
+                        domain=getName();
+                    }
+                    if(log.isDebugEnabled())
+                        log.debug( "Register " + domain );
+                    oname=new ObjectName(domain + ":type=Engine");
+                    controller=oname;
+                    Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null);
-            } catch( Throwable t ) {
-                log.info("Error registering ", t );
+                } catch( Throwable t ) {
+                    log.info("Error registering ", t );
+                }
             }
-        }
 
-        if( mbeansFile == null ) {
-            String defaultMBeansFile=getBaseDir() + "/conf/tomcat5-mbeans.xml";
-            File f=new File( defaultMBeansFile );
-            if( f.exists() ) mbeansFile=f.getAbsolutePath();
-        }
-        if( mbeansFile != null ) {
-            readEngineMbeans();
-        }
-        if( mbeans != null ) {
-            try {
-                Registry.getRegistry(null, null).invoke(mbeans, "init", false);
-            } catch (Exception e) {
-                log.error("Error in init() for " + mbeansFile, e);
+            if( mbeansFile == null ) {
+                String defaultMBeansFile=getBaseDir() + "/conf/tomcat5-mbeans.xml";
+                File f=new File( defaultMBeansFile );
+                if( f.exists() ) mbeansFile=f.getAbsolutePath();
+            }
+            if( mbeansFile != null ) {
+                readEngineMbeans();
+            }
+            if( mbeans != null ) {
+                try {
+                    Registry.getRegistry(null, null).invoke(mbeans, "init", false);
+                } catch (Exception e) {
+                    log.error("Error in init() for " + mbeansFile, e);
+                }
             }
         }
         
@@ -350,31 +352,32 @@ public class StandardEngine
         // this call implizit this.stop()
         ((StandardService)service).destroy();
 
-        if( mbeans != null ) {
-            try {
-                Registry.getRegistry(null, null)
-                    .invoke(mbeans, "destroy", false);
-            } catch (Exception e) {
-                log.error(sm.getString("standardEngine.unregister.mbeans.failed" ,mbeansFile), e);
-            }
-        }
-        // 
-        if( mbeans != null ) {
-            try {
-                for( int i=0; i<mbeans.size() ; i++ ) {
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( mbeans != null ) {
+                try {
                     Registry.getRegistry(null, null)
-                        .unregisterComponent((ObjectName)mbeans.get(i));
+                    .invoke(mbeans, "destroy", false);
+                } catch (Exception e) {
+                    log.error(sm.getString("standardEngine.unregister.mbeans.failed" ,mbeansFile), e);
                 }
-            } catch (Exception e) {
-                log.error(sm.getString("standardEngine.unregister.mbeans.failed", mbeansFile), e);
             }
-        }
-        
-        // force all metadata to be reloaded.
-        // That doesn't affect existing beans. We should make it per
-        // registry - and stop using the static.
-        Registry.getRegistry(null, null).resetMetadata();
-        
+            // 
+            if( mbeans != null ) {
+                try {
+                    for( int i=0; i<mbeans.size() ; i++ ) {
+                        Registry.getRegistry(null, null)
+                        .unregisterComponent((ObjectName)mbeans.get(i));
+                    }
+                } catch (Exception e) {
+                    log.error(sm.getString("standardEngine.unregister.mbeans.failed", mbeansFile), e);
+                }
+            }
+
+            // force all metadata to be reloaded.
+            // That doesn't affect existing beans. We should make it per
+            // registry - and stop using the static.
+            Registry.getRegistry(null, null).resetMetadata();
+        }        
     }
     
     /**
@@ -390,29 +393,31 @@ public class StandardEngine
             init();
         }
 
-        // Look for a realm - that may have been configured earlier. 
-        // If the realm is added after context - it'll set itself.
-        if( realm == null ) {
-            ObjectName realmName=null;
-            try {
-                realmName=new ObjectName( domain + ":type=Realm");
-                if( mserver.isRegistered(realmName ) ) {
-                    mserver.invoke(realmName, "init", 
-                            new Object[] {},
-                            new String[] {}
-                    );            
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            // Look for a realm - that may have been configured earlier. 
+            // If the realm is added after context - it'll set itself.
+            if( realm == null ) {
+                ObjectName realmName=null;
+                try {
+                    realmName=new ObjectName( domain + ":type=Realm");
+                    if( mserver.isRegistered(realmName ) ) {
+                        mserver.invoke(realmName, "init", 
+                                new Object[] {},
+                                new String[] {}
+                        );            
+                    }
+                } catch( Throwable t ) {
+                    log.debug("No realm for this engine " + realmName);
                 }
-            } catch( Throwable t ) {
-                log.debug("No realm for this engine " + realmName);
             }
-        }
-            
-        if( mbeans != null ) {
-            try {
-                Registry.getRegistry(null, null)
+
+            if( mbeans != null ) {
+                try {
+                    Registry.getRegistry(null, null)
                     .invoke(mbeans, "start", false);
-            } catch (Exception e) {
-                log.error("Error in start() for " + mbeansFile, e);
+                } catch (Exception e) {
+                    log.error("Error in start() for " + mbeansFile, e);
+                }
             }
         }
 
@@ -423,11 +428,13 @@ public class StandardEngine
     
     public void stop() throws LifecycleException {
         super.stop();
-        if( mbeans != null ) {
-            try {
-                Registry.getRegistry(null, null).invoke(mbeans, "stop", false);
-            } catch (Exception e) {
-                log.error("Error in stop() for " + mbeansFile, e);
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( mbeans != null ) {
+                try {
+                    Registry.getRegistry(null, null).invoke(mbeans, "stop", false);
+                } catch (Exception e) {
+                    log.error("Error in stop() for " + mbeansFile, e);
+                }
             }
         }
     }

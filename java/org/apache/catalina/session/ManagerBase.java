@@ -399,8 +399,10 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     }
 
     public void destroy() {
-        if( oname != null )
-            Registry.getRegistry(null, null).unregisterComponent(oname);
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname != null )
+                Registry.getRegistry(null, null).unregisterComponent(oname);
+        }
         initialized=false;
         oname = null;
     }
@@ -411,22 +413,24 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         
         log = Logger.getLogger(ManagerBase.class);
         
-        if( oname==null ) {
-            try {
-                StandardContext ctx=(StandardContext)this.getContainer();
-                Engine eng=(Engine)ctx.getParent().getParent();
-                domain=ctx.getEngineName();
-                distributable = ctx.getDistributable();
-                StandardHost hst=(StandardHost)ctx.getParent();
-                String path = ctx.getPath();
-                if (path.equals("")) {
-                    path = "/";
-                }   
-                oname=new ObjectName(domain + ":type=Manager,path="
-                + path + ",host=" + hst.getName());
-                Registry.getRegistry(null, null).registerComponent(this, oname, null );
-            } catch (Exception e) {
-                log.error("Error registering ",e);
+        StandardContext ctx=(StandardContext)this.getContainer();
+        distributable = ctx.getDistributable();
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname==null ) {
+                try {
+                    Engine eng=(Engine)ctx.getParent().getParent();
+                    domain=ctx.getEngineName();
+                    StandardHost hst=(StandardHost)ctx.getParent();
+                    String path = ctx.getPath();
+                    if (path.equals("")) {
+                        path = "/";
+                    }   
+                    oname=new ObjectName(domain + ":type=Manager,path="
+                            + path + ",host=" + hst.getName());
+                    Registry.getRegistry(null, null).registerComponent(this, oname, null );
+                } catch (Exception e) {
+                    log.error("Error registering ",e);
+                }
             }
         }
         

@@ -724,7 +724,7 @@ public class Embedded  extends StandardService implements Lifecycle {
 
         // Start our defined Connectors second
         for (int i = 0; i < connectors.length; i++) {
-            connectors[i].initialize();
+            connectors[i].init();
             if (connectors[i] instanceof Lifecycle)
                 ((Lifecycle) connectors[i]).start();
         }

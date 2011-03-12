@@ -524,20 +524,22 @@ public class StandardHost
             }
         }
         
-        if( oname==null ) {
-            // not registered in JMX yet - standalone mode
-            try {
-                StandardEngine engine=(StandardEngine)parent;
-                domain=engine.getName();
-                if(log.isDebugEnabled())
-                    log.debug( "Register host " + getName() + " with domain "+ domain );
-                oname=new ObjectName(domain + ":type=Host,host=" +
-                        this.getName());
-                controller = oname;
-                Registry.getRegistry(null, null)
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname==null ) {
+                // not registered in JMX yet - standalone mode
+                try {
+                    StandardEngine engine=(StandardEngine)parent;
+                    domain=engine.getName();
+                    if(log.isDebugEnabled())
+                        log.debug( "Register host " + getName() + " with domain "+ domain );
+                    oname=new ObjectName(domain + ":type=Host,host=" +
+                            this.getName());
+                    controller = oname;
+                    Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null);
-            } catch( Throwable t ) {
-                log.error("Host registering failed!", t );
+                } catch( Throwable t ) {
+                    log.error("Host registering failed!", t );
+                }
             }
         }
     }

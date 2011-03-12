@@ -1644,8 +1644,10 @@ public class StandardWrapper
         // Start up this component
         super.start();
 
-        if( oname != null )
-            registerJMX((StandardContext)getParent());
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname != null )
+                registerJMX((StandardContext)getParent());
+        }
         
         // Load and initialize an instance of this servlet if requested
         // MOVED TO StandardContext START() METHOD
@@ -1700,18 +1702,20 @@ public class StandardWrapper
             broadcaster.sendNotification(notification);
         }
         
-        if( oname != null ) {
-            Registry.getRegistry(null, null).unregisterComponent(oname);
-            
-            // Send j2ee.object.deleted notification 
-            Notification notification = 
-                new Notification("j2ee.object.deleted", this.getObjectName(), 
-                                sequenceNumber++);
-            broadcaster.sendNotification(notification);
-        }
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( oname != null ) {
+                Registry.getRegistry(null, null).unregisterComponent(oname);
 
-        if (isJspServlet && jspMonitorON != null ) {
-            Registry.getRegistry(null, null).unregisterComponent(jspMonitorON);
+                // Send j2ee.object.deleted notification 
+                Notification notification = 
+                    new Notification("j2ee.object.deleted", this.getObjectName(), 
+                            sequenceNumber++);
+                broadcaster.sendNotification(notification);
+            }
+
+            if (isJspServlet && jspMonitorON != null ) {
+                Registry.getRegistry(null, null).unregisterComponent(jspMonitorON);
+            }
         }
 
     }

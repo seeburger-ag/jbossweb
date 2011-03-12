@@ -181,19 +181,21 @@ public class AjpAprProtocol
 
 
     public void start() throws Exception {
-        if (this.domain != null ) {
-            try {
-                tpOname = new ObjectName
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if (this.domain != null ) {
+                try {
+                    tpOname = new ObjectName
                     (domain + ":" + "type=ThreadPool,name=" + getName());
-                Registry.getRegistry(null, null)
+                    Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
-            } catch (Exception e) {
-                log.error("Can't register threadpool" );
-            }
-            rgOname = new ObjectName
+                } catch (Exception e) {
+                    log.error("Can't register threadpool" );
+                }
+                rgOname = new ObjectName
                 (domain + ":type=GlobalRequestProcessor,name=" + getName());
-            Registry.getRegistry(null, null).registerComponent
+                Registry.getRegistry(null, null).registerComponent
                 (cHandler.global, rgOname, null);
+            }
         }
 
         try {
@@ -270,10 +272,12 @@ public class AjpAprProtocol
                 throw ex;
             }
         }
-        if (tpOname!=null)
-            Registry.getRegistry(null, null).unregisterComponent(tpOname);
-        if (rgOname != null)
-            Registry.getRegistry(null, null).unregisterComponent(rgOname);
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if (tpOname!=null)
+                Registry.getRegistry(null, null).unregisterComponent(tpOname);
+            if (rgOname != null)
+                Registry.getRegistry(null, null).unregisterComponent(rgOname);
+        }
     }
 
     // *
@@ -519,7 +523,7 @@ public class AjpAprProtocol
         }
         
         protected void register(AjpAprProcessor processor) {
-            if (proto.getDomain() != null) {
+           if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
@@ -541,7 +545,7 @@ public class AjpAprProtocol
         }
 
         protected void unregister(AjpAprProcessor processor) {
-            if (proto.getDomain() != null) {
+            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         RequestInfo rp = processor.getRequest().getRequestProcessor();
