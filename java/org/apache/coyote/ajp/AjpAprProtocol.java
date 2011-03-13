@@ -523,14 +523,14 @@ public class AjpAprProtocol
         }
         
         protected void register(AjpAprProcessor processor) {
-           if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            RequestInfo rp = processor.getRequest().getRequestProcessor();
+            rp.setGlobalProcessor(global);
+            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
-                        RequestInfo rp = processor.getRequest().getRequestProcessor();
-                        rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
-                            (proto.getDomain() + ":type=RequestProcessor,worker="
+                        (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getName() + ",name=AjpRequest" + count);
                         if (log.isDebugEnabled()) {
                             log.debug("Register " + rpName);
@@ -545,11 +545,11 @@ public class AjpAprProtocol
         }
 
         protected void unregister(AjpAprProcessor processor) {
+            RequestInfo rp = processor.getRequest().getRequestProcessor();
+            rp.setGlobalProcessor(null);
             if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
                 synchronized (this) {
                     try {
-                        RequestInfo rp = processor.getRequest().getRequestProcessor();
-                        rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
                         if (log.isDebugEnabled()) {
                             log.debug("Unregister " + rpName);

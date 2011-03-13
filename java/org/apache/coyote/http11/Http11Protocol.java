@@ -550,13 +550,12 @@ public class Http11Protocol
     protected static class Http11ConnectionHandler implements Handler {
 
         protected Http11Protocol proto;
-        protected AtomicLong registerCount = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? null : new AtomicLong(0);
+        protected AtomicLong registerCount = new AtomicLong(0);
         protected RequestGroupInfo global = new RequestGroupInfo();
 
         protected ConcurrentHashMap<Socket, Http11Processor> connections =
             new ConcurrentHashMap<Socket, Http11Processor>();
         protected ConcurrentLinkedQueue<Http11Processor> recycledProcessors = 
-            (org.apache.tomcat.util.Constants.LOW_MEMORY) ? null :
             new ConcurrentLinkedQueue<Http11Processor>() {
             protected AtomicInteger size = new AtomicInteger(0);
             public boolean offer(Http11Processor processor) {
@@ -627,9 +626,7 @@ public class Http11Protocol
                 } finally {
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
-                        if (recycledProcessors != null) {
-                            recycledProcessors.offer(result);
-                        }
+                        recycledProcessors.offer(result);
                     } else {
                         if (proto.endpoint.isRunning()) {
                             proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
@@ -643,7 +640,7 @@ public class Http11Protocol
         }
         
         public SocketState process(Socket socket) {
-            Http11Processor processor = (recycledProcessors != null) ? recycledProcessors.poll() : null;
+            Http11Processor processor = recycledProcessors.poll();
             try {
 
                 if (processor == null) {
@@ -665,7 +662,7 @@ public class Http11Protocol
                     connections.put(socket, processor);
                     proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), 
                             processor.getResumeNotification(), false);
-                } else if (recycledProcessors != null) {
+                } else {
                     recycledProcessors.offer(processor);
                 }
                 return state;
@@ -691,9 +688,7 @@ public class Http11Protocol
                 Http11Protocol.log.error
                     (sm.getString("http11protocol.proto.error"), e);
             }
-            if (recycledProcessors != null) {
-                recycledProcessors.offer(processor);
-            }
+            recycledProcessors.offer(processor);
             return SocketState.CLOSED;
         }
         
@@ -713,19 +708,17 @@ public class Http11Protocol
             processor.setSocketBuffer(proto.socketBuffer);
             processor.setMaxSavePostSize(proto.maxSavePostSize);
             processor.setServer(proto.server);
-            if (!org.apache.tomcat.util.Constants.LOW_MEMORY) {
-                register(processor);
-            }
+            register(processor);
             return processor;
         }
         
         protected void register(Http11Processor processor) {
+            RequestInfo rp = processor.getRequest().getRequestProcessor();
+            rp.setGlobalProcessor(global);
             if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
-                        RequestInfo rp = processor.getRequest().getRequestProcessor();
-                        rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getName() + ",name=HttpRequest" + count);
@@ -742,11 +735,11 @@ public class Http11Protocol
         }
 
         protected void unregister(Http11Processor processor) {
+            RequestInfo rp = processor.getRequest().getRequestProcessor();
+            rp.setGlobalProcessor(null);
             if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
                 synchronized (this) {
                     try {
-                        RequestInfo rp = processor.getRequest().getRequestProcessor();
-                        rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
                         if (log.isDebugEnabled()) {
                             log.debug("Unregister " + rpName);

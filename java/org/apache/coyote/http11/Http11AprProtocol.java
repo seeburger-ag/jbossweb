@@ -684,12 +684,12 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         }
         
         protected void register(Http11AprProcessor processor) {
+            RequestInfo rp = processor.getRequest().getRequestProcessor();
+            rp.setGlobalProcessor(global);
             if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
-                        RequestInfo rp = processor.getRequest().getRequestProcessor();
-                        rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getName() + ",name=HttpRequest" + count);
@@ -706,11 +706,11 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         }
 
         protected void unregister(Http11AprProcessor processor) {
+            RequestInfo rp = processor.getRequest().getRequestProcessor();
+            rp.setGlobalProcessor(null);
             if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
                 synchronized (this) {
                     try {
-                        RequestInfo rp = processor.getRequest().getRequestProcessor();
-                        rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
                         if (log.isDebugEnabled()) {
                             log.debug("Unregister " + rpName);
