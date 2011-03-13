@@ -155,7 +155,7 @@ public class JIoEndpoint {
     /**
      * Maximum amount of worker threads.
      */
-    protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 256 : 512 * Runtime.getRuntime().availableProcessors();
+    protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 64 : 512 * Runtime.getRuntime().availableProcessors();
     public void setMaxThreads(int maxThreads) { this.maxThreads = maxThreads; }
     public int getMaxThreads() { return maxThreads; }
 
