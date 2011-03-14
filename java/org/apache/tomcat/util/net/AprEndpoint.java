@@ -964,6 +964,28 @@ public class AprEndpoint {
 
     
     /**
+     * Return a new worker thread, and block while to worker is available.
+     */
+    protected Worker getWorkerThread() {
+        // Allocate a new worker thread
+        Worker workerThread = createWorkerThread();
+        if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
+            while (workerThread == null) {
+                try {
+                    synchronized (workers) {
+                        workers.wait();
+                    }
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+                workerThread = createWorkerThread();
+            }
+        }
+        return workerThread;
+    }
+
+
+    /**
      * Allocate a new poller of the specified size.
      */
     protected long allocatePoller(int size, long pool, int timeout) {
@@ -987,7 +1009,7 @@ public class AprEndpoint {
     protected boolean processSocketWithOptions(long socket) {
         try {
             if (executor == null) {
-                Worker worker = createWorkerThread();
+                Worker worker = getWorkerThread();
                 if (worker != null) {
                     worker.assignWithOptions(socket);
                 } else {
@@ -1012,7 +1034,7 @@ public class AprEndpoint {
     protected boolean processSocket(long socket) {
         try {
             if (executor == null) {
-                Worker worker = createWorkerThread();
+                Worker worker = getWorkerThread();
                 if (worker != null) {
                     worker.assign(socket);
                 } else {
@@ -1037,7 +1059,7 @@ public class AprEndpoint {
     protected boolean processSocket(long socket, SocketStatus status) {
         try {
             if (executor == null) {
-                Worker worker = createWorkerThread();
+                Worker worker = getWorkerThread();
                 if (worker != null) {
                     worker.assign(socket, status);
                 } else {

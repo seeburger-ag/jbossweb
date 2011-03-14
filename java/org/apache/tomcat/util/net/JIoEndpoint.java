@@ -1205,6 +1205,28 @@ public class JIoEndpoint {
 
 
     /**
+     * Return a new worker thread, and block while to worker is available.
+     */
+    protected Worker getWorkerThread() {
+        // Allocate a new worker thread
+        Worker workerThread = createWorkerThread();
+        if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
+            while (workerThread == null) {
+                try {
+                    synchronized (workers) {
+                        workers.wait();
+                    }
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+                workerThread = createWorkerThread();
+            }
+        }
+        return workerThread;
+    }
+
+
+    /**
      * Recycle the specified Processor so that it can be used again.
      *
      * @param workerThread The processor to be recycled
@@ -1224,7 +1246,7 @@ public class JIoEndpoint {
     protected boolean processSocket(Socket socket) {
         try {
             if (executor == null) {
-                Worker worker = createWorkerThread();
+                Worker worker = getWorkerThread();
                 if (worker != null) {
                     worker.assign(socket);
                 } else {
@@ -1249,7 +1271,7 @@ public class JIoEndpoint {
     protected boolean processSocket(Socket socket, SocketStatus status) {
         try {
             if (executor == null) {
-                Worker worker = createWorkerThread();
+                Worker worker = getWorkerThread();
                 if (worker != null) {
                     worker.assign(socket, status);
                 } else {

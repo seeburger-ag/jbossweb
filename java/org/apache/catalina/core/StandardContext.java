@@ -610,13 +610,13 @@ public class StandardContext
     /**
      * Cache max size in KB.
      */
-    protected int cacheMaxSize = 10240; // 10 MB
+    protected int cacheMaxSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 128 : 10240; // 10 MB
 
 
     /**
      * Cache object max size in KB.
      */
-    protected int cacheObjectMaxSize = 256; // 256K
+    protected int cacheObjectMaxSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 8 : 256; // 256K
 
 
     /**

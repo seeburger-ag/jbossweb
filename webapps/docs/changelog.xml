@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.Beta5 (remm)">
+  <subsection name="General">
+    <changelog>
+      <fix>
+        Add a set of low memory use defaults. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.Beta4 (remm)">
   <subsection name="Catalina">
     <changelog>
