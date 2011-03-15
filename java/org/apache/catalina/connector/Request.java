@@ -157,7 +157,7 @@ public class Request
 
 
     protected static final boolean LOCAL_RANDOM = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.LOCAL_RANDOM", "true")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.LOCAL_RANDOM", (org.apache.tomcat.util.Constants.LOW_MEMORY) ? "false" : "true")).booleanValue();
 
 
     // ----------------------------------------------------------- Constructors
