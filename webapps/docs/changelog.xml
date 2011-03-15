@@ -16,6 +16,23 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.Beta6 (remm)">
+  <subsection name="General">
+    <changelog>
+      <fix>
+        Tune low memory use defaults. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        Expose the request info objects using a Java API on ProtocolHandler. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.Beta5 (remm)">
   <subsection name="General">
     <changelog>

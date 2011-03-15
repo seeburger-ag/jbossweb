@@ -151,6 +151,9 @@ public class Http11Protocol
         return false;
     }
 
+    public RequestGroupInfo getRequestGroupInfo() {
+        return cHandler.global;
+    }
 
     public void init() throws Exception {
         endpoint.setName(getName());

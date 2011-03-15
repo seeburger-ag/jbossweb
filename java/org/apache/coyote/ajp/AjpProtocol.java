@@ -158,6 +158,10 @@ public class AjpProtocol
         return false;
     }
 
+    public RequestGroupInfo getRequestGroupInfo() {
+        return cHandler.global;
+    }
+
 
     /** Start the protocol
      */

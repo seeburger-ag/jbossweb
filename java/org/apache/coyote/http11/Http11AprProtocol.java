@@ -106,6 +106,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         return true;
     }
 
+    public RequestGroupInfo getRequestGroupInfo() {
+        return cHandler.global;
+    }
+
 
     /** Start the protocol
      */

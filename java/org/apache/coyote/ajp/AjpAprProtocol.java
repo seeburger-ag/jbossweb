@@ -160,6 +160,10 @@ public class AjpAprProtocol
         return false;
     }
 
+    public RequestGroupInfo getRequestGroupInfo() {
+        return cHandler.global;
+    }
+
 
     /** Start the protocol
      */
