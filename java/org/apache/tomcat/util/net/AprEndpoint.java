@@ -582,22 +582,6 @@ public class AprEndpoint {
             useSendfile = false;
         }
 
-        // Poller size defaults
-        if (pollerSize <= 0) {
-            if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
-                pollerSize = (1 * 1024);
-            } else {
-                pollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
-            }
-        }
-        if (sendfileSize <= 0) {
-            if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
-                sendfileSize = 128;
-            } else {
-                sendfileSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
-            }
-        }
-
         long inetAddress = Address.info(addressStr, family,
                 port, 0, rootPool);
         
@@ -1442,6 +1426,18 @@ public class AprEndpoint {
             
             pool = Pool.create(serverSockPool);
             actualPollerSize = pollerSize;
+            // Poller size defaults
+            if (actualPollerSize <= 0) {
+                if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
+                    if (event) {
+                        actualPollerSize = 128;
+                    } else {
+                        actualPollerSize = 1024;
+                    }
+                } else {
+                    actualPollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
+                }
+            }
             if ((OS.IS_WIN32 || OS.IS_WIN64) && (actualPollerSize > 1024)) {
                 // The maximum per poller to get reasonable performance is 1024
                 // Adjust poller size so that it won't reach the limit
@@ -2134,6 +2130,13 @@ public class AprEndpoint {
         protected void init() {
             pool = Pool.create(serverSockPool);
             int size = sendfileSize;
+            if (size <= 0) {
+                if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
+                    size = 128;
+                } else {
+                    size = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
+                }
+            }
             sendfilePollset = allocatePoller(size, pool, soTimeout);
             if (sendfilePollset == 0 && size > 1024) {
                 size = 1024;

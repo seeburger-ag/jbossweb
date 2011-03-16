@@ -171,7 +171,7 @@ public class JIoEndpoint {
     /**
      * Size of the socket poller.
      */
-    protected int pollerSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? (1 * 1024) : (32 * 1024);
+    protected int pollerSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 128 : (32 * 1024);
     public void setPollerSize(int pollerSize) { this.pollerSize = pollerSize; }
     public int getPollerSize() { return pollerSize; }
 
