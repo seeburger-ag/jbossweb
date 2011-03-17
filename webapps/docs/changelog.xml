@@ -15,6 +15,16 @@
   </properties>
 
 <body>
+<section name="JBoss Web 2.1.12.GA (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <bug>46982</bug>: Correct reporting of DST offset in access logs. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.11.GA (remm)">
   <subsection name="Catalina">
     <changelog>
