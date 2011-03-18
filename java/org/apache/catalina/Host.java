@@ -84,6 +84,22 @@ public interface Host extends Container {
 
 
     /**
+     * Return the value of the auto deploy flag.  If true, it indicates that 
+     * this host's child webapps should be discovred and automatically 
+     * deployed dynamically.
+     */
+    public boolean getAutoDeploy();
+
+
+    /**
+     * Set the auto deploy flag value for this host.
+     * 
+     * @param autoDeploy The new auto deploy flag
+     */
+    public void setAutoDeploy(boolean autoDeploy);
+
+
+    /**
      * Return the Java class name of the context configuration class
      * for new web applications.
      */
@@ -99,6 +115,22 @@ public interface Host extends Container {
     public void setConfigClass(String configClass);
 
         
+    /**
+     * Return the value of the deploy on startup flag.  If true, it indicates 
+     * that this host's child webapps should be discovred and automatically 
+     * deployed.
+     */
+    public boolean getDeployOnStartup();
+
+
+    /**
+     * Set the deploy on startup flag value for this host.
+     * 
+     * @param deployOnStartup The new deploy on startup flag
+     */
+    public void setDeployOnStartup(boolean deployOnStartup);
+
+
     /**
      * Return the canonical, fully qualified, name of the virtual host
      * this Container represents.
@@ -117,6 +149,38 @@ public interface Host extends Container {
     public void setName(String name);
 
 
+    /**
+     * Get the server.xml <host> attribute's xmlNamespaceAware.
+     * @return true if namespace awarenes is enabled.
+     *
+     */
+    public boolean getXmlNamespaceAware();
+
+
+    /**
+     * Get the server.xml <host> attribute's xmlValidation.
+     * @return true if validation is enabled.
+     *
+     */
+    public boolean getXmlValidation();
+
+
+    /**
+     * Set the validation feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlValidation true to enable xml instance validation
+     */
+    public void setXmlValidation(boolean xmlValidation);
+
+
+   /**
+     * Set the namespace aware feature of the XML parser used when
+     * parsing xml instances.
+     * @param xmlNamespaceAware true to enable namespace awareness
+     */
+    public void setXmlNamespaceAware(boolean xmlNamespaceAware);
+
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -133,6 +197,15 @@ public interface Host extends Container {
      * a zero length array is returned.
      */
     public String[] findAliases();
+
+
+    /**
+     * Return the Context that would be used to process the specified
+     * host-relative request URI, if any; otherwise return <code>null</code>.
+     *
+     * @param uri Request URI to be mapped
+     */
+    public Context map(String uri);
 
 
     /**

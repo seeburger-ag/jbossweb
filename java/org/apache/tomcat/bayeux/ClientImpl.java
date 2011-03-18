@@ -231,7 +231,7 @@ public class ClientImpl implements Client {
     }
     
     public String toString() {
-        StringBuilder buf = new StringBuilder(super.toString());
+        StringBuffer buf = new StringBuffer(super.toString());
         buf.append(" id=").append(getId());
         return buf.toString();
     }

@@ -36,15 +36,4 @@ public final class AstBracketSuffix extends SimpleNode {
             throws ELException {
         return this.children[0].getValue(ctx);
     }
-
-    public Object getParameters(EvaluationContext ctx)
-            throws ELException {
-        if (jjtGetNumChildren() < 2)
-            return new Object[0];
-        Object[] params = new Object[jjtGetNumChildren() - 1];
-        for (int i = 1; i < jjtGetNumChildren(); i++) {
-            params[i - 1] = jjtGetChild(i).getValue(ctx);
-        }
-        return params;
-    }
 }

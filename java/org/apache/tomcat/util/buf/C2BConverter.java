@@ -48,7 +48,7 @@ public class C2BConverter {
         throws IOException {
         try {
             encoder = Charset.forName(charset).newEncoder();
-            encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+            encoder = encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }
@@ -75,8 +75,8 @@ public class C2BConverter {
                     bc.getBuffer().length - bc.getEnd());
         } else {
             // Initialize the byte buffer
-            bb.limit(bc.getBuffer().length);
             bb.position(bc.getEnd());
+            bb.limit(bc.getBuffer().length);
         }
         if ((cb == null) || (cb.array() != cc.getBuffer())) {
             // Create a new char buffer if anything changed
@@ -84,8 +84,8 @@ public class C2BConverter {
                     cc.getLength());
         } else {
             // Initialize the char buffer
-            cb.limit(cc.getEnd());
             cb.position(cc.getStart());
+            cb.limit(cc.getEnd());
         }
         // Do the decoding and get the results into the byte chunk and the char chunk
         CoderResult result = encoder.encode(cb, bb, false);

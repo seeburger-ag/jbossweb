@@ -22,15 +22,16 @@ package org.apache.catalina.authenticator;
 import java.io.IOException;
 import java.security.Principal;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.util.Base64;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -113,7 +114,7 @@ public class BasicAuthenticator
      * @exception IOException if an input/output error occurs
      */
     public boolean authenticate(Request request,
-                                HttpServletResponse response,
+                                Response response,
                                 LoginConfig config)
         throws IOException {
 
@@ -179,7 +180,7 @@ public class BasicAuthenticator
 
             principal = context.getRealm().authenticate(username, password);
             if (principal != null) {
-                register(request, response, principal, HttpServletRequest.BASIC_AUTH,
+                register(request, response, principal, Constants.BASIC_METHOD,
                          username, password);
                 return (true);
             }
@@ -188,12 +189,14 @@ public class BasicAuthenticator
 
         // Send an "unauthorized" response and an appropriate challenge
         MessageBytes authenticate = 
-            request.getResponse().getCoyoteResponse().getMimeHeaders()
+            response.getCoyoteResponse().getMimeHeaders()
             .addValue(AUTHENTICATE_BYTES, 0, AUTHENTICATE_BYTES.length);
         CharChunk authenticateCC = authenticate.getCharChunk();
         authenticateCC.append("Basic realm=\"");
         if (config.getRealmName() == null) {
-            authenticateCC.append("Realm");
+            authenticateCC.append(request.getServerName());
+            authenticateCC.append(':');
+            authenticateCC.append(Integer.toString(request.getServerPort()));
         } else {
             authenticateCC.append(config.getRealmName());
         }

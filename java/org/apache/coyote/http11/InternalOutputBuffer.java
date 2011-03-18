@@ -472,14 +472,12 @@ public class InternalOutputBuffer
      */
     public void sendHeader(MessageBytes name, MessageBytes value) {
 
-        if (name.getLength() > 0 && !value.isNull()) {
-            write(name);
-            buf[pos++] = Constants.COLON;
-            buf[pos++] = Constants.SP;
-            write(value);
-            buf[pos++] = Constants.CR;
-            buf[pos++] = Constants.LF;
-        }
+        write(name);
+        buf[pos++] = Constants.COLON;
+        buf[pos++] = Constants.SP;
+        write(value);
+        buf[pos++] = Constants.CR;
+        buf[pos++] = Constants.LF;
 
     }
 

@@ -19,6 +19,8 @@
 package org.apache.catalina.startup;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 
@@ -30,6 +32,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
+import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Connector;
@@ -37,10 +40,12 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardService;
+import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.security.SecurityConfig;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.IntrospectionUtils;
+import org.apache.tomcat.util.log.SystemLogHandler;
 import org.jboss.logging.Logger;
 
 
@@ -130,6 +135,18 @@ public class Embedded  extends StandardService implements Lifecycle {
 
 
     /**
+     * Is naming enabled ?
+     */
+    protected boolean useNaming = true;
+
+
+    /**
+     * Is standard streams redirection enabled ?
+     */
+    protected boolean redirectStreams = true;
+
+
+    /**
      * The set of Engines that have been deployed in this server.  Normally
      * there will only be one.
      */
@@ -174,7 +191,63 @@ public class Embedded  extends StandardService implements Lifecycle {
      */
     protected boolean started = false;
 
+    /**
+     * Use await.
+     */
+    protected boolean await = false;
+
+
     // ------------------------------------------------------------- Properties
+
+
+    /**
+     * Return true if naming is enabled.
+     */
+    public boolean isUseNaming() {
+
+        return (this.useNaming);
+
+    }
+
+
+    /**
+     * Enables or disables naming support.
+     *
+     * @param useNaming The new use naming value
+     */
+    public void setUseNaming(boolean useNaming) {
+
+        boolean oldUseNaming = this.useNaming;
+        this.useNaming = useNaming;
+        support.firePropertyChange("useNaming", new Boolean(oldUseNaming),
+                                   new Boolean(this.useNaming));
+
+    }
+
+
+    /**
+     * Return true if redirction of standard streams is enabled.
+     */
+    public boolean isRedirectStreams() {
+
+        return (this.redirectStreams);
+
+    }
+
+
+    /**
+     * Enables or disables naming support.
+     *
+     * @param useNaming The new use naming value
+     */
+    public void setRedirectStreams(boolean redirectStreams) {
+
+        boolean oldRedirectStreams = this.redirectStreams;
+        this.redirectStreams = redirectStreams;
+        support.firePropertyChange("redirectStreams", new Boolean(oldRedirectStreams),
+                                   new Boolean(this.redirectStreams));
+
+    }
 
 
     /**
@@ -198,6 +271,14 @@ public class Embedded  extends StandardService implements Lifecycle {
         this.realm = realm;
         support.firePropertyChange("realm", oldRealm, this.realm);
 
+    }
+
+    public void setAwait(boolean b) {
+        await = b;
+    }
+
+    public boolean isAwait() {
+        return await;
     }
 
     public void setCatalinaHome( String s ) {
@@ -388,7 +469,7 @@ public class Embedded  extends StandardService implements Lifecycle {
      * @exception IllegalArgumentException if an invalid parameter
      *  is specified
      */
-    public Context createContext(String path, String docBase, ContextConfig config) {
+    public Context createContext(String path, String docBase) {
 
         if( log.isDebugEnabled() )
             log.debug("Creating context '" + path + "' with docBase '" +
@@ -399,6 +480,7 @@ public class Embedded  extends StandardService implements Lifecycle {
         context.setDocBase(docBase);
         context.setPath(path);
 
+        ContextConfig config = new ContextConfig();
         config.setCustomAuthenticators(authenticators);
         ((Lifecycle) context).addLifecycleListener(config);
 
@@ -465,6 +547,25 @@ public class Embedded  extends StandardService implements Lifecycle {
         host.setName(name);
 
         return (host);
+
+    }
+
+
+    /**
+     * Create and return a class loader manager that can be customized, and
+     * then attached to a Context, before it is started.
+     *
+     * @param parent ClassLoader that will be the parent of the one
+     *  created by this Loader
+     */
+    public Loader createLoader(ClassLoader parent) {
+
+        if( log.isDebugEnabled() )
+            log.debug("Creating Loader with parent class loader '" +
+                       parent + "'");
+
+        WebappLoader loader = new WebappLoader(parent);
+        return (loader);
 
     }
 
@@ -703,6 +804,12 @@ public class Embedded  extends StandardService implements Lifecycle {
         if( log.isInfoEnabled() )
             log.info("Starting tomcat server");
 
+        // Validate the setup of our required system properties
+        initDirs();
+
+        // Initialize some naming specific properties
+        initNaming();
+
         // Initialise if not already done.
         if (!initialized) {
             initialized = true;
@@ -724,7 +831,7 @@ public class Embedded  extends StandardService implements Lifecycle {
 
         // Start our defined Connectors second
         for (int i = 0; i < connectors.length; i++) {
-            connectors[i].init();
+            connectors[i].initialize();
             if (connectors[i] instanceof Lifecycle)
                 ((Lifecycle) connectors[i]).start();
         }
@@ -770,6 +877,119 @@ public class Embedded  extends StandardService implements Lifecycle {
 
     }
 
+
+    // ------------------------------------------------------ Protected Methods
+
+
+    /** Initialize naming - this should only enable java:env and root naming.
+     * If tomcat is embeded in an application that already defines those -
+     * it shouldn't do it.
+     *
+     * XXX The 2 should be separated, you may want to enable java: but not
+     * the initial context and the reverse
+     * XXX Can we "guess" - i.e. lookup java: and if something is returned assume
+     * false ?
+     * XXX We have a major problem with the current setting for java: url
+     */
+    protected void initNaming() {
+        // Setting additional variables
+        if (!useNaming) {
+            log.debug( "Catalina naming disabled");
+            System.setProperty("catalina.useNaming", "false");
+        } else {
+            System.setProperty("catalina.useNaming", "true");
+            String value = "org.apache.naming";
+            String oldValue =
+                System.getProperty(javax.naming.Context.URL_PKG_PREFIXES);
+            if (oldValue != null) {
+                value = value + ":" + oldValue;
+            }
+            System.setProperty(javax.naming.Context.URL_PKG_PREFIXES, value);
+            if( log.isDebugEnabled() )
+                log.debug("Setting naming prefix=" + value);
+            value = System.getProperty
+                (javax.naming.Context.INITIAL_CONTEXT_FACTORY);
+            if (value == null) {
+                System.setProperty
+                    (javax.naming.Context.INITIAL_CONTEXT_FACTORY,
+                     "org.apache.naming.java.javaURLContextFactory");
+            } else {
+                log.debug( "INITIAL_CONTEXT_FACTORY alread set " + value );
+            }
+        }
+    }
+
+
+    protected void initDirs() {
+
+        String catalinaHome = System.getProperty("catalina.home");
+        if (catalinaHome == null) {
+            // Backwards compatibility patch for J2EE RI 1.3
+            String j2eeHome = System.getProperty("com.sun.enterprise.home");
+            if (j2eeHome != null) {
+                catalinaHome=System.getProperty("com.sun.enterprise.home");
+            } else if (System.getProperty("catalina.base") != null) {
+                catalinaHome = System.getProperty("catalina.base");
+            } else {
+                // Use IntrospectionUtils and guess the dir
+                catalinaHome = IntrospectionUtils.guessInstall
+                    ("catalina.home", "catalina.base", "catalina.jar");
+                if (catalinaHome == null) {
+                    catalinaHome = IntrospectionUtils.guessInstall
+                        ("tomcat.install", "catalina.home", "tomcat.jar");
+                }
+            }
+        }
+        // last resort - for minimal/embedded cases. 
+        if(catalinaHome==null) {
+            catalinaHome=System.getProperty("user.dir");
+        }
+        if (catalinaHome != null) {
+            File home = new File(catalinaHome);
+            if (!home.isAbsolute()) {
+                try {
+                    catalinaHome = home.getCanonicalPath();
+                } catch (IOException e) {
+                    catalinaHome = home.getAbsolutePath();
+                }
+            }
+            System.setProperty("catalina.home", catalinaHome);
+        }
+
+        if (System.getProperty("catalina.base") == null) {
+            System.setProperty("catalina.base",
+                               catalinaHome);
+        } else {
+            String catalinaBase = System.getProperty("catalina.base");
+            File base = new File(catalinaBase);
+            if (!base.isAbsolute()) {
+                try {
+                    catalinaBase = base.getCanonicalPath();
+                } catch (IOException e) {
+                    catalinaBase = base.getAbsolutePath();
+                }
+            }
+            System.setProperty("catalina.base", catalinaBase);
+        }
+        
+        String temp = System.getProperty("java.io.tmpdir");
+        if (temp == null || (!(new File(temp)).exists())
+                || (!(new File(temp)).isDirectory())) {
+            log.error(sm.getString("embedded.notmp", temp));
+        }
+
+    }
+
+    
+    protected void initStreams() {
+        if (redirectStreams) {
+            // Replace System.out and System.err with a custom PrintStream
+            SystemLogHandler systemlog = new SystemLogHandler(System.out);
+            System.setOut(systemlog);
+            System.setErr(systemlog);
+        }
+    }
+    
 
     // -------------------------------------------------------- Private Methods
 
