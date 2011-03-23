@@ -21,6 +21,7 @@ package org.apache.catalina.connector;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Set;
 
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
@@ -261,6 +262,12 @@ public class Connector
       */
      protected boolean useBodyEncodingForURI = false;
 
+     
+     /**
+      * Allowed virtual hosts.
+      */
+     protected Set<String> allowedHosts = null;
+     
 
      protected static HashMap replacements = new HashMap();
      static {
@@ -376,7 +383,27 @@ public class Connector
 
     }
 
+
     /**
+     * Set of allowed hosts.
+     */
+    public Set<String> getAllowedHosts() {
+
+        return allowedHosts;
+
+    }
+
+
+    /**
+     * Restrict the connector to certain hosts.
+     */
+    public void setAllowedHosts(Set<String> allowedHosts) {
+
+        this.allowedHosts = allowedHosts;
+
+    }
+
+   /**
      * Is this connector available for processing requests?
      */
     public boolean isAvailable() {

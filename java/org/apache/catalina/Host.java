@@ -100,6 +100,21 @@ public interface Host extends Container {
 
         
     /**
+     * Return the default webapp name.
+     */
+    public String getDefaultWebapp();
+
+
+    /**
+     * Set the default webapp name for this Host. Defaults to "ROOT.war".
+     *
+     * @param defaultWebapp The archive name of the webapp which will be mapped
+     *                  as the root of the host
+     */
+    public void setDefaultWebapp(String defaultWebapp);
+
+
+    /**
      * Return the canonical, fully qualified, name of the virtual host
      * this Container represents.
      */

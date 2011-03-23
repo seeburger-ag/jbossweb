@@ -85,6 +85,12 @@ public class StandardHost
 
 
     /**
+     * The default webapp name.
+     */
+    private String defaultWebapp = "ROOT";
+
+
+    /**
      * The Java class name of the default context configuration class
      * for deployed web applications.
      */
@@ -150,6 +156,22 @@ public class StandardHost
         String oldAppBase = this.appBase;
         this.appBase = appBase;
         support.firePropertyChange("appBase", oldAppBase, this.appBase);
+
+    }
+
+
+    public String getDefaultWebapp() {
+
+        return (this.defaultWebapp);
+
+    }
+
+
+    public void setDefaultWebapp(String defaultWebapp) {
+
+        String oldDefaultWebapp = this.defaultWebapp;
+        this.defaultWebapp = defaultWebapp;
+        support.firePropertyChange("defaultWebapp", oldDefaultWebapp, this.defaultWebapp);
 
     }
 

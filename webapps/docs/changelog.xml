@@ -16,6 +16,19 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.Beta7 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <update>
+        Add a host filtering feature in the connectors. (remm)
+      </update>
+      <update>
+        Add root webapp configuration in Host. (remm)
+      </update>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.Beta6 (remm)">
   <subsection name="General">
     <changelog>
