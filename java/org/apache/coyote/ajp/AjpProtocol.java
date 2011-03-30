@@ -266,9 +266,7 @@ public class AjpProtocol
         String encodedAddr = "";
         if (getAddress() != null) {
             encodedAddr = "" + getAddress();
-            if (encodedAddr.startsWith("/"))
-                encodedAddr = encodedAddr.substring(1);
-            encodedAddr = URLEncoder.encode(encodedAddr) + "-";
+            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-')) + "-";
         }
         return ("ajp-" + encodedAddr + endpoint.getPort());
     }
