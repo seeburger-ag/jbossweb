@@ -1422,28 +1422,29 @@ public class AprEndpoint {
          */
         protected void init() {
 
-            timeouts = new SocketTimeouts(pollerSize);
-            
             pool = Pool.create(serverSockPool);
-            actualPollerSize = pollerSize;
+            int defaultPollerSize = pollerSize;
             // Poller size defaults
-            if (actualPollerSize <= 0) {
+            if (defaultPollerSize <= 0) {
                 if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
                     if (event) {
-                        actualPollerSize = 128;
+                        defaultPollerSize = 128;
                     } else {
-                        actualPollerSize = 1024;
+                        defaultPollerSize = 1024;
                     }
                 } else {
-                    actualPollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
+                    defaultPollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
                 }
             }
-            if ((OS.IS_WIN32 || OS.IS_WIN64) && (actualPollerSize > 1024)) {
+            if ((OS.IS_WIN32 || OS.IS_WIN64) && (defaultPollerSize > 1024)) {
                 // The maximum per poller to get reasonable performance is 1024
                 // Adjust poller size so that it won't reach the limit
-                actualPollerSize = 1024;
+                defaultPollerSize = 1024;
             }
-            
+            actualPollerSize = defaultPollerSize;
+
+            timeouts = new SocketTimeouts(defaultPollerSize);
+
             // At the moment, setting the timeout is useless, but it could get used
             // again as the normal poller could be faster using maintain. It might not
             // be worth bothering though.
@@ -1457,7 +1458,7 @@ public class AprEndpoint {
                 pollset = allocatePoller(actualPollerSize, pool, -1);
             }
             
-            pollerCount = pollerSize / actualPollerSize;
+            pollerCount = defaultPollerSize / actualPollerSize;
             pollerTime = pollTime / pollerCount;
             
             pollers = new long[pollerCount];
@@ -1473,8 +1474,8 @@ public class AprEndpoint {
 
             desc = new long[actualPollerSize * 2];
             connectionCount = 0;
-            addList = new SocketList(pollerSize);
-            localAddList = new SocketList(pollerSize);
+            addList = new SocketList(defaultPollerSize);
+            localAddList = new SocketList(defaultPollerSize);
 
         }
 
