@@ -16,6 +16,19 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.Beta8 (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        Fix APR init with a negative pollerSize. (remm)
+      </fix>
+      <fix>
+        Beautify the address string which is used as the connector name. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.Beta7 (remm)">
   <subsection name="Catalina">
     <changelog>
