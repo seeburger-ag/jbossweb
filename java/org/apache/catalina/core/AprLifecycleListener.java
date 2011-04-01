@@ -103,11 +103,11 @@ public class AprLifecycleListener
         }
         try {
             String methodName = "initialize";
-            Class paramTypes[] = new Class[1];
+            Class<?> paramTypes[] = new Class[1];
             paramTypes[0] = String.class;
             Object paramValues[] = new Object[1];
             paramValues[0] = null;
-            Class clazz = Class.forName("org.apache.tomcat.jni.Library");
+            Class<?> clazz = Class.forName("org.apache.tomcat.jni.Library");
             Method method = clazz.getMethod(methodName, paramTypes);
             method.invoke(null, paramValues);
             major = clazz.getField("TCN_MAJOR_VERSION").getInt(null);
@@ -171,11 +171,11 @@ public class AprLifecycleListener
             return;
         }
         String methodName = "randSet";
-        Class paramTypes[] = new Class[1];
+        Class<?> paramTypes[] = new Class[1];
         paramTypes[0] = String.class;
         Object paramValues[] = new Object[1];
         paramValues[0] = SSLRandomSeed;
-        Class clazz = Class.forName("org.apache.tomcat.jni.SSL");
+        Class<?> clazz = Class.forName("org.apache.tomcat.jni.SSL");
         Method method = clazz.getMethod(methodName, paramTypes);
         method.invoke(null, paramValues);
 
@@ -185,6 +185,10 @@ public class AprLifecycleListener
         method.invoke(null, paramValues);
  
         sslInitialized = true;
+    }
+
+    public static boolean isAprInitialized() {
+        return aprInitialized;
     }
 
     public String getSSLEngine() {

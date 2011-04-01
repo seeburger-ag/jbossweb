@@ -340,9 +340,9 @@ public class Embedded  extends StandardService implements Lifecycle {
             } else if (protocol.equals("memory")) {
                 connector = new Connector("org.apache.coyote.memory.MemoryProtocolHandler");
             } else if (protocol.equals("http")) {
-                connector = new Connector();
+                connector = new Connector("http");
             } else if (protocol.equals("https")) {
-                connector = new Connector();
+                connector = new Connector("http");
                 connector.setScheme("https");
                 connector.setSecure(true);
                 connector.setProperty("SSLEnabled","true");

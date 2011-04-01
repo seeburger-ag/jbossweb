@@ -18,8 +18,6 @@
 
 package org.apache.catalina.connector;
 
-import java.lang.reflect.Method;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -33,6 +31,7 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Service;
+import org.apache.catalina.core.AprLifecycleListener;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.coyote.Adapter;
@@ -72,20 +71,15 @@ public class Connector
     // ------------------------------------------------------------ Constructor
 
 
-    public Connector()
-        throws Exception {
-        this(null);
-    }
-
     public Connector(String protocol)
         throws Exception {
         setProtocol(protocol);
         // Instantiate protocol handler
         try {
-            Class clazz = Class.forName(protocolHandlerClassName);
+            Class<?> clazz = Class.forName(protocolHandlerClassName);
             this.protocolHandler = (ProtocolHandler) clazz.newInstance();
         } catch (Exception e) {
-            log.error
+            throw new IllegalArgumentException
                 (sm.getString
                  ("coyoteConnector.protocolHandlerInstantiationFailed", e));
         }
@@ -269,7 +263,7 @@ public class Connector
      protected Set<String> allowedHosts = null;
      
 
-     protected static HashMap replacements = new HashMap();
+     protected static HashMap<String, String> replacements = new HashMap<String, String>();
      static {
          replacements.put("acceptCount", "backlog");
          replacements.put("connectionLinger", "soLinger");
@@ -330,15 +324,6 @@ public class Connector
 
 
     /**
-     * remove a configured property.
-     */
-    public void removeProperty(String name) {
-        // FIXME !
-        //protocolHandler.removeAttribute(name);
-    }
-
-
-    /**
      * Return the <code>Service</code> with which we are associated (if any).
      */
     public Service getService() {
@@ -356,7 +341,6 @@ public class Connector
     public void setService(Service service) {
 
         this.service = service;
-        // FIXME: setProperty("service", service);
 
     }
 
@@ -580,70 +564,18 @@ public class Connector
 
     }
     
-    // ---------------------------------------------- APR Version Constants
-
-    private static final int TCN_REQUIRED_MAJOR = 1;
-    private static final int TCN_REQUIRED_MINOR = 1;
-    private static final int TCN_REQUIRED_PATCH = 3;
-    private static boolean aprInitialized = false;
-
-    // APR init support
-    private static synchronized void initializeAPR()
-    {
-        if (aprInitialized) {
-            return;
-        }
-        int major = 0;
-        int minor = 0;
-        int patch = 0;
-        try {
-            String methodName = "initialize";
-            Class paramTypes[] = new Class[1];
-            paramTypes[0] = String.class;
-            Object paramValues[] = new Object[1];
-            paramValues[0] = null;
-            Class clazz = Class.forName("org.apache.tomcat.jni.Library");
-            Method method = clazz.getMethod(methodName, paramTypes);
-            method.invoke(null, paramValues);
-            major = clazz.getField("TCN_MAJOR_VERSION").getInt(null);
-            minor = clazz.getField("TCN_MINOR_VERSION").getInt(null);
-            patch = clazz.getField("TCN_PATCH_VERSION").getInt(null);
-        } catch (Throwable t) {
-            return;
-        }
-        if ((major != TCN_REQUIRED_MAJOR) ||
-            (minor != TCN_REQUIRED_MINOR) ||
-            (patch <  TCN_REQUIRED_PATCH)) {
-            try {
-                // Terminate the APR in case the version
-                // is below required.
-                String methodName = "terminate";
-                Method method = Class.forName("org.apache.tomcat.jni.Library")
-                                    .getMethod(methodName, (Class [])null);
-                method.invoke(null, (Object []) null);
-            } catch (Throwable t) {
-                // Ignore
-            }
-            return;
-        }
-        aprInitialized = true;
-    }
-
     /**
      * Set the Coyote protocol which will be used by the connector.
      *
      * @param protocol The Coyote protocol name
      */
-    public void setProtocol(String protocol) {
+    protected void setProtocol(String protocol) {
 
-        // Test APR support
-        initializeAPR();
-
-        if (aprInitialized) {
-            if ("HTTP/1.1".equals(protocol)) {
+        if (AprLifecycleListener.isAprInitialized()) {
+            if ("HTTP/1.1".equals(protocol) || "http".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.http11.Http11AprProtocol");
-            } else if ("AJP/1.3".equals(protocol)) {
+            } else if ("AJP/1.3".equals(protocol) || "ajp".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.ajp.AjpAprProtocol");
             } else if (protocol != null) {
@@ -653,10 +585,10 @@ public class Connector
                     ("org.apache.coyote.http11.Http11AprProtocol");
             }
         } else {
-            if ("HTTP/1.1".equals(protocol)) {
+            if ("HTTP/1.1".equals(protocol) || "http".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.http11.Http11Protocol");
-            } else if ("AJP/1.3".equals(protocol)) {
+            } else if ("AJP/1.3".equals(protocol) || "ajp".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.ajp.AjpProtocol");
             } else if (protocol != null) {
@@ -722,7 +654,7 @@ public class Connector
             setProperty("proxyName", proxyName);
         } else {
             this.proxyName = null;
-            removeProperty("proxyName");
+            setProperty("proxyName", null);
         }
 
     }
@@ -994,7 +926,7 @@ public class Connector
             throws MalformedObjectNameException {
         String encodedAddr = null;
         if (getProperty("address") != null) {
-            encodedAddr = URLEncoder.encode(getProperty("address").toString());
+            encodedAddr = ObjectName.quote(getProperty("address").toString());
         }
         String addSuffix = (getProperty("address") == null) ? "" : ",address="
                 + encodedAddr;
