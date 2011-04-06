@@ -28,11 +28,13 @@ import javax.servlet.jsp.tagext.FunctionInfo;
 import javax.servlet.jsp.tagext.TagFileInfo;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
-import org.apache.jasper.xmlparser.ParserUtils;
-import org.apache.jasper.xmlparser.TreeNode;
 
 /**
  * Class responsible for generating an implicit tag library containing tag
@@ -113,43 +115,46 @@ class ImplicitTagLibraryInfo extends TagLibraryInfo {
                             tagName.lastIndexOf(suffix));
                     tagFileMap.put(tagName, path);
                 } else if (path.endsWith(IMPLICIT_TLD)) {
-                    InputStream in = null;
+                    InputStream is = null;
                     try {
-                        in = ctxt.getResourceAsStream(path);
-                        if (in != null) {
+                        is = ctxt.getResourceAsStream(path);
+                        if (is != null) {
                             
                             // Add implicit TLD to dependency list
                             if (pi != null) {
                                 pi.addDependant(path);
                             }
                             
-                            ParserUtils pu = new ParserUtils();
-                            TreeNode tld = pu.parseXMLDocument(uri, in);
-
-                            if (tld.findAttribute("version") != null) {
-                                this.jspversion = tld.findAttribute("version");
+                            XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(is);
+                            
+                            reader.require(XMLStreamConstants.START_DOCUMENT, null, null);
+                            while (reader.hasNext() && reader.next() != XMLStreamConstants.START_ELEMENT) {
+                                // Skip until first element
+                            }
+                            
+                            final int count = reader.getAttributeCount();
+                            for (int i = 0; i < count; i ++) {
+                                if ("version".equals(reader.getAttributeLocalName(i))) {
+                                    this.jspversion = reader.getAttributeValue(i);
+                                }
                             }
 
-                            // Process each child element of our <taglib> element
-                            Iterator list = tld.findChildren();
-
-                            while (list.hasNext()) {
-                                TreeNode element = (TreeNode) list.next();
-                                String tname = element.getName();
-
-                                if ("tlibversion".equals(tname) // JSP 1.1
-                                        || "tlib-version".equals(tname)) { // JSP 1.2
-                                    this.tlibversion = element.getBody();
-                                } else if ("jspversion".equals(tname)
-                                        || "jsp-version".equals(tname)) {
-                                    this.jspversion = element.getBody();
-                                } else if ("shortname".equals(tname) || "short-name".equals(tname)) {
-                                    // Ignore
+                            while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+                                String elementName = reader.getLocalName();
+                                if ("tlibversion".equals(elementName) // JSP 1.1
+                                        || "tlib-version".equals(elementName)) { // JSP 1.2
+                                    this.tlibversion = reader.getElementText().trim();
+                                } else if ("jspversion".equals(elementName)
+                                        || "jsp-version".equals(elementName)) {
+                                    this.jspversion = reader.getElementText().trim();
+                                } else if ("shortname".equals(elementName) || "short-name".equals(elementName)) {
+                                    reader.getElementText();
                                 } else {
                                     // All other elements are invalid
                                     err.jspError("jsp.error.invalid.implicit", path);
                                 }
                             }
+
                             try {
                                 double version = Double.parseDouble(this.jspversion);
                                 if (version < 2.0) {
@@ -159,10 +164,12 @@ class ImplicitTagLibraryInfo extends TagLibraryInfo {
                                 err.jspError("jsp.error.invalid.implicit.version", path);
                             }
                         }
+                    } catch (XMLStreamException e) {
+                        err.jspError("jsp.error.invalid.implicit", path, e);
                     } finally {
-                        if (in != null) {
+                        if (is != null) {
                             try {
-                                in.close();
+                                is.close();
                             } catch (Throwable t) {
                             }
                         }
