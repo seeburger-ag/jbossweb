@@ -94,7 +94,7 @@ public class Constants {
     /**
      * Default tag handler pool size.
      */
-    public static final int MAX_POOL_SIZE = Integer.parseInt(System.getProperty("org.apache.jasper.Constants.MAX_POOL_SIZE", "16"));
+    public static final int MAX_POOL_SIZE = Integer.parseInt(System.getProperty("org.apache.jasper.Constants.MAX_POOL_SIZE", "4"));
 
     /**
      * The query parameter that causes the JSP engine to just
@@ -143,7 +143,7 @@ public class Constants {
         (System.getSecurityManager() != null);
 
     public static final boolean USE_INSTANCE_MANAGER_FOR_TAGS =
-        Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.USE_INSTANCE_MANAGER_FOR_TAGS", "false")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.USE_INSTANCE_MANAGER_FOR_TAGS", "true")).booleanValue();
 
     public static final boolean INJECT_TAGS =
         Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.INJECT_TAGS", "false")).booleanValue();

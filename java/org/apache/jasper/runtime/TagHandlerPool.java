@@ -37,7 +37,7 @@ public class TagHandlerPool {
     public static final String OPTION_TAGPOOL="tagpoolClassName";
     public static final String OPTION_MAXSIZE="tagpoolMaxSize";
 
-    private Logger log = Logger.getLogger(TagHandlerPool.class);
+    protected Logger log = Logger.getLogger(TagHandlerPool.class);
     
     // index of next available tag handler
     private int current;
@@ -52,11 +52,10 @@ public class TagHandlerPool {
                 Class c=Class.forName( tpClassName );
                 result=(TagHandlerPool)c.newInstance();
             } catch (Exception e) {
-                e.printStackTrace();
-                result=null;
+                result = null;
             }
         }
-        if( result==null ) result=new TagHandlerPool();
+        if( result==null ) result=new PerThreadTagHandlerPool();
         result.init(config);
 
         return result;
@@ -151,14 +150,6 @@ public class TagHandlerPool {
         }
         // There is no need for other threads to wait for us to release
         handler.release();
-        if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-            try {
-                instanceManager.destroyInstance(handler);
-            } catch (Exception e) {
-                log.warn("Error processing preDestroy on tag instance of "
-                        + handler.getClass().getName(), e);
-            }
-        }
     }
 
     /**
