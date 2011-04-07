@@ -55,6 +55,7 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
     }
 
     protected void init(ServletConfig config) {
+        instanceManager = InstanceManagerFactory.getInstanceManager(config);
         maxSize = Constants.MAX_POOL_SIZE;
         String maxSizeS = getOption(config, OPTION_MAXSIZE, null);
         if (maxSizeS != null) {

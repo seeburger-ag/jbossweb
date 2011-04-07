@@ -494,10 +494,6 @@
 		<property name="maven.repository.id" value="jboss-releases-repository"/>
 
 		<!-- Linux/Unix execs -->
-		<exec dir="." executable="/bin/sh" os="Linux">
-			<arg value="-c" />
-			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
-		</exec>
         <exec dir="." executable="/bin/sh" os="Linux">
             <arg value="-c" />
             <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jbossweb -Dversion=${version} -Dclassifier=sources"/>
@@ -508,10 +504,6 @@
 		</exec>
 
 		<!-- Windows exec -->
-		<exec dir="." executable="cmd" os="Windows NT">
-			<arg value="/c" />
-			<arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
-		</exec>
         <exec dir="." executable="cmd" os="Windows NT">
             <arg value="/c" />
             <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jbossweb -Dversion=${version} -Dclassifier=sources"/>
@@ -522,5 +514,32 @@
 		</exec>
 
 	</target>
+
+    <target name="maven-jdt" description="Upload to Maven repository; if this looks like a hack, it's because it's one">
+
+        <filter token="VERSION" value="${version}"/>
+        <copy todir="${tomcat.jars}" filtering="true">
+            <fileset dir="res">
+                <include name="*-pom.xml"/>
+            </fileset>
+        </copy>
+
+        <!-- Maven repository configuration -->
+        <property name="maven.repository.url" value="https://repository.jboss.org/nexus/service/local/staging/deploy/maven2"/>
+        <property name="maven.repository.id" value="jboss-releases-repository"/>
+
+        <!-- Linux/Unix execs -->
+        <exec dir="." executable="/bin/sh" os="Linux">
+            <arg value="-c" />
+            <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
+        </exec>
+
+        <!-- Windows exec -->
+        <exec dir="." executable="cmd" os="Windows NT">
+            <arg value="/c" />
+            <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
+        </exec>
+
+    </target>
 
 </project>
