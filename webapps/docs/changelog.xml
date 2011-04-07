@@ -16,6 +16,27 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.Beta9 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        Improve connector API and make the native listener in charge of the default protocol
+        handler selection. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        Rewrite the remnants of DOM based parsing using STAX. JSPX files still use SAX. (remm)
+      </fix>
+      <fix>
+        Fix per thread tagpool to use the instance manager, and default to the per thread pool. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.Beta8 (remm)">
   <subsection name="Coyote">
     <changelog>
