@@ -289,8 +289,8 @@ public class FormAuthenticator
         if (session == null)
             session = request.getSessionInternal(false);
         if (session == null) {
-            if (containerLog.isDebugEnabled())
-                containerLog.debug
+            if (getContainer().getLogger().isDebugEnabled())
+                getContainer().getLogger().debug
                     ("User took so long to log on the session expired");
             if (landingPage == null) {
                 response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT,
