@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.Beta11 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        Fix authenticator NPE due to uninitialized containerLog field when the modeler is disabled. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.Beta10 (remm)">
   <subsection name="Jasper">
     <changelog>
