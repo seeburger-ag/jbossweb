@@ -64,6 +64,12 @@ public interface Session {
     public static final String SESSION_PASSIVATED_EVENT = "passivateSession";
 
 
+    /**
+     * The SessionEvent event type when a session is created.
+     */
+    public static final String SESSION_ID_CHANGED_EVENT = "changeIdSession";
+
+
     // ------------------------------------------------------------- Properties
 
 
