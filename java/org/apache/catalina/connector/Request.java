@@ -160,6 +160,10 @@ public class Request
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.LOCAL_RANDOM", (org.apache.tomcat.util.Constants.LOW_MEMORY) ? "false" : "true")).booleanValue();
 
 
+    protected static final boolean SEED_WITH_GLOBAL_RANDOM = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SEED_WITH_GLOBAL_RANDOM", "true")).booleanValue();
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -635,7 +639,13 @@ public class Request
     public void setConnector(Connector connector) {
         this.connector = connector;
         if (LOCAL_RANDOM) {
-            random = new SecureRandom(connector.getService().getRandom().generateSeed(16));
+            if (SEED_WITH_GLOBAL_RANDOM) {
+                byte[] seed = new byte[16];
+                connector.getService().getRandom().nextBytes(seed);
+                random = new SecureRandom(seed);
+            } else {
+                random = new SecureRandom(connector.getService().getRandom().generateSeed(16));
+            }
         } else {
             random = connector.getService().getRandom();
         }

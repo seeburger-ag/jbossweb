@@ -22,6 +22,9 @@
       <fix>
         Add a new session id changed event to SessionListener, the Servlet API events are not appropriate. (remm)
       </fix>
+      <fix>
+        Default to a cheaper seed method for request randoms. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
