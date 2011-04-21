@@ -95,6 +95,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public void setAdapter(Adapter adapter) { this.adapter = adapter; }
     public Adapter getAdapter() { return adapter; }
 
+    private boolean canDestroy = false;
 
     /** Start the protocol
      */
@@ -149,6 +150,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             log.error(sm.getString("http11protocol.endpoint.pauseerror"), ex);
             throw ex;
         }
+        canDestroy = false;
         // Wait for a while until all the processors are idle
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
@@ -166,6 +168,9 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     done = false;
                     break;
                 }
+            }
+            if (done) {
+                canDestroy = true;
             }
         }
         if(log.isInfoEnabled())
@@ -186,7 +191,22 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public void destroy() throws Exception {
         if(log.isInfoEnabled())
             log.info(sm.getString("http11protocol.stop", getName()));
-        endpoint.destroy();
+        if (canDestroy) {
+            endpoint.destroy();
+        } else {
+            log.warn(sm.getString("http11protocol.cannotDestroy", getName()));
+            try {
+                RequestInfo[] states = cHandler.global.getRequestProcessors();
+                for (int i = 0; i < states.length; i++) {
+                    if (states[i].getStage() == org.apache.coyote.Constants.STAGE_SERVICE) {
+                        // FIXME: Log RequestInfo content
+                    }
+                }
+            } catch (Exception ex) {
+                log.error(sm.getString("http11protocol.cannotDestroy", getName()), ex);
+                throw ex;
+            }
+        }
         if( tpOname!=null )
             Registry.getRegistry(null, null).unregisterComponent(tpOname);
         if( rgOname != null )

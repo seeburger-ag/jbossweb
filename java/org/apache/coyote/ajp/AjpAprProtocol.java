@@ -110,6 +110,9 @@ public class AjpAprProtocol
     private AjpConnectionHandler cHandler;
 
 
+    private boolean canDestroy = false;
+
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -201,6 +204,7 @@ public class AjpAprProtocol
             log.error(sm.getString("ajpprotocol.endpoint.pauseerror"), ex);
             throw ex;
         }
+        canDestroy = false;
         // Wait for a while until all the processors are idle
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
@@ -218,6 +222,9 @@ public class AjpAprProtocol
                     done = false;
                     break;
                 }
+            }
+            if (done) {
+                canDestroy = true;
             }
         }
         if (log.isInfoEnabled())
@@ -238,7 +245,22 @@ public class AjpAprProtocol
     public void destroy() throws Exception {
         if (log.isInfoEnabled())
             log.info(sm.getString("ajpprotocol.stop", getName()));
-        endpoint.destroy();
+        if (canDestroy) {
+            endpoint.destroy();
+        } else {
+            log.warn(sm.getString("ajpprotocol.cannotDestroy", getName()));
+            try {
+                RequestInfo[] states = cHandler.global.getRequestProcessors();
+                for (int i = 0; i < states.length; i++) {
+                    if (states[i].getStage() == org.apache.coyote.Constants.STAGE_SERVICE) {
+                        // FIXME: Log RequestInfo content
+                    }
+                }
+            } catch (Exception ex) {
+                log.error(sm.getString("ajpprotocol.cannotDestroy", getName()), ex);
+                throw ex;
+            }
+        }
         if (tpOname!=null)
             Registry.getRegistry(null, null).unregisterComponent(tpOname);
         if (rgOname != null)

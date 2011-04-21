@@ -23,6 +23,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        <jboss-jira>JBWEB-186</jboss-jira>: Using the native connector causes the JVM to crash when shutting down on Windows. (remm)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 2.1.11.GA (remm)">
@@ -1951,7 +1958,7 @@
         <bug>41289</bug>: Create configBase, since it is no longer created elsewhere.
         Submitted by Shiva Kumar H R. (remm)
       </fix>
-     </changelog>
+    </changelog>
   </subsection>
   <subsection name="Coyote">
     <changelog>
