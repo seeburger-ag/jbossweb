@@ -394,11 +394,11 @@ public abstract class ELArithmetic {
         if (isNumber(obj)) {
             return coerce((Number) obj);
         }
-        if (obj instanceof String) {
-            return coerce((String) obj);
-        }
         if (obj == null || "".equals(obj)) {
             return coerce(ZERO);
+        }
+        if (obj instanceof String) {
+            return coerce((String) obj);
         }
 
         if (obj instanceof Character) {

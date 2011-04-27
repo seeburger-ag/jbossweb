@@ -27,6 +27,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <bug>47371</bug>: Fix conversion from empty string to number in EL. (remm)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 7.0.0.Beta11 (remm)">
