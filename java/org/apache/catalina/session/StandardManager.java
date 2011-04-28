@@ -67,6 +67,13 @@ public class StandardManager
     extends ManagerBase
     implements Lifecycle, PropertyChangeListener {
 
+    public static final int MAX_ACTIVE_SESSIONS =
+        Integer.valueOf(System.getProperty("org.apache.catalina.session.StandardManager.MAX_ACTIVE_SESSIONS", 
+                (org.apache.tomcat.util.Constants.LOW_MEMORY) ? "1024" : "-1")).intValue();
+
+    public static final String PATHNAME =
+        System.getProperty("org.apache.catalina.session.StandardManager.PATHNAME");
+
     // ---------------------------------------------------- Security Classes
     private class PrivilegedDoLoad
         implements PrivilegedExceptionAction {
@@ -112,7 +119,7 @@ public class StandardManager
     /**
      * The maximum number of active Sessions allowed, or -1 for no limit.
      */
-    protected int maxActiveSessions = -1;
+    protected int maxActiveSessions = MAX_ACTIVE_SESSIONS;
 
 
     /**
@@ -129,7 +136,7 @@ public class StandardManager
      * temporary working directory provided by our context, available via
      * the <code>javax.servlet.context.tempdir</code> context attribute.
      */
-    protected String pathname = "SESSIONS.ser";
+    protected String pathname = PATHNAME;
 
 
     /**

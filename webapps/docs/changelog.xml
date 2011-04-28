@@ -25,6 +25,10 @@
       <fix>
         Default to a cheaper seed method for request randoms. (remm)
       </fix>
+      <fix>
+        Low memory default for session manager (with low max amount of sessions), and disable
+        session persistence by default. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
