@@ -62,6 +62,7 @@ public final class Library {
                 break;
         }
         if (!loaded) {
+            err += " (LibraryLoader.load()): ";
             try {
                 LibraryLoader.load(System.getProperty("catalina.home"));
                 loaded = true;
