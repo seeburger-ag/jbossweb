@@ -135,10 +135,16 @@ public final class LibraryLoader {
         }
         for (int i = 0; i < count; i++) {
             boolean optional = false;
+            boolean full = false;
             String dlibName = props.getProperty(name + "." + i);
             if (dlibName.startsWith("?")) {
                 dlibName = dlibName.substring(1);
                 optional = true;
+            }
+            if (dlibName.startsWith("*")) {
+                /* On windoze we can have a single library that contains all the stuff we need */
+                dlibName = dlibName.substring(1);
+                full = true;
             }
             String fullPath = metaPath + File.separator + path +
                               File.separator + dlibName;
@@ -159,6 +165,8 @@ public final class LibraryLoader {
                     }
                 }
             }
+            if (full)
+                break;
         }
     }
 
