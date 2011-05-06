@@ -54,6 +54,17 @@ public final class LibraryLoader {
         else if (name.equals("AIX"))
             platform = "aix";
 
+        if (platform.equals("solaris")) {
+            // Add the version...
+            String version = System.getProperty("os.version");
+            if (version.equals("5.10"))
+                platform = "solaris10";
+            else if (version.equals("5.9"))
+                platform = "solaris9";
+            else 
+                platform = "solaris11";
+        }
+
         return platform;
     }
 
@@ -68,8 +79,6 @@ public final class LibraryLoader {
             cpu = "parisc2";
         else if (arch.startsWith("IA64"))
             cpu = "i64";
-        else if (arch.startsWith("sparc"))
-            cpu = "sparcv9";
         else if (arch.equals("x86_64"))
             cpu = "x64";
         else if (arch.equals("amd64"))
