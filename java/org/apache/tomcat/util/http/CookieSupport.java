@@ -79,7 +79,7 @@ public final class CookieSupport {
     static {
         STRICT_SERVLET_COMPLIANCE = Boolean.valueOf(System.getProperty(
                 "org.apache.catalina.STRICT_SERVLET_COMPLIANCE",
-                "false")).booleanValue();
+                "true")).booleanValue();
         
         ALLOW_EQUALS_IN_VALUE = Boolean.valueOf(System.getProperty(
                 "org.apache.tomcat.util.http.ServerCookie.ALLOW_EQUALS_IN_VALUE",
