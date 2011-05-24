@@ -121,15 +121,15 @@ public class TagHandlerPool {
         // Out of sync block - there is no need for other threads to
         // wait for us to construct a tag for this thread.
         try {
-        	if (Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-        		return (Tag) instanceManager.newInstance(handlerClass.getName(), handlerClass.getClassLoader());
-        	} else {
+            if (Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
+                return (Tag) instanceManager.newInstance(handlerClass);
+            } else {
                 Tag instance = (Tag) handlerClass.newInstance();
                 if (Constants.INJECT_TAGS) {
                     instanceManager.newInstance(instance);
                 }
                 return instance;
-        	}
+            }
         } catch (Exception e) {
             throw new JspException(e.getMessage(), e);
         }
@@ -151,14 +151,6 @@ public class TagHandlerPool {
         }
         // There is no need for other threads to wait for us to release
         handler.release();
-        if (Constants.INJECT_TAGS) {
-            try {
-                instanceManager.destroyInstance(handler);
-            } catch (Exception e) {
-                log.warn("Error processing preDestroy on tag instance of "
-                        + handler.getClass().getName(), e);
-            }
-        }
     }
 
     /**

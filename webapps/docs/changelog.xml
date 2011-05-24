@@ -51,6 +51,9 @@
       <fix>
         Close reader in JDT compiler. (markt)
       </fix>
+      <fix>
+        <jira>200</jira>: Improve tags classloading. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
