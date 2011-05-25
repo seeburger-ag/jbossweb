@@ -17,6 +17,13 @@
 <body>
 
 <section name="JBoss Web 3.0.0.CR2 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <jira>187</jira>: Fix NPE calling multipart parsing when a Servlet has no multipart config. (remm)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Jasper">
     <changelog>
       <fix>
