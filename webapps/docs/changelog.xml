@@ -29,6 +29,9 @@
         Low memory default for session manager (with low max amount of sessions), and disable
         session persistence by default. (remm)
       </fix>
+      <fix>
+        SingleThreadModel handling was not properly implemented following a filter chain simplification. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

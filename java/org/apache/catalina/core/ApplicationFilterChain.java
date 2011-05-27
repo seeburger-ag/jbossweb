@@ -160,6 +160,12 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
     private Wrapper wrapper = null;
 
 
+    /**
+     * The servlet to be executed by this chain.
+     */
+    private Servlet servlet = null;
+
+
    /**
      * The string manager for our package.
      */
@@ -296,7 +302,6 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
         }
 
         // We fell off the end of the chain -- call the servlet instance
-        Servlet servlet = wrapper.getServlet();
         pointer++;
         try {
             support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
@@ -470,7 +475,6 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
         }
 
         // We fell off the end of the chain -- call the servlet instance
-        Servlet servlet = wrapper.getServlet();
         pointer++;
         try {
             support.fireInstanceEvent(InstanceEvent.BEFORE_SERVICE_EVENT,
@@ -544,6 +548,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
         filterCount = 0;
         pos = 0;
         pointer = 0;
+        servlet = null;
         wrapper = null;
         requestFacade.releaseFilterChain();
 
@@ -562,7 +567,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
     /**
      * Set the wrapper that will be executed at the end of this chain.
      *
-     * @param servlet The Wrapper to be executed
+     * @param wrapper The Wrapper to be executed
      */
     void setWrapper(Wrapper wrapper) {
 
@@ -572,6 +577,18 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
 
 
     /**
+     * Set the servlet that will be executed at the end of this chain.
+     *
+     * @param servlet The Servlet to be executed
+     */
+    void setServlet(Servlet servlet) {
+
+        this.servlet = servlet;
+
+    }
+
+
+   /**
      * Set the RequestFacade object used for removing the association of the
      * chain from the request facade.
      *
@@ -598,6 +615,10 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
 
     public Wrapper getWrapper() {
         return wrapper;
+    }
+
+    public Servlet getServlet() {
+        return servlet;
     }
 
 
