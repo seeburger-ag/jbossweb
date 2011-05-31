@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.CR2 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        SingleThreadModel handling was not properly implemented following a filter chain simplification. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.CR1 (remm)">
   <subsection name="Catalina">
     <changelog>
@@ -28,9 +38,6 @@
       <fix>
         Low memory default for session manager (with low max amount of sessions), and disable
         session persistence by default. (remm)
-      </fix>
-      <fix>
-        SingleThreadModel handling was not properly implemented following a filter chain simplification. (remm)
       </fix>
     </changelog>
   </subsection>

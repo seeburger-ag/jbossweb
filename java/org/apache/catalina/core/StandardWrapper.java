@@ -944,29 +944,23 @@ public class StandardWrapper
             throw new ServletException
               (sm.getString("standardWrapper.unloading", getName()));
 
-        // If not SingleThreadedModel, return the same instance every time
-        if (!singleThreadModel) {
-
-            // Load and initialize our instance if necessary
-            if (instance == null) {
-                synchronized (this) {
-                    if (instance == null) {
-                        try {
-                            instance = loadServlet();
-                        } catch (ServletException e) {
-                            throw e;
-                        } catch (Throwable e) {
-                            throw new ServletException
-                                (sm.getString("standardWrapper.allocate"), e);
-                        }
+        // Load and initialize our instance if necessary
+        if (instance == null) {
+            synchronized (this) {
+                if (instance == null) {
+                    try {
+                        instance = loadServlet();
+                    } catch (ServletException e) {
+                        throw e;
+                    } catch (Throwable e) {
+                        throw new ServletException(sm.getString("standardWrapper.allocate"), e);
                     }
                 }
             }
+        }
 
-            if (!singleThreadModel) {
-                return (instance);
-            }
-
+        if (!singleThreadModel) {
+            return (instance);
         }
 
         synchronized (instancePool) {

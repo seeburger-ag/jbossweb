@@ -92,49 +92,50 @@ public class JasperLoader extends URLClassLoader {
      *                                     
      * @exception ClassNotFoundException if the class was not found
      */                                    
-    public Class loadClass(final String name, boolean resolve)
-        throws ClassNotFoundException {
+    public Class<?> loadClass(final String name, boolean resolve)
+            throws ClassNotFoundException {
 
-        Class clazz = null;                
-                                           
+        Class<?> clazz = null;
+
         // (0) Check our previously loaded class cache
-        clazz = findLoadedClass(name);     
-        if (clazz != null) {               
-            if (resolve)                   
-                resolveClass(clazz);       
-            return (clazz);        
-        }                          
-                          
-        // (.5) Permission to access this class when using a SecurityManager
-        if (securityManager != null) {     
-            int dot = name.lastIndexOf('.');
-            if (dot >= 0) {                
-                try {        
-                    // Do not call the security manager since by default, we grant that package.
-                    if (!"org.apache.jasper.runtime".equalsIgnoreCase(name.substring(0,dot))){
-                        securityManager.checkPackageAccess(name.substring(0,dot));
-                    }
-                } catch (SecurityException se) {
-                    String error = "Security Violation, attempt to use " +
-                        "Restricted Class: " + name;
-                    se.printStackTrace();
-                    throw new ClassNotFoundException(error);
-                }                          
-            }                              
+        clazz = findLoadedClass(name);
+        if (clazz != null) {
+            if (resolve)
+                resolveClass(clazz);
+            return (clazz);
         }
 
-	if( !name.startsWith(JSP_PACKAGE_PREFIX) ) {
+        // (.5) Permission to access this class when using a SecurityManager
+        if (securityManager != null) {
+            int dot = name.lastIndexOf('.');
+            if (dot >= 0) {
+                try {
+                    // Do not call the security manager since by default, we
+                    // grant that package.
+                    if (!"org.apache.jasper.runtime".equalsIgnoreCase(name
+                            .substring(0, dot))) {
+                        securityManager.checkPackageAccess(name.substring(0,
+                                dot));
+                    }
+                } catch (SecurityException se) {
+                    String error = "Security Violation, attempt to use "
+                            + "Restricted Class: " + name;
+                    throw new ClassNotFoundException(error, se);
+                }
+            }
+        }
+
+        if (!name.startsWith(JSP_PACKAGE_PREFIX)) {
             // Class is not in org.apache.jsp, therefore, have our
             // parent load it
-            clazz = parent.loadClass(name);            
-	    if( resolve )
-		resolveClass(clazz);
-	    return clazz;
-	}
+            clazz = parent.loadClass(name);
+            if (resolve)
+                resolveClass(clazz);
+            return clazz;
+        }
 
-	return findClass(name);
+        return findClass(name);
     }
-
     
     /**
      * Delegate to parent
