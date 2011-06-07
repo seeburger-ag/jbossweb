@@ -248,6 +248,7 @@ public class OutputBuffer extends Writer
         outputCharChunk.setChars(null, 0, 0);
         closed = false;
         suspended = false;
+        doFlush = false;
         
         if (conv!= null) {
             conv.recycle();

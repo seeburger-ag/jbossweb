@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.CR3 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <bug>51324</bug>: Recycle should reset the OutputBuffer doFlush flag. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.CR2 (remm)">
   <subsection name="Catalina">
     <changelog>
