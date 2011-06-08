@@ -1341,8 +1341,8 @@ public class Request
         }
         
         if (context == null)
-            return;        	     
-        
+            return;
+
         // Notify interested application event listeners
         Object listeners[] = context.getApplicationEventListeners();
         if ((listeners == null) || (listeners.length == 0))
@@ -1414,8 +1414,8 @@ public class Request
         }
         
         if (context == null)
-            return; 
-        
+            return;
+
         // Notify interested application event listeners
         Object listeners[] = context.getApplicationEventListeners();
         if ((listeners == null) || (listeners.length == 0))
