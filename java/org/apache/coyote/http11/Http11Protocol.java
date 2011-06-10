@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.net.ssl.SSLContext;
 
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
@@ -544,6 +545,14 @@ public class Http11Protocol
 
     public void setKeyAlias(String keyAlias) {
         setAttribute("keyAlias", keyAlias);
+    }
+
+    public SSLContext getSSLContext() {
+        return (SSLContext) getAttribute("SSLContext");
+    }
+
+    public void setSSLContext(SSLContext sslContext) {
+        setAttribute("SSLContext", sslContext);
     }
 
     // -----------------------------------  Http11ConnectionHandler Inner Class

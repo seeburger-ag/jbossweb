@@ -446,13 +446,15 @@ public class JSSESocketFactory
             }
 
             // Create and init SSLContext
-            SSLContext context = SSLContext.getInstance(protocol); 
-            context.init(getKeyManagers(keystoreType, keystoreProvider,
-                                 algorithm,
-                                 (String) attributes.get("keyAlias")),
-                         getTrustManagers(keystoreType, keystoreProvider,
-                                 trustAlgorithm),
-                         new SecureRandom());
+            SSLContext context = (SSLContext) attributes.get("SSLContext");
+            if (context == null) {
+                context = SSLContext.getInstance(protocol); 
+                context.init(
+                        getKeyManagers(keystoreType, keystoreProvider,
+                                algorithm, (String) attributes.get("keyAlias")),
+                        getTrustManagers(keystoreType, keystoreProvider,
+                                trustAlgorithm), new SecureRandom());
+            }
 
             // Configure SSL session cache
             int sessionCacheSize;
