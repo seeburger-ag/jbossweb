@@ -22,6 +22,9 @@
       <fix>
         <bug>51324</bug>: Recycle should reset the OutputBuffer doFlush flag. (remm)
       </fix>
+      <fix>
+        <bug>51348</bug>: WebDAV lock processing NPE fix. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
