@@ -347,6 +347,18 @@ public class Request
 
 
     /**
+     * Application input stream.
+     */
+    protected ServletInputStream applicationInputStream = null;
+
+
+    /**
+     * Application reader.
+     */
+    protected BufferedReader applicationReader = null;
+
+
+    /**
      * User principal.
      */
     protected Principal userPrincipal = null;
@@ -525,6 +537,8 @@ public class Request
         inputBuffer.recycle();
         usingInputStream = false;
         usingReader = false;
+        applicationInputStream = null;
+        applicationReader = null;
         userPrincipal = null;
         subject = null;
         sessionParsed = false;
@@ -853,16 +867,6 @@ public class Request
         }
         return inputStream;
     }
-
-    /**
-     * Set the input stream associated with this Request.
-     *
-     * @param stream The new input stream
-     */
-    public void setStream(InputStream stream) {
-        // Ignore
-    }
-
 
     /**
      * URI byte to char converter (not recycled).
@@ -1215,12 +1219,20 @@ public class Request
             throw new IllegalStateException
                 (sm.getString("coyoteRequest.getInputStream.ise"));
 
+        if (applicationInputStream != null) {
+            return applicationInputStream;
+        }
         usingInputStream = true;
         if (inputStream == null) {
             inputStream = new CoyoteInputStream(inputBuffer);
         }
         return inputStream;
 
+    }
+
+
+    public void setInputStream(ServletInputStream inputStream) {
+        applicationInputStream = inputStream;
     }
 
 
@@ -1362,6 +1374,9 @@ public class Request
             throw new IllegalStateException
                 (sm.getString("coyoteRequest.getReader.ise"));
 
+        if (applicationReader != null) {
+            return applicationReader;
+        }
         usingReader = true;
         inputBuffer.checkConverter();
         if (reader == null) {
@@ -1369,6 +1384,16 @@ public class Request
         }
         return reader;
 
+    }
+
+    
+    /**
+     * Replaces the reader with an application provided one.
+     * 
+     * @param reader
+     */
+    public void setReader(BufferedReader reader) {
+        applicationReader = reader;
     }
 
 

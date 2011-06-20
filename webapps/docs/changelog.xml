@@ -25,6 +25,10 @@
       <fix>
         <bug>51348</bug>: WebDAV lock processing NPE fix. (markt)
       </fix>
+      <update>
+        Allow valves to replace the IS/reader and OS/writer that gets returned to the
+        applications. (remm)
+      </update>
     </changelog>
   </subsection>
 </section>

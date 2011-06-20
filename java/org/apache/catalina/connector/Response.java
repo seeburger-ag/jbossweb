@@ -218,6 +218,18 @@ public class Response
 
 
     /**
+     * Application output stream.
+     */
+    protected ServletOutputStream applicationOutputStream = null;
+
+
+    /**
+     * Using writer flag.
+     */
+    protected PrintWriter applicationWriter = null;
+
+
+    /**
      * URL encoder.
      */
     protected UEncoder urlEncoder = new UEncoder();
@@ -241,6 +253,8 @@ public class Response
         outputBuffer.recycle();
         usingOutputStream = false;
         usingWriter = false;
+        applicationOutputStream = null;
+        applicationWriter = null;
         appCommitted = false;
         included = false;
         error = false;
@@ -389,16 +403,6 @@ public class Response
             outputStream = new CoyoteOutputStream(outputBuffer);
         }
         return outputStream;
-    }
-
-
-    /**
-     * Set the output stream associated with this Response.
-     *
-     * @param stream The new output stream
-     */
-    public void setStream(OutputStream stream) {
-        // This method is evil
     }
 
 
@@ -567,12 +571,21 @@ public class Response
             throw new IllegalStateException
                 (sm.getString("coyoteResponse.getOutputStream.ise"));
 
+        if (applicationOutputStream != null) {
+            return applicationOutputStream;
+        }
+        
         usingOutputStream = true;
         if (outputStream == null) {
             outputStream = new CoyoteOutputStream(outputBuffer);
         }
         return outputStream;
 
+    }
+
+    
+    public void setOutputStream(ServletOutputStream outputStream) {
+        applicationOutputStream = outputStream;
     }
 
 
@@ -598,6 +611,10 @@ public class Response
             throw new IllegalStateException
                 (sm.getString("coyoteResponse.getWriter.ise"));
 
+        if (applicationWriter != null) {
+            return applicationWriter;
+        }
+
         if (Globals.STRICT_SERVLET_COMPLIANCE) {
             /*
              * If the response's character encoding has not been specified as
@@ -621,6 +638,11 @@ public class Response
         }
         return writer;
 
+    }
+
+
+    public void setWriter(PrintWriter writer) {
+        applicationWriter = writer;
     }
 
 
