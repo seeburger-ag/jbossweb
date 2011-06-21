@@ -133,7 +133,12 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
             if (ptd.handlers != null) {
                 for (int i=ptd.current; i>=0; i--) {
                     if (ptd.handlers[i] != null) {
-                        ptd.handlers[i].release();
+                        try {
+                            ptd.handlers[i].release();
+                        } catch (Exception e) {
+                            log.warn("Error processing release on tag instance of "
+                                    + ptd.handlers[i].getClass().getName(), e);
+                        }
                         if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
                             try {
                                 instanceManager.destroyInstance(ptd.handlers[i]);
@@ -145,7 +150,10 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
                     }
                 }
             }
+            ptd.handlers = null;
+            ptd.current = -1;
         }
+        perThreadDataVector.clear();
     }
 }
 
