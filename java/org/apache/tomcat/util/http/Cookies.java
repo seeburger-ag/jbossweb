@@ -51,7 +51,9 @@ public final class Cookies { // extends MultiMap {
      * being quoted.
      */
     public static final boolean ALLOW_EQUALS_IN_VALUE;
-    
+
+    public static final boolean VERSION_SWITCH =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "false")).booleanValue() ? false : Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.ServerCookie.VERSION_SWITCH", "false")).booleanValue();    
     /*
     List of Separator Characters (see isSeparator())
     Excluding the '/' char violates the RFC, but 
@@ -67,7 +69,7 @@ public final class Cookies { // extends MultiMap {
         for (int i = 0; i < 128; i++) {
             separators[i] = false;
         }
-        if (Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.ServerCookie.VERSION_SWITCH", "false")).booleanValue()) {
+        if (VERSION_SWITCH) {
             /* Version 1 separators */
             SEPARATORS = new char[] { '\t', ' ', '\"', '\'', '(', ')', ',',
             ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}' };
