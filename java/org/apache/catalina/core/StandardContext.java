@@ -4212,13 +4212,13 @@ public class StandardContext
      */
     protected void unbindThread(ClassLoader oldContextClassLoader) {
 
+        DirContextURLStreamHandler.unbind();
+
         lifecycle.fireLifecycleEvent(UNBIND_THREAD_EVENT, null);
 
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
 
         oldContextClassLoader = null;
-
-        DirContextURLStreamHandler.unbind();
 
     }
 
