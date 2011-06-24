@@ -16,6 +16,24 @@
 
 <body>
 
+<section name="JBoss Web 7.0.0.CR4 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <jboss-jira>AS7-1098</jboss-jira>: Cleanup URL stream handler init by using 
+        the classloader returned loader.getClassLoader(). (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        Improve per thread tagpool cleanup. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.CR3 (remm)">
   <subsection name="Catalina">
     <changelog>
@@ -29,10 +47,6 @@
         Allow valves to replace the IS/reader and OS/writer that gets returned to the
         applications. (remm)
       </update>
-      <fix>
-        <jboss-jira>AS7-1098</jboss-jira>: Call context classloader unbind with the right
-        classloader. (remm)
-      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

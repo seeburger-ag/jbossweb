@@ -3725,6 +3725,10 @@ public class StandardContext
                 if ((loader != null) && (loader instanceof Lifecycle))
                     ((Lifecycle) loader).start();
 
+                if ((loader != null) && (loader.getClassLoader() != null)) {
+                    DirContextURLStreamHandler.bind(loader.getClassLoader(), getResources());
+                }
+
                 // Unbinding thread
                 unbindThread(oldCCL);
 
@@ -3996,6 +4000,9 @@ public class StandardContext
             if ((logger != null) && (logger instanceof Lifecycle)) {
                 ((Lifecycle) logger).stop();
             }
+            if ((loader != null) && (loader.getClassLoader() != null)) {
+                DirContextURLStreamHandler.unbind(loader.getClassLoader());
+            }
             if ((loader != null) && (loader instanceof Lifecycle)) {
                 ((Lifecycle) loader).stop();
             }
@@ -4200,8 +4207,6 @@ public class StandardContext
 
         lifecycle.fireLifecycleEvent(BIND_THREAD_EVENT, null);
         
-        DirContextURLStreamHandler.bind(getResources());
-
         return oldContextClassLoader;
 
     }
@@ -4211,8 +4216,6 @@ public class StandardContext
      * Unbind thread.
      */
     protected void unbindThread(ClassLoader oldContextClassLoader) {
-
-        DirContextURLStreamHandler.unbind();
 
         lifecycle.fireLifecycleEvent(UNBIND_THREAD_EVENT, null);
 
