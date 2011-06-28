@@ -24,6 +24,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
+import java.util.Locale;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Response;
@@ -497,8 +498,7 @@ public class OutputBuffer extends Writer
             enc = coyoteResponse.getCharacterEncoding();
 
         gotEnc = true;
-        if (enc == null)
-            enc = DEFAULT_ENCODING;
+        enc = (enc == null) ? DEFAULT_ENCODING : enc.toUpperCase(Locale.US);
         conv = (C2BConverter) encoders.get(enc);
         if (conv == null) {
             
