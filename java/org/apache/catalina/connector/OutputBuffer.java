@@ -24,6 +24,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
+import java.util.Locale;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Response;
@@ -555,26 +556,25 @@ public class OutputBuffer extends Writer
             enc = coyoteResponse.getCharacterEncoding();
 
         gotEnc = true;
-        if (enc == null)
+        if (enc == null) {
             enc = DEFAULT_ENCODING;
-        conv = (C2BConverter) encoders.get(enc);
+        } else {
+            enc = enc.toUpperCase(Locale.US);
+        }
+        conv = encoders.get(enc);
         if (conv == null) {
-            
             if (Globals.IS_SECURITY_ENABLED){
-                try{
-                    conv = (C2BConverter)AccessController.doPrivileged(
-                            new PrivilegedExceptionAction(){
-
-                                public Object run() throws IOException{
+                try {
+                    conv = AccessController
+                            .doPrivileged(new PrivilegedExceptionAction<C2BConverter>() {
+                                public C2BConverter run() throws IOException {
                                     return new C2BConverter(enc);
                                 }
-
-                            }
-                    );              
-                }catch(PrivilegedActionException ex){
+                            });
+                } catch (PrivilegedActionException ex) {
                     Exception e = ex.getException();
                     if (e instanceof IOException)
-                        throw (IOException)e; 
+                        throw (IOException) e;
                 }
             } else {
                 conv = new C2BConverter(enc);

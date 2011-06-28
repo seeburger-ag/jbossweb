@@ -511,7 +511,7 @@ public final class ByteChunk implements Cloneable, Serializable {
         String strValue=null;
         try {
             if( enc==null ) enc=DEFAULT_CHARACTER_ENCODING;
-            strValue = new String( buff, start, end-start, enc );
+            strValue = new String( buff, start, end-start, EncodingToCharset.toCharset(enc) );
             /*
              Does not improve the speed too much on most systems,
              it's safer to use the "clasical" new String().

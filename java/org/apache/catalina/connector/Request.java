@@ -111,6 +111,7 @@ import org.apache.catalina.util.StringParser;
 import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.buf.B2CConverter;
 import org.apache.tomcat.util.buf.ByteChunk;
+import org.apache.tomcat.util.buf.EncodingToCharset;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.buf.StringCache;
 import org.apache.tomcat.util.http.Cookies;
@@ -171,6 +172,7 @@ public class Request
         // Ensure that classes are loaded for SM
         new StringCache.ByteEntry();
         new StringCache.CharEntry();
+        new EncodingToCharset();
     }
 
     public Request() {
@@ -1740,9 +1742,7 @@ public class Request
             return;
         
         // Ensure that the specified encoding is valid
-        byte buffer[] = new byte[1];
-        buffer[0] = (byte) 'a';
-        String dummy = new String(buffer, enc);
+        EncodingToCharset.toCharset(enc);
 
         // Save the validated encoding
         coyoteRequest.setCharacterEncoding(enc);

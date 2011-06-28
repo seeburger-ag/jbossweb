@@ -23,6 +23,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
+import java.util.Locale;
 
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.StringManager;
@@ -556,25 +557,25 @@ public class InputBuffer extends Reader
             enc = coyoteRequest.getCharacterEncoding();
 
         gotEnc = true;
-        if (enc == null)
+        if (enc == null) {
             enc = DEFAULT_ENCODING;
+        } else {
+            enc = enc.toUpperCase(Locale.US);
+        }
         conv = encoders.get(enc);
         if (conv == null) {
-            if (SecurityUtil.isPackageProtectionEnabled()){
-                try{
-                    conv = (B2CConverter)AccessController.doPrivileged(
-                            new PrivilegedExceptionAction(){
-
-                                public Object run() throws IOException{
+            if (SecurityUtil.isPackageProtectionEnabled()) {
+                try {
+                    conv = (B2CConverter) AccessController
+                            .doPrivileged(new PrivilegedExceptionAction<B2CConverter>() {
+                                public B2CConverter run() throws IOException {
                                     return new B2CConverter(enc);
                                 }
-
-                            }
-                    );              
-                }catch(PrivilegedActionException ex){
+                            });
+                } catch (PrivilegedActionException ex) {
                     Exception e = ex.getException();
                     if (e instanceof IOException)
-                        throw (IOException)e; 
+                        throw (IOException) e;
                 }
             } else {
                 conv = new B2CConverter(enc);
