@@ -557,11 +557,7 @@ public class InputBuffer extends Reader
             enc = coyoteRequest.getCharacterEncoding();
 
         gotEnc = true;
-        if (enc == null) {
-            enc = DEFAULT_ENCODING;
-        } else {
-            enc = enc.toUpperCase(Locale.US);
-        }
+        enc = (enc == null) ? DEFAULT_ENCODING : enc.toUpperCase(Locale.US);
         conv = encoders.get(enc);
         if (conv == null) {
             if (SecurityUtil.isPackageProtectionEnabled()) {
