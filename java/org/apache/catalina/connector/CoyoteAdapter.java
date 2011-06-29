@@ -523,6 +523,7 @@ public class CoyoteAdapter
         }
         connector.getService().getMapper().map(serverName, decodedURI, 
                                   request.getMappingData());
+        log.error("Merde: " + request.getMappingData().context + " : " + request.getMappingData().host + " : " + request.getMappingData());
         request.setContext((Context) request.getMappingData().context);
         request.setWrapper((Wrapper) request.getMappingData().wrapper);
 

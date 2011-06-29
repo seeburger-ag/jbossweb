@@ -10,6 +10,7 @@
     <author email="craigmcc@apache.org">Craig R. McClanahan</author>
     <author email="remm@apache.org">Remy Maucherat</author>
     <author email="yoavs@apache.org">Yoav Shapira</author>
+    <author email="jfclere@apache.org">Jean-Frederic Clere</author>
     <title>Documentation Index</title>
   </properties>
 
@@ -24,6 +25,8 @@ JBoss Web implements the Servlet 3.0 and JavaServer Pages 2.2 specifications fro
 <a href="http://www.jcp.org">Java Community Process</a>, and includes many
 additional features that make it a useful platform for developing and deploying
 web applications and web services.</p>
+
+<p><strong>JBoss Web 7.0.x</strong> is a subsystem of AS7, there isn't yet standalone version of it.</p>
 
 <p>Select one of the links from the navigation menu (to the left) to drill
 down to the more detailed documentation that is available.  Each available
@@ -40,8 +43,6 @@ JBoss Web, and using many of its features.</p>
 <ol>
 <li><a href="introduction.html"><strong>Introduction</strong></a> - A
     brief, high level, overview of JBoss Web.</li>
-<li><a href="setup.html"><strong>Setup</strong></a> - How to install and run
-    JBoss Web on a variety of platforms.</li>
 <li><a href="sysprops.html"><strong>System Properties</strong></a> - System
     properties used for JBoss Web configuration.</li>
 <li><a href="appdev/index.html"><strong>First web application</strong></a>

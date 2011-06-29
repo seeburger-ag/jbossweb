@@ -52,31 +52,53 @@
         <p>Name of the Virtual Host</p>
       </attribute>
 
-      <attribute name="alias" required="false">
-        <p>List of alias supported by the Virtual Host</p>
+      <attribute name="autoDeploy" required="false">
+        <p>This flag value indicates if new web applications, dropped in to
+        the <code>appBase</code> directory while JBoss Web is running, should
+        be automatically deployed.  The flag's value defaults to true.  See
+        <a href="#Automatic Application Deployment">Automatic Application
+        Deployment</a> for more information.</p>
       </attribute>
 
-      <attribute name="access-log" required="false">
-        <p>Element describing how the access log information should be logged.</p>
+      <attribute name="backgroundProcessorDelay" required="false">
+        <p>This value represents the delay in seconds between the 
+        invocation of the backgroundProcess method on this host and 
+        its child containers, including all contexts. 
+        Child containers will not be invoked if their delay value is not 
+        negative (which would mean they are using their own processing 
+        thread). Setting this to a positive value will cause 
+        a thread to be spawn. After waiting the specified amount of time, 
+        the thread will invoke the backgroundProcess method on this host 
+        and all its child containers. A host will use background processing to
+        perform live web application deployment related tasks. If not 
+        specified, the default value for this attribute is -1, which means 
+        the host will rely on the background processing thread of its parent 
+        engine.</p>
       </attribute>
 
-      <attribute name="rewrite" required="false">
-        <p>Element describing what the rewrite valve should do with requests corresponding to the Virtual Host.</p>
+      <attribute name="className" required="false">
+        <p>Java class name of the implementation to use.  This class must
+        implement the <code>org.apache.catalina.Host</code> interface.
+        If not specified, the standard value (defined below) will be used.</p>
       </attribute>
 
-      <attribute name="enable-welcome-root" required="false">
-        <p>Whether or not the bundled welcome directory is used as the root web context.</p>
+      <attribute name="deployOnStartup" required="false">
+        <p>This flag value indicates if web applications from this host should
+        be automatically deployed by the host configurator.
+        The flag's value defaults to true.  See
+        <a href="#Automatic Application Deployment">Automatic Application
+        Deployment</a> for more information.</p>
       </attribute>
 
-      <attribute name="default-web-module" required="false">
-        <p>Webapp to use as default applicationWhether or not the bundled welcome directory is used as the root web context.
-           If not specified, a default of <code>ROOT.war</code> is used.</p>
+      <attribute name="name" required="true">
+        <p>Network name of this virtual host, as registered in your
+        <em>Domain Name Service</em> server.  One of the Hosts nested within
+        an <a href="engine.html">Engine</a> MUST have a name that matches the
+        <code>defaultHost</code> setting for that Engine.  See
+        <a href="#Host Name Aliases">Host Name Aliases</a> for information
+        on how to assign more than one network name to the same
+        virtual host.</p>
       </attribute>
-
-       <attribute name="missing stuff" required="false">
-         <p>TODO</p>
-       </attribute>
-
 
     </attributes>
 

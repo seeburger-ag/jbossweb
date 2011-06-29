@@ -133,7 +133,7 @@
        </div>
        
        <xsl:comment>FOOTER</xsl:comment>
-       <div class="footer">&#169; 1999-2007, Apache Software Foundation. &#169; 2007-2008 Red Hat Middleware, LLC. All Rights Reserved. </div>
+       <div class="footer">&#169; 1999-2007, Apache Software Foundation. &#169; 2007-2011 Red Hat Middleware, LLC. All Rights Reserved. </div>
        
     </div>
 
