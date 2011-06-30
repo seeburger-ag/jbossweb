@@ -2,7 +2,7 @@
 <!DOCTYPE document [
   <!ENTITY project SYSTEM "project.xml">
 ]>
-<document url="http.html">
+<document url="ssl.html">
 
   &project;
 
@@ -10,7 +10,7 @@
     <author email="craigmcc@apache.org">Craig R. McClanahan</author>
     <author email="yoavs@apache.org">Yoav Shapira</author>
     <author email="jfclere@apache.org">Jean-Frederic Clere</author>
-    <title>The HTTP Connector</title>
+    <title>The HTTPS Connector</title>
   </properties>
 
 <body>
@@ -18,27 +18,14 @@
 
 <section name="Introduction">
 
-  <p>The <strong>HTTP Connector</strong> element represents a
+  <p>The <strong>HTTPS Connector</strong> element represents a
   <strong>Connector</strong> component that supports the HTTP/1.1 protocol.
-  It enables Catalina to function as a stand-alone web server, in addition
-  to its ability to execute servlets and JSP pages.  A particular instance
-  of this component listens for connections on a specific TCP port number
-  on the server.  One or more such <strong>Connectors</strong> can be
-  configured as part of the <a href="subsystem.html">Web subSystem</a>
-  to perform request processing and create the response.</p>
-
-  <p>If you wish to configure the <strong>Connector</strong> that is used
-  for connections to web servers using the AJP protocol (such as the
-  <code>mod_jk 1.2.x</code> connector for Apache 1.3), see
-  <a href="ajp.html">here</a> instead.</p>
-
-  <p>Each incoming request requires
-  a thread for the duration of that request.  If more simultaneous requests
-  are received than can be handled by the currently available request
-  processing threads, additional threads will be created up to the
-  configured maximum (the value of the <code>max-connections</code> attribute).
-  Additional connections will be rejected.</p>
-
+  SSL, or Secure Socket Layer, is a technology which allows web browsers and web servers to
+  communicate over a secured connection.
+  This means that the data being sent is encrypted by one side, transmitted, then decrypted by
+  the other side before processing.
+  This is a two-way process, meaning that both the server AND the browser encrypt all traffic before sending out data.
+  </p>
 </section>
 
 
@@ -46,92 +33,11 @@
 
   <subsection name="Common Attributes">
 
-  <p>All implementations of <strong>Connector</strong>
-  support the following attributes:</p>
+  <p>See the <a href="http.html">http connector documentation</a> for the commun attributs.</p>
 
   <attributes>
  
-    <attribute name="name" required="true">
-      <p>Name of the connector</p>
-    </attribute>
-
-    <attribute name="enable-lookups" required="false">
-      <p>Set to <code>true</code> if you want calls to
-      <code>request.getRemoteHost()</code> to perform DNS lookups in
-      order to return the actual host name of the remote client.  Set
-      to <code>false</code> to skip the DNS lookup and return the IP
-      address in String form instead (thereby improving performance).
-      By default, DNS lookups are enabled.</p>
-    </attribute>
-
-    <attribute name="max-post-size" required="false">
-      <p>The maximum size in bytes of the POST which will be handled by
-      the container FORM URL parameter parsing. The limit can be disabled by
-      setting this attribute to a value less than or equal to 0.
-      If not specified, this attribute is set to 2097152 (2 megabytes).</p>
-    </attribute>
-
-    <attribute name="max-save-post-size" required="false">
-      <p>The maximum size in bytes of the POST which will be saved/buffered by
-      the container during FORM or CLIENT-CERT authentication. For both types
-      of authentication, the POST will be saved/buffered before the user is
-      authenticated. For CLIENT-CERT authentication, the POST is buffered for
-      the duration of the SSL handshake and the buffer emptied when the request
-      is processed. For FORM authentication the POST is saved whilst the user
-      is re-directed to the login form and is retained until the user
-      successfully authenticates or the session associated with the
-      authentication request expires. The limit can be disabled by setting this
-      attribute to -1. Setting the attribute to zero will disable the saving of
-      POST data during authentication and the buffering during SSL handshake. 
-      If not specified, this attribute is set to 4096 (4 kilobytes).</p>
-    </attribute>
-
-    <attribute name="protocol" required="false">
-      <p>
-        Sets the protocol to handle incoming traffic.
-        The default value is <code>HTTP/1.1</code> and configures the 
-        <code>org.apache.coyote.http11.Http11Protocol</code>. This is the blocking Java connector.<br/>
-        If the <code>PATH(Windows)</code> or <code>LD_LIBRARY_PATH(on most unix system)</code>  
-        environment variables contain the Tomcat native library, the APR connector
-        will automatically be configured. Please be advised that the APR connector has different
-        settings for HTTPS than the default Java connector.<br/>
-        Other values for this attribute are, but not limited to:<br/>
-        <code>org.apache.coyote.http11.Http11Protocol</code> - same as HTTP/1.1<br/>
-        <code>org.apache.coyote.http11.Http11NioProtocol</code> - non blocking Java connector, not supported in JBossWeb<br/>
-        <code>org.apache.coyote.http11.Http11AprProtocol</code> - the APR connector.<br/>
-        Take a look at our <a href="#Connector Comparison">Connector Comparison</a> chart.
-        The configuration for both Java connectors are identical, both for http and https. <br/>
-        For more information on the APR connector and APR specific SSL settings please 
-        visit the <a href="../apr.html">APR documentation</a>
-        
-      </p>
-    </attribute>
-
-    <attribute name="proxy-name" required="false">
-      <p>If this <strong>Connector</strong> is being used in a proxy
-      configuration, configure this attribute to specify the server name
-      to be returned for calls to <code>request.getServerName()</code>.
-      See <a href="#Proxy Support">Proxy Support</a> for more
-      information.</p>
-    </attribute>
-
-    <attribute name="proxy-port" required="false">
-      <p>If this <strong>Connector</strong> is being used in a proxy
-      configuration, configure this attribute to specify the server port
-      to be returned for calls to <code>request.getServerPort()</code>.
-      See <a href="#Proxy Support">Proxy Support</a> for more
-      information.</p>
-    </attribute>
-
-    <attribute name="redirect-port" required="false">
-      <p>If this <strong>Connector</strong> is supporting non-SSL
-      requests, and a request is received for which a matching
-      <code>&lt;security-constraint&gt;</code> requires SSL transport,
-      Catalina will automatically redirect the request to the port
-      number specified here.</p>
-    </attribute>
-
-    <attribute name="ssl" required="false">
+    <attribute name="ssl" required="true">
       <p>
       Use this element to enable SSL traffic on a connector.
       To turn on SSL handshake/encryption/decryption on a connector.
@@ -143,7 +49,7 @@
       </p>
     </attribute>
 
-    <attribute name="scheme" required="false">
+    <attribute name="scheme" required="true">
       <p>Set this attribute to the name of the protocol you wish to have
       returned by calls to <code>request.getScheme()</code>.  For
       example, you would set this attribute to "<code>https</code>"
@@ -151,7 +57,7 @@
       </p>
     </attribute>
 
-    <attribute name="secure" required="false">
+    <attribute name="secure" required="true">
       <p>Set this attribute to <code>true</code> if you wish to have
       calls to <code>request.isSecure()</code> to return <code>true</code>
       for requests received by this Connector. You would want this on an
@@ -160,17 +66,6 @@
       The default value is <code>false</code>.</p>
     </attribute>
 
-    <attribute name="enabled" required="false">
-      <p>Set this attribute to <code>false</code> if you don't wan the
-      Connector to be used.
-      The default value is <code>true</code>.</p>
-    </attribute>
-
-    <attribute name="executor" required="false">
-      <p>A reference to the name in an <a href="executor.html">Executor</a> element.
-         If this attribute is enabled, and the named executor exists, the connector will
-         use the executor, and all the other thread attributes will be ignored.</p>
-    </attribute>
   </attributes>
 
   </subsection>
@@ -178,7 +73,7 @@
   <subsection name="Standard Implementation">
 
   <p>
-  HTTP doesn't support more attributes that the ones listed above.</p>
+  HTTPS doesn't support more attributes that the ones listed above.</p>
 
   </subsection>
   
@@ -187,7 +82,7 @@
 
 <section name="Nested Components">
 
-  <p>None at this time.</p>
+  <p><code>ssl</code> is the nested component of the https connector.</p>
 
 </section>
 

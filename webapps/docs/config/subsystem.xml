@@ -42,7 +42,7 @@
       <attribute name="connector" required="false">
         <p>That is the description of the <code>connector</code> element.
         There could be more than one <code>connector</code> per subsystem.
-        See <a href="connector.html">connector</a> for more information.
+        See <a href="http.html">connector</a> for more information.
         </p>
       </attribute>
 
