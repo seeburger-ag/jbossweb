@@ -24,6 +24,10 @@
         when requesting a reader/writer caused by encoding to charset conversion 
         bottleneck. (remm, markt)
       </fix>
+      <fix>
+        Stop considering '/' as a separator in cookies by default (based on the
+        compliance flag being true by default). (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

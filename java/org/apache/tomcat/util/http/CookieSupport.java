@@ -55,8 +55,7 @@ public final class CookieSupport {
 
     /**
      * If set to true, the <code>/</code> character will be treated as a
-     * separator. Default is usually false. If STRICT_SERVLET_COMPLIANCE==true
-     * then default is true. Explicitly setting always takes priority.
+     * separator. Default is false.
      */
     public static final boolean FWD_SLASH_IS_SEPARATOR;
 
@@ -89,6 +88,10 @@ public final class CookieSupport {
                 "org.apache.tomcat.util.http.ServerCookie.ALLOW_HTTP_SEPARATORS_IN_V0",
                 "false")).booleanValue();
         
+        FWD_SLASH_IS_SEPARATOR = Boolean.valueOf(System.getProperty(
+                "org.apache.tomcat.util.http.ServerCookie.FWD_SLASH_IS_SEPARATOR",
+                "false")).booleanValue();
+        
         String alwaysAddExpires = System.getProperty(
         "org.apache.tomcat.util.http.ServerCookie.ALWAYS_ADD_EXPIRES");
         if (alwaysAddExpires == null) {
@@ -96,15 +99,6 @@ public final class CookieSupport {
         } else {
             ALWAYS_ADD_EXPIRES =
                 Boolean.valueOf(alwaysAddExpires).booleanValue();
-        }
-        
-        String  fwdSlashIsSeparator = System.getProperty(
-                "org.apache.tomcat.util.http.ServerCookie.FWD_SLASH_IS_SEPARATOR");
-        if (fwdSlashIsSeparator == null) {
-            FWD_SLASH_IS_SEPARATOR = STRICT_SERVLET_COMPLIANCE;
-        } else {
-            FWD_SLASH_IS_SEPARATOR =
-                Boolean.valueOf(fwdSlashIsSeparator).booleanValue();
         }
         
         /*
