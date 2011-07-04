@@ -7,7 +7,7 @@
   &project;
 
   <properties>
-    <author email="fhanik@apache.org">Filip Hanik</author>
+    <author email="jfclere@gmail.com">Jean-Frederic Clere</author>
     <title>The Executor (thread pool)</title>
   </properties>
 
@@ -22,70 +22,73 @@
      but also other components when those get configured to support executors</p>
 
 
-  <p>The executor has to implement the <code>org.apache.catalina.Executor</code> interface.</p>
+  <p>The <code>executor</code> is defined in the <code>subsystem=threads</code>
+     See <a href="https://docs.jboss.org/author/display/AS7/Admin+Guide">AS7 Admin Guide</a>
+     for more on the threads system.
+  </p>
   
-  <p>The executor is a nested element to the <a href="service.html">Service</a> element.
-     And in order for it to be picked up by the connectors, the Executor element has to appear
-     prior to the Connector element in server.xml</p>
 </section>
 
 
-<section name="Attributes">
+<section name="Example">
 
-  <subsection name="Common Attributes">
+  <p>To demonstrate how a the logic works a <code>thread-pool</code>
+  was added to the <code>subsystem=threads</code> and used in the
+  <code>subsystem=web/connector=http</code>:</p>
 
-  <p>All implementations of <strong>Executor</strong>
-  support the following attributes:</p>
+  <subsection name="subsystem=threads">
+  <p>A <code>thread-pool</code> named "http" has been added it uses a
+     <code>thread-factory</code> that creates threads named "HTTP-number"
+  </p>
 
-  <attributes>
- 
-    <attribute name="className" required="false">
-      <p>The class of the implementation. The implementation has to implement the 
-         <code>org.apache.catalina.Executor</code> interface.
-         This interface ensures that the object can be referenced through its <code>name</code> attribute
-         and that implements Lifecycle, so that it can be started and stopped with the container.
-         The default value for the className is <code>org.apache.catalina.core.StandardThreadExecutor</code></p>
-    </attribute>
+<source>
+[standalone@localhost:9999 /] ./subsystem=threads:read-resource(recursive=true)
+{
+    "outcome" => "success",
+    "result" => {
+        "bounded-queue-thread-pool" => undefined,
+        "queueless-thread-pool" => undefined,
+        "scheduled-thread-pool" => undefined,
+        "thread-factory" => {"http" => {
+            "name" => "http",
+            "priority" => 9,
+            "thread-name-pattern" => "HTTP-%t"
+        }},
+        "unbounded-queue-thread-pool" => {"http" => {
+            "max-threads" => {
+                "count" => big decimal 10,
+                "per-cpu" => big decimal 20
+            },
+            "name" => "http",
+            "thread-factory" => "http"
+        }}
+    }
+}
+</source>
 
-    <attribute name="name" required="true">
-      <p>The name used to reference this pool in other places in server.xml.
-         The name is required and must be unique.</p>
-    </attribute>
-
-  </attributes>
 
   </subsection>
 
-  <subsection name="Standard Implementation">
+  <subsection name="the connector using it">
 
-  <p>
-  The default implementation supports the following attributes:</p>
+  <p>That is just a standard http <code>connector</code> that uses the
+     thread-pool defined above.
+  </p>
 
-  <attributes>
-
-    <attribute name="threadPriority" required="false">
-      <p>(int) The thread priority for threads in the executor, the default is <code>Thread.NORM_PRIORITY</code></p>
-    </attribute>
-    <attribute name="daemon" required="false">
-      <p>(boolean) Whether the threads should be daemon threads or not, the default is <code>true</code></p>
-    </attribute>
-    <attribute name="namePrefix" required="false">
-      <p>(String) The name prefix for each thread created by the executor.
-         The thread name for an individual thread will be <code>namePrefix+threadNumber</code></p>
-    </attribute>
-    <attribute name="maxThreads" required="false">
-      <p>(int) The max number of active threads in this pool, default is <code>200</code></p>
-    </attribute>
-    <attribute name="minSpareThreads" required="false">
-      <p>(int) The minimum number of threads always kept alive, default is <code>25</code></p>
-    </attribute>
-    <attribute name="maxIdleTime" required="false">
-      <p>(int) The number of milliseconds before an idle thread shutsdown, unless the number of active threads are less
-         or equal to minSpareThreads. Default value is <code>60000</code>(1 minute)</p>
-    </attribute>
-  </attributes>
-
-
+<source>
+[standalone@localhost:9999 /] ./subsystem=web/connector=http:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "executor" => "http",
+        "protocol" => "HTTP/1.1",
+        "scheme" => "http",
+        "socket-binding" => "http",
+        "ssl" => undefined,
+        "virtual-server" => undefined
+    }
+}
+</source>
   </subsection>
 </section>
 
