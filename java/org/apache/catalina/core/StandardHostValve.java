@@ -213,6 +213,15 @@ final class StandardHostValve
         // Select the Context to be used for this Request
         Context context = request.getContext();
 
+        // Some regular callback events should be filtered out for Servlet 3 async
+        if (request.getAsyncContext() != null) {
+            Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
+            if (event.getType() == EventType.EVENT && asyncContext.getRunnable() == null 
+                    && asyncContext.getPath() == null) {
+                return;
+            }
+        }
+
         // Bind the context CL to the current thread
         if (context.getLoader() != null) {
             Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
@@ -237,6 +246,7 @@ final class StandardHostValve
                                      instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
                     sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
+                    Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
                     return;
                 }
             }

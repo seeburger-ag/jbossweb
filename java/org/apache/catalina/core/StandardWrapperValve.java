@@ -639,9 +639,6 @@ final class StandardWrapperValve
                 if (!asyncContext.isReady()) {
                     asyncContext.complete();
                 }
-            } else {
-                container.getLogger().warn(sm.getString("standardWrapper.async.invalidContext",
-                        getContainer().getName()));
             }
         }
 
@@ -665,7 +662,6 @@ final class StandardWrapperValve
                            Throwable exception) {
     	request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, exception);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-
     }
 
     public long getProcessingTime() {
