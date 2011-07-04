@@ -99,7 +99,6 @@
         <code>org.apache.coyote.http11.Http11Protocol</code> - same as HTTP/1.1<br/>
         <code>org.apache.coyote.http11.Http11NioProtocol</code> - non blocking Java connector, not supported in JBossWeb<br/>
         <code>org.apache.coyote.http11.Http11AprProtocol</code> - the APR connector.<br/>
-        Take a look at our <a href="#Connector Comparison">Connector Comparison</a> chart.
         The configuration for both Java connectors are identical, both for http and https. <br/>
         For more information on the APR connector and APR specific SSL settings please 
         visit the <a href="../apr.html">APR documentation</a>
@@ -110,17 +109,13 @@
     <attribute name="proxy-name" required="false">
       <p>If this <strong>Connector</strong> is being used in a proxy
       configuration, configure this attribute to specify the server name
-      to be returned for calls to <code>request.getServerName()</code>.
-      See <a href="#Proxy Support">Proxy Support</a> for more
-      information.</p>
+      to be returned for calls to <code>request.getServerName()</code>.</p>
     </attribute>
 
     <attribute name="proxy-port" required="false">
       <p>If this <strong>Connector</strong> is being used in a proxy
       configuration, configure this attribute to specify the server port
-      to be returned for calls to <code>request.getServerPort()</code>.
-      See <a href="#Proxy Support">Proxy Support</a> for more
-      information.</p>
+      to be returned for calls to <code>request.getServerPort()</code>.</p>
     </attribute>
 
     <attribute name="redirect-port" required="false">
@@ -139,7 +134,7 @@
       <code>scheme</code> and the <code>secure</code> attributes as well
       to pass the correct <code>request.getScheme()</code> and 
       <code>request.isSecure()</code> values to the servlets
-      See <a href="#SSL Support">SSL Support</a> for more information.
+      See <a href="ssl.html">SSL Support</a> for more information.
       </p>
     </attribute>
 
@@ -187,7 +182,7 @@
 
 <section name="Nested Components">
 
-  <p>None at this time.</p>
+  <p><code>ssl</code>: SSL configuration See <a href="ssl.html">HTTPS</a></p>
 
 </section>
 
