@@ -794,6 +794,7 @@ public class JIoEndpoint {
                                 }
                             } else {
                                 if (info.resume()) {
+                                    timeouts.remove(info.socket);
                                     if (!processSocket(info.socket, SocketStatus.OPEN_CALLBACK)) {
                                         try { info.socket.close(); } catch (IOException e) { }
                                     }
