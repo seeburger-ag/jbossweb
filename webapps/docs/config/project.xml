@@ -23,7 +23,7 @@
     <menu name="Connectors">
         <item name="HTTP"                  href="http.html"/>
         <item name="AJP"                   href="ajp.html"/>
-        <item name="HPTTPS"                href="ssl.html"/>
+        <item name="HTTPS"                href="ssl.html"/>
         <item name="Native"                href="native.html"/>
     </menu>
 
