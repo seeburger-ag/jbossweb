@@ -15,6 +15,30 @@
   </properties>
 
 <body>
+<section name="JBoss Web 2.1.11.GA (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <jira>148</jira>: Fix possible NPE on request.set/removeAttribute. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        <jboss-jira>JBPAPP-5293</jboss-jira>: ConcurrentModificationException in HandshakeCompletedNotify-Thread. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <jira>185</jira>: Fix cache thread safety issue for EL expression builder.
+        Patch submitted by Takayoshi Kimura. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
 
 <section name="JBoss Web 2.1.10.GA (remm)">
   <subsection name="Coyote">
