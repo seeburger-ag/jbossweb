@@ -1369,6 +1369,9 @@ public class Request
             return;
         }
         
+        if (context == null)
+            return;
+
         // Notify interested application event listeners
         Object listeners[] = context.getApplicationEventListeners();
         if ((listeners == null) || (listeners.length == 0))
@@ -1439,6 +1442,9 @@ public class Request
             coyoteRequest.setAttribute(name, value);
         }
         
+        if (context == null)
+            return;
+
         // Notify interested application event listeners
         Object listeners[] = context.getApplicationEventListeners();
         if ((listeners == null) || (listeners.length == 0))
