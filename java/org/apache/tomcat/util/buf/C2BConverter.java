@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.charset.CodingErrorAction;
 
 /**
  * NIO based character encoder.
@@ -46,8 +47,8 @@ public class C2BConverter {
     public C2BConverter(String charset)
         throws IOException {
         try {
-            encoder = EncodingToCharset.toCharset(charset).newEncoder();
-            encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+            encoder = Charset.forName(charset).newEncoder();
+            encoder = encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }

@@ -36,28 +36,28 @@ public final class FastHttpDateFormat {
     // -------------------------------------------------------------- Variables
 
 
-    private static final int CACHE_SIZE = 
+    protected static final int CACHE_SIZE = 
         Integer.parseInt(System.getProperty("org.apache.tomcat.util.http.FastHttpDateFormat.CACHE_SIZE", "1000"));
 
     
     /**
      * HTTP date format.
      */
-    private static final SimpleDateFormat format = 
+    protected static final SimpleDateFormat format = 
         new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 
 
     /**
      * The set of SimpleDateFormat formats to use in getDateHeader().
      */
-    private static final SimpleDateFormat formats[] = {
+    protected static final SimpleDateFormat formats[] = {
         new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US),
         new SimpleDateFormat("EEEEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US),
         new SimpleDateFormat("EEE MMMM d HH:mm:ss yyyy", Locale.US)
     };
 
 
-    private final static TimeZone gmtZone = TimeZone.getTimeZone("GMT");
+    protected final static TimeZone gmtZone = TimeZone.getTimeZone("GMT");
 
 
     /**
@@ -77,26 +77,26 @@ public final class FastHttpDateFormat {
     /**
      * Instant on which the currentDate object was generated.
      */
-    private static long currentDateGenerated = 0L;
+    protected static long currentDateGenerated = 0L;
 
 
     /**
      * Current formatted date.
      */
-    private static String currentDate = null;
+    protected static String currentDate = null;
 
 
     /**
      * Formatter cache.
      */
-    private static final ConcurrentHashMap<Long, String> formatCache = 
+    protected static final ConcurrentHashMap<Long, String> formatCache = 
         new ConcurrentHashMap<Long, String>(CACHE_SIZE);
 
 
     /**
      * Parser cache.
      */
-    private static final ConcurrentHashMap<String, Long> parseCache = 
+    protected static final ConcurrentHashMap<String, Long> parseCache = 
         new ConcurrentHashMap<String, Long>(CACHE_SIZE);
 
 
@@ -112,8 +112,8 @@ public final class FastHttpDateFormat {
         if ((now - currentDateGenerated) > 1000) {
             synchronized (format) {
                 if ((now - currentDateGenerated) > 1000) {
-                    currentDate = format.format(new Date(now));
                     currentDateGenerated = now;
+                    currentDate = format.format(new Date(now));
                 }
             }
         }

@@ -54,17 +54,6 @@ public final class LibraryLoader {
         else if (name.equals("AIX"))
             platform = "aix";
 
-        if (platform.equals("solaris")) {
-            // Add the version...
-            String version = System.getProperty("os.version");
-            if (version.equals("5.10"))
-                platform = "solaris10";
-            else if (version.equals("5.9"))
-                platform = "solaris9";
-            else 
-                platform = "solaris11";
-        }
-
         return platform;
     }
 
@@ -79,6 +68,8 @@ public final class LibraryLoader {
             cpu = "parisc2";
         else if (arch.startsWith("IA64"))
             cpu = "i64";
+        else if (arch.startsWith("sparc"))
+            cpu = "sparcv9";
         else if (arch.equals("x86_64"))
             cpu = "x64";
         else if (arch.equals("amd64"))
@@ -127,6 +118,10 @@ public final class LibraryLoader {
              */
             metaPath = basePath + "bin" + File.separator +
                        getDefaultMetaPath();
+            meta = new File(metaPath);
+            if (!meta.exists()) {
+                metaPath = basePath + "bin" + File.separator + "native";
+            }
         }
         try {
             InputStream is = LibraryLoader.class.getResourceAsStream
@@ -140,34 +135,30 @@ public final class LibraryLoader {
         }
         for (int i = 0; i < count; i++) {
             boolean optional = false;
-            boolean full = false;
             String dlibName = props.getProperty(name + "." + i);
             if (dlibName.startsWith("?")) {
                 dlibName = dlibName.substring(1);
                 optional = true;
             }
-            if (dlibName.startsWith("*")) {
-                /* On windoze we can have a single library that contains all the stuff we need */
-                dlibName = dlibName.substring(1);
-                full = true;
-            }
-            String fullPath = metaPath + path +
+            String fullPath = metaPath + File.separator + path +
                               File.separator + dlibName;
+            meta = new File(fullPath);
+            if (!meta.exists()) {
+               fullPath = metaPath + File.separator + dlibName; 
+            }
             try {
                 Runtime.getRuntime().load(fullPath);
             }
             catch (Throwable d) {
                 if (!optional) {
-                    java.io.File fd = new java.io.File(fullPath);
-                    if (fd.exists()) {
+                    meta = new File(fullPath);
+                    if (meta.exists()) {
                         throw new UnsatisfiedLinkError(" Error: " + d.getMessage() + " " );
                     } else {
                         throw new UnsatisfiedLinkError(" Can't find: " + fullPath + " ");
                     }
                 }
             }
-            if (full)
-                break;
         }
     }
 

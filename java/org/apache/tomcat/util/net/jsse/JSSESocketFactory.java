@@ -26,9 +26,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
@@ -41,7 +39,6 @@ import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.PKIXBuilderParameters;
 import java.security.cert.X509CertSelector;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Vector;
 
 import javax.net.ssl.CertPathTrustManagerParameters;
@@ -54,7 +51,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSessionContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
@@ -87,7 +83,7 @@ public class JSSESocketFactory
 
     private static StringManager sm =
         StringManager.getManager("org.apache.tomcat.util.net.jsse.res");
-    private static final boolean RFC_5746_SUPPORTED;
+
     // defaults
     static String defaultProtocol = "TLS";
     static boolean defaultClientAuth = false;
@@ -100,28 +96,6 @@ public class JSSESocketFactory
 
     static org.jboss.logging.Logger log =
         org.jboss.logging.Logger.getLogger(JSSESocketFactory.class);
-
-    static {
-        boolean result = false;
-        SSLContext context;
-        try {
-            context = SSLContext.getInstance("TLS");
-            context.init(null, null, new SecureRandom());
-            SSLServerSocketFactory ssf = context.getServerSocketFactory();
-            String ciphers[] = ssf.getSupportedCipherSuites();
-            for (String cipher : ciphers) {
-                if ("TLS_EMPTY_RENEGOTIATION_INFO_SCSV".equals(cipher)) {
-                    result = true;
-                    break;
-                }
-            }
-        } catch (NoSuchAlgorithmException e) {
-            // Assume no RFC 5746 support
-        } catch (KeyManagementException e) {
-            // Assume no RFC 5746 support
-        }
-        RFC_5746_SUPPORTED = result;
-    }
 
     protected boolean initialized;
     protected String clientAuth = "false";
@@ -178,22 +152,38 @@ public class JSSESocketFactory
         SSLSocket asock = null;
         try {
              asock = (SSLSocket)socket.accept();
+             if (!allowUnsafeLegacyRenegotiation) {
+                 asock.addHandshakeCompletedListener(
+                         new DisableSslRenegotiation());
+             }
+             configureClientAuth(asock);
         } catch (SSLException e){
           throw new SocketException("SSL handshake error" + e.toString());
         }
         return asock;
     }
     
-    public void handshake(Socket sock) throws IOException {
-        // We do getSession instead of startHandshake() so we can call this multiple times
-        SSLSession session = ((SSLSocket)sock).getSession();
-        if (session.getCipherSuite().equals("SSL_NULL_WITH_NULL_NULL"))
-            throw new IOException("SSL handshake failed. Ciper suite in SSL Session is SSL_NULL_WITH_NULL_NULL");
+    private static class DisableSslRenegotiation 
+            implements HandshakeCompletedListener {
+        private volatile boolean completed = false;
 
-        if (!allowUnsafeLegacyRenegotiation && !RFC_5746_SUPPORTED) {
-            // Prevent further handshakes by removing all cipher suites
-            ((SSLSocket) sock).setEnabledCipherSuites(new String[0]);
+        public void handshakeCompleted(HandshakeCompletedEvent event) {
+            if (completed) {
+                try {
+                    log.warn("SSL renegotiation is disabled, closing connection");
+                    event.getSession().invalidate();
+                    event.getSocket().close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            completed = true;
         }
+    }
+
+
+    public void handshake(Socket sock) throws IOException {
+        ((SSLSocket)sock).startHandshake();
     }
 
     /*
@@ -317,6 +307,9 @@ public class JSSESocketFactory
         if( truststorePassword == null) {
             truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
         }
+        if( truststorePassword == null ) {
+            truststorePassword = getKeystorePassword();
+        }
         if(log.isDebugEnabled()) {
             log.debug("TrustPass = " + truststorePassword);
         }
@@ -343,7 +336,7 @@ public class JSSESocketFactory
             log.debug("trustProvider = " + truststoreProvider);
         }
 
-        if (truststoreFile != null){
+        if (truststoreFile != null && truststorePassword != null){
             trustStore = getStore(truststoreType, truststoreProvider,
                     truststoreFile, truststorePassword);
         }
@@ -374,11 +367,7 @@ public class JSSESocketFactory
                 istream = new FileInputStream(keyStoreFile);
             }
 
-            char[] storePass = null;
-            if (pass != null) {
-                storePass = pass.toCharArray(); 
-            }
-            ks.load(istream, storePass);
+            ks.load(istream, pass.toCharArray());
         } catch (FileNotFoundException fnfe) {
             log.error(sm.getString("jsse.keystore_load_failed", type, path,
                     fnfe.getMessage()), fnfe);
@@ -446,15 +435,13 @@ public class JSSESocketFactory
             }
 
             // Create and init SSLContext
-            SSLContext context = (SSLContext) attributes.get("SSLContext");
-            if (context == null) {
-                context = SSLContext.getInstance(protocol); 
-                context.init(
-                        getKeyManagers(keystoreType, keystoreProvider,
-                                algorithm, (String) attributes.get("keyAlias")),
-                        getTrustManagers(keystoreType, keystoreProvider,
-                                trustAlgorithm), new SecureRandom());
-            }
+            SSLContext context = SSLContext.getInstance(protocol); 
+            context.init(getKeyManagers(keystoreType, keystoreProvider,
+                                 algorithm,
+                                 (String) attributes.get("keyAlias")),
+                         getTrustManagers(keystoreType, keystoreProvider,
+                                 trustAlgorithm),
+                         new SecureRandom());
 
             // Configure SSL session cache
             int sessionCacheSize;
@@ -523,7 +510,7 @@ public class JSSESocketFactory
         kms = kmf.getKeyManagers();
         if (keyAlias != null) {
             if (JSSESocketFactory.defaultKeystoreType.equals(keystoreType)) {
-                keyAlias = keyAlias.toLowerCase(Locale.ENGLISH);
+                keyAlias = keyAlias.toLowerCase();
             }
             for(int i=0; i<kms.length; i++) {
                 kms[i] = new JSSEKeyManager((X509KeyManager)kms[i], keyAlias);

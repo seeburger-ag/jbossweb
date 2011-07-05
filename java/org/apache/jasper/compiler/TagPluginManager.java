@@ -17,17 +17,13 @@
 
 package org.apache.jasper.compiler;
 
-import java.io.InputStream;
-import java.util.HashMap;
-
+import java.util.*;
+import java.io.*;
 import javax.servlet.ServletContext;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 import org.apache.jasper.JasperException;
+import org.apache.jasper.xmlparser.ParserUtils;
+import org.apache.jasper.xmlparser.TreeNode;
 import org.apache.jasper.compiler.tagplugin.TagPlugin;
 import org.apache.jasper.compiler.tagplugin.TagPluginContext;
 
@@ -42,7 +38,7 @@ public class TagPluginManager {
     private static final String TAG_PLUGINS_ROOT_ELEM = "tag-plugins";
 
     private boolean initialized = false;
-    private HashMap<String, TagPlugin> tagPlugins = null;
+    private HashMap tagPlugins = null;
     private ServletContext ctxt;
     private PageInfo pageInfo;
 
@@ -71,77 +67,54 @@ public class TagPluginManager {
     }
  
     private void init(ErrorDispatcher err) throws JasperException {
-        if (initialized)
-            return;
+	if (initialized)
+	    return;
 
-        InputStream is = ctxt.getResourceAsStream(TAG_PLUGINS_XML);
-        if (is == null)
-            return;
+	InputStream is = ctxt.getResourceAsStream(TAG_PLUGINS_XML);
+	if (is == null)
+	    return;
 
-        XMLStreamReader reader;
-        try {
-            reader = XMLInputFactory.newInstance().createXMLStreamReader(is);
-            reader.require(XMLStreamConstants.START_DOCUMENT, null, null);
+	TreeNode root = (new ParserUtils()).parseXMLDocument(TAG_PLUGINS_XML,
+							     is);
+	if (root == null) {
+	    return;
+	}
 
-            reader.require(XMLStreamConstants.START_DOCUMENT, null, null);
-            while (reader.hasNext() && reader.next() != XMLStreamConstants.START_ELEMENT) {
-                // Skip until first element
-            }
+	if (!TAG_PLUGINS_ROOT_ELEM.equals(root.getName())) {
+	    err.jspError("jsp.error.plugin.wrongRootElement", TAG_PLUGINS_XML,
+			 TAG_PLUGINS_ROOT_ELEM);
+	}
 
-            if (!TAG_PLUGINS_ROOT_ELEM.equals(reader.getLocalName())) {
-                err.jspError("jsp.error.plugin.wrongRootElement", TAG_PLUGINS_XML,
-                        TAG_PLUGINS_ROOT_ELEM);
-            }
+	tagPlugins = new HashMap();
+	Iterator pluginList = root.findChildren("tag-plugin");
+	while (pluginList.hasNext()) {
+	    TreeNode pluginNode = (TreeNode) pluginList.next();
+            TreeNode tagClassNode = pluginNode.findChild("tag-class");
+	    if (tagClassNode == null) {
+		// Error
+		return;
+	    }
+	    String tagClass = tagClassNode.getBody().trim();
+	    TreeNode pluginClassNode = pluginNode.findChild("plugin-class");
+	    if (pluginClassNode == null) {
+		// Error
+		return;
+	    }
 
-            tagPlugins = new HashMap<String, TagPlugin>();
-            while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
-                String elementName = reader.getLocalName();
-                if ("tag-plugin".equals(elementName)) { // JSP 1.2
-                    String tagClassName = null;
-                    String pluginClassName = null;
-                    while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
-                        String childClementName = reader.getLocalName();
-                        if ("tag-class".equals(childClementName)) {
-                            tagClassName = reader.getElementText().trim();
-                        } else if ("plugin-class".equals(childClementName)) {
-                            pluginClassName = reader.getElementText().trim();
-                        } else {
-                            err.jspError("jsp.error.invalid.tagplugin", TAG_PLUGINS_XML);
-                        }
-                    }
-                    if (tagClassName == null || pluginClassName == null) {
-                        err.jspError("jsp.error.invalid.tagplugin", TAG_PLUGINS_XML);
-                    }
-                    TagPlugin tagPlugin = null;
-                    try {
-                        Class<?> pluginClass = Thread.currentThread().getContextClassLoader().loadClass(pluginClassName);
-                        tagPlugin = (TagPlugin) pluginClass.newInstance();
-                    } catch (Exception e) {
-                        throw new JasperException(e);
-                    }
-                    if (tagPlugin == null) {
-                        return;
-                    }
-                    tagPlugins.put(tagClassName, tagPlugin);
-
-                } else {
-                    // All other elements are invalid
-                    err.jspError("jsp.error.invalid.tagplugin", TAG_PLUGINS_XML);
-                }
-            }
-        } catch (XMLStreamException e) {
-            err.jspError("jsp.error.invalid.tagplugin", TAG_PLUGINS_XML, e);
-        } catch (FactoryConfigurationError e) {
-            throw new JasperException(e);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Throwable t) {
-                }
-            }
-        }
-        initialized = true;
+	    String pluginClassStr = pluginClassNode.getBody();
+	    TagPlugin tagPlugin = null;
+	    try {
+		Class pluginClass = Class.forName(pluginClassStr);
+		tagPlugin = (TagPlugin) pluginClass.newInstance();
+	    } catch (Exception e) {
+		throw new JasperException(e);
+	    }
+	    if (tagPlugin == null) {
+		return;
+	    }
+	    tagPlugins.put(tagClass, tagPlugin);
+	}
+	initialized = true;
     }
 
     /**
