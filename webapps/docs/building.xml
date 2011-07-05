@@ -85,11 +85,11 @@ available, which will be used to actually perform the build.
 
 <p>
 Use the following commands:
-<code><br/>
-    cd ${jbossweb.source}<br/>
-    ant download<br/>
-    ant<br/>
-</code>
+<source>
+    cd ${jbossweb.source}
+    ant download
+    ant
+</source>
 </p>
 
 <p>
