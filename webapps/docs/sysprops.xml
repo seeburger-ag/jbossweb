@@ -59,8 +59,8 @@ Closed connection to localhost:9999
   <properties>
 
     <property name="jvmRoute">
-      <p>Provides a default value for the <code>jvmRoute</code> attribute of the
-      <a href="engine.html">Engine</a> element. It does not override the automaticaly
+      <p>Provides a default value for the <code>jvmRoute</code> attribute.
+      It does not override the automaticaly
       generated value used when using ha read with using configuration like <code>standalone-ha.xml</code></p>
       <p>It supports <code>:reload</code>.</p>
     </property>
