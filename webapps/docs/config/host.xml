@@ -100,7 +100,7 @@
     <attributes>
       <attribute name="relative-to" required="false">
         <p>directory location based on the global path configuration in the domain model.
-           If not specified, it defaults to the JBoss Application data directory (jboss.server.data.dir).</p>
+           If not specified, it defaults to the JBoss Application data directory (jboss.server.base.dir).</p>
       </attribute>
 
       <attribute name="path" required="false">

@@ -94,7 +94,7 @@ Use the following commands:
 
 <p>
 NOTE: That build jar files in output/jars, the <code>jbossweb.jar</code>
-have to be copied in <code>${jboss.server.data.dir)/modules/org/jboss/as/web/main</code> to be
+have to be copied in <code>${jboss.server.base.dir)/modules/org/jboss/as/web/main</code> to be
 used in AS7.
 </p>
 
