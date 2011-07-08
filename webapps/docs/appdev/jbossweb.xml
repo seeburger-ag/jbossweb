@@ -34,6 +34,54 @@
 
     <attributes>
 
+      <attribute name="env-entry" required="false">
+        <p>An element <code>env-entry</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="ejb-ref" required="false">
+        <p>An element <code>ejb-ref</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="ejb-local-ref" required="false">
+        <p>An element <code>ejb-local-ref</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="service-ref" required="false">
+        <p>An element <code>service-ref</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="resource-ref" required="false">
+        <p>An element <code>resource-ref</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="resource-env-ref" required="false">
+        <p>An element <code>resource-env-ref</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="message-destination-ref" required="false">
+        <p>An element <code>message-destination-ref</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="persistence-context-ref" required="false">
+        <p>An element <code>persistence-context-ref</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="persistence-unit-ref" required="false">
+        <p>An element <code>persistence-unit-ref</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="post-construct" required="false">
+        <p>An element <code>post-construct</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="pre-destroy" required="false">
+        <p>An element <code>pre-destroy</code> as defined in J2EE</p>
+      </attribute>
+
+      <attribute name="data-source" required="false">
+        <p>An element <code>data-source</code> as defined in J2EE</p>
+      </attribute>
+
       <attribute name="context-root" required="false">
         <p>Root context of the web-app. It defaults to the filename of the deployememt without the .war suffix</p>
       </attribute>
