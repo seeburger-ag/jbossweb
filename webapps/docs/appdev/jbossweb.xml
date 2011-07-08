@@ -121,6 +121,22 @@
         <p>list of <code>condition</code>Elements. See condition below.</p>
       </attribute>
 
+      <attribute name="listener-type" required="true">
+        <p>Tell what kind of listener to add to the Context of the webapp:</p>
+        <ul>
+        <li>CONTAINER: Add a ContainerListener to the Context.
+           <br/><br/></li>
+        <li>LIFECYCLE: Add a LifecycleListener to the Context.
+           <br/><br/></li>
+        <li>SERVLET_INSTANCE: Add a InstanceListener to the Context.
+           <br/><br/></li>
+        <li>SERVLET_CONTAINER: Add a WrapperListener to the Context.
+           <br/><br/></li>
+        <li>SERVLET_LIFECYCLE: Add a WrapperLifecycle to the Context.
+           <br/><br/></li>
+        </ul>
+      </attribute>
+
       <attribute name="module" required="true">
         <p>name of the module containing the listener class.</p>
       </attribute>
@@ -138,7 +154,7 @@
 
   <subsection name="valve">
     <p><code>valve</code> describes a valve of the webapp.
-      Like <code>listener</code> has <code>class-name</code>, <code>module</code> and <code>&lt;param/&gt;</code>
+      Similar to the <code>listener</code> has <code>class-name</code>, <code>module</code> and <code>&lt;param/&gt;</code>
     </p>
   </subsection>
 
