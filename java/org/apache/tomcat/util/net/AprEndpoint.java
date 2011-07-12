@@ -2208,7 +2208,7 @@ public class AprEndpoint {
                                                data.pos, data.end - data.pos, 0);
                     if (nw < 0) {
                         if (!(-nw == Status.EAGAIN)) {
-                            Socket.destroy(data.socket);
+                            Pool.destroy(data.fdpool);
                             data.socket = 0;
                             return false;
                         } else {

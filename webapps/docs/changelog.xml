@@ -16,6 +16,24 @@
 
 <body>
 
+<section name="JBoss Web 7.0.1.Final (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <jira>205</jira>: Filter out some generic callback events which are not
+        relevant for Servlet 3 async. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        Fix handling of sendfile errors when calling add. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.0.Final (remm)">
   <subsection name="Coyote">
     <changelog>
