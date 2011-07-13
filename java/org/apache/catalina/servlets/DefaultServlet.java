@@ -59,6 +59,8 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.connector.RequestFacade;
+import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
@@ -805,7 +807,7 @@ public class DefaultServlet
                     // Silent catch
                 }
                 if (ostream != null) {
-                    if (!checkSendfile(request, response, cacheEntry, contentLength, null))
+                    if (!checkSendfile(request, response, path, cacheEntry, contentLength, null))
                         copy(cacheEntry, renderResult, ostream);
                 } else {
                     copy(cacheEntry, renderResult, writer);
@@ -850,7 +852,7 @@ public class DefaultServlet
                         // Silent catch
                     }
                     if (ostream != null) {
-                        if (!checkSendfile(request, response, cacheEntry, range.end - range.start + 1, range))
+                        if (!checkSendfile(request, response, path, cacheEntry, range.end - range.start + 1, range))
                             copy(cacheEntry, ostream, range);
                     } else {
                         copy(cacheEntry, writer, range);
@@ -1494,24 +1496,21 @@ public class DefaultServlet
      */
     protected boolean checkSendfile(HttpServletRequest request,
                                   HttpServletResponse response,
-                                  CacheEntry entry,
+                                  String path, CacheEntry entry,
                                   long length, Range range) {
         if ((sendfileSize > 0)
             && (entry.resource != null)
             && ((length > sendfileSize) || (entry.resource.getContent() == null))
             && (entry.attributes.getCanonicalPath() != null)
-            && (Boolean.TRUE == request.getAttribute("org.apache.tomcat.sendfile.support"))
             && (request.getClass().getName().equals("org.apache.catalina.connector.RequestFacade"))
-            && (response.getClass().getName().equals("org.apache.catalina.connector.ResponseFacade"))) {
-            request.setAttribute("org.apache.tomcat.sendfile.filename", entry.attributes.getCanonicalPath());
+            && (response.getClass().getName().equals("org.apache.catalina.connector.ResponseFacade"))
+            && ((RequestFacade) request).hasSendfile()) {
+            ResponseFacade responseFacade = (ResponseFacade) response;
             if (range == null) {
-                request.setAttribute("org.apache.tomcat.sendfile.start", new Long(0L));
-                request.setAttribute("org.apache.tomcat.sendfile.end", new Long(length));
+                responseFacade.sendFile(path, entry.attributes.getCanonicalPath(), 0, length);
             } else {
-                request.setAttribute("org.apache.tomcat.sendfile.start", new Long(range.start));
-                request.setAttribute("org.apache.tomcat.sendfile.end", new Long(range.end + 1));
+                responseFacade.sendFile(path, entry.attributes.getCanonicalPath(), range.start, range.end + 1);
             }
-            request.setAttribute("org.apache.tomcat.sendfile.token", this);
             return true;
         } else {
             return false;

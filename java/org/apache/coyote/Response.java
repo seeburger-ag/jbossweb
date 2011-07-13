@@ -127,6 +127,10 @@ public final class Response {
     protected int lastWrite = 1;
     protected boolean flushLeftovers = true;
     
+    protected String sendfilePath = null;
+    protected long sendfileStart = 0;
+    protected long sendfileEnd = 0;
+
     // ------------------------------------------------------------- Properties
 
     public Request getRequest() {
@@ -557,6 +561,29 @@ public final class Response {
         return contentLength;
     }
 
+    public String getSendfilePath() {
+        return sendfilePath;
+    }
+
+    public void setSendfilePath(String sendfilePath) {
+        this.sendfilePath = sendfilePath;
+    }
+
+    public long getSendfileStart() {
+        return sendfileStart;
+    }
+
+    public void setSendfileStart(long sendfileStart) {
+        this.sendfileStart = sendfileStart;
+    }
+
+    public long getSendfileEnd() {
+        return sendfileEnd;
+    }
+
+    public void setSendfileEnd(long sendfileEnd) {
+        this.sendfileEnd = sendfileEnd;
+    }
 
     /** 
      * Write a chunk of bytes.
@@ -584,6 +611,8 @@ public final class Response {
         errorException = null;
         errorURI = null;
         headers.clear();
+
+        sendfilePath = null;
 
         // update counters
         lastWrite = 1;

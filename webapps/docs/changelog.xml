@@ -30,6 +30,9 @@
       <fix>
         Fix handling of sendfile errors when calling add. (markt)
       </fix>
+      <update>
+        Refactor sendfile as its own API, similar to sendError. (remm)
+      </update>
     </changelog>
   </subsection>
 </section>

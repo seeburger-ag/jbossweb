@@ -94,13 +94,17 @@ public class Http11AprProcessor implements ActionHook {
         request = new Request();
         inputBuffer = new InternalAprInputBuffer(request, headerBufferSize, endpoint);
         request.setInputBuffer(inputBuffer);
+        if (endpoint.getUseSendfile()) {
+            request.setSendfile(true);
+        }
 
         response = new Response();
         response.setHook(this);
         outputBuffer = new InternalAprOutputBuffer(response, headerBufferSize, endpoint);
         response.setOutputBuffer(outputBuffer);
+
         request.setResponse(response);
-        
+
         ssl = endpoint.isSSLEnabled();
 
         initializeFilters();
@@ -1495,11 +1499,6 @@ public class Http11AprProcessor implements ActionHook {
             contentDelimitation = true;
         }
 
-        // Advertise sendfile support through a request attribute
-        if (endpoint.getUseSendfile()) {
-            request.setAttribute("org.apache.tomcat.sendfile.support", Boolean.TRUE);
-        }
-        
     }
 
 
@@ -1672,20 +1671,15 @@ public class Http11AprProcessor implements ActionHook {
         }
 
         // Sendfile support
-        if (endpoint.getUseSendfile()) {
-            String fileName = (String) request.getAttribute("org.apache.tomcat.sendfile.filename");
-            if (fileName != null) {
-                // No entity body sent here
-                outputBuffer.addActiveFilter
-                    (outputFilters[Constants.VOID_FILTER]);
-                contentDelimitation = true;
-                sendfileData = new AprEndpoint.SendfileData();
-                sendfileData.fileName = fileName;
-                sendfileData.start = 
-                    ((Long) request.getAttribute("org.apache.tomcat.sendfile.start")).longValue();
-                sendfileData.end = 
-                    ((Long) request.getAttribute("org.apache.tomcat.sendfile.end")).longValue();
-            }
+        if (response.getSendfilePath() != null) {
+            // No entity body sent here
+            outputBuffer.addActiveFilter
+                (outputFilters[Constants.VOID_FILTER]);
+            contentDelimitation = true;
+            sendfileData = new AprEndpoint.SendfileData();
+            sendfileData.fileName = response.getSendfilePath();
+            sendfileData.start = response.getSendfileStart();
+            sendfileData.end = response.getSendfileEnd();
         }
         
         // Check for compression

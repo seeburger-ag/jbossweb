@@ -144,6 +144,7 @@ public final class Request {
     // Time of the request - usefull to avoid repeated calls to System.currentTime
     private long startTime = 0L;
     private int available = 0;
+    private boolean sendfile = false;
 
     private RequestInfo reqProcessorMX=new RequestInfo(this);
     // ------------------------------------------------------------- Properties
@@ -169,6 +170,16 @@ public final class Request {
     public UDecoder getURLDecoder() {
         return urlDecoder;
     }
+
+    public boolean hasSendfile() {
+        return sendfile;
+    }
+
+
+    public void setSendfile(boolean sendfile) {
+        this.sendfile = sendfile;
+    }
+
 
     // -------------------- Request data --------------------
 

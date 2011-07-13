@@ -442,6 +442,17 @@ public class ResponseFacade
 
     }
 
+    public void sendFile(String path, String absolutePath, long start, long end) {
+        
+        if (isCommitted())
+            throw new IllegalStateException
+                (/*sm.getString("responseBase.reset.ise")*/);
+
+        response.setAppCommitted(true);
+
+        response.sendFile(path, absolutePath, start, end);
+
+    }
 
     public void setDateHeader(String name, long date) {
 

@@ -3301,6 +3301,11 @@ public class Request
     }
 
 
+    public boolean hasSendfile() {
+        return coyoteRequest.hasSendfile();
+    }
+
+
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append(sm.getString("coyoteRequest.servletStack", Thread.currentThread().getName()));

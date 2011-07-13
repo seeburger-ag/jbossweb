@@ -19,6 +19,7 @@
 package org.apache.catalina.connector;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -46,6 +47,8 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.StringManager;
+import org.apache.naming.resources.CacheEntry;
+import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.UEncoder;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
@@ -1331,6 +1334,66 @@ public class Response
         } catch (IllegalArgumentException e) {
             setStatus(SC_NOT_FOUND);
         }
+
+        // Cause the response to be finished (from the application perspective)
+        setSuspended(true);
+
+    }
+
+
+    public void sendFile(String path, String absolutePath, long start, long end) {
+
+        if (isCommitted())
+            throw new IllegalStateException
+                (sm.getString("coyoteResponse.sendFile.ise"));
+
+        // Ignore any call from an included servlet
+        if (included)
+            return; 
+
+        if (!request.hasSendfile())
+            throw new IllegalStateException(sm.getString("coyoteResponse.sendFile.no"));
+
+        if (Globals.IS_SECURITY_ENABLED) {
+            if (path != null) {
+                CacheEntry cacheEntry = 
+                    ((ProxyDirContext) request.getContext().getResources()).lookupCache(path);
+                if (cacheEntry.exists && cacheEntry.resource != null && (end > start)
+                        && cacheEntry.attributes.getCanonicalPath() != null) {
+                    coyoteResponse.setSendfilePath(cacheEntry.attributes.getCanonicalPath());
+                    coyoteResponse.setSendfileStart(start);
+                    coyoteResponse.setSendfileEnd(end);
+                }
+            } else if (absolutePath != null) {
+                String canonicalPath = null;
+                try {
+                    canonicalPath = new File(absolutePath).getCanonicalPath();
+                } catch (IOException e) {
+                    throw new IllegalArgumentException(sm.getString("coyoteResponse.sendFile.path"));
+                }
+                System.getSecurityManager().checkRead(canonicalPath);
+                coyoteResponse.setSendfilePath(absolutePath);
+                coyoteResponse.setSendfileStart(start);
+                coyoteResponse.setSendfileEnd(end);
+            }
+        } else {
+            if (absolutePath != null) {
+                coyoteResponse.setSendfilePath(absolutePath);
+                coyoteResponse.setSendfileStart(start);
+                coyoteResponse.setSendfileEnd(end);
+            } else {
+                CacheEntry cacheEntry = 
+                    ((ProxyDirContext) request.getContext().getResources()).lookupCache(path);
+                if (cacheEntry.exists && cacheEntry.resource != null && (end > start)
+                        && cacheEntry.attributes.getCanonicalPath() != null) {
+                    coyoteResponse.setSendfilePath(cacheEntry.attributes.getCanonicalPath());
+                    coyoteResponse.setSendfileStart(start);
+                    coyoteResponse.setSendfileEnd(end);
+                }
+            }
+        }
+
+        outputBuffer.setBytesWritten(end - start);
 
         // Cause the response to be finished (from the application perspective)
         setSuspended(true);

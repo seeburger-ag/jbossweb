@@ -602,6 +602,10 @@ public class OutputBuffer extends Writer
         return -1;
     }
 
+    public void setBytesWritten(long bytesWritten) {
+        this.bytesWritten = bytesWritten;
+    }
+
     public int getCharsWritten() {
         if (charsWritten < Integer.MAX_VALUE) {
             return (int) charsWritten;
