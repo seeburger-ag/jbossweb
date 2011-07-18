@@ -54,6 +54,14 @@ public final class LibraryLoader {
         else if (name.equals("AIX"))
             platform = "aix";
 
+        return platform;
+    }
+
+    public static String getDefaultPlatformNameVersion()
+    {
+        String platform = getDefaultPlatformName();
+
+
         if (platform.equals("solaris")) {
             // Add the version...
             String version = System.getProperty("os.version");
@@ -90,7 +98,7 @@ public final class LibraryLoader {
 
     public static String getDefaultLibraryPath()
     {
-        String name = getDefaultPlatformName();
+        String name = getDefaultPlatformNameVersion();
         String arch = getDefaultPlatformCpu();
 
         return name + File.separator + arch;
@@ -136,7 +144,7 @@ public final class LibraryLoader {
             count = Integer.parseInt(props.getProperty(name + ".count"));
         }
         catch (Throwable t) {
-            throw new UnsatisfiedLinkError("Can't use Library.properties");
+            throw new UnsatisfiedLinkError("Can't use Library.properties for: " + name);
         }
         for (int i = 0; i < count; i++) {
             boolean optional = false;
