@@ -23,6 +23,9 @@
         <jira>205</jira>: Filter out some generic callback events which are not
         relevant for Servlet 3 async. (remm)
       </fix>
+      <fix>
+        Arrange solaris and macosx native logic (jfclere)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
