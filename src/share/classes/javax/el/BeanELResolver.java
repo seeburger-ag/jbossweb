@@ -25,6 +25,8 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,10 +36,28 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class BeanELResolver extends ELResolver {
 
+    private static final int CACHE_SIZE;
+    private static final String CACHE_SIZE_PROP =
+        "org.apache.el.BeanELResolver.CACHE_SIZE";
+
+    static {
+        if (System.getSecurityManager() == null) {
+            CACHE_SIZE = Integer.parseInt(
+                    System.getProperty(CACHE_SIZE_PROP, "1000"));
+        } else {
+            CACHE_SIZE = AccessController.doPrivileged(
+                    new PrivilegedAction<Integer>() {
+                    public Integer run() {
+                        return Integer.valueOf(
+                                System.getProperty(CACHE_SIZE_PROP, "1000"));
+                    }
+                }).intValue();
+        }
+    }
 	private final boolean readOnly;
 
-	private final ConcurrentCache<String, BeanProperties> cache = new ConcurrentCache<String, BeanProperties>(
-			1000);
+    private final ConcurrentCache<String, BeanProperties> cache =
+        new ConcurrentCache<String, BeanProperties>(CACHE_SIZE);
 
 	public BeanELResolver() {
 		this.readOnly = false;
@@ -312,7 +332,9 @@ public class BeanELResolver extends ELResolver {
 		public V get(K key) {
 			V value = this.eden.get(key);
 			if (value == null) {
+                synchronized (longterm) {
 				value = this.longterm.get(key);
+                }
 				if (value != null) {
 					this.eden.put(key, value);
 				}
@@ -322,7 +344,9 @@ public class BeanELResolver extends ELResolver {
 		
 		public void put(K key, V value) {
 			if (this.eden.size() >= this.size) {
+                synchronized (longterm) {
 				this.longterm.putAll(this.eden);
+                }
 				this.eden.clear();
 			}
 			this.eden.put(key, value);
