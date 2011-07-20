@@ -83,9 +83,12 @@ public final class LibraryLoader {
 
         if (arch.endsWith("86"))
             cpu = "x86";
-        else if (arch.startsWith("PA_RISC"))
-            cpu = "parisc2";
-        else if (arch.startsWith("IA64"))
+        else if (arch.startsWith("PA_RISC")) {
+            if (arch.endsWith("W")
+               cpu = "parisc2W";
+            else
+               cpu = "parisc2";
+        } else if (arch.startsWith("IA64"))
             cpu = "i64";
         else if (arch.equals("x86_64"))
             cpu = "x64";
