@@ -23,9 +23,6 @@
         <jira>205</jira>: Filter out some generic callback events which are not
         relevant for Servlet 3 async. (remm)
       </fix>
-      <fix>
-        Arrange solaris and macosx native logic (jfclere)
-      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -36,6 +33,9 @@
       <update>
         Refactor sendfile as its own API, similar to sendError. (remm)
       </update>
+      <fix>
+        Arrange solaris and macosx native logic (jfclere)
+      </fix>
     </changelog>
   </subsection>
 </section>
