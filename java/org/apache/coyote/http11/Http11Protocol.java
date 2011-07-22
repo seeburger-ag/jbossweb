@@ -460,6 +460,9 @@ public class Http11Protocol
     public int getSoTimeout() { return endpoint.getSoTimeout(); }
     public void setSoTimeout(int soTimeout) { endpoint.setSoTimeout(soTimeout); }
 
+    public void setPollerSize(int pollerSize) { endpoint.setPollerSize(pollerSize); }
+    public int getPollerSize() { return endpoint.getPollerSize(); }
+
     // HTTP
     /**
      * Return the Keep-Alive policy for the connection.

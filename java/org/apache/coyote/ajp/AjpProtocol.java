@@ -305,6 +305,9 @@ public class AjpProtocol
     public int getSoTimeout() { return endpoint.getSoTimeout(); }
     public void setSoTimeout(int soTimeout) { endpoint.setSoTimeout(soTimeout); }
 
+    public void setPollerSize(int pollerSize) { endpoint.setPollerSize(pollerSize); }
+    public int getPollerSize() { return endpoint.getPollerSize(); }
+
     /**
      * Should authentication be done in the native webserver layer, 
      * or in the Servlet container ?
