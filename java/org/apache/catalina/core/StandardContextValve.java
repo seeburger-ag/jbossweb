@@ -158,59 +158,8 @@ final class StandardContextValve
             }
         }
 
-        // Normal request processing
-        Object instances[] = context.getApplicationEventListeners();
-
-        ServletRequestEvent event = null;
-
-        if ((instances != null) 
-                && (instances.length > 0)) {
-            event = new ServletRequestEvent
-                (((StandardContext) container).getServletContext(), 
-                 request.getRequest());
-            // create pre-service event
-            for (int i = 0; i < instances.length; i++) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener =
-                    (ServletRequestListener) instances[i];
-                try {
-                    listener.requestInitialized(event);
-                } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("standardContext.requestListener.requestInit",
-                                     instances[i].getClass().getName()), t);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                    return;
-                }
-            }
-        }
-
         wrapper.getPipeline().getFirst().invoke(request, response);
 
-        if ((instances !=null ) &&
-                (instances.length > 0)) {
-            // create post-service event
-            for (int i = instances.length - 1; i >= 0; i--) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener =
-                    (ServletRequestListener) instances[i];
-                try {
-                    listener.requestDestroyed(event);
-                } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("standardContext.requestListener.requestDestroy",
-                                     instances[i].getClass().getName()), t);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                }
-            }
-        }
-                
     }
 
 
@@ -229,56 +178,10 @@ final class StandardContextValve
     public final void event(Request request, Response response, HttpEvent httpEvent)
         throws IOException, ServletException {
 
-        Object instances[] = context.getApplicationEventListeners();
-        ServletRequestEvent event = null;
-        if (instances != null && (instances.length > 0)) {
-            event = new ServletRequestEvent
-                (((StandardContext) container).getServletContext(), 
-                 request.getRequest());
-            // create pre-service event
-            for (int i = 0; i < instances.length; i++) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener =
-                    (ServletRequestListener) instances[i];
-                try {
-                    listener.requestInitialized(event);
-                } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("requestListenerValve.requestInit",
-                                     instances[i].getClass().getName()), t);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                    return;
-                }
-            }
-        }
-
         // Select the Wrapper to be used for this Request
         Wrapper wrapper = request.getWrapper();
         wrapper.getPipeline().getFirst().event(request, response, httpEvent);
 
-        if (instances != null && (instances.length > 0)) {
-            // create post-service event
-            for (int i = instances.length - 1; i >= 0; i--) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener =
-                    (ServletRequestListener) instances[i];
-                try {
-                    listener.requestDestroyed(event);
-                } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
-                                     instances[i].getClass().getName()), t);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                }
-            }
-        }
-      
     }
 
 

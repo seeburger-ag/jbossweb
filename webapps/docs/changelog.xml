@@ -22,6 +22,11 @@
       <fix>
         <jira>187</jira>: Fix NPE calling multipart parsing when a Servlet has no multipart config. (remm)
       </fix>
+      <fix>
+        <jboss-jira>JBAS-8297</jboss-jira>: Fix calling Request listeners when entering and exiting 
+        the application scope in the main host valve, not simply just before 
+        calling the filter chain. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
