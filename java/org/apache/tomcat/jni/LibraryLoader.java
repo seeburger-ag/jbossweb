@@ -84,7 +84,7 @@ public final class LibraryLoader {
         if (arch.endsWith("86"))
             cpu = "x86";
         else if (arch.startsWith("PA_RISC")) {
-            if (arch.endsWith("W")
+            if (arch.endsWith("W"))
                cpu = "parisc2W";
             else
                cpu = "parisc2";
