@@ -16,7 +16,7 @@
 
 <body>
 
-<section name="JBoss Web 3.0.0.CR2 (remm)">
+<section name="JBoss Web 3.0.0.CR2 (jfclere)">
   <subsection name="Catalina">
     <changelog>
       <fix>
