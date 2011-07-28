@@ -20,6 +20,12 @@
   <subsection name="Catalina">
     <changelog>
       <fix>
+        Use upper case for encoding (remm)
+      </fix>
+      <fix>
+        Arranging loading for jbossnative (jfclere)
+      </fix>
+      <fix>
         <jira>187</jira>: Fix NPE calling multipart parsing when a Servlet has no multipart config. (remm)
       </fix>
       <fix>
@@ -27,10 +33,21 @@
         the application scope in the main host valve, not simply just before 
         calling the filter chain. (remm)
       </fix>
+      <fix>
+        Ensure work dir attribute is made read-only: CVE-2010-3718. (markt)
+      </fix>
+      <fix>
+        Increase default MAX_PAUSE_WAIT to 300. (remm)
+      </fix>
+      <fix>
+        Filter out invalid locale header. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
     <changelog>
+      <fix><bug>47371</bug>:  Fix empty string to number conversion (should be converted to 0) (markt)
+      </fix>
       <fix>
         <jboss-jira>JBAS-8579</jboss-jira>: Fix default for tag body content. (remm)
       </fix>
@@ -66,6 +83,9 @@
       <fix>
         <jira>200</jira>: Improve tags classloading. (remm)
       </fix>
+      <fix>
+        Rebase Jasper from the 7 branch's Jasper to pull in all fixes (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
@@ -91,7 +111,7 @@
 </section>
 
 <section name="JBoss Web 3.0.0.Beta7 (remm)">
-  <subsection name="Genral">
+  <subsection name="General">
     <changelog>
       <fix>
         Use a more standard fileupload and update to 1.2. (markt)
