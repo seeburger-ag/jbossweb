@@ -47,7 +47,6 @@
 package org.apache.catalina.core;
 
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
 
@@ -124,7 +123,7 @@ public final class ApplicationFilterFactory {
      * @param request The servlet request we are processing
      * @param wrapper The servlet instance to be wrapped
      */
-    public ApplicationFilterChain createFilterChain(ServletRequest request, Wrapper wrapper, Servlet servlet) {
+    public ApplicationFilterChain createFilterChain(ServletRequest request, Wrapper wrapper) {
 
         // get the dispatcher type
         int dispatcher = -1; 
@@ -186,7 +185,6 @@ public final class ApplicationFilterFactory {
             filterChain.setRequestFacade(requestFacade);
         }
         filterChain.setWrapper(wrapper);
-        filterChain.setServlet(servlet);
 
         // Acquire the filter mappings for this Context
         StandardContext context = (StandardContext) wrapper.getParent();

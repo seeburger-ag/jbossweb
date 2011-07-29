@@ -93,8 +93,8 @@ public final class NonLoginAuthenticator
             associate(ssoId, getSession(request, true));
         */
         
-        if (getContainer().getLogger().isDebugEnabled())
-            getContainer().getLogger().debug("User authentication is not required");
+        if (containerLog.isDebugEnabled())
+            containerLog.debug("User authentication is not required");
         return (true);
 
 

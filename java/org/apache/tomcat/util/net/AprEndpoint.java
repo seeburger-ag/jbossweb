@@ -170,7 +170,7 @@ public class AprEndpoint {
     /**
      * Maximum amount of worker threads.
      */
-    protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 32 : 32 * Runtime.getRuntime().availableProcessors();
+    protected int maxThreads = 32 * Runtime.getRuntime().availableProcessors();
     public void setMaxThreads(int maxThreads) { this.maxThreads = maxThreads; }
     public int getMaxThreads() { return maxThreads; }
 
@@ -186,7 +186,7 @@ public class AprEndpoint {
     /**
      * Size of the socket poller.
      */
-    protected int pollerSize = -1;
+    protected int pollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
     public void setPollerSize(int pollerSize) { this.pollerSize = pollerSize; }
     public int getPollerSize() { return pollerSize; }
 
@@ -194,7 +194,7 @@ public class AprEndpoint {
     /**
      * Size of the sendfile (= concurrent files which can be served).
      */
-    protected int sendfileSize = -1;
+    protected int sendfileSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
     public void setSendfileSize(int sendfileSize) { this.sendfileSize = sendfileSize; }
     public int getSendfileSize() { return sendfileSize; }
 
@@ -948,28 +948,6 @@ public class AprEndpoint {
 
     
     /**
-     * Return a new worker thread, and block while to worker is available.
-     */
-    protected Worker getWorkerThread() {
-        // Allocate a new worker thread
-        Worker workerThread = createWorkerThread();
-        if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
-            while (workerThread == null) {
-                try {
-                    synchronized (workers) {
-                        workers.wait();
-                    }
-                } catch (InterruptedException e) {
-                    // Ignore
-                }
-                workerThread = createWorkerThread();
-            }
-        }
-        return workerThread;
-    }
-
-
-    /**
      * Allocate a new poller of the specified size.
      */
     protected long allocatePoller(int size, long pool, int timeout) {
@@ -993,7 +971,7 @@ public class AprEndpoint {
     protected boolean processSocketWithOptions(long socket) {
         try {
             if (executor == null) {
-                Worker worker = getWorkerThread();
+                Worker worker = createWorkerThread();
                 if (worker != null) {
                     worker.assignWithOptions(socket);
                 } else {
@@ -1018,7 +996,7 @@ public class AprEndpoint {
     protected boolean processSocket(long socket) {
         try {
             if (executor == null) {
-                Worker worker = getWorkerThread();
+                Worker worker = createWorkerThread();
                 if (worker != null) {
                     worker.assign(socket);
                 } else {
@@ -1043,7 +1021,7 @@ public class AprEndpoint {
     protected boolean processSocket(long socket, SocketStatus status) {
         try {
             if (executor == null) {
-                Worker worker = getWorkerThread();
+                Worker worker = createWorkerThread();
                 if (worker != null) {
                     worker.assign(socket, status);
                 } else {
@@ -1422,29 +1400,16 @@ public class AprEndpoint {
          */
         protected void init() {
 
+            timeouts = new SocketTimeouts(pollerSize);
+            
             pool = Pool.create(serverSockPool);
-            int defaultPollerSize = pollerSize;
-            // Poller size defaults
-            if (defaultPollerSize <= 0) {
-                if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
-                    if (event) {
-                        defaultPollerSize = 128;
-                    } else {
-                        defaultPollerSize = 1024;
-                    }
-                } else {
-                    defaultPollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
-                }
-            }
-            if ((OS.IS_WIN32 || OS.IS_WIN64) && (defaultPollerSize > 1024)) {
+            actualPollerSize = pollerSize;
+            if ((OS.IS_WIN32 || OS.IS_WIN64) && (actualPollerSize > 1024)) {
                 // The maximum per poller to get reasonable performance is 1024
                 // Adjust poller size so that it won't reach the limit
-                defaultPollerSize = 1024;
+                actualPollerSize = 1024;
             }
-            actualPollerSize = defaultPollerSize;
-
-            timeouts = new SocketTimeouts(defaultPollerSize);
-
+            
             // At the moment, setting the timeout is useless, but it could get used
             // again as the normal poller could be faster using maintain. It might not
             // be worth bothering though.
@@ -1458,7 +1423,7 @@ public class AprEndpoint {
                 pollset = allocatePoller(actualPollerSize, pool, -1);
             }
             
-            pollerCount = defaultPollerSize / actualPollerSize;
+            pollerCount = pollerSize / actualPollerSize;
             pollerTime = pollTime / pollerCount;
             
             pollers = new long[pollerCount];
@@ -1474,8 +1439,8 @@ public class AprEndpoint {
 
             desc = new long[actualPollerSize * 2];
             connectionCount = 0;
-            addList = new SocketList(defaultPollerSize);
-            localAddList = new SocketList(defaultPollerSize);
+            addList = new SocketList(pollerSize);
+            localAddList = new SocketList(pollerSize);
 
         }
 
@@ -2131,13 +2096,6 @@ public class AprEndpoint {
         protected void init() {
             pool = Pool.create(serverSockPool);
             int size = sendfileSize;
-            if (size <= 0) {
-                if (org.apache.tomcat.util.Constants.LOW_MEMORY) {
-                    size = 128;
-                } else {
-                    size = (OS.IS_WIN32 || OS.IS_WIN64) ? (1 * 1024) : (16 * 1024);
-                }
-            }
             sendfilePollset = allocatePoller(size, pool, soTimeout);
             if (sendfilePollset == 0 && size > 1024) {
                 size = 1024;
@@ -2208,7 +2166,7 @@ public class AprEndpoint {
                                                data.pos, data.end - data.pos, 0);
                     if (nw < 0) {
                         if (!(-nw == Status.EAGAIN)) {
-                            Pool.destroy(data.fdpool);
+                            Socket.destroy(data.socket);
                             data.socket = 0;
                             return false;
                         } else {

@@ -39,6 +39,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.StringManager;
+import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
 
@@ -64,6 +65,12 @@ public abstract class ValveBase
      * The Container whose pipeline this Valve is a component of.
      */
     protected Container container = null;
+
+
+    /**
+     * Container log
+     */
+    protected Logger containerLog = null;
 
 
     /**
@@ -268,6 +275,7 @@ public abstract class ValveBase
         Container container=this.getContainer();
         if( container == null || ! (container instanceof ContainerBase) )
             return null;
+        this.containerLog = container.getLogger();
         ContainerBase containerBase=(ContainerBase)container;
         Pipeline pipe=containerBase.getPipeline();
         Valve valves[]=pipe.getValves();

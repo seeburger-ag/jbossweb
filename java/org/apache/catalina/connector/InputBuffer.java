@@ -560,18 +560,21 @@ public class InputBuffer extends Reader
         enc = (enc == null) ? DEFAULT_ENCODING : enc.toUpperCase(Locale.US);
         conv = encoders.get(enc);
         if (conv == null) {
-            if (SecurityUtil.isPackageProtectionEnabled()) {
-                try {
-                    conv = (B2CConverter) AccessController
-                            .doPrivileged(new PrivilegedExceptionAction<B2CConverter>() {
-                                public B2CConverter run() throws IOException {
+            if (SecurityUtil.isPackageProtectionEnabled()){
+                try{
+                    conv = (B2CConverter)AccessController.doPrivileged(
+                            new PrivilegedExceptionAction(){
+
+                                public Object run() throws IOException{
                                     return new B2CConverter(enc);
                                 }
-                            });
-                } catch (PrivilegedActionException ex) {
+
+                            }
+                    );              
+                }catch(PrivilegedActionException ex){
                     Exception e = ex.getException();
                     if (e instanceof IOException)
-                        throw (IOException) e;
+                        throw (IOException)e; 
                 }
             } else {
                 conv = new B2CConverter(enc);

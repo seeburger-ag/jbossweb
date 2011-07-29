@@ -85,17 +85,11 @@ public class StandardHost
 
 
     /**
-     * The default webapp name.
-     */
-    private String defaultWebapp = "ROOT";
-
-
-    /**
      * The Java class name of the default context configuration class
      * for deployed web applications.
      */
     private String configClass =
-        System.getProperty("org.apache.catalina.core.StandardHost.configClass", null);
+        System.getProperty("org.apache.catalina.core.StandardHost.configClass", "org.apache.catalina.startup.ContextConfig");
 
 
     /**
@@ -156,22 +150,6 @@ public class StandardHost
         String oldAppBase = this.appBase;
         this.appBase = appBase;
         support.firePropertyChange("appBase", oldAppBase, this.appBase);
-
-    }
-
-
-    public String getDefaultWebapp() {
-
-        return (this.defaultWebapp);
-
-    }
-
-
-    public void setDefaultWebapp(String defaultWebapp) {
-
-        String oldDefaultWebapp = this.defaultWebapp;
-        this.defaultWebapp = defaultWebapp;
-        support.firePropertyChange("defaultWebapp", oldDefaultWebapp, this.defaultWebapp);
 
     }
 
@@ -546,22 +524,20 @@ public class StandardHost
             }
         }
         
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( oname==null ) {
-                // not registered in JMX yet - standalone mode
-                try {
-                    StandardEngine engine=(StandardEngine)parent;
-                    domain=engine.getName();
-                    if(log.isDebugEnabled())
-                        log.debug( "Register host " + getName() + " with domain "+ domain );
-                    oname=new ObjectName(domain + ":type=Host,host=" +
-                            this.getName());
-                    controller = oname;
-                    Registry.getRegistry(null, null)
+        if( oname==null ) {
+            // not registered in JMX yet - standalone mode
+            try {
+                StandardEngine engine=(StandardEngine)parent;
+                domain=engine.getName();
+                if(log.isDebugEnabled())
+                    log.debug( "Register host " + getName() + " with domain "+ domain );
+                oname=new ObjectName(domain + ":type=Host,host=" +
+                        this.getName());
+                controller = oname;
+                Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null);
-                } catch( Throwable t ) {
-                    log.error("Host registering failed!", t );
-                }
+            } catch( Throwable t ) {
+                log.error("Host registering failed!", t );
             }
         }
     }

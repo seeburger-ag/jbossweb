@@ -37,7 +37,7 @@ public class TagHandlerPool {
     public static final String OPTION_TAGPOOL="tagpoolClassName";
     public static final String OPTION_MAXSIZE="tagpoolMaxSize";
 
-    protected Logger log = Logger.getLogger(TagHandlerPool.class);
+    private Logger log = Logger.getLogger(TagHandlerPool.class);
     
     // index of next available tag handler
     private int current;
@@ -52,10 +52,11 @@ public class TagHandlerPool {
                 Class c=Class.forName( tpClassName );
                 result=(TagHandlerPool)c.newInstance();
             } catch (Exception e) {
-                result = null;
+                e.printStackTrace();
+                result=null;
             }
         }
-        if( result==null ) result=new PerThreadTagHandlerPool();
+        if( result==null ) result=new TagHandlerPool();
         result.init(config);
 
         return result;
@@ -120,15 +121,15 @@ public class TagHandlerPool {
         // Out of sync block - there is no need for other threads to
         // wait for us to construct a tag for this thread.
         try {
-        	if (Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-        		return (Tag) instanceManager.newInstance(handlerClass);
-        	} else {
+            if (Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
+                return (Tag) instanceManager.newInstance(handlerClass);
+            } else {
                 Tag instance = (Tag) handlerClass.newInstance();
                 if (Constants.INJECT_TAGS) {
                     instanceManager.newInstance(instance);
                 }
                 return instance;
-        	}
+            }
         } catch (Exception e) {
             throw new JspException(e.getMessage(), e);
         }
@@ -159,7 +160,7 @@ public class TagHandlerPool {
     public synchronized void release() {
         for (int i = current; i >= 0; i--) {
             handlers[i].release();
-            if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
+            if (Constants.INJECT_TAGS) {
                 try {
                     instanceManager.destroyInstance(handlers[i]);
                 } catch (Exception e) {

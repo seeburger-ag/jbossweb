@@ -418,26 +418,24 @@ public final class StandardServer
         lifecycle.fireLifecycleEvent(INIT_EVENT, null);
         initialized = true;
 
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( oname==null ) {
-                try {
-                    oname=new ObjectName( "Catalina:type=Server");
-                    Registry.getRegistry(null, null)
-                    .registerComponent(this, oname, null );
-                } catch (Exception e) {
-                    log.error("Error registering ",e);
-                }
-            }
-
-            // Register global String cache
+        if( oname==null ) {
             try {
-                ObjectName oname2 = 
-                    new ObjectName(oname.getDomain() + ":type=StringCache");
+                oname=new ObjectName( "Catalina:type=Server");
                 Registry.getRegistry(null, null)
-                .registerComponent(new StringCache(), oname2, null );
+                    .registerComponent(this, oname, null );
             } catch (Exception e) {
                 log.error("Error registering ",e);
             }
+        }
+        
+        // Register global String cache
+        try {
+            ObjectName oname2 = 
+                new ObjectName(oname.getDomain() + ":type=StringCache");
+            Registry.getRegistry(null, null)
+                .registerComponent(new StringCache(), oname2, null );
+        } catch (Exception e) {
+            log.error("Error registering ",e);
         }
 
         // Initialize our defined Services

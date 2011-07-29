@@ -18,8 +18,9 @@
 
 package org.apache.catalina.connector;
 
+import java.lang.reflect.Method;
+import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.Set;
 
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
@@ -31,7 +32,6 @@ import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Service;
-import org.apache.catalina.core.AprLifecycleListener;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.coyote.Adapter;
@@ -60,8 +60,7 @@ public class Connector
      * Alternate flag to enable recycling of facades.
      */
     public static final boolean RECYCLE_FACADES =
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.RECYCLE_FACADES", 
-                (org.apache.tomcat.util.Constants.LOW_MEMORY) ? "true" : "false")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.RECYCLE_FACADES", "false")).booleanValue();
 
     
     protected static final boolean X_POWERED_BY = 
@@ -71,15 +70,20 @@ public class Connector
     // ------------------------------------------------------------ Constructor
 
 
+    public Connector()
+        throws Exception {
+        this(null);
+    }
+
     public Connector(String protocol)
         throws Exception {
         setProtocol(protocol);
         // Instantiate protocol handler
         try {
-            Class<?> clazz = Class.forName(protocolHandlerClassName);
+            Class clazz = Class.forName(protocolHandlerClassName);
             this.protocolHandler = (ProtocolHandler) clazz.newInstance();
         } catch (Exception e) {
-            throw new IllegalArgumentException
+            log.error
                 (sm.getString
                  ("coyoteConnector.protocolHandlerInstantiationFailed", e));
         }
@@ -256,14 +260,8 @@ public class Connector
       */
      protected boolean useBodyEncodingForURI = false;
 
-     
-     /**
-      * Allowed virtual hosts.
-      */
-     protected Set<String> allowedHosts = null;
-     
 
-     protected static HashMap<String, String> replacements = new HashMap<String, String>();
+     protected static HashMap replacements = new HashMap();
      static {
          replacements.put("acceptCount", "backlog");
          replacements.put("connectionLinger", "soLinger");
@@ -324,6 +322,15 @@ public class Connector
 
 
     /**
+     * remove a configured property.
+     */
+    public void removeProperty(String name) {
+        // FIXME !
+        //protocolHandler.removeAttribute(name);
+    }
+
+
+    /**
      * Return the <code>Service</code> with which we are associated (if any).
      */
     public Service getService() {
@@ -341,6 +348,7 @@ public class Connector
     public void setService(Service service) {
 
         this.service = service;
+        // FIXME: setProperty("service", service);
 
     }
 
@@ -367,27 +375,7 @@ public class Connector
 
     }
 
-
     /**
-     * Set of allowed hosts.
-     */
-    public Set<String> getAllowedHosts() {
-
-        return allowedHosts;
-
-    }
-
-
-    /**
-     * Restrict the connector to certain hosts.
-     */
-    public void setAllowedHosts(Set<String> allowedHosts) {
-
-        this.allowedHosts = allowedHosts;
-
-    }
-
-   /**
      * Is this connector available for processing requests?
      */
     public boolean isAvailable() {
@@ -421,6 +409,10 @@ public class Connector
      * Connector.
      */
     public Container getContainer() {
+        if( container==null ) {
+            // Lazy - maybe it was added later
+            findContainer();
+        }
         return (container);
 
     }
@@ -564,18 +556,70 @@ public class Connector
 
     }
     
+    // ---------------------------------------------- APR Version Constants
+
+    private static final int TCN_REQUIRED_MAJOR = 1;
+    private static final int TCN_REQUIRED_MINOR = 1;
+    private static final int TCN_REQUIRED_PATCH = 3;
+    private static boolean aprInitialized = false;
+
+    // APR init support
+    private static synchronized void initializeAPR()
+    {
+        if (aprInitialized) {
+            return;
+        }
+        int major = 0;
+        int minor = 0;
+        int patch = 0;
+        try {
+            String methodName = "initialize";
+            Class paramTypes[] = new Class[1];
+            paramTypes[0] = String.class;
+            Object paramValues[] = new Object[1];
+            paramValues[0] = null;
+            Class clazz = Class.forName("org.apache.tomcat.jni.Library");
+            Method method = clazz.getMethod(methodName, paramTypes);
+            method.invoke(null, paramValues);
+            major = clazz.getField("TCN_MAJOR_VERSION").getInt(null);
+            minor = clazz.getField("TCN_MINOR_VERSION").getInt(null);
+            patch = clazz.getField("TCN_PATCH_VERSION").getInt(null);
+        } catch (Throwable t) {
+            return;
+        }
+        if ((major != TCN_REQUIRED_MAJOR) ||
+            (minor != TCN_REQUIRED_MINOR) ||
+            (patch <  TCN_REQUIRED_PATCH)) {
+            try {
+                // Terminate the APR in case the version
+                // is below required.
+                String methodName = "terminate";
+                Method method = Class.forName("org.apache.tomcat.jni.Library")
+                                    .getMethod(methodName, (Class [])null);
+                method.invoke(null, (Object []) null);
+            } catch (Throwable t) {
+                // Ignore
+            }
+            return;
+        }
+        aprInitialized = true;
+    }
+
     /**
      * Set the Coyote protocol which will be used by the connector.
      *
      * @param protocol The Coyote protocol name
      */
-    protected void setProtocol(String protocol) {
+    public void setProtocol(String protocol) {
 
-        if (AprLifecycleListener.isAprInitialized()) {
-            if ("HTTP/1.1".equals(protocol) || "http".equals(protocol)) {
+        // Test APR support
+        initializeAPR();
+
+        if (aprInitialized) {
+            if ("HTTP/1.1".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.http11.Http11AprProtocol");
-            } else if ("AJP/1.3".equals(protocol) || "ajp".equals(protocol)) {
+            } else if ("AJP/1.3".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.ajp.AjpAprProtocol");
             } else if (protocol != null) {
@@ -585,10 +629,10 @@ public class Connector
                     ("org.apache.coyote.http11.Http11AprProtocol");
             }
         } else {
-            if ("HTTP/1.1".equals(protocol) || "http".equals(protocol)) {
+            if ("HTTP/1.1".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.http11.Http11Protocol");
-            } else if ("AJP/1.3".equals(protocol) || "ajp".equals(protocol)) {
+            } else if ("AJP/1.3".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.ajp.AjpProtocol");
             } else if (protocol != null) {
@@ -654,7 +698,7 @@ public class Connector
             setProperty("proxyName", proxyName);
         } else {
             this.proxyName = null;
-            setProperty("proxyName", null);
+            removeProperty("proxyName");
         }
 
     }
@@ -926,7 +970,7 @@ public class Connector
             throws MalformedObjectNameException {
         String encodedAddr = null;
         if (getProperty("address") != null) {
-            encodedAddr = ObjectName.quote(getProperty("address").toString());
+            encodedAddr = URLEncoder.encode(getProperty("address").toString());
         }
         String addSuffix = (getProperty("address") == null) ? "" : ",address="
                 + encodedAddr;
@@ -938,7 +982,7 @@ public class Connector
     /**
      * Initialize this connector (create ServerSocket here!)
      */
-    public void init()
+    public void initialize()
         throws LifecycleException
     {
         if (initialized) {
@@ -949,20 +993,18 @@ public class Connector
 
         this.initialized = true;
 
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (oname == null) {
-                try {
-                    // we are loaded directly, via API - and no name was given to us
-                    oname = createObjectName(container.getName(), "Connector");
-                    Registry.getRegistry(null, null)
+        if (oname == null) {
+            try {
+                // we are loaded directly, via API - and no name was given to us
+                oname = createObjectName(container.getName(), "Connector");
+                Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null);
-                    controller=oname;
-                } catch (Exception e) {
-                    log.error( "Error registering connector ", e);
-                }
-                if(log.isDebugEnabled())
-                    log.debug("Creating name for connector " + oname);
+                controller=oname;
+            } catch (Exception e) {
+                log.error( "Error registering connector ", e);
             }
+            if(log.isDebugEnabled())
+                log.debug("Creating name for connector " + oname);
         }
 
         // Initializa adapter
@@ -1017,7 +1059,7 @@ public class Connector
      */
     public void start() throws LifecycleException {
         if( !initialized )
-            init();
+            initialize();
 
         // Validate and update our current state
         if (started ) {
@@ -1030,21 +1072,19 @@ public class Connector
 
         // We can't register earlier - the JMX registration of this happens
         // in Server.start callback
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if ( this.oname != null ) {
-                // We are registred - register the adapter as well.
-                try {
-                    Registry.getRegistry(null, null).registerComponent
+        if ( this.oname != null ) {
+            // We are registred - register the adapter as well.
+            try {
+                Registry.getRegistry(null, null).registerComponent
                     (protocolHandler, createObjectName(this.domain,"ProtocolHandler"), null);
-                } catch (Exception ex) {
-                    log.error(sm.getString
-                            ("coyoteConnector.protocolRegistrationFailed"), ex);
-                }
-            } else {
-                if(log.isInfoEnabled())
-                    log.info(sm.getString
-                            ("coyoteConnector.cannotRegisterProtocol"));
+            } catch (Exception ex) {
+                log.error(sm.getString
+                          ("coyoteConnector.protocolRegistrationFailed"), ex);
             }
+        } else {
+            if(log.isInfoEnabled())
+                log.info(sm.getString
+                     ("coyoteConnector.cannotRegisterProtocol"));
         }
 
         try {
@@ -1079,14 +1119,12 @@ public class Connector
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            try {
-                Registry.getRegistry(null, null).unregisterComponent
+        try {
+            Registry.getRegistry(null, null).unregisterComponent
                 (createObjectName(this.domain,"ProtocolHandler"));
-            } catch (MalformedObjectNameException e) {
-                log.error( sm.getString
-                        ("coyoteConnector.protocolUnregistrationFailed"), e);
-            }
+        } catch (MalformedObjectNameException e) {
+            log.error( sm.getString
+                    ("coyoteConnector.protocolUnregistrationFailed"), e);
         }
         try {
             protocolHandler.destroy();
@@ -1145,13 +1183,61 @@ public class Connector
         }
     }
 
-    public void destroy() throws Exception {
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( oname!=null && controller==oname ) {
-                if(log.isDebugEnabled())
-                    log.debug("Unregister itself " + oname );
-                Registry.getRegistry(null, null).unregisterComponent(oname);
+    protected void findContainer() {
+        try {
+            // Register to the service
+            ObjectName parentName=new ObjectName( domain + ":" +
+                    "type=Service");
+
+            if(log.isDebugEnabled())
+                log.debug("Adding to " + parentName );
+            if( mserver.isRegistered(parentName )) {
+                mserver.invoke(parentName, "addConnector", new Object[] { this },
+                        new String[] {"org.apache.catalina.connector.Connector"});
+                // As a side effect we'll get the container field set
+                // Also initialize will be called
+                //return;
             }
+            // XXX Go directly to the Engine
+            // initialize(); - is called by addConnector
+            ObjectName engName=new ObjectName( domain + ":" + "type=Engine");
+            if( mserver.isRegistered(engName )) {
+                Object obj=mserver.getAttribute(engName, "managedResource");
+                if(log.isDebugEnabled())
+                      log.debug("Found engine " + obj + " " + obj.getClass());
+                container=(Container)obj;
+
+                // Internal initialize - we now have the Engine
+                initialize();
+
+                if(log.isDebugEnabled())
+                    log.debug("Initialized");
+                // As a side effect we'll get the container field set
+                // Also initialize will be called
+                return;
+            }
+        } catch( Exception ex ) {
+            log.error( "Error finding container " + ex);
+        }
+    }
+
+    public void init() throws Exception {
+
+        if( this.getService() != null ) {
+            if(log.isDebugEnabled())
+                 log.debug( "Already configured" );
+            return;
+        }
+        if( container==null ) {
+            findContainer();
+        }
+    }
+
+    public void destroy() throws Exception {
+        if( oname!=null && controller==oname ) {
+            if(log.isDebugEnabled())
+                 log.debug("Unregister itself " + oname );
+            Registry.getRegistry(null, null).unregisterComponent(oname);
         }
         if( getService() == null)
             return;

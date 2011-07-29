@@ -251,7 +251,7 @@ final class StandardWrapperValve
         ApplicationFilterFactory factory =
             ApplicationFilterFactory.getInstance();
         ApplicationFilterChain filterChain =
-            factory.createFilterChain(request, wrapper, servlet);
+            factory.createFilterChain(request, wrapper);
         // Reset event flag value after creating the filter chain
         request.setEventMode(false);
 
@@ -639,6 +639,9 @@ final class StandardWrapperValve
                 if (!asyncContext.isReady()) {
                     asyncContext.complete();
                 }
+            } else {
+                throw new IllegalStateException(sm.getString("standardWrapper.async.invalidContext",
+                        getContainer().getName()));
             }
         }
 
@@ -662,6 +665,7 @@ final class StandardWrapperValve
                            Throwable exception) {
     	request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, exception);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
     }
 
     public long getProcessingTime() {

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.UnsupportedCharsetException;
@@ -51,7 +52,7 @@ public class B2CConverter {
     public B2CConverter(String charset)
         throws IOException {
         try {
-            decoder = EncodingToCharset.toCharset(charset).newDecoder();
+            decoder = Charset.forName(charset).newDecoder();
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }

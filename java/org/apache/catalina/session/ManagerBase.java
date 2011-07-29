@@ -21,7 +21,15 @@ package org.apache.catalina.session;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -36,12 +44,15 @@ import javax.management.ObjectName;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
+import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
+import org.apache.catalina.util.Base64;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -57,16 +68,37 @@ import org.jboss.logging.Logger;
 public abstract class ManagerBase implements Manager, MBeanRegistration {
     protected Logger log = Logger.getLogger(ManagerBase.class);
 
-    private static final char[] SESSION_ID_ALPHABET = 
-        System.getProperty("org.apache.catalina.session.ManagerBase.SESSION_ID_ALPHABET", 
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_").toCharArray();
- 
-     // ----------------------------------------------------- Instance Variables
+    // ----------------------------------------------------- Instance Variables
+
+    protected DataInputStream randomIS=null;
+    protected String devRandomSource="/dev/urandom";
+
+    /**
+     * The default message digest algorithm to use if we cannot use
+     * the requested one.
+     */
+    protected static final String DEFAULT_ALGORITHM = "MD5";
+
+
+    /**
+     * The message digest algorithm to be used when generating session
+     * identifiers.  This must be an algorithm supported by the
+     * <code>java.security.MessageDigest</code> class on your platform.
+     */
+    protected String algorithm = DEFAULT_ALGORITHM;
+
 
     /**
      * The Container with which this Manager is associated.
      */
     protected Container container;
+
+
+    /**
+     * Return the MessageDigest implementation to be used when
+     * creating session identifiers.
+     */
+    protected MessageDigest digest = null;
 
 
     /**
@@ -78,9 +110,16 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
 
 
     /**
+     * A String initialization parameter used to increase the entropy of
+     * the initialization of our random number generator.
+     */
+    protected String entropy = null;
+
+
+    /**
      * The descriptive information string for this implementation.
      */
-    private static final String info = "ManagerBase/2.0";
+    private static final String info = "ManagerBase/1.0";
 
 
     /**
@@ -93,13 +132,26 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     /**
      * The session id length of Sessions created by this Manager.
      */
-    protected int sessionIdLength = 18;
+    protected int sessionIdLength = 16;
 
 
     /**
      * The descriptive name of this Manager implementation (for logging).
      */
     protected static String name = "ManagerBase";
+
+
+    /**
+     * A random number generator to use when generating session identifiers.
+     */
+    protected Random random = null;
+
+
+    /**
+     * The Java class name of the random number generator class to be used
+     * when generating session identifiers.
+     */
+    protected String randomClass = "java.security.SecureRandom";
 
 
     /**
@@ -167,7 +219,66 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     protected PropertyChangeSupport support = new PropertyChangeSupport(this);
     
     
+    // ------------------------------------------------------------- Security classes
+
+
+    private class PrivilegedSetRandomFile implements PrivilegedAction<DataInputStream>{
+        
+        public PrivilegedSetRandomFile(String s) {
+            devRandomSource = s;
+        }
+        
+        public DataInputStream run(){
+            try {
+                File f=new File( devRandomSource );
+                if( ! f.exists() ) return null;
+                randomIS= new DataInputStream( new FileInputStream(f));
+                randomIS.readLong();
+                if( log.isDebugEnabled() )
+                    log.debug( "Opening " + devRandomSource );
+                return randomIS;
+            } catch (IOException ex){
+                log.warn("Error reading " + devRandomSource, ex);
+                if (randomIS != null) {
+                    try {
+                        randomIS.close();
+                    } catch (Exception e) {
+                        log.warn("Failed to close randomIS.");
+                    }
+                }
+                devRandomSource = null;
+                randomIS=null;
+                return null;
+            }            
+        }
+    }
+
+
     // ------------------------------------------------------------- Properties
+
+    /**
+     * Return the message digest algorithm for this Manager.
+     */
+    public String getAlgorithm() {
+
+        return (this.algorithm);
+
+    }
+
+
+    /**
+     * Set the message digest algorithm for this Manager.
+     *
+     * @param algorithm The new message digest algorithm
+     */
+    public void setAlgorithm(String algorithm) {
+
+        String oldAlgorithm = this.algorithm;
+        this.algorithm = algorithm;
+        support.firePropertyChange("algorithm", oldAlgorithm, this.algorithm);
+
+    }
+
 
     /**
      * Return the Container with which this Manager is associated.
@@ -200,6 +311,41 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
 
 
     /**
+     * Return the MessageDigest object to be used for calculating
+     * session identifiers.  If none has been created yet, initialize
+     * one the first time this method is called.
+     */
+    public synchronized MessageDigest getDigest() {
+
+        if (this.digest == null) {
+            long t1=System.currentTimeMillis();
+            if (log.isDebugEnabled())
+                log.debug(sm.getString("managerBase.getting", algorithm));
+            try {
+                this.digest = MessageDigest.getInstance(algorithm);
+            } catch (NoSuchAlgorithmException e) {
+                log.error(sm.getString("managerBase.digest", algorithm), e);
+                try {
+                    this.digest = MessageDigest.getInstance(DEFAULT_ALGORITHM);
+                } catch (NoSuchAlgorithmException f) {
+                    log.error(sm.getString("managerBase.digest",
+                                     DEFAULT_ALGORITHM), e);
+                    this.digest = null;
+                }
+            }
+            if (log.isDebugEnabled())
+                log.debug(sm.getString("managerBase.gotten"));
+            long t2=System.currentTimeMillis();
+            if( log.isDebugEnabled() )
+                log.debug("getDigest() " + (t2-t1));
+        }
+
+        return (this.digest);
+
+    }
+
+
+    /**
      * Return the distributable flag for the sessions supported by
      * this Manager.
      */
@@ -224,6 +370,58 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         support.firePropertyChange("distributable",
                                    new Boolean(oldDistributable),
                                    new Boolean(this.distributable));
+
+    }
+
+
+    /**
+     * Return the entropy increaser value, or compute a semi-useful value
+     * if this String has not yet been set.
+     */
+    public String getEntropy() {
+
+        // Calculate a semi-useful value if this has not been set
+        if (this.entropy == null) {
+            // Use APR to get a crypto secure entropy value
+            byte[] result = new byte[32];
+            boolean apr = false;
+            try {
+                String methodName = "random";
+                Class paramTypes[] = new Class[2];
+                paramTypes[0] = result.getClass();
+                paramTypes[1] = int.class;
+                Object paramValues[] = new Object[2];
+                paramValues[0] = result;
+                paramValues[1] = new Integer(32);
+                Method method = Class.forName("org.apache.tomcat.jni.OS")
+                    .getMethod(methodName, paramTypes);
+                method.invoke(null, paramValues);
+                apr = true;
+            } catch (Throwable t) {
+                // Ignore
+            }
+            if (apr) {
+                setEntropy(new String(Base64.encode(result)));
+            } else {
+                setEntropy(this.toString());
+            }
+        }
+
+        return (this.entropy);
+
+    }
+
+
+    /**
+     * Set the entropy increaser value.
+     *
+     * @param entropy The new entropy increaser value
+     */
+    public void setEntropy(String entropy) {
+
+        String oldEntropy = entropy;
+        this.entropy = entropy;
+        support.firePropertyChange("entropy", oldEntropy, this.entropy);
 
     }
 
@@ -306,6 +504,109 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         return (name);
 
     }
+
+    /** 
+     * Use /dev/random-type special device. This is new code, but may reduce
+     * the big delay in generating the random.
+     *
+     *  You must specify a path to a random generator file. Use /dev/urandom
+     *  for linux ( or similar ) systems. Use /dev/random for maximum security
+     *  ( it may block if not enough "random" exist ). You can also use
+     *  a pipe that generates random.
+     *
+     *  The code will check if the file exists, and default to java Random
+     *  if not found. There is a significant performance difference, very
+     *  visible on the first call to getSession ( like in the first JSP )
+     *  - so use it if available.
+     */
+    public void setRandomFile( String s ) {
+        // as a hack, you can use a static file - and generate the same
+        // session ids ( good for strange debugging )
+        if (Globals.IS_SECURITY_ENABLED){
+            randomIS = AccessController.doPrivileged(new PrivilegedSetRandomFile(s));
+        } else {
+            try{
+                devRandomSource=s;
+                File f=new File( devRandomSource );
+                if( ! f.exists() ) return;
+                randomIS= new DataInputStream( new FileInputStream(f));
+                randomIS.readLong();
+                if( log.isDebugEnabled() )
+                    log.debug( "Opening " + devRandomSource );
+            } catch( IOException ex ) {
+                log.warn("Error reading " + devRandomSource, ex);
+                if (randomIS != null) {
+                    try {
+                        randomIS.close();
+                    } catch (Exception e) {
+                        log.warn("Failed to close randomIS.");
+                    }
+                }
+                devRandomSource = null;
+                randomIS=null;
+            }
+        }
+    }
+
+    public String getRandomFile() {
+        return devRandomSource;
+    }
+
+
+    /**
+     * Return the random number generator instance we should use for
+     * generating session identifiers.  If there is no such generator
+     * currently defined, construct and seed a new one.
+     */
+    public Random getRandom() {
+        if (this.random == null) {
+            // Calculate the new random number generator seed
+            long seed = System.nanoTime();
+            char entropy[] = getEntropy().toCharArray();
+            for (int i = 0; i < entropy.length; i++) {
+                long update = ((byte) entropy[i]) << ((i % 8) * 8);
+                seed ^= update;
+            }
+            // Construct and seed a new random number generator
+            try {
+                Class clazz = Class.forName(randomClass);
+                this.random = (Random) clazz.newInstance();
+            } catch (Exception e) {
+                log.warn(sm.getString("managerBase.random", randomClass), e);
+                this.random = new java.util.Random();
+            }
+            this.random.setSeed(seed);
+        }
+        
+        return (this.random);
+
+    }
+
+
+    /**
+     * Return the random number generator class name.
+     */
+    public String getRandomClass() {
+
+        return (this.randomClass);
+
+    }
+
+
+    /**
+     * Set the random number generator class name.
+     *
+     * @param randomClass The new random number generator class name
+     */
+    public void setRandomClass(String randomClass) {
+
+        String oldRandomClass = this.randomClass;
+        this.randomClass = randomClass;
+        support.firePropertyChange("randomClass", oldRandomClass,
+                                   this.randomClass);
+
+    }
+
 
     /**
      * Gets the number of sessions that have expired.
@@ -399,9 +700,15 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     }
 
     public void destroy() {
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( oname != null )
-                Registry.getRegistry(null, null).unregisterComponent(oname);
+        if( oname != null )
+            Registry.getRegistry(null, null).unregisterComponent(oname);
+        if (randomIS!=null) {
+            try {
+                randomIS.close();
+            } catch (IOException ioe) {
+                log.warn("Failed to close randomIS.");
+            }
+            randomIS=null;
         }
         initialized=false;
         oname = null;
@@ -413,26 +720,27 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         
         log = Logger.getLogger(ManagerBase.class);
         
-        StandardContext ctx=(StandardContext)this.getContainer();
-        distributable = ctx.getDistributable();
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( oname==null ) {
-                try {
-                    Engine eng=(Engine)ctx.getParent().getParent();
-                    domain=ctx.getEngineName();
-                    StandardHost hst=(StandardHost)ctx.getParent();
-                    String path = ctx.getPath();
-                    if (path.equals("")) {
-                        path = "/";
-                    }   
-                    oname=new ObjectName(domain + ":type=Manager,path="
-                            + path + ",host=" + hst.getName());
-                    Registry.getRegistry(null, null).registerComponent(this, oname, null );
-                } catch (Exception e) {
-                    log.error("Error registering ",e);
-                }
+        if( oname==null ) {
+            try {
+                StandardContext ctx=(StandardContext)this.getContainer();
+                Engine eng=(Engine)ctx.getParent().getParent();
+                domain=ctx.getEngineName();
+                distributable = ctx.getDistributable();
+                StandardHost hst=(StandardHost)ctx.getParent();
+                String path = ctx.getPath();
+                if (path.equals("")) {
+                    path = "/";
+                }   
+                oname=new ObjectName(domain + ":type=Manager,path="
+                + path + ",host=" + hst.getName());
+                Registry.getRegistry(null, null).registerComponent(this, oname, null );
+            } catch (Exception e) {
+                log.error("Error registering ",e);
             }
         }
+        
+        // Initialize random number generation
+        getRandomBytes(new byte[16]);
         
         if(log.isDebugEnabled())
             log.debug("Registering " + oname );
@@ -472,11 +780,27 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      * 
      * @param session   The session to change the session ID for
      */
-    public void changeSessionId(Session session, Random random) {
-        session.setId(generateSessionId(random));
+    public void changeSessionId(Session session) {
+        session.setId(generateSessionId());
     }
 
 
+    /**
+     * Construct and return a new session object, based on the default
+     * settings specified by this Manager's properties.  The session
+     * id will be assigned by this method, and available via the getId()
+     * method of the returned session.  If a new session cannot be created
+     * for any reason, return <code>null</code>.
+     * 
+     * @exception IllegalStateException if a new session cannot be
+     *  instantiated for any reason
+     * @deprecated
+     */
+    public Session createSession() {
+        return createSession(null);
+    }
+    
+    
     /**
      * Construct and return a new session object, based on the default
      * settings specified by this Manager's properties.  The session
@@ -490,7 +814,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      * @exception IllegalStateException if a new session cannot be
      *  instantiated for any reason
      */
-    public Session createSession(String sessionId, Random random) {
+    public Session createSession(String sessionId) {
         
         // Recycle or create a Session instance
         Session session = createEmptySession();
@@ -501,7 +825,34 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         session.setCreationTime(System.currentTimeMillis());
         session.setMaxInactiveInterval(this.maxInactiveInterval);
         if (sessionId == null) {
-            sessionId = generateSessionId(random);
+            sessionId = generateSessionId();
+        // FIXME WHy we need no duplication check?
+        /*         
+             synchronized (sessions) {
+                while (sessions.get(sessionId) != null) { // Guarantee
+                    // uniqueness
+                    duplicates++;
+                    sessionId = generateSessionId();
+                }
+            }
+        */
+            
+            // FIXME: Code to be used in case route replacement is needed
+            /*
+        } else {
+            String jvmRoute = getJvmRoute();
+            if (getJvmRoute() != null) {
+                String requestJvmRoute = null;
+                int index = sessionId.indexOf(".");
+                if (index > 0) {
+                    requestJvmRoute = sessionId
+                            .substring(index + 1, sessionId.length());
+                }
+                if (requestJvmRoute != null && !requestJvmRoute.equals(jvmRoute)) {
+                    sessionId = sessionId.substring(0, index) + "." + jvmRoute;
+                }
+            }
+            */
         }
         session.setId(sessionId);
         sessionCounter++;
@@ -587,70 +938,83 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     }
 
 
+    protected void getRandomBytes(byte bytes[]) {
+        // Generate a byte array containing a session identifier
+        if (devRandomSource != null && randomIS == null) {
+            setRandomFile(devRandomSource);
+        }
+        if (randomIS != null) {
+            try {
+                int len = randomIS.read(bytes);
+                if (len == bytes.length) {
+                    return;
+                }
+                if(log.isDebugEnabled())
+                    log.debug("Got " + len + " " + bytes.length );
+            } catch (Exception ex) {
+                // Ignore
+            }
+            devRandomSource = null;
+            
+            try {
+                randomIS.close();
+            } catch (Exception e) {
+                log.warn("Failed to close randomIS.");
+            }
+            
+            randomIS = null;
+        }
+        getRandom().nextBytes(bytes);
+    }
+
+
     /**
      * Generate and return a new session identifier.
      */
-    protected String generateSessionId(Random random) {
-        byte[] bytes = new byte[sessionIdLength];
-        random.nextBytes(bytes);
-        // Encode the result
-        char[] id = encode(bytes);
+    protected synchronized String generateSessionId() {
+
+        byte random[] = new byte[16];
         String jvmRoute = getJvmRoute();
-        if (appendJVMRoute() && jvmRoute != null) {
-            StringBuilder buffer = new StringBuilder();
-            buffer.append(id).append('.').append(jvmRoute);
-            return buffer.toString();
-        } else {
-            return String.valueOf(id);
-        }
+        String result = null;
+
+        // Render the result as a String of hexadecimal digits
+        StringBuilder buffer = new StringBuilder();
+        do {
+            int resultLenBytes = 0;
+            if (result != null) {
+                buffer = new StringBuilder();
+                duplicates++;
+            }
+
+            while (resultLenBytes < this.sessionIdLength) {
+                getRandomBytes(random);
+                random = getDigest().digest(random);
+                for (int j = 0;
+                j < random.length && resultLenBytes < this.sessionIdLength;
+                j++) {
+                    byte b1 = (byte) ((random[j] & 0xf0) >> 4);
+                    byte b2 = (byte) (random[j] & 0x0f);
+                    if (b1 < 10)
+                        buffer.append((char) ('0' + b1));
+                    else
+                        buffer.append((char) ('A' + (b1 - 10)));
+                    if (b2 < 10)
+                        buffer.append((char) ('0' + b2));
+                    else
+                        buffer.append((char) ('A' + (b2 - 10)));
+                    resultLenBytes++;
+                }
+            }
+            if (jvmRoute != null) {
+                buffer.append('.').append(jvmRoute);
+            }
+            result = buffer.toString();
+        } while (sessions.containsKey(result));
+        return (result);
+
     }
 
-    protected boolean appendJVMRoute() {
-        return true;
-    }
-    
-    /**
-     * Encode the bytes into a String with a slightly modified Base64-algorithm
-     * This code was written by Kevin Kelley <kelley@ruralnet.net>
-     * and adapted by Thomas Peuss <jboss@peuss.de>
-     *
-     * @param data The bytes you want to encode
-     * @return the encoded String
-     */
-    public static char[] encode(byte[] data) {
-       char[] out = new char[((data.length + 2) / 3) * 4];
-       char[] alphabet = SESSION_ID_ALPHABET;
-       //
-       // 3 bytes encode to 4 chars.  Output is always an even
-       // multiple of 4 characters.
-       //
-       for (int i = 0, index = 0; i < data.length; i += 3, index += 4) {
-          boolean quad = false;
-          boolean trip = false;
 
-          int val = (0xFF & (int) data[i]);
-          val <<= 8;
-          if ((i + 1) < data.length) {
-             val |= (0xFF & (int) data[i + 1]);
-             trip = true;
-          }
-          val <<= 8;
-          if ((i + 2) < data.length) {
-             val |= (0xFF & (int) data[i + 2]);
-             quad = true;
-          }
-          out[index + 3] = alphabet[(quad ? (val & 0x3F) : 64)];
-          val >>= 6;
-          out[index + 2] = alphabet[(trip ? (val & 0x3F) : 64)];
-          val >>= 6;
-          out[index + 1] = alphabet[val & 0x3F];
-          val >>= 6;
-          out[index + 0] = alphabet[val & 0x3F];
-       }
-       return out;
-    }
-
-    
     // ------------------------------------------------------ Protected Methods
 
 

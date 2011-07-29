@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.net.ssl.SSLContext;
 
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
@@ -152,9 +151,6 @@ public class Http11Protocol
         return false;
     }
 
-    public RequestGroupInfo getRequestGroupInfo() {
-        return cHandler.global;
-    }
 
     public void init() throws Exception {
         endpoint.setName(getName());
@@ -198,22 +194,21 @@ public class Http11Protocol
     }
 
     public void start() throws Exception {
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (this.domain != null) {
-                try {
-                    tpOname = new ObjectName
+        if (this.domain != null) {
+            try {
+                tpOname = new ObjectName
                     (domain + ":" + "type=ThreadPool,name=" + getName());
-                    Registry.getRegistry(null, null)
+                Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
-                } catch (Exception e) {
-                    log.error("Can't register endpoint");
-                }
-                rgOname=new ObjectName
-                (domain + ":type=GlobalRequestProcessor,name=" + getName());
-                Registry.getRegistry(null, null).registerComponent
-                ( cHandler.global, rgOname, null );
+            } catch (Exception e) {
+                log.error("Can't register endpoint");
             }
+            rgOname=new ObjectName
+                (domain + ":type=GlobalRequestProcessor,name=" + getName());
+            Registry.getRegistry(null, null).registerComponent
+                ( cHandler.global, rgOname, null );
         }
+
         try {
             endpoint.start();
         } catch (Exception ex) {
@@ -269,19 +264,19 @@ public class Http11Protocol
         if (log.isInfoEnabled())
             log.info(sm.getString("http11protocol.stop", getName()));
         endpoint.destroy();
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (tpOname!=null)
-                Registry.getRegistry(null, null).unregisterComponent(tpOname);
-            if (rgOname != null)
-                Registry.getRegistry(null, null).unregisterComponent(rgOname);
-        }
+        if (tpOname!=null)
+            Registry.getRegistry(null, null).unregisterComponent(tpOname);
+        if (rgOname != null)
+            Registry.getRegistry(null, null).unregisterComponent(rgOname);
     }
 
     public String getName() {
         String encodedAddr = "";
         if (getAddress() != null) {
             encodedAddr = "" + getAddress();
-            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-')) + "-";
+            if (encodedAddr.startsWith("/"))
+                encodedAddr = encodedAddr.substring(1);
+            encodedAddr = URLEncoder.encode(encodedAddr) + "-";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }
@@ -335,7 +330,7 @@ public class Http11Protocol
      * Maximum number of requests which can be performed over a keepalive 
      * connection. The default is the same as for Apache HTTP Server.
      */
-    protected int maxKeepAliveRequests = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 1 : 100;
+    protected int maxKeepAliveRequests = 100;
     public int getMaxKeepAliveRequests() { return maxKeepAliveRequests; }
     public void setMaxKeepAliveRequests(int mkar) { maxKeepAliveRequests = mkar; }
 
@@ -460,9 +455,6 @@ public class Http11Protocol
     public int getSoTimeout() { return endpoint.getSoTimeout(); }
     public void setSoTimeout(int soTimeout) { endpoint.setSoTimeout(soTimeout); }
 
-    public void setPollerSize(int pollerSize) { endpoint.setPollerSize(pollerSize); }
-    public int getPollerSize() { return endpoint.getPollerSize(); }
-
     // HTTP
     /**
      * Return the Keep-Alive policy for the connection.
@@ -548,14 +540,6 @@ public class Http11Protocol
 
     public void setKeyAlias(String keyAlias) {
         setAttribute("keyAlias", keyAlias);
-    }
-
-    public SSLContext getSSLContext() {
-        return (SSLContext) getAttribute("SSLContext");
-    }
-
-    public void setSSLContext(SSLContext sslContext) {
-        setAttribute("SSLContext", sslContext);
     }
 
     // -----------------------------------  Http11ConnectionHandler Inner Class
@@ -726,12 +710,12 @@ public class Http11Protocol
         }
         
         protected void register(Http11Processor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(global);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getName() + ",name=HttpRequest" + count);
@@ -748,11 +732,11 @@ public class Http11Protocol
         }
 
         protected void unregister(Http11Processor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(null);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
                         if (log.isDebugEnabled()) {
                             log.debug("Unregister " + rpName);

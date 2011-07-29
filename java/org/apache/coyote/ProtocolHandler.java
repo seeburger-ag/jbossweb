@@ -61,9 +61,6 @@ public interface ProtocolHandler {
     public boolean hasIoEvents();
 
 
-    public RequestGroupInfo getRequestGroupInfo();
-
-
    /**
      * Init the protocol.
      */

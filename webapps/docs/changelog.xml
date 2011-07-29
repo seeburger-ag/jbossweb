@@ -16,325 +16,38 @@
 
 <body>
 
-<section name="JBoss Web 7.0.1.Final (remm)">
+<section name="JBoss Web 3.0.0.CR2 (jfclere)">
   <subsection name="Catalina">
     <changelog>
       <fix>
-        <jira>205</jira>: Filter out some generic callback events which are not
-        relevant for Servlet 3 async. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Coyote">
-    <changelog>
-      <fix>
-        Fix handling of sendfile errors when calling add. (markt)
-      </fix>
-      <update>
-        Refactor sendfile as its own API, similar to sendError. (remm)
-      </update>
-      <fix>
-        Arrange solaris and macosx native logic (jfclere)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Final (remm)">
-  <subsection name="Coyote">
-    <changelog>
-      <fix>
-        Improve byte[] to String conversion speed when running into a cache miss and
-        when requesting a reader/writer caused by encoding to charset conversion 
-        bottleneck. (remm, markt)
+        Use upper case for encoding (remm)
       </fix>
       <fix>
-        Stop considering '/' as a separator in cookies by default (based on the
-        compliance flag being true by default). (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.CR4 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        <jboss-jira>AS7-1098</jboss-jira>: Cleanup URL stream handler init by using 
-        the classloader returned loader.getClassLoader(). (remm)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Jasper">
-    <changelog>
-      <fix>
-        Improve per thread tagpool cleanup. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.CR3 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        <bug>51324</bug>: Recycle should reset the OutputBuffer doFlush flag. (remm)
+        Arranging loading for jbossnative (jfclere)
       </fix>
       <fix>
-        <bug>51348</bug>: WebDAV lock processing NPE fix. (markt)
-      </fix>
-      <update>
-        Allow valves to replace the IS/reader and OS/writer that gets returned to the
-        applications. (remm)
-      </update>
-    </changelog>
-  </subsection>
-  <subsection name="Jasper">
-    <changelog>
-      <fix>
-        Improve per thread tagpool cleanup. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.CR2 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        SingleThreadModel handling was not properly implemented following a filter chain simplification. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.CR1 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        Add a new session id changed event to SessionListener, the Servlet API events are not appropriate. (remm)
+        <jira>187</jira>: Fix NPE calling multipart parsing when a Servlet has no multipart config. (remm)
       </fix>
       <fix>
-        Default to a cheaper seed method for request randoms. (remm)
-      </fix>
-      <fix>
-        Low memory default for session manager (with low max amount of sessions), and disable
-        session persistence by default. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Jasper">
-    <changelog>
-      <fix>
-        <bug>47371</bug>: Fix conversion from empty string to number in EL. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta11 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        Fix authenticator NPE due to uninitialized containerLog field when the modeler is disabled. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta10 (remm)">
-  <subsection name="Jasper">
-    <changelog>
-      <fix>
-        Fix per thread tagpool NPE due to missing instance manager. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta9 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        Improve connector API and make the native listener in charge of the default protocol
-        handler selection. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Jasper">
-    <changelog>
-      <fix>
-        Rewrite the remnants of DOM based parsing using STAX. JSPX files still use SAX. (remm)
-      </fix>
-      <fix>
-        Fix per thread tagpool to use the instance manager, and default to the per thread pool. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta8 (remm)">
-  <subsection name="Coyote">
-    <changelog>
-      <fix>
-        Fix APR init with a negative pollerSize. (remm)
-      </fix>
-      <fix>
-        Beautify the address string which is used as the connector name. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta7 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <update>
-        Add a host filtering feature in the connectors. (remm)
-      </update>
-      <update>
-        Add root webapp configuration in Host. (remm)
-      </update>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta6 (remm)">
-  <subsection name="General">
-    <changelog>
-      <fix>
-        Tune low memory use defaults. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Coyote">
-    <changelog>
-      <fix>
-        Expose the request info objects using a Java API on ProtocolHandler. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta5 (remm)">
-  <subsection name="General">
-    <changelog>
-      <fix>
-        Add a set of low memory use defaults. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta4 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        Revert allow setting content-length when using a writer. (remm)
-      </fix>
-      <fix>
-        The various defaults for system properties will be the desired AS 
-        defaults, while standalone will use a custom config. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta3 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <update>
-        Drop extension validator, now taken over in the embedding application server. (markt)
-      </update>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta2 (remm)">
-  <subsection name="General">
-    <changelog>
-      <fix>
-        Update to the JDT 3.7 branch. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        <bug>50747</bug>: Allow setting content-length when using a writer, as the previous check 
-        was incomplete. (markt)
-      </fix>
-      <fix>
-        Work directory was not set as a read only attribute. (markt)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Coyote">
-    <changelog>
-      <fix>
-        <bug>49000</bug>: Improve name only cookie handling. (markt)
-      </fix>
-      <fix>
-        <bug>47319</bug>: Fix getRemoteHost() with APR when name cannot be resolved. (markt)
-      </fix>
-      <fix>
-        <bug>50189</bug>: Fix AJP protocol corruption if a webapp reads from the request after closing 
-        the response. (remm)
-      </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Jasper">
-    <changelog>
-      <fix>
-        <bug>50500</bug>: Improve certain arithmetic conversions in EL. (markt)
-      </fix>
-    </changelog>
-  </subsection>
-</section>
-
-<section name="JBoss Web 7.0.0.Beta1 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-        <jboss-jira>JBAS-8571</jboss-jira>: Allow a Servlet 3.0 login to reauthenticate with SSO. (remm)
-      </fix>
-      <fix>
-        <jira>189</jira>: Overlay timestamps need special treatment. (remm)
-      </fix>
-      <fix>
-        Improve session id and SSO id creation. (remm)
-      </fix>
-      <fix>
-        <bug>49779</bug>: Interaction between continue and FORM. (markt)
-      </fix>
-      <fix>
-        Allow a landing page for FORM. (markt)
-      </fix>
-      <fix>
-        <jira>190</jira>: The rewrite resolver should look at request attributes. (remm)
-      </fix>
-      <fix>
-        <bug>49991</bug>: Fix calling Request listeners when entering and exiting 
+        <jboss-jira>JBAS-8297</jboss-jira>: Fix calling Request listeners when entering and exiting 
         the application scope in the main host valve, not simply just before 
         calling the filter chain. (remm)
       </fix>
-    </changelog>
-  </subsection>
-  <subsection name="Coyote">
-    <changelog>
       <fix>
-        <jboss-jira>JBPAPP-5293</jboss-jira>: ConcurrentModificationException in HandshakeCompletedNotify-Thread. (remm)
+        Ensure work dir attribute is made read-only: CVE-2010-3718. (markt)
       </fix>
       <fix>
-        <jira>186</jira>: Fix wait logic in pause() and add configuration. (jfclere)
+        Increase default MAX_PAUSE_WAIT to 300. (remm)
       </fix>
       <fix>
-        Allow using the new TLS renegotiation (RFC 5746) if available. (markt)
+        Filter out invalid locale header. (remm)
       </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
     <changelog>
+      <fix><bug>47371</bug>:  Fix empty string to number conversion (should be converted to 0) (markt)
+      </fix>
       <fix>
         <jboss-jira>JBAS-8579</jboss-jira>: Fix default for tag body content. (remm)
       </fix>
@@ -366,6 +79,32 @@
       </fix>
       <fix>
         Close reader in JDT compiler. (markt)
+      </fix>
+      <fix>
+        <jira>200</jira>: Improve tags classloading. (remm)
+      </fix>
+      <fix>
+        Rebase Jasper from the 7 branch's Jasper to pull in all fixes (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 3.0.0.CR1 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        <jira>189</jira>: Overlay timestamps need special treatment. (remm)
+      </fix>
+      <fix>
+        <jira>190</jira>: The rewrite resolver should look at request attributes. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+        <jira>186</jira>: Fix wait logic in pause() and add configuration. (jfclere)
       </fix>
     </changelog>
   </subsection>

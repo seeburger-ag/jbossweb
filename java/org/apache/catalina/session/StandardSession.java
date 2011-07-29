@@ -332,20 +332,13 @@ public class StandardSession
     public void setId(String id) {
 
         if ((this.id != null) && (manager != null))
-                manager.remove(this);
+            manager.remove(this);
 
-        String oldId = this.id;
         this.id = id;
 
         if (manager != null)
             manager.add(this);
-
-        if (oldId == null) {
-            tellNew();
-        } else {
-            // Notify interested session event listeners
-            fireSessionEvent(Session.SESSION_ID_CHANGED_EVENT, oldId);
-        }
+        tellNew();
     }
 
 

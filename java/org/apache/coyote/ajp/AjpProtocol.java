@@ -158,10 +158,6 @@ public class AjpProtocol
         return false;
     }
 
-    public RequestGroupInfo getRequestGroupInfo() {
-        return cHandler.global;
-    }
-
 
     /** Start the protocol
      */
@@ -182,22 +178,21 @@ public class AjpProtocol
 
 
     public void start() throws Exception {
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (this.domain != null ) {
-                try {
-                    tpOname = new ObjectName
+        if (this.domain != null ) {
+            try {
+                tpOname = new ObjectName
                     (domain + ":" + "type=ThreadPool,name=" + getName());
-                    Registry.getRegistry(null, null)
+                Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
-                } catch (Exception e) {
-                    log.error("Can't register threadpool" );
-                }
-                rgOname = new ObjectName
-                (domain + ":type=GlobalRequestProcessor,name=" + getName());
-                Registry.getRegistry(null, null).registerComponent
-                (cHandler.global, rgOname, null);
+            } catch (Exception e) {
+                log.error("Can't register threadpool" );
             }
+            rgOname = new ObjectName
+                (domain + ":type=GlobalRequestProcessor,name=" + getName());
+            Registry.getRegistry(null, null).registerComponent
+                (cHandler.global, rgOname, null);
         }
+
         try {
             endpoint.start();
         } catch (Exception ex) {
@@ -215,7 +210,7 @@ public class AjpProtocol
             log.error(sm.getString("ajpprotocol.endpoint.pauseerror"), ex);
             throw ex;
         }
-        // Wait for a while until all the processors are idle
+        // Wait for a while until all the processors are no longer processing requests
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
         boolean done = false;
@@ -253,12 +248,10 @@ public class AjpProtocol
         if (log.isInfoEnabled())
             log.info(sm.getString("ajpprotocol.stop", getName()));
         endpoint.destroy();
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (tpOname!=null)
-                Registry.getRegistry(null, null).unregisterComponent(tpOname);
-            if (rgOname != null)
-                Registry.getRegistry(null, null).unregisterComponent(rgOname);
-        }
+        if (tpOname!=null)
+            Registry.getRegistry(null, null).unregisterComponent(tpOname);
+        if (rgOname != null)
+            Registry.getRegistry(null, null).unregisterComponent(rgOname);
     }
 
     // *
@@ -266,7 +259,9 @@ public class AjpProtocol
         String encodedAddr = "";
         if (getAddress() != null) {
             encodedAddr = "" + getAddress();
-            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-')) + "-";
+            if (encodedAddr.startsWith("/"))
+                encodedAddr = encodedAddr.substring(1);
+            encodedAddr = URLEncoder.encode(encodedAddr) + "-";
         }
         return ("ajp-" + encodedAddr + endpoint.getPort());
     }
@@ -304,9 +299,6 @@ public class AjpProtocol
 
     public int getSoTimeout() { return endpoint.getSoTimeout(); }
     public void setSoTimeout(int soTimeout) { endpoint.setSoTimeout(soTimeout); }
-
-    public void setPollerSize(int pollerSize) { endpoint.setPollerSize(pollerSize); }
-    public int getPollerSize() { return endpoint.getPollerSize(); }
 
     /**
      * Should authentication be done in the native webserver layer, 
@@ -491,12 +483,12 @@ public class AjpProtocol
         }
         
         protected void register(AjpProcessor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(global);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getName() + ",name=AjpRequest" + count);
@@ -513,11 +505,11 @@ public class AjpProtocol
         }
 
         protected void unregister(AjpProcessor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(null);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
                         if (log.isDebugEnabled()) {
                             log.debug("Unregister " + rpName);

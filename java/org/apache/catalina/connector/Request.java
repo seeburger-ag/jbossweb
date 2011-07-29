@@ -53,7 +53,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,7 +64,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
@@ -111,7 +109,6 @@ import org.apache.catalina.util.StringParser;
 import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.buf.B2CConverter;
 import org.apache.tomcat.util.buf.ByteChunk;
-import org.apache.tomcat.util.buf.EncodingToCharset;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.buf.StringCache;
 import org.apache.tomcat.util.http.Cookies;
@@ -140,7 +137,7 @@ public class Request
 
 
     protected static final boolean SESSION_ID_CHECK = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SESSION_ID_CHECK", "true")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SESSION_ID_CHECK", "false")).booleanValue();
 
 
     protected static final boolean WRAPPED_RESPONSE_IN_LOGIN = 
@@ -157,14 +154,6 @@ public class Request
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.USE_PRINCIPAL_FROM_SESSION", "false")).booleanValue();
 
 
-    protected static final boolean LOCAL_RANDOM = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.LOCAL_RANDOM", (org.apache.tomcat.util.Constants.LOW_MEMORY) ? "false" : "true")).booleanValue();
-
-
-    protected static final boolean SEED_WITH_NEXT_BYTES = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SEED_WITH_NEXT_BYTES", "true")).booleanValue();
-
-
     // ----------------------------------------------------------- Constructors
 
 
@@ -172,7 +161,6 @@ public class Request
         // Ensure that classes are loaded for SM
         new StringCache.ByteEntry();
         new StringCache.CharEntry();
-        new EncodingToCharset();
     }
 
     public Request() {
@@ -180,7 +168,7 @@ public class Request
         formats[0].setTimeZone(GMT_ZONE);
         formats[1].setTimeZone(GMT_ZONE);
         formats[2].setTimeZone(GMT_ZONE);
-        
+
     }
 
 
@@ -349,18 +337,6 @@ public class Request
 
 
     /**
-     * Application input stream.
-     */
-    protected ServletInputStream applicationInputStream = null;
-
-
-    /**
-     * Application reader.
-     */
-    protected BufferedReader applicationReader = null;
-
-
-    /**
      * User principal.
      */
     protected Principal userPrincipal = null;
@@ -503,12 +479,6 @@ public class Request
     protected boolean sslAttributes = false;
     
 
-    /**
-     * Random generator.
-     */
-    protected Random random = null;
-    
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -539,8 +509,6 @@ public class Request
         inputBuffer.recycle();
         usingInputStream = false;
         usingReader = false;
-        applicationInputStream = null;
-        applicationReader = null;
         userPrincipal = null;
         subject = null;
         sessionParsed = false;
@@ -654,17 +622,6 @@ public class Request
      */
     public void setConnector(Connector connector) {
         this.connector = connector;
-        if (LOCAL_RANDOM) {
-            if (SEED_WITH_NEXT_BYTES) {
-                byte[] seed = new byte[16];
-                connector.getService().getRandom().nextBytes(seed);
-                random = new SecureRandom(seed);
-            } else {
-                random = new SecureRandom(connector.getService().getRandom().generateSeed(16));
-            }
-        } else {
-            random = connector.getService().getRandom();
-        }
     }
 
 
@@ -693,13 +650,6 @@ public class Request
         this.context = context;
     }
 
-
-    /**
-     * Return the Random.
-     */
-    public Random getRandom() {
-        return (this.random);
-    }
 
     /**
      * Filter chains associated with the request.
@@ -869,6 +819,16 @@ public class Request
         }
         return inputStream;
     }
+
+    /**
+     * Set the input stream associated with this Request.
+     *
+     * @param stream The new input stream
+     */
+    public void setStream(InputStream stream) {
+        // Ignore
+    }
+
 
     /**
      * URI byte to char converter (not recycled).
@@ -1221,20 +1181,12 @@ public class Request
             throw new IllegalStateException
                 (sm.getString("coyoteRequest.getInputStream.ise"));
 
-        if (applicationInputStream != null) {
-            return applicationInputStream;
-        }
         usingInputStream = true;
         if (inputStream == null) {
             inputStream = new CoyoteInputStream(inputBuffer);
         }
         return inputStream;
 
-    }
-
-
-    public void setInputStream(ServletInputStream inputStream) {
-        applicationInputStream = inputStream;
     }
 
 
@@ -1376,9 +1328,6 @@ public class Request
             throw new IllegalStateException
                 (sm.getString("coyoteRequest.getReader.ise"));
 
-        if (applicationReader != null) {
-            return applicationReader;
-        }
         usingReader = true;
         inputBuffer.checkConverter();
         if (reader == null) {
@@ -1386,16 +1335,6 @@ public class Request
         }
         return reader;
 
-    }
-
-    
-    /**
-     * Replaces the reader with an application provided one.
-     * 
-     * @param reader
-     */
-    public void setReader(BufferedReader reader) {
-        applicationReader = reader;
     }
 
 
@@ -1742,7 +1681,9 @@ public class Request
             return;
         
         // Ensure that the specified encoding is valid
-        EncodingToCharset.toCharset(enc);
+        byte buffer[] = new byte[1];
+        buffer[0] = (byte) 'a';
+        String dummy = new String(buffer, enc);
 
         // Save the validated encoding
         coyoteRequest.setCharacterEncoding(enc);
@@ -2662,7 +2603,7 @@ public class Request
                 sessionId = null;
             }
         }
-        session = manager.createSession(sessionId, random);
+        session = manager.createSession(sessionId);
 
         // Creating a new session cookie based on that session
         // If there was no cookie with the current session id, add a cookie to the response
@@ -3298,11 +3239,6 @@ public class Request
             parseMultipart();
         }
         return parts.values();
-    }
-
-
-    public boolean hasSendfile() {
-        return coyoteRequest.hasSendfile();
     }
 
 

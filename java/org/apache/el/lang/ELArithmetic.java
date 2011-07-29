@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,18 +26,16 @@ import org.apache.el.util.MessageFactory;
 /**
  * A helper class of Arithmetic defined by the EL Specification
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Id$
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
  */
 public abstract class ELArithmetic {
 
-    public static final class BigDecimalDelegate extends ELArithmetic {
+    public final static class BigDecimalDelegate extends ELArithmetic {
 
-        @Override
         protected Number add(Number num0, Number num1) {
             return ((BigDecimal) num0).add((BigDecimal) num1);
         }
 
-        @Override
         protected Number coerce(Number num) {
             if (num instanceof BigDecimal)
                 return num;
@@ -46,86 +44,71 @@ public abstract class ELArithmetic {
             return new BigDecimal(num.doubleValue());
         }
 
-        @Override
         protected Number coerce(String str) {
             return new BigDecimal(str);
         }
 
-        @Override
         protected Number divide(Number num0, Number num1) {
             return ((BigDecimal) num0).divide((BigDecimal) num1,
                     BigDecimal.ROUND_HALF_UP);
         }
 
-        @Override
         protected Number subtract(Number num0, Number num1) {
             return ((BigDecimal) num0).subtract((BigDecimal) num1);
         }
 
-        @Override
         protected Number mod(Number num0, Number num1) {
             return new Double(num0.doubleValue() % num1.doubleValue());
         }
 
-        @Override
         protected Number multiply(Number num0, Number num1) {
             return ((BigDecimal) num0).multiply((BigDecimal) num1);
         }
 
-        @Override
         public boolean matches(Object obj0, Object obj1) {
             return (obj0 instanceof BigDecimal || obj1 instanceof BigDecimal);
         }
     }
 
-    public static final class BigIntegerDelegate extends ELArithmetic {
+    public final static class BigIntegerDelegate extends ELArithmetic {
 
-        @Override
         protected Number add(Number num0, Number num1) {
             return ((BigInteger) num0).add((BigInteger) num1);
         }
 
-        @Override
         protected Number coerce(Number num) {
             if (num instanceof BigInteger)
                 return num;
             return new BigInteger(num.toString());
         }
 
-        @Override
         protected Number coerce(String str) {
             return new BigInteger(str);
         }
 
-        @Override
         protected Number divide(Number num0, Number num1) {
             return (new BigDecimal((BigInteger) num0)).divide(new BigDecimal((BigInteger) num1), BigDecimal.ROUND_HALF_UP);
         }
 
-        @Override
         protected Number multiply(Number num0, Number num1) {
             return ((BigInteger) num0).multiply((BigInteger) num1);
         }
 
-        @Override
         protected Number mod(Number num0, Number num1) {
             return ((BigInteger) num0).mod((BigInteger) num1);
         }
 
-        @Override
         protected Number subtract(Number num0, Number num1) {
             return ((BigInteger) num0).subtract((BigInteger) num1);
         }
 
-        @Override
         public boolean matches(Object obj0, Object obj1) {
             return (obj0 instanceof BigInteger || obj1 instanceof BigInteger);
         }
     }
 
-    public static final class DoubleDelegate extends ELArithmetic {
+    public final static class DoubleDelegate extends ELArithmetic {
 
-        @Override
         protected Number add(Number num0, Number num1) {
             // could only be one of these
             if (num0 instanceof BigDecimal) {
@@ -136,7 +119,6 @@ public abstract class ELArithmetic {
             return new Double(num0.doubleValue() + num1.doubleValue());
         }
 
-        @Override
         protected Number coerce(Number num) {
             if (num instanceof Double)
                 return num;
@@ -145,22 +127,18 @@ public abstract class ELArithmetic {
             return new Double(num.doubleValue());
         }
 
-        @Override
         protected Number coerce(String str) {
             return new Double(str);
         }
 
-        @Override
         protected Number divide(Number num0, Number num1) {
             return new Double(num0.doubleValue() / num1.doubleValue());
         }
 
-        @Override
         protected Number mod(Number num0, Number num1) {
             return new Double(num0.doubleValue() % num1.doubleValue());
         }
 
-        @Override
         protected Number subtract(Number num0, Number num1) {
             // could only be one of these
             if (num0 instanceof BigDecimal) {
@@ -171,7 +149,6 @@ public abstract class ELArithmetic {
             return new Double(num0.doubleValue() - num1.doubleValue());
         }
 
-        @Override
         protected Number multiply(Number num0, Number num1) {
             // could only be one of these
             if (num0 instanceof BigDecimal) {
@@ -182,7 +159,6 @@ public abstract class ELArithmetic {
             return new Double(num0.doubleValue() * num1.doubleValue());
         }
 
-        @Override
         public boolean matches(Object obj0, Object obj1) {
             return (obj0 instanceof Double
                     || obj1 instanceof Double
@@ -194,75 +170,64 @@ public abstract class ELArithmetic {
         }
     }
 
-    public static final class LongDelegate extends ELArithmetic {
+    public final static class LongDelegate extends ELArithmetic {
 
-        @Override
         protected Number add(Number num0, Number num1) {
-            return Long.valueOf(num0.longValue() + num1.longValue());
+            return new Long(num0.longValue() + num1.longValue());
         }
 
-        @Override
         protected Number coerce(Number num) {
             if (num instanceof Long)
                 return num;
-            return Long.valueOf(num.longValue());
+            return new Long(num.longValue());
         }
 
-        @Override
         protected Number coerce(String str) {
-            return Long.valueOf(str);
+            return new Long(str);
         }
 
-        @Override
         protected Number divide(Number num0, Number num1) {
-            return Long.valueOf(num0.longValue() / num1.longValue());
+            return new Long(num0.longValue() / num1.longValue());
         }
 
-        @Override
         protected Number mod(Number num0, Number num1) {
-            return Long.valueOf(num0.longValue() % num1.longValue());
+            return new Long(num0.longValue() % num1.longValue());
         }
 
-        @Override
         protected Number subtract(Number num0, Number num1) {
-            return Long.valueOf(num0.longValue() - num1.longValue());
+            return new Long(num0.longValue() - num1.longValue());
         }
 
-        @Override
         protected Number multiply(Number num0, Number num1) {
-            return Long.valueOf(num0.longValue() * num1.longValue());
+            return new Long(num0.longValue() * num1.longValue());
         }
 
-        @Override
         public boolean matches(Object obj0, Object obj1) {
             return (obj0 instanceof Long || obj1 instanceof Long);
         }
     }
 
-    public static final BigDecimalDelegate BIGDECIMAL = new BigDecimalDelegate();
+    public final static BigDecimalDelegate BIGDECIMAL = new BigDecimalDelegate();
 
-    public static final BigIntegerDelegate BIGINTEGER = new BigIntegerDelegate();
+    public final static BigIntegerDelegate BIGINTEGER = new BigIntegerDelegate();
 
-    public static final DoubleDelegate DOUBLE = new DoubleDelegate();
+    public final static DoubleDelegate DOUBLE = new DoubleDelegate();
 
-    public static final LongDelegate LONG = new LongDelegate();
+    public final static LongDelegate LONG = new LongDelegate();
 
-    private static final Long ZERO = Long.valueOf(0);
+    private final static Long ZERO = new Long(0);
 
-    public static final Number add(final Object obj0, final Object obj1) {
+    public final static Number add(final Object obj0, final Object obj1) {
         if (obj0 == null && obj1 == null) {
-            return Long.valueOf(0);
+            return new Long(0);
         }
 
         final ELArithmetic delegate;
         if (BIGDECIMAL.matches(obj0, obj1))
             delegate = BIGDECIMAL;
-        else if (DOUBLE.matches(obj0, obj1)) {
-            if (BIGINTEGER.matches(obj0, obj1))
-                delegate = BIGDECIMAL;
-            else
-                delegate = DOUBLE;
-        } else if (BIGINTEGER.matches(obj0, obj1))
+        else if (DOUBLE.matches(obj0, obj1))
+            delegate = DOUBLE;
+        else if (BIGINTEGER.matches(obj0, obj1))
             delegate = BIGINTEGER;
         else
             delegate = LONG;
@@ -273,14 +238,14 @@ public abstract class ELArithmetic {
         return delegate.add(num0, num1);
     }
 
-    public static final Number mod(final Object obj0, final Object obj1) {
+    public final static Number mod(final Object obj0, final Object obj1) {
         if (obj0 == null && obj1 == null) {
-            return Long.valueOf(0);
+            return new Long(0);
         }
 
         final ELArithmetic delegate;
         if (BIGDECIMAL.matches(obj0, obj1))
-            delegate = DOUBLE;
+            delegate = BIGDECIMAL;
         else if (DOUBLE.matches(obj0, obj1))
             delegate = DOUBLE;
         else if (BIGINTEGER.matches(obj0, obj1))
@@ -294,21 +259,18 @@ public abstract class ELArithmetic {
         return delegate.mod(num0, num1);
     }
 
-    public static final Number subtract(final Object obj0, final Object obj1) {
+    public final static Number subtract(final Object obj0, final Object obj1) {
         if (obj0 == null && obj1 == null) {
-            return Long.valueOf(0);
+            return new Long(0);
         }
 
         final ELArithmetic delegate;
         if (BIGDECIMAL.matches(obj0, obj1))
             delegate = BIGDECIMAL;
-        else if (DOUBLE.matches(obj0, obj1)) {
-            if (BIGINTEGER.matches(obj0, obj1))
-                delegate = BIGDECIMAL;
-            else
-                delegate = DOUBLE;
-        } else if (BIGINTEGER.matches(obj0, obj1))
-            delegate = BIGINTEGER;
+        else if (DOUBLE.matches(obj0, obj1))
+            delegate = DOUBLE;
+        else if (BIGINTEGER.matches(obj0, obj1))
+            delegate = BIGINTEGER;   
         else
             delegate = LONG;
 
@@ -318,7 +280,7 @@ public abstract class ELArithmetic {
         return delegate.subtract(num0, num1);
     }
 
-    public static final Number divide(final Object obj0, final Object obj1) {
+    public final static Number divide(final Object obj0, final Object obj1) {
         if (obj0 == null && obj1 == null) {
             return ZERO;
         }
@@ -337,20 +299,17 @@ public abstract class ELArithmetic {
         return delegate.divide(num0, num1);
     }
 
-    public static final Number multiply(final Object obj0, final Object obj1) {
+    public final static Number multiply(final Object obj0, final Object obj1) {
         if (obj0 == null && obj1 == null) {
-            return Long.valueOf(0);
+            return new Long(0);
         }
 
         final ELArithmetic delegate;
         if (BIGDECIMAL.matches(obj0, obj1))
             delegate = BIGDECIMAL;
-        else if (DOUBLE.matches(obj0, obj1)) {
-            if (BIGINTEGER.matches(obj0, obj1))
-                delegate = BIGDECIMAL;
-            else
-                delegate = DOUBLE;
-        } else if (BIGINTEGER.matches(obj0, obj1))
+        else if (DOUBLE.matches(obj0, obj1))
+            delegate = DOUBLE;
+        else if (BIGINTEGER.matches(obj0, obj1))
             delegate = BIGINTEGER;
         else
             delegate = LONG;
@@ -361,11 +320,11 @@ public abstract class ELArithmetic {
         return delegate.multiply(num0, num1);
     }
 
-    public static final boolean isNumber(final Object obj) {
+    public final static boolean isNumber(final Object obj) {
         return (obj != null && isNumberType(obj.getClass()));
     }
 
-    public static final boolean isNumberType(final Class<?> type) {
+    public final static boolean isNumberType(final Class<?> type) {
         return type == Long.TYPE || type == Double.TYPE ||
             type == Byte.TYPE || type == Short.TYPE ||
             type == Integer.TYPE || type == Float.TYPE ||
@@ -373,7 +332,7 @@ public abstract class ELArithmetic {
     }
 
     /**
-     *
+     * 
      */
     protected ELArithmetic() {
         super();
@@ -390,7 +349,7 @@ public abstract class ELArithmetic {
     protected abstract Number coerce(final Number num);
 
     protected final Number coerce(final Object obj) {
-
+        
         if (isNumber(obj)) {
             return coerce((Number) obj);
         }
@@ -402,7 +361,7 @@ public abstract class ELArithmetic {
         }
 
         if (obj instanceof Character) {
-            return coerce(Short.valueOf((short) ((Character) obj).charValue()));
+            return coerce(new Short((short) ((Character) obj).charValue()));
         }
 
         throw new IllegalArgumentException(MessageFactory.get("error.convert",

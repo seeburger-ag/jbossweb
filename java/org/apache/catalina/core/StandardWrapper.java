@@ -944,23 +944,29 @@ public class StandardWrapper
             throw new ServletException
               (sm.getString("standardWrapper.unloading", getName()));
 
-        // Load and initialize our instance if necessary
-        if (instance == null) {
-            synchronized (this) {
-                if (instance == null) {
-                    try {
-                        instance = loadServlet();
-                    } catch (ServletException e) {
-                        throw e;
-                    } catch (Throwable e) {
-                        throw new ServletException(sm.getString("standardWrapper.allocate"), e);
+        // If not SingleThreadedModel, return the same instance every time
+        if (!singleThreadModel) {
+
+            // Load and initialize our instance if necessary
+            if (instance == null) {
+                synchronized (this) {
+                    if (instance == null) {
+                        try {
+                            instance = loadServlet();
+                        } catch (ServletException e) {
+                            throw e;
+                        } catch (Throwable e) {
+                            throw new ServletException
+                                (sm.getString("standardWrapper.allocate"), e);
+                        }
                     }
                 }
             }
-        }
 
-        if (!singleThreadModel) {
-            return (instance);
+            if (!singleThreadModel) {
+                return (instance);
+            }
+
         }
 
         synchronized (instancePool) {
@@ -1638,10 +1644,8 @@ public class StandardWrapper
         // Start up this component
         super.start();
 
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( oname != null )
-                registerJMX((StandardContext)getParent());
-        }
+        if( oname != null )
+            registerJMX((StandardContext)getParent());
         
         // Load and initialize an instance of this servlet if requested
         // MOVED TO StandardContext START() METHOD
@@ -1696,20 +1700,18 @@ public class StandardWrapper
             broadcaster.sendNotification(notification);
         }
         
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( oname != null ) {
-                Registry.getRegistry(null, null).unregisterComponent(oname);
+        if( oname != null ) {
+            Registry.getRegistry(null, null).unregisterComponent(oname);
+            
+            // Send j2ee.object.deleted notification 
+            Notification notification = 
+                new Notification("j2ee.object.deleted", this.getObjectName(), 
+                                sequenceNumber++);
+            broadcaster.sendNotification(notification);
+        }
 
-                // Send j2ee.object.deleted notification 
-                Notification notification = 
-                    new Notification("j2ee.object.deleted", this.getObjectName(), 
-                            sequenceNumber++);
-                broadcaster.sendNotification(notification);
-            }
-
-            if (isJspServlet && jspMonitorON != null ) {
-                Registry.getRegistry(null, null).unregisterComponent(jspMonitorON);
-            }
+        if (isJspServlet && jspMonitorON != null ) {
+            Registry.getRegistry(null, null).unregisterComponent(jspMonitorON);
         }
 
     }

@@ -1181,9 +1181,6 @@ public class AjpProcessor implements ActionHook {
         if (endOfStream) {
             return false;
         }
-        if (finished) {
-            return false;
-        }
 
         // Request more data immediately
         output.write(getBodyMessageArray);

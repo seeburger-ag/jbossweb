@@ -119,25 +119,30 @@ final class StandardHostValve
         }
 
         // Bind the context CL to the current thread
-        if (context.getLoader() != null) {
-            Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
+        if( context.getLoader() != null ) {
+            // Not started - it should check for availability first
+            // This should eventually move to Engine, it's generic.
+            Thread.currentThread().setContextClassLoader
+                    (context.getLoader().getClassLoader());
         }
 
-        // Enter application scope
+        // Normal request processing
         Object instances[] = context.getApplicationEventListeners();
 
         ServletRequestEvent event = null;
 
         if ((instances != null) 
                 && (instances.length > 0)) {
-            event = new ServletRequestEvent(context.getServletContext(), request.getRequest());
+            event = new ServletRequestEvent(context.getServletContext(), 
+                 request.getRequest());
             // create pre-service event
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i] == null)
                     continue;
                 if (!(instances[i] instanceof ServletRequestListener))
                     continue;
-                ServletRequestListener listener = (ServletRequestListener) instances[i];
+                ServletRequestListener listener =
+                    (ServletRequestListener) instances[i];
                 try {
                     listener.requestInitialized(event);
                 } catch (Throwable t) {
@@ -153,6 +158,27 @@ final class StandardHostValve
         // Ask this Context to process this request
         context.getPipeline().getFirst().invoke(request, response);
 
+        if ((instances !=null ) &&
+                (instances.length > 0)) {
+            // create post-service event
+            for (int i = instances.length - 1; i >= 0; i--) {
+                if (instances[i] == null)
+                    continue;
+                if (!(instances[i] instanceof ServletRequestListener))
+                    continue;
+                ServletRequestListener listener =
+                    (ServletRequestListener) instances[i];
+                try {
+                    listener.requestDestroyed(event);
+                } catch (Throwable t) {
+                    container.getLogger().error(sm.getString("standardContext.requestListener.requestDestroy",
+                                     instances[i].getClass().getName()), t);
+                    ServletRequest sreq = request.getRequest();
+                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
+                }
+            }
+        }
+                
         // Access a session (if present) to update last accessed time, based on a
         // strict interpretation of the specification
         if (Globals.STRICT_SERVLET_COMPLIANCE) {
@@ -170,29 +196,9 @@ final class StandardHostValve
             status(request, response);
         }
 
-        // Exit application scope
-        if ((instances !=null ) &&
-                (instances.length > 0)) {
-            // create post-service event
-            for (int i = instances.length - 1; i >= 0; i--) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener = (ServletRequestListener) instances[i];
-                try {
-                    listener.requestDestroyed(event);
-                } catch (Throwable t2) {
-                    container.getLogger().error(sm.getString("standardContext.requestListener.requestDestroy",
-                                     instances[i].getClass().getName()), t2);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t2);
-                }
-            }
-        }
-
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader
+            (StandardHostValve.class.getClassLoader());
 
     }
 
@@ -213,32 +219,27 @@ final class StandardHostValve
         // Select the Context to be used for this Request
         Context context = request.getContext();
 
-        // Some regular callback events should be filtered out for Servlet 3 async
-        if (request.getAsyncContext() != null) {
-            Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
-            if (event.getType() == EventType.EVENT && asyncContext.getRunnable() == null 
-                    && asyncContext.getPath() == null) {
-                return;
-            }
-        }
-
         // Bind the context CL to the current thread
-        if (context.getLoader() != null) {
-            Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
+        if( context.getLoader() != null ) {
+            // Not started - it should check for availability first
+            // This should eventually move to Engine, it's generic.
+            Thread.currentThread().setContextClassLoader
+                    (context.getLoader().getClassLoader());
         }
 
-        // Enter application scope
         Object instances[] = context.getApplicationEventListeners();
         ServletRequestEvent event2 = null;
         if (instances != null && (instances.length > 0)) {
-            event2 = new ServletRequestEvent(context.getServletContext(), request.getRequest());
+            event2 = new ServletRequestEvent(context.getServletContext(), 
+                 request.getRequest());
             // create pre-service event
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i] == null)
                     continue;
                 if (!(instances[i] instanceof ServletRequestListener))
                     continue;
-                ServletRequestListener listener = (ServletRequestListener) instances[i];
+                ServletRequestListener listener =
+                    (ServletRequestListener) instances[i];
                 try {
                     listener.requestInitialized(event2);
                 } catch (Throwable t) {
@@ -246,7 +247,6 @@ final class StandardHostValve
                                      instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
                     sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                    Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
                     return;
                 }
             }
@@ -255,6 +255,26 @@ final class StandardHostValve
         // Ask this Context to process this request
         context.getPipeline().getFirst().event(request, response, event);
 
+        if (instances != null && (instances.length > 0)) {
+            // create post-service event
+            for (int i = instances.length - 1; i >= 0; i--) {
+                if (instances[i] == null)
+                    continue;
+                if (!(instances[i] instanceof ServletRequestListener))
+                    continue;
+                ServletRequestListener listener =
+                    (ServletRequestListener) instances[i];
+                try {
+                    listener.requestDestroyed(event2);
+                } catch (Throwable t) {
+                    container.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
+                                     instances[i].getClass().getName()), t);
+                    ServletRequest sreq = request.getRequest();
+                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
+                }
+            }
+        }
+      
         // Access a session (if present) to update last accessed time, based on a
         // strict interpretation of the specification
         if (Globals.STRICT_SERVLET_COMPLIANCE) {
@@ -287,28 +307,9 @@ final class StandardHostValve
             }
         }
 
-        // Exit application scope
-        if (instances != null && (instances.length > 0)) {
-            // create post-service event
-            for (int i = instances.length - 1; i >= 0; i--) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener = (ServletRequestListener) instances[i];
-                try {
-                    listener.requestDestroyed(event2);
-                } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
-                                     instances[i].getClass().getName()), t);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                }
-            }
-        }
-
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader
+            (StandardHostValve.class.getClassLoader());
 
     }
 

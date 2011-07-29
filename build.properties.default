@@ -10,11 +10,11 @@
 # -----------------------------------------------------------------------------
 
 # ----- Version Control Flags -----
-version.major=7
+version.major=3
 version.minor=0
 version.build=0
 version.patch=0
-version.tag=SNAPSHOT
+version.tag=CR2
 
 # ----- Default Base Path for Dependent Packages -----
 # Please note this path must be absolute, not relative,
@@ -33,10 +33,10 @@ base-tomcat.loc=http://archive.apache.org/dist/tomcat
 base-sf.loc=http://downloads.sourceforge.net
 
 # ----- Eclipse JDT, version 3.2 or later -----
-jdt.home=${base.path}/plugins
+jdt.home=${base.path}/eclipse/plugins
 jdt.lib=${jdt.home}
-jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.7.0.v_B35.jar
-jdt.loc=http://download.eclipse.org/eclipse/downloads/drops/S-3.7M5-201101272034/org.eclipse.jdt-3.7M5.zip
+jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.5.2.v_981_R35x.jar
+jdt.loc=http://download.eclipse.org/eclipse/downloads/drops/R-3.5.2-201002111343/eclipse-JDT-3.5.2.zip
 
 # ----- Dojo Toolkit (for test webapp) -----
 dojo-js.home=${base.path}/dojo-release-1.4.3

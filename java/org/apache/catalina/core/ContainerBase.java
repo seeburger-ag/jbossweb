@@ -1164,18 +1164,16 @@ public abstract class ContainerBase
         initialized=false;
 
         // unregister this component
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if ( oname != null ) {
-                try {
-                    if( controller == oname ) {
-                        Registry.getRegistry(null, null)
+        if ( oname != null ) {
+            try {
+                if( controller == oname ) {
+                    Registry.getRegistry(null, null)
                         .unregisterComponent(oname);
-                        if(log.isDebugEnabled())
-                            log.debug("unregistering " + oname);
-                    }
-                } catch( Throwable t ) {
-                    log.error("Error unregistering ", t );
+                    if(log.isDebugEnabled())
+                        log.debug("unregistering " + oname);
                 }
+            } catch( Throwable t ) {
+                log.error("Error unregistering ", t );
             }
         }
 

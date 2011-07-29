@@ -2324,21 +2324,21 @@ class Generator {
                 out.print(tagHandlerClassName);
                 out.println("());");
                 if (Constants.INJECT_TAGS) {
-                    out.printin(VAR_INSTANCEMANAGER);
-                    out.print(".newInstance(");
-                    out.print(tagHandlerVar);
-                    out.println(");");
-                }
+                out.printin(VAR_INSTANCEMANAGER);
+                out.print(".newInstance(");
+                out.print(tagHandlerVar);
+                out.println(");");
             }
+        }
         }
 
         private void writeDestroyInstance(String tagHandlerVar) {
             if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-                out.printin(VAR_INSTANCEMANAGER);
-                out.print(".destroyInstance(");
-                out.print(tagHandlerVar);
-                out.println(");");
-            }
+            out.printin(VAR_INSTANCEMANAGER);
+            out.print(".destroyInstance(");
+            out.print(tagHandlerVar);
+            out.println(");");
+        }
         }
 
         private void generateCustomEnd(Node.CustomTag n, String tagHandlerVar,

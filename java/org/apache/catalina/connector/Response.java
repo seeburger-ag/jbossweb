@@ -19,7 +19,6 @@
 package org.apache.catalina.connector;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -47,8 +46,6 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.StringManager;
-import org.apache.naming.resources.CacheEntry;
-import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.UEncoder;
 import org.apache.tomcat.util.http.FastHttpDateFormat;
@@ -221,18 +218,6 @@ public class Response
 
 
     /**
-     * Application output stream.
-     */
-    protected ServletOutputStream applicationOutputStream = null;
-
-
-    /**
-     * Using writer flag.
-     */
-    protected PrintWriter applicationWriter = null;
-
-
-    /**
      * URL encoder.
      */
     protected UEncoder urlEncoder = new UEncoder();
@@ -256,8 +241,6 @@ public class Response
         outputBuffer.recycle();
         usingOutputStream = false;
         usingWriter = false;
-        applicationOutputStream = null;
-        applicationWriter = null;
         appCommitted = false;
         included = false;
         error = false;
@@ -406,6 +389,16 @@ public class Response
             outputStream = new CoyoteOutputStream(outputBuffer);
         }
         return outputStream;
+    }
+
+
+    /**
+     * Set the output stream associated with this Response.
+     *
+     * @param stream The new output stream
+     */
+    public void setStream(OutputStream stream) {
+        // This method is evil
     }
 
 
@@ -574,21 +567,12 @@ public class Response
             throw new IllegalStateException
                 (sm.getString("coyoteResponse.getOutputStream.ise"));
 
-        if (applicationOutputStream != null) {
-            return applicationOutputStream;
-        }
-        
         usingOutputStream = true;
         if (outputStream == null) {
             outputStream = new CoyoteOutputStream(outputBuffer);
         }
         return outputStream;
 
-    }
-
-    
-    public void setOutputStream(ServletOutputStream outputStream) {
-        applicationOutputStream = outputStream;
     }
 
 
@@ -614,10 +598,6 @@ public class Response
             throw new IllegalStateException
                 (sm.getString("coyoteResponse.getWriter.ise"));
 
-        if (applicationWriter != null) {
-            return applicationWriter;
-        }
-
         if (Globals.STRICT_SERVLET_COMPLIANCE) {
             /*
              * If the response's character encoding has not been specified as
@@ -641,11 +621,6 @@ public class Response
         }
         return writer;
 
-    }
-
-
-    public void setWriter(PrintWriter writer) {
-        applicationWriter = writer;
     }
 
 
@@ -1341,66 +1316,6 @@ public class Response
     }
 
 
-    public void sendFile(String path, String absolutePath, long start, long end) {
-
-        if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.sendFile.ise"));
-
-        // Ignore any call from an included servlet
-        if (included)
-            return; 
-
-        if (!request.hasSendfile())
-            throw new IllegalStateException(sm.getString("coyoteResponse.sendFile.no"));
-
-        if (Globals.IS_SECURITY_ENABLED) {
-            if (path != null) {
-                CacheEntry cacheEntry = 
-                    ((ProxyDirContext) request.getContext().getResources()).lookupCache(path);
-                if (cacheEntry.exists && cacheEntry.resource != null && (end > start)
-                        && cacheEntry.attributes.getCanonicalPath() != null) {
-                    coyoteResponse.setSendfilePath(cacheEntry.attributes.getCanonicalPath());
-                    coyoteResponse.setSendfileStart(start);
-                    coyoteResponse.setSendfileEnd(end);
-                }
-            } else if (absolutePath != null) {
-                String canonicalPath = null;
-                try {
-                    canonicalPath = new File(absolutePath).getCanonicalPath();
-                } catch (IOException e) {
-                    throw new IllegalArgumentException(sm.getString("coyoteResponse.sendFile.path"));
-                }
-                System.getSecurityManager().checkRead(canonicalPath);
-                coyoteResponse.setSendfilePath(absolutePath);
-                coyoteResponse.setSendfileStart(start);
-                coyoteResponse.setSendfileEnd(end);
-            }
-        } else {
-            if (absolutePath != null) {
-                coyoteResponse.setSendfilePath(absolutePath);
-                coyoteResponse.setSendfileStart(start);
-                coyoteResponse.setSendfileEnd(end);
-            } else {
-                CacheEntry cacheEntry = 
-                    ((ProxyDirContext) request.getContext().getResources()).lookupCache(path);
-                if (cacheEntry.exists && cacheEntry.resource != null && (end > start)
-                        && cacheEntry.attributes.getCanonicalPath() != null) {
-                    coyoteResponse.setSendfilePath(cacheEntry.attributes.getCanonicalPath());
-                    coyoteResponse.setSendfileStart(start);
-                    coyoteResponse.setSendfileEnd(end);
-                }
-            }
-        }
-
-        outputBuffer.setBytesWritten(end - start);
-
-        // Cause the response to be finished (from the application perspective)
-        setSuspended(true);
-
-    }
-
-
     /**
      * Set the specified date header to the specified value.
      *
@@ -1593,12 +1508,15 @@ public class Response
         if (serverPort != urlPort)
             return (false);
 
-        String file = url.getFile();
-        if (file == null)
-            return (false);
-        String tok = request.getContext().getSessionCookie().getPathParameterName() + session.getIdInternal();
-        if (file.indexOf(tok) >= 0)
-            return (false);
+        String contextPath = request.getContext().getPath();
+        if (contextPath != null) {
+            String file = url.getFile();
+            if ((file == null) || !file.startsWith(contextPath))
+                return (false);
+            String tok = request.getContext().getSessionCookie().getPathParameterName() + session.getIdInternal();
+            if (file.indexOf(tok, contextPath.length()) >= 0)
+                return (false);
+        }
 
         // This URL belongs to our web application, so it is encodeable
         return (true);

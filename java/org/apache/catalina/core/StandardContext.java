@@ -86,7 +86,9 @@ import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.deploy.SessionCookie;
 import org.apache.catalina.deploy.jsp.TagLibraryInfo;
 import org.apache.catalina.session.StandardManager;
+import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.util.CharsetMapper;
+import org.apache.catalina.util.ExtensionValidator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.naming.resources.BaseDirContext;
@@ -308,8 +310,7 @@ public class StandardContext
      * Should we allow the <code>ServletContext.getContext()</code> method
      * to access the context of other web applications in this server?
      */
-    protected boolean crossContext = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardContext.CROSS_CONTEXT", "false")).booleanValue();
+    protected boolean crossContext = false;
 
     
     /**
@@ -610,13 +611,13 @@ public class StandardContext
     /**
      * Cache max size in KB.
      */
-    protected int cacheMaxSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 128 : 10240; // 10 MB
+    protected int cacheMaxSize = 10240; // 10 MB
 
 
     /**
      * Cache object max size in KB.
      */
-    protected int cacheObjectMaxSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 8 : 256; // 256K
+    protected int cacheObjectMaxSize = 256; // 256K
 
 
     /**
@@ -3536,15 +3537,13 @@ public class StandardContext
                 ((BaseDirContext) webappResources).allocate();
             }
             // Register the cache in JMX
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-                if (isCachingAllowed()) {
-                    ObjectName resourcesName = 
-                        new ObjectName(this.getDomain() + ":type=Cache,host=" 
-                                + getHostname() + ",path=" 
-                                + (("".equals(getPath()))?"/":getPath()));
-                    Registry.getRegistry(null, null).registerComponent
-                        (proxyDirContext.getCache(), resourcesName, null);
-                }
+            if (isCachingAllowed()) {
+                ObjectName resourcesName = 
+                    new ObjectName(this.getDomain() + ":type=Cache,host=" 
+                                   + getHostname() + ",path=" 
+                                   + (("".equals(getPath()))?"/":getPath()));
+                Registry.getRegistry(null, null).registerComponent
+                    (proxyDirContext.getCache(), resourcesName, null);
             }
             this.resources = proxyDirContext;
         } catch (Throwable t) {
@@ -3573,17 +3572,15 @@ public class StandardContext
                     ((BaseDirContext) webappResources).release();
                 }
                 // Unregister the cache in JMX
-                if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-                    if (isCachingAllowed()) {
-                        ObjectName resourcesName = 
-                            new ObjectName(this.getDomain()
-                                    + ":type=Cache,host=" 
-                                    + getHostname() + ",path=" 
-                                    + (("".equals(getPath()))?"/"
-                                            :getPath()));
-                        Registry.getRegistry(null, null)
+                if (isCachingAllowed()) {
+                    ObjectName resourcesName = 
+                        new ObjectName(this.getDomain()
+                                       + ":type=Cache,host=" 
+                                       + getHostname() + ",path=" 
+                                       + (("".equals(getPath()))?"/"
+                                          :getPath()));
+                    Registry.getRegistry(null, null)
                         .unregisterComponent(resourcesName);
-                    }
                 }
             }
         } catch (Throwable t) {
@@ -3661,16 +3658,14 @@ public class StandardContext
         if(log.isDebugEnabled())
             log.debug("Starting " + ("".equals(getName()) ? "ROOT" : getName()));
 
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            // Set JMX object name for proper pipeline registration
-            preRegisterJMX();
+        // Set JMX object name for proper pipeline registration
+        preRegisterJMX();
 
-            if ((oname != null) && 
-                    (Registry.getRegistry(null, null).getMBeanServer().isRegistered(oname))) {
-                // As things depend on the JMX registration, the context
-                // must be reregistered again once properly initialized
-                Registry.getRegistry(null, null).unregisterComponent(oname);
-            }
+        if ((oname != null) && 
+            (Registry.getRegistry(null, null).getMBeanServer().isRegistered(oname))) {
+            // As things depend on the JMX registration, the context
+            // must be reregistered again once properly initialized
+            Registry.getRegistry(null, null).unregisterComponent(oname);
         }
 
         // Notify our interested LifecycleListeners
@@ -3708,10 +3703,26 @@ public class StandardContext
         // Post work directory
         postWorkDirectory();
 
+        // Validate required extensions
+        boolean dependencyCheck = true;
+        try {
+            dependencyCheck = ExtensionValidator.validateApplication
+                (getResources(), this);
+        } catch (IOException ioe) {
+            log.error("Error in dependencyCheck", ioe);
+            dependencyCheck = false;
+        }
+
+        if (!dependencyCheck) {
+            // do not make application available if depency check fails
+            ok = false;
+        }
+
         // Standard container startup
         if (log.isDebugEnabled())
             log.debug("Processing standard container startup");
 
+        
         // Binding thread
         ClassLoader oldCCL = bindThread();
 
@@ -3724,10 +3735,6 @@ public class StandardContext
                 // Start our subordinate components, if any
                 if ((loader != null) && (loader instanceof Lifecycle))
                     ((Lifecycle) loader).start();
-
-                if ((loader != null) && (loader.getClassLoader() != null)) {
-                    DirContextURLStreamHandler.bind(loader.getClassLoader(), getResources());
-                }
 
                 // Unbinding thread
                 unbindThread(oldCCL);
@@ -3894,9 +3901,7 @@ public class StandardContext
         setStarting(false);
 
         // JMX registration
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            registerJMX();
-        }
+        registerJMX();
 
         startTime=System.currentTimeMillis();
         
@@ -3999,9 +4004,6 @@ public class StandardContext
             }
             if ((logger != null) && (logger instanceof Lifecycle)) {
                 ((Lifecycle) logger).stop();
-            }
-            if ((loader != null) && (loader.getClassLoader() != null)) {
-                DirContextURLStreamHandler.unbind(loader.getClassLoader());
             }
             if ((loader != null) && (loader instanceof Lifecycle)) {
                 ((Lifecycle) loader).stop();
@@ -4207,6 +4209,8 @@ public class StandardContext
 
         lifecycle.fireLifecycleEvent(BIND_THREAD_EVENT, null);
         
+        DirContextURLStreamHandler.bind(getResources());
+
         return oldContextClassLoader;
 
     }
@@ -4222,6 +4226,8 @@ public class StandardContext
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
 
         oldContextClassLoader = null;
+
+        DirContextURLStreamHandler.unbind();
 
     }
 
@@ -4534,25 +4540,17 @@ public class StandardContext
         if (stream == null) {
             return "";
         }
-        BufferedReader br = null;
+        BufferedReader br = new BufferedReader(
+                                new InputStreamReader(stream));
         StringBuilder sb = new StringBuilder();
+        String strRead = "";
         try {
-            br = new BufferedReader(new InputStreamReader(stream));
-            String strRead = "";
             while (strRead != null) {
                 sb.append(strRead);
                 strRead = br.readLine();
             }
         } catch (IOException e) {
             return "";
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
         }
 
         return sb.toString(); 
@@ -4687,6 +4685,60 @@ public class StandardContext
 
     public synchronized void init() throws Exception {
 
+        if( this.getParent() == null ) {
+            ObjectName parentName=getParentName();
+            
+            if( ! mserver.isRegistered(parentName)) {
+                if(log.isDebugEnabled())
+                    log.debug("No host, creating one " + parentName);
+                StandardHost host=new StandardHost();
+                host.setName(hostName);
+                Registry.getRegistry(null, null)
+                    .registerComponent(host, parentName, null);
+                // We could do it the hard way...
+                //mserver.invoke(parentName, "init", new Object[] {}, new String[] {} );
+                // or same thing easier:
+                host.init();
+            }
+            
+            // Add the main configuration listener
+            LifecycleListener config = null;
+            try {
+                String configClassName = getConfigClass();
+                if (configClassName == null) {
+                    try {
+                        configClassName = String.valueOf(mserver.getAttribute(parentName, "configClass"));
+                    } catch (AttributeNotFoundException e) {
+                        // Ignore, it's normal a host may not have this optional attribute
+                    }
+                }
+                if (configClassName != null) {
+                    Class clazz = Class.forName(configClassName);
+                    config = (LifecycleListener) clazz.newInstance();
+                } else {
+                    config = new ContextConfig();
+                }
+            } catch (Exception e) {
+                log.warn("Error creating ContextConfig for " + parentName, e);
+                throw e;
+            }
+            this.addLifecycleListener(config);
+
+            if (log.isDebugEnabled()) {
+                log.debug("AddChild " + parentName + " " + this);
+            }
+            try {
+                mserver.invoke(parentName, "addChild", new Object[] { this },
+                        new String[] {"org.apache.catalina.Container"});
+            } catch (Exception e) {
+                destroy();
+                throw e;
+            }
+            // It's possible that addChild may have started us
+            if( initialized ) {
+                return;
+            }
+        }
         super.init();
         
         // Notify our interested LifecycleListeners

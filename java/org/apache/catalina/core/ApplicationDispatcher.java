@@ -718,7 +718,7 @@ final class ApplicationDispatcher
                 
         // Get the FilterChain Here
         ApplicationFilterFactory factory = ApplicationFilterFactory.getInstance();
-        ApplicationFilterChain filterChain = factory.createFilterChain(request, wrapper, servlet);
+        ApplicationFilterChain filterChain = factory.createFilterChain(request, wrapper);
         // Call the service() method for the allocated servlet instance
         String jspFile = wrapper.getJspFile();
         try {

@@ -1112,13 +1112,4 @@ public class RequestFacade implements HttpServletRequest {
         return request.getParts();
     }
 
-    public boolean hasSendfile() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-
-        return request.hasSendfile();
-    }
-
 }

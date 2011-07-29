@@ -536,13 +536,7 @@ public class CoyoteAdapter
             res.setMessage("Context not mapped");
             return false;
         }
-        if (connector.getAllowedHosts() != null 
-                && !connector.getAllowedHosts().contains(request.getMappingData().host)) {
-            res.setStatus(403);
-            res.setMessage("Host access is forbidden through this connector");
-            return false;
-        }
-
+        
         // Filter trace method
         if (!connector.getAllowTrace() 
                 && req.method().equalsIgnoreCase("TRACE")) {

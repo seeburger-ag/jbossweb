@@ -447,9 +447,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
         filter.init(this);
         
         // Expose filter via JMX
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            registerJMX();
-        }
+        registerJMX();
         
         return (this.filter);
 
@@ -487,9 +485,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
      */
     void release() {
 
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            unregsiterJMX();
-        }
+        unregsiterJMX();
         
         if (this.filter != null)
         {

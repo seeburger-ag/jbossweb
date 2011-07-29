@@ -26,7 +26,6 @@ import org.apache.coyote.InputBuffer;
 import org.apache.coyote.OutputBuffer;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.Request;
-import org.apache.coyote.RequestGroupInfo;
 import org.apache.coyote.Response;
 
 
@@ -74,10 +73,6 @@ public class MemoryProtocolHandler
 
     public boolean hasIoEvents() {
         return false;
-    }
-
-    public RequestGroupInfo getRequestGroupInfo() {
-        return null;
     }
 
 

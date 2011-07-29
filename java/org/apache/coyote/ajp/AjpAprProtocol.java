@@ -114,9 +114,6 @@ public class AjpAprProtocol
     private AjpConnectionHandler cHandler;
 
 
-    private boolean canDestroy = false;
-
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -160,10 +157,6 @@ public class AjpAprProtocol
         return false;
     }
 
-    public RequestGroupInfo getRequestGroupInfo() {
-        return cHandler.global;
-    }
-
 
     /** Start the protocol
      */
@@ -185,21 +178,19 @@ public class AjpAprProtocol
 
 
     public void start() throws Exception {
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (this.domain != null ) {
-                try {
-                    tpOname = new ObjectName
+        if (this.domain != null ) {
+            try {
+                tpOname = new ObjectName
                     (domain + ":" + "type=ThreadPool,name=" + getName());
-                    Registry.getRegistry(null, null)
+                Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
-                } catch (Exception e) {
-                    log.error("Can't register threadpool" );
-                }
-                rgOname = new ObjectName
-                (domain + ":type=GlobalRequestProcessor,name=" + getName());
-                Registry.getRegistry(null, null).registerComponent
-                (cHandler.global, rgOname, null);
+            } catch (Exception e) {
+                log.error("Can't register threadpool" );
             }
+            rgOname = new ObjectName
+                (domain + ":type=GlobalRequestProcessor,name=" + getName());
+            Registry.getRegistry(null, null).registerComponent
+                (cHandler.global, rgOname, null);
         }
 
         try {
@@ -219,8 +210,7 @@ public class AjpAprProtocol
             log.error(sm.getString("ajpprotocol.endpoint.pauseerror"), ex);
             throw ex;
         }
-        canDestroy = false;
-        // Wait for a while until all the processors are idle
+        // Wait for a while until all the processors are no longer processing requests
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
         boolean done = false;
@@ -237,9 +227,6 @@ public class AjpAprProtocol
                     done = false;
                     break;
                 }
-            }
-            if (done) {
-                canDestroy = true;
             }
         }
         if (log.isInfoEnabled())
@@ -260,28 +247,11 @@ public class AjpAprProtocol
     public void destroy() throws Exception {
         if (log.isInfoEnabled())
             log.info(sm.getString("ajpprotocol.stop", getName()));
-        if (canDestroy) {
-            endpoint.destroy();
-        } else {
-            log.warn(sm.getString("ajpprotocol.cannotDestroy", getName()));
-            try {
-                RequestInfo[] states = cHandler.global.getRequestProcessors();
-                for (int i = 0; i < states.length; i++) {
-                    if (states[i].getStage() == org.apache.coyote.Constants.STAGE_SERVICE) {
-                        // FIXME: Log RequestInfo content
-                    }
-                }
-            } catch (Exception ex) {
-                log.error(sm.getString("ajpprotocol.cannotDestroy", getName()), ex);
-                throw ex;
-            }
-        }
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (tpOname!=null)
-                Registry.getRegistry(null, null).unregisterComponent(tpOname);
-            if (rgOname != null)
-                Registry.getRegistry(null, null).unregisterComponent(rgOname);
-        }
+        endpoint.destroy();
+        if (tpOname!=null)
+            Registry.getRegistry(null, null).unregisterComponent(tpOname);
+        if (rgOname != null)
+            Registry.getRegistry(null, null).unregisterComponent(rgOname);
     }
 
     // *
@@ -289,7 +259,9 @@ public class AjpAprProtocol
         String encodedAddr = "";
         if (getAddress() != null) {
             encodedAddr = "" + getAddress();
-            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-')) + "-";
+            if (encodedAddr.startsWith("/"))
+                encodedAddr = encodedAddr.substring(1);
+            encodedAddr = URLEncoder.encode(encodedAddr) + "-";
         }
         return ("ajp-" + encodedAddr + endpoint.getPort());
     }
@@ -525,14 +497,14 @@ public class AjpAprProtocol
         }
         
         protected void register(AjpAprProcessor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(global);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
-                        (proto.getDomain() + ":type=RequestProcessor,worker="
+                            (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getName() + ",name=AjpRequest" + count);
                         if (log.isDebugEnabled()) {
                             log.debug("Register " + rpName);
@@ -547,11 +519,11 @@ public class AjpAprProtocol
         }
 
         protected void unregister(AjpAprProcessor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(null);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
                         if (log.isDebugEnabled()) {
                             log.debug("Unregister " + rpName);
