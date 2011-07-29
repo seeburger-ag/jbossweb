@@ -36,7 +36,7 @@ base-sf.loc=http://downloads.sourceforge.net
 jdt.home=${base.path}/eclipse/plugins
 jdt.lib=${jdt.home}
 jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.5.2.v_981_R35x.jar
-jdt.loc=http://download.eclipse.org/eclipse/downloads/drops/R-3.5.2-201002111343/eclipse-JDT-3.5.2.zip
+jdt.loc=http://archive.eclipse.org/eclipse/downloads/drops/R-3.5.2-201002111343/eclipse-JDT-3.5.2.zip
 
 # ----- Dojo Toolkit (for test webapp) -----
 dojo-js.home=${base.path}/dojo-release-1.4.3
