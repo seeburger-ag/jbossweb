@@ -38,6 +38,10 @@ jdt.lib=${jdt.home}
 jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.5.2.v_981_R35x.jar
 jdt.loc=http://archive.eclipse.org/eclipse/downloads/drops/R-3.5.2-201002111343/eclipse-JDT-3.5.2.zip
 
+jdt-src.home=${base.path}/eclipse/plugins
+jdt-src.lib=${jdt.home}
+jdt-src.loc=http://archive.eclipse.org/eclipse/downloads/drops/R-3.5.2-201002111343/eclipse-sourceBuild-srcIncluded-3.5.2.zip
+
 # ----- Dojo Toolkit (for test webapp) -----
 dojo-js.home=${base.path}/dojo-release-1.4.3
 dojo-js.loc=http://download.dojotoolkit.org/release-1.4.3/dojo-release-1.4.3.tar.gz
