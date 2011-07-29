@@ -14,7 +14,7 @@ version.major=3
 version.minor=0
 version.build=0
 version.patch=0
-version.tag=SNAPSHOT
+version.tag=CR2
 
 # ----- Default Base Path for Dependent Packages -----
 # Please note this path must be absolute, not relative,
