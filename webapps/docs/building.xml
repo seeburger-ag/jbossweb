@@ -8,7 +8,7 @@
 
     <properties>
       <author>Remy Maucherat</author>
-      <title>Building JBossWeb</title>
+      <title>Building Tomcat</title>
     </properties>
 
 <body>
@@ -17,7 +17,7 @@
 
 <p>
 Building JBoss Web from SVN is very easy, and is the first step to contributing to
-JBossWeb. The following is a step by step TODO list.
+Tomcat. The following is a step by step TODO list.
 </p>
 
 </section>
@@ -68,7 +68,7 @@ available, which will be used to actually perform the build.
   
   <p>
   Download a source package from:
-  <code>http://www.jboss.org/jbossweb/downloads/jboss-web</code>
+  <code>http://labs.jboss.com/jbossweb/</code>
   </p>
   
   <p>
@@ -85,17 +85,11 @@ available, which will be used to actually perform the build.
 
 <p>
 Use the following commands:
-<source>
-    cd ${jbossweb.source}
-    ant download
-    ant
-</source>
-</p>
-
-<p>
-NOTE: That build jar files in output/jars, the <code>jbossweb.jar</code>
-have to be copied in <code>${jboss.server.base.dir)/modules/org/jboss/as/web/main</code> to be
-used in AS7.
+<code><br/>
+    cd ${jbossweb.source}<br/>
+    ant download<br/>
+    ant<br/>
+</code>
 </p>
 
 <p>

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.UnsupportedCharsetException;
@@ -51,7 +52,7 @@ public class B2CConverter {
     public B2CConverter(String charset)
         throws IOException {
         try {
-            decoder = EncodingToCharset.toCharset(charset).newDecoder();
+            decoder = Charset.forName(charset).newDecoder();
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }
@@ -80,8 +81,8 @@ public class B2CConverter {
             bb = ByteBuffer.wrap(bc.getBuffer(), bc.getStart(), bc.getLength());
         } else {
             // Initialize the byte buffer
-            bb.limit(bc.getEnd());
             bb.position(bc.getStart());
+            bb.limit(bc.getEnd());
         }
         if ((cb == null) || (cb.array() != cc.getBuffer())) {
             // Create a new char buffer if anything changed
@@ -89,8 +90,8 @@ public class B2CConverter {
                     cc.getBuffer().length - cc.getEnd());
         } else {
             // Initialize the char buffer
-            cb.limit(cc.getBuffer().length);
             cb.position(cc.getEnd());
+            cb.limit(cc.getBuffer().length);
         }
         CoderResult result = null;
         // Parse leftover if any are present
@@ -125,8 +126,8 @@ public class B2CConverter {
             cc.setEnd(cb.position());
             // Put leftovers in the leftovers byte buffer
             if (bc.getLength() > 0) {
-                leftovers.limit(leftovers.array().length);
                 leftovers.position(bc.getLength());
+                leftovers.limit(leftovers.array().length);
                 bc.substract(leftovers.array(), 0, bc.getLength());
             }
         }
