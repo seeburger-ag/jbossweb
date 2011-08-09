@@ -24,7 +24,6 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
-import java.util.Locale;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Response;
@@ -249,7 +248,6 @@ public class OutputBuffer extends Writer
         outputCharChunk.setChars(null, 0, 0);
         closed = false;
         suspended = false;
-        doFlush = false;
         
         if (conv!= null) {
             conv.recycle();
@@ -262,7 +260,7 @@ public class OutputBuffer extends Writer
 
 
     /**
-     * Clear cached encoders (to save memory for event requests).
+     * Clear cached encoders (to save memory for Comet requests).
      */
     public void clearEncoders() {
         encoders.clear();
@@ -325,8 +323,6 @@ public class OutputBuffer extends Writer
     protected void doFlush(boolean realFlush)
         throws IOException {
 
-        if (closed)
-            return;
         if (suspended)
             return;
 
@@ -363,7 +359,7 @@ public class OutputBuffer extends Writer
     protected int lastWrite() {
         int res = coyoteResponse.getLastWrite();
         if (res == 0) {
-            coyoteResponse.action(ActionCode.ACTION_EVENT_WRITE, null);
+            coyoteResponse.action(ActionCode.ACTION_COMET_WRITE, null);
         }
         return res;
     }
@@ -556,21 +552,26 @@ public class OutputBuffer extends Writer
             enc = coyoteResponse.getCharacterEncoding();
 
         gotEnc = true;
-        enc = (enc == null) ? DEFAULT_ENCODING : enc.toUpperCase(Locale.US);
-        conv = encoders.get(enc);
+        if (enc == null)
+            enc = DEFAULT_ENCODING;
+        conv = (C2BConverter) encoders.get(enc);
         if (conv == null) {
+            
             if (Globals.IS_SECURITY_ENABLED){
-                try {
-                    conv = AccessController
-                            .doPrivileged(new PrivilegedExceptionAction<C2BConverter>() {
-                                public C2BConverter run() throws IOException {
+                try{
+                    conv = (C2BConverter)AccessController.doPrivileged(
+                            new PrivilegedExceptionAction(){
+
+                                public Object run() throws IOException{
                                     return new C2BConverter(enc);
                                 }
-                            });
-                } catch (PrivilegedActionException ex) {
+
+                            }
+                    );              
+                }catch(PrivilegedActionException ex){
                     Exception e = ex.getException();
                     if (e instanceof IOException)
-                        throw (IOException) e;
+                        throw (IOException)e; 
                 }
             } else {
                 conv = new C2BConverter(enc);
@@ -600,10 +601,6 @@ public class OutputBuffer extends Writer
             return (int) bytesWritten;
         }
         return -1;
-    }
-
-    public void setBytesWritten(long bytesWritten) {
-        this.bytesWritten = bytesWritten;
     }
 
     public int getCharsWritten() {

@@ -24,9 +24,6 @@ import java.io.IOException;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Context;
@@ -36,11 +33,11 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.ErrorPage;
+import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
-import org.jboss.servlet.http.HttpEvent.EventType;
 
 
 /**
@@ -119,35 +116,11 @@ final class StandardHostValve
         }
 
         // Bind the context CL to the current thread
-        if (context.getLoader() != null) {
-            Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
-        }
-
-        // Enter application scope
-        Object instances[] = context.getApplicationEventListeners();
-
-        ServletRequestEvent event = null;
-
-        if ((instances != null) 
-                && (instances.length > 0)) {
-            event = new ServletRequestEvent(context.getServletContext(), request.getRequest());
-            // create pre-service event
-            for (int i = 0; i < instances.length; i++) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener = (ServletRequestListener) instances[i];
-                try {
-                    listener.requestInitialized(event);
-                } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("standardContext.requestListener.requestInit",
-                                     instances[i].getClass().getName()), t);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                    return;
-                }
-            }
+        if( context.getLoader() != null ) {
+            // Not started - it should check for availability first
+            // This should eventually move to Engine, it's generic.
+            Thread.currentThread().setContextClassLoader
+                    (context.getLoader().getClassLoader());
         }
 
         // Ask this Context to process this request
@@ -162,7 +135,7 @@ final class StandardHostValve
         // Error page processing
         response.setSuspended(false);
 
-        Throwable t = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+        Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
 
         if (t != null) {
             throwable(request, response, t);
@@ -170,29 +143,9 @@ final class StandardHostValve
             status(request, response);
         }
 
-        // Exit application scope
-        if ((instances !=null ) &&
-                (instances.length > 0)) {
-            // create post-service event
-            for (int i = instances.length - 1; i >= 0; i--) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener = (ServletRequestListener) instances[i];
-                try {
-                    listener.requestDestroyed(event);
-                } catch (Throwable t2) {
-                    container.getLogger().error(sm.getString("standardContext.requestListener.requestDestroy",
-                                     instances[i].getClass().getName()), t2);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t2);
-                }
-            }
-        }
-
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader
+            (StandardHostValve.class.getClassLoader());
 
     }
 
@@ -201,8 +154,8 @@ final class StandardHostValve
      * Process Comet event.
      *
      * @param request Request to be processed
-     * @param response Response to be processed
-     * @param event The event to be processed
+     * @param response Response to be produced
+     * @param valveContext Valve context used to forward to the next Valve
      *
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
@@ -213,43 +166,12 @@ final class StandardHostValve
         // Select the Context to be used for this Request
         Context context = request.getContext();
 
-        // Some regular callback events should be filtered out for Servlet 3 async
-        if (request.getAsyncContext() != null) {
-            Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
-            if (event.getType() == EventType.EVENT && asyncContext.getRunnable() == null 
-                    && asyncContext.getPath() == null) {
-                return;
-            }
-        }
-
         // Bind the context CL to the current thread
-        if (context.getLoader() != null) {
-            Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
-        }
-
-        // Enter application scope
-        Object instances[] = context.getApplicationEventListeners();
-        ServletRequestEvent event2 = null;
-        if (instances != null && (instances.length > 0)) {
-            event2 = new ServletRequestEvent(context.getServletContext(), request.getRequest());
-            // create pre-service event
-            for (int i = 0; i < instances.length; i++) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener = (ServletRequestListener) instances[i];
-                try {
-                    listener.requestInitialized(event2);
-                } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("requestListenerValve.requestInit",
-                                     instances[i].getClass().getName()), t);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                    Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
-                    return;
-                }
-            }
+        if( context.getLoader() != null ) {
+            // Not started - it should check for availability first
+            // This should eventually move to Engine, it's generic.
+            Thread.currentThread().setContextClassLoader
+                    (context.getLoader().getClassLoader());
         }
 
         // Ask this Context to process this request
@@ -264,51 +186,17 @@ final class StandardHostValve
         // Error page processing
         response.setSuspended(false);
 
-        if (request.getAsyncContext() == null) {
-            Throwable t = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
-            if (t != null) {
-                throwable(request, response, t);
-            } else {
-                status(request, response);
-            }
-        } else {
-            Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
-            if ((event.getType() == EventType.TIMEOUT || event.getType() == EventType.ERROR)
-                    && request.isEventMode() && asyncContext.getPath() == null) {
-                Throwable t = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
-                if (t != null) {
-                    throwable(request, response, t);
-                } else {
-                    status(request, response);
-                }
-            }
-            if (request.isEventMode() && asyncContext.getPath() == null) {
-                asyncContext.complete();
-            }
-        }
+        Throwable t = (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
 
-        // Exit application scope
-        if (instances != null && (instances.length > 0)) {
-            // create post-service event
-            for (int i = instances.length - 1; i >= 0; i--) {
-                if (instances[i] == null)
-                    continue;
-                if (!(instances[i] instanceof ServletRequestListener))
-                    continue;
-                ServletRequestListener listener = (ServletRequestListener) instances[i];
-                try {
-                    listener.requestDestroyed(event2);
-                } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
-                                     instances[i].getClass().getName()), t);
-                    ServletRequest sreq = request.getRequest();
-                    sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                }
-            }
+        if (t != null) {
+            throwable(request, response, t);
+        } else {
+            status(request, response);
         }
 
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader
+            (StandardHostValve.class.getClassLoader());
 
     }
 
@@ -363,21 +251,21 @@ final class StandardHostValve
                 (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                  errorPage.getLocation());
             request.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    ApplicationFilterFactory.ERROR_INTEGER);
+                              new Integer(ApplicationFilterFactory.ERROR));
             request.setAttribute
-                (RequestDispatcher.ERROR_STATUS_CODE,
-                        Integer.valueOf(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
-            request.setAttribute(RequestDispatcher.ERROR_MESSAGE,
+                (Globals.STATUS_CODE_ATTR,
+                 new Integer(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
+            request.setAttribute(Globals.ERROR_MESSAGE_ATTR,
                               throwable.getMessage());
-            request.setAttribute(RequestDispatcher.ERROR_EXCEPTION,
+            request.setAttribute(Globals.EXCEPTION_ATTR,
                               realError);
             Wrapper wrapper = request.getWrapper();
             if (wrapper != null)
-                request.setAttribute(RequestDispatcher.ERROR_SERVLET_NAME,
+                request.setAttribute(Globals.SERVLET_NAME_ATTR,
                                   wrapper.getName());
-            request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI,
+            request.setAttribute(Globals.EXCEPTION_PAGE_ATTR,
                                  request.getRequestURI());
-            request.setAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE,
+            request.setAttribute(Globals.EXCEPTION_TYPE_ATTR,
                               realError.getClass());
             if (custom(request, response, errorPage)) {
                 try {
@@ -431,25 +319,25 @@ final class StandardHostValve
         ErrorPage errorPage = context.findErrorPage(statusCode);
         if (errorPage != null) {
             response.setAppCommitted(false);
-            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
-                              Integer.valueOf(statusCode));
+            request.setAttribute(Globals.STATUS_CODE_ATTR,
+                              new Integer(statusCode));
 
-            String message = response.getMessage();
+            String message = RequestUtil.filter(response.getMessage());
             if (message == null)
                 message = "";
-            request.setAttribute(RequestDispatcher.ERROR_MESSAGE, message);
+            request.setAttribute(Globals.ERROR_MESSAGE_ATTR, message);
             request.setAttribute
                 (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                  errorPage.getLocation());
             request.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    ApplicationFilterFactory.ERROR_INTEGER);
+                              new Integer(ApplicationFilterFactory.ERROR));
 
 
             Wrapper wrapper = request.getWrapper();
             if (wrapper != null)
-                request.setAttribute(RequestDispatcher.ERROR_SERVLET_NAME,
+                request.setAttribute(Globals.SERVLET_NAME_ATTR,
                                   wrapper.getName());
-            request.setAttribute(RequestDispatcher.ERROR_REQUEST_URI,
+            request.setAttribute(Globals.EXCEPTION_PAGE_ATTR,
                                  request.getRequestURI());
             if (custom(request, response, errorPage)) {
                 try {

@@ -10,7 +10,6 @@
     <author email="craigmcc@apache.org">Craig R. McClanahan</author>
     <author email="remm@apache.org">Remy Maucherat</author>
     <author email="yoavs@apache.org">Yoav Shapira</author>
-    <author email="jfclere@apache.org">Jean-Frederic Clere</author>
     <title>Documentation Index</title>
   </properties>
 
@@ -21,12 +20,10 @@
 <p>This is the top-level entry point of the documentation bundle for the
 <strong>JBoss Web</strong> Servlet/JSP container, which is based on the 
 Apache Tomcat 6.0 project developed by the Apache Software Foundation.
-JBoss Web implements the Servlet 3.0 and JavaServer Pages 2.2 specifications from the
+JBoss Web implements the Servlet 2.5 and JavaServer Pages 2.1 specifications from the
 <a href="http://www.jcp.org">Java Community Process</a>, and includes many
 additional features that make it a useful platform for developing and deploying
 web applications and web services.</p>
-
-<p><strong>JBoss Web 7.0.x</strong> is a subsystem of AS7, there isn't yet standalone version of it.</p>
 
 <p>Select one of the links from the navigation menu (to the left) to drill
 down to the more detailed documentation that is available.  Each available
@@ -43,12 +40,14 @@ JBoss Web, and using many of its features.</p>
 <ol>
 <li><a href="introduction.html"><strong>Introduction</strong></a> - A
     brief, high level, overview of JBoss Web.</li>
+<li><a href="setup.html"><strong>Setup</strong></a> - How to install and run
+    JBoss Web on a variety of platforms.</li>
 <li><a href="sysprops.html"><strong>System Properties</strong></a> - System
     properties used for JBoss Web configuration.</li>
 <li><a href="appdev/index.html"><strong>First web application</strong></a>
     - An introduction to the concepts of a <em>web application</em> as defined
     in the <a href="http://java.sun.com/products/servlet/download.html">Servlet
-    3.0 Specification</a>.  Covers basic organization of your web application
+    2.4 Specification</a>.  Covers basic organization of your web application
     source tree, the structure of a web application archive, and an
     introduction to the web application deployment descriptor
     (<code>/WEB-INF/web.xml</code>).</li>
@@ -135,9 +134,9 @@ are responsible for installing, configuring, and operating a JBoss Web server.
       used to interface JBoss Web with servers like Apache HTTPd, IIS
       and others.</li>
 <li><a href="servletapi/index.html"><strong>Servlet API Javadocs</strong></a> -
-    The Servlet 3.0 API Javadocs.</li>
+    The Servlet 2.4 API Javadocs.</li>
 <li><a href="jspapi/index.html"><strong>JSP API Javadocs</strong></a> -
-    The JSP 2.2 API Javadocs.</li>
+    The JSP 2.0 API Javadocs.</li>
 </ul>
 
 </section>
@@ -156,6 +155,9 @@ the development of the <em>JBoss Web</em> project.</p>
 <li><a href="changelog.html"><strong>Changelog</strong></a> - Details the
     changes made to JBoss Web.
     </li>
+<li><a href="catalina/funcspecs/index.html"><strong>Functional Specifications</strong></a>
+    - Requirements specifications for features of the <em>Catalina</em> servlet
+    container portion of JBoss Web.</li>
 <li><a href="catalina/docs/api/index.html"><strong>Catalina Javadocs</strong></a>
     - Javadoc API documentation for the <em>Catalina</em> servlet
     container and its dependencies.</li>

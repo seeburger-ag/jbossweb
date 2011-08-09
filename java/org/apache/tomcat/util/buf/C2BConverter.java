@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.charset.CodingErrorAction;
 
 /**
  * NIO based character encoder.
@@ -46,8 +47,8 @@ public class C2BConverter {
     public C2BConverter(String charset)
         throws IOException {
         try {
-            encoder = EncodingToCharset.toCharset(charset).newEncoder();
-            encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+            encoder = Charset.forName(charset).newEncoder();
+            encoder = encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }
@@ -74,8 +75,8 @@ public class C2BConverter {
                     bc.getBuffer().length - bc.getEnd());
         } else {
             // Initialize the byte buffer
-            bb.limit(bc.getBuffer().length);
             bb.position(bc.getEnd());
+            bb.limit(bc.getBuffer().length);
         }
         if ((cb == null) || (cb.array() != cc.getBuffer())) {
             // Create a new char buffer if anything changed
@@ -83,8 +84,8 @@ public class C2BConverter {
                     cc.getLength());
         } else {
             // Initialize the char buffer
-            cb.limit(cc.getEnd());
             cb.position(cc.getStart());
+            cb.limit(cc.getEnd());
         }
         // Do the decoding and get the results into the byte chunk and the char chunk
         CoderResult result = encoder.encode(cb, bb, false);
