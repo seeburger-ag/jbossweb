@@ -68,4 +68,5 @@ public interface Node {
   public void accept(NodeVisitor visitor) throws Exception;
   public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes) throws ELException;
   public Object invoke(EvaluationContext ctx, Class[] paramTypes, Object[] paramValues) throws ELException;
+  public boolean isParametersProvided();
 }

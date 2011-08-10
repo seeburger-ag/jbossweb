@@ -157,4 +157,9 @@ public abstract class SimpleNode extends ELSupport implements Node {
     public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes) throws ELException {
         throw new UnsupportedOperationException();
     }
+    
+    public boolean isParametersProvided() {
+        return false;
+    }
+
 }

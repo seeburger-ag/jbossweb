@@ -35,6 +35,14 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        EL escaping fixes. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+
 </section>
 
 <section name="JBoss Web 2.1.11.GA (remm)">

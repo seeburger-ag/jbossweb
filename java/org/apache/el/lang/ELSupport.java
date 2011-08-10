@@ -249,6 +249,9 @@ public class ELSupport {
         if (Number.class.equals(type)) {
             return number;
         }
+        if (Number.class.equals(type)) {
+            return number;
+        }
 
         throw new IllegalArgumentException(MessageFactory.get("error.convert",
                 number, number.getClass(), type));
