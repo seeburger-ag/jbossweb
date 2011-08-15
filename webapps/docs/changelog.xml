@@ -15,7 +15,7 @@
   </properties>
 
 <body>
-<section name="JBoss Web 2.1.12.GA (remm)">
+<section name="JBoss Web 2.1.12.GA (jfclere)">
   <subsection name="Catalina">
     <changelog>
       <fix>
