@@ -34,20 +34,19 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Random;
-
 import javax.servlet.ServletContext;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
+import org.apache.catalina.Globals;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Session;
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CustomObjectInputStream;
 import org.apache.catalina.util.LifecycleSupport;
+
+import org.apache.catalina.security.SecurityUtil;
 /**
  * Standard implementation of the <b>Manager</b> interface that provides
  * simple session persistence across restarts of this component (such as
@@ -66,13 +65,6 @@ import org.apache.catalina.util.LifecycleSupport;
 public class StandardManager
     extends ManagerBase
     implements Lifecycle, PropertyChangeListener {
-
-    public static final int MAX_ACTIVE_SESSIONS =
-        Integer.valueOf(System.getProperty("org.apache.catalina.session.StandardManager.MAX_ACTIVE_SESSIONS", 
-                (org.apache.tomcat.util.Constants.LOW_MEMORY) ? "1024" : "-1")).intValue();
-
-    public static final String PATHNAME =
-        System.getProperty("org.apache.catalina.session.StandardManager.PATHNAME");
 
     // ---------------------------------------------------- Security Classes
     private class PrivilegedDoLoad
@@ -119,7 +111,7 @@ public class StandardManager
     /**
      * The maximum number of active Sessions allowed, or -1 for no limit.
      */
-    protected int maxActiveSessions = MAX_ACTIVE_SESSIONS;
+    protected int maxActiveSessions = -1;
 
 
     /**
@@ -136,7 +128,7 @@ public class StandardManager
      * temporary working directory provided by our context, available via
      * the <code>javax.servlet.context.tempdir</code> context attribute.
      */
-    protected String pathname = PATHNAME;
+    protected String pathname = "SESSIONS.ser";
 
 
     /**
@@ -287,7 +279,7 @@ public class StandardManager
      * @exception IllegalStateException if a new session cannot be
      *  instantiated for any reason
      */
-    public Session createSession(String sessionId, Random random) {
+    public Session createSession(String sessionId) {
 
         if ((maxActiveSessions >= 0) &&
             (sessions.size() >= maxActiveSessions)) {
@@ -296,7 +288,7 @@ public class StandardManager
                 (sm.getString("standardManager.createSession.ise"));
         }
 
-        return (super.createSession(sessionId, random));
+        return (super.createSession(sessionId));
 
     }
 
@@ -401,11 +393,9 @@ public class StandardManager
                     StandardSession session = getNewSession();
                     session.readObjectData(ois);
                     session.setManager(this);
-                    if (session.isValidInternal()) {
-                        sessions.put(session.getIdInternal(), session);
-                        session.activate();
-                        sessionCounter++;
-                    }
+                    sessions.put(session.getIdInternal(), session);
+                    session.activate();
+                    sessionCounter++;
                 }
             } catch (ClassNotFoundException e) {
                 log.error(sm.getString("standardManager.loading.cnfe", e), e);
@@ -635,6 +625,13 @@ public class StandardManager
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
+        // Force initialization of the random number generator
+        if (log.isDebugEnabled())
+            log.debug("Force random number initialization starting");
+        String dummy = generateSessionId();
+        if (log.isDebugEnabled())
+            log.debug("Force random number initialization completed");
+
         // Load unloaded sessions, if any
         try {
             load();
@@ -685,6 +682,9 @@ public class StandardManager
                 session.recycle();
             }
         }
+
+        // Require a new random number generator if we are restarted
+        this.random = null;
 
         if( initialized ) {
             destroy();
@@ -738,7 +738,7 @@ public class StandardManager
                 ServletContext servletContext =
                     ((Context) container).getServletContext();
                 File tempdir = (File)
-                    servletContext.getAttribute(ServletContext.TEMPDIR);
+                    servletContext.getAttribute(Globals.WORK_DIR_ATTR);
                 if (tempdir != null)
                     file = new File(tempdir, pathname);
             }

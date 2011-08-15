@@ -58,12 +58,6 @@ public class Constants {
     };
 
     /**
-     * ServletContext attribute for the JSP Servlet options.
-     */
-    public static final String SERVLET_OPTIONS = 
-        System.getProperty("org.apache.jasper.Constants.SERVLET_OPTIONS", "org.apache.catalina.jsp_options");
-
-    /**
      * ServletContext attribute for classpath. This is tomcat specific. 
      * Other servlet engines may choose to support this attribute if they 
      * want to have this JSP engine running on them. 
@@ -94,7 +88,7 @@ public class Constants {
     /**
      * Default tag handler pool size.
      */
-    public static final int MAX_POOL_SIZE = Integer.parseInt(System.getProperty("org.apache.jasper.Constants.MAX_POOL_SIZE", "4"));
+    public static final int MAX_POOL_SIZE = 5;
 
     /**
      * The query parameter that causes the JSP engine to just
@@ -120,7 +114,57 @@ public class Constants {
      * uses. 
      */
     public static final String INC_SERVLET_PATH = "javax.servlet.include.servlet_path";
+    public static final String TMP_DIR = "javax.servlet.context.tempdir";
 
+    // Must be kept in sync with org/apache/catalina/Globals.java
+    public static final String ALT_DD_ATTR = 
+        System.getProperty("org.apache.jasper.Constants.ALT_DD_ATTR", "org.apache.catalina.deploy.alt_dd");
+
+    /**
+     * Public Id and the Resource path (of the cached copy) 
+     * of the DTDs for tag library descriptors. 
+     */
+    public static final String TAGLIB_DTD_PUBLIC_ID_11 = 
+	"-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN";
+    public static final String TAGLIB_DTD_RESOURCE_PATH_11 = 
+	"/javax/servlet/jsp/resources/web-jsptaglibrary_1_1.dtd";
+    public static final String TAGLIB_DTD_PUBLIC_ID_12 = 
+	"-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN";
+    public static final String TAGLIB_DTD_RESOURCE_PATH_12 = 
+	"/javax/servlet/jsp/resources/web-jsptaglibrary_1_2.dtd";
+
+    /**
+     * Public Id and the Resource path (of the cached copy) 
+     * of the DTDs for web application deployment descriptors
+     */
+    public static final String WEBAPP_DTD_PUBLIC_ID_22 = 
+	"-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN";
+    public static final String WEBAPP_DTD_RESOURCE_PATH_22 = 
+	"/javax/servlet/resources/web-app_2_2.dtd";
+    public static final String WEBAPP_DTD_PUBLIC_ID_23 = 
+	"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN";
+    public static final String WEBAPP_DTD_RESOURCE_PATH_23 = 
+	"/javax/servlet/resources/web-app_2_3.dtd";
+
+    /**
+     * List of the Public IDs that we cache, and their
+     * associated location. This is used by 
+     * an EntityResolver to return the location of the
+     * cached copy of a DTD.
+     */
+    public static final String[] CACHED_DTD_PUBLIC_IDS = {
+	TAGLIB_DTD_PUBLIC_ID_11,
+	TAGLIB_DTD_PUBLIC_ID_12,
+	WEBAPP_DTD_PUBLIC_ID_22,
+	WEBAPP_DTD_PUBLIC_ID_23,
+    };
+    public static final String[] CACHED_DTD_RESOURCE_PATHS = {
+	TAGLIB_DTD_RESOURCE_PATH_11,
+	TAGLIB_DTD_RESOURCE_PATH_12,
+	WEBAPP_DTD_RESOURCE_PATH_22,
+	WEBAPP_DTD_RESOURCE_PATH_23,
+    };
+    
     /**
      * Default URLs to download the pluging for Netscape and IE.
      */
@@ -143,10 +187,10 @@ public class Constants {
         (System.getSecurityManager() != null);
 
     public static final boolean USE_INSTANCE_MANAGER_FOR_TAGS =
-        Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.USE_INSTANCE_MANAGER_FOR_TAGS", "true")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.USE_INSTANCE_MANAGER_FOR_TAGS", "false")).booleanValue();
 
     public static final boolean INJECT_TAGS =
-        Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.INJECT_TAGS", "false")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.jasper.Constants.INJECT_TAGS", "true")).booleanValue();
 
     /**
      * The name of the path parameter used to pass the session identifier

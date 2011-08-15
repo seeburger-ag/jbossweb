@@ -211,12 +211,12 @@ public class ExpressionParseTree {
      * A node the represents a String value
      */
     private class StringNode extends Node {
-        StringBuilder value;
+        StringBuffer value;
         String resolved = null;
 
 
         public StringNode(String value) {
-            this.value = new StringBuilder(value);
+            this.value = new StringBuffer(value);
         }
 
 

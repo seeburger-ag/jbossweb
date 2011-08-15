@@ -19,11 +19,6 @@
     Author:    Jacob Hookom
     Email:    jacob at hookom.net
 */
-/*
-  Building:
-  jjtree ELParser.jjt
-  javacc ELParser.jj
-*/
 
 /* == Option Declaration == */
 options
@@ -241,7 +236,7 @@ void ValueSuffix() : {}
  */
 void DotSuffix() #DotSuffix : { Token t = null; }
 {
-    <DOT> t=<IDENTIFIER> { jjtThis.setImage(t.image); } (<LPAREN> Parameters() <RPAREN>)?
+    <DOT> t=<IDENTIFIER> { jjtThis.setImage(t.image); }
 }
 
 /*
@@ -250,16 +245,7 @@ void DotSuffix() #DotSuffix : { Token t = null; }
  */
 void BracketSuffix() #BracketSuffix : {}
 {
-    <LBRACK> Expression() <RBRACK> (<LPAREN> Parameters() <RPAREN>)?
-}
-
-/*
- * Parameters
- * Method parameters
- */
-void Parameters() : {}
-{
-    (Expression())? (<COMMA> Expression())*
+    <LBRACK> Expression() <RBRACK>
 }
 
 /*
