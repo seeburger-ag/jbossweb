@@ -40,7 +40,12 @@ wsdl4j-src.loc=http://repo1.maven.org/maven2/wsdl4j/wsdl4j/1.6.1/wsdl4j-1.6.1.ja
 jdt.home=${base.path}/eclipse/plugins
 jdt.lib=${jdt.home}
 jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.4.2.v_883_R34x.jar
-jdt.loc=http://download.eclipse.org/eclipse/downloads/drops/R-3.4.1-200809111700/eclipse-JDT-3.4.1.zip
+jdt.loc=http://archive.eclipse.org/eclipse/downloads/drops/R-3.4.1-200809111700/eclipse-JDT-3.4.1.zip
+
+jdt-src.home=${base.path}/eclipse/plugins
+jdt-src.lib=${jdt.home}
+jdt-src.loc=http://archive.eclipse.org/eclipse/downloads/drops/R-3.4.1-200809111700/eclipse-sourceBuild-srcIncluded-3.4.1.zip
+
 
 # ----- Commons DBCP, version 1.1 or later -----
 commons-dbcp.version=1.2.2
