@@ -317,9 +317,21 @@
       <arg value="-c" />
       <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/servlet-api.jar -DpomFile=${tomcat.jars}/servlet-api-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
     </exec>
-  	<exec dir="." executable="/bin/sh" os="Linux">
+    <exec dir="." executable="/bin/sh" os="Linux">
       <arg value="-c" />
       <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jbossweb-src.zip -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=jboss.web -DartifactId=jbossweb -Dversion=${version} -Dclassifier=sources"/>
+    </exec>
+    <exec dir="." executable="/bin/sh" os="Linux">
+      <arg value="-c" />
+      <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/el-api-src.zip -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=jboss.web -DartifactId=el-api -Dversion=${version} -Dclassifier=sources"/>
+    </exec>
+    <exec dir="." executable="/bin/sh" os="Linux">
+      <arg value="-c" />
+      <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/servlet-api-src.zip -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=jboss.web -DartifactId=servlet-api -Dversion=${version} -Dclassifier=sources"/>
+    </exec>
+    <exec dir="." executable="/bin/sh" os="Linux">
+      <arg value="-c" />
+      <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jsp-api-src.zip -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=jboss.web -DartifactId=jsp-api -Dversion=${version} -Dclassifier=sources"/>
     </exec>
 
     <!-- Windows exec -->

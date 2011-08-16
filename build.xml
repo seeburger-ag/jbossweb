@@ -620,6 +620,22 @@
         <include name="javax/el/**" />
       </fileset>
     </zip>
+    <zip destfile="${tomcat.jars}/el-api-src.zip">
+      <fileset dir="${basedir}/java">
+        <include name="javax/el/**" />
+      </fileset>
+    </zip>
+    <zip destfile="${tomcat.jars}/servlet-api-src.zip">
+      <fileset dir="${basedir}/java">
+        <include name="javax/servlet/**" />
+        <exclude name="javax/servlet/jsp/**" />
+      </fileset>
+    </zip>
+    <zip destfile="${tomcat.jars}/jsp-api-src.zip">
+      <fileset dir="${basedir}/java">
+        <include name="javax/servlet/jsp/**" />
+      </fileset>
+    </zip>
   	
   </target>
 	
