@@ -40,6 +40,9 @@
 	<property name="jasper-jdt.home" value="${base.path}/jbossweb-deps/jdt" />
 	<property name="jasper-jdt.jar" value="${jasper-jdt.home}/jasper-jdt.jar"/>
 
+	<property name="jasper-jdt-src.home" value="${base.path}/jbossweb-deps/jdt-src" />
+	<property name="jasper-jdt-src.jar" value="${jasper-jdt-src.home}/jasper-jdt-src.jar"/>
+
 	<!-- Classpath -->
 	<path id="tomcat.classpath">
 		<fileset dir="${basedir}/lib">
@@ -348,6 +351,7 @@
 		</jar>
 
 		<copy file="${jasper-jdt.jar}" todir="${tomcat.jars}" />
+		<copy file="${jasper-jdt-src.jar}" todir="${tomcat.jars}" />
 
 		<!-- Create a source jar of the jbossweb/servlet classes -->
 		<jar destfile="${tomcat.jars}/jbossweb-src.jar" index="true">
@@ -364,6 +368,7 @@
 	<target name="clean-depend"
 	     description="Clean depend src components">
 		<delete dir="${jasper-jdt.home}"/>
+		<delete dir="${jasper-jdt-src.home}"/>
 	</target>
 
 	<target name="clean">
@@ -432,12 +437,21 @@
 		<!-- Build Jasper JDT bundle -->
 		<antcall target="downloadzip">
 			<param name="sourcefile" value="${jdt.loc}"/>
-			<param name="destfile" value="${jdt.jar}"/>
 			<param name="destdir" value="${base.path}"/>
 		</antcall>
 		<mkdir dir="${jasper-jdt.home}"/>
 		<antcall target="build-jasper-jdt">
 			<param name="basedir" value="${jasper-jdt.home}" />
+		</antcall>
+
+		<!-- Build Jasper JDT sources bundle -->
+		<antcall target="downloadzip">
+			<param name="sourcefile" value="${jdt-src.loc}"/>
+			<param name="destdir" value="${jasper-jdt-src.home}"/>
+		</antcall>
+		<mkdir dir="${jasper-jdt-src.home}"/>
+		<antcall target="build-jasper-jdt-src">
+			<param name="basedir" value="${jasper-jdt-src.home}" />
 		</antcall>
 
 	</target>
@@ -446,6 +460,16 @@
 		<unjar src="${jdt.jar}" dest="${jasper-jdt.home}" />
 		<jar destfile="${jasper-jdt.jar}" index="true">
 			<fileset dir="${jasper-jdt.home}">
+				<include name="org/eclipse/jdt/core/compiler/**"/>
+				<include name="org/eclipse/jdt/internal/compiler/**"/>
+				<include name="org/eclipse/jdt/internal/core/util/CommentRecorder*"/>
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="build-jasper-jdt-src">
+		<jar destfile="${jasper-jdt-src.jar}" index="true">
+			<fileset dir="${jasper-jdt-src.home}/src/plugins/org.eclipse.jdt.core/model">
 				<include name="org/eclipse/jdt/core/compiler/**"/>
 				<include name="org/eclipse/jdt/internal/compiler/**"/>
 				<include name="org/eclipse/jdt/internal/core/util/CommentRecorder*"/>
