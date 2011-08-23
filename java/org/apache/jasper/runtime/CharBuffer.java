@@ -216,7 +216,7 @@ public class CharBuffer {
      */
     public String toString()
     {
-        StringBuilder sb = new StringBuilder(size());
+        StringBuffer sb = new StringBuffer(size());
         for (Iterator iter = this.bufList.iterator(); iter.hasNext();) {
             char[] curBuf = (char[]) iter.next();
             sb.append(curBuf);

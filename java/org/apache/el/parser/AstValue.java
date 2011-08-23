@@ -25,7 +25,6 @@ import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.MethodInfo;
 import javax.el.PropertyNotFoundException;
-import javax.el.ValueReference;
 
 import org.apache.el.lang.ELSupport;
 import org.apache.el.lang.EvaluationContext;
@@ -45,6 +44,7 @@ public final class AstValue extends SimpleNode {
 
     protected static class Target {
         protected Object base;
+
         protected Object property;
     }
 
@@ -58,14 +58,6 @@ public final class AstValue extends SimpleNode {
         return ctx.getELResolver().getType(ctx, t.base, t.property);
     }
 
-    public ValueReference getValueReference(EvaluationContext ctx) {
-        try {
-            Target t = getTarget(ctx);
-            return new ValueReference(t.base, t.property);
-        } catch (Exception e) {
-            return null;
-        }
-    }
     private final Target getTarget(EvaluationContext ctx) throws ELException {
         // evaluate expr-a to value-a
         Object base = this.children[0].getValue(ctx);
@@ -122,17 +114,8 @@ public final class AstValue extends SimpleNode {
             if (property == null) {
                 return null;
             } else {
-                Object[] params = null;
-                if (this.children[i] instanceof AstDotSuffix) {
-                    params = ((AstDotSuffix) this.children[i]).getParameters(ctx);
-                }
-                if (params != null && params.length > 0) {
-                    ctx.setPropertyResolved(false);
-                    base = resolver.invoke(ctx, base, property, null, params);
-                } else {
-                    ctx.setPropertyResolved(false);
-                    base = resolver.getValue(ctx, base, property);
-                }
+                ctx.setPropertyResolved(false);
+                base = resolver.getValue(ctx, base, property);
             }
             i++;
         }
@@ -181,24 +164,14 @@ public final class AstValue extends SimpleNode {
     public Object invoke(EvaluationContext ctx, Class[] paramTypes,
             Object[] paramValues) throws ELException {
         Target t = getTarget(ctx);
-        Object[] params = null;
-        if (jjtGetNumChildren() > 1 && this.children[1] instanceof AstDotSuffix) {
-            params = ((AstDotSuffix) this.children[1]).getParameters(ctx);
-        }
+        Method m = ReflectionUtil.getMethod(t.base, t.property, paramTypes);
         Object result = null;
-        if (params != null && params.length > 0) {
-            ELResolver resolver = ctx.getELResolver();
-            ctx.setPropertyResolved(false);
-            result = resolver.invoke(ctx, t.base, t.property, null, params);
-        } else {
-            Method m = ReflectionUtil.getMethod(t.base, t.property, paramTypes);
-            try {
-                result = m.invoke(t.base, (Object[]) paramValues);
-            } catch (IllegalAccessException iae) {
-                throw new ELException(iae);
-            } catch (InvocationTargetException ite) {
-                throw new ELException(ite.getCause());
-            }
+        try {
+            result = m.invoke(t.base, (Object[]) paramValues);
+        } catch (IllegalAccessException iae) {
+            throw new ELException(iae);
+        } catch (InvocationTargetException ite) {
+            throw new ELException(ite.getCause());
         }
         return result;
     }

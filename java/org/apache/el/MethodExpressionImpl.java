@@ -312,7 +312,7 @@ public final class MethodExpressionImpl extends MethodExpression implements
         return false;
     }
 
-    public boolean isParmetersProvided() {
+    public boolean isParametersProvided() {
         return this.getNode().isParametersProvided();
     }
 

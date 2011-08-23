@@ -19,17 +19,20 @@
 package org.apache.catalina.session;
 
 
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,10 +54,10 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.SessionEvent;
 import org.apache.catalina.SessionListener;
-import org.apache.catalina.realm.GenericPrincipal;
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.StringManager;
+
+import org.apache.catalina.security.SecurityUtil;
 
 /**
  * Standard implementation of the <b>Session</b> interface.  This object is
@@ -79,9 +82,6 @@ import org.apache.catalina.util.StringManager;
 
 public class StandardSession
     implements HttpSession, Session, Serializable {
-
-
-    private static final long serialVersionUID = -4294597583262209053L;
 
 
     protected static final boolean ACTIVITY_CHECK = 
@@ -130,7 +130,7 @@ public class StandardSession
     /**
      * The collection of user data attributes associated with this Session.
      */
-    protected Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+    protected Map attributes = new ConcurrentHashMap();
 
 
     /**
@@ -139,6 +139,24 @@ public class StandardSession
      * version of this object.
      */
     protected transient String authType = null;
+
+
+    /**
+     * The <code>java.lang.Method</code> for the
+     * <code>fireContainerEvent()</code> method of the
+     * <code>org.apache.catalina.core.StandardContext</code> method,
+     * if our Context implementation is of this class.  This value is
+     * computed dynamically the first time it is needed, or after
+     * a session reload (since it is declared transient).
+     */
+    protected transient Method containerEventMethod = null;
+
+
+    /**
+     * The method signature for the <code>fireContainerEvent</code> method.
+     */
+    protected static final Class containerEventTypes[] =
+    { String.class, Object.class };
 
 
     /**
@@ -192,7 +210,7 @@ public class StandardSession
     /**
      * The session event listeners for this Session.
      */
-    protected transient ArrayList<SessionListener> listeners = new ArrayList<SessionListener>();
+    protected transient ArrayList listeners = new ArrayList();
 
 
     /**
@@ -226,7 +244,7 @@ public class StandardSession
      * and event listeners.  <b>IMPLEMENTATION NOTE:</b> This object is
      * <em>not</em> saved and restored across session serializations!
      */
-    protected transient Map<String, Object> notes = new ConcurrentHashMap<String, Object>();
+    protected transient Map notes = new Hashtable();
 
 
     /**
@@ -248,6 +266,14 @@ public class StandardSession
      * The HTTP session context associated with this session.
      */
     protected static HttpSessionContext sessionContext = null;
+
+
+    /**
+     * The property change support for this component.  NOTE:  This value
+     * is not included in the serialized version of this object.
+     */
+    protected transient PropertyChangeSupport support =
+        new PropertyChangeSupport(this);
 
 
     /**
@@ -284,7 +310,9 @@ public class StandardSession
      */
     public void setAuthType(String authType) {
 
+        String oldAuthType = this.authType;
         this.authType = authType;
+        support.firePropertyChange("authType", oldAuthType, this.authType);
 
     }
 
@@ -332,20 +360,13 @@ public class StandardSession
     public void setId(String id) {
 
         if ((this.id != null) && (manager != null))
-                manager.remove(this);
+            manager.remove(this);
 
-        String oldId = this.id;
         this.id = id;
 
         if (manager != null)
             manager.add(this);
-
-        if (oldId == null) {
-            tellNew();
-        } else {
-            // Notify interested session event listeners
-            fireSessionEvent(Session.SESSION_ID_CHANGED_EVENT, oldId);
-        }
+        tellNew();
     }
 
 
@@ -360,7 +381,7 @@ public class StandardSession
 
         // Notify interested application event listeners
         Context context = (Context) manager.getContainer();
-        Object listeners[] = context.getApplicationSessionLifecycleListeners();
+        Object listeners[] = context.getApplicationLifecycleListeners();
         if (listeners != null) {
             HttpSessionEvent event =
                 new HttpSessionEvent(getSession());
@@ -370,12 +391,18 @@ public class StandardSession
                 HttpSessionListener listener =
                     (HttpSessionListener) listeners[i];
                 try {
-                    context.fireContainerEvent("beforeSessionCreated", listener);
+                    fireContainerEvent(context,
+                                       "beforeSessionCreated",
+                                       listener);
                     listener.sessionCreated(event);
-                    context.fireContainerEvent("afterSessionCreated", listener);
+                    fireContainerEvent(context,
+                                       "afterSessionCreated",
+                                       listener);
                 } catch (Throwable t) {
                     try {
-                        context.fireContainerEvent("afterSessionCreated", listener);
+                        fireContainerEvent(context,
+                                           "afterSessionCreated",
+                                           listener);
                     } catch (Exception e) {
                         ;
                     }
@@ -399,31 +426,6 @@ public class StandardSession
 
     }
 
-
-    /**
-     * Return the last time the client sent a request associated with this
-     * session, as the number of milliseconds since midnight, January 1, 1970
-     * GMT.  Actions that your application takes, such as getting or setting
-     * a value associated with the session, do not affect the access time.
-     * This one gets updated whenever a request starts.
-     */
-    public long getThisAccessedTime() {
-
-        if (!isValidInternal()) {
-            throw new IllegalStateException
-                (sm.getString("standardSession.getThisAccessedTime.ise"));
-        }
-
-        return (this.thisAccessedTime);
-    }
-
-    /**
-     * Return the last client access time without invalidation check
-     * @see #getThisAccessedTime().
-     */
-    public long getThisAccessedTimeInternal() {
-        return (this.thisAccessedTime);
-    }
 
     /**
      * Return the last time the client sent a request associated with this
@@ -496,7 +498,7 @@ public class StandardSession
         if (isValid && interval == 0) {
             expire();
         }
-        
+
     }
 
 
@@ -536,7 +538,9 @@ public class StandardSession
      */
     public void setPrincipal(Principal principal) {
 
+        Principal oldPrincipal = this.principal;
         this.principal = principal;
+        support.firePropertyChange("principal", oldPrincipal, this.principal);
 
     }
 
@@ -657,7 +661,7 @@ public class StandardSession
 
     }
 
-    
+
     /**
      * Perform the internal processing required to invalidate this session,
      * without triggering an exception if the session has already expired.
@@ -679,22 +683,31 @@ public class StandardSession
             expiring = true;
         
             // Notify interested application event listeners
+            // FIXME - Assumes we call listeners in reverse order
             Context context = (Context) manager.getContainer();
-            Object listeners[] = context.getApplicationSessionLifecycleListeners();
-            if (notify && listeners != null && (listeners.length > 0)) {
+            Object listeners[] = context.getApplicationLifecycleListeners();
+            if (notify && (listeners != null)) {
                 HttpSessionEvent event =
                     new HttpSessionEvent(getSession());
-                for (int i = listeners.length - 1; i >= 0; i--) {
-                    if (!(listeners[i] instanceof HttpSessionListener))
+                for (int i = 0; i < listeners.length; i++) {
+                    int j = (listeners.length - 1) - i;
+                    if (!(listeners[j] instanceof HttpSessionListener))
                         continue;
-                    HttpSessionListener listener = (HttpSessionListener) listeners[i];
+                    HttpSessionListener listener =
+                        (HttpSessionListener) listeners[j];
                     try {
-                        context.fireContainerEvent("beforeSessionDestroyed", listener);
+                        fireContainerEvent(context,
+                                           "beforeSessionDestroyed",
+                                           listener);
                         listener.sessionDestroyed(event);
-                        context.fireContainerEvent("afterSessionDestroyed", listener);
+                        fireContainerEvent(context,
+                                           "afterSessionDestroyed",
+                                           listener);
                     } catch (Throwable t) {
                         try {
-                            context.fireContainerEvent("afterSessionDestroyed", listener);
+                            fireContainerEvent(context,
+                                               "afterSessionDestroyed",
+                                               listener);
                         } catch (Exception e) {
                             ;
                         }
@@ -732,18 +745,6 @@ public class StandardSession
             // Notify interested session event listeners
             if (notify) {
                 fireSessionEvent(Session.SESSION_DESTROYED_EVENT, null);
-            }
-
-            // Call the logout method
-            if (principal instanceof GenericPrincipal) {
-                GenericPrincipal gp = (GenericPrincipal) principal;
-                try {
-                    gp.logout();
-                } catch (Exception e) {
-                    manager.getContainer().getLogger().error(
-                            sm.getString("standardSession.logoutfail"),
-                            e);
-                }
             }
 
             // We have completed expire of this session
@@ -913,7 +914,7 @@ public class StandardSession
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         sb.append("StandardSession[");
         sb.append(id);
         sb.append("]");
@@ -1343,33 +1344,39 @@ public class StandardSession
                 (HttpSessionAttributeListener) listeners[i];
             try {
                 if (unbound != null) {
-                    context.fireContainerEvent("beforeSessionAttributeReplaced",
+                    fireContainerEvent(context,
+                                       "beforeSessionAttributeReplaced",
                                        listener);
                     if (event == null) {
                         event = new HttpSessionBindingEvent
                             (getSession(), name, unbound);
                     }
                     listener.attributeReplaced(event);
-                    context.fireContainerEvent("afterSessionAttributeReplaced",
+                    fireContainerEvent(context,
+                                       "afterSessionAttributeReplaced",
                                        listener);
                 } else {
-                    context.fireContainerEvent("beforeSessionAttributeAdded",
+                    fireContainerEvent(context,
+                                       "beforeSessionAttributeAdded",
                                        listener);
                     if (event == null) {
                         event = new HttpSessionBindingEvent
                             (getSession(), name, value);
                     }
                     listener.attributeAdded(event);
-                    context.fireContainerEvent("afterSessionAttributeAdded",
+                    fireContainerEvent(context,
+                                       "afterSessionAttributeAdded",
                                        listener);
                 }
             } catch (Throwable t) {
                 try {
                     if (unbound != null) {
-                        context.fireContainerEvent("afterSessionAttributeReplaced",
+                        fireContainerEvent(context,
+                                           "afterSessionAttributeReplaced",
                                            listener);
                     } else {
-                        context.fireContainerEvent("afterSessionAttributeAdded",
+                        fireContainerEvent(context,
+                                           "afterSessionAttributeAdded",
                                            listener);
                     }
                 } catch (Exception e) {
@@ -1390,7 +1397,7 @@ public class StandardSession
      * Return the <code>isValid</code> flag for this session without any expiration
      * check.
      */
-    public boolean isValidInternal() {
+    protected boolean isValidInternal() {
         return (this.isValid || this.expiring);
     }
 
@@ -1427,7 +1434,7 @@ public class StandardSession
 
         // Deserialize the attribute count and attribute values
         if (attributes == null)
-            attributes = new ConcurrentHashMap<String, Object>();
+            attributes = new Hashtable();
         int n = ((Integer) stream.readObject()).intValue();
         boolean isValidSave = isValid;
         isValid = true;
@@ -1441,11 +1448,11 @@ public class StandardSession
         isValid = isValidSave;
 
         if (listeners == null) {
-            listeners = new ArrayList<SessionListener>();
+            listeners = new ArrayList();
         }
 
         if (notes == null) {
-            notes = new ConcurrentHashMap<String, Object>();
+            notes = new Hashtable();
         }
     }
 
@@ -1541,6 +1548,39 @@ public class StandardSession
 
 
     /**
+     * Fire container events if the Context implementation is the
+     * <code>org.apache.catalina.core.StandardContext</code>.
+     *
+     * @param context Context for which to fire events
+     * @param type Event type
+     * @param data Event data
+     *
+     * @exception Exception occurred during event firing
+     */
+    protected void fireContainerEvent(Context context,
+                                    String type, Object data)
+        throws Exception {
+
+        if (!"org.apache.catalina.core.StandardContext".equals
+            (context.getClass().getName())) {
+            return; // Container events are not supported
+        }
+        // NOTE:  Race condition is harmless, so do not synchronize
+        if (containerEventMethod == null) {
+            containerEventMethod =
+                context.getClass().getMethod("fireContainerEvent",
+                                             containerEventTypes);
+        }
+        Object containerEventParams[] = new Object[2];
+        containerEventParams[0] = type;
+        containerEventParams[1] = data;
+        containerEventMethod.invoke(context, containerEventParams);
+
+    }
+                                      
+
+
+    /**
      * Notify all session event listeners that a particular event has
      * occurred for this Session.  The default implementation performs
      * this notification synchronously using the calling thread.
@@ -1612,26 +1652,29 @@ public class StandardSession
         // Notify interested application event listeners
         Context context = (Context) manager.getContainer();
         Object listeners[] = context.getApplicationEventListeners();
-        if (listeners == null || (listeners.length < 1))
+        if (listeners == null)
             return;
-        for (int i = listeners.length - 1; i >= 0; i--) {
+        for (int i = 0; i < listeners.length; i++) {
             if (!(listeners[i] instanceof HttpSessionAttributeListener))
                 continue;
             HttpSessionAttributeListener listener =
                 (HttpSessionAttributeListener) listeners[i];
             try {
-                context.fireContainerEvent("beforeSessionAttributeRemoved",
+                fireContainerEvent(context,
+                                   "beforeSessionAttributeRemoved",
                                    listener);
                 if (event == null) {
                     event = new HttpSessionBindingEvent
                         (getSession(), name, value);
                 }
                 listener.attributeRemoved(event);
-                context.fireContainerEvent("afterSessionAttributeRemoved",
+                fireContainerEvent(context,
+                                   "afterSessionAttributeRemoved",
                                    listener);
             } catch (Throwable t) {
                 try {
-                    context.fireContainerEvent("afterSessionAttributeRemoved",
+                    fireContainerEvent(context,
+                                       "afterSessionAttributeRemoved",
                                        listener);
                 } catch (Exception e) {
                     ;
