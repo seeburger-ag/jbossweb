@@ -74,6 +74,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Manager;
+import org.apache.catalina.ThreadBindingListener;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.deploy.ErrorPage;
@@ -640,6 +641,13 @@ public class StandardContext
     protected String engineName = null;
     protected String j2EEApplication="none";
     protected String j2EEServer="none";
+
+
+    protected static final ThreadBindingListener DEFAULT_NAMING_LISTENER = (new ThreadBindingListener() {
+        public void bind() {}
+        public void unbind() {}
+    });
+    protected ThreadBindingListener threadBindingListener = DEFAULT_NAMING_LISTENER;
 
 
     // ----------------------------------------------------- Context Properties
@@ -1642,6 +1650,22 @@ public class StandardContext
         support.firePropertyChange("resources", oldResources,
                                    this.webappResources);
 
+    }
+
+
+    /**
+     * Get the associated ThreadBindingListener.
+     */
+    public ThreadBindingListener getThreadBindingListener() {
+        return threadBindingListener;
+    }
+
+
+    /**
+     * Get the associated ThreadBindingListener.
+     */
+    public void setThreadBindingListener(ThreadBindingListener threadBindingListener) {
+        this.threadBindingListener = threadBindingListener;
     }
 
 
@@ -4197,14 +4221,12 @@ public class StandardContext
         ClassLoader oldContextClassLoader =
             Thread.currentThread().getContextClassLoader();
 
-        if (getResources() == null)
-            return oldContextClassLoader;
-
         if ((getLoader() != null) && getLoader().getClassLoader() != null) {
             Thread.currentThread().setContextClassLoader
                 (getLoader().getClassLoader());
         }
 
+        threadBindingListener.bind();
         lifecycle.fireLifecycleEvent(BIND_THREAD_EVENT, null);
         
         return oldContextClassLoader;
@@ -4218,6 +4240,7 @@ public class StandardContext
     protected void unbindThread(ClassLoader oldContextClassLoader) {
 
         lifecycle.fireLifecycleEvent(UNBIND_THREAD_EVENT, null);
+        threadBindingListener.unbind();
 
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
 

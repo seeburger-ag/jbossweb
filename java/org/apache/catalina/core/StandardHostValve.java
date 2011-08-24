@@ -122,6 +122,7 @@ final class StandardHostValve
         if (context.getLoader() != null) {
             Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
         }
+        context.getThreadBindingListener().bind();
 
         // Enter application scope
         Object instances[] = context.getApplicationEventListeners();
@@ -191,6 +192,7 @@ final class StandardHostValve
             }
         }
 
+        context.getThreadBindingListener().unbind();
         // Restore the context classloader
         Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
 
@@ -226,6 +228,7 @@ final class StandardHostValve
         if (context.getLoader() != null) {
             Thread.currentThread().setContextClassLoader(context.getLoader().getClassLoader());
         }
+        context.getThreadBindingListener().bind();
 
         // Enter application scope
         Object instances[] = context.getApplicationEventListeners();
@@ -307,6 +310,7 @@ final class StandardHostValve
             }
         }
 
+        context.getThreadBindingListener().unbind();
         // Restore the context classloader
         Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
 

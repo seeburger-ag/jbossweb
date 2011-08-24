@@ -1102,6 +1102,18 @@ public interface Context extends Container {
      */
     public boolean isInitialized();
 
+    
+    /**
+     * Get the associated ThreadBindingListener.
+     */
+    public ThreadBindingListener getThreadBindingListener();
+
+
+    /**
+     * Get the associated ThreadBindingListener.
+     */
+    public void setThreadBindingListener(ThreadBindingListener threadBindingListener);
+
 
 }
 
