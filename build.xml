@@ -165,14 +165,6 @@
           includes="*.xml">
 			<param name="relative-path" expression=".."/>
 		</xslt>
-		<xslt basedir="webapps/docs/architecture"
-           destdir="${tomcat.build}/webapps/docs/architecture"
-         extension=".html"
-             style="webapps/docs/tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-			<param name="relative-path" expression=".."/>
-		</xslt>
 
 		<!-- Print friendly version -->
 		<mkdir dir="${tomcat.build}/webapps/docs/printer" />
@@ -222,15 +214,6 @@
 		</xslt>
 		<xslt basedir="webapps/docs/config"
            destdir="${tomcat.build}/webapps/docs/config/printer"
-         extension=".html"
-             style="webapps/docs/tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-			<param name="relative-path" expression="../.."/>
-			<param name="project-menu" expression="nomenu"/>
-		</xslt>
-		<xslt basedir="webapps/docs/architecture"
-           destdir="${tomcat.build}/webapps/docs/architecture/printer"
          extension=".html"
              style="webapps/docs/tomcat-docs.xsl"
           excludes="project.xml"
@@ -305,17 +288,6 @@
 		</xslt>
 		<xslt basedir="webapps/docs/config"
            destdir="${jbossweb.site}/config"
-         extension=".html"
-             style="webapps/docs/tomcat-docs.xsl"
-          excludes="project.xml"
-          includes="*.xml">
-			<param name="relative-path" expression=".."/>
-			<param name="project-menu" expression="nomenu"/>
-			<param name="bodyonly" expression="true"/>
-			<param name="usehead" expression="true"/>
-		</xslt>
-		<xslt basedir="webapps/docs/architecture"
-           destdir="${jbossweb.site}/architecture"
          extension=".html"
              style="webapps/docs/tomcat-docs.xsl"
           excludes="project.xml"
