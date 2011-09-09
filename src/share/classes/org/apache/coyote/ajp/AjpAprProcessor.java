@@ -386,7 +386,8 @@ public class AjpAprProcessor implements ActionHook {
                     if(log.isDebugEnabled()) {
                         log.debug("Unexpected message: "+type);
                     }
-                    continue;
+                    error = true;
+                    break;
                 }
 
                 keptAlive = true;
@@ -994,7 +995,7 @@ public class AjpAprProcessor implements ActionHook {
         flush();
 
         // read remaining data from the special first-body-chunk
-        if (first && request.getContentLength() > 0) {
+        if (first && request.getContentLengthLong() > 0) {
             try {
                 receive();
             } catch (IOException e) {
