@@ -533,7 +533,7 @@ public class AjpAprProcessor implements ActionHook {
             }
         } else {
             recycle();
-            return SocketState.CLOSED;
+            return SocketState.OPEN;
         }
     }
 
