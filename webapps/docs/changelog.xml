@@ -30,6 +30,11 @@
          <bug>51698</bug>: Fix CVE-2011-3190. Prevent AJP message injection. (markt)
       </fix>
     </changelog>
+    <changelog>
+      <fix>
+         <jira>JBWEB-201</jira>JBoss Web Native causes JVM crash with AJP. (jfclere/remm)
+      </fix>
+    </changelog>
   </subsection>
 </section>
 
