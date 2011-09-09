@@ -15,6 +15,16 @@
   </properties>
 
 <body>
+<section name="JBoss Web 2.1.13.GA (jfclere)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         <bug>51698</bug>: Fix CVE-2011-3190. Prevent AJP message injection. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 2.1.12.GA (jfclere)">
   <subsection name="Catalina">
     <changelog>
