@@ -30,6 +30,9 @@
          <bug>51698</bug>: Fix CVE-2011-3190. Prevent AJP message injection. (markt)
       </fix>
       <fix>
+         <bug>51860</bug>: Fix issues when keyAlias is being used. (markt)
+      </fix>
+      <fix>
          <jira>JBWEB-201</jira>JBoss Web Native causes JVM crash with AJP. (jfclere/remm)
       </fix>
     </changelog>
