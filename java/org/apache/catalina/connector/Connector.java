@@ -68,6 +68,13 @@ public class Connector
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.X_POWERED_BY", "false")).booleanValue();
     
 
+    protected static final String URI_ENCODING = 
+        System.getProperty("org.apache.catalina.connector.URI_ENCODING");
+    
+    protected static final boolean USE_BODY_ENCODING_FOR_QUERY_STRING = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING", "false")).booleanValue();
+    
+
     // ------------------------------------------------------------ Constructor
 
 
@@ -248,13 +255,13 @@ public class Connector
      /**
       * URI encoding.
       */
-     protected String URIEncoding = null;
+     protected String URIEncoding = URI_ENCODING;
 
 
      /**
       * URI encoding as body.
       */
-     protected boolean useBodyEncodingForURI = false;
+     protected boolean useBodyEncodingForURI = USE_BODY_ENCODING_FOR_QUERY_STRING;
 
      
      /**
