@@ -23,6 +23,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+       <jira>JBPAPP-7267</jira> ParserUtils uses JAXP in a non-modular classloading compatible way (jfclere)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 2.1.12.GA (jfclere)">

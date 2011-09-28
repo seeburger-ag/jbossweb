@@ -87,7 +87,7 @@ public class ParserUtils {
         // Perform an XML parse of this document, via JAXP
         try {
             DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
+               createDocumentBuilderFactory();
             factory.setNamespaceAware(true);
             factory.setValidating(validating);
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -116,7 +116,7 @@ public class ParserUtils {
         return (convert(null, document.getDocumentElement()));
     }
 
-
+    
     /**
      * Parse the specified XML document, and return a <code>TreeNode</code>
      * that corresponds to the root node of the document tree.
@@ -183,6 +183,22 @@ public class ParserUtils {
         
         // Return the completed TreeNode graph
         return (treeNode);
+    }
+    
+    protected static DocumentBuilderFactory createDocumentBuilderFactory()
+    {
+       ClassLoader cl = Thread.currentThread().getContextClassLoader();
+       DocumentBuilderFactory factory;
+       try
+       {
+          Thread.currentThread().setContextClassLoader(ParserUtils.class.getClassLoader());
+          factory = DocumentBuilderFactory.newInstance();
+       }
+       finally
+       {
+          Thread.currentThread().setContextClassLoader(cl);
+       }
+       return factory;
     }
 }
 
