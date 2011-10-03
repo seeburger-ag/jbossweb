@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 3.0.0.CR3 (jfclere)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         <jira>JBWEB-201</jira>JBoss Web Native causes JVM crash with AJP. (jfclere/remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 3.0.0.CR2 (jfclere)">
   <subsection name="Catalina">
     <changelog>
