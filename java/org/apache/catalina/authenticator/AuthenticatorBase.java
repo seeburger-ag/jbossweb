@@ -82,6 +82,15 @@ public abstract class AuthenticatorBase
 
     // ----------------------------------------------------- Instance Variables
 
+    /**
+     * Authentication header
+     */
+    protected static final String AUTH_HEADER_NAME = "WWW-Authenticate";
+
+    /**
+     * Default authentication realm name.
+     */
+    protected static final String REALM_NAME = "Authentication required";
 
     /**
      * The number of random bytes to include when generating a

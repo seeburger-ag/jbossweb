@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.0.3.Final (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+        Improve DIGEST authentication security. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.2.Final (remm)">
   <subsection name="Catalina">
     <changelog>
