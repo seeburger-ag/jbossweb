@@ -336,7 +336,7 @@ public class StandardService
      *
      * @param connector The Connector to be added
      */
-    public void addConnector(Connector connector) throws LifecycleException {
+    public void addConnector(Connector connector) {
 
         synchronized (connectors) {
             connector.setContainer(this.container);
@@ -346,21 +346,21 @@ public class StandardService
             results[connectors.length] = connector;
             connectors = results;
 
-            if (initialized) {
-                try {
-                    connector.init();
-                } catch (LifecycleException e) {
-                    log.error("Connector.initialize", e);
-                    throw new LifecycleException("Can't initialize Connector");
+            if (!DELAY_CONNECTOR_STARTUP) {
+                if (initialized) {
+                    try {
+                        connector.init();
+                    } catch (LifecycleException e) {
+                        log.error("Connector.initialize", e);
+                    }
                 }
-            }
 
-            if (started && (connector instanceof Lifecycle)) {
-                try {
-                    ((Lifecycle) connector).start();
-                } catch (LifecycleException e) {
-                    log.error("Connector.start", e);
-                    throw new LifecycleException("Can't start Connector");
+                if (started && (connector instanceof Lifecycle)) {
+                    try {
+                        ((Lifecycle) connector).start();
+                    } catch (LifecycleException e) {
+                        log.error("Connector.start", e);
+                    }
                 }
             }
 
@@ -757,9 +757,11 @@ public class StandardService
         addLifecycleListener(mapperListener);
         
         // Initialize our defined Connectors
-        synchronized (connectors) {
-            for (int i = 0; i < connectors.length; i++) {
-                connectors[i].init();
+        if (!DELAY_CONNECTOR_STARTUP) {
+            synchronized (connectors) {
+                for (int i = 0; i < connectors.length; i++) {
+                    connectors[i].init();
+                }
             }
         }
 
