@@ -420,11 +420,13 @@ public class StandardService
             }
             if (j < 0)
                 return;
-            if (started && (connectors[j] instanceof Lifecycle)) {
-                try {
-                    ((Lifecycle) connectors[j]).stop();
-                } catch (LifecycleException e) {
-                    log.error("Connector.stop", e);
+            if (!DELAY_CONNECTOR_STARTUP) {
+                if (started && (connectors[j] instanceof Lifecycle)) {
+                    try {
+                        ((Lifecycle) connectors[j]).stop();
+                    } catch (LifecycleException e) {
+                        log.error("Connector.stop", e);
+                    }
                 }
             }
             connectors[j].setContainer(null);
