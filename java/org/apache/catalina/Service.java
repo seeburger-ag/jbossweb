@@ -115,7 +115,7 @@ public interface Service {
      *
      * @param connector The Connector to be added
      */
-    public void addConnector(Connector connector);
+    public void addConnector(Connector connector) throws LifecycleException;
 
     /**
      * Find and return the set of Connectors associated with this Service.

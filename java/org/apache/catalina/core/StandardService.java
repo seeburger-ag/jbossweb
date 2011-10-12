@@ -336,7 +336,7 @@ public class StandardService
      *
      * @param connector The Connector to be added
      */
-    public void addConnector(Connector connector) {
+    public void addConnector(Connector connector) throws LifecycleException {
 
         synchronized (connectors) {
             connector.setContainer(this.container);
@@ -351,6 +351,7 @@ public class StandardService
                     connector.init();
                 } catch (LifecycleException e) {
                     log.error("Connector.initialize", e);
+                    throw new LifecycleException("Can't initialize Connector");
                 }
             }
 
@@ -359,6 +360,7 @@ public class StandardService
                     ((Lifecycle) connector).start();
                 } catch (LifecycleException e) {
                     log.error("Connector.start", e);
+                    throw new LifecycleException("Can't start Connector");
                 }
             }
 
