@@ -379,7 +379,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
      * Maximum number of requests which can be performed over a keepalive 
      * connection. The default is the same as for Apache HTTP Server.
      */
-    protected int maxKeepAliveRequests = 100;
+    protected int maxKeepAliveRequests = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS", "100")).intValue();
     public int getMaxKeepAliveRequests() { return maxKeepAliveRequests; }
     public void setMaxKeepAliveRequests(int mkar) { maxKeepAliveRequests = mkar; }
 
