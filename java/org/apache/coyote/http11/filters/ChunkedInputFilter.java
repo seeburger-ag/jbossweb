@@ -286,6 +286,8 @@ public class ChunkedInputFilter implements InputFilter {
                 eol = true;
             } else if (buf[pos] == Constants.SEMI_COLON) {
                 trailer = true;
+            } else if (buf[pos] < 0) {
+                throw new IOException("Invalid chunk header");
             } else if (!trailer) { 
                 //don't read data after the trailer
                 if (HexUtils.DEC[buf[pos]] != -1) {
