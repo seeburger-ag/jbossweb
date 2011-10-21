@@ -22,6 +22,20 @@
       <fix>
         Improve DIGEST authentication security. (remm)
       </fix>
+      <fix>
+        <jira>AS7-2073</jira>: Delegate connector lifecycle handling if in delay mode. (jfclere, remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         Possible exception parsing invalid chunk headers. (remm)
+      </fix>
+      <fix>
+         Add org.apache.tomcat.util.net.WAIT_FOR_THREAD system property to bring back optional
+         blocking for the thread pool. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

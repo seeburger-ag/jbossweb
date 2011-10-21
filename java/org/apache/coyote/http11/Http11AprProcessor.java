@@ -1176,7 +1176,7 @@ public class Http11AprProcessor implements ActionHook {
                     // Cipher suite
                     Object sslO = SSLSocket.getInfoS(socket, SSL.SSL_INFO_CIPHER);
                     if (sslO != null) {
-                        request.setAttribute(AprEndpoint.CIPHER_SUITE_KEY, sslO);
+                        request.setAttribute(org.apache.tomcat.util.net.Constants.CIPHER_SUITE_KEY, sslO);
                     }
                     // Get client certificate and the certificate chain if present
                     // certLength == -1 indicates an error
@@ -1193,15 +1193,15 @@ public class Http11AprProcessor implements ActionHook {
                         }
                     }
                     if (certs != null) {
-                        request.setAttribute(AprEndpoint.CERTIFICATE_KEY, certs);
+                        request.setAttribute(org.apache.tomcat.util.net.Constants.CERTIFICATE_KEY, certs);
                     }
                     // User key size
                     sslO = new Integer(SSLSocket.getInfoI(socket, SSL.SSL_INFO_CIPHER_USEKEYSIZE));
-                    request.setAttribute(AprEndpoint.KEY_SIZE_KEY, sslO);
+                    request.setAttribute(org.apache.tomcat.util.net.Constants.KEY_SIZE_KEY, sslO);
                     // SSL session ID
                     sslO = SSLSocket.getInfoS(socket, SSL.SSL_INFO_SESSION_ID);
                     if (sslO != null) {
-                        request.setAttribute(AprEndpoint.SESSION_ID_KEY, sslO);
+                        request.setAttribute(org.apache.tomcat.util.net.Constants.SESSION_ID_KEY, sslO);
                     }
                 } catch (Exception e) {
                     log.warn(sm.getString("http11processor.socket.ssl"), e);
@@ -1240,7 +1240,7 @@ public class Http11AprProcessor implements ActionHook {
                             }
                         }
                         if (certs != null) {
-                            request.setAttribute(AprEndpoint.CERTIFICATE_KEY, certs);
+                            request.setAttribute(org.apache.tomcat.util.net.Constants.CERTIFICATE_KEY, certs);
                         }
                     } 
                 } catch (Exception e) {

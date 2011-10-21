@@ -645,7 +645,7 @@ public class AjpProcessor implements ActionHook {
                     log.error(sm.getString("ajpprocessor.certs.fail"), e);
                     return;
                 }
-                request.setAttribute(JIoEndpoint.CERTIFICATE_KEY, jsseCerts);
+                request.setAttribute(org.apache.tomcat.util.net.Constants.CERTIFICATE_KEY, jsseCerts);
             }
 
         } else if (actionCode == ActionCode.ACTION_REQ_HOST_ATTRIBUTE) {
@@ -858,19 +858,19 @@ public class AjpProcessor implements ActionHook {
             case Constants.SC_A_SSL_CIPHER :
                 request.scheme().setString("https");
                 requestHeaderMessage.getBytes(tmpMB);
-                request.setAttribute(JIoEndpoint.CIPHER_SUITE_KEY,
+                request.setAttribute(org.apache.tomcat.util.net.Constants.CIPHER_SUITE_KEY,
                                      tmpMB.toString());
                 break;
 
             case Constants.SC_A_SSL_SESSION :
                 request.scheme().setString("https");
                 requestHeaderMessage.getBytes(tmpMB);
-                request.setAttribute(JIoEndpoint.SESSION_ID_KEY,
+                request.setAttribute(org.apache.tomcat.util.net.Constants.SESSION_ID_KEY,
                                      tmpMB.toString());
                 break;
 
             case Constants.SC_A_SSL_KEY_SIZE :
-                request.setAttribute(JIoEndpoint.KEY_SIZE_KEY,
+                request.setAttribute(org.apache.tomcat.util.net.Constants.KEY_SIZE_KEY,
                                      new Integer(requestHeaderMessage.getInt()));
                 break;
 
