@@ -178,8 +178,6 @@ public class StandardManager
 
         // Register with the new Container (if any)
         if ((this.container != null) && (this.container instanceof Context)) {
-            setMaxInactiveInterval
-                ( ((Context) this.container).getSessionTimeout()*60 );
             ((Context) this.container).addPropertyChangeListener(this);
         }
 

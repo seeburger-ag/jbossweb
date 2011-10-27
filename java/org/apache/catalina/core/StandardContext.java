@@ -3804,6 +3804,11 @@ public class StandardContext
                     setManager(contextManager);
                 }
 
+                // Configure the session timeout
+                if (manager != null) {
+                    manager.setMaxInactiveInterval(sessionTimeout * 60);
+                }
+
                 if (manager!=null && (getCluster() != null) && distributable) {
                     //let the cluster know that there is a context that is distributable
                     //and that it has its own manager

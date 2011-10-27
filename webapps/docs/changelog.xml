@@ -25,6 +25,10 @@
       <fix>
         <jira>AS7-2073</jira>: Delegate connector lifecycle handling if in delay mode. (jfclere, remm)
       </fix>
+      <fix>
+        For compatibility with managers which don't extend StandardManager, set the session timeout
+        from Context.start, so that it is always propagated. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
@@ -35,6 +39,10 @@
       <fix>
          Add org.apache.tomcat.util.net.WAIT_FOR_THREAD system property to bring back optional
          blocking for the thread pool. (remm)
+      </fix>
+      <fix>
+         Add a limit on the number of parameters that can be parsed in a POST (1024 by default, 
+         configured with org.apache.tomcat.util.http.Parameters.MAX_COUNT). (remm)
       </fix>
     </changelog>
   </subsection>
