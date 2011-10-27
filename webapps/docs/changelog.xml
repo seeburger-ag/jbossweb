@@ -44,6 +44,10 @@
          Add a limit on the number of parameters that can be parsed in a POST (1024 by default, 
          configured with org.apache.tomcat.util.http.Parameters.MAX_COUNT). (remm)
       </fix>
+      <fix>
+         Add system properties which restrict parameter count (org.apache.tomcat.util.http.Parameters.MAX_COUNT
+         default to 512) and header count (org.apache.tomcat.util.http.MimeHeaders.MAX_COUNT to 128). (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

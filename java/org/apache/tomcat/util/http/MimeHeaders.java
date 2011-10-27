@@ -23,9 +23,6 @@ import java.util.Enumeration;
 
 import org.apache.tomcat.util.buf.MessageBytes;
 
-/* XXX XXX XXX Need a major rewrite  !!!!
- */
-
 /**
  * This class is used to contain standard internet message headers,
  * used for SMTP (RFC822) and HTTP (RFC2068) messages as well as for
@@ -77,12 +74,6 @@ import org.apache.tomcat.util.buf.MessageBytes;
  *  to avoid inside tomcat. The goal is to use _only_ MessageByte-based Fields,
  *  and reduce to 0 the memory overhead of tomcat.
  *
- *  TODO:
- *  XXX one-buffer parsing - for http ( other protocols don't need that )
- *  XXX remove unused methods
- *  XXX External enumerations, with 0 GC.
- *  XXX use HeaderName ID
- *  
  * 
  * @author dac@eng.sun.com
  * @author James Todd [gonzo@eng.sun.com]
@@ -212,9 +203,10 @@ public class MimeHeaders {
     }
 
     /** Initial size - should be == average number of headers per request
-     *  XXX  make it configurable ( fine-tuning of web-apps )
      */
     public static final int DEFAULT_HEADER_SIZE = 8;
+    protected static final int MAX_COUNT = 
+        Integer.valueOf(System.getProperty("org.apache.tomcat.util.http.MimeHeaders.MAX_COUNT", "128")).intValue();
 
     /**
      * The header fields.
@@ -333,6 +325,9 @@ public class MimeHeaders {
         MimeHeaderField mh;
         int len = headers.length;
         if (count >= len) {
+            if (count >= MAX_COUNT) {
+                throw new IllegalStateException("Header count exceeded allowed maximum: " + MAX_COUNT);
+            }
             // expand header list array
             MimeHeaderField tmp[] = new MimeHeaderField[count * 2];
             System.arraycopy(headers, 0, tmp, 0, len);
@@ -441,9 +436,7 @@ public class MimeHeaders {
      * @param name the name of the header field to be removed
      */
     public void removeHeader(String name) {
-        // XXX
         // warning: rather sticky code; heavily tuned
-
         for (int i = 0; i < count; i++) {
             if (headers[i].getName().equalsIgnoreCase(name)) {
                 removeHeader(i--);
