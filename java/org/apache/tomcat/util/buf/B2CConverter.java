@@ -67,6 +67,10 @@ public class B2CConverter {
         leftovers.position(0);
     }
 
+    public boolean isUndeflow() {
+        return (leftovers.position() > 0);
+    }
+
     /**
      * Convert the given bytes to characters.
      * 
