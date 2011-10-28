@@ -37,8 +37,6 @@ public class TagHandlerPool {
     public static final String OPTION_TAGPOOL="tagpoolClassName";
     public static final String OPTION_MAXSIZE="tagpoolMaxSize";
 
-    protected Logger log = Logger.getLogger(TagHandlerPool.class);
-    
     // index of next available tag handler
     private int current;
     protected InstanceManager instanceManager = null;
@@ -163,8 +161,7 @@ public class TagHandlerPool {
                 try {
                     instanceManager.destroyInstance(handlers[i]);
                 } catch (Exception e) {
-                    log.warn("Error processing preDestroy on tag instance of "
-                            + handlers[i].getClass().getName(), e);
+                    // Ignore
                 }
             }
         }

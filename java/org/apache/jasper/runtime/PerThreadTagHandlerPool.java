@@ -136,15 +136,13 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
                         try {
                             ptd.handlers[i].release();
                         } catch (Exception e) {
-                            log.warn("Error processing release on tag instance of "
-                                    + ptd.handlers[i].getClass().getName(), e);
+                            // Ignore
                         }
                         if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
                             try {
                                 instanceManager.destroyInstance(ptd.handlers[i]);
                             } catch (Exception e) {
-                                log.warn("Error processing preDestroy on tag instance of "
-                                        + ptd.handlers[i].getClass().getName(), e);
+                                // Ignore
                             }
                         }
                     }
