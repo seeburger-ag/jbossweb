@@ -527,6 +527,10 @@
         <!-- Linux/Unix execs -->
         <exec dir="." executable="/bin/sh" os="Linux">
             <arg value="-c" />
+            <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jasper-jdt -Dversion=${version} -Dclassifier=sources"/>
+        </exec>
+        <exec dir="." executable="/bin/sh" os="Linux">
+            <arg value="-c" />
             <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
         </exec>
 
