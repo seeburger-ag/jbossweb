@@ -19,6 +19,16 @@
 <section name="JBoss Web 7.0.3.Final (remm)">
   <subsection name="Catalina">
     <changelog>
+      <update>
+        Add alias based dir context. (remm, markt)
+      </update>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.0.3.Final (remm)">
+  <subsection name="Catalina">
+    <changelog>
       <fix>
         Improve DIGEST authentication security. (remm)
       </fix>
