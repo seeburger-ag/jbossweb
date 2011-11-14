@@ -24,6 +24,13 @@
       </update>
     </changelog>
   </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         Filter out multibyte chars when writing a char chunk. (rjung)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 7.0.3.Final (remm)">
