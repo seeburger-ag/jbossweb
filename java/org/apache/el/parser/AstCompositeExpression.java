@@ -20,7 +20,6 @@ package org.apache.el.parser;
 
 import javax.el.ELException;
 
-import org.apache.el.lang.ELSupport;
 import org.apache.el.lang.EvaluationContext;
 
 
@@ -41,13 +40,13 @@ public final class AstCompositeExpression extends SimpleNode {
 
     public Object getValue(EvaluationContext ctx)
             throws ELException {
-        StringBuilder sb = new StringBuilder(16);
+        StringBuffer sb = new StringBuffer(16);
         Object obj = null;
         if (this.children != null) {
             for (int i = 0; i < this.children.length; i++) {
                 obj = this.children[i].getValue(ctx);
                 if (obj != null) {
-                    sb.append(ELSupport.coerceToString(obj));
+                    sb.append(obj);
                 }
             }
         }

@@ -1,23 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.apache.coyote.http11;
@@ -36,6 +31,7 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
@@ -99,17 +95,6 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public void setAdapter(Adapter adapter) { this.adapter = adapter; }
     public Adapter getAdapter() { return adapter; }
 
-    private boolean canDestroy = false;
-
-
-    public boolean hasIoEvents() {
-        return true;
-    }
-
-    public RequestGroupInfo getRequestGroupInfo() {
-        return cHandler.global;
-    }
-
 
     /** Start the protocol
      */
@@ -123,8 +108,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             log.error(sm.getString("http11protocol.endpoint.initerror"), ex);
             throw ex;
         }
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("http11protocol.init", getName()));
+        if(log.isInfoEnabled())
+            log.info(sm.getString("http11protocol.init", getName()));
 
     }
 
@@ -132,22 +117,21 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     ObjectName rgOname;
 
     public void start() throws Exception {
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( this.domain != null ) {
-                try {
-                    tpOname=new ObjectName
+        if( this.domain != null ) {
+            try {
+                tpOname=new ObjectName
                     (domain + ":" + "type=ThreadPool,name=" + getName());
-                    Registry.getRegistry(null, null)
-                    .registerComponent(endpoint, tpOname, null );
-                } catch (Exception e) {
-                    log.error("Can't register threadpool" );
-                }
-                rgOname=new ObjectName
-                (domain + ":type=GlobalRequestProcessor,name=" + getName());
-                Registry.getRegistry(null, null).registerComponent
-                ( cHandler.global, rgOname, null );
+                Registry.getRegistry(null, null)
+                .registerComponent(endpoint, tpOname, null );
+            } catch (Exception e) {
+                log.error("Can't register threadpool" );
             }
+            rgOname=new ObjectName
+                (domain + ":type=GlobalRequestProcessor,name=" + getName());
+            Registry.getRegistry(null, null).registerComponent
+                ( cHandler.global, rgOname, null );
         }
+
         try {
             endpoint.start();
         } catch (Exception ex) {
@@ -165,7 +149,6 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             log.error(sm.getString("http11protocol.endpoint.pauseerror"), ex);
             throw ex;
         }
-        canDestroy = false;
         // Wait for a while until all the processors are idle
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
@@ -183,9 +166,6 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     done = false;
                     break;
                 }
-            }
-            if (done) {
-                canDestroy = true;
             }
         }
         if(log.isInfoEnabled())
@@ -206,35 +186,20 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public void destroy() throws Exception {
         if(log.isInfoEnabled())
             log.info(sm.getString("http11protocol.stop", getName()));
-        if (canDestroy) {
-            endpoint.destroy();
-        } else {
-            log.warn(sm.getString("http11protocol.cannotDestroy", getName()));
-            try {
-                RequestInfo[] states = cHandler.global.getRequestProcessors();
-                for (int i = 0; i < states.length; i++) {
-                    if (states[i].getStage() == org.apache.coyote.Constants.STAGE_SERVICE) {
-                        // FIXME: Log RequestInfo content
-                    }
-                }
-            } catch (Exception ex) {
-                log.error(sm.getString("http11protocol.cannotDestroy", getName()), ex);
-                throw ex;
-            }
-        }
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( tpOname!=null )
-                Registry.getRegistry(null, null).unregisterComponent(tpOname);
-            if( rgOname != null )
-                Registry.getRegistry(null, null).unregisterComponent(rgOname);
-        }
+        endpoint.destroy();
+        if( tpOname!=null )
+            Registry.getRegistry(null, null).unregisterComponent(tpOname);
+        if( rgOname != null )
+            Registry.getRegistry(null, null).unregisterComponent(rgOname);
     }
 
     public String getName() {
         String encodedAddr = "";
         if (getAddress() != null) {
             encodedAddr = "" + getAddress();
-            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-')) + "-";
+            if (encodedAddr.startsWith("/"))
+                encodedAddr = encodedAddr.substring(1);
+            encodedAddr = URLEncoder.encode(encodedAddr) + "-";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }
@@ -379,7 +344,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
      * Maximum number of requests which can be performed over a keepalive 
      * connection. The default is the same as for Apache HTTP Server.
      */
-    protected int maxKeepAliveRequests = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS", "100")).intValue();
+    protected int maxKeepAliveRequests = 100;
     public int getMaxKeepAliveRequests() { return maxKeepAliveRequests; }
     public void setMaxKeepAliveRequests(int mkar) { maxKeepAliveRequests = mkar; }
 
@@ -606,7 +571,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         }
                     } else {
                         if (proto.endpoint.isRunning()) {
-                            proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
+                            proto.endpoint.getCometPoller().add(socket, result.getCometTimeout(), 
                                     result.getReadNotifications(), result.getWriteNotification(), result.getResumeNotification(), false);
                         }
                     }
@@ -623,6 +588,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     processor = createProcessor();
                 }
 
+                processor.action(ActionCode.ACTION_START, null);
+
                 SocketState state = processor.process(socket);
                 if (state == SocketState.LONG) {
                     // Associate the connection with the processor. The next request 
@@ -633,8 +600,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         // Call a read event right away
                         state = event(socket, SocketStatus.OPEN_READ);
                     } else {
-                        proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), 
-                                processor.getReadNotifications(), false, processor.getResumeNotification(), false);
+                        proto.endpoint.getCometPoller().add(socket, processor.getCometTimeout(), 
+                                processor.getReadNotifications(), false, false, false);
                     }
                 } else {
                     recycledProcessors.offer(processor);
@@ -686,12 +653,12 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         }
         
         protected void register(Http11AprProcessor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(global);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getName() + ",name=HttpRequest" + count);
@@ -708,11 +675,11 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         }
 
         protected void unregister(Http11AprProcessor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(null);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
                         if (log.isDebugEnabled()) {
                             log.debug("Unregister " + rpName);

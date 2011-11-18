@@ -311,9 +311,4 @@ public final class MethodExpressionImpl extends MethodExpression implements
     public boolean isLiteralText() {
         return false;
     }
-
-    public boolean isParmetersProvided() {
-        return this.getNode().isParametersProvided();
-    }
-
 }

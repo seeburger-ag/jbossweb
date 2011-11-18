@@ -1,56 +1,19 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License. You can obtain
- * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
- * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
- * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
- * accompanied this code.  If applicable, add the following below the License
- * Header, with the fields enclosed by brackets [] replaced by your own
- * identifying information: "Portions Copyrighted [year]
- * [name of copyright owner]"
- *
- * Contributor(s):
- *
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 2004 The Apache Software Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
  
 package javax.servlet.jsp.tagext;
 
@@ -63,12 +26,17 @@ import javax.servlet.jsp.tagext.TagFileInfo;
  *
  * Most of the information is directly from the TLD, except for
  * the prefix and the uri values used in the taglib directive
+ *
+ *
  */
 
 abstract public class TagLibraryInfo {
 
     /**
      * Constructor.
+     *
+     * This will invoke the constructors for TagInfo, and TagAttributeInfo
+     * after parsing the TLD file.
      *
      * @param prefix the prefix actually used by the taglib directive
      * @param uri the URI actually used by the taglib directive
@@ -166,7 +134,7 @@ abstract public class TagLibraryInfo {
      * @return the TagFileInfo objects corresponding to the tag files defined
      *         by this tag library, or a zero length array if this
      *         tag library defines no tags files
-     * @since JSP 2.0
+     * @since 2.0
      */
     public TagFileInfo[] getTagFiles() {
         return tagFiles;
@@ -204,7 +172,7 @@ abstract public class TagLibraryInfo {
      * @param shortname The short name (no prefix) of the tag
      * @return the TagFileInfo for the specified Tag file, or null
      *         if no Tag file is found
-     * @since JSP 2.0
+     * @since 2.0
      */
     public TagFileInfo getTagFile(String shortname) {
         TagFileInfo tagFiles[] = getTagFiles();
@@ -226,7 +194,7 @@ abstract public class TagLibraryInfo {
      *
      * @return the functions defined in this tag library, or a zero
      *         length array if the tag library defines no functions.
-     * @since JSP 2.0
+     * @since 2.0
      */
     public FunctionInfo[] getFunctions() {
         return functions;
@@ -240,7 +208,7 @@ abstract public class TagLibraryInfo {
      * @param name The name (no prefix) of the function
      * @return the FunctionInfo for the function with the given name, or null
      *         if no such function exists
-     * @since JSP 2.0
+     * @since 2.0
      */
     public FunctionInfo getFunction(String name) {
 
@@ -259,24 +227,21 @@ abstract public class TagLibraryInfo {
 
 
     /**
-     * Returns an array of TagLibraryInfo objects representing the entire set
-     * of tag libraries (including this TagLibraryInfo) imported by taglib
-     * directives in the translation unit that references this
-     * TagLibraryInfo.
-     *
-     * If a tag library is imported more than once and bound to different
-     * prefices, only the TagLibraryInfo bound to the first prefix must be
-     * included in the returned array.
-     *
-     * @return Array of TagLibraryInfo objects representing the entire set
-     * of tag libraries (including this TagLibraryInfo) imported by taglib
+     * Returns an array of TagLibraryInfo objects representing the entire set 
+     * of tag libraries (including this TagLibraryInfo) imported by taglib 
+     * directives in the translation unit that references this TagLibraryInfo. 
+     * If a tag library is imported more than once and bound to different prefices, 
+     * only the TagLibraryInfo bound to the first prefix must be included 
+     * in the returned array.
+     * 
+     * @return Array of TagLibraryInfo objects representing the entire set 
+     * of tag libraries (including this TagLibraryInfo) imported by taglib 
      * directives in the translation unit that references this TagLibraryInfo.
-     *
-     * @since JSP 2.1
+     * @since 2.1
      */
-    public abstract TagLibraryInfo[] getTagLibraryInfos();
-
-
+    public abstract javax.servlet.jsp.tagext.TagLibraryInfo[] getTagLibraryInfos();
+    
+    
     // Protected fields
 
     /**
@@ -298,14 +263,14 @@ abstract public class TagLibraryInfo {
     /**
      * An array describing the tag files that are defined in this tag library.
      *
-     * @since JSP 2.0
+     * @since 2.0
      */
     protected TagFileInfo[] tagFiles;
     
     /**
      * An array describing the functions that are defined in this tag library.
      *
-     * @since JSP 2.0
+     * @since 2.0
      */
     protected FunctionInfo[] functions;
 
