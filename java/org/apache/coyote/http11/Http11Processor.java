@@ -776,7 +776,7 @@ public class Http11Processor implements ActionHook {
             boolean pipelined = inputBuffer.nextRequest();
             outputBuffer.nextRequest();
             recycle();
-            return (pipelined) ? SocketState.CLOSED : SocketState.OPEN;
+            return (pipelined || !keepAlive) ? SocketState.CLOSED : SocketState.OPEN;
         } else {
             return SocketState.LONG;
         }
