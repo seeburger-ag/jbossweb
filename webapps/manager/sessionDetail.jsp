@@ -14,8 +14,10 @@
 <% String path = (String) request.getAttribute("path");
    Session currentSession = (Session)request.getAttribute("currentSession");
    HttpSession currentHttpSession = currentSession.getSession();
-   String currentSessionId = currentSession.getId();
-   String submitUrl = ((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString();
+   String currentSessionId = JspHelper.escapeXml(currentSession.getId());
+   String submitUrl = JspHelper.escapeXml(response.encodeURL(
+           ((HttpServletRequest) pageContext.getRequest()).getRequestURI() +
+           "?path=" + path));
 %>
 <head>
     <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
@@ -29,7 +31,7 @@
 	<title>Sessions Administration: details for <%= currentSessionId %></title>
 </head>
 <body>
-<h1>Details for Session <%= JspHelper.escapeXml(currentSessionId) %></h1>
+<h1>Details for Session <%= currentSessionId %></h1>
 
 <table style="text-align: left;" border="0">
   <tr>
@@ -104,7 +106,7 @@
    	String attributeName = (String) attributeNamesEnumeration.nextElement();
 %>
 		<tr>
-			<td align="center"><form action="<%= submitUrl %>"><div><input type="hidden" name="path" value="<%= path %>" /><input type="hidden" name="action" value="removeSessionAttribute" /><input type="hidden" name="sessionId" value="<%= currentSessionId %>" /><input type="hidden" name="attributeName" value="<%= attributeName %>" /><input type="submit" value="Remove" /></div></form></td>
+			<td align="center"><form action="<%= submitUrl %>"><div><input type="hidden" name="action" value="<%= JspHelper.escapeXml(attributeName) %>" /><input type="hidden" name="sessionId" value="<%= currentSessionId %>" /><input type="hidden" name="attributeName" value="<%= attributeName %>" /><input type="submit" value="Remove" /></div></form></td>
 			<td><%= JspHelper.escapeXml(attributeName) %></td>
 			<td><% Object attributeValue = currentHttpSession.getAttribute(attributeName); %><span title="<%= attributeValue == null ? "" : attributeValue.getClass().toString() %>"><%= JspHelper.escapeXml(attributeValue) %></span></td>
 		</tr>
