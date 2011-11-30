@@ -285,7 +285,8 @@ final class StandardHostValve
                     status(request, response);
                 }
             }
-            if (request.isEventMode() && asyncContext.getPath() == null) {
+            // AS7-2844 if (request.isEventMode() && asyncContext.getPath() == null) {
+            if (!asyncContext.isReady()) {
                 asyncContext.complete();
             }
         }
