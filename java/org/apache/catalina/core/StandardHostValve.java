@@ -284,10 +284,10 @@ final class StandardHostValve
                 } else {
                     status(request, response);
                 }
-            }
-            // AS7-2844 if (request.isEventMode() && asyncContext.getPath() == null) {
-            if (!asyncContext.isReady()) {
-                asyncContext.complete();
+                // An error page (if any) must call complete or dispatch, if not the container calls complete
+                if (request.isEventMode() && asyncContext.getPath() == null) {
+                    asyncContext.complete();
+                }
             }
         }
 
