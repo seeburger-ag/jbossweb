@@ -569,8 +569,10 @@ public class ClusterListener
             } else if (source instanceof Server) {
                 stopListener();
                 stopServer((Server) source, -1);
-                for (int i = 0; i < connections.length; i++) {
-                    closeConnection(i);
+                if (connections != null) {
+                    for (int i = 0; i < connections.length; i++) {
+                        closeConnection(i);
+                    }
                 }
                 init = false;
             } else {
