@@ -28,24 +28,26 @@ import org.apache.el.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
+ * @version $Id$
  */
 public final class AstNegative extends SimpleNode {
     public AstNegative(int id) {
         super(id);
     }
 
-    public Class getType(EvaluationContext ctx)
+    @Override
+    public Class<?> getType(EvaluationContext ctx)
             throws ELException {
         return Number.class;
     }
 
+    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         Object obj = this.children[0].getValue(ctx);
 
         if (obj == null) {
-            return new Long(0);
+            return Long.valueOf(0);
         }
         if (obj instanceof BigDecimal) {
             return ((BigDecimal) obj).negate();
@@ -57,27 +59,27 @@ public final class AstNegative extends SimpleNode {
             if (isStringFloat((String) obj)) {
                 return new Double(-Double.parseDouble((String) obj));
             }
-            return new Long(-Long.parseLong((String) obj));
+            return Long.valueOf(-Long.parseLong((String) obj));
         }
         if (obj instanceof Long) {
-            return new Long(-((Long) obj).longValue());
+            return Long.valueOf(-((Long) obj).longValue());
         }
         if (obj instanceof Double) {
             return new Double(-((Double) obj).doubleValue());
         }
         if (obj instanceof Integer) {
-            return new Integer(-((Integer) obj).intValue());
+            return Integer.valueOf(-((Integer) obj).intValue());
         }
         if (obj instanceof Float) {
             return new Float(-((Float) obj).floatValue());
         }
         if (obj instanceof Short) {
-            return new Short((short) -((Short) obj).shortValue());
+            return Short.valueOf((short) -((Short) obj).shortValue());
         }
         if (obj instanceof Byte) {
-            return new Byte((byte) -((Byte) obj).byteValue());
+            return Byte.valueOf((byte) -((Byte) obj).byteValue());
         }
         Long num = (Long) coerceToNumber(obj, Long.class);
-        return new Long(-num.longValue());
+        return Long.valueOf(-num.longValue());
     }
 }

@@ -27,14 +27,14 @@ import org.apache.el.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
+ * @version $Id$
  */
 public final class AstFloatingPoint extends SimpleNode {
     public AstFloatingPoint(int id) {
         super(id);
     }
 
-    private Number number;
+    private volatile Number number;
 
     public Number getFloatingPoint() {
         if (this.number == null) {
@@ -47,12 +47,14 @@ public final class AstFloatingPoint extends SimpleNode {
         return this.number;
     }
 
+    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         return this.getFloatingPoint();
     }
 
-    public Class getType(EvaluationContext ctx)
+    @Override
+    public Class<?> getType(EvaluationContext ctx)
             throws ELException {
         return this.getFloatingPoint().getClass();
     }

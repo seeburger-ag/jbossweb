@@ -25,14 +25,14 @@ import org.apache.el.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
+ * @version $Id$
  */
 public final class AstString extends SimpleNode {
     public AstString(int id) {
         super(id);
     }
 
-    private String string;
+    private volatile String string;
 
     public String getString() {
         if (this.string == null) {
@@ -41,16 +41,19 @@ public final class AstString extends SimpleNode {
         return this.string;
     }
 
-    public Class getType(EvaluationContext ctx)
+    @Override
+    public Class<?> getType(EvaluationContext ctx)
             throws ELException {
         return String.class;
     }
 
+    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         return this.getString();
     }
 
+    @Override
     public void setImage(String image) {
         if (image.indexOf('\\') == -1) {
             this.image = image;

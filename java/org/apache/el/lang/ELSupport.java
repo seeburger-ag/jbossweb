@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,62 +23,50 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import javax.el.ELException;
-import javax.el.PropertyNotFoundException;
 
 import org.apache.el.util.MessageFactory;
 
 
 /**
  * A helper class that implements the EL Specification
- * 
+ *
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$Date$$Author$
+ * @version $Id$
  */
 public class ELSupport {
 
-    private final static Long ZERO = new Long(0L);
-
-    public final static void throwUnhandled(Object base, Object property)
-            throws ELException {
-        if (base == null) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled.null", property));
-        } else {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", base.getClass(), property));
-        }
-    }
+    private static final Long ZERO = Long.valueOf(0L);
 
     /**
      * Compare two objects, after coercing to the same type if appropriate.
-     * 
-     * If the objects are identical, or they are equal according to 
+     *
+     * If the objects are identical, or they are equal according to
      * {@link #equals(Object, Object)} then return 0.
-     * 
+     *
      * If either object is a BigDecimal, then coerce both to BigDecimal first.
      * Similarly for Double(Float), BigInteger, and Long(Integer, Char, Short, Byte).
-     *  
+     *
      * Otherwise, check that the first object is an instance of Comparable, and compare
      * against the second object. If that is null, return 1, otherwise
      * return the result of comparing against the second object.
-     * 
+     *
      * Similarly, if the second object is Comparable, if the first is null, return -1,
      * else return the result of comparing against the first object.
-     * 
+     *
      * A null object is considered as:
      * <ul>
      * <li>ZERO when compared with Numbers</li>
      * <li>the empty string for String compares</li>
      * <li>Otherwise null is considered to be lower than anything else.</li>
      * </ul>
-     * 
+     *
      * @param obj0 first object
      * @param obj1 second object
      * @return -1, 0, or 1 if this object is less than, equal to, or greater than val.
      * @throws ELException if neither object is Comparable
      * @throws ClassCastException if the objects are not mutually comparable
      */
-    public final static int compare(final Object obj0, final Object obj1)
+    public static final int compare(final Object obj0, final Object obj1)
             throws ELException {
         if (obj0 == obj1 || equals(obj0, obj1)) {
             return 0;
@@ -121,19 +109,19 @@ public class ELSupport {
 
     /**
      * Compare two objects for equality, after coercing to the same type if appropriate.
-     * 
+     *
      * If the objects are identical (including both null) return true.
      * If either object is null, return false.
      * If either object is Boolean, coerce both to Boolean and check equality.
      * Similarly for Enum, String, BigDecimal, Double(Float), Long(Integer, Short, Byte, Character)
      * Otherwise default to using Object.equals().
-     * 
+     *
      * @param obj0 the first object
      * @param obj1 the second object
      * @return true if the objects are equal
      * @throws ELException
      */
-    public final static boolean equals(final Object obj0, final Object obj1)
+    public static final boolean equals(final Object obj0, final Object obj1)
             throws ELException {
         if (obj0 == obj1) {
             return true;
@@ -173,19 +161,19 @@ public class ELSupport {
         }
     }
 
-    /**
-     * @param obj
-     * @param type
-     * @return
-     */
-    public final static Enum<?> coerceToEnum(final Object obj, Class type) {
+    // Going to have to have some casts /raw types somewhere so doing it here
+    // keeps them all in one place. There might be a neater / better solution
+    // but I couldn't find it
+    @SuppressWarnings("unchecked")
+    public static final Enum<?> coerceToEnum(final Object obj,
+            @SuppressWarnings("rawtypes") Class type) {
         if (obj == null || "".equals(obj)) {
             return null;
         }
         if (type.isAssignableFrom(obj.getClass())) {
             return (Enum<?>) obj;
         }
-        
+
         if (!(obj instanceof String)) {
             throw new ELException(MessageFactory.get("error.convert",
                     obj, obj.getClass(), type));
@@ -208,7 +196,7 @@ public class ELSupport {
      * @return the Boolean value of the object
      * @throws ELException if object is not Boolean or String
      */
-    public final static Boolean coerceToBoolean(final Object obj)
+    public static final Boolean coerceToBoolean(final Object obj)
             throws ELException {
         if (obj == null || "".equals(obj)) {
             return Boolean.FALSE;
@@ -224,16 +212,16 @@ public class ELSupport {
                 obj, obj.getClass(), Boolean.class));
     }
 
-    public final static Character coerceToCharacter(final Object obj)
+    public static final Character coerceToCharacter(final Object obj)
             throws ELException {
         if (obj == null || "".equals(obj)) {
-            return new Character((char) 0);
+            return Character.valueOf((char) 0);
         }
         if (obj instanceof String) {
-            return new Character(((String) obj).charAt(0));
+            return Character.valueOf(((String) obj).charAt(0));
         }
         if (ELArithmetic.isNumber(obj)) {
-            return new Character((char) ((Number) obj).shortValue());
+            return Character.valueOf((char) ((Number) obj).shortValue());
         }
         Class<?> objType = obj.getClass();
         if (obj instanceof Character) {
@@ -244,31 +232,16 @@ public class ELSupport {
                 obj, objType, Character.class));
     }
 
-    public final static Number coerceToNumber(final Object obj) {
-        if (obj == null) {
-            return ZERO;
-        } else if (obj instanceof Number) {
-            return (Number) obj;
-        } else {
-            String str = coerceToString(obj);
-            if (isStringFloat(str)) {
-                return toFloat(str);
-            } else {
-                return toNumber(str);
-            }
-        }
-    }
-
-    protected final static Number coerceToNumber(final Number number,
+    protected static final Number coerceToNumber(final Number number,
             final Class<?> type) throws ELException {
         if (Long.TYPE == type || Long.class.equals(type)) {
-            return new Long(number.longValue());
+            return Long.valueOf(number.longValue());
         }
         if (Double.TYPE == type || Double.class.equals(type)) {
             return new Double(number.doubleValue());
         }
         if (Integer.TYPE == type || Integer.class.equals(type)) {
-            return new Integer(number.intValue());
+            return Integer.valueOf(number.intValue());
         }
         if (BigInteger.class.equals(type)) {
             if (number instanceof BigDecimal) {
@@ -289,10 +262,10 @@ public class ELSupport {
             return new BigDecimal(number.doubleValue());
         }
         if (Byte.TYPE == type || Byte.class.equals(type)) {
-            return new Byte(number.byteValue());
+            return Byte.valueOf(number.byteValue());
         }
         if (Short.TYPE == type || Short.class.equals(type)) {
-            return new Short(number.shortValue());
+            return Short.valueOf(number.shortValue());
         }
         if (Float.TYPE == type || Float.class.equals(type)) {
             return new Float(number.floatValue());
@@ -305,7 +278,7 @@ public class ELSupport {
                 number, number.getClass(), type));
     }
 
-    public final static Number coerceToNumber(final Object obj,
+    public static final Number coerceToNumber(final Object obj,
             final Class<?> type) throws ELException {
         if (obj == null || "".equals(obj)) {
             return coerceToNumber(ZERO, type);
@@ -318,7 +291,7 @@ public class ELSupport {
         }
 
         if (obj instanceof Character) {
-            return coerceToNumber(new Short((short) ((Character) obj)
+            return coerceToNumber(Short.valueOf((short) ((Character) obj)
                     .charValue()), type);
         }
 
@@ -326,7 +299,7 @@ public class ELSupport {
                 obj, obj.getClass(), type));
     }
 
-    protected final static Number coerceToNumber(final String val,
+    protected static final Number coerceToNumber(final String val,
             final Class<?> type) throws ELException {
         if (Long.TYPE == type || Long.class.equals(type)) {
             try {
@@ -402,7 +375,7 @@ public class ELSupport {
      * @param obj
      * @return the String value of the object
      */
-    public final static String coerceToString(final Object obj) {
+    public static final String coerceToString(final Object obj) {
         if (obj == null) {
             return "";
         } else if (obj instanceof String) {
@@ -414,26 +387,7 @@ public class ELSupport {
         }
     }
 
-    public final static void checkType(final Object obj, final Class<?> type)
-        throws ELException {
-        if (String.class.equals(type)) {
-            coerceToString(obj);
-        }
-        if (ELArithmetic.isNumberType(type)) {
-            coerceToNumber(obj, type);
-        }
-        if (Character.class.equals(type) || Character.TYPE == type) {
-            coerceToCharacter(obj);
-        }
-        if (Boolean.class.equals(type) || Boolean.TYPE == type) {
-            coerceToBoolean(obj);
-        }
-        if (type.isEnum()) {
-            coerceToEnum(obj, type);
-        }
-    }
-
-    public final static Object coerceToType(final Object obj,
+    public static final Object coerceToType(final Object obj,
             final Class<?> type) throws ELException {
         if (type == null || Object.class.equals(type) ||
                 (obj != null && type.isAssignableFrom(obj.getClass()))) {
@@ -471,44 +425,24 @@ public class ELSupport {
                 obj, obj.getClass(), type));
     }
 
-    /**
-     * Check if an array contains any {@code null} entries.
-     * @param obj array to be checked
-     * @return true if the array contains a {@code null}
-     */
-    public final static boolean containsNulls(final Object[] obj) {
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[0] == null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public final static boolean isBigDecimalOp(final Object obj0,
+    public static final boolean isBigDecimalOp(final Object obj0,
             final Object obj1) {
         return (obj0 instanceof BigDecimal || obj1 instanceof BigDecimal);
     }
 
-    public final static boolean isBigIntegerOp(final Object obj0,
+    public static final boolean isBigIntegerOp(final Object obj0,
             final Object obj1) {
         return (obj0 instanceof BigInteger || obj1 instanceof BigInteger);
     }
 
-    public final static boolean isDoubleOp(final Object obj0, final Object obj1) {
+    public static final boolean isDoubleOp(final Object obj0, final Object obj1) {
         return (obj0 instanceof Double
                 || obj1 instanceof Double
                 || obj0 instanceof Float
                 || obj1 instanceof Float);
     }
 
-    public final static boolean isDoubleStringOp(final Object obj0,
-            final Object obj1) {
-        return (isDoubleOp(obj0, obj1)
-                || (obj0 instanceof String && isStringFloat((String) obj0)) || (obj1 instanceof String && isStringFloat((String) obj1)));
-    }
-
-    public final static boolean isLongOp(final Object obj0, final Object obj1) {
+    public static final boolean isLongOp(final Object obj0, final Object obj1) {
         return (obj0 instanceof Long
                 || obj1 instanceof Long
                 || obj0 instanceof Integer
@@ -521,7 +455,7 @@ public class ELSupport {
                 || obj1 instanceof Byte);
     }
 
-    public final static boolean isStringFloat(final String str) {
+    public static final boolean isStringFloat(final String str) {
         int len = str.length();
         if (len > 1) {
             for (int i = 0; i < len; i++) {
@@ -538,32 +472,8 @@ public class ELSupport {
         return false;
     }
 
-    public final static Number toFloat(final String value) {
-        try {
-            if (Double.parseDouble(value) > Double.MAX_VALUE) {
-                return new BigDecimal(value);
-            } else {
-                return new Double(value);
-            }
-        } catch (NumberFormatException e0) {
-            return new BigDecimal(value);
-        }
-    }
-
-    public final static Number toNumber(final String value) {
-        try {
-            return new Integer(Integer.parseInt(value));
-        } catch (NumberFormatException e0) {
-            try {
-                return new Long(Long.parseLong(value));
-            } catch (NumberFormatException e1) {
-                return new BigInteger(value);
-            }
-        }
-    }
-
     /**
-     * 
+     *
      */
     public ELSupport() {
         super();

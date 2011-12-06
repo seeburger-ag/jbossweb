@@ -400,7 +400,6 @@ public abstract class ELArithmetic {
         if (obj instanceof String) {
             return coerce((String) obj);
         }
-
         if (obj instanceof Character) {
             return coerce(Short.valueOf((short) ((Character) obj).charValue()));
         }

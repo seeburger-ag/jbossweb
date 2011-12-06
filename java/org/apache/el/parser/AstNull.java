@@ -25,18 +25,20 @@ import org.apache.el.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
+ * @version $Id$
  */
 public final class AstNull extends SimpleNode {
     public AstNull(int id) {
         super(id);
     }
 
-    public Class getType(EvaluationContext ctx)
+    @Override
+    public Class<?> getType(EvaluationContext ctx)
             throws ELException {
         return null;
     }
 
+    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         return null;

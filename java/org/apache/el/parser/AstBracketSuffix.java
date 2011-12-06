@@ -25,26 +25,16 @@ import org.apache.el.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
+ * @version $Id$
  */
 public final class AstBracketSuffix extends SimpleNode {
     public AstBracketSuffix(int id) {
         super(id);
     }
 
+    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         return this.children[0].getValue(ctx);
-    }
-
-    public Object getParameters(EvaluationContext ctx)
-            throws ELException {
-        if (jjtGetNumChildren() < 2)
-            return new Object[0];
-        Object[] params = new Object[jjtGetNumChildren() - 1];
-        for (int i = 1; i < jjtGetNumChildren(); i++) {
-            params[i - 1] = jjtGetChild(i).getValue(ctx);
-        }
-        return params;
     }
 }

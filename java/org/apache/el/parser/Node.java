@@ -7,9 +7,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,7 +32,7 @@ import org.apache.el.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
+ * $Id$
  */
 public interface Node {
 
@@ -59,16 +59,26 @@ public interface Node {
 
   /** Return the number of children the node has. */
   public int jjtGetNumChildren();
-  
+
   public String getImage();
-  
+
   public Object getValue(EvaluationContext ctx) throws ELException;
-  public ValueReference getValueReference(EvaluationContext ctx);
   public void setValue(EvaluationContext ctx, Object value) throws ELException;
-  public Class getType(EvaluationContext ctx) throws ELException;
+  public Class<?> getType(EvaluationContext ctx) throws ELException;
   public boolean isReadOnly(EvaluationContext ctx) throws ELException;
   public void accept(NodeVisitor visitor) throws Exception;
-  public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes) throws ELException;
-  public Object invoke(EvaluationContext ctx, Class[] paramTypes, Object[] paramValues) throws ELException;
+  public MethodInfo getMethodInfo(EvaluationContext ctx, Class<?>[] paramTypes)
+          throws ELException;
+  public Object invoke(EvaluationContext ctx, Class<?>[] paramTypes,
+          Object[] paramValues) throws ELException;
+
+  /**
+   * @since EL 2.2
+   */
+  public ValueReference getValueReference(EvaluationContext ctx);
+
+  /**
+   * @since EL 2.2
+   */
   public boolean isParametersProvided();
 }

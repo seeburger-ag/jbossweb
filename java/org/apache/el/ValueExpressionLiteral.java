@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,12 +19,11 @@ package org.apache.el;
 
 import java.io.Externalizable;
 import java.io.IOException;
-import javax.el.ELContext;
-import javax.el.PropertyNotWritableException;
-
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import javax.el.ELContext;
+import javax.el.PropertyNotWritableException;
 import javax.el.ValueExpression;
 
 import org.apache.el.lang.ELSupport;
@@ -39,17 +38,18 @@ public final class ValueExpressionLiteral extends ValueExpression implements
 
     private Object value;
 
-    private Class expectedType;
+    private Class<?> expectedType;
 
     public ValueExpressionLiteral() {
         super();
     }
-    
-    public ValueExpressionLiteral(Object value, Class expectedType) {
+
+    public ValueExpressionLiteral(Object value, Class<?> expectedType) {
         this.value = value;
         this.expectedType = expectedType;
     }
 
+    @Override
     public Object getValue(ELContext context) {
         if (this.expectedType != null) {
             return ELSupport.coerceToType(this.value, this.expectedType);
@@ -57,27 +57,33 @@ public final class ValueExpressionLiteral extends ValueExpression implements
         return this.value;
     }
 
+    @Override
     public void setValue(ELContext context, Object value) {
         throw new PropertyNotWritableException(MessageFactory.get(
                 "error.value.literal.write", this.value));
     }
 
+    @Override
     public boolean isReadOnly(ELContext context) {
         return true;
     }
 
-    public Class getType(ELContext context) {
+    @Override
+    public Class<?> getType(ELContext context) {
         return (this.value != null) ? this.value.getClass() : null;
     }
 
-    public Class getExpectedType() {
+    @Override
+    public Class<?> getExpectedType() {
         return this.expectedType;
     }
 
+    @Override
     public String getExpressionString() {
         return (this.value != null) ? this.value.toString() : null;
     }
 
+    @Override
     public boolean equals(Object obj) {
         return (obj instanceof ValueExpressionLiteral && this
                 .equals((ValueExpressionLiteral) obj));
@@ -88,20 +94,24 @@ public final class ValueExpressionLiteral extends ValueExpression implements
                 .equals(ve.value))));
     }
 
+    @Override
     public int hashCode() {
         return (this.value != null) ? this.value.hashCode() : 0;
     }
 
+    @Override
     public boolean isLiteralText() {
         return true;
     }
 
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(this.value);
         out.writeUTF((this.expectedType != null) ? this.expectedType.getName()
                 : "");
     }
 
+    @Override
     public void readExternal(ObjectInput in) throws IOException,
             ClassNotFoundException {
         this.value = in.readObject();
