@@ -16,6 +16,24 @@
 
 <body>
 
+<section name="JBoss Web 7.0.5.Final (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <update>
+        <jira>AS7-2844</jira>: Error pages are suppose to complete or dispatch an async operation,
+        but the check was not in the right location. (remm)
+      </update>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+         Rebase on Tomcat EL. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.4.Final (remm)">
   <subsection name="Catalina">
     <changelog>

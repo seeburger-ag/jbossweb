@@ -77,11 +77,42 @@
 
   <!-- Run the tests -->
   <target name="all" depends="compile">
+  	<!--
      <java dir="${test.classes}" classname="${test.runner}" fork="yes">
             <arg value="org.jboss.web.cookies.CookiesTestCase"/>
             <jvmarg line="-Dcluster=${cluster}"/>
             <classpath refid="jbossweb.test.classpath"/>
-     </java>
+     </java>-->
+    <mkdir dir="${basedir}/output/logs" />
+    <junit printsummary="yes" fork="yes" dir="." showoutput="yes"
+      errorproperty="test.result.error"
+      failureproperty="test.result.failure"
+      haltonfailure="false" >
+
+      <classpath refid="jbossweb.test.classpath" />
+
+      <formatter type="plain"/>
+
+      <!-- If test.entry is defined, run a single test, otherwise run all valid tests -->
+      <test todir="${basedir}/output/logs" />
+      <batchtest todir="${basedir}/output/logs">
+        <fileset dir="java" >
+          <!-- Include all by default -->
+          <include name="**/Test*.java" />
+          <!-- Exclude helper classes -->
+          <exclude name="**/Tester*.java" />
+        </fileset>
+      </batchtest>
+    </junit>
+
+  	<java dir="${test.classes}" classname="${test.runner}" fork="yes">
+           <arg value="org.apache.el.TestValueExpressionImpl"/>
+           <classpath refid="jbossweb.test.classpath"/>
+    </java>
+    <java dir="${test.classes}" classname="${test.runner}" fork="yes">
+           <arg value="org.apache.el.TestMethodExpressionImpl"/>
+           <classpath refid="jbossweb.test.classpath"/>
+    </java>
   </target>
 
   <target name="ssl" depends="compile">
