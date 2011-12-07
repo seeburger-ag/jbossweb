@@ -125,6 +125,37 @@ public class TestMethodExpressionImpl {
     }
 
     @Test
+    public void testInvoke2825() {
+        TesterBeanB beanB = new TesterBeanB();
+        beanB.setName("B");
+
+        context.getVariableMapper().setVariable("method",
+                factory.createValueExpression("sayHello", String.class));
+        context.getVariableMapper().setVariable("arg",
+                factory.createValueExpression("JUnit", String.class));
+
+        MethodExpression me1 = factory.createMethodExpression(
+                context, "${beanB.getName()}", String.class, new Class<?>[] {});
+        MethodExpression me2 = factory.createMethodExpression(
+                context, "${beanB[method](arg)}", String.class,
+                new Class<?>[] { String.class });
+        MethodExpression me3 = factory.createMethodExpression(
+                context, "${beanB.sayHello}", String.class,
+                new Class<?>[] { String.class });
+
+        assertEquals("B", me1.invoke(context, null));
+        assertEquals("Hello JUnit from B", me2.invoke(context, null));
+        assertEquals("Hello JUnit from B",
+                me2.invoke(context, new Object[] { "JUnit2" }));
+        assertEquals("Hello JUnit2 from B",
+                me3.invoke(context, new Object[] { "JUnit2" }));
+        assertEquals("Hello JUnit from B",
+                me2.invoke(context, new Object[] { null }));
+        assertEquals("Hello null from B",
+                me3.invoke(context, new Object[] { null }));
+    }
+
+    @Test
     public void testInvokeWithSuper() {
         MethodExpression me = factory.createMethodExpression(context,
                 "${beanA.setBean(beanBB)}", null ,
