@@ -336,7 +336,7 @@ public class Http11Protocol
      * connection. The default is the same as for Apache HTTP Server.
      */
     protected int maxKeepAliveRequests = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 1 : 
-        Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS", "100")).intValue();
+        Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS", "-1")).intValue();
     public int getMaxKeepAliveRequests() { return maxKeepAliveRequests; }
     public void setMaxKeepAliveRequests(int mkar) { maxKeepAliveRequests = mkar; }
 
