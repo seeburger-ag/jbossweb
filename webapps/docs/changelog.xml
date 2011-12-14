@@ -16,11 +16,21 @@
 
 <body>
 
+<section name="JBoss Web 7.0.6.Final (remm)">
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+         <jira>211</jira>: Better exception handling when including. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.5.Final (remm)">
   <subsection name="Catalina">
     <changelog>
       <update>
-        <jira>AS7-2844</jira>: Error pages are supposed to complete or dispatch an async operation,
+        <jboss-jira>AS7-2844</jboss-jira>: Error pages are supposed to complete or dispatch an async operation,
         but the check was not in the right location. (remm)
       </update>
     </changelog>
@@ -55,7 +65,7 @@
          Filter out multibyte chars when writing a char chunk. (rjung)
       </fix>
       <fix>
-         <jira>AS7-2739</jira>: Allow using the keepalive disable configuration
+         <jboss-jira>AS7-2739</jboss-jira>: Allow using the keepalive disable configuration
          when using the async or event modes. (remm)
       </fix>
     </changelog>
@@ -69,7 +79,7 @@
         Improve DIGEST authentication security. (remm)
       </fix>
       <fix>
-        <jira>AS7-2073</jira>: Delegate connector lifecycle handling if in delay mode. (jfclere, remm)
+        <jboss-jira>AS7-2073</jboss-jira>: Delegate connector lifecycle handling if in delay mode. (jfclere, remm)
       </fix>
       <fix>
         For compatibility with managers which don't extend StandardManager, set the session timeout
@@ -115,7 +125,7 @@
          <bug>51860</bug>: Fix issues when keyAlias is being used. (markt)
       </fix>
       <fix>
-         <jira>JBWEB-201</jira>JBoss Web Native causes JVM crash with AJP. (jfclere/remm)
+         <jira>201</jira>: JBoss Web Native causes JVM crash with AJP. (jfclere/remm)
       </fix>
     </changelog>
   </subsection>
