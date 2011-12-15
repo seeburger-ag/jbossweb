@@ -37,39 +37,38 @@ public final class Library {
     {
         boolean loaded = false;
         String err = "";
-        for (int i = 0; i < NAMES.length; i++) {
-            try {
-                System.loadLibrary(NAMES[i]);
-                loaded = true;
-            }
-            catch (Throwable e) {
-                if ( i > 0)
-                    err += ", ";
-
-                String name = System.mapLibraryName(NAMES[i]);
-                String path = System.getProperty("java.library.path");
-                String sep = System.getProperty("path.separator");
-                String [] paths = path.split(sep);
-                for (int j=0; j<paths.length; j++) {
-                    java.io.File fd = new java.io.File(paths[j] + System.getProperty("file.separator") + name);
-                    if (fd.exists()) {
-                        err += "(Error on: " + paths[j] + System.getProperty("file.separator") + name +")";
-                    }
-                }
-                err +=  e.getMessage();
-            }
-            if (loaded)
-                break;
+        try {
+            LibraryLoader.load(System.getProperty("catalina.home"));
+            loaded = true;
+        }
+        catch (Throwable e) {
+            err +=  e.getMessage();
         }
         if (!loaded) {
-            err += " (LibraryLoader.load()): ";
-            try {
-                LibraryLoader.load(System.getProperty("catalina.home"));
-                loaded = true;
+            for (int i = 0; i < NAMES.length; i++) {
+                try {
+                    System.loadLibrary(NAMES[i]);
+                    loaded = true;
+                }
+                catch (Throwable e) {
+                    if ( i > 0)
+                        err += ", ";
+
+                    String name = System.mapLibraryName(NAMES[i]);
+                    String path = System.getProperty("java.library.path");
+                    String sep = System.getProperty("path.separator");
+                    String [] paths = path.split(sep);
+                    for (int j=0; j<paths.length; j++) {
+                        java.io.File fd = new java.io.File(paths[j] + System.getProperty("file.separator") + name);
+                        if (fd.exists()) {
+                            err += "(Error on: " + paths[j] + System.getProperty("file.separator") + name +")";
+                        }
+                    }
+                    err +=  e.getMessage();
+                }
+                if (loaded)
+                    break;
             }
-            catch (Throwable e) {
-                err +=  e.getMessage();
-            }                            
         }
         if (!loaded) {
             err += "(";
