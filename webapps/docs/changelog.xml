@@ -71,6 +71,10 @@
       <update>
         Add new PING method for mod_cluster. (jfclere)
       </update>
+      <fix>
+        <jboss-jira>AS7-1098</jboss-jira>: Call context classloader unbind with the right
+        classloader. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

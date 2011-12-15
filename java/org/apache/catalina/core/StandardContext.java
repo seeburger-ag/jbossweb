@@ -4822,6 +4822,8 @@ public class StandardContext
      */
     private void unbindThread(ClassLoader oldContextClassLoader) {
 
+        DirContextURLStreamHandler.unbind();
+
         Thread.currentThread().setContextClassLoader(oldContextClassLoader);
 
         oldContextClassLoader = null;
@@ -4829,8 +4831,6 @@ public class StandardContext
         if (isUseNaming()) {
             ContextBindings.unbindThread(this, this);
         }
-
-        DirContextURLStreamHandler.unbind();
 
     }
 
