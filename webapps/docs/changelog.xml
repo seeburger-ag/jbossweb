@@ -24,6 +24,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <update>
+        <jboss-jira>AS7-2695</jboss-jira>: Native library loading updates. (jfclere, mturk)
+      </update>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 7.0.5.Final (remm)">
