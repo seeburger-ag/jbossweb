@@ -58,7 +58,7 @@ public class BaseRequest {
     int contentLength = 0;
     MessageBytes contentType = MessageBytes.newInstance();
     MimeHeaders headers = new MimeHeaders();
-    Cookies cookies = new Cookies(headers);
+    Cookies cookies = new Cookies();
     HashMap attributes = new HashMap();
 
     MessageBytes tomcatInstanceId = MessageBytes.newInstance();

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.TagPluginManager;
+import org.apache.jasper.compiler.TldLocationsCache;
 
 /**
  * A class to hold all init parameters specific to the JSP engine. 
@@ -134,6 +135,19 @@ public interface Options {
     public String getCompilerClassName();   
 
     /**
+     * The cache for the location of the TLD's
+     * for the various tag libraries 'exposed'
+     * by the web application.
+     * A tag library is 'exposed' either explicitely in 
+     * web.xml or implicitely via the uri tag in the TLD 
+     * of a taglib deployed in a jar file (WEB-INF/lib).
+     *
+     * @return the instance of the TldLocationsCache
+     * for the web-application.
+     */
+    public TldLocationsCache getTldLocationsCache();
+
+    /**
      * Java platform encoding to generate the JSP
      * page servlet.
      */
@@ -169,11 +183,6 @@ public interface Options {
      */
     public int getModificationTestInterval();
     
-    /**
-     * Re-compile on failure.
-     */
-    public boolean getRecompileOnFail();
-
     /**
      * Is caching enabled (used for precompilation).
      */
