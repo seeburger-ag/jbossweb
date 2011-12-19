@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.0.7.Final (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         Fix buffering issue when encoding certain characters. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.6.Final (remm)">
   <subsection name="Jasper">
     <changelog>
