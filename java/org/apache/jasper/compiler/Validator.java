@@ -1213,9 +1213,9 @@ class Validator {
                                         try {
                                             jspAttrs[i].validateEL(this.pageInfo.getExpressionFactory(), ctx);
                                         } catch (ELException e) {
-                                            this.err.jspError(n.getStart(),
+                                            this.err.jspError(n,
                                                     "jsp.error.invalid.expression", 
-                                                    attrs.getValue(i), e.toString());
+                                                    attrs.getValue(i), e);
                                         }
                                     } else {
                                         // Runtime expression
