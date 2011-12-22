@@ -712,7 +712,23 @@ public class ClusterListener
         return result.toString();
     }   
     public String doProxyPing(String scheme, String host, int port) {
-        return doProxyPing(scheme + "://" + host + String.valueOf(port));
+        HashMap<String, String> parameters = new HashMap<String, String>();
+        if (scheme != null)
+            parameters.put("Scheme", scheme);
+        if (host != null)
+            parameters.put("Host", host);
+        if (port != 0)
+            parameters.put("Port", String.valueOf(port));
+        // Send PING * request
+        Proxy[] local = proxies;
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < local.length; i++) {
+            result.append("Proxy[").append(i).append("]: [").append(local[i].address)
+                            .append(':').append(local[i].port).append("]: \r\n");
+            result.append(sendRequest("PING", true, parameters, i));
+            result.append("\r\n");
+        }
+        return result.toString();
     }
     
     /**
