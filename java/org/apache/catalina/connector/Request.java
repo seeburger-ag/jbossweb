@@ -2962,10 +2962,20 @@ public class Request
         if (!("multipart/form-data".equals(contentType)))
             throw new ServletException(sm.getString("coyoteRequest.notMultipart"));
 
-        DiskFileItemFactory factory = new DiskFileItemFactory();
-        if (config.getLocation() != null) {
-            factory.setRepository(new File(config.getLocation()));
+        File location = null;
+        if (config.getLocation() == null || config.getLocation().length() == 0) {
+            location = ((File) context.getServletContext().getAttribute(
+                    ServletContext.TEMPDIR));
+        } else {
+            location = new File(config.getLocation());
+            if (!location.isAbsolute()) {
+                location = new File((File) context.getServletContext().getAttribute(ServletContext.TEMPDIR), 
+                        config.getLocation()).getAbsoluteFile();
+            }
         }
+
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+        factory.setRepository(location);
         if (config.getFileSizeThreshold() > 0) {
             factory.setSizeThreshold(config.getFileSizeThreshold());
         }

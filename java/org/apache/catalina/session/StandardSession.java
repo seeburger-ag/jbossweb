@@ -493,9 +493,6 @@ public class StandardSession
     public void setMaxInactiveInterval(int interval) {
 
         this.maxInactiveInterval = interval;
-        if (isValid && interval == 0) {
-            expire();
-        }
         
     }
 
@@ -581,7 +578,7 @@ public class StandardSession
             return true;
         }
 
-        if (maxInactiveInterval >= 0) { 
+        if (maxInactiveInterval > 0) { 
             int offset = (int) (System.currentTimeMillis() - creationTime);
             int timeIdle = (offset - thisAccessedTime) / 1000;
             if (timeIdle >= maxInactiveInterval) {
