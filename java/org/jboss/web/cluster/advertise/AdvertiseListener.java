@@ -286,20 +286,38 @@ public class AdvertiseListener
         }
     }
 
-    private boolean verifyDigest(String digest, String server, String date)
+    private boolean verifyDigest(String digest, String server, String date, String sequence)
     {
         if (md == null)
             return true;
         md.reset();
         digestString(md, securityKey);
+        byte[] ssalt = md.digest();
+        md.update(ssalt);
+
         digestString(md, date);
+        digestString(md, sequence);
         digestString(md, server);
         byte [] our = md.digest();
-        byte [] dst = new byte[digest.length() * 2];
-        for (int i = 0, j = 0; i < digest.length(); i++) {
-            char ch = digest.charAt(i);
-            dst[j++] = (byte)((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
+
+        if (our.length != digest.length() / 2) {
+            return false;
         }
+
+        int val = 0;
+        for (int i = 0; i < digest.length(); i++) {
+            int ch = digest.charAt(i);
+            if (i % 2 == 0) {
+                val = ((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
+            } else {
+                val = val * 16 + ((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
+
+                if (our[i / 2] != (byte) val) {
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
@@ -367,6 +385,7 @@ public class AdvertiseListener
                     String    status_desc = null;
                     String    digest      = null;
                     String    server_name = null;
+                    String sequence = null;
                     AdvertisedServer server = null;
                     boolean added = false;
                     for (int i = 0; i < headers.length; i++) {
@@ -394,6 +413,9 @@ public class AdvertiseListener
                             else if (hdrv[0].equals("Digest")) {
                                 digest = hdrv[1];
                             }
+                            else if (hdrv[0].equals("Sequence")) {
+                                sequence = hdrv[1];
+                            }
                             else if (hdrv[0].equals("Server")) {
                                 server_name = hdrv[1];
                                 server = servers.get(server_name);
@@ -410,8 +432,7 @@ public class AdvertiseListener
                     if (server != null && status > 0) {
                         if (md != null) {
                             /* We need a digest to match */
-                            if (!verifyDigest(digest, server_name, date_str)) {
-                                System.out.println("Digest mismatch");
+                            if (!verifyDigest(digest, server_name, date_str, sequence)) {
                                 continue;
                             }
                         }
