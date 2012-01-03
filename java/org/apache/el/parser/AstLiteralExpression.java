@@ -25,37 +25,34 @@ import org.apache.el.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Id$
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
  */
 public final class AstLiteralExpression extends SimpleNode {
     public AstLiteralExpression(int id) {
         super(id);
     }
 
-    @Override
-    public Class<?> getType(EvaluationContext ctx) throws ELException {
+    public Class getType(EvaluationContext ctx) throws ELException {
         return String.class;
     }
 
-    @Override
     public Object getValue(EvaluationContext ctx) throws ELException {
         return this.image;
     }
 
-    @Override
     public void setImage(String image) {
         if (image.indexOf('\\') == -1) {
             this.image = image;
             return;
         }
         int size = image.length();
-        StringBuilder buf = new StringBuilder(size);
+        StringBuffer buf = new StringBuffer(size);
         for (int i = 0; i < size; i++) {
             char c = image.charAt(i);
-            if (c == '\\' && i + 2 < size) {
+            if (c == '\\' && i + 1 < size) {
                 char c1 = image.charAt(i + 1);
-                char c2 = image.charAt(i + 2);
-                if ((c1 == '#' || c1 == '$') && c2 == '{')  {
+                if (c1 == '\\' || c1 == '"' || c1 == '\'' || c1 == '#'
+                        || c1 == '$') {
                     c = c1;
                     i++;
                 }

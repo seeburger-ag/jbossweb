@@ -18,17 +18,13 @@
 
 package org.apache.el.parser;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.MethodInfo;
 import javax.el.PropertyNotFoundException;
-import javax.el.ValueReference;
 
 import org.apache.el.lang.ELSupport;
 import org.apache.el.lang.EvaluationContext;
@@ -38,34 +34,13 @@ import org.apache.el.util.ReflectionUtil;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Id$
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
  */
 public final class AstValue extends SimpleNode {
 
-    private static final boolean IS_SECURITY_ENABLED =
-        (System.getSecurityManager() != null);
-
-    protected static final boolean COERCE_TO_ZERO;
-
-    static {
-        if (IS_SECURITY_ENABLED) {
-            COERCE_TO_ZERO = AccessController.doPrivileged(
-                    new PrivilegedAction<Boolean>(){
-                        @Override
-                        public Boolean run() {
-                            return Boolean.valueOf(System.getProperty(
-                                    "org.apache.el.parser.COERCE_TO_ZERO",
-                                    "true"));
-                        }
-
-                    }
-            ).booleanValue();
-        } else {
-            COERCE_TO_ZERO = Boolean.valueOf(System.getProperty(
-                    "org.apache.el.parser.COERCE_TO_ZERO",
-                    "true")).booleanValue();
-        }
-    }
+    protected static final boolean COERCE_TO_ZERO =
+        Boolean.valueOf(System.getProperty(
+                "org.apache.el.parser.COERCE_TO_ZERO", "true")).booleanValue();
 
     protected static class Target {
         protected Object base;
@@ -77,23 +52,17 @@ public final class AstValue extends SimpleNode {
         super(id);
     }
 
-    @Override
-    public Class<?> getType(EvaluationContext ctx) throws ELException {
+    public Class getType(EvaluationContext ctx) throws ELException {
         Target t = getTarget(ctx);
         ctx.setPropertyResolved(false);
-        Class<?> result = ctx.getELResolver().getType(ctx, t.base, t.property);
-        if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", t.base, t.property));
-        }
-        return result;
+        return ctx.getELResolver().getType(ctx, t.base, t.property);
     }
 
     private final Target getTarget(EvaluationContext ctx) throws ELException {
         // evaluate expr-a to value-a
         Object base = this.children[0].getValue(ctx);
 
-        // if our base is null (we know there are more properties to evaluate)
+        // if our base is null (we know there are more properites to evaluate)
         if (base == null) {
             throw new PropertyNotFoundException(MessageFactory.get(
                     "error.unreachable.base", this.children[0].getImage()));
@@ -101,15 +70,7 @@ public final class AstValue extends SimpleNode {
 
         // set up our start/end
         Object property = null;
-        int propCount = this.jjtGetNumChildren();
-
-        if (propCount > 2 &&
-                this.jjtGetChild(propCount - 1) instanceof AstMethodParameters) {
-            // Method call with paramaters.
-            propCount-=2;
-        } else {
-            propCount--;
-        }
+        int propCount = this.jjtGetNumChildren() - 1;
         int i = 1;
 
         // evaluate any properties before our target
@@ -142,74 +103,43 @@ public final class AstValue extends SimpleNode {
         return t;
     }
 
-    @Override
     public Object getValue(EvaluationContext ctx) throws ELException {
         Object base = this.children[0].getValue(ctx);
         int propCount = this.jjtGetNumChildren();
         int i = 1;
-        Object suffix = null;
+        Object property = null;
         ELResolver resolver = ctx.getELResolver();
         while (base != null && i < propCount) {
-            suffix = this.children[i].getValue(ctx);
-            if (i + 1 < propCount &&
-                    (this.children[i+1] instanceof AstMethodParameters)) {
-                AstMethodParameters mps =
-                    (AstMethodParameters) this.children[i+1];
-                // This is a method
-                base = resolver.invoke(ctx, base, suffix, null,
-                        mps.getParameters(ctx));
-                i+=2;
+            property = this.children[i].getValue(ctx);
+            if (property == null) {
+                return null;
             } else {
-                // This is a property
-                if (suffix == null) {
-                    return null;
-                }
-
                 ctx.setPropertyResolved(false);
-                base = resolver.getValue(ctx, base, suffix);
-                i++;
+                base = resolver.getValue(ctx, base, property);
             }
-        }
-        if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", base, suffix));
+            i++;
         }
         return base;
     }
 
-    @Override
     public boolean isReadOnly(EvaluationContext ctx) throws ELException {
         Target t = getTarget(ctx);
         ctx.setPropertyResolved(false);
-        boolean result =
-            ctx.getELResolver().isReadOnly(ctx, t.base, t.property);
-        if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", t.base, t.property));
-        }
-        return result;
+        return ctx.getELResolver().isReadOnly(ctx, t.base, t.property);
     }
 
-    @Override
     public void setValue(EvaluationContext ctx, Object value)
             throws ELException {
         Target t = getTarget(ctx);
         ctx.setPropertyResolved(false);
         ELResolver resolver = ctx.getELResolver();
-
         // coerce to the expected type
         Class<?> targetClass = resolver.getType(ctx, t.base, t.property);
-        if (COERCE_TO_ZERO == true
+        if (COERCE_TO_ZERO
                 || !isAssignable(value, targetClass)) {
-            resolver.setValue(ctx, t.base, t.property,
-                    ELSupport.coerceToType(value, targetClass));
-        } else {
-            resolver.setValue(ctx, t.base, t.property, value);
+            value = ELSupport.coerceToType(value, targetClass);
         }
-        if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", t.base, t.property));
-        }
+        resolver.setValue(ctx, t.base, t.property, value);
     }
 
     private boolean isAssignable(Object value, Class<?> targetClass) {
@@ -223,11 +153,7 @@ public final class AstValue extends SimpleNode {
         return true;
     }
 
-
-    @Override
-    // Interface el.parser.Node uses raw types (and is auto-generated)
-    public MethodInfo getMethodInfo(EvaluationContext ctx,
-            @SuppressWarnings("rawtypes") Class[] paramTypes)
+    public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes)
             throws ELException {
         Target t = getTarget(ctx);
         Method m = ReflectionUtil.getMethod(t.base, t.property, paramTypes);
@@ -235,104 +161,18 @@ public final class AstValue extends SimpleNode {
                 .getParameterTypes());
     }
 
-    @Override
-    // Interface el.parser.Node uses a raw type (and is auto-generated)
-    public Object invoke(EvaluationContext ctx,
-            @SuppressWarnings("rawtypes") Class[] paramTypes,
+    public Object invoke(EvaluationContext ctx, Class[] paramTypes,
             Object[] paramValues) throws ELException {
-
         Target t = getTarget(ctx);
-        Method m = null;
-        Object[] values = null;
-        if (isParametersProvided()) {
-            values = ((AstMethodParameters)
-                    this.jjtGetChild(2)).getParameters(ctx);
-            Class<?>[] types = getTypesFromValues(values);
-            m = ReflectionUtil.getMethod(t.base, t.property, types);
-        } else {
-            m = ReflectionUtil.getMethod(t.base, t.property, paramTypes);
-            values = paramValues;
-        }
-        if (m.isVarArgs()) {
-            // May need to convert values
-            values = toVarArgs(values, m);
-        }
+        Method m = ReflectionUtil.getMethod(t.base, t.property, paramTypes);
         Object result = null;
         try {
-            result = m.invoke(t.base, values);
+            result = m.invoke(t.base, (Object[]) paramValues);
         } catch (IllegalAccessException iae) {
             throw new ELException(iae);
-        } catch (IllegalArgumentException iae) {
-            throw new ELException(iae);
         } catch (InvocationTargetException ite) {
-            Throwable cause = ite.getCause();
-            if (cause instanceof ThreadDeath) {
-                throw (ThreadDeath) cause;
-            }
-            if (cause instanceof VirtualMachineError) {
-                throw (VirtualMachineError) cause;
-            }
-            throw new ELException(cause);
+            throw new ELException(ite.getCause());
         }
         return result;
-    }
-
-    private Object[] toVarArgs(Object[] src, Method m) {
-        int paramCount = m.getParameterTypes().length;
-
-        Object[] dest = new Object[paramCount];
-        Object[] varArgs = (Object[]) Array.newInstance(
-                m.getParameterTypes()[paramCount - 1].getComponentType(),
-                src.length - (paramCount - 1));
-        System.arraycopy(src, 0, dest, 0, paramCount - 1);
-        System.arraycopy(src, paramCount - 1, varArgs, 0,
-                src.length - (paramCount - 1));
-        dest[paramCount - 1] = varArgs;
-        return dest;
-    }
-
-    private Class<?>[] getTypesFromValues(Object[] values) {
-        if (values == null) {
-            return null;
-        }
-
-        Class<?> result[] = new Class<?>[values.length];
-        for (int i = 0; i < values.length; i++) {
-            if (values[i] == null) {
-                result[i] = null;
-            } else {
-                result[i] = values[i].getClass();
-            }
-        }
-        return result;
-    }
-
-
-    /**
-     * @since EL 2.2
-     */
-    @Override
-    public ValueReference getValueReference(EvaluationContext ctx) {
-        // Check this is a reference to a base and a property
-        if (this.children.length > 2 &&
-                this.jjtGetChild(2) instanceof AstMethodParameters) {
-            // This is a method call
-            return null;
-        }
-        Target t = getTarget(ctx);
-        return new ValueReference(t.base, t.property);
-    }
-
-
-    /**
-     * @since EL 2.2
-     */
-    @Override
-    public boolean isParametersProvided() {
-        if (this.children.length > 2
-                && this.jjtGetChild(2) instanceof AstMethodParameters) {
-            return true;
-        }
-        return false;
     }
 }

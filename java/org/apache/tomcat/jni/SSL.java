@@ -116,10 +116,6 @@ public final class SSL {
 
     /* As server, disallow session resumption on renegotiation */
     public static final int SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION = 0x00010000;
-    /* Permit unsafe legacy renegotiation */
-    public static final int SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION      = 0x00040000;
-    /* If set, always create a new key when using tmp_eddh parameters */
-    public static final int SSL_OP_SINGLE_ECDH_USE                  = 0x00080000;
     /* If set, always create a new key when using tmp_dh parameters */
     public static final int SSL_OP_SINGLE_DH_USE                    = 0x00100000;
     /* Set to always use the tmp_rsa key when doing RSA operations,
@@ -327,16 +323,4 @@ public final class SSL {
      * Return last SSL error string
      */
     public static native String getLastError();
-
-    /**
-     * Return true if SSL_OP_ if defined.
-     * <p>
-     * Currently used for testing weather the
-     * SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION is supported by OpenSSL.
-     * <p>
-     * @param op SSL_OP to test.
-     * @return true if SSL_OP is supported by OpenSSL library.
-     */
-    public static native boolean hasOp(int op);
-
 }

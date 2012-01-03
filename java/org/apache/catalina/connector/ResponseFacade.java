@@ -24,7 +24,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Collection;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
@@ -32,8 +31,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Globals;
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.StringManager;
+import org.apache.catalina.security.SecurityUtil;
 
 /**
  * Facade class that wraps a Coyote response object. 
@@ -442,17 +441,6 @@ public class ResponseFacade
 
     }
 
-    public void sendFile(String path, String absolutePath, long start, long end) {
-        
-        if (isCommitted())
-            throw new IllegalStateException
-                (/*sm.getString("responseBase.reset.ise")*/);
-
-        response.setAppCommitted(true);
-
-        response.sendFile(path, absolutePath, start, end);
-
-    }
 
     public void setDateHeader(String name, long date) {
 
@@ -562,46 +550,6 @@ public class ResponseFacade
         }
 
         response.setCharacterEncoding(arg0);
-    }
-
-
-    public String getHeader(String name) {
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        return response.getHeader(name);
-    }
-
-
-    public Collection<String> getHeaderNames() {
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        return response.getHeaderNames();
-    }
-
-
-    public Collection<String> getHeaders(String name) {
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        return response.getHeaders(name);
-    }
-
-
-    public int getStatus() {
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        return response.getStatus();
     }
 
 }
