@@ -320,6 +320,8 @@ public final class Parameters extends MultiMap {
             }
             values[oldValues.length] = value;
         } else {
+            if (paramHashStringArray.size() >=MAX_COUNT)
+                throw new IllegalStateException("Parameter count exceeded allowed maximum: " + MAX_COUNT);
             values = new String[1];
             values[0] = value;
         }
