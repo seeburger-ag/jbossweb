@@ -156,6 +156,20 @@ public class TestMethodExpressionImpl {
     }
 
     @Test
+    public void testInvokeAS7_3177() {
+        TesterBeanB beanB = new TesterBeanB();
+        beanB.setName("B");
+
+        context.getVariableMapper().setVariable("arg",
+                factory.createValueExpression(null, Object.class));
+
+        MethodExpression me1 = factory.createMethodExpression(
+                context, "${beanB.sayHello(arg)}", String.class,
+                null);
+        assertEquals("Hello null from B", me1.invoke(context, null));
+    }
+
+    @Test
     public void testInvokeWithSuper() {
         MethodExpression me = factory.createMethodExpression(context,
                 "${beanA.setBean(beanBB)}", null ,

@@ -156,8 +156,7 @@ public class ReflectionUtil {
             int exactMatch = 0;
             boolean noMatch = false;
             for (int i = 0; i < mParamCount; i++) {
-                // Can't be null
-                if (mParamTypes[i].equals(paramTypes[i])) {
+                if (paramTypes[i] == null || mParamTypes[i].equals(paramTypes[i])) {
                     exactMatch++;
                 } else if (i == (mParamCount - 1) && m.isVarArgs()) {
                     Class<?> varType = mParamTypes[i].getComponentType();

@@ -24,6 +24,16 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+         <jira>211</jira>: Better exception handling when validating EL. (remm)
+      </fix>
+      <fix>
+         <jboss-jira>AS7-3177</jboss-jira>: NPE mapping null parameters values in EL. (remm)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 7.0.7.Final (remm)">
