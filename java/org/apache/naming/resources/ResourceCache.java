@@ -210,7 +210,7 @@ public class ResourceCache {
 
         // Increase the amount to free so that allocate won't have to run right
         // away again
-        toFree += (cacheMaxSize / 20);
+        toFree += (cacheMaxSize / 16);
 
         int size = notFoundCache.size();
         if (size > spareNotFoundEntries) {

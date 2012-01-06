@@ -73,8 +73,6 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.apache.naming.NamingContextBindingsEnumeration;
-import org.apache.naming.NamingContextEnumeration;
 import org.apache.naming.NamingEnumerationImpl;
 import org.apache.naming.StringManager;
 
@@ -122,6 +120,7 @@ public class ProxyDirContext implements DirContext {
                     cache = new ResourceCache();
                 }
                 cache.setCacheMaxSize(baseDirContext.getCacheMaxSize());
+                cache.setSpareNotFoundEntries(baseDirContext.getCacheMaxSize()/8);
                 cacheTTL = baseDirContext.getCacheTTL();
                 cacheObjectMaxSize = baseDirContext.getCacheObjectMaxSize();
                 // cacheObjectMaxSize must be less than cacheMaxSize

@@ -22,6 +22,9 @@
       <fix>
          Updates for Servlet 3.0a. (markt, remm)
       </fix>
+      <fix>
+         Fix cache defaults with low memory mode. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
