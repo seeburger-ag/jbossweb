@@ -301,7 +301,7 @@ public class AprEndpoint {
     /**
      * Use endfile for sending static files.
      */
-    protected boolean useSendfile = Library.APR_HAS_SENDFILE;
+    protected boolean useSendfile = false; /* CVE-2011-2526 */
     public void setUseSendfile(boolean useSendfile) { this.useSendfile = useSendfile; }
     public boolean getUseSendfile() { return useSendfile; }
 
