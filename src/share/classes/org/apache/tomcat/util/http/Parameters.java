@@ -51,6 +51,8 @@ public final class Parameters extends MultiMap {
     MessageBytes decodedQuery=MessageBytes.newInstance();
     
     public static final int INITIAL_SIZE=4;
+    protected static final int MAX_COUNT = 
+        Integer.valueOf(System.getProperty("org.apache.tomcat.util.http.Parameters.MAX_COUNT", "512")).intValue();
 
     // Garbage-less parameter merging.
     // In a sub-request with parameters, the new parameters
@@ -175,6 +177,8 @@ public final class Parameters extends MultiMap {
                 values[i+ oldValues.length] = newValues[i];
             }
         } else {
+            if (paramHashStringArray.size() >=MAX_COUNT)
+                throw new IllegalStateException("Parameter count exceeded allowed maximum: " + MAX_COUNT);
             values = newValues;
         }
 
@@ -316,6 +320,8 @@ public final class Parameters extends MultiMap {
             }
             values[oldValues.length] = value;
         } else {
+            if (paramHashStringArray.size() >=MAX_COUNT)
+                throw new IllegalStateException("Parameter count exceeded allowed maximum: " + MAX_COUNT);
             values = new String[1];
             values[0] = value;
         }
