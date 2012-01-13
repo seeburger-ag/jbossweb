@@ -89,6 +89,15 @@ public abstract class AuthenticatorBase
      */
     protected static final String DEFAULT_ALGORITHM = "MD5";
 
+    /**
+     * Authentication header
+     */
+    protected static final String AUTH_HEADER_NAME = "WWW-Authenticate";
+
+    /**
+     * Default authentication realm name.
+     */
+    protected static final String REALM_NAME = "Authentication required";
 
     /**
      * The number of random bytes to include when generating a
