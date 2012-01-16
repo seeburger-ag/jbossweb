@@ -30,6 +30,9 @@
       <fix>
          Resolve EL variables when returning value references. (markt)
       </fix>
+      <fix>
+         <bug>52445</bug>: Do not assume EL method expressions have exactly three elements. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
