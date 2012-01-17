@@ -27,9 +27,12 @@ package org.jboss.web.cluster.advertise;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -180,11 +183,37 @@ public class AdvertiseListener
         servers.remove(server);
     }
 
+    private String getSystemProperty(final String key) {
+        PrivilegedAction<String> action = new PrivilegedAction<String>() {
+            @Override
+            public String run() {
+                try {
+                    return System.getProperty(key);
+                } catch (SecurityException e) {
+                    return null;
+                }
+            }
+        };
+        return AccessController.doPrivileged(action);
+    }
+
     private void init()
         throws IOException
     {
-        ms = new MulticastSocket(advertisePort);
-        ms.setTimeToLive(16);
+        String value = getSystemProperty("os.name");
+        boolean linuxlike = (value != null) && (value.toLowerCase().startsWith("linux") || value.toLowerCase().startsWith("mac") || value.toLowerCase().startsWith("hp"));
+        if ((groupAddress == null) || !linuxlike)
+            ms = new MulticastSocket(advertisePort);
+        else {
+            try {
+                ms = new MulticastSocket(new InetSocketAddress(groupAddress, advertisePort));
+            } catch (IOException e) {
+                ms = new MulticastSocket(advertisePort);
+            }
+        }
+ 
+        // Limit socket send to localhost
+        ms.setTimeToLive(0);
         ms.joinGroup(InetAddress.getByName(groupAddress));
         initialized = true;
     }
