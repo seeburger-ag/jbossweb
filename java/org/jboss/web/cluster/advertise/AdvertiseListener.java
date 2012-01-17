@@ -185,7 +185,6 @@ public class AdvertiseListener
 
     private String getSystemProperty(final String key) {
         PrivilegedAction<String> action = new PrivilegedAction<String>() {
-            @Override
             public String run() {
                 try {
                     return System.getProperty(key);
