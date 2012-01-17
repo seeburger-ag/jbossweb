@@ -4,4 +4,23 @@
   <groupId>jboss.web</groupId>
   <artifactId>jbossweb</artifactId>
   <version>@VERSION@</version>
+  <description>JBossWeb jar bundle</description>
+  <name>jbossweb</name>
+  <url>http://jboss.org/jbossweb</url>
+  <scm>
+     <url>http://fisheye.jboss.org/browse/jbossweb/branches/2.1.x</url>
+  </scm>
+  <developers>
+    <developer>
+      <id>JBossWeb developers</id>
+  </developer>
+    <developer>
+      <id>ASF Tomcat developers</id>
+  </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>GNU GPL Version 3</name>
+    </license>
+  </licenses>
 </project>
