@@ -339,16 +339,6 @@ file installed with JBoss Web.  It will look something like this:</p>
            keystoreFile="${user.home}/.keystore" keystorePass="changeit"
            clientAuth="false" sslProtocol="TLS"/&gt;
 --&gt;
-&lt;-- Define a non-blocking Java SSL Coyote HTTP/1.1 Connector on port 8443 --&gt;
-&lt;!--
-&lt;Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
-           port="8443" minSpareThreads="5" maxSpareThreads="75"
-           enableLookups="true" disableUploadTimeout="true" 
-           acceptCount="100"  maxThreads="200"
-           scheme="https" secure="true" SSLEnabled="true"
-           keystoreFile="${user.home}/.keystore" keystorePass="changeit"
-           clientAuth="false" sslProtocol="TLS"/&gt;
---&gt;
 </source>
 and to specify an APR connector
 <source>

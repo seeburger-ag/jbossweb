@@ -127,6 +127,10 @@ public final class JspRuntimeContext {
 
         initClassPath();
 
+	if (context instanceof org.apache.jasper.servlet.JspCServletContext) {
+	    return;
+	}
+
         if (Constants.IS_SECURITY_ENABLED) {
             initSecurity();
         }
@@ -324,7 +328,7 @@ public final class JspRuntimeContext {
         }
         
         URL [] urls = ((URLClassLoader) parentClassLoader).getURLs();
-        StringBuilder cpath = new StringBuilder();
+        StringBuffer cpath = new StringBuffer();
         String sep = System.getProperty("path.separator");
 
         for(int i = 0; i < urls.length; i++) {

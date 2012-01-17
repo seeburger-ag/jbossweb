@@ -22,7 +22,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.StringTokenizer;
 import org.apache.catalina.util.IOTools;
 /**
@@ -32,7 +31,7 @@ import org.apache.catalina.util.IOTools;
  * 
  * @author Dan Sandberg
  * @author David Becker
- * @version $Id$
+ * @version $Revision$, $Date$
  */
 public class SSIProcessor {
     /** The start pattern */
@@ -41,17 +40,13 @@ public class SSIProcessor {
     protected final static String COMMAND_END = "-->";
     protected final static int BUFFER_SIZE = 4096;
     protected SSIExternalResolver ssiExternalResolver;
-    protected HashMap<String,SSICommand> commands =
-        new HashMap<String,SSICommand>();
+    protected HashMap commands = new HashMap();
     protected int debug;
-    protected final boolean allowExec;
 
 
-    public SSIProcessor(SSIExternalResolver ssiExternalResolver, int debug,
-            boolean allowExec) {
+    public SSIProcessor(SSIExternalResolver ssiExternalResolver, int debug) {
         this.ssiExternalResolver = ssiExternalResolver;
         this.debug = debug;
-        this.allowExec = allowExec;
         addBuiltinCommands();
     }
 
@@ -59,9 +54,7 @@ public class SSIProcessor {
     protected void addBuiltinCommands() {
         addCommand("config", new SSIConfig());
         addCommand("echo", new SSIEcho());
-        if (allowExec) {
-            addCommand("exec", new SSIExec());
-        }
+        addCommand("exec", new SSIExec());
         addCommand("include", new SSIInclude());
         addCommand("flastmod", new SSIFlastmod());
         addCommand("fsize", new SSIFsize());
@@ -104,7 +97,7 @@ public class SSIProcessor {
         stringWriter = null;
         int index = 0;
         boolean inside = false;
-        StringBuilder command = new StringBuilder();
+        StringBuffer command = new StringBuffer();
         try {
             while (index < fileContents.length()) {
                 char c = fileContents.charAt(index);
@@ -139,8 +132,8 @@ public class SSIProcessor {
                         // change
                         // during the loop
                         String configErrMsg = ssiMediator.getConfigErrMsg();
-                        SSICommand ssiCommand =
-                            commands.get(strCmd.toLowerCase(Locale.ENGLISH));
+                        SSICommand ssiCommand = (SSICommand)commands
+                                .get(strCmd.toLowerCase());
                         String errorMessage = null;
                         if (ssiCommand == null) {
                             errorMessage = "Unknown command: " + strCmd;
@@ -182,19 +175,19 @@ public class SSIProcessor {
 
 
     /**
-     * Parse a StringBuilder and take out the param type token. Called from
+     * Parse a StringBuffer and take out the param type token. Called from
      * <code>requestHandler</code>
      * 
      * @param cmd
-     *            a value of type 'StringBuilder'
+     *            a value of type 'StringBuffer'
      * @return a value of type 'String[]'
      */
-    protected String[] parseParamNames(StringBuilder cmd, int start) {
+    protected String[] parseParamNames(StringBuffer cmd, int start) {
         int bIdx = start;
         int i = 0;
         int quotes = 0;
         boolean inside = false;
-        StringBuilder retBuf = new StringBuilder();
+        StringBuffer retBuf = new StringBuffer();
         while (bIdx < cmd.length()) {
             if (!inside) {
                 while (bIdx < cmd.length() && isSpace(cmd.charAt(bIdx)))
@@ -232,18 +225,18 @@ public class SSIProcessor {
 
 
     /**
-     * Parse a StringBuilder and take out the param token. Called from
+     * Parse a StringBuffer and take out the param token. Called from
      * <code>requestHandler</code>
      * 
      * @param cmd
-     *            a value of type 'StringBuilder'
+     *            a value of type 'StringBuffer'
      * @return a value of type 'String[]'
      */
-    protected String[] parseParamValues(StringBuilder cmd, int start, int count) {
+    protected String[] parseParamValues(StringBuffer cmd, int start, int count) {
         int valIndex = 0;
         boolean inside = false;
         String[] vals = new String[count];
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         char endQuote = 0;
         for (int bIdx = start; bIdx < cmd.length(); bIdx++) {
             if (!inside) {
@@ -283,14 +276,14 @@ public class SSIProcessor {
 
 
     /**
-     * Parse a StringBuilder and take out the command token. Called from
+     * Parse a StringBuffer and take out the command token. Called from
      * <code>requestHandler</code>
      * 
      * @param cmd
-     *            a value of type 'StringBuilder'
+     *            a value of type 'StringBuffer'
      * @return a value of type 'String', or null if there is none
      */
-    private String parseCmd(StringBuilder cmd) {
+    private String parseCmd(StringBuffer cmd) {
         int firstLetter = -1;
         int lastLetter = -1;
         for (int i = 0; i < cmd.length(); i++) {

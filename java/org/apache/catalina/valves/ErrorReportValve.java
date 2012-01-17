@@ -22,10 +22,10 @@ package org.apache.catalina.valves;
 import java.io.IOException;
 import java.io.Writer;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.Globals;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.RequestUtil;
@@ -102,7 +102,7 @@ public class ErrorReportValve
         getNext().invoke(request, response);
 
         Throwable throwable =
-            (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+            (Throwable) request.getAttribute(Globals.EXCEPTION_ATTR);
 
         if (response.isCommitted()) {
             return;
@@ -172,7 +172,7 @@ public class ErrorReportValve
         if (report == null)
             return;
 
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
 
         sb.append("<html><head><title>");
         sb.append(ServerInfo.getServerInfo()).append(" - ");
@@ -267,7 +267,7 @@ public class ErrorReportValve
      * occurrence of javax.servlet.).
      */
     protected String getPartialServletStackTrace(Throwable t) {
-        StringBuilder trace = new StringBuilder();
+        StringBuffer trace = new StringBuffer();
         trace.append(t.toString()).append('\n');
         StackTraceElement[] elements = t.getStackTrace();
         int pos = elements.length;

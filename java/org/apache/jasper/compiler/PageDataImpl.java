@@ -53,7 +53,7 @@ class PageDataImpl extends PageData implements TagConstants {
     private static final String CDATA_END_SECTION = "]]>\n";
 
     // string buffer used to build XML view
-    private StringBuilder buf;
+    private StringBuffer buf;
 
     /**
      * Constructor.
@@ -69,7 +69,7 @@ class PageDataImpl extends PageData implements TagConstants {
 	page.visit(firstPass);
 
 	// Second pass
-	buf = new StringBuilder();
+	buf = new StringBuffer();
 	SecondPassVisitor secondPass
 	    = new SecondPassVisitor(page.getRoot(), buf, compiler,
 				    firstPass.getJspIdPrefix());
@@ -82,7 +82,7 @@ class PageDataImpl extends PageData implements TagConstants {
      * @return the input stream of the XML view
      */
     public InputStream getInputStream() {
-	// Turn StringBuilder into InputStream
+	// Turn StringBuffer into InputStream
         try {
             return new ByteArrayInputStream(buf.toString().getBytes("UTF-8"));
         } catch (UnsupportedEncodingException uee) {
@@ -234,7 +234,7 @@ class PageDataImpl extends PageData implements TagConstants {
         	implements TagConstants {
 
 	private Node.Root root;
-	private StringBuilder buf;
+	private StringBuffer buf;
 	private Compiler compiler;
 	private String jspIdPrefix;
 	private boolean resetDefaultNS = false;
@@ -245,7 +245,7 @@ class PageDataImpl extends PageData implements TagConstants {
 	/*
 	 * Constructor
 	 */
-	public SecondPassVisitor(Node.Root root, StringBuilder buf,
+	public SecondPassVisitor(Node.Root root, StringBuffer buf,
 				 Compiler compiler, String jspIdPrefix) {
 	    this.root = root;
 	    this.buf = buf;
