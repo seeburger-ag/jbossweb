@@ -314,6 +314,8 @@ public final class Parameters extends MultiMap {
         if (paramHashStringArray.containsKey(key)) {
             String oldValues[] = (String[])paramHashStringArray.
                 get(key);
+            if (oldValues.length >=MAX_COUNT)
+                throw new IllegalStateException("Parameter values exceeded allowed maximum: " + MAX_COUNT);
             values = new String[oldValues.length + 1];
             for (int i = 0; i < oldValues.length; i++) {
                 values[i] = oldValues[i];
