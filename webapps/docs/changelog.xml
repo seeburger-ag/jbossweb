@@ -16,6 +16,17 @@
 
 <body>
 
+<section name="JBoss Web 7.0.10.Final (remm)">
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+         Disable Java identifier check by default (set org.apache.el.parser.SKIP_IDENTIFIER_CHECK to
+         false to enable it back). (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.9.Final (remm)">
   <subsection name="Coyote">
     <changelog>

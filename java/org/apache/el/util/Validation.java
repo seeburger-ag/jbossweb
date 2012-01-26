@@ -46,14 +46,14 @@ public class Validation {
                         public Boolean run() {
                             return Boolean.valueOf(System.getProperty(
                                     "org.apache.el.parser.SKIP_IDENTIFIER_CHECK",
-                            "false"));
+                            "true"));
                         }
                     }
             ).booleanValue();
         } else {
             SKIP_IDENTIFIER_CHECK = Boolean.valueOf(System.getProperty(
                     "org.apache.el.parser.SKIP_IDENTIFIER_CHECK",
-            "false")).booleanValue();
+            "true")).booleanValue();
         }
     }
 
