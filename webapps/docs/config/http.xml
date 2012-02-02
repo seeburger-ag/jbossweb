@@ -86,6 +86,13 @@
       If not specified, this attribute is set to 4096 (4 kilobytes).</p>
     </attribute>
 
+    <attribute name="max-connections" required="false">
+      <p>Max of connections supported by the connector. That is the max number of threads
+      when using the JIO connector and the end point poller size for all connectors.
+      for the native connector the max number of threads is calculated (32 times the
+      number of processors available to the Java virtual machine.).</p>
+    </attribute>
+
     <attribute name="protocol" required="false">
       <p>
         Sets the protocol to handle incoming traffic.

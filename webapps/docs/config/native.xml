@@ -29,6 +29,19 @@
 
   <p>See <a href="http.html">http connector</a> for the Common Attributes</p>
 
+ <attributes>
+     <attribute name="max-connections" required="false">
+     <p>Max of connections supported by the connector.
+        That is the end point poller size and the size of the sendfile poller too.
+        The default values depend on the OS and on org.apache.tomcat.util.Constants.LOW_MEMORY.</p>
+     <p>LOW_MEMORY=true  : 1024</p>
+     <p>LOW_MEMORY=false : 32768</p>
+     <p>windows: 1024 Note that also the maximum support by the platform.</p>
+     <p>Note that the max number of threads is calculated and it is 32 times the
+      number of processors available to the Java virtual machine. (32 in case org.apache.tomcat.util.Constants.LOW_MEMORY=true)</p>
+     </attribute>
+ </attributes>
+
   </subsection>
 </section>
 
