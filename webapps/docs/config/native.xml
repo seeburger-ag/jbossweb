@@ -52,6 +52,19 @@
 
 </section>
 
+<section name="Threads">
+  <p>If you try to bench native you should remember that the number of active threads is limited to 32 x number of processors.
+     Most of the tests tools are not realistic: they make the requests synchronously (and with no wait time) so the max number of
+     active threads could be reached quickly. Once it is reached the socket connections are closed.
+     In case you want the connector to wait for an available thread you can set org.apache.tomcat.util.net.Constants.WAIT_FOR_THREAD
+     to true. For example in standalone.xml:
+  </p>
+<source>
+    &lt;system-properties&gt;
+       &lt;property name="org.apache.tomcat.util.net.Constants.WAIT_FOR_THREAD" value="true"/&gt;
+    &lt;/system-properties&gt;
+</source>
+</section>
 
 </body>
 
