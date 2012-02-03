@@ -346,6 +346,12 @@ public class CoyoteAdapter
 
         }
 
+        // Check if the connector was stopped
+        if (connector.getService() == null) {
+            res.setStatus(500);
+            return;
+        }
+
         if (connector.getXpoweredBy()) {
             response.addHeader("X-Powered-By", X_POWERED_BY);
         }
