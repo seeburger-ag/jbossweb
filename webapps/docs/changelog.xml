@@ -22,6 +22,13 @@
       <fix>
          Port some additional valves and filters. (remm)
       </fix>
+      <fix>
+         <jboss-jira>AS7-3562</jboss-jira>: Add basic all roles mode configuration, just in case.
+         Uses the org.apache.catalina.realm.RealmBase.ALL_ROLES_MODE system property. (remm)
+      </fix>
+      <fix>
+         <jboss-jira>AS7-2877</jboss-jira>: Add a possible fix for NPEs on some requests on stop. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
