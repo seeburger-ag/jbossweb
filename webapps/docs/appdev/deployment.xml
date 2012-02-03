@@ -8,7 +8,6 @@
 
   <properties>
     <author email="craigmcc@apache.org">Craig R. McClanahan</author>
-    <author email="jfclere@apache.org">Jean-Frederic Clere</author>
     <title>Deployment</title>
   </properties>
 
@@ -37,7 +36,7 @@ distribute your application to be installed.</p>
 files and JSP pages that comprise your application's user interface.  When the
 system administrator deploys your application into a particular server, he
 or she assigns a <em>context path</em> to your application (a later section
-of this manual describes deployment on JBossWeb).  Thus, if the
+of this manual describes deployment on Tomcat).  Thus, if the
 system administrator assigns your application to the context path
 <code>/catalog</code>, then a request URI referring to
 <code>/catalog/index.html</code> will retrieve the <code>index.html</code>
@@ -50,7 +49,7 @@ file from your document root.</p>
 
 <p>To facilitate creation of a Web Application Archive file in the required
 format, it is convenient to arrange the "executable" files of your web
-application (that is, the files that JBossWeb actually uses when executing
+application (that is, the files that Tomcat actually uses when executing
 your app) in the same organization as required by the WAR format itself.
 To do this, you will end up with the following contents in your
 application's "document root" directory:</p>
@@ -68,11 +67,6 @@ application's "document root" directory:</p>
     along with any initialization parameters and container-managed
     security constraints that you want the server to enforce for you.
     This file is discussed in more detail in the following subsection.
-    <br/><br/></li>
-<li><strong>/WEB-INF/jboss-web.xml</strong> - The <em>JBoss Web Application Deployment
-    Descriptor</em> for your application. This is an XML file describing the
-    JBossWeb extensions to <strong>/WEB-INF/web.xml</strong>.
-    See <a href="./jbossweb.html">jboss-web.xml</a> for more.
     <br/><br/></li>
 <li><strong>/WEB-INF/classes/</strong> - This directory contains any Java
     class files (and associated resources) required for your application,
@@ -108,14 +102,30 @@ API Specification, version 2.3, which you should consult for more details.</p>
 
 <section name="Shared Library Files">
 
-<p>If you want to share libraries between webapps put them in a ear file
-with the libraries you want to share.
-</p>
+<p>Like most servlet containers, Tomcat 5 also supports mechanisms to install
+library JAR files (or unpacked classes) once, and make them visible to all
+installed web applications (without having to be included inside the web
+application itself.  The details of how Tomcat locates and shares such
+classes are described in the
+<a href="../class-loader-howto.html">Class Loader HOW-TO</a> documentation.
+For the purposes of our discussion, there are two locations that are commonly
+used within a Tomcat 5 installation for shared code:</p>
+<ul>
+<li><strong>$CATALINA_HOME/common/lib</strong> - JAR files placed here are
+    visible both to web applications and internal Tomcat code.  This is a
+    good place to put JDBC drivers that are required for both your application
+    and internal Tomcat use (such as for a JDBCRealm).
+    <br/><br/></li>
+<li><strong>$CATALINA_BASE/shared/lib</strong> - JAR files placed here are
+    visible to all web applications, but not to internal Tomcat code.  This
+    is the right place for shared libraries that are specific to your
+    application.<br/><br/></li>
+</ul>
 
-<p>Out of the box, a standard JBossWeb installation includes a variety
+<p>Out of the box, a standard Tomcat 5 installation includes a variety
 of pre-installed shared library files, including:</p>
 <ul>
-<li>The <em>Servlet 3.0</em> and <em>JSP 2.2</em> APIs that are fundamental
+<li>The <em>Servlet 2.4</em> and <em>JSP 2.0</em> APIs that are fundamental
     to writing servlets and JavaServer Pages.<br/><br/></li>
 <li>An <em>XML Parser</em> compliant with the JAXP (version 1.2) APIs, so
     your application can perform DOM-based or SAX-based processing of
@@ -127,6 +137,16 @@ of pre-installed shared library files, including:</p>
 
 <section name="Web Application Deployment Descriptor">
 
+    <blockquote><em>
+    <p>The description below uses the variable name $CATALINA_HOME
+    to refer to the directory into which you have installed Tomcat 5,
+    and is the base directory against which most relative paths are
+    resolved.  However, if you have configured Tomcat 5 for multiple
+    instances by setting a CATALINA_BASE directory, you should use
+    $CATALINA_BASE instead of $CATALINA_HOME for each of these
+    references.</p>
+    </em></blockquote>
+
 <p>As mentioned above, the <code>/WEB-INF/web.xml</code> file contains the
 Web Application Deployment Descriptor for your application.  As the filename
 extension implies, this file is an XML document, and defines everything about
@@ -135,7 +155,7 @@ which is assigned by the system administrator when the application is
 deployed).</p>
 
 <p>The complete syntax and semantics for the deployment descriptor is defined
-in Chapter 13 of the Servlet API Specification, version 3.0.  Over time, it
+in Chapter 13 of the Servlet API Specification, version 2.3.  Over time, it
 is expected that development tools will be provided that create and edit the
 deployment descriptor for you.  In the meantime, to provide a starting point,
 a <a href="web.xml.txt" target="_new">basic web.xml file</a>
@@ -144,7 +164,7 @@ included element.</p>
 
 <p><strong>NOTE</strong> - The Servlet Specification includes a Document
 Type Descriptor (DTD) for the web application deployment descriptor, and
-JBossWeb enforces the rules defined here when processing your application's
+Tomcat 5 enforces the rules defined here when processing your application's
 <code>/WEB-INF/web.xml</code> file.  In particular, you <strong>must</strong>
 enter your descriptor elements (such as <code>&lt;filter&gt;</code>,
 <code>&lt;servlet&gt;</code>, and <code>&lt;servlet-mapping&gt;</code> in
@@ -153,48 +173,70 @@ the order defined by the DTD (see Section 13.3).</p>
 </section>
 
 
-<section name="JBoss Web Application Deployment">
+<section name="Tomcat Context Descriptor">
 
-<p>A /WEB-INF/jboss-web.xml file can be used to define JBossWeb specific
+    <blockquote><em>
+    <p>The description below uses the variable name $CATALINA_HOME
+    to refer to the directory into which you have installed Tomcat 5,
+    and is the base directory against which most relative paths are
+    resolved.  However, if you have configured Tomcat 5 for multiple
+    instances by setting a CATALINA_BASE directory, you should use
+    $CATALINA_BASE instead of $CATALINA_HOME for each of these
+    references.</p>
+    </em></blockquote>
+
+<p>A /META-INF/context.xml file can be used to define Tomcat specific
 configuration options, such as loggers, data sources, session manager
-configuration and more. This XML file is describe in <a href="./jbossweb.html">jboss-web.xml</a>.
-</p>
+configuration and more. This XML file must contain one Context element, which
+will be considered as if it was the child of the Host element corresponding
+to the Host to which the  The Tomcat configuration documentation contains
+information on the Context element.</p>
 
 </section>
 
 
-<section name="Deployment With JBossWeb">
+<section name="Deployment With Tomcat 5">
 
 <p>In order to be executed, a web application must be deployed on
 a servlet container.  This is true even during development.
 We will describe using Tomcat 5 to provide the execution environment.
-A web application can be deployed in JBossWeb by one of the following
+A web application can be deployed in Tomcat by one of the following
 approaches:</p>
 <ul>
 <li><em>Copy unpacked directory hierarchy into a subdirectory in directory
-    <code>${jboss.server.base.dir}/standalone/deployments/</code></em>.  JBossWeb will assign a
+    <code>$CATALINA_HOME/webapps/</code></em>.  Tomcat will assign a
     context path to your application based on the subdirectory name you
     choose.  We will use this technique in the <code>build.xml</code>
     file that we construct, because it is the quickest and easiest approach
-    during development.
-    you have to create a file named like <code>myapp.war.dodeploy</code> to
-    start the deployement scanner on the myapp.war directory.
+    during development.  Be sure to restart Tomcat after installing or
+    updating your application.
     <br/><br/></li>
 <li><em>Copy the web application archive file into directory
-    <code>${jboss.server.base.dir}/standalone/deployments/</code></em>.  When JBossWeb is started, it will
+    <code>$CATALINA_HOME/webapps/</code></em>.  When Tomcat is started, it will
     automatically expand the web application archive file into its unpacked
     form, and execute the application that way.  This approach would typically
     be used to install an additional application, provided by a third party
     vendor or by your internal development staff, into an existing
-    JBossWeb installation. The web-app will be automaticaly deployed.
+    Tomcat installation.  <strong>NOTE</strong> - If you use this approach,
+    and wish to update your application later, you must both replace the
+    web application archive file <strong>AND</strong> delete the expanded
+    directory that Tomcat created, and then restart Tomcat, in order to reflect
+    your changes.
     <br/><br/></li>
-<li><em>Use the command line or the Web Management Interface of AS7.
-    web applications</em>. For example something like:
-<source>
-[standalone@localhost:9999 /] deploy /home/jfclere/jbossweb_sandbox/webapps/myapp.war
-'myapp.war' deployed successfully.
-</source>
-    In the above example <code>myapp.war</code> will be deployed under the context <code>/myapp</code>
+<li><em>Use the Tomcat 5 "Manager" web application to deploy and undeploy
+    web applications</em>.  Tomcat 5 includes a web application, deployed
+    by default on context path <code>/manager</code>, that allows you to
+    deploy and undeploy applications on a running Tomcat server without
+    restarting it.  See the administrator documentation (TODO: hyperlink)
+    for more information on using the Manager web application.<br/><br/></li>
+<li><em>Use "Manager" Ant Tasks In Your Build Script</em>.  Tomcat 5
+    includes a set of custom task definitions for the <code>Ant</code>
+    build tool that allow you to automate the execution of commands to the
+    "Manager" web application.  These tasks are used in the Tomcat deployer.
+    <br/><br/></li>
+<li><em>Use the Tomcat Deployer</em>.  Tomcat 5 includes a packaged tool
+    bundling the Ant tasks, and can be used to automatically precompile JSPs
+    which are part of the web application before deployment to the server.
     <br/><br/></li>
 </ul>
 
