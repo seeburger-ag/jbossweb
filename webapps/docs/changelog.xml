@@ -30,6 +30,10 @@
          Disable Java identifier check by default (set org.apache.el.parser.SKIP_IDENTIFIER_CHECK to
          false to enable it back). (remm)
       </fix>
+      <fix>
+         <jboss-jira>AS7-3562</jboss-jira>: Fix leak on invalid tag pooling when JSP id consumer is used.
+         Submitted by Stuart Douglas. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

@@ -2264,8 +2264,7 @@ class Generator {
                 if (n.implementsBodyTag()) {
                     out.printin("if (");
                     out.print(tagEvalVar);
-                    out
-                            .println(" != javax.servlet.jsp.tagext.Tag.EVAL_BODY_INCLUDE) {");
+                    out.println(" != javax.servlet.jsp.tagext.Tag.EVAL_BODY_INCLUDE) {");
                     // Assume EVAL_BODY_BUFFERED
                     out.pushIndent();
                     out.printil("out = _jspx_page_context.pushBody();");
@@ -2354,8 +2353,7 @@ class Generator {
                     syncScriptingVars(n, VariableInfo.AT_BEGIN);
                     syncScriptingVars(n, VariableInfo.NESTED);
 
-                    out
-                            .printil("if (evalDoAfterBody != javax.servlet.jsp.tagext.BodyTag.EVAL_BODY_AGAIN)");
+                    out.printil("if (evalDoAfterBody != javax.servlet.jsp.tagext.BodyTag.EVAL_BODY_AGAIN)");
                     out.pushIndent();
                     out.printil("break;");
                     out.popIndent();
@@ -2369,8 +2367,7 @@ class Generator {
                 if (n.implementsBodyTag()) {
                     out.printin("if (");
                     out.print(tagEvalVar);
-                    out
-                            .println(" != javax.servlet.jsp.tagext.Tag.EVAL_BODY_INCLUDE) {");
+                    out.println(" != javax.servlet.jsp.tagext.Tag.EVAL_BODY_INCLUDE) {");
                     out.pushIndent();
                     out.printil("out = _jspx_page_context.popBody();");
                     if (n.implementsTryCatchFinally()) {
@@ -2390,8 +2387,7 @@ class Generator {
 
             out.printin("if (");
             out.print(tagHandlerVar);
-            out
-                    .println(".doEndTag() == javax.servlet.jsp.tagext.Tag.SKIP_PAGE) {");
+            out.println(".doEndTag() == javax.servlet.jsp.tagext.Tag.SKIP_PAGE) {");
             out.pushIndent();
             if (!n.implementsTryCatchFinally()) {
                 if (isPoolingEnabled && !(n.implementsJspIdConsumer())) {
@@ -2437,7 +2433,7 @@ class Generator {
                 out.println(".doFinally();");
             }
 
-            if (isPoolingEnabled) {
+            if (isPoolingEnabled && !(n.implementsJspIdConsumer())) {
                 out.printin(n.getTagHandlerPoolName());
                 out.print(".reuse(");
                 out.print(tagHandlerVar);
