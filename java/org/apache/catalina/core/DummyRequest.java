@@ -25,27 +25,18 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.security.Principal;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.AsyncListener;
-import javax.servlet.DispatcherType;
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
@@ -272,27 +263,6 @@ public class DummyRequest
     public String getLocalName() { return null; }
     public int getLocalPort() { return -1; }
     public int getRemotePort() { return -1; }
-
-    public void addAsyncListener(AsyncListener listener,
-            ServletRequest servletRequest, ServletResponse servletResponse) {}
-    public void addAsyncListener(AsyncListener listener) {}
-    public AsyncContext getAsyncContext() { return null; }
-    public ServletContext getServletContext() { return null; }
-    public boolean isAsyncStarted() { return false; }
-    public boolean isAsyncSupported() { return false; }
-    public void setAsyncTimeout(long timeout) {}
-    public AsyncContext startAsync() throws IllegalStateException { return null; }
-    public AsyncContext startAsync(ServletRequest servletRequest,
-            ServletResponse servletResponse) throws IllegalStateException { return null; }
-    public DispatcherType getDispatcherType() { return null; }
-    public ServletResponse getServletResponse() { return null; }
-    public boolean authenticate(HttpServletResponse response) throws IOException,
-            ServletException { return false; }
-    public void login(String username, String password) throws ServletException {}
-    public void logout() throws ServletException {}
-    public long getAsyncTimeout() { return 0; }
-    public Part getPart(String name) throws IllegalArgumentException { return null; }
-    public Collection<Part> getParts() { return null; }
     
 }
 
