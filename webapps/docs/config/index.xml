@@ -8,7 +8,6 @@
 
   <properties>
     <author email="craigmcc@apache.org">Craig R. McClanahan</author>
-    <author email="jfclere@gmail.com">Jean-Frederic Clere</author>
     <title>Overview</title>
   </properties>
 
@@ -18,7 +17,7 @@
 <section name="Overview">
 
 <p>This manual contains reference information about all of the configuration
-directives that can be used in the Web subsystem to
+directives that can be included in a <code>conf/server.xml</code> file to
 configure the behavior of the JBoss Web Servlet/JSP container.  It does not
 attempt to describe which configuration directives should be used to perform
 specific tasks - for that, see the various <em>HOW-TO</em> documents on the
@@ -27,17 +26,22 @@ main index page.</p>
 <p>The configuration element descriptions are organized into the following
 major categories:</p>
 <ul>
-<li><strong>connectors</strong> - Represent the interface between external
+<li><strong>Top Level Elements</strong> - <code>&lt;Server&gt;</code> is the
+    root element of the entire configuration file, while
+    <code>&lt;Service&gt;</code> represents a group of Connectors that is
+    associated with an Engine.</li>
+<li><strong>Connectors</strong> - Represent the interface between external
     clients sending requests to (and receiving responses from) a particular
     Service.</li>
-<li><strong>virtual-server</strong> - Represent the virtual host corresponding
-    to requests matching it.</li>
-<li><strong>jsp-configuration</strong> - That is the configuration of 
-    the JSP container.</li>
-<li><strong>static-resources</strong> - That is the configuration of
-    Default Servlet (how the static ressources should served).</li>
+<li><strong>Containers</strong> - Represent components whose function is to
+    process incoming requests, and create the corresponding responses.
+    An Engine handles all requests for a Service, a Host handles all requests
+    for a particular virtual host, and a Context handles all requests for a
+    specific web application.</li>
 <li><strong>Nested Components</strong> - Represent elements that can be
-    nested inside the above elements.</li>
+    nested inside the element for a Container.  Some elements can be nested
+    inside any Container, while others can only be nested inside a
+    Context.</li>
 </ul>
 
 <p>For each element, the corresponding documentation follows this general
@@ -48,11 +52,16 @@ outline:</p>
     the <code>org.apache.catalina</code> pacakge) that is implemented by one
     or more standard implementations.</li>
 <li><strong>Attributes</strong> - The set of attributes that are legal for
-    this element.</li>
+    this element.  Generally, this will be subdivided into <em>Common</em>
+    attributes that are supported by all implementations of the corresponding
+    Java interface, and <em>Standard Implementation</em> attributes that are
+    specific to a particular Java class that implements this interface.
+    The names of required attributes are <strong>bolded</strong>.</li>
 <li><strong>Nested Components</strong> - Enumerates which of the <em>Nested
     Components</em> can be legally nested within this element.</li>
 <li><strong>Special Features</strong> - Describes the configuration of a large
-    variety of special features (specific to each element type).</li>
+    variety of special features (specific to each element type) that are
+    supported by the standard implementation of this interface.</li>
 </ul>
 
 </section>

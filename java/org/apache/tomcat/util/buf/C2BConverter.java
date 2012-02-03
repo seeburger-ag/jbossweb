@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.charset.CodingErrorAction;
 
 /**
  * NIO based character encoder.
@@ -41,23 +42,16 @@ public class C2BConverter {
     protected CharBuffer cb = null;
 
     /**
-     * Leftover buffer used for multi-characters characters.
-     */
-    protected CharBuffer leftovers = null;
-
-    /**
      * Create an encoder for the specified charset.
      */
     public C2BConverter(String charset)
         throws IOException {
         try {
-            encoder = EncodingToCharset.toCharset(charset).newEncoder();
-            encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+            encoder = Charset.forName(charset).newEncoder();
+            encoder = encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }
-        char[] left = new char[4];
-        leftovers = CharBuffer.wrap(left);
     }
 
     /** 
@@ -65,11 +59,6 @@ public class C2BConverter {
      */
     public void recycle() {
         encoder.reset();
-        leftovers.position(0);
-    }
-
-    public boolean isUndeflow() {
-        return (leftovers.position() > 0);
     }
 
     /**
@@ -86,8 +75,8 @@ public class C2BConverter {
                     bc.getBuffer().length - bc.getEnd());
         } else {
             // Initialize the byte buffer
-            bb.limit(bc.getBuffer().length);
             bb.position(bc.getEnd());
+            bb.limit(bc.getBuffer().length);
         }
         if ((cb == null) || (cb.array() != cc.getBuffer())) {
             // Create a new char buffer if anything changed
@@ -95,29 +84,11 @@ public class C2BConverter {
                     cc.getLength());
         } else {
             // Initialize the char buffer
+            cb.position(cc.getStart());
             cb.limit(cc.getEnd());
-            cb.position(cc.getStart());
-        }
-        CoderResult result = null;
-        // Parse leftover if any are present
-        if (leftovers.position() > 0) {
-            int pos = bb.position();
-            // Loop until one char is encoded or there is a encoder error
-            do {
-                leftovers.put((char) cc.substract());
-                leftovers.flip();
-                result = encoder.encode(leftovers, bb, false);
-                leftovers.position(leftovers.limit());
-                leftovers.limit(leftovers.array().length);
-            } while (result.isUnderflow() && (bb.position() == pos));
-            if (result.isError() || result.isMalformed()) {
-                result.throwException();
-            }
-            cb.position(cc.getStart());
-            leftovers.position(0);
         }
         // Do the decoding and get the results into the byte chunk and the char chunk
-        result = encoder.encode(cb, bb, false);
+        CoderResult result = encoder.encode(cb, bb, false);
         if (result.isError() || result.isMalformed()) {
             result.throwException();
         } else if (result.isOverflow()) {
@@ -128,12 +99,6 @@ public class C2BConverter {
             // Propagate current positions to the byte chunk and char chunk
             bc.setEnd(bb.position());
             cc.setOffset(cb.position());
-            // Put leftovers in the leftovers char buffer
-            if (cc.getLength() > 0) {
-                leftovers.limit(leftovers.array().length);
-                leftovers.position(cc.getLength());
-                cc.substract(leftovers.array(), 0, cc.getLength());
-            }
         }
     }
     

@@ -40,8 +40,6 @@ public final class Parameters {
     protected static final int LAST = -1;
     public static final int INITIAL_SIZE = 8;
     protected static final String[] ARRAY_TYPE = new String[0];
-    protected static final int MAX_COUNT = 
-        Integer.valueOf(System.getProperty("org.apache.tomcat.util.http.Parameters.MAX_COUNT", "512")).intValue();
 
     protected class Field {
         MessageBytes name = MessageBytes.newInstance();
@@ -214,9 +212,6 @@ public final class Parameters {
         int len = fields.length;
         int pos = count;
         if (count >= len) {
-            if (count >= MAX_COUNT) {
-                throw new IllegalStateException("Parameter count exceeded allowed maximum: " + MAX_COUNT);
-            }
             // expand header list array
             Field tmp[] = new Field[pos * 2];
             System.arraycopy(fields, 0, tmp, 0, len);
@@ -457,7 +452,7 @@ public final class Parameters {
     /** Debug purpose
      */
     public String paramsAsString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         Enumeration en = getParameterNames();
         while (en.hasMoreElements()) {
             String k = (String) en.nextElement();

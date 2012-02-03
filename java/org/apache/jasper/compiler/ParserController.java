@@ -612,12 +612,10 @@ class ParserController implements TagConstants {
                     && Character.isWhitespace(root.charAt(index))) {
                 index++;
             }
-            if (index < root.length() 
-                    && (root.charAt(index) == '"' || root.charAt(index) == '\'')) {
-                index++;
-                if (root.regionMatches(index, JSP_URI, 0, JSP_URI.length())) {
-                    return true;
-                }
+            if (index < root.length() && root.charAt(index++) == '"'
+                && root.regionMatches(index, JSP_URI, 0,
+                        JSP_URI.length())) {
+                return true;
             }
         }
 
