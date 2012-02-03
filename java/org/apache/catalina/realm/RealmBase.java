@@ -161,7 +161,8 @@ public abstract class RealmBase
     /**
      * The all role mode.
      */
-    protected AllRolesMode allRolesMode = AllRolesMode.STRICT_MODE;
+    protected AllRolesMode allRolesMode = AllRolesMode.toMode(System.getProperty("org.apache.catalina.realm.RealmBase.ALL_ROLES_MODE", 
+            AllRolesMode.STRICT_MODE.name));
     
 
     // ------------------------------------------------------------- Properties
