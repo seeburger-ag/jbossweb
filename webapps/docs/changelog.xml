@@ -28,6 +28,9 @@
       <fix>
         <jboss-jira>JBPAPP-5293</jboss-jira>: ConcurrentModificationException in HandshakeCompletedNotify-Thread. (remm)
       </fix>
+      <fix>
+        <jboss-jira>JBPAPP-8050</jboss-jira>: Improve DIGEST authentication security. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

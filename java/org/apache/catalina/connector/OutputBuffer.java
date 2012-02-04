@@ -463,6 +463,10 @@ public class OutputBuffer extends Writer
         outputCharChunk.setChars(buf, off, len);
         while (outputCharChunk.getLength() > 0) { 
             conv.convert(outputCharChunk, bb);
+            if (bb.getLength() == 0) {
+                // Break out of the loop if more chars are needed to produce any output
+                break;
+            }
             if (outputCharChunk.getLength() > 0) {
                 bb.flushBuffer();
             }
