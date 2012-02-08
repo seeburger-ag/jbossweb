@@ -661,6 +661,7 @@ public class AjpAprProcessor implements ActionHook {
             first = false;
             empty = false;
             replay = true;
+            endOfStream = false;
 
         } else if (actionCode == ActionCode.ACTION_EVENT_BEGIN) {
             event = true;
