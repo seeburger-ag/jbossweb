@@ -553,7 +553,13 @@ public class AprEndpoint {
             } else if (addressStr.indexOf(':') >= 0) {
                 family = Socket.APR_UNSPEC;
             }
-         }
+            if (!Boolean.getBoolean("java.net.preferIPv4Stack")) {
+                family = Socket.APR_INET6;
+                if (addressStr != null && addressStr.indexOf(':') < 0) {
+                    addressStr = "::ffff:" + addressStr;
+                }
+            }
+        }
 
         // Sendfile usage on systems which don't support it cause major problems
         if (useSendfile && !Library.APR_HAS_SENDFILE) {

@@ -22,6 +22,10 @@
       <fix>
          <bug>52606</bug>: Body replay with AJP. (markt)
       </fix>
+      <fix>
+         <jboss-jira>AS7-3607</jboss-jira>: Support ipv4 addresses as ipv6 when the
+         JVM is configured to prefer ipv6. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
