@@ -24,7 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -43,8 +42,6 @@ import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.UnavailableException;
@@ -59,8 +56,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.catalina.Globals;
-import org.apache.catalina.connector.RequestFacade;
-import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
@@ -127,12 +122,6 @@ public class DefaultServlet
      * Allow customized directory listing per directory.
      */
     protected String  localXsltFile = null;
-
-
-    /**
-     * Allow customized directory listing per context.
-     */
-    protected String contextXsltFile = null;
 
 
     /**
@@ -253,7 +242,6 @@ public class DefaultServlet
         fileEncoding = getServletConfig().getInitParameter("fileEncoding");
 
         globalXsltFile = getServletConfig().getInitParameter("globalXsltFile");
-        contextXsltFile = getServletConfig().getInitParameter("contextXsltFile");
         localXsltFile = getServletConfig().getInitParameter("localXsltFile");
         readmeFile = getServletConfig().getInitParameter("readmeFile");
 
@@ -303,12 +291,12 @@ public class DefaultServlet
     protected String getRelativePath(HttpServletRequest request) {
 
         // Are we being processed by a RequestDispatcher.include()?
-        if (request.getAttribute(RequestDispatcher.INCLUDE_REQUEST_URI) != null) {
+        if (request.getAttribute(Globals.INCLUDE_REQUEST_URI_ATTR) != null) {
             String result = (String) request.getAttribute(
-                    RequestDispatcher.INCLUDE_PATH_INFO);
+                                            Globals.INCLUDE_PATH_INFO_ATTR);
             if (result == null)
                 result = (String) request.getAttribute(
-                        RequestDispatcher.INCLUDE_SERVLET_PATH);
+                                            Globals.INCLUDE_SERVLET_PATH_ATTR);
             if ((result == null) || (result.equals("")))
                 result = "/";
             return (result);
@@ -465,7 +453,7 @@ public class DefaultServlet
         // resource - create a temp. file on the local filesystem to
         // perform this operation
         File tempDir = (File) getServletContext().getAttribute
-            (ServletContext.TEMPDIR);
+            ("javax.servlet.context.tempdir");
         // Convert all '/' characters to '.' in resourcePath
         String convertedResourcePath = path.replace('/', '.');
         File contentFile = new File(tempDir, convertedResourcePath);
@@ -602,7 +590,7 @@ public class DefaultServlet
     /**
      * Display the size of a file.
      */
-    protected void displaySize(StringBuilder buf, int filesize) {
+    protected void displaySize(StringBuffer buf, int filesize) {
 
         int leftside = filesize / 1024;
         int rightside = (filesize % 1024) / 103;  // makes 1 digit
@@ -647,15 +635,16 @@ public class DefaultServlet
             // Check if we're included so we can return the appropriate 
             // missing resource name in the error
             String requestUri = (String) request.getAttribute(
-                    RequestDispatcher.INCLUDE_REQUEST_URI);
+                                            Globals.INCLUDE_REQUEST_URI_ATTR);
             if (requestUri == null) {
                 requestUri = request.getRequestURI();
             } else {
                 // We're included, and the response.sendError() below is going
                 // to be ignored by the resource that is including us.
-                // Therefore, throw an exception to notify the error.
-                throw new FileNotFoundException(sm.getString("defaultServlet.missingResource",
-                        RequestUtil.filter(requestUri)));
+                // Therefore, the only way we can let the including resource
+                // know is by including warning message in response
+                response.getWriter().write(sm.getString("defaultServlet.missingResource",
+                            RequestUtil.filter(requestUri)));
             }
 
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
@@ -670,7 +659,7 @@ public class DefaultServlet
                 // Check if we're included so we can return the appropriate 
                 // missing resource name in the error
                 String requestUri = (String) request.getAttribute(
-                        RequestDispatcher.INCLUDE_REQUEST_URI);
+                                            Globals.INCLUDE_REQUEST_URI_ATTR);
                 if (requestUri == null) {
                     requestUri = request.getRequestURI();
                 }
@@ -686,7 +675,7 @@ public class DefaultServlet
 
             // Checking If headers
             boolean included =
-                (request.getAttribute(RequestDispatcher.INCLUDE_CONTEXT_PATH) != null);
+                (request.getAttribute(Globals.INCLUDE_CONTEXT_PATH_ATTR) != null);
             if (!included
                 && !checkIfHeaders(request, response, cacheEntry.attributes)) {
                 return;
@@ -807,7 +796,7 @@ public class DefaultServlet
                     // Silent catch
                 }
                 if (ostream != null) {
-                    if (!checkSendfile(request, response, path, cacheEntry, contentLength, null))
+                    if (!checkSendfile(request, response, cacheEntry, contentLength, null))
                         copy(cacheEntry, renderResult, ostream);
                 } else {
                     copy(cacheEntry, renderResult, writer);
@@ -852,7 +841,7 @@ public class DefaultServlet
                         // Silent catch
                     }
                     if (ostream != null) {
-                        if (!checkSendfile(request, response, path, cacheEntry, range.end - range.start + 1, range))
+                        if (!checkSendfile(request, response, cacheEntry, range.end - range.start + 1, range))
                             copy(cacheEntry, ostream, range);
                     } else {
                         copy(cacheEntry, writer, range);
@@ -1115,7 +1104,7 @@ public class DefaultServlet
                                     InputStream xsltInputStream)
         throws IOException, ServletException {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
 
         sb.append("<?xml version=\"1.0\"?>");
         sb.append("<listing ");
@@ -1147,10 +1136,6 @@ public class DefaultServlet
                 if (trimmed.equalsIgnoreCase("WEB-INF") ||
                     trimmed.equalsIgnoreCase("META-INF") ||
                     trimmed.equalsIgnoreCase(localXsltFile))
-                    continue;
-
-                if (contextXsltFile != null
-                        && (cacheEntry.name + trimmed).equals(contextXsltFile))
                     continue;
 
                 CacheEntry childCacheEntry =
@@ -1245,7 +1230,7 @@ public class DefaultServlet
         OutputStreamWriter osWriter = new OutputStreamWriter(stream, "UTF8");
         PrintWriter writer = new PrintWriter(osWriter);
 
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         
         // rewriteUrl(contextPath) is expensive. cache result for later reuse
         String rewrittenContextPath =  rewriteUrl(contextPath);
@@ -1450,17 +1435,9 @@ public class DefaultServlet
             } catch (NamingException e) {
                 if (debug > 10)
                     log("localXsltFile '" + localXsltFile + "' not found", e);
+
+                return null;
             }
-        }
-
-        if (contextXsltFile != null) {
-            InputStream is =
-                getServletContext().getResourceAsStream(contextXsltFile);
-            if (is != null)
-                return is;
-
-            if (debug > 10)
-                log("contextXsltFile '" + contextXsltFile + "' not found");
         }
 
         /*  Open and read in file in one fell swoop to reduce chance
@@ -1496,21 +1473,24 @@ public class DefaultServlet
      */
     protected boolean checkSendfile(HttpServletRequest request,
                                   HttpServletResponse response,
-                                  String path, CacheEntry entry,
+                                  CacheEntry entry,
                                   long length, Range range) {
         if ((sendfileSize > 0)
             && (entry.resource != null)
             && ((length > sendfileSize) || (entry.resource.getContent() == null))
             && (entry.attributes.getCanonicalPath() != null)
+            && (Boolean.TRUE == request.getAttribute("org.apache.tomcat.sendfile.support"))
             && (request.getClass().getName().equals("org.apache.catalina.connector.RequestFacade"))
-            && (response.getClass().getName().equals("org.apache.catalina.connector.ResponseFacade"))
-            && ((RequestFacade) request).hasSendfile()) {
-            ResponseFacade responseFacade = (ResponseFacade) response;
+            && (response.getClass().getName().equals("org.apache.catalina.connector.ResponseFacade"))) {
+            request.setAttribute("org.apache.tomcat.sendfile.filename", entry.attributes.getCanonicalPath());
             if (range == null) {
-                responseFacade.sendFile(path, entry.attributes.getCanonicalPath(), 0, length);
+                request.setAttribute("org.apache.tomcat.sendfile.start", new Long(0L));
+                request.setAttribute("org.apache.tomcat.sendfile.end", new Long(length));
             } else {
-                responseFacade.sendFile(path, entry.attributes.getCanonicalPath(), range.start, range.end + 1);
+                request.setAttribute("org.apache.tomcat.sendfile.start", new Long(range.start));
+                request.setAttribute("org.apache.tomcat.sendfile.end", new Long(range.end + 1));
             }
+            request.setAttribute("org.apache.tomcat.sendfile.token", this);
             return true;
         } else {
             return false;

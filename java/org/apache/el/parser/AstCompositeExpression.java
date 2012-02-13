@@ -20,13 +20,12 @@ package org.apache.el.parser;
 
 import javax.el.ELException;
 
-import org.apache.el.lang.ELSupport;
 import org.apache.el.lang.EvaluationContext;
 
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Id$
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
  */
 public final class AstCompositeExpression extends SimpleNode {
 
@@ -34,22 +33,20 @@ public final class AstCompositeExpression extends SimpleNode {
         super(id);
     }
 
-    @Override
-    public Class<?> getType(EvaluationContext ctx)
+    public Class getType(EvaluationContext ctx)
             throws ELException {
         return String.class;
     }
 
-    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
-        StringBuilder sb = new StringBuilder(16);
+        StringBuffer sb = new StringBuffer(16);
         Object obj = null;
         if (this.children != null) {
             for (int i = 0; i < this.children.length; i++) {
                 obj = this.children[i].getValue(ctx);
                 if (obj != null) {
-                    sb.append(ELSupport.coerceToString(obj));
+                    sb.append(obj);
                 }
             }
         }
