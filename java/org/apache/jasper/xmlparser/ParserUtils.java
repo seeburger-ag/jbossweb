@@ -87,10 +87,10 @@ public class ParserUtils {
         // Perform an XML parse of this document, via JAXP
         try {
             DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
+               createDocumentBuilderFactory();
             factory.setNamespaceAware(true);
             factory.setValidating(validating);
-            DocumentBuilder builder = factory.newDocumentBuilder();
+            DocumentBuilder builder = newDocumentBuilder(factory);
             builder.setEntityResolver(entityResolver);
             builder.setErrorHandler(errorHandler);
             document = builder.parse(is);
@@ -183,6 +183,36 @@ public class ParserUtils {
         
         // Return the completed TreeNode graph
         return (treeNode);
+    }
+    
+    protected static DocumentBuilderFactory createDocumentBuilderFactory()
+    {
+       ClassLoader cl = Thread.currentThread().getContextClassLoader();
+       DocumentBuilderFactory factory;
+       try
+       {
+          Thread.currentThread().setContextClassLoader(ParserUtils.class.getClassLoader());
+          factory = DocumentBuilderFactory.newInstance();
+       }
+       finally
+       {
+          Thread.currentThread().setContextClassLoader(cl);
+       }
+       return factory;
+    }
+
+    protected static DocumentBuilder newDocumentBuilder(DocumentBuilderFactory factory) throws ParserConfigurationException
+    {
+       ClassLoader cl = Thread.currentThread().getContextClassLoader();
+       try
+       {
+          Thread.currentThread().setContextClassLoader(ParserUtils.class.getClassLoader());
+          return factory.newDocumentBuilder();
+       }
+       finally
+       {
+          Thread.currentThread().setContextClassLoader(cl);
+       }
     }
 }
 
