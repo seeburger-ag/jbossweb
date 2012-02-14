@@ -22,6 +22,13 @@
       <fix>
          Sync memory leak hacks listener. (markt)
       </fix>
+      <add>
+        Update the request dispatcher with a direct invoke, for servlet batch processing. (remm)
+      </add>
+      <fix>
+         If coming from outside of the application scope, make the request dispatcher
+         set all necessary bindings and send events. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

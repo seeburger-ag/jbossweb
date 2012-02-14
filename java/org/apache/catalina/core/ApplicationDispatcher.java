@@ -30,6 +30,8 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
 import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.ServletResponseWrapper;
@@ -99,7 +101,22 @@ final class ApplicationDispatcher
         }
     }
 
-    
+    protected class PrivilegedInvoke implements PrivilegedExceptionAction {
+        private ServletRequest request;
+        private ServletResponse response;
+
+        PrivilegedInvoke(ServletRequest request, ServletResponse response)
+        {
+            this.request = request;
+            this.response = response;
+        }
+
+        public Object run() throws ServletException, IOException {
+            doInvoke(request,response);
+            return null;
+        }
+    }
+
     protected class PrivilegedAsync implements PrivilegedExceptionAction {
         private ServletRequest request;
         private ServletResponse response;
@@ -297,6 +314,70 @@ final class ApplicationDispatcher
 
 
     // --------------------------------------------------------- Public Methods
+
+
+    /**
+     * Batch forward this request and response to another resource for processing.
+     * Any runtime exception, IOException, or ServletException thrown by the
+     * called servlet will be propogated to the caller. This acts like a straight
+     * invacation, using the REQUEST mapping.
+     *
+     * @param request The servlet request to be forwarded
+     * @param response The servlet response to be forwarded
+     *
+     * @exception IOException if an input/output error occurs
+     * @exception ServletException if a servlet exception occurs
+     */
+    public void invoke(ServletRequest request, ServletResponse response)
+        throws ServletException, IOException
+    {
+        if (Globals.IS_SECURITY_ENABLED) {
+            try {
+                AccessController.doPrivileged(new PrivilegedInvoke(request, response));
+            } catch (PrivilegedActionException pe) {
+                Exception e = pe.getException();
+                if (e instanceof ServletException)
+                    throw (ServletException) e;
+                throw (IOException) e;
+            }
+        } else {
+            doInvoke(request,response);
+        }
+    }
+
+    private void doInvoke(ServletRequest request, ServletResponse response)
+        throws ServletException, IOException
+    {
+
+        // Set up to handle the specified request and response
+        State state = new State(request, response, false);
+
+        if (Globals.STRICT_SERVLET_COMPLIANCE) {
+            // Check SRV.8.2 / SRV.14.2.5.1 compliance
+            checkSameObjects(request, response);
+        }
+
+        wrapResponse(state);
+        ApplicationHttpRequest wrequest = (ApplicationHttpRequest) wrapRequest(state);
+        String contextPath = context.getPath();
+        wrequest.setContextPath(contextPath);
+        wrequest.setRequestURI(requestURI);
+        wrequest.setServletPath(servletPath);
+        wrequest.setPathInfo(pathInfo);
+        if (queryString != null) {
+            wrequest.setQueryString(queryString);
+            wrequest.setQueryParams(queryString);
+        }
+
+        state.outerRequest.setAttribute
+            (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
+                requestPath);
+        state.outerRequest.setAttribute
+            (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
+                    ApplicationFilterFactory.REQUEST_INTEGER);
+        invoke(state.outerRequest, response, state);
+
+    }
 
 
     /**
@@ -663,18 +744,6 @@ final class ApplicationDispatcher
     private void invoke(ServletRequest request, ServletResponse response,
             State state) throws IOException, ServletException {
 
-        // Checking to see if the context classloader is the current context
-        // classloader. If it's not, we're saving it, and setting the context
-        // classloader to the Context classloader
-        ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
-        ClassLoader contextClassLoader = context.getLoader().getClassLoader();
-
-        if (oldCCL != contextClassLoader) {
-            Thread.currentThread().setContextClassLoader(contextClassLoader);
-        } else {
-            oldCCL = null;
-        }
-
         // Initialize local variables we may need
         HttpServletResponse hresponse = state.hresponse;
         Servlet servlet = null;
@@ -682,6 +751,43 @@ final class ApplicationDispatcher
         ServletException servletException = null;
         RuntimeException runtimeException = null;
         boolean unavailable = false;
+
+        // Checking to see if the context classloader is the current context
+        // classloader. If it's not, we're saving it, and setting the context
+        // classloader to the Context classloader
+        ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
+        ClassLoader contextClassLoader = context.getLoader().getClassLoader();
+
+        if (oldCCL != contextClassLoader) {
+            // Enter application scope
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
+            context.getThreadBindingListener().bind();
+            Object instances[] = context.getApplicationEventListeners();
+            ServletRequestEvent event = null;
+            if (instances != null && (instances.length > 0)) {
+                event = new ServletRequestEvent(context.getServletContext(), request);
+                // create pre-service event
+                for (int i = 0; i < instances.length; i++) {
+                    if (instances[i] == null)
+                        continue;
+                    if (!(instances[i] instanceof ServletRequestListener))
+                        continue;
+                    ServletRequestListener listener = (ServletRequestListener) instances[i];
+                    try {
+                        listener.requestInitialized(event);
+                    } catch (Throwable t) {
+                        context.getLogger().error(sm.getString("requestListenerValve.requestInit",
+                                         instances[i].getClass().getName()), t);
+                        request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
+                        servletException = new ServletException
+                            (sm.getString("requestListenerValve.requestInit",
+                                wrapper.getName()), t);
+                    }
+                }
+            }
+        } else {
+            oldCCL = null;
+        }
 
         // Check for the servlet being marked unavailable
         if (wrapper.isUnavailable()) {
@@ -765,14 +871,8 @@ final class ApplicationDispatcher
         }
 
         // Release the filter chain (if any) for this request
-        try {
-            if (filterChain != null)
-                filterChain.release();
-        } catch (Throwable e) {
-            wrapper.getLogger().error(sm.getString("standardWrapper.releaseFilters",
-                             wrapper.getName()), e);
-            // FIXME: Exception handling needs to be simpiler to what is in the StandardWrapperValue
-        }
+        if (filterChain != null)
+            filterChain.release();
 
         // Deallocate the allocated servlet instance
         try {
@@ -791,10 +891,36 @@ final class ApplicationDispatcher
                               wrapper.getName()), e);
         }
 
+
         // Reset the old context class loader
-        if (oldCCL != null)
+        if (oldCCL != null) {
+            // Exit application scope
+            Object instances[] = context.getApplicationEventListeners();
+            ServletRequestEvent event = null;
+            if (instances != null && (instances.length > 0)) {
+                // create post-service event
+                for (int i = instances.length - 1; i >= 0; i--) {
+                    if (instances[i] == null)
+                        continue;
+                    if (!(instances[i] instanceof ServletRequestListener))
+                        continue;
+                    ServletRequestListener listener = (ServletRequestListener) instances[i];
+                    try {
+                        listener.requestDestroyed(event);
+                    } catch (Throwable t) {
+                        context.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
+                                instances[i].getClass().getName()), t);
+                        request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
+                        servletException = new ServletException
+                            (sm.getString("requestListenerValve.requestDestroy",
+                                    wrapper.getName()), t);
+                    }
+                }
+            }
+            context.getThreadBindingListener().unbind();
             Thread.currentThread().setContextClassLoader(oldCCL);
-        
+        }
+
         // Unwrap request/response if needed
         // See Bugzilla 30949
         unwrapRequest(state);
