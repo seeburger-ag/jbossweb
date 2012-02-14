@@ -65,7 +65,7 @@ import org.apache.catalina.util.StringManager;
  * @version $Revision$ $Date$
  */
 
-final class ApplicationDispatcher
+public final class ApplicationDispatcher
     implements RequestDispatcher {
 
 
