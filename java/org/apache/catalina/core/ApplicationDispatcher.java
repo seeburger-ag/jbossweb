@@ -758,12 +758,12 @@ public final class ApplicationDispatcher
         ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
         ClassLoader contextClassLoader = context.getLoader().getClassLoader();
 
+        ServletRequestEvent event = null;
+        Object instances[] = context.getApplicationEventListeners();
         if (oldCCL != contextClassLoader) {
             // Enter application scope
             Thread.currentThread().setContextClassLoader(contextClassLoader);
             context.getThreadBindingListener().bind();
-            Object instances[] = context.getApplicationEventListeners();
-            ServletRequestEvent event = null;
             if (instances != null && (instances.length > 0)) {
                 event = new ServletRequestEvent(context.getServletContext(), request);
                 // create pre-service event
@@ -895,8 +895,6 @@ public final class ApplicationDispatcher
         // Reset the old context class loader
         if (oldCCL != null) {
             // Exit application scope
-            Object instances[] = context.getApplicationEventListeners();
-            ServletRequestEvent event = null;
             if (instances != null && (instances.length > 0)) {
                 // create post-service event
                 for (int i = instances.length - 1; i >= 0; i--) {
