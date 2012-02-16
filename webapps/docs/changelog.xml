@@ -42,6 +42,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+         <bug>52666</bug>: Correct coercion order in EL for A {==,!=,eq,ne} B. (markt)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 7.0.10.Final (remm)">

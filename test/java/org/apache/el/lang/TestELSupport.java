@@ -28,6 +28,11 @@ import org.junit.Test;
 
 public class TestELSupport {
     @Test
+    public void testEquals() {
+        assertTrue(ELSupport.equals("01", Long.valueOf(1)));
+    }
+
+    @Test
     public void testBigDecimal() {
         testIsSame(new BigDecimal(
                 "0.123456789012345678901234567890123456789012345678901234567890123456789"));
