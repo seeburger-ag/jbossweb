@@ -2312,8 +2312,11 @@ public class Request
         // Return the current session if it exists and is valid
         if ((session != null) && !session.isValid())
             session = null;
-        if (session != null)
+        if (session != null) {
+			session.setNew(false);
+			session.access();
             return (session);
+		}
 
         // Return the requested session if it exists and is valid
         Manager manager = null;
