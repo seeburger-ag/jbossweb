@@ -29,7 +29,6 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagInfo;
 
-import org.apache.catalina.Globals;
 import org.apache.jasper.compiler.Compiler;
 import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.JspUtil;
@@ -93,8 +92,6 @@ public class JspCompilationContext {
     protected TagInfo tagInfo;
     protected URL tagFileJarUrl;
 
-    protected HashMap<String, org.apache.catalina.deploy.jsp.TagLibraryInfo> jspTagLibraries = null;
-
     // jspURI _must_ be relative to the context
     public JspCompilationContext(String jspUri,
                                  boolean isErrPage,
@@ -125,12 +122,6 @@ public class JspCompilationContext {
         this.rctxt = rctxt;
         this.tagFileJarUrls = new HashMap<String, URL>();
         this.basePackageName = Constants.JSP_PACKAGE_NAME;
-        jspTagLibraries = (HashMap<String, org.apache.catalina.deploy.jsp.TagLibraryInfo>) 
-            context.getAttribute(Globals.JSP_TAG_LIBRARIES);
-        if (jspTagLibraries == null) {
-            // FIXME: error message, Jasper needs TLD data
-            throw new IllegalStateException();
-        }
     }
 
     public JspCompilationContext(String tagfile,
@@ -304,9 +295,6 @@ public class JspCompilationContext {
             }
             if (jarUrl != null) {
                 result = new URL(jarUrl.toExternalForm() + res.substring(1));
-            } else {
-                // May not be in a JAR in some IDE environments
-                result = context.getResource(canonicalURI(res));
             }
         } else if (res.startsWith("jar:file:")) {
             // This is a tag file packaged in a jar that is being checked
@@ -558,19 +546,9 @@ public class JspCompilationContext {
      * 'exposed' in the web application.
      */
     public String[] getTldLocation(String uri) throws JasperException {
-        org.apache.catalina.deploy.jsp.TagLibraryInfo tagLibraryInfo = jspTagLibraries.get(uri);
-        if (tagLibraryInfo == null) {
-            return null;
-        } else {
-            String[] location = new String[2];
-            if (tagLibraryInfo.getLocation() == null) {
-                location[0] = tagLibraryInfo.getPath();
-            } else {
-                location[0] = tagLibraryInfo.getLocation();
-                location[1] = tagLibraryInfo.getPath();
-            }
-            return location;
-        }
+        String[] location = 
+            getOptions().getTldLocationsCache().getLocation(uri);
+        return location;
     }
 
     /**
@@ -610,10 +588,6 @@ public class JspCompilationContext {
             } catch (JasperException ex) {
                 // Cache compilation exception
                 jsw.setCompilationException(ex);
-                if (options.getDevelopment() && options.getRecompileOnFail()) {
-                    // Force a recompilation attempt on next access
-                    jsw.setLastModificationTest(-1);
-                }
                 throw ex;
             } catch (Exception ex) {
                 JasperException je = new JasperException(
@@ -707,7 +681,7 @@ public class JspCompilationContext {
 
     protected static final String canonicalURI(String s) {
        if (s == null) return null;
-       StringBuilder result = new StringBuilder();
+       StringBuffer result = new StringBuffer();
        final int len = s.length();
        int pos = 0;
        while (pos < len) {

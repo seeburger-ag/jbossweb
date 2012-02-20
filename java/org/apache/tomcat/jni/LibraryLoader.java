@@ -29,11 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.jboss.logging.Logger;
-
 public final class LibraryLoader {
 
-    private static Logger log = Logger.getLogger(org.apache.catalina.core.AprLifecycleListener.class);
 
     public static String getDefaultPlatformName()
     {
@@ -57,7 +54,51 @@ public final class LibraryLoader {
         else if (name.equals("AIX"))
             platform = "aix";
 
+        if (platform.equals("solaris")) {
+            // Add the version...
+            String version = System.getProperty("os.version");
+            if (version.equals("5.10"))
+                platform = "solaris10";
+            else if (version.equals("5.9"))
+                platform = "solaris9";
+            else 
+                platform = "solaris11";
+        }
+
         return platform;
+    }
+
+    public static String getDefaultPlatformCpu()
+    {
+        String cpu;
+        String arch = System.getProperty("os.arch");
+
+        if (arch.endsWith("86"))
+            cpu = "x86";
+        else if (arch.startsWith("PA_RISC"))
+            cpu = "parisc2";
+        else if (arch.startsWith("IA64"))
+            cpu = "i64";
+        else if (arch.equals("x86_64"))
+            cpu = "x64";
+        else if (arch.equals("amd64"))
+            cpu = "x64";
+        else
+            cpu = arch;
+        return cpu;
+    }
+
+    public static String getDefaultLibraryPath()
+    {
+        String name = getDefaultPlatformName();
+        String arch = getDefaultPlatformCpu();
+
+        return name + File.separator + arch;
+    }
+
+    public static String getDefaultMetaPath()
+    {
+        return "META-INF" + File.separator + "lib" + File.separator;
     }
 
     private LibraryLoader()
@@ -70,8 +111,27 @@ public final class LibraryLoader {
     {
         int count = 0;
         String name = getDefaultPlatformName();
+        String path = getDefaultLibraryPath();
         Properties props = new Properties();
 
+        File root = new File(rootPath);
+        String basePath = root.getCanonicalPath().toString();
+        if (!basePath.endsWith(File.separator)) {
+            basePath += File.separator;
+        }
+        String metaPath = basePath + getDefaultMetaPath();
+        File meta = new File(metaPath);
+        if (!meta.exists()) {
+            /* Try adding bin prefix to rootPath.
+             * Used if we pass catalina.base property
+             */
+            metaPath = basePath + "bin" + File.separator +
+                       getDefaultMetaPath();
+            meta = new File(metaPath);
+            if (!meta.exists()) {
+                metaPath = basePath + "bin" + File.separator + "native";
+            }
+        }
         try {
             InputStream is = LibraryLoader.class.getResourceAsStream
                 ("/org/apache/tomcat/jni/Library.properties");
@@ -80,7 +140,7 @@ public final class LibraryLoader {
             count = Integer.parseInt(props.getProperty(name + ".count"));
         }
         catch (Throwable t) {
-            throw new UnsatisfiedLinkError("Can't use Library.properties for: " + name);
+            throw new UnsatisfiedLinkError("Can't use Library.properties");
         }
         for (int i = 0; i < count; i++) {
             boolean optional = false;
@@ -95,19 +155,27 @@ public final class LibraryLoader {
                 dlibName = dlibName.substring(1);
                 full = true;
             }
-
-            /* AS7 jboss-modules takes care of the names */
+            String fullPath = metaPath + File.separator + path +
+                              File.separator + dlibName;
+            meta = new File(fullPath);
+            if (!meta.exists()) {
+               fullPath = metaPath + File.separator + dlibName; 
+            }
             try {
-                System.loadLibrary(dlibName);
-                log.debug("Loaded: " + dlibName);
-            } catch (Throwable d) {
-                log.debug("Loading " + dlibName + " throws: " + d);
-                if (optional)
-                   continue;
-                throw new UnsatisfiedLinkError(" Error: " + d.getMessage() + " " );
+                Runtime.getRuntime().load(fullPath);
+            }
+            catch (Throwable d) {
+                if (!optional) {
+                    meta = new File(fullPath);
+                    if (meta.exists()) {
+                        throw new UnsatisfiedLinkError(" Error: " + d.getMessage() + " " );
+                    } else {
+                        throw new UnsatisfiedLinkError(" Can't find: " + fullPath + " ");
+                    }
+                }
             }
             if (full)
-                 break;
+                break;
         }
     }
 

@@ -112,7 +112,7 @@ public final class HexUtils {
      */
     public static String convert(byte bytes[]) {
 
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        StringBuffer sb = new StringBuffer(bytes.length * 2);
         for (int i = 0; i < bytes.length; i++) {
             sb.append(convertDigit((int) (bytes[i] >> 4)));
             sb.append(convertDigit((int) (bytes[i] & 0x0f)));
