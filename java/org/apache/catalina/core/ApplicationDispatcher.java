@@ -24,14 +24,11 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
-import javax.servlet.AsyncContext;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
 import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.ServletResponseWrapper;
@@ -65,7 +62,7 @@ import org.apache.catalina.util.StringManager;
  * @version $Revision$ $Date$
  */
 
-public final class ApplicationDispatcher
+final class ApplicationDispatcher
     implements RequestDispatcher {
 
 
@@ -101,47 +98,13 @@ public final class ApplicationDispatcher
         }
     }
 
-    protected class PrivilegedInvoke implements PrivilegedExceptionAction {
-        private ServletRequest request;
-        private ServletResponse response;
-
-        PrivilegedInvoke(ServletRequest request, ServletResponse response)
-        {
-            this.request = request;
-            this.response = response;
-        }
-
-        public Object run() throws ServletException, IOException {
-            doInvoke(request,response);
-            return null;
-        }
-    }
-
-    protected class PrivilegedAsync implements PrivilegedExceptionAction {
-        private ServletRequest request;
-        private ServletResponse response;
-        private boolean attributes;
-
-        PrivilegedAsync(ServletRequest request, ServletResponse response, boolean attributes)
-        {
-            this.request = request;
-            this.response = response;
-            this.attributes = attributes;
-        }
-
-        public Object run() throws ServletException, IOException {
-            doAsync(request, response, attributes);
-            return null;
-        }
-    }
-
     
     /**
      * Used to pass state when the request dispatcher is used. Using instance
      * variables causes threading issues and state is too complex to pass and
      * return single ServletRequest or ServletResponse objects.
      */
-    private static class State {
+    private class State {
         State(ServletRequest request, ServletResponse response,
                 boolean including) {
             this.outerRequest = request;
@@ -223,7 +186,10 @@ public final class ApplicationDispatcher
         this.pathInfo = pathInfo;
         this.queryString = queryString;
         this.name = name;
-        this.support = wrapper.getInstanceSupport();
+        if (wrapper instanceof StandardWrapper)
+            this.support = ((StandardWrapper) wrapper).getInstanceSupport();
+        else
+            this.support = new InstanceSupport(wrapper);
 
     }
 
@@ -317,150 +283,6 @@ public final class ApplicationDispatcher
 
 
     /**
-     * Batch forward this request and response to another resource for processing.
-     * Any runtime exception, IOException, or ServletException thrown by the
-     * called servlet will be propogated to the caller. This acts like a straight
-     * invacation, using the REQUEST mapping.
-     *
-     * @param request The servlet request to be forwarded
-     * @param response The servlet response to be forwarded
-     *
-     * @exception IOException if an input/output error occurs
-     * @exception ServletException if a servlet exception occurs
-     */
-    public void invoke(ServletRequest request, ServletResponse response)
-        throws ServletException, IOException
-    {
-        if (Globals.IS_SECURITY_ENABLED) {
-            try {
-                AccessController.doPrivileged(new PrivilegedInvoke(request, response));
-            } catch (PrivilegedActionException pe) {
-                Exception e = pe.getException();
-                if (e instanceof ServletException)
-                    throw (ServletException) e;
-                throw (IOException) e;
-            }
-        } else {
-            doInvoke(request,response);
-        }
-    }
-
-    private void doInvoke(ServletRequest request, ServletResponse response)
-        throws ServletException, IOException
-    {
-
-        // Set up to handle the specified request and response
-        State state = new State(request, response, false);
-
-        if (Globals.STRICT_SERVLET_COMPLIANCE) {
-            // Check SRV.8.2 / SRV.14.2.5.1 compliance
-            checkSameObjects(request, response);
-        }
-
-        wrapResponse(state);
-        ApplicationHttpRequest wrequest = (ApplicationHttpRequest) wrapRequest(state);
-        String contextPath = context.getPath();
-        wrequest.setContextPath(contextPath);
-        wrequest.setRequestURI(requestURI);
-        wrequest.setServletPath(servletPath);
-        wrequest.setPathInfo(pathInfo);
-        if (queryString != null) {
-            wrequest.setQueryString(queryString);
-            wrequest.setQueryParams(queryString);
-        }
-
-        state.outerRequest.setAttribute
-            (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-                requestPath);
-        state.outerRequest.setAttribute
-            (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    ApplicationFilterFactory.REQUEST_INTEGER);
-        invoke(state.outerRequest, response, state);
-
-    }
-
-
-    /**
-     * Async forward this request and response to another resource for processing.
-     * Any runtime exception, IOException, or ServletException thrown by the
-     * called servlet will be propogated to the caller.
-     *
-     * @param request The servlet request to be forwarded
-     * @param response The servlet response to be forwarded
-     *
-     * @exception IOException if an input/output error occurs
-     * @exception ServletException if a servlet exception occurs
-     */
-    public void async(ServletRequest request, ServletResponse response, boolean attributes)
-        throws ServletException, IOException
-    {
-        if (Globals.IS_SECURITY_ENABLED) {
-            try {
-                AccessController.doPrivileged(new PrivilegedAsync(request, response, attributes));
-            } catch (PrivilegedActionException pe) {
-                Exception e = pe.getException();
-                if (e instanceof ServletException)
-                    throw (ServletException) e;
-                throw (IOException) e;
-            }
-        } else {
-            doAsync(request,response, attributes);
-        }
-    }
-
-    private void doAsync(ServletRequest request, ServletResponse response, boolean attributes)
-        throws ServletException, IOException
-    {
-
-        // Set up to handle the specified request and response
-        State state = new State(request, response, false);
-
-        if (Globals.STRICT_SERVLET_COMPLIANCE) {
-            // Check SRV.8.2 / SRV.14.2.5.1 compliance
-            checkSameObjects(request, response);
-        }
-
-        if (attributes) {
-            wrapResponse(state);
-            ApplicationHttpRequest wrequest =
-                (ApplicationHttpRequest) wrapRequest(state);
-            String contextPath = context.getPath();
-            HttpServletRequest hrequest = state.hrequest;
-            if (hrequest.getAttribute(AsyncContext.ASYNC_REQUEST_URI) == null) {
-                wrequest.setAttribute(AsyncContext.ASYNC_REQUEST_URI,
-                        hrequest.getRequestURI());
-                wrequest.setAttribute(AsyncContext.ASYNC_CONTEXT_PATH,
-                        hrequest.getContextPath());
-                wrequest.setAttribute(AsyncContext.ASYNC_SERVLET_PATH,
-                        hrequest.getServletPath());
-                wrequest.setAttribute(AsyncContext.ASYNC_PATH_INFO,
-                        hrequest.getPathInfo());
-                wrequest.setAttribute(AsyncContext.ASYNC_QUERY_STRING,
-                        hrequest.getQueryString());
-            }
-
-            wrequest.setContextPath(contextPath);
-            wrequest.setRequestURI(requestURI);
-            wrequest.setServletPath(servletPath);
-            wrequest.setPathInfo(pathInfo);
-            if (queryString != null) {
-                wrequest.setQueryString(queryString);
-                wrequest.setQueryParams(queryString);
-            }
-        }
-
-        state.outerRequest.setAttribute
-            (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
-                requestPath);
-        state.outerRequest.setAttribute
-            (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    ApplicationFilterFactory.ASYNC_INTEGER);
-        invoke(state.outerRequest, response, state);
-
-    }
-
-
-    /**
      * Forward this request and response to another resource for processing.
      * Any runtime exception, IOException, or ServletException thrown by the
      * called servlet will be propogated to the caller.
@@ -535,16 +357,16 @@ public final class ApplicationDispatcher
                 (ApplicationHttpRequest) wrapRequest(state);
             String contextPath = context.getPath();
             HttpServletRequest hrequest = state.hrequest;
-            if (hrequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) == null) {
-                wrequest.setAttribute(RequestDispatcher.FORWARD_REQUEST_URI,
+            if (hrequest.getAttribute(Globals.FORWARD_REQUEST_URI_ATTR) == null) {
+                wrequest.setAttribute(Globals.FORWARD_REQUEST_URI_ATTR,
                                       hrequest.getRequestURI());
-                wrequest.setAttribute(RequestDispatcher.FORWARD_CONTEXT_PATH,
+                wrequest.setAttribute(Globals.FORWARD_CONTEXT_PATH_ATTR,
                                       hrequest.getContextPath());
-                wrequest.setAttribute(RequestDispatcher.FORWARD_SERVLET_PATH,
+                wrequest.setAttribute(Globals.FORWARD_SERVLET_PATH_ATTR,
                                       hrequest.getServletPath());
-                wrequest.setAttribute(RequestDispatcher.FORWARD_PATH_INFO,
+                wrequest.setAttribute(Globals.FORWARD_PATH_INFO_ATTR,
                                       hrequest.getPathInfo());
-                wrequest.setAttribute(RequestDispatcher.FORWARD_QUERY_STRING,
+                wrequest.setAttribute(Globals.FORWARD_QUERY_STRING_ATTR,
                                       hrequest.getQueryString());
             }
  
@@ -612,13 +434,13 @@ public final class ApplicationDispatcher
         Integer disInt = (Integer) request.getAttribute
             (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR);
         if (disInt != null) {
-            if (disInt != ApplicationFilterFactory.ERROR_INTEGER) {
+            if (disInt.intValue() != ApplicationFilterFactory.ERROR) {
                 state.outerRequest.setAttribute
                     (ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                      requestPath);
                 state.outerRequest.setAttribute
                     (ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                     ApplicationFilterFactory.FORWARD_INTEGER);
+                     Integer.valueOf(ApplicationFilterFactory.FORWARD));
                 invoke(state.outerRequest, response, state);
             } else {
                 invoke(state.outerRequest, response, state);
@@ -626,6 +448,7 @@ public final class ApplicationDispatcher
         }
 
     }
+    
     
     
     /**
@@ -681,7 +504,7 @@ public final class ApplicationDispatcher
             if (servletPath != null)
                 wrequest.setServletPath(servletPath);
             wrequest.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    ApplicationFilterFactory.INCLUDE_INTEGER);
+                    Integer.valueOf(ApplicationFilterFactory.INCLUDE));
             wrequest.setAttribute(
                     ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                     requestPath);
@@ -695,25 +518,25 @@ public final class ApplicationDispatcher
                 (ApplicationHttpRequest) wrapRequest(state);
             String contextPath = context.getPath();
             if (requestURI != null)
-                wrequest.setAttribute(RequestDispatcher.INCLUDE_REQUEST_URI,
+                wrequest.setAttribute(Globals.INCLUDE_REQUEST_URI_ATTR,
                                       requestURI);
             if (contextPath != null)
-                wrequest.setAttribute(RequestDispatcher.INCLUDE_CONTEXT_PATH,
+                wrequest.setAttribute(Globals.INCLUDE_CONTEXT_PATH_ATTR,
                                       contextPath);
             if (servletPath != null)
-                wrequest.setAttribute(RequestDispatcher.INCLUDE_SERVLET_PATH,
+                wrequest.setAttribute(Globals.INCLUDE_SERVLET_PATH_ATTR,
                                       servletPath);
             if (pathInfo != null)
-                wrequest.setAttribute(RequestDispatcher.INCLUDE_PATH_INFO,
+                wrequest.setAttribute(Globals.INCLUDE_PATH_INFO_ATTR,
                                       pathInfo);
             if (queryString != null) {
-                wrequest.setAttribute(RequestDispatcher.INCLUDE_QUERY_STRING,
+                wrequest.setAttribute(Globals.INCLUDE_QUERY_STRING_ATTR,
                                       queryString);
                 wrequest.setQueryParams(queryString);
             }
             
             wrequest.setAttribute(ApplicationFilterFactory.DISPATCHER_TYPE_ATTR,
-                    ApplicationFilterFactory.INCLUDE_INTEGER);
+                    Integer.valueOf(ApplicationFilterFactory.INCLUDE));
             wrequest.setAttribute(
                     ApplicationFilterFactory.DISPATCHER_REQUEST_PATH_ATTR,
                     requestPath);
@@ -744,6 +567,18 @@ public final class ApplicationDispatcher
     private void invoke(ServletRequest request, ServletResponse response,
             State state) throws IOException, ServletException {
 
+        // Checking to see if the context classloader is the current context
+        // classloader. If it's not, we're saving it, and setting the context
+        // classloader to the Context classloader
+        ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
+        ClassLoader contextClassLoader = context.getLoader().getClassLoader();
+
+        if (oldCCL != contextClassLoader) {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
+        } else {
+            oldCCL = null;
+        }
+
         // Initialize local variables we may need
         HttpServletResponse hresponse = state.hresponse;
         Servlet servlet = null;
@@ -751,43 +586,6 @@ public final class ApplicationDispatcher
         ServletException servletException = null;
         RuntimeException runtimeException = null;
         boolean unavailable = false;
-
-        // Checking to see if the context classloader is the current context
-        // classloader. If it's not, we're saving it, and setting the context
-        // classloader to the Context classloader
-        ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
-        ClassLoader contextClassLoader = context.getLoader().getClassLoader();
-
-        ServletRequestEvent event = null;
-        Object instances[] = context.getApplicationEventListeners();
-        if (oldCCL != contextClassLoader) {
-            // Enter application scope
-            Thread.currentThread().setContextClassLoader(contextClassLoader);
-            context.getThreadBindingListener().bind();
-            if (instances != null && (instances.length > 0)) {
-                event = new ServletRequestEvent(context.getServletContext(), request);
-                // create pre-service event
-                for (int i = 0; i < instances.length; i++) {
-                    if (instances[i] == null)
-                        continue;
-                    if (!(instances[i] instanceof ServletRequestListener))
-                        continue;
-                    ServletRequestListener listener = (ServletRequestListener) instances[i];
-                    try {
-                        listener.requestInitialized(event);
-                    } catch (Throwable t) {
-                        context.getLogger().error(sm.getString("requestListenerValve.requestInit",
-                                         instances[i].getClass().getName()), t);
-                        request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                        servletException = new ServletException
-                            (sm.getString("requestListenerValve.requestInit",
-                                wrapper.getName()), t);
-                    }
-                }
-            }
-        } else {
-            oldCCL = null;
-        }
 
         // Check for the servlet being marked unavailable
         if (wrapper.isUnavailable()) {
@@ -824,34 +622,49 @@ public final class ApplicationDispatcher
                 
         // Get the FilterChain Here
         ApplicationFilterFactory factory = ApplicationFilterFactory.getInstance();
-        ApplicationFilterChain filterChain = factory.createFilterChain(request, wrapper, servlet);
+        ApplicationFilterChain filterChain = factory.createFilterChain(request,
+                                                                wrapper,servlet);
         // Call the service() method for the allocated servlet instance
-        String jspFile = wrapper.getJspFile();
         try {
-            if (jspFile != null) {
+            String jspFile = wrapper.getJspFile();
+            if (jspFile != null)
                 request.setAttribute(Globals.JSP_FILE_ATTR, jspFile);
-            } else {
+            else
                 request.removeAttribute(Globals.JSP_FILE_ATTR);
-            }
             support.fireInstanceEvent(InstanceEvent.BEFORE_DISPATCH_EVENT,
                                       servlet, request, response);
             // for includes/forwards
             if ((servlet != null) && (filterChain != null)) {
-                filterChain.doFilter(request, response);
-            }
+               filterChain.doFilter(request, response);
+             }
             // Servlet Service Method is called by the FilterChain
+            request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_DISPATCH_EVENT,
+                                      servlet, request, response);
         } catch (ClientAbortException e) {
+            request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_DISPATCH_EVENT,
+                                      servlet, request, response);
             ioException = e;
         } catch (IOException e) {
+            request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_DISPATCH_EVENT,
+                                      servlet, request, response);
             wrapper.getLogger().error(sm.getString("applicationDispatcher.serviceException",
                              wrapper.getName()), e);
             ioException = e;
         } catch (UnavailableException e) {
+            request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_DISPATCH_EVENT,
+                                      servlet, request, response);
             wrapper.getLogger().error(sm.getString("applicationDispatcher.serviceException",
                              wrapper.getName()), e);
             servletException = e;
             wrapper.unavailable(e);
         } catch (ServletException e) {
+            request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_DISPATCH_EVENT,
+                                      servlet, request, response);
             Throwable rootCause = StandardWrapper.getRootCause(e);
             if (!(rootCause instanceof ClientAbortException)) {
                 wrapper.getLogger().error(sm.getString("applicationDispatcher.serviceException",
@@ -859,20 +672,23 @@ public final class ApplicationDispatcher
             }
             servletException = e;
         } catch (RuntimeException e) {
+            request.removeAttribute(Globals.JSP_FILE_ATTR);
+            support.fireInstanceEvent(InstanceEvent.AFTER_DISPATCH_EVENT,
+                                      servlet, request, response);
             wrapper.getLogger().error(sm.getString("applicationDispatcher.serviceException",
                              wrapper.getName()), e);
             runtimeException = e;
-        } finally {
-            if (jspFile != null) {
-                request.removeAttribute(Globals.JSP_FILE_ATTR);
-            }
-            support.fireInstanceEvent(InstanceEvent.AFTER_DISPATCH_EVENT,
-                                      servlet, request, response);
         }
 
         // Release the filter chain (if any) for this request
-        if (filterChain != null)
-            filterChain.release();
+        try {
+            if (filterChain != null)
+                filterChain.release();
+        } catch (Throwable e) {
+            wrapper.getLogger().error(sm.getString("standardWrapper.releaseFilters",
+                             wrapper.getName()), e);
+            // FIXME: Exception handling needs to be simpiler to what is in the StandardWrapperValue
+        }
 
         // Deallocate the allocated servlet instance
         try {
@@ -891,34 +707,10 @@ public final class ApplicationDispatcher
                               wrapper.getName()), e);
         }
 
-
         // Reset the old context class loader
-        if (oldCCL != null) {
-            // Exit application scope
-            if (instances != null && (instances.length > 0)) {
-                // create post-service event
-                for (int i = instances.length - 1; i >= 0; i--) {
-                    if (instances[i] == null)
-                        continue;
-                    if (!(instances[i] instanceof ServletRequestListener))
-                        continue;
-                    ServletRequestListener listener = (ServletRequestListener) instances[i];
-                    try {
-                        listener.requestDestroyed(event);
-                    } catch (Throwable t) {
-                        context.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
-                                instances[i].getClass().getName()), t);
-                        request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                        servletException = new ServletException
-                            (sm.getString("requestListenerValve.requestDestroy",
-                                    wrapper.getName()), t);
-                    }
-                }
-            }
-            context.getThreadBindingListener().unbind();
+        if (oldCCL != null)
             Thread.currentThread().setContextClassLoader(oldCCL);
-        }
-
+        
         // Unwrap request/response if needed
         // See Bugzilla 30949
         unwrapRequest(state);
@@ -1023,11 +815,16 @@ public final class ApplicationDispatcher
         while (current != null) {
             if(state.hrequest == null && (current instanceof HttpServletRequest))
                 state.hrequest = (HttpServletRequest)current;
+            if ("org.apache.catalina.servlets.InvokerHttpRequest".
+                equals(current.getClass().getName()))
+                break; // KLUDGE - Make nested RD.forward() using invoker work
             if (!(current instanceof ServletRequestWrapper))
                 break;
             if (current instanceof ApplicationHttpRequest)
                 break;
             if (current instanceof ApplicationRequest)
+                break;
+            if (current instanceof Request)
                 break;
             previous = current;
             current = ((ServletRequestWrapper) current).getRequest();
@@ -1036,15 +833,18 @@ public final class ApplicationDispatcher
         // Instantiate a new wrapper at this point and insert it in the chain
         ServletRequest wrapper = null;
         if ((current instanceof ApplicationHttpRequest) ||
+            (current instanceof Request) ||
             (current instanceof HttpServletRequest)) {
             // Compute a crossContext flag
             HttpServletRequest hcurrent = (HttpServletRequest) current;
             boolean crossContext = false;
-            if (state.outerRequest instanceof HttpServletRequest) {
+            if ((state.outerRequest instanceof ApplicationHttpRequest) ||
+                (state.outerRequest instanceof Request) ||
+                (state.outerRequest instanceof HttpServletRequest)) {
                 HttpServletRequest houterRequest = 
                     (HttpServletRequest) state.outerRequest;
                 Object contextPath = houterRequest.getAttribute
-                    (RequestDispatcher.INCLUDE_CONTEXT_PATH);
+                    (Globals.INCLUDE_CONTEXT_PATH_ATTR);
                 if (contextPath == null) {
                     // Forward
                     contextPath = houterRequest.getContextPath();
@@ -1087,19 +887,22 @@ public final class ApplicationDispatcher
                 break;
             if (current instanceof ApplicationResponse)
                 break;
+            if (current instanceof Response)
+                break;
             previous = current;
             current = ((ServletResponseWrapper) current).getResponse();
         }
 
         // Instantiate a new wrapper at this point and insert it in the chain
         ServletResponse wrapper = null;
-        if (current instanceof HttpServletResponse) {
+        if ((current instanceof ApplicationHttpResponse) ||
+            (current instanceof Response) ||
+            (current instanceof HttpServletResponse))
             wrapper =
                 new ApplicationHttpResponse((HttpServletResponse) current,
                         state.including);
-        } else {
+        else
             wrapper = new ApplicationResponse(current, state.including);
-        }
         if (previous == null)
             state.outerResponse = wrapper;
         else

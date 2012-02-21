@@ -2,6 +2,9 @@
 <classpath>
 	<classpathentry excluding="**/.svn/**" kind="src" path="java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="output/jars/jasper-jdt.jar"/>
+	<classpathentry kind="lib" path="lib/jboss-jaxrpc.jar"/>
+	<classpathentry kind="lib" path="lib/mail.jar"/>
+	<classpathentry kind="lib" path="lib/wsdl4j.jar"/>
+	<classpathentry kind="lib" path="lib/commons-jci-core-1.0.jar"/>
 	<classpathentry kind="output" path=".settings/output"/>
 </classpath>
