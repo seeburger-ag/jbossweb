@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="arch.html">
+
+  &project;
+
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <title>Architecture Overview</title>
+  </properties>
+
+<body>
+
+<section name="Design">
+ <p>The core functionality of JBoss Web Server is provided by the
+ <a href="http://tomcat.apache.org">Apache Tomcat</a>.
+ Apache Tomcat is embedded inside JBoss Application Server using
+ Embedded Engine. This allows the seamless integration with JBoss components
+ by using underlaying Microkernel system.
+ </p>
+ <p>Additional modules allows to use the JBoss Web Server as drop-in replacement
+ for standard native web servers, while offering the Reference Implementation for
+ the <a href="http://java.sun.com/products/servlets">Java Servlet</a> and
+ <a href="http://java.sun.com/products/jsp">JavaServer Pages</a> technologies.
+ The Java Servlet and JavaServer Pages specifications are developed by Sun 
+ under the <a href="http://jcp.org/en/introduction/overview">Java Community Process</a>.
+ </p>
+ <figure src="/images/design/jbosswebarch.png" name="Figure 1" text="JBossWeb architecture"/>
+ <p>Figure 1. shows the JBoss Web Server architecture. The brief description of
+ architecture components is described in the following sections.
+ </p>
+ <subsection name="Tomcat">
+   <p>JBoss Web Server currently uses the <strong>Apache Tomcat 5.5.x</strong>
+   branch. While it supports the same Servlet and JSP
+   Specification versions as Apache Tomcat 5.0.x, there are significant changes
+   in many areas under the hood, resulting in improved performance, stability,
+   and total cost of ownership.
+   </p>
+   <attributes name="Servlet/JSP Spec" value="Apache Tomcat version">
+     <attribute name="2.5/2.1" required="false"><strong>6.0.X</strong> - Planned for Q4/2005</attribute>
+     <attribute name="2.4/2.0" required="false"><strong>5.5.X</strong> - Apache Tomcat 5.5 is
+        the current focus of development.
+     </attribute>
+   </attributes>
+ </subsection>
+ <subsection name="JBossCache">
+   <p>JBossCache is a replicated and transactional cache.
+   It is replicated since multiple JBossCache instances can be distributed
+   (within the same JVM or across several JVMs whether they reside on the same
+   machine or on different machines on a network) and data is replicated across
+   the whole group. It is transactional because a user can configure a JTA
+   transaction manager and make the cache operation transactional.
+   Note that the cache can also be run without any replication; this is the local mode.
+   </p>
+   <p>Currently, it consists of two components: <code>TreeCache</code> and
+   <code>TreeCacheAop</code>. TreeCache is a tree-structured cache that provides
+   replication and transaction context, while TreeCacheAop extends the functionality
+   of TreeCache but behaves as a true object cache providing transparent and
+   finer-grained object mapping into internal cache.
+   </p>
+ </subsection>
+ <subsection name="JBossJTA">
+ <p>A clean room implementation of the <a href="http://java.sun.com/products/jta/">
+ Java Transaction API</a> part of the <a href="http://java.sun.com/j2ee/">J2EE specification.</a>
+ JBossJTA is made up of a number of a components and interfaces.
+ The interfaces can be used when you change the transaction manager implementation,
+ i.e. plugin a thirdparty implementation.
+ </p>
+ </subsection>
+ <subsection name="JBossJCA">
+ <p>A clean room implementation of the
+ <a href="http://java.sun.com/j2ee/connector/index.jsp">J2EE Connector API</a> part of the
+ <a href="http://java.sun.com/j2ee/">J2EE specification</a>.
+ JCA handles the deployment of resource adapters. These include <code>DataSources</code> and
+ <code>ConnectionFactorys</code> and <code>MessageListeners</code> to and from databases,
+ legacy systems or JMS Servers
+ </p>
+ </subsection>
+ <subsection name="JBoss Microkernel">
+ <p>The JBoss Microkernel is a set of MBeans that runs on top of JBossMX.
+ It has been designed to be totally modular from the ground up.
+ Support classes exists to extend the notion of an MBean into a Service or Deployer.
+ </p>
+ <p>JBossMX isJBoss implementation of the JMX technology. JBoss includes a clean
+ room implementation of the JMX API's published by Sun Microsystems.
+ While implementing all the required management functions it is also geared towards
+ acting as a core library of the JBoss Microkernel.
+ JBoss MX supports version 1.2 of the JMX specification
+ (<a href="http://jcp.org/en/jsr/detail?id=3">JSR 003</a>) since JBoss versions 3.2.5
+ and 4.0.0. Support for the JMX Remote API (JSR 160) is under development. 
+ </p>
+ </subsection>
+</section>
+<section name="Modules">
+ <p>JBoss Web Server comes with various extension modules that extends the core
+ functionality of both Apache Tomcat standalone, and standard JBoss Application Server.
+ Some modules are platform specific like Microsoft .NET module, and the others are
+ cross platform, and requires a designated platform binaries.
+ </p>
+ <figure src="/images/design/jbosswebblockda.png" name="Figure 2" text="JBossWeb extensions"/>
+ <p>Figure 2. shows the JBoss Web Server extions modules.
+ </p>
+ <subsection name="Tomcat Native">
+ <p>Tomcat Native is JNI based library for Operating System Abstraction. The core
+ functionality of Tomcat Native is provided by using <a href="http://apr.apache.org">
+ Apache Portable Runtime (APR)</a>. The primary goal of APR is to provide an API to
+ which software developers may code and be assured of predictable if not identical
+ behavior regardless of the platform on which their software is built, relieving them
+ of the need to code special-case conditions to work around or take advantage of
+ platform-specific deficiencies or features. 
+ </p>
+ <p>SSL support is enabled by using the <a href="http://www.openssl.org">OpenSSL</a>
+ library. This gives much higher performance as well as hardware encryption software
+ support then standard Java offers. It also gives exixting users of 
+ <a href="http://httpd.apache.org">Apache HTTPD</a> a seamless transition from mod_ssl.
+ </p>
+ <p>See the <a href="arch01.html">Native</a> section for the more details about
+ Tomcat Native and additional libraries used.
+ </p>
+ </subsection>
+ <subsection name="Native Proxy">
+ <p>NativeProxy is Servlet abstraction that enables both in-process and
+ out-of-process access to the legacy subsystems regardless of the method that is
+ used for the integrated within the JBoss Web Server. 
+ NativeProxy has integrated advanced application load balancer that offers both
+ high availability and application segmantation for remotely based subsystems.
+ </p>
+ <figure src="/images/design/procdiag.png" name="Figure 3" text="Native Proxy"/>
+ <p>Out of process mosules are accessed using Native proxy. Each of the module
+ is run as a daemon either on the local or remote machine. This gives much higer
+ security and stabilty in case of faulty modules.
+ </p>
+ </subsection>
+ <subsection name="Proxy Stream">
+ <p>Proxy stream is a protocol very much similar to the Tomcat AJP/1.3 protocol,
+ with additions for using Operating system advanced connection mechanisms like
+ Unix Domain Sockets or Microsoft Windows Named Pipes. It offers both connection
+ reuse and connection multiplexing. Unlike AJP/1.3 the data transferred can be
+ encrypted, thus rising the security without the need for special network
+ hardware and topology.
+ </p>
+ <p>The main purpose for Proxy Steam Protocol is to give transparent access to
+ the out-of-process legacy subsystems that can be hosted on the remote machine.
+ </p>
+ </subsection>
+ <subsection name="Native Module API">
+ <p>This componet is JNI based native abstraction layer for various http centic
+ legacy subsystem. It is responsible for loading the legacy applications inside the
+ process address space of the running JVM.
+ </p>
+ </subsection>
+ <subsection name="URL Rewrite">
+ <p>This module uses a rule-based rewriting engine (based on a regular-expression parser)
+ to rewrite requested URLs on the fly. It supports an unlimited number of rules and an
+ unlimited number of attached rule conditions for each rule to provide a really flexible
+ and powerful URL manipulation mechanism. The URL manipulations can depend on various tests,
+ for instance server variables, environment variables, HTTP headers, time stamps and even
+ external database lookups in various formats can be used to achieve a really
+ granular URL matching.
+ </p>
+ </subsection>
+</section>
+</body>
+</document>
