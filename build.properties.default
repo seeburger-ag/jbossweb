@@ -13,7 +13,7 @@
 version.major=2
 version.minor=0
 version.build=0
-version.patch=GA_CP16_JBPAPP-8221
+version.patch=GA_CP16_BZ794470
 
 # ----- Vesion Control Flags -----
 jboss.version.major=4

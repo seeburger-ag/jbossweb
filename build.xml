@@ -16,7 +16,7 @@
   <property name="version.major"         value="2" />
   <property name="version.minor"         value="0" />
   <property name="version.build"         value="0" />
-  <property name="version.patch"         value="GA_CP16_JBPAPP-8221" />
+  <property name="version.patch"         value="GA_CP16_BZ794470" />
   <property name="version.flag"          value="" />
   <property name="version.number"        value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
   <property name="version"               value="${version.major}.${version.minor}.${version.build}.${version.patch}${version.flag}" />
