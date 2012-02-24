@@ -19,8 +19,8 @@
 <section name="Introduction">
 
 <p>This is the top-level entry point of the documentation bundle for the
-<strong>JBoss Web</strong> Servlet/JSP container, which is based on the 
-Apache Tomcat 6.0 project developed by the Apache Software Foundation.
+<strong>JBoss Web</strong> Servlet/JSP container, which is based on a fork
+of the Apache Tomcat project developed by the Apache Software Foundation.
 JBoss Web implements the Servlet 3.0 and JavaServer Pages 2.2 specifications from the
 <a href="http://www.jcp.org">Java Community Process</a>, and includes many
 additional features that make it a useful platform for developing and deploying
@@ -55,10 +55,6 @@ JBoss Web, and using many of its features.</p>
 <li><a href="deployer-howto.html"><strong>Deployer</strong></a> -
     Operating the JBoss Web Deployer to deploy, precompile, and validate web
     applications.</li>
-<li><a href="realm-howto.html"><strong>Realms and Access Control</strong></a>
-    - Description of how to configure <em>Realms</em> (databases of users,
-    passwords, and their associated roles) for use in web applications that
-    utilize <em>Container Managed Security</em>.</li>
 <li><a href="security-manager-howto.html"><strong>Security Manager</strong></a>
     - Configuring and using a Java Security Manager to
     support fine-grained control over the behavior of your web applications.
@@ -66,9 +62,6 @@ JBoss Web, and using many of its features.</p>
 <li><a href="class-loader-howto.html"><strong>Classloading</strong></a>
     - Information about class loading in JBoss Web, including where to place
     your application classes so that they are visible.</li>
-<li><a href="jasper-howto.html"><strong>JSPs</strong></a>
-    - Information about Jasper configuration, as well as the JSP compiler
-    usage.</li>
 <li><a href="ssl-howto.html"><strong>SSL</strong></a> -
     Installing and
     configuring SSL support so that your JBoss Web will serve requests using
@@ -144,9 +137,6 @@ the development of the <em>JBoss Web</em> project.</p>
 <li><a href="jasper/docs/api/index.html"><strong>Jasper Javadocs</strong></a>
     - Javadoc API documentation for the <em>Jasper</em> JSP container
     portion of JBoss Web.</li>
-<li><a href="architecture/index.html"><strong>JBoss Web Architecture</strong></a>
-    - Documentation of the JBoss Web Server Architecture.</li>
-
 </ul>
 
 </section>
