@@ -20,7 +20,7 @@ package org.apache.tomcat.util.http;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-
+import java.util.HashMap;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
@@ -74,7 +74,7 @@ public final class Parameters {
      * 
      * This is less frequesnt than add() - we want to keep add O(1).
      */
-    protected class NamesEnumeration implements Enumeration {
+    protected class NamesEnumeration implements Enumeration<String> {
         int pos;
         String next;
 
@@ -99,16 +99,8 @@ public final class Parameters {
         private void findNext() {
             next = null;
             for (; pos < count; pos++) {
-                next = getName(pos).toString();
-                for (int j = 0; j < pos; j++) {
-                    if (getName(j).equals(next)) {
-                        // duplicate.
-                        next = null;
-                        break;
-                    }
-                }
-                if (next != null) {
-                    // it's not a duplicate
+                if (fields[pos].nextPos == LAST) {
+                    next = getName(pos).toString();
                     break;
                 }
             }
@@ -121,7 +113,7 @@ public final class Parameters {
             return next != null;
         }
 
-        public Object nextElement() {
+        public String nextElement() {
             String current = next;
             findNext();
             return current;
@@ -243,6 +235,9 @@ public final class Parameters {
         if (next != NEED_NEXT) {
             return next;
         }
+        if (next == LAST) {
+            return LAST;
+        }
 
         // next==NEED_NEXT, we never searched for this header
         MessageBytes name = fields[startPos].name;
@@ -290,9 +285,30 @@ public final class Parameters {
         }
     }
 
-    public Enumeration getParameterNames() {
+    public Enumeration<String> getParameterNames() {
         handleQueryParameters();
+        for (int i = 0; i < count; i++) {
+            if (fields[i].nextPos == NEED_NEXT) {
+                findNext(i);
+            }
+        }
         return new NamesEnumeration();
+    }
+    
+    public void getParameterMap(HashMap<String, String[]> parameterMap) {
+        handleQueryParameters();
+        for (int i = 0; i < count; i++) {
+            String name = getName(i).toString();
+            if (!parameterMap.containsKey(name)) {
+                ArrayList<String> result = new ArrayList<String>();
+                int j = i;
+                while (j >= 0) {
+                    result.add(getValue(j).toString());
+                    j = findNext(j);
+                }
+                parameterMap.put(name, result.toArray(ARRAY_TYPE));
+            }
+        }
     }
 
     // Shortcut.
