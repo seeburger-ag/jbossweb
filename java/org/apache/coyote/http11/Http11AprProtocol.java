@@ -320,7 +320,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     /**
      * Maximum size of the HTTP message header.
      */
-    protected int maxHttpHeaderSize = 8 * 1024;
+    protected int maxHttpHeaderSize = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_HEADER_SIZE", "8192")).intValue();
     public int getMaxHttpHeaderSize() { return maxHttpHeaderSize; }
     public void setMaxHttpHeaderSize(int valueI) { maxHttpHeaderSize = valueI; }
 
@@ -338,25 +338,25 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     /**
      * Integrated compression support.
      */
-    protected String compression = "off";
+    protected String compression = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION", "off");
     public String getCompression() { return compression; }
     public void setCompression(String valueS) { compression = valueS; }
     
     
     // HTTP
-    protected String noCompressionUserAgents = null;
+    protected String noCompressionUserAgents = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_RESTRICTED_UA");
     public String getNoCompressionUserAgents() { return noCompressionUserAgents; }
     public void setNoCompressionUserAgents(String valueS) { noCompressionUserAgents = valueS; }
 
     
     // HTTP
-    protected String compressableMimeTypes = "text/html,text/xml,text/plain";
+    protected String compressableMimeTypes = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIME_TYPES", "text/html,text/xml,text/plain");
     public String getCompressableMimeType() { return compressableMimeTypes; }
     public void setCompressableMimeType(String valueS) { compressableMimeTypes = valueS; }
     
     
     // HTTP
-    protected int compressionMinSize = 2048;
+    protected int compressionMinSize = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIN_SIZE", "2048")).intValue();
     public int getCompressionMinSize() { return compressionMinSize; }
     public void setCompressionMinSize(int valueI) { compressionMinSize = valueI; }
 
@@ -402,7 +402,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     /**
      * Server header.
      */
-    protected String server;
+    protected String server = System.getProperty("org.apache.coyote.http11.Http11Protocol.SERVER");
     public void setServer( String server ) { this.server = server; }
     public String getServer() { return server; }
 
