@@ -14,242 +14,103 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.apache.tomcat.util.http;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.buf.UDecoder;
+import org.apache.tomcat.util.res.StringManager;
 
 /**
- * 
+ *
  * @author Costin Manolache
- * @author Remy Maucherat
  */
 public final class Parameters {
 
     protected static org.jboss.logging.Logger log = org.jboss.logging.Logger
             .getLogger(Parameters.class);
 
-    protected static final int NEED_NEXT = -2;
-    protected static final int LAST = -1;
-    public static final int INITIAL_SIZE = 8;
-    protected static final String[] ARRAY_TYPE = new String[0];
+    protected static final StringManager sm =
+        StringManager.getManager("org.apache.tomcat.util.http");
+
     protected static final int MAX_COUNT = 
         Integer.valueOf(System.getProperty("org.apache.tomcat.util.http.Parameters.MAX_COUNT", "512")).intValue();
 
-    protected class Field {
-        MessageBytes name = MessageBytes.newInstance();
-        MessageBytes value = MessageBytes.newInstance();
+    private final HashMap<String,ArrayList<String>> paramHashValues =
+        new HashMap<String,ArrayList<String>>();
+    private boolean didQueryParameters=false;
 
-        // Extra info for speed
+    MessageBytes queryMB;
 
-        // multiple fields with same name - a linked list will
-        // speed up multiple name enumerations and search.
-        int nextPos;
+    UDecoder urlDec;
+    MessageBytes decodedQuery=MessageBytes.newInstance();
 
-        // hashkey
-        int hash;
-        Field nextSameHash;
+    String encoding=null;
+    String queryStringEncoding=null;
 
-        Field() {
-            nextPos = NEED_NEXT;
-        }
-
-        void recycle() {
-            name.recycle();
-            value.recycle();
-            nextPos = NEED_NEXT;
-        }
-    }
+    private int limit = MAX_COUNT;
+    private int parameterCount = 0;
 
     /**
-     * Enumerate the distinct header names. Each nextElement() is O(n) ( a
-     * comparation is done with all previous elements ).
-     * 
-     * This is less frequesnt than add() - we want to keep add O(1).
+     * Is set to <code>true</code> if there were failures during parameter
+     * parsing.
      */
-    protected class NamesEnumeration implements Enumeration<String> {
-        int pos;
-        String next;
+    private boolean parseFailed = false;
 
-        // toString and unique options are not implemented -
-        // we allways to toString and unique.
-
-        /**
-         * Create a new multi-map enumeration.
-         * 
-         * @param headers
-         *            the collection to enumerate
-         * @param toString
-         *            convert each name to string
-         * @param unique
-         *            return only unique names
-         */
-        public NamesEnumeration() {
-            pos = 0;
-            findNext();
-        }
-
-        private void findNext() {
-            next = null;
-            for (; pos < count; pos++) {
-                if (fields[pos].nextPos == LAST) {
-                    next = getName(pos).toString();
-                    break;
-                }
-            }
-            // next time findNext is called it will try the
-            // next element
-            pos++;
-        }
-
-        public boolean hasMoreElements() {
-            return next != null;
-        }
-
-        public String nextElement() {
-            String current = next;
-            findNext();
-            return current;
-        }
-    }
-
-    protected Field[] fields;
-    // fields in use
-    protected int count;
-
-    protected boolean didQueryParameters = false;
-    protected boolean didMerge = false;
-
-    protected MessageBytes queryMB;
-
-    protected UDecoder urlDec;
-    protected MessageBytes decodedQuery = MessageBytes.newInstance();
-
-    protected String encoding = null;
-    protected String queryStringEncoding = null;
-
-    /**
-     * 
-     */
     public Parameters() {
-        fields = new Field[INITIAL_SIZE];
+        // NO-OP
     }
 
-    public void setQuery(MessageBytes queryMB) {
-        this.queryMB = queryMB;
+    public void setQuery( MessageBytes queryMB ) {
+        this.queryMB=queryMB;
     }
 
-    public void setHeaders(MimeHeaders headers) {
-        // Not used anymore at the moment
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 
-    public void setEncoding(String s) {
-        encoding = s;
+    public String getEncoding() {
+        return encoding;
     }
 
-    public void setURLDecoder(UDecoder u) {
-        urlDec = u;
+    public void setEncoding( String s ) {
+        encoding=s;
+        if(log.isDebugEnabled()) {
+            log.debug( "Set encoding to " + s );
+        }
     }
 
-    public void setQueryStringEncoding(String s) {
-        queryStringEncoding = s;
+    public void setQueryStringEncoding( String s ) {
+        queryStringEncoding=s;
+        if(log.isDebugEnabled()) {
+            log.debug( "Set query string encoding to " + s );
+        }
+    }
+
+    public boolean isParseFailed() {
+        return parseFailed;
+    }
+
+    public void setParseFailed(boolean parseFailed) {
+        this.parseFailed = parseFailed;
     }
 
     public void recycle() {
-        for (int i = 0; i < count; i++) {
-            fields[i].recycle();
-        }
-        count = 0;
-        didQueryParameters = false;
-        didMerge = false;
-        encoding = null;
+        parameterCount = 0;
+        paramHashValues.clear();
+        didQueryParameters=false;
+        encoding=null;
         decodedQuery.recycle();
-    }
-
-    /**
-     * Returns the current number of header fields.
-     */
-    protected int size() {
-        return count;
-    }
-
-    /**
-     * Returns the Nth header name This may be used to iterate through all
-     * header fields.
-     * 
-     * An exception is thrown if the index is not valid ( <0 or >size )
-     */
-    protected MessageBytes getName(int n) {
-        // n >= 0 && n < count ? headers[n].getName() : null
-        return fields[n].name;
-    }
-
-    /**
-     * Returns the Nth header value This may be used to iterate through all
-     * header fields.
-     */
-    protected MessageBytes getValue(int n) {
-        return fields[n].value;
-    }
-
-    /**
-     * Create a new, unitialized entry.
-     */
-    protected int addField() {
-        int len = fields.length;
-        int pos = count;
-        if (count >= len) {
-            if (count >= MAX_COUNT) {
-                throw new IllegalStateException("Parameter count exceeded allowed maximum: " + MAX_COUNT);
-            }
-            // expand header list array
-            Field tmp[] = new Field[pos * 2];
-            System.arraycopy(fields, 0, tmp, 0, len);
-            fields = tmp;
-        }
-        if (fields[pos] == null) {
-            fields[pos] = new Field();
-        }
-        count++;
-        return pos;
-    }
-
-    protected int findFirst(String name) {
-        for (int i = 0; i < count; i++) {
-            if (fields[i].name.equals(name)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    protected int findNext(int startPos) {
-        int next = fields[startPos].nextPos;
-        if (next != NEED_NEXT) {
-            return next;
-        }
-        if (next == LAST) {
-            return LAST;
-        }
-
-        // next==NEED_NEXT, we never searched for this header
-        MessageBytes name = fields[startPos].name;
-        for (int i = (startPos + 1); i < count; i++) {
-            if (fields[i].name.equals(name)) {
-                // cache the search result
-                fields[startPos].nextPos = i;
-                return i;
-            }
-        }
-        fields[startPos].nextPos = LAST;
-        return -1;
+        parseFailed = false;
     }
 
     // -------------------- Data access --------------------
@@ -263,234 +124,324 @@ public final class Parameters {
             return;
         }
         for (int i = 0; i < values.length; i++) {
-            String value = values[i];
-            int pos = addField();
-            getName(pos).setString(name);
-            getValue(pos).setString(value);
+            addParameter(name, values[i]);
         }
     }
 
     public String[] getParameterValues(String name) {
         handleQueryParameters();
-        int pos = findFirst(name);
-        if (pos >= 0) {
-            ArrayList<String> result = new ArrayList<String>();
-            while (pos >= 0) {
-                result.add(getValue(pos).toString());
-                pos = findNext(pos);
-            }
-            return result.toArray(ARRAY_TYPE);
-        } else {
+        // no "facade"
+        ArrayList<String> values = paramHashValues.get(name);
+        if (values == null) {
             return null;
         }
+        return values.toArray(new String[values.size()]);
     }
 
     public Enumeration<String> getParameterNames() {
         handleQueryParameters();
-        for (int i = 0; i < count; i++) {
-            if (fields[i].nextPos == NEED_NEXT) {
-                findNext(i);
-            }
-        }
-        return new NamesEnumeration();
-    }
-    
-    public void getParameterMap(HashMap<String, String[]> parameterMap) {
-        handleQueryParameters();
-        for (int i = 0; i < count; i++) {
-            String name = getName(i).toString();
-            if (!parameterMap.containsKey(name)) {
-                ArrayList<String> result = new ArrayList<String>();
-                int j = i;
-                while (j >= 0) {
-                    result.add(getValue(j).toString());
-                    j = findNext(j);
-                }
-                parameterMap.put(name, result.toArray(ARRAY_TYPE));
-            }
-        }
+        return Collections.enumeration(paramHashValues.keySet());
     }
 
-    // Shortcut.
-    public String getParameter(String name) {
+    public String getParameter(String name ) {
         handleQueryParameters();
-        int pos = findFirst(name);
-        if (pos >= 0) {
-            return getValue(pos).toString();
+        ArrayList<String> values = paramHashValues.get(name);
+        if (values != null) {
+            if(values.size() == 0) {
+                return "";
+            }
+            return values.get(0);
         } else {
             return null;
         }
     }
-
     // -------------------- Processing --------------------
     /** Process the query string into parameters
      */
     public void handleQueryParameters() {
-        if (didQueryParameters)
+        if( didQueryParameters ) {
             return;
+        }
 
-        didQueryParameters = true;
+        didQueryParameters=true;
 
-        if (queryMB == null || queryMB.isNull())
+        if( queryMB==null || queryMB.isNull() ) {
             return;
+        }
 
-        if (debug > 0)
-            log("Decoding query " + decodedQuery + " " + queryStringEncoding);
+        if(log.isDebugEnabled()) {
+            log.debug("Decoding query " + decodedQuery + " " +
+                    queryStringEncoding);
+        }
 
         try {
-            decodedQuery.duplicate(queryMB);
+            decodedQuery.duplicate( queryMB );
         } catch (IOException e) {
             // Can't happen, as decodedQuery can't overflow
             e.printStackTrace();
         }
-        processParameters(decodedQuery, queryStringEncoding);
+        processParameters( decodedQuery, queryStringEncoding );
     }
 
-    protected void addParam(String name, String value) {
-        if (name == null) {
+
+    public void addParameter( String key, String value )
+            throws IllegalStateException {
+
+        if( key==null ) {
             return;
         }
-        int pos = addField();
-        getName(pos).setString(name);
-        getValue(pos).setString(value);
+
+        parameterCount ++;
+        if (limit > -1 && parameterCount > limit) {
+            // Processing this parameter will push us over the limit. ISE is
+            // what Request.parseParts() uses for requests that are too big
+            parseFailed = true;
+            throw new IllegalStateException(sm.getString(
+                    "parameters.maxCountFail", Integer.valueOf(limit)));
+        }
+
+        ArrayList<String> values = paramHashValues.get(key);
+        if (values == null) {
+            values = new ArrayList<String>(1);
+            paramHashValues.put(key, values);
+        }
+        values.add(value);
+    }
+
+    public void setURLDecoder( UDecoder u ) {
+        urlDec=u;
     }
 
     // -------------------- Parameter parsing --------------------
-
     // we are called from a single thread - we can do it the hard way
     // if needed
-    protected ByteChunk tmpName = new ByteChunk();
-    protected ByteChunk tmpValue = new ByteChunk();
-    protected CharChunk tmpNameC = new CharChunk(32);
-    protected CharChunk tmpValueC = new CharChunk(128);
+    ByteChunk tmpName=new ByteChunk();
+    ByteChunk tmpValue=new ByteChunk();
+    private final ByteChunk origName=new ByteChunk();
+    private final ByteChunk origValue=new ByteChunk();
+    CharChunk tmpNameC=new CharChunk(1024);
+    public static final String DEFAULT_ENCODING = "ISO-8859-1";
+    private static final Charset DEFAULT_CHARSET =
+        Charset.forName(DEFAULT_ENCODING);
 
-    public void processParameters(MessageBytes data) {
-        processParameters(data, encoding);
+
+    public void processParameters( byte bytes[], int start, int len ) {
+        processParameters(bytes, start, len, null);
     }
 
-    public void processParameters(MessageBytes data, String encoding) {
-        if (data == null || data.isNull() || data.getLength() <= 0)
-            return;
+    private void processParameters(byte bytes[], int start, int len, String enc) {
 
-        if (data.getType() != MessageBytes.T_BYTES) {
-            data.toBytes();
+        if(log.isDebugEnabled()) {
+            log.debug(sm.getString("parameters.bytes",
+                    new String(bytes, start, len, DEFAULT_CHARSET)));
         }
-        ByteChunk bc = data.getByteChunk();
-        processParameters(bc.getBytes(), bc.getOffset(), bc.getLength(),
-                encoding);
-    }
 
-    public void processParameters(byte bytes[], int start, int len) {
-        processParameters(bytes, start, len, encoding);
-    }
+        int decodeFailCount = 0;
 
-    public void processParameters(byte bytes[], int start, int len, String enc) {
-        int end = start + len;
         int pos = start;
+        int end = start + len;
 
-        if (debug > 0)
-            log("Bytes: " + new String(bytes, start, len));
-
-        do {
-            boolean noEq = false;
-            int valStart = -1;
-            int valEnd = -1;
-
+        while(pos < end) {
             int nameStart = pos;
-            int nameEnd = ByteChunk.indexOf(bytes, nameStart, end, '=');
-            // Workaround for a&b&c encoding
-            int nameEnd2 = ByteChunk.indexOf(bytes, nameStart, end, '&');
-            if ((nameEnd2 != -1) && (nameEnd == -1 || nameEnd > nameEnd2)) {
-                nameEnd = nameEnd2;
-                noEq = true;
-                valStart = nameEnd;
-                valEnd = nameEnd;
-                if (debug > 0)
-                    log("no equal " + nameStart + " " + nameEnd + " "
-                            + new String(bytes, nameStart, nameEnd - nameStart));
+            int nameEnd = -1;
+            int valueStart = -1;
+            int valueEnd = -1;
+
+            boolean parsingName = true;
+            boolean decodeName = false;
+            boolean decodeValue = false;
+            boolean parameterComplete = false;
+
+            do {
+                switch(bytes[pos]) {
+                    case '=':
+                        if (parsingName) {
+                            // Name finished. Value starts from next character
+                            nameEnd = pos;
+                            parsingName = false;
+                            valueStart = ++pos;
+                        } else {
+                            // Equals character in value
+                            pos++;
+                        }
+                        break;
+                    case '&':
+                        if (parsingName) {
+                            // Name finished. No value.
+                            nameEnd = pos;
+                        } else {
+                            // Value finished
+                            valueEnd  = pos;
+                        }
+                        parameterComplete = true;
+                        pos++;
+                        break;
+                    case '%':
+                    case '+':
+                        // Decoding required
+                        if (parsingName) {
+                            decodeName = true;
+                        } else {
+                            decodeValue = true;
+                        }
+                        pos ++;
+                        break;
+                    default:
+                        pos ++;
+                        break;
+                }
+            } while (!parameterComplete && pos < end);
+
+            if (pos == end) {
+                if (nameEnd == -1) {
+                    nameEnd = pos;
+                } else if (valueStart > -1 && valueEnd == -1){
+                    valueEnd = pos;
+                }
             }
-            if (nameEnd == -1)
-                nameEnd = end;
 
-            if (!noEq) {
-                valStart = (nameEnd < end) ? nameEnd + 1 : end;
-                valEnd = ByteChunk.indexOf(bytes, valStart, end, '&');
-                if (valEnd == -1)
-                    valEnd = (valStart < end) ? end : valStart;
+            if (log.isDebugEnabled() && valueStart == -1) {
+                log.debug(sm.getString("parameters.noequal",
+                        Integer.valueOf(nameStart), Integer.valueOf(nameEnd),
+                        new String(bytes, nameStart, nameEnd-nameStart,
+                                DEFAULT_CHARSET)));
             }
 
-            pos = valEnd + 1;
-
-            if (nameEnd <= nameStart) {
-                log.warn("Parameters: Invalid chunk ignored.");
+            if (nameEnd <= nameStart ) {
+                if (valueStart == -1) {
+                    // &&
+                    if (log.isDebugEnabled()) {
+                        log.debug(sm.getString("parameters.emptyChunk"));
+                    }
+                    // Do not flag as error
+                    continue;
+                }
+                // &=foo&
+                if (log.isDebugEnabled()) {
+                    String extract;
+                    if (valueEnd >= nameStart) {
+                        extract = new String(bytes, nameStart, valueEnd
+                                - nameStart, DEFAULT_CHARSET);
+                    } else {
+                        extract = "";
+                    }
+                    String message = sm.getString("parameters.invalidChunk",
+                            Integer.valueOf(nameStart),
+                            Integer.valueOf(valueEnd), extract);
+                    log.debug(message);
+                }
+                parseFailed = true;
                 continue;
                 // invalid chunk - it's better to ignore
             }
+
             tmpName.setBytes(bytes, nameStart, nameEnd - nameStart);
-            tmpValue.setBytes(bytes, valStart, valEnd - valStart);
+            if (valueStart >= 0) {
+                tmpValue.setBytes(bytes, valueStart, valueEnd - valueStart);
+            } else {
+                tmpValue.setBytes(bytes, 0, 0);
+            }
+
+            // Take copies as if anything goes wrong originals will be
+            // corrupted. This means original values can be logged.
+            // For performance - only done for debug
+            if (log.isDebugEnabled()) {
+                try {
+                    origName.append(bytes, nameStart, nameEnd - nameStart);
+                    if (valueStart >= 0) {
+                        origValue.append(bytes, valueStart, valueEnd - valueStart);
+                    } else {
+                        origValue.append(bytes, 0, 0);
+                    }
+                } catch (IOException ioe) {
+                    // Should never happen...
+                    parseFailed = true;
+                    log.error(sm.getString("parameters.copyFail"), ioe);
+                }
+            }
 
             try {
-                addParam(urlDecode(tmpName, enc), urlDecode(tmpValue, enc));
+                String name;
+                String value;
+
+                if (decodeName) {
+                    urlDecode(tmpName);
+                }
+                tmpName.setEncoding(enc);
+                name = tmpName.toString();
+
+                if (valueStart >= 0) {
+                    if (decodeValue) {
+                        urlDecode(tmpValue);
+                    }
+                    tmpValue.setEncoding(enc);
+                    value = tmpValue.toString();
+                } else {
+                    value = "";
+                }
+
+                addParameter(name, value);
             } catch (IOException e) {
-                // Exception during character decoding: skip parameter
-                log.warn("Parameters: Character decoding failed. "
-                        + "Parameter skipped.", e);
+                parseFailed = true;
+                decodeFailCount++;
+                if (log.isDebugEnabled()) {
+                    log.debug(sm.getString("parameters.decodeFail.debug",
+                            origName.toString(), origValue.toString()), e);
+                }
             }
 
             tmpName.recycle();
             tmpValue.recycle();
-
-        } while (pos < end);
-    }
-
-    protected String urlDecode(ByteChunk bc, String enc) throws IOException {
-        if (urlDec == null) {
-            urlDec = new UDecoder();
-        }
-        urlDec.convert(bc);
-        String result = null;
-        if (enc != null) {
-            bc.setEncoding(enc);
-            result = bc.toString();
-        } else {
-            CharChunk cc = tmpNameC;
-            int length = bc.getLength();
-            cc.allocate(length, -1);
-            // Default encoding: fast conversion
-            byte[] bbuf = bc.getBuffer();
-            char[] cbuf = cc.getBuffer();
-            int start = bc.getStart();
-            for (int i = 0; i < length; i++) {
-                cbuf[i] = (char) (bbuf[i + start] & 0xff);
+            // Only recycle copies if we used them
+            if (log.isDebugEnabled()) {
+                origName.recycle();
+                origValue.recycle();
             }
-            cc.setChars(cbuf, 0, length);
-            result = cc.toString();
-            cc.recycle();
         }
-        return result;
+
+        if (decodeFailCount > 1 && log.isDebugEnabled()) {
+            log.debug(sm.getString("parameters.multipleDecodingFail",
+                    Integer.valueOf(decodeFailCount)));
+        }
+        if (parseFailed) {
+            throw new IllegalStateException(sm.getString("parameters.failed"));
+        }
     }
 
-    /** Debug purpose
+    private void urlDecode(ByteChunk bc)
+        throws IOException {
+        if( urlDec==null ) {
+            urlDec=new UDecoder();
+        }
+        urlDec.convert(bc, true);
+    }
+
+    public void processParameters( MessageBytes data, String encoding ) {
+        if( data==null || data.isNull() || data.getLength() <= 0 ) {
+            return;
+        }
+
+        if( data.getType() != MessageBytes.T_BYTES ) {
+            data.toBytes();
+        }
+        ByteChunk bc=data.getByteChunk();
+        processParameters( bc.getBytes(), bc.getOffset(),
+                           bc.getLength(), encoding);
+    }
+
+    /**
+     * Debug purpose
      */
     public String paramsAsString() {
         StringBuilder sb = new StringBuilder();
-        Enumeration en = getParameterNames();
-        while (en.hasMoreElements()) {
-            String k = (String) en.nextElement();
-            sb.append(k).append("=");
-            String v[] = (String[]) getParameterValues(k);
-            for (int i = 0; i < v.length; i++)
-                sb.append(v[i]).append(",");
-            sb.append("\n");
+        for (Map.Entry<String, ArrayList<String>> e : paramHashValues.entrySet()) {
+            sb.append(e.getKey()).append('=');
+            ArrayList<String> values = e.getValue();
+            for (String value : values) {
+                sb.append(value).append(',');
+            }
+            sb.append('\n');
         }
         return sb.toString();
     }
-
-    private static int debug = 0;
-
-    private void log(String s) {
-        if (log.isDebugEnabled())
-            log.debug("Parameters: " + s);
-    }
-
 }

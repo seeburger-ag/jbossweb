@@ -16,6 +16,21 @@
 
 <body>
 
+<section name="JBoss Web 7.0.12.Final (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         Rebase parameters handling. (markt)
+      </fix>
+      <fix>
+         <jboss-jira>AS7-3953</jboss-jira>: Add system properties for configuration 
+         of some lesser used features in the HTTP connector: server header, header size, 
+         and compression. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.0.11.Final (remm)">
   <subsection name="Catalina">
     <changelog>
