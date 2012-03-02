@@ -93,17 +93,17 @@ Closed connection to localhost:9999
       default value of <code>128</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.util. http.FastHttpDateFormat.CACHE_SIZE">
+    <property name="org.apache.tomcat.util.http.FastHttpDateFormat.CACHE_SIZE">
       <p>The size of the cache to use parsed and formatted date value. If not
       specified, the default value of <code>1000</code> will be used.</p>
     </property>
 
-    <property name="org.apache.catalina.core. StandardService.DELAY_CONNECTOR_STARTUP">
+    <property name="org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP">
       <p>If <code>true</code>, the connector startup will not be done automatically. Useful
       in embedded mode.</p>
     </property>
 
-    <property name="org.apache.catalina.connector. Request.SESSION_ID_CHECK">
+    <property name="org.apache.catalina.connector.Request.SESSION_ID_CHECK">
       <p>If <code>true</code>, the Servet container will verify that a session
       exists in a context with the specified session id before creating a session
       with that id.</p>
@@ -116,6 +116,46 @@ Closed connection to localhost:9999
       ISO-8859-1 encoded, particularly if user provided input is included in
       the message, to prevent a possible XSS vulnerability. If not specified
       the default value of <code>false</code> will be used.</p>
+    </property>
+
+    <property name="org.apache.tomcat.util.http.Parameters.MAX_COUNT">
+      <p>The maximum amount of parameters that can be parsed in a post body.
+      If exceeded, parsing will fail using an IllegalStateException. The default
+      value is <code>512</code> parameters.</p>
+    </property>
+
+    <property name="org.apache.tomcat.util.http.MimeHeaders.MAX_COUNT">
+      <p>The maximum amount of headers that can be sent in the HTTP request.
+      If exceeded, parsing will fail using an IllegalStateException. The default
+      value is <code>128</code> headers.</p>
+    </property>
+
+    <property name="org.apache.coyote.http11.Http11Protocol.MAX_HEADER_SIZE">
+      <p>The maximum size of the HTTP headers, in bytes.
+      If exceeded, parsing will fail using an ArrayOutOfBoundsExceptions. The default
+      value is <code>8192</code> bytes.</p>
+    </property>
+
+    <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION">
+      <p>Allows using simple compression with the HTTP connector. The default
+      value is <code>off</code>, and compression can be enabled using the value 
+      <code>on</code> to enable it conditionally, or <code>force</code> to always
+      enable it.</p>
+    </property>
+
+    <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION_RESTRICTED_UA">
+      <p>User agents regexps that will not receive compressed content. The default
+      value is empty.</p>
+    </property>
+
+    <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIME_TYPES">
+      <p>Content type prefixes of compressible content. The default value is 
+      <code>text/html,text/xml,text/plain</code>.</p>
+    </property>
+
+    <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIN_SIZE">
+      <p>Minimum size of content that will be compressed. The default value is 
+      <code>2048</code> bytes.</p>
     </property>
 
   </properties>
