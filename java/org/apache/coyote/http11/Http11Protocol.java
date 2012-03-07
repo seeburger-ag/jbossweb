@@ -281,7 +281,7 @@ public class Http11Protocol
         String encodedAddr = "";
         if (getAddress() != null) {
             encodedAddr = "" + getAddress();
-            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-')) + "-";
+            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-').replace(':', '_').replace('%', '-')) + "-";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }
