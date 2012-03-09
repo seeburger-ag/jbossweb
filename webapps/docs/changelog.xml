@@ -22,6 +22,9 @@
       <fix>
          <jboss-jira>AS7-3851</jboss-jira>: Cleanup IPv6 logging. (remm)
       </fix>
+      <fix>
+         <jira>234</jira>: Fix parameters encoding processing issue introduced when rebasing. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
