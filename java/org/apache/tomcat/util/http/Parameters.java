@@ -226,7 +226,7 @@ public final class Parameters {
 
 
     public void processParameters( byte bytes[], int start, int len ) {
-        processParameters(bytes, start, len, null);
+        processParameters(bytes, start, len, encoding);
     }
 
     private void processParameters(byte bytes[], int start, int len, String enc) {
