@@ -16,7 +16,7 @@
 
 <body>
 
-<section name="JBoss Web 7.2.0.Alpha1 (remm)">
+<section name="JBoss Web 7.0.13.Final (remm)">
   <subsection name="Coyote">
     <changelog>
       <fix>
