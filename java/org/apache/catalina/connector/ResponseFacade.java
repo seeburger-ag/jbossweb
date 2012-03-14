@@ -454,6 +454,19 @@ public class ResponseFacade
 
     }
 
+    public void sendUpgrade(org.jboss.web.upgrade.ProtocolHandler protocolHandler)
+            throws IOException {
+        
+        if (isCommitted())
+            throw new IllegalStateException
+                (/*sm.getString("responseBase.reset.ise")*/);
+
+        response.setAppCommitted(true);
+
+        response.sendUpgrade(protocolHandler);
+
+    }
+
     public void setDateHeader(String name, long date) {
 
         if (isCommitted())

@@ -171,6 +171,11 @@ public final class ActionCode {
      */
     public static final ActionCode ACTION_EVENT_WRITE = new ActionCode(27);
     
+    /**
+     * Ask for a protocol upgrade
+     */
+    public static final ActionCode UPGRADE = new ActionCode(28);
+    
     // ----------------------------------------------------------- Constructors
     int code;
 
