@@ -25,6 +25,9 @@
       <fix>
          <jira>234</jira>: Fix parameters encoding processing issue introduced when rebasing. (remm)
       </fix>
+      <add>
+         Protocol upgrade API. (remm)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Jasper">
