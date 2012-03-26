@@ -35,6 +35,9 @@
       <fix>
          <bug>52776</bug>: Fix cleanup after JspFragment.invoke. Sumitted by Karl von Randow. (markt)
       </fix>
+      <fix>
+         <bug>52970</bug>: Fix enum as method invocation argument in EL. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
