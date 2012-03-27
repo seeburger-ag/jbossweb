@@ -100,14 +100,15 @@ public final class LibraryLoader {
             try {
                 System.loadLibrary(dlibName);
                 log.debug("Loaded: " + dlibName);
-            } catch (Throwable d) {
+                if (full)
+                    break;
+            }
+            catch (Throwable d) {
                 log.debug("Loading " + dlibName + " throws: " + d);
                 if (optional)
                    continue;
                 throw new UnsatisfiedLinkError(" Error: " + d.getMessage() + " " );
             }
-            if (full)
-                 break;
         }
     }
 
