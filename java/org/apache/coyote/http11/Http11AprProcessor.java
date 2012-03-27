@@ -1297,6 +1297,10 @@ public class Http11AprProcessor implements ActionHook {
             writeNotification = true;
         } else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
             timeout = ((Integer) param).intValue();
+        } else if (actionCode == ActionCode.UPGRADE) {
+            // Switch to raw bytes mode
+            inputBuffer.removeActiveFilters();
+            outputBuffer.removeActiveFilters();
         }
 
     }
@@ -1653,7 +1657,7 @@ public class Http11AprProcessor implements ActionHook {
         }
 
         int statusCode = response.getStatus();
-        if ((statusCode == 204) || (statusCode == 205)
+        if ((statusCode == 101) || (statusCode == 204) || (statusCode == 205)
             || (statusCode == 304)) {
             // No entity body
             outputBuffer.addActiveFilter

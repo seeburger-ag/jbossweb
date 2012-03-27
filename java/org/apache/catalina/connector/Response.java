@@ -1342,7 +1342,7 @@ public class Response
     }
 
 
-    public void sendUpgrade(org.jboss.web.upgrade.ProtocolHandler protocolHandler)
+    public void sendUpgrade()
             throws IOException {
 
         if (isCommitted())
@@ -1353,11 +1353,23 @@ public class Response
             throw new IllegalStateException
                 (sm.getString("coyoteResponse.upgrade.noEvents"));
 
-        request.getCoyoteRequest().action(ActionCode.UPGRADE, protocolHandler);
+        if (!request.isEventMode() || request.getAsyncContext() != null)
+            throw new IllegalStateException
+                (sm.getString("coyoteResponse.upgrade.noHttpEventServlet"));
+
+        // Ignore any call from an included servlet
+        if (included)
+            return; 
+
+        // Clear any data content that has been buffered
+        resetBuffer();
 
         // Output required by RFC2616. Protocol specific headers should have
         // already been set.
         setStatus(HttpServletResponse.SC_SWITCHING_PROTOCOLS);
+
+        outputBuffer.flush();
+        request.getCoyoteRequest().action(ActionCode.UPGRADE, null);
 
         // Cause the response to be finished (from the application perspective)
         setSuspended(true);

@@ -283,6 +283,11 @@ public class InternalAprOutputBuffer
     }
 
 
+    public void removeActiveFilters() {
+        lastActiveFilter = -1;
+    }
+
+
     // --------------------------------------------------------- Public Methods
 
 

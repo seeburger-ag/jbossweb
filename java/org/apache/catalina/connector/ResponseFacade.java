@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.Globals;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.StringManager;
+import org.jboss.servlet.http.UpgradableHttpServletResponse;
 
 /**
  * Facade class that wraps a Coyote response object. 
@@ -45,7 +46,7 @@ import org.apache.catalina.util.StringManager;
  */
 @SuppressWarnings("deprecation")
 public class ResponseFacade 
-    implements HttpServletResponse {
+    implements HttpServletResponse, UpgradableHttpServletResponse {
 
 
     // ----------------------------------------------------------- DoPrivileged
@@ -454,7 +455,7 @@ public class ResponseFacade
 
     }
 
-    public void sendUpgrade(org.jboss.web.upgrade.ProtocolHandler protocolHandler)
+    public void sendUpgrade()
             throws IOException {
         
         if (isCommitted())
@@ -463,7 +464,7 @@ public class ResponseFacade
 
         response.setAppCommitted(true);
 
-        response.sendUpgrade(protocolHandler);
+        response.sendUpgrade();
 
     }
 

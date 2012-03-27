@@ -288,6 +288,11 @@ public class InternalAprInputBuffer implements InputBuffer {
     }
 
 
+    public void removeActiveFilters() {
+        lastActiveFilter = -1;
+    }
+
+
     /**
      * Set the swallow input flag.
      */
