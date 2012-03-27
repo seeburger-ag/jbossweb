@@ -15,13 +15,19 @@
   </properties>
 
 <body>
-
-<section name="JBoss Web 7.0.13.Final (remm)">
+<section name="JBoss Web 7.0.14.Final (remm)">
   <subsection name="Coyote">
     <changelog>
       <fix>
          <jboss-jira>JBPAPP-8505</jboss-jira>: Add back the multi files logic for Windows. (jfclere/mturk)
       </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.0.13.Final (remm)">
+  <subsection name="Coyote">
+    <changelog>
       <fix>
          <jboss-jira>AS7-3851</jboss-jira>: Cleanup IPv6 logging. (remm)
       </fix>
