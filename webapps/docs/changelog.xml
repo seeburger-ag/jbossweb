@@ -20,6 +20,9 @@
   <subsection name="Coyote">
     <changelog>
       <fix>
+         <jboss-jira>JBPAPP-8505</jboss-jira>: Add back the multi files logic for Windows. (jfclere/mturk)
+      </fix>
+      <fix>
          <jboss-jira>AS7-3851</jboss-jira>: Cleanup IPv6 logging. (remm)
       </fix>
       <fix>
