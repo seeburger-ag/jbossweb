@@ -1371,9 +1371,6 @@ public class Response
         outputBuffer.flush();
         request.getCoyoteRequest().action(ActionCode.UPGRADE, null);
 
-        // Cause the response to be finished (from the application perspective)
-        setSuspended(true);
-
     }
 
 
