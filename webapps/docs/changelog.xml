@@ -24,6 +24,9 @@
       <fix>
          <jboss-jira>JBPAPP-8505</jboss-jira>: Add back the multi files logic for Windows. (jfclere/mturk)
       </fix>
+      <add>
+         Protocol upgrade API. (remm)
+      </add>
     </changelog>
   </subsection>
 </section>

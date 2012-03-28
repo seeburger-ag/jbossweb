@@ -47,6 +47,7 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.StringManager;
+import org.apache.coyote.ActionCode;
 import org.apache.naming.resources.CacheEntry;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.buf.CharChunk;
@@ -1337,6 +1338,38 @@ public class Response
 
         // Cause the response to be finished (from the application perspective)
         setSuspended(true);
+
+    }
+
+
+    public void sendUpgrade()
+            throws IOException {
+
+        if (isCommitted())
+            throw new IllegalStateException
+                (sm.getString("coyoteResponse.upgrade.ise"));
+
+        if (!connector.hasIoEvents())
+            throw new IllegalStateException
+                (sm.getString("coyoteResponse.upgrade.noEvents"));
+
+        if (!request.isEventMode() || request.getAsyncContext() != null)
+            throw new IllegalStateException
+                (sm.getString("coyoteResponse.upgrade.noHttpEventServlet"));
+
+        // Ignore any call from an included servlet
+        if (included)
+            return; 
+
+        // Clear any data content that has been buffered
+        resetBuffer();
+
+        // Output required by RFC2616. Protocol specific headers should have
+        // already been set.
+        setStatus(HttpServletResponse.SC_SWITCHING_PROTOCOLS);
+
+        outputBuffer.flush();
+        request.getCoyoteRequest().action(ActionCode.UPGRADE, null);
 
     }
 

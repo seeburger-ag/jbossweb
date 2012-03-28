@@ -288,6 +288,15 @@ public class InternalAprInputBuffer implements InputBuffer {
     }
 
 
+    public void removeActiveFilters() {
+        // Recycle filters
+        for (int i = 0; i <= lastActiveFilter; i++) {
+            activeFilters[i].recycle();
+        }
+        lastActiveFilter = -1;
+    }
+
+
     /**
      * Set the swallow input flag.
      */
