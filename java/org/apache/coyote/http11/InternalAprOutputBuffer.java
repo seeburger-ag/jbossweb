@@ -284,6 +284,10 @@ public class InternalAprOutputBuffer
 
 
     public void removeActiveFilters() {
+        // Recycle filters
+        for (int i = 0; i <= lastActiveFilter; i++) {
+            activeFilters[i].recycle();
+        }
         lastActiveFilter = -1;
     }
 
