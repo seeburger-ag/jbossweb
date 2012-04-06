@@ -41,6 +41,9 @@
       <fix>
          <bug>52970</bug>: Fix enum as method invocation argument in EL. (markt)
       </fix>
+      <fix>
+         Use per webapp expression factory. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
