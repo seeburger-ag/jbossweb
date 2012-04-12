@@ -31,6 +31,9 @@
       <add>
          Protocol upgrade API. (remm)
       </add>
+      <fix>
+         <jboss-jira>AS7-4469</jboss-jira>: Rebase SSL valve used by mod_headers. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
