@@ -34,6 +34,9 @@
       <fix>
          <jboss-jira>AS7-4469</jboss-jira>: Rebase SSL valve used by mod_headers. (remm)
       </fix>
+      <fix>
+         <jboss-jira>AS7-4469</jboss-jira>: Fix SSL session id attribute name (standardized in Servlet 3). (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

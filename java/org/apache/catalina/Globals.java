@@ -119,6 +119,8 @@ public final class Globals {
      * for this SSL connection (as an object of type java.lang.String).
      */
     public static final String SSL_SESSION_ID_ATTR =
+        "javax.servlet.request.ssl_session_id";
+    public static final String SSL_SESSION_ID_OLD_ATTR =
         "javax.servlet.request.ssl_session";
 
 

@@ -31,6 +31,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.security.cert.X509Certificate;
 
+import org.apache.tomcat.util.net.Constants;
 import org.apache.tomcat.util.net.SSLSupport;
 
 /** JSSESupport
@@ -195,7 +196,7 @@ class JSSESupport implements SSLSupport {
         SSLSupport.CipherData c_aux[]=ciphers;
         if (session == null)
             return null;
-        Integer keySize = (Integer) session.getValue(KEY_SIZE_KEY);
+        Integer keySize = (Integer) session.getValue(Constants.KEY_SIZE_KEY);
         if (keySize == null) {
             int size = 0;
             String cipherSuite = session.getCipherSuite();
@@ -205,8 +206,8 @@ class JSSESupport implements SSLSupport {
                     break;
                 }
             }
-            keySize = new Integer(size);
-            session.putValue(KEY_SIZE_KEY, keySize);
+            keySize = Integer.valueOf(size);
+            session.putValue(Constants.KEY_SIZE_KEY, keySize);
         }
         return keySize;
     }

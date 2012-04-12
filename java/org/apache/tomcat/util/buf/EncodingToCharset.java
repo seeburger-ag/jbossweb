@@ -35,6 +35,9 @@ public class EncodingToCharset {
     private static final Map<String, Charset> encodingToCharsetCache =
         new HashMap<String, Charset>();
 
+    public static final Charset ISO_8859_1;
+    public static final Charset UTF_8;
+
     static {
         for (Charset charset: Charset.availableCharsets().values()) {
             encodingToCharsetCache.put(charset.name().toUpperCase(Locale.US), charset);
@@ -42,6 +45,8 @@ public class EncodingToCharset {
                 encodingToCharsetCache.put(alias.toUpperCase(Locale.US), charset);
             }
         }
+        ISO_8859_1 = encodingToCharsetCache.get("ISO-8859-1");
+        UTF_8 = encodingToCharsetCache.get("UTF-8");
     }
 
     public static Charset toCharset(String encoding)

@@ -1054,20 +1054,16 @@ public class Http11Processor implements ActionHook {
                 if (sslSupport != null) {
                     Object sslO = sslSupport.getCipherSuite();
                     if (sslO != null)
-                        request.setAttribute
-                            (SSLSupport.CIPHER_SUITE_KEY, sslO);
+                        request.setAttribute(org.apache.tomcat.util.net.Constants.CIPHER_SUITE_KEY, sslO);
                     sslO = sslSupport.getPeerCertificateChain(false);
                     if (sslO != null)
-                        request.setAttribute
-                            (SSLSupport.CERTIFICATE_KEY, sslO);
+                        request.setAttribute(org.apache.tomcat.util.net.Constants.CERTIFICATE_KEY, sslO);
                     sslO = sslSupport.getKeySize();
                     if (sslO != null)
-                        request.setAttribute
-                            (SSLSupport.KEY_SIZE_KEY, sslO);
+                        request.setAttribute(org.apache.tomcat.util.net.Constants.KEY_SIZE_KEY, sslO);
                     sslO = sslSupport.getSessionId();
                     if (sslO != null)
-                        request.setAttribute
-                            (SSLSupport.SESSION_ID_KEY, sslO);
+                        request.setAttribute(org.apache.tomcat.util.net.Constants.SESSION_ID_KEY, sslO);
                 }
             } catch (Exception e) {
                 log.warn(sm.getString("http11processor.socket.ssl"), e);
@@ -1142,9 +1138,8 @@ public class Http11Processor implements ActionHook {
                 }
                 try {
                     Object sslO = sslSupport.getPeerCertificateChain(true);
-                    if( sslO != null) {
-                        request.setAttribute
-                            (SSLSupport.CERTIFICATE_KEY, sslO);
+                    if (sslO != null) {
+                        request.setAttribute(org.apache.tomcat.util.net.Constants.CERTIFICATE_KEY, sslO);
                     }
                 } catch (Exception e) {
                     log.warn(sm.getString("http11processor.socket.ssl"), e);
