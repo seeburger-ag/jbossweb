@@ -47,7 +47,7 @@ public final class Constants {
      * The Request attribute key for the session id.
      * This one is a Tomcat extension to the Servlet spec.
      */
-    public static final String SESSION_ID_KEY = "javax.servlet.request.ssl_session";
+    public static final String SESSION_ID_KEY = "javax.servlet.request.ssl_session_id";
 
 
 }
