@@ -455,6 +455,16 @@ public class ResponseFacade
 
     }
 
+    public void startUpgrade() {
+        
+        if (isCommitted())
+            throw new IllegalStateException
+                (/*sm.getString("responseBase.reset.ise")*/);
+
+        response.startUpgrade();
+
+    }
+
     public void sendUpgrade()
             throws IOException {
         

@@ -26,11 +26,20 @@ import java.io.IOException;
 
 /**
  * Upgradable HTTP Servlet response.
- * 
- * @author remm
  */
 public interface UpgradableHttpServletResponse {
 
+    /**
+     * Start the connection upgrade process. After calling this method,
+     * data will be available raw from the connection. Calling this method
+     * is optional if no read/write are needed during the upgrade process.
+     */
+    public void startUpgrade();
+
+    /**
+     * Send the switching protocol HTTP status and commit the response by
+     * flushing the buffer.
+     */
     public void sendUpgrade()
             throws IOException;
 
