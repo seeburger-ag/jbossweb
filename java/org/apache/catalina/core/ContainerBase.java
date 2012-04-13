@@ -42,6 +42,7 @@ import org.apache.catalina.Cluster;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
+import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
@@ -1598,10 +1599,16 @@ public abstract class ContainerBase
                     Thread.currentThread().setContextClassLoader
                         (container.getLoader().getClassLoader());
                 }
+                if (container instanceof Context) {
+                    ((Context) container).getThreadBindingListener().bind();
+                }
                 container.backgroundProcess();
             } catch (Throwable t) {
                 log.error("Exception invoking periodic operation: ", t);
             } finally {
+                if (container instanceof Context) {
+                    ((Context) container).getThreadBindingListener().unbind();
+                }
                 Thread.currentThread().setContextClassLoader(cl);
             }
             Container[] children = container.findChildren();

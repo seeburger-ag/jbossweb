@@ -37,6 +37,9 @@
       <fix>
          <jboss-jira>AS7-4469</jboss-jira>: Fix SSL session id attribute name (standardized in Servlet 3). (remm)
       </fix>
+      <fix>
+         Use the thread listener bind/unbind in the background process. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
