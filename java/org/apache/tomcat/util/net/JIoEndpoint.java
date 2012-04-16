@@ -24,6 +24,7 @@ package org.apache.tomcat.util.net;
 
 import java.io.IOException;
 import java.net.BindException;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -1077,9 +1078,21 @@ public class JIoEndpoint {
             if (address == null) {
                 s = new Socket("localhost", port);
             } else {
-                s = new Socket(address, port);
-                    // setting soLinger to a small value will help shutdown the
-                    // connection quicker
+                if (address instanceof Inet6Address && ((Inet6Address)address).isLinkLocalAddress()) {
+                    /* We need to work-around a java6 bug with IPv6 */
+                    String addressString = address.getHostAddress();
+                    if (addressString.indexOf("%") != -1) {
+                        String addressStringWithoutSuffix = addressString.substring(0, addressString.indexOf("%"));
+                        InetAddress addressWithoutSuffix = InetAddress.getByName(addressStringWithoutSuffix);
+                        s = new Socket (addressWithoutSuffix, port , addressWithoutSuffix, 0);
+                    } else {
+                        s = new Socket(address, port, address, 0);
+                    }
+                } else  {
+                    s = new Socket(address, port);
+                }
+                // setting soLinger to a small value will help shutdown the
+                // connection quicker
                 s.setSoLinger(true, 0);
             }
         } catch (Exception e) {

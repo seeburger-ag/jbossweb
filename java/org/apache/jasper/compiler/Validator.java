@@ -27,7 +27,6 @@ import java.util.Locale;
 import javax.el.ELException;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
-import javax.servlet.jsp.JspFactory;
 import javax.servlet.jsp.tagext.FunctionInfo;
 import javax.servlet.jsp.tagext.JspFragment;
 import javax.servlet.jsp.tagext.PageData;
@@ -38,6 +37,7 @@ import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.servlet.jsp.tagext.ValidationMessage;
 
+import org.apache.el.lang.ELSupport;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.el.ELContextImpl;
 import org.xml.sax.Attributes;
@@ -497,7 +497,8 @@ class Validator {
                 new JspUtil.ValidAttribute("doctype-public"),
                 new JspUtil.ValidAttribute("doctype-system") };
 
-        private final ExpressionFactory expressionFactory;
+        private static final ExpressionFactory EXPRESSION_FACTORY =
+            ExpressionFactory.newInstance();
 
         /*
          * Constructor
@@ -506,11 +507,6 @@ class Validator {
             this.pageInfo = compiler.getPageInfo();
             this.err = compiler.getErrorDispatcher();
             this.loader = compiler.getCompilationContext().getClassLoader();
-            // Get the cached EL expression factory for this context
-            expressionFactory =
-                    JspFactory.getDefaultFactory().getJspApplicationContext(
-                    compiler.getCompilationContext().getServletContext()).
-                    getExpressionFactory();
         }
 
         public void visit(Node.JspRoot n) throws JasperException {
@@ -1170,7 +1166,7 @@ class Validator {
                                             Boolean.TYPE == expectedClass ||
                                             expectedClass.isEnum()) {
                                         try {
-                                            expressionFactory.coerceToType(attrs.getValue(i), expectedClass);
+                                            EXPRESSION_FACTORY.coerceToType(attrs.getValue(i), expectedClass);
                                         } catch (Exception e) {
                                             err.jspError
                                                 (n, "jsp.error.coerce_to_type",
