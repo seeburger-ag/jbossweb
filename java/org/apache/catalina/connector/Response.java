@@ -1342,6 +1342,29 @@ public class Response
     }
 
 
+    public void startUpgrade() {
+
+        if (isCommitted())
+            throw new IllegalStateException
+                (sm.getString("coyoteResponse.upgrade.ise"));
+
+        if (!connector.hasIoEvents())
+            throw new IllegalStateException
+                (sm.getString("coyoteResponse.upgrade.noEvents"));
+
+        if (!request.isEventMode() || request.getAsyncContext() != null)
+            throw new IllegalStateException
+                (sm.getString("coyoteResponse.upgrade.noHttpEventServlet"));
+
+        // Ignore any call from an included servlet
+        if (included)
+            return; 
+
+        request.getCoyoteRequest().action(ActionCode.UPGRADE, null);
+
+    }
+
+
     public void sendUpgrade()
             throws IOException {
 
@@ -1360,9 +1383,6 @@ public class Response
         // Ignore any call from an included servlet
         if (included)
             return; 
-
-        // Clear any data content that has been buffered
-        resetBuffer();
 
         // Output required by RFC2616. Protocol specific headers should have
         // already been set.

@@ -1657,11 +1657,15 @@ public class Http11AprProcessor implements ActionHook {
         }
 
         int statusCode = response.getStatus();
-        if ((statusCode == 101) || (statusCode == 204) || (statusCode == 205)
+        if ((statusCode == 204) || (statusCode == 205)
             || (statusCode == 304)) {
             // No entity body
             outputBuffer.addActiveFilter
                 (outputFilters[Constants.VOID_FILTER]);
+            entityBody = false;
+            contentDelimitation = true;
+        }
+        if (statusCode >= 100 && statusCode < 200) {
             entityBody = false;
             contentDelimitation = true;
         }

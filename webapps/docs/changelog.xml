@@ -17,6 +17,19 @@
 <body>
 
 <section name="JBoss Web 7.2.0.Alpha1 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         <jboss-jira>AS7-4469</jboss-jira>: Rebase SSL valve used by mod_headers. (remm)
+      </fix>
+      <fix>
+         <jboss-jira>AS7-4469</jboss-jira>: Fix SSL session id attribute name (standardized in Servlet 3). (remm)
+      </fix>
+      <fix>
+         Use the thread listener bind/unbind in the background process. (remm)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Coyote">
     <changelog>
       <fix>
@@ -31,15 +44,6 @@
       <add>
          Protocol upgrade API. (remm)
       </add>
-      <fix>
-         <jboss-jira>AS7-4469</jboss-jira>: Rebase SSL valve used by mod_headers. (remm)
-      </fix>
-      <fix>
-         <jboss-jira>AS7-4469</jboss-jira>: Fix SSL session id attribute name (standardized in Servlet 3). (remm)
-      </fix>
-      <fix>
-         Use the thread listener bind/unbind in the background process. (remm)
-      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
