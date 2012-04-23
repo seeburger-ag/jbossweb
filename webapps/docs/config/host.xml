@@ -137,14 +137,14 @@
   </subsection>
 
   <subsection name="rewrite">
-    <p><code>rewrite</code>describes how requests should be rewritten before processing.
+    <p><code>rewrite</code> describes how requests should be rewritten before processing.
        It adds the <code>RewriteValve</code> to the Virtual Host defined by <code>virtual-server</code>
        See <a href="../rewrite.html">URL Rewriting</a> for more information.
     </p>
 
     <attributes>
       <attribute name="condition" required="true">
-        <p>list of <code>condition</code>Elements. See condition below.</p>
+        <p>list of <code>condition</code> Elements. See condition below.</p>
       </attribute>
 
       <attribute name="pattern" required="true">
@@ -162,8 +162,9 @@
   </subsection>
 
   <subsection name="condition">
+    <p><code>condition</code> describes a condition of the conditions list to apply the pattern substitution</p>
+
     <attributes>
-    <p><code>condition</code>describes a condition of the conditions list to apply the pattern substitution</p>
       <attribute name="test" required="true">
         <p>a test string is first evaluated, before being matched against the specified pattern</p>
       </attribute>
@@ -179,9 +180,10 @@
   </subsection>
 
   <subsection name="sso">
-    <p><code>sso</code>describes how single sign on is processed.
+    <p><code>sso</code> describes how single sign on is processed.
        It adds a <code>Valve</code> to the Virtual Host defined by <code>virtual-server</code>
     </p>
+
     <attributes>
       <attribute name="cache-container" required="false">
         <p>Name of the cache container to use for clusterised sso</p>
