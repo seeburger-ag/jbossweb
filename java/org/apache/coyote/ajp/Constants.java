@@ -96,7 +96,9 @@ public final class Constants {
     /**
      * Default maximum total byte size for a AJP packet
      */
-    public static final int MAX_PACKET_SIZE = 8192;
+    public static final int MAX_PACKET_SIZE = 
+            Integer.valueOf(System.getProperty("org.apache.coyote.ajp.MAX_PACKET_SIZE", "8192")).intValue();
+
     /**
      * Size of basic packet header
      */
