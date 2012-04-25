@@ -24,6 +24,8 @@ package org.apache.tomcat.util.net;
  */
 public final class Constants {
 
+    public static final int MAX_THREADS = 
+            Integer.valueOf(System.getProperty("org.apache.tomcat.util.net.MAX_THREADS", "-1")).intValue();
 
     public static final boolean WAIT_FOR_THREAD = 
         Boolean.valueOf(System.getProperty("org.apache.tomcat.util.net.WAIT_FOR_THREAD", "false")).booleanValue();
@@ -48,6 +50,5 @@ public final class Constants {
      * This one is a Tomcat extension to the Servlet spec.
      */
     public static final String SESSION_ID_KEY = "javax.servlet.request.ssl_session_id";
-
 
 }

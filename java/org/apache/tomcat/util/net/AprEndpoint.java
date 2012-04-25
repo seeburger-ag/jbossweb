@@ -148,7 +148,7 @@ public class AprEndpoint {
     /**
      * Maximum amount of worker threads.
      */
-    protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 32 : 32 * Runtime.getRuntime().availableProcessors();
+    protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 32 : ((Constants.MAX_THREADS == -1) ? 32 * Runtime.getRuntime().availableProcessors() : Constants.MAX_THREADS);
     public void setMaxThreads(int maxThreads) { this.maxThreads = maxThreads; }
     public int getMaxThreads() { return maxThreads; }
 
