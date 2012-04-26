@@ -22,6 +22,9 @@
          <jboss-jira>AS7-4151</jboss-jira>: Add system property to configure AJP packet size, and another
          for endpoint max threads. (remm)
       </fix>
+      <fix>
+         <jboss-jira>AS7-4566</jboss-jira>: Add system property to configure connection timeout. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
