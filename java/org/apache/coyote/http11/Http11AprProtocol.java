@@ -230,11 +230,19 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         }
     }
 
-    public String getName() {
+    public String getJmxName() {
         String encodedAddr = "";
         if (getAddress() != null) {
             encodedAddr = "" + getAddress();
             encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-').replace(':', '_').replace('%', '-')) + "-";
+        }
+        return ("http-" + encodedAddr + endpoint.getPort());
+    }
+
+    public String getName() {
+        String encodedAddr = "";
+        if (getAddress() != null) {
+            encodedAddr = getAddress() + ":";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }
@@ -694,7 +702,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         long count = registerCount.incrementAndGet();
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
-                                + proto.getName() + ",name=HttpRequest" + count);
+                                + proto.getJmxName() + ",name=HttpRequest" + count);
                         if (log.isDebugEnabled()) {
                             log.debug("Register " + rpName);
                         }

@@ -261,12 +261,19 @@ public class AjpProtocol
         }
     }
 
-    // *
-    public String getName() {
+    public String getJmxName() {
         String encodedAddr = "";
         if (getAddress() != null) {
             encodedAddr = "" + getAddress();
             encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-').replace(':', '_').replace('%', '-')) + "-";
+        }
+        return ("ajp-" + encodedAddr + endpoint.getPort());
+    }
+
+    public String getName() {
+        String encodedAddr = "";
+        if (getAddress() != null) {
+            encodedAddr = getAddress() + ":";
         }
         return ("ajp-" + encodedAddr + endpoint.getPort());
     }
@@ -499,7 +506,7 @@ public class AjpProtocol
                         long count = registerCount.incrementAndGet();
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
-                                + proto.getName() + ",name=AjpRequest" + count);
+                                + proto.getJmxName() + ",name=AjpRequest" + count);
                         if (log.isDebugEnabled()) {
                             log.debug("Register " + rpName);
                         }
