@@ -1078,19 +1078,7 @@ public class JIoEndpoint {
             if (address == null) {
                 s = new Socket("localhost", port);
             } else {
-                if (address instanceof Inet6Address && ((Inet6Address)address).isLinkLocalAddress()) {
-                    /* We need to work-around a java6 bug with IPv6 */
-                    String addressString = address.getHostAddress();
-                    if (addressString.indexOf("%") != -1) {
-                        String addressStringWithoutSuffix = addressString.substring(0, addressString.indexOf("%"));
-                        InetAddress addressWithoutSuffix = InetAddress.getByName(addressStringWithoutSuffix);
-                        s = new Socket (addressWithoutSuffix, port , addressWithoutSuffix, 0);
-                    } else {
-                        s = new Socket(address, port, address, 0);
-                    }
-                } else  {
-                    s = new Socket(address, port);
-                }
+                s = new Socket(address, port);
                 // setting soLinger to a small value will help shutdown the
                 // connection quicker
                 s.setSoLinger(true, 0);

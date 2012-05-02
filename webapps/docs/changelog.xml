@@ -25,6 +25,9 @@
       <fix>
          <jboss-jira>AS7-4566</jboss-jira>: Add system property to configure connection timeout. (remm)
       </fix>
+      <fix>
+         Drop fix for <jboss-jira>AS7-4566</jboss-jira> (problem with IPv6 on shutdown on JDK 6). (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
