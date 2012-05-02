@@ -50,8 +50,7 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 
 	private final static String KEY = JspApplicationContextImpl.class.getName();
 
-    private final ExpressionFactory expressionFactory =
-            ExpressionFactory.newInstance();
+    private final ExpressionFactory expressionFactory = ExpressionFactory.newInstance();
 
 	private final List<ELContextListener> contextListeners = new ArrayList<ELContextListener>();
 

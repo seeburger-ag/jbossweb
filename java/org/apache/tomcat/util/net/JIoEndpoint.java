@@ -24,6 +24,7 @@ package org.apache.tomcat.util.net;
 
 import java.io.IOException;
 import java.net.BindException;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -1078,8 +1079,8 @@ public class JIoEndpoint {
                 s = new Socket("localhost", port);
             } else {
                 s = new Socket(address, port);
-                    // setting soLinger to a small value will help shutdown the
-                    // connection quicker
+                // setting soLinger to a small value will help shutdown the
+                // connection quicker
                 s.setSoLinger(true, 0);
             }
         } catch (Exception e) {
