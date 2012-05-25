@@ -344,6 +344,9 @@ public class CoyoteAdapter
             req.getParameters().setQueryStringEncoding
                 (connector.getURIEncoding());
 
+            // Set the context classloader, since in that case it might not be set
+            Thread.currentThread().setContextClassLoader(CoyoteAdapter.class.getClassLoader());
+
         }
 
         // Check if the connector was stopped

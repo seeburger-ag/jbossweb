@@ -28,6 +28,10 @@
       <fix>
          Drop fix for <jboss-jira>AS7-4566</jboss-jira> (problem with IPv6 on shutdown on JDK 6). (remm)
       </fix>
+      <fix>
+         <jboss-jira>JBPAPP-9126</jboss-jira>: Set the context classloader as soon as possible on newly
+         created threads. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
