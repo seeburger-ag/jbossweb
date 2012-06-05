@@ -31,7 +31,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.security.cert.X509Certificate;
 
-import org.apache.tomcat.util.net.Constants;
 import org.apache.tomcat.util.net.SSLSupport;
 
 /** JSSESupport
@@ -149,15 +148,6 @@ class JSSESupport implements SSLSupport {
             ssl.setNeedClientAuth(true);
         }
 
-        if (ssl.getEnabledCipherSuites().length == 0) {
-            // Handshake is never going to be successful.
-            // Assume this is because handshakes are disabled
-            log.warn("SSL server initiated renegotiation is disabled, closing connection");
-            session.invalidate();
-            ssl.close();
-            return;
-        }
-
         InputStream in = ssl.getInputStream();
         int oldTimeout = ssl.getSoTimeout();
         ssl.setSoTimeout(1000);
@@ -180,7 +170,10 @@ class JSSESupport implements SSLSupport {
                 break;
             }
         }
-        ssl.setSoTimeout(oldTimeout);
+        // If legacy re-negotiation is disabled, socked could be closed here 
+        if (!ssl.isClosed()) {
+            ssl.setSoTimeout(oldTimeout);
+        }
         if (listener.completed == false) {
             throw new SocketException("SSL Cert handshake timeout");
         }
@@ -196,7 +189,7 @@ class JSSESupport implements SSLSupport {
         SSLSupport.CipherData c_aux[]=ciphers;
         if (session == null)
             return null;
-        Integer keySize = (Integer) session.getValue(Constants.KEY_SIZE_KEY);
+        Integer keySize = (Integer) session.getValue(KEY_SIZE_KEY);
         if (keySize == null) {
             int size = 0;
             String cipherSuite = session.getCipherSuite();
@@ -206,8 +199,8 @@ class JSSESupport implements SSLSupport {
                     break;
                 }
             }
-            keySize = Integer.valueOf(size);
-            session.putValue(Constants.KEY_SIZE_KEY, keySize);
+            keySize = new Integer(size);
+            session.putValue(KEY_SIZE_KEY, keySize);
         }
         return keySize;
     }
@@ -221,7 +214,7 @@ class JSSESupport implements SSLSupport {
         byte [] ssl_session = session.getId();
         if ( ssl_session == null) 
             return null;
-        StringBuilder buf=new StringBuilder("");
+        StringBuffer buf=new StringBuffer("");
         for(int x=0; x<ssl_session.length; x++) {
             String digit=Integer.toHexString((int)ssl_session[x]);
             if (digit.length()<2) buf.append('0');

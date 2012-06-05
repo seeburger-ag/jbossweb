@@ -178,7 +178,7 @@ public class ChannelImpl implements Channel {
     }
     
     public String toString() {
-        StringBuilder buf = new StringBuilder(super.toString());
+        StringBuffer buf = new StringBuffer(super.toString());
         buf.append("; channelId=").append(getId());
         return buf.toString();
     }

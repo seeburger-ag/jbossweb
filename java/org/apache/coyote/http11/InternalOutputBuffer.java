@@ -472,14 +472,12 @@ public class InternalOutputBuffer
      */
     public void sendHeader(MessageBytes name, MessageBytes value) {
 
-        if (name.getLength() > 0 && !value.isNull()) {
-            write(name);
-            buf[pos++] = Constants.COLON;
-            buf[pos++] = Constants.SP;
-            write(value);
-            buf[pos++] = Constants.CR;
-            buf[pos++] = Constants.LF;
-        }
+        write(name);
+        buf[pos++] = Constants.COLON;
+        buf[pos++] = Constants.SP;
+        write(value);
+        buf[pos++] = Constants.CR;
+        buf[pos++] = Constants.LF;
 
     }
 
@@ -645,7 +643,9 @@ public class InternalOutputBuffer
             // but is the only consistent approach within the current
             // servlet framework.  It must suffice until servlet output
             // streams properly encode their output.
-            if (((c <= 31) && (c != 9)) || c == 127 || c > 255) {
+            if ((c <= 31) && (c != 9)) {
+                c = ' ';
+            } else if (c == 127) {
                 c = ' ';
             }
             buf[pos++] = (byte) c;
