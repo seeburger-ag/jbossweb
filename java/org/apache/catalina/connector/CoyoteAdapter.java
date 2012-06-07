@@ -264,7 +264,9 @@ public class CoyoteAdapter
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
 
-                if (!error && (request.getAttribute(RequestDispatcher.ERROR_EXCEPTION) != null)) {
+                Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
+                if (!error && ((request.getAttribute(RequestDispatcher.ERROR_EXCEPTION) != null)
+                        || (asyncContext != null && asyncContext.getError() != null))) {
                     // An unexpected exception occurred while processing the event, so
                     // error should be called
                     request.getEvent().setType(HttpEvent.EventType.ERROR);
@@ -343,6 +345,9 @@ public class CoyoteAdapter
             // Set query string encoding
             req.getParameters().setQueryStringEncoding
                 (connector.getURIEncoding());
+
+            // Set the context classloader, since in that case it might not be set
+            Thread.currentThread().setContextClassLoader(CoyoteAdapter.class.getClassLoader());
 
         }
 

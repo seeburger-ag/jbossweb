@@ -3368,6 +3368,7 @@ public class Request
         protected ServletContext servletContext = null;
         protected String path = null;
         protected Runnable runnable = null;
+        protected Throwable error = null;
         protected boolean useAttributes = false;
         protected boolean original = true;
         protected boolean ready = true;
@@ -3469,6 +3470,7 @@ public class Request
             runnable = null;
             useAttributes = false;
             ready = true;
+            error = null;
         }
         
         public Map<AsyncListener, AsyncListenerRegistration> getAsyncListeners() {
@@ -3507,6 +3509,15 @@ public class Request
                 throw new ServletException(sm.getString("coyoteRequest.createListener", clazz.getName()), e);
             }
             return listenerInstance;
+        }
+
+        public Throwable getError() {
+            return error;
+        }
+
+        public void setError(Throwable error) {
+            ready = true;
+            this.error = error;
         }
 
     }

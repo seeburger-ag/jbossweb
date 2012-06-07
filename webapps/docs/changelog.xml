@@ -28,6 +28,14 @@
       <fix>
          Use the thread listener bind/unbind in the background process. (remm)
       </fix>
+      <fix>
+         <jboss-jira>JBPAPP-9126</jboss-jira>: Set the context classloader as soon as possible on newly
+         created threads. (remm)
+      </fix>
+      <fix>
+         <jboss-jira>AS7-4232</jboss-jira>: Modify async error processing based on a stricter spec 
+         interpretation. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
