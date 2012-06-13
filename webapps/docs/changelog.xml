@@ -59,6 +59,9 @@
       <fix>
          <jboss-jira>AS7-4566</jboss-jira>: Add system property to configure connection timeout. (remm)
       </fix>
+      <add>
+         NIO 2 HTTP connector. (benothman)
+      </add>
     </changelog>
   </subsection>
   <subsection name="Jasper">
