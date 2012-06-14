@@ -51,7 +51,7 @@ public abstract class Http11AbstractProcessor implements ActionHook {
 	 * Logger.
 	 */
 	protected static org.jboss.logging.Logger log = org.jboss.logging.Logger
-			.getLogger(Http11Processor.class);
+			.getLogger(Http11AbstractProcessor.class);
 
 	/**
 	 * The string manager for this package.

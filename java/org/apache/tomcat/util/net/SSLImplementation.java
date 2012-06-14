@@ -37,11 +37,7 @@ abstract public class SSLImplementation {
     private static org.jboss.logging.Logger logger = org.jboss.logging.Logger
             .getLogger(SSLImplementation.class);
 
-    // The default implementations in our search path
-    private static final String JSSEImplementationClass = "org.apache.tomcat.util.net.jsse.JSSEImplementation";
-
-    private static final String[] implementations = { JSSEImplementationClass,
-            "org.apache.tomcat.util.net.jsse.NioJSSEImplementation" };
+    private static final String[] implementations = { "org.apache.tomcat.util.net.jsse.NioJSSEImplementation" };
 
     /**
      * @return the default implementation of {@code SSLImplementation}
@@ -74,13 +70,6 @@ abstract public class SSLImplementation {
             return getInstance();
 
         try {
-            // Workaround for the J2SE 1.4.x classloading problem (under
-            // Solaris).
-            // Class.forName(..) fails without creating class using new.
-            // This is an ugly workaround.
-            if (JSSEImplementationClass.equals(className)) {
-                return new org.apache.tomcat.util.net.jsse.JSSEImplementation();
-            }
             Class<?> clazz = Class.forName(className);
             return (SSLImplementation) clazz.newInstance();
         } catch (Exception e) {
@@ -97,22 +86,10 @@ abstract public class SSLImplementation {
     abstract public String getImplementationName();
 
     /**
-     * @return a new instance of {@link ServerSocketFactory} 
-     */
-    abstract public ServerSocketFactory getServerSocketFactory();
-
-    /**
      * 
      * @return a new instance of {@link NioJSSESocketChannelFactory}
      */
     public abstract NioJSSESocketChannelFactory getServerSocketChannelFactory();
-
-    /**
-     * Return a {@link SSLSupport} attached to the socket
-     * @param sock
-     * @return a {@link SSLSupport} attached to the socket
-     */
-    abstract public SSLSupport getSSLSupport(Socket sock);
 
     /**
      * @param channel

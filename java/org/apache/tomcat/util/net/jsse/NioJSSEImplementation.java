@@ -28,7 +28,6 @@ import javax.net.ssl.SSLSession;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SSLSupport;
-import org.apache.tomcat.util.net.ServerSocketFactory;
 
 /**
  * {@code NioJSSEImplementation}
@@ -98,29 +97,6 @@ public class NioJSSEImplementation extends SSLImplementation {
 	 */
 	public SSLSupport getSSLSupport(SSLSession session) {
 		return factory.getSSLSupport(session);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.apache.tomcat.util.net.SSLImplementation#getServerSocketFactory()
-	 */
-	@Override
-	public ServerSocketFactory getServerSocketFactory() {
-		throw new RuntimeException("Not supported for class " + ServerSocketFactory.class.getName());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.apache.tomcat.util.net.SSLImplementation#getSSLSupport(java.net.Socket
-	 * )
-	 */
-	@Override
-	public SSLSupport getSSLSupport(Socket sock) {
-		throw new RuntimeException("Not supported for class " + Socket.class.getName());
 	}
 
 }

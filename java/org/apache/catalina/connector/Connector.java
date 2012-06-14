@@ -594,10 +594,7 @@ public class Connector
         } else {
             if ("HTTP/1.1".equals(protocol) || "http".equals(protocol)) {
                 setProtocolHandlerClassName
-                    ("org.apache.coyote.http11.Http11Protocol");
-            } else if ("AJP/1.3".equals(protocol) || "ajp".equals(protocol)) {
-                setProtocolHandlerClassName
-                    ("org.apache.coyote.ajp.AjpProtocol");
+                    ("org.apache.coyote.http11.Http11NioProtocol");
             } else if (protocol != null) {
                 setProtocolHandlerClassName(protocol);
             }

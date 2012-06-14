@@ -16,7 +16,7 @@
 
 <body>
 
-<section name="JBoss Web 7.2.0.Alpha1 (remm)">
+<section name="JBoss Web 7.7.0.Alpha1 (remm)">
   <subsection name="Catalina">
     <changelog>
       <fix>
@@ -61,6 +61,9 @@
       </fix>
       <add>
          NIO 2 HTTP connector. (benothman)
+      </add>
+      <add>
+         Drop java.io connectors (AJP and HTTP). AJP now requires native. (remm)
       </add>
     </changelog>
   </subsection>
