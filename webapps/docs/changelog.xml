@@ -45,6 +45,9 @@
       <fix>
          Use per webapp expression factory. (markt)
       </fix>
+      <fix>
+         <jira>242</jira>: Fix rare leak with tag pooling. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
