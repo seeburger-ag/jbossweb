@@ -51,6 +51,12 @@ Closed connection to localhost:9999
     }
 }
 </source>
+Or edit the standalone.xml and add afiter the <code>extensions</code>:
+<source>
+   &lt;system-properties&gt;
+       &lt;property name="org.apache.catalina.JSESSIONID" value="MYID"/&gt;
+    &lt;/system-properties&gt;
+</source>
   </p>
 </section>
 
@@ -158,6 +164,10 @@ Closed connection to localhost:9999
       <code>2048</code> bytes.</p>
     </property>
 
+    <property name="org.apache.coyote.http11.Http11Protocol.SERVER">
+      <p>Server Identity stringr: the <code>Server:</code> header. The default value is 
+      <code>Apache-Coyote/1.1</code>.</p>
+    </property>
   </properties>
 
 </section>
