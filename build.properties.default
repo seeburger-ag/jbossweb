@@ -20,9 +20,10 @@ version.tag=SNAPSHOT
 # Please note this path must be absolute, not relative,
 # as it is referenced with different working directory
 # contexts by the various build scripts.
-base.path=/usr/share/java
+#base.path=/usr/share/java
 #base.path=C:/path/to/the/repository
 #base.path=/usr/local
+base.path=/NotBackedUp/Patches/JBossWeb-invalidParameters
 
 compile.source=1.6
 compile.target=1.6
@@ -36,11 +37,13 @@ base-sf.loc=http://downloads.sourceforge.net
 jdt.home=${base.path}/plugins
 jdt.lib=${jdt.home}
 jdt.jar=${jdt.lib}/org.eclipse.jdt.core_3.7.0.v_B61.jar
-jdt.loc=http://download.eclipse.org/eclipse/downloads/drops/R-3.7-201106131736/org.eclipse.jdt-3.7.zip
+#jdt.loc=http://download.eclipse.org/eclipse/downloads/drops/R-3.7-201106131736/org.eclipse.jdt-3.7.zip
+jdt.loc=http://archive.eclipse.org/eclipse/downloads/drops/R-3.7-201106131736/org.eclipse.jdt-3.7.zip
 
 jdt-src.home=${base.path}/eclipse/plugins
 jdt-src.lib=${jdt.home}
-jdt-src.loc=http://download.eclipse.org/eclipse/downloads/drops/R-3.7-201106131736/eclipse-sourceBuild-srcIncluded-3.7.zip
+#jdt-src.loc=http://download.eclipse.org/eclipse/downloads/drops/R-3.7-201106131736/eclipse-sourceBuild-srcIncluded-3.7.zip
+jdt-src.loc=http://archive.eclipse.org/eclipse/downloads/drops/R-3.7-201106131736/eclipse-sourceBuild-srcIncluded-3.7.zip
 
 # ----- Dojo Toolkit (for test webapp) -----
 dojo-js.home=${base.path}/dojo-release-1.4.3
