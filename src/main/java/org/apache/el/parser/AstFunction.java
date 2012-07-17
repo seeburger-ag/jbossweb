@@ -18,6 +18,8 @@
 
 package org.apache.el.parser;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -25,7 +27,6 @@ import javax.el.ELException;
 import javax.el.FunctionMapper;
 
 import org.apache.el.lang.EvaluationContext;
-import org.apache.el.util.MessageFactory;
 
 
 /**
@@ -66,12 +67,11 @@ public final class AstFunction extends SimpleNode {
 
         // quickly validate again for this request
         if (fnMapper == null) {
-            throw new ELException(MessageFactory.get("error.fnMapper.null"));
+            throw new ELException(MESSAGES.missingFunctionMapper());
         }
         Method m = fnMapper.resolveFunction(this.prefix, this.localName);
         if (m == null) {
-            throw new ELException(MessageFactory.get("error.fnMapper.method",
-                    this.getOutputName()));
+            throw new ELException(MESSAGES.functionNotFound(this.getOutputName()));
         }
         return m.getReturnType();
     }
@@ -84,12 +84,11 @@ public final class AstFunction extends SimpleNode {
 
         // quickly validate again for this request
         if (fnMapper == null) {
-            throw new ELException(MessageFactory.get("error.fnMapper.null"));
+            throw new ELException(MESSAGES.missingFunctionMapper());
         }
         Method m = fnMapper.resolveFunction(this.prefix, this.localName);
         if (m == null) {
-            throw new ELException(MessageFactory.get("error.fnMapper.method",
-                    this.getOutputName()));
+            throw new ELException(MESSAGES.functionNotFound(this.getOutputName()));
         }
 
         Class<?>[] paramTypes = m.getParameterTypes();
@@ -104,14 +103,13 @@ public final class AstFunction extends SimpleNode {
                     params[i] = coerceToType(params[i], paramTypes[i]);
                 }
             } catch (ELException ele) {
-                throw new ELException(MessageFactory.get("error.function", this
-                        .getOutputName()), ele);
+                throw new ELException(MESSAGES.errorCallingFunction(this.getOutputName()), ele);
             }
         }
         try {
             result = m.invoke(null, params);
         } catch (IllegalAccessException iae) {
-            throw new ELException(MessageFactory.get("error.function", this
+            throw new ELException(MESSAGES.errorCallingFunction(this
                     .getOutputName()), iae);
         } catch (InvocationTargetException ite) {
             Throwable cause = ite.getCause();
@@ -121,7 +119,7 @@ public final class AstFunction extends SimpleNode {
             if (cause instanceof VirtualMachineError) {
                 throw (VirtualMachineError) cause;
             }
-            throw new ELException(MessageFactory.get("error.function", this
+            throw new ELException(MESSAGES.errorCallingFunction(this
                     .getOutputName()), cause);
         }
         return result;

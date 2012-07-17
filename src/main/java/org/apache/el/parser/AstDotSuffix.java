@@ -18,10 +18,11 @@
 
 package org.apache.el.parser;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import javax.el.ELException;
 
 import org.apache.el.lang.EvaluationContext;
-import org.apache.el.util.MessageFactory;
 import org.apache.el.util.Validation;
 
 
@@ -43,8 +44,7 @@ public final class AstDotSuffix extends SimpleNode {
     @Override
     public void setImage(String image) {
         if (!Validation.isIdentifier(image)) {
-            throw new ELException(MessageFactory.get("error.identifier.notjava",
-                    image));
+            throw new ELException(MESSAGES.errorNotJavaIdentifier(image));
         }
         this.image = image;
     }

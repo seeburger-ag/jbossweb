@@ -18,6 +18,8 @@
 
 package org.apache.el.parser;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,7 +34,6 @@ import javax.el.ValueReference;
 
 import org.apache.el.lang.ELSupport;
 import org.apache.el.lang.EvaluationContext;
-import org.apache.el.util.MessageFactory;
 import org.apache.el.util.ReflectionUtil;
 
 
@@ -83,8 +84,7 @@ public final class AstValue extends SimpleNode {
         ctx.setPropertyResolved(false);
         Class<?> result = ctx.getELResolver().getType(ctx, t.base, t.property);
         if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", t.base, t.property));
+            throw new PropertyNotFoundException(MESSAGES.errorResolving(t.base, t.property));
         }
         return result;
     }
@@ -95,8 +95,7 @@ public final class AstValue extends SimpleNode {
 
         // if our base is null (we know there are more properties to evaluate)
         if (base == null) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.unreachable.base", this.children[0].getImage()));
+            throw new PropertyNotFoundException(MESSAGES.errorResolvingIdentifierType(this.children[0].getImage()));
         }
 
         // set up our start/end
@@ -124,16 +123,14 @@ public final class AstValue extends SimpleNode {
             // if we are in this block, we have more properties to resolve,
             // but our base was null
             if (base == null || property == null) {
-                throw new PropertyNotFoundException(MessageFactory.get(
-                        "error.unreachable.property", property));
+                throw new PropertyNotFoundException(MESSAGES.errorResolvingProperty(property));
             }
         }
 
         property = this.children[i].getValue(ctx);
 
         if (property == null) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.unreachable.property", this.children[i]));
+            throw new PropertyNotFoundException(MESSAGES.errorResolvingProperty(this.children[i]));
         }
 
         Target t = new Target();
@@ -171,8 +168,7 @@ public final class AstValue extends SimpleNode {
             }
         }
         if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", base, suffix));
+            throw new PropertyNotFoundException(MESSAGES.errorResolving(base, suffix));
         }
         return base;
     }
@@ -184,8 +180,7 @@ public final class AstValue extends SimpleNode {
         boolean result =
             ctx.getELResolver().isReadOnly(ctx, t.base, t.property);
         if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", t.base, t.property));
+            throw new PropertyNotFoundException(MESSAGES.errorResolving(t.base, t.property));
         }
         return result;
     }
@@ -207,8 +202,7 @@ public final class AstValue extends SimpleNode {
             resolver.setValue(ctx, t.base, t.property, value);
         }
         if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled", t.base, t.property));
+            throw new PropertyNotFoundException(MESSAGES.errorResolving(t.base, t.property));
         }
     }
 

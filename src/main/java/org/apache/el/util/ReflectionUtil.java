@@ -16,6 +16,8 @@
  */
 package org.apache.el.util;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -118,8 +120,7 @@ public class ReflectionUtil {
             Class<?>[] paramTypes, Object[] paramValues)
             throws MethodNotFoundException {
         if (base == null || property == null) {
-            throw new MethodNotFoundException(MessageFactory.get(
-                    "error.method.notfound", base, property,
+            throw new MethodNotFoundException(MESSAGES.methodNotFound(base, property,
                     paramString(paramTypes)));
         }
 
@@ -234,16 +235,14 @@ public class ReflectionUtil {
             if (match == null) {
                 // If multiple methods have the same matching number of parameters
                 // the match is ambiguous so throw an exception
-                throw new MethodNotFoundException(MessageFactory.get(
-                        "error.method.ambiguous", base, property,
+                throw new MethodNotFoundException(MESSAGES.ambiguousMethod(base, property,
                         paramString(paramTypes)));
                 }
         }
 
         // Handle case where no match at all was found
         if (match == null) {
-            throw new MethodNotFoundException(MessageFactory.get(
-                        "error.method.notfound", base, property,
+            throw new MethodNotFoundException(MESSAGES.methodNotFound(base, property,
                         paramString(paramTypes)));
         }
 

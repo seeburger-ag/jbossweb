@@ -65,7 +65,11 @@ public class StringManager {
 
     private StringManager(String packageName) {
 	String bundleName = packageName + ".LocalStrings";
+    try {
 	bundle = ResourceBundle.getBundle(bundleName);
+    } catch (MissingResourceException mre) {
+        // Ignore
+    }
     }
 
     /**
@@ -79,6 +83,9 @@ public class StringManager {
             String msg = "key is null";
 
             throw new NullPointerException(msg);
+        }
+        if (bundle == null) {
+            return key;
         }
 
         String str = null;

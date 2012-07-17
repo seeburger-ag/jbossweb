@@ -52,6 +52,9 @@ public class Localizer {
      * @return Localized error message
      */
     public static String getMessage(String errCode) {
+        if (bundle == null) {
+            return errCode;
+        }
 	String errMsg = errCode;
 	try {
 	    errMsg = bundle.getString(errCode);
@@ -145,6 +148,9 @@ public class Localizer {
      * @return Localized error message
      */
     public static String getMessage(String errCode, Object[] args) {
+        if (bundle == null) {
+            return errCode;
+        }
 	String errMsg = errCode;
 	try {
 	    errMsg = bundle.getString(errCode);

@@ -18,6 +18,8 @@
 
 package org.apache.el.parser;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.util.Arrays;
 
 import javax.el.ELException;
@@ -27,7 +29,6 @@ import javax.el.ValueReference;
 
 import org.apache.el.lang.ELSupport;
 import org.apache.el.lang.EvaluationContext;
-import org.apache.el.util.MessageFactory;
 
 
 /**
@@ -139,7 +140,7 @@ public abstract class SimpleNode extends ELSupport implements Node {
     @Override
     public void setValue(EvaluationContext ctx, Object value)
             throws ELException {
-        throw new PropertyNotWritableException(MessageFactory.get("error.syntax.set"));
+        throw new PropertyNotWritableException(MESSAGES.errorWithSetSyntax());
     }
 
     @Override

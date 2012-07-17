@@ -17,14 +17,14 @@
 
 package org.apache.el.lang;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import javax.el.ELException;
-
-import org.apache.el.util.MessageFactory;
 
 
 /**
@@ -104,7 +104,7 @@ public class ELSupport {
             final Comparable<Object> comparable = (Comparable<Object>) obj1;
             return (obj0 != null) ? -comparable.compareTo(obj0) : -1;
         }
-        throw new ELException(MessageFactory.get("error.compare", obj0, obj1));
+        throw new ELException(MESSAGES.errorComparing(obj0, obj1));
     }
 
     /**
@@ -171,16 +171,14 @@ public class ELSupport {
         }
 
         if (!(obj instanceof String)) {
-            throw new ELException(MessageFactory.get("error.convert",
-                    obj, obj.getClass(), type));
+            throw new ELException(MESSAGES.errorConverting(obj, obj.getClass(), type));
         }
 
         Enum<?> result;
         try {
              result = Enum.valueOf(type, (String) obj);
         } catch (IllegalArgumentException iae) {
-            throw new ELException(MessageFactory.get("error.convert",
-                    obj, obj.getClass(), type));
+            throw new ELException(MESSAGES.errorConverting(obj, obj.getClass(), type));
         }
         return result;
     }
@@ -204,8 +202,7 @@ public class ELSupport {
             return Boolean.valueOf((String) obj);
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
-                obj, obj.getClass(), Boolean.class));
+        throw new ELException(MESSAGES.errorConverting(obj, obj.getClass(), Boolean.class));
     }
 
     public static final Character coerceToCharacter(final Object obj)
@@ -224,8 +221,7 @@ public class ELSupport {
             return (Character) obj;
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
-                obj, objType, Character.class));
+        throw new ELException(MESSAGES.errorConverting(obj, objType, Character.class));
     }
 
     protected static final Number coerceToNumber(final Number number,
@@ -270,8 +266,7 @@ public class ELSupport {
             return number;
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
-                number, number.getClass(), type));
+        throw new ELException(MESSAGES.errorConverting(number, number.getClass(), type));
     }
 
     public static final Number coerceToNumber(final Object obj,
@@ -291,8 +286,7 @@ public class ELSupport {
                     .charValue()), type);
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
-                obj, obj.getClass(), type));
+        throw new ELException(MESSAGES.errorConverting(obj, obj.getClass(), type));
     }
 
     protected static final Number coerceToNumber(final String val,
@@ -301,69 +295,60 @@ public class ELSupport {
             try {
                 return Long.valueOf(val);
             } catch (NumberFormatException nfe) {
-                throw new ELException(MessageFactory.get("error.convert",
-                        val, String.class, type));
+                throw new ELException(MESSAGES.errorConverting(val, String.class, type));
             }
         }
         if (Integer.TYPE == type || Integer.class.equals(type)) {
             try {
                 return Integer.valueOf(val);
             } catch (NumberFormatException nfe) {
-                throw new ELException(MessageFactory.get("error.convert",
-                        val, String.class, type));
+                throw new ELException(MESSAGES.errorConverting(val, String.class, type));
             }
         }
         if (Double.TYPE == type || Double.class.equals(type)) {
             try {
                 return Double.valueOf(val);
             } catch (NumberFormatException nfe) {
-                throw new ELException(MessageFactory.get("error.convert",
-                        val, String.class, type));
+                throw new ELException(MESSAGES.errorConverting(val, String.class, type));
             }
         }
         if (BigInteger.class.equals(type)) {
             try {
                 return new BigInteger(val);
             } catch (NumberFormatException nfe) {
-                throw new ELException(MessageFactory.get("error.convert",
-                        val, String.class, type));
+                throw new ELException(MESSAGES.errorConverting(val, String.class, type));
             }
         }
         if (BigDecimal.class.equals(type)) {
             try {
                 return new BigDecimal(val);
             } catch (NumberFormatException nfe) {
-                throw new ELException(MessageFactory.get("error.convert",
-                        val, String.class, type));
+                throw new ELException(MESSAGES.errorConverting(val, String.class, type));
             }
         }
         if (Byte.TYPE == type || Byte.class.equals(type)) {
             try {
                 return Byte.valueOf(val);
             } catch (NumberFormatException nfe) {
-                throw new ELException(MessageFactory.get("error.convert",
-                        val, String.class, type));
+                throw new ELException(MESSAGES.errorConverting(val, String.class, type));
             }
         }
         if (Short.TYPE == type || Short.class.equals(type)) {
             try {
                 return Short.valueOf(val);
             } catch (NumberFormatException nfe) {
-                throw new ELException(MessageFactory.get("error.convert",
-                        val, String.class, type));
+                throw new ELException(MESSAGES.errorConverting(val, String.class, type));
             }
         }
         if (Float.TYPE == type || Float.class.equals(type)) {
             try {
                 return Float.valueOf(val);
             } catch (NumberFormatException nfe) {
-                throw new ELException(MessageFactory.get("error.convert",
-                        val, String.class, type));
+                throw new ELException(MESSAGES.errorConverting(val, String.class, type));
             }
         }
 
-        throw new ELException(MessageFactory.get("error.convert",
-                val, String.class, type));
+        throw new ELException(MESSAGES.errorConverting(val, String.class, type));
     }
 
     /**
@@ -417,8 +402,7 @@ public class ELSupport {
                 return editor.getValue();
             }
         }
-        throw new ELException(MessageFactory.get("error.convert",
-                obj, obj.getClass(), type));
+        throw new ELException(MESSAGES.errorConverting(obj, obj.getClass(), type));
     }
 
     public static final boolean isBigDecimalOp(final Object obj0,

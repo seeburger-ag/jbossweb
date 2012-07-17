@@ -106,6 +106,9 @@ public class StringManager {
 
             throw new IllegalArgumentException(msg);
         }
+        if (bundle == null) {
+            return key;
+        }
 
         String str = null;
 

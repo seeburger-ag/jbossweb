@@ -17,10 +17,10 @@
 
 package org.apache.el.lang;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
-import org.apache.el.util.MessageFactory;
 
 
 /**
@@ -404,8 +404,7 @@ public abstract class ELArithmetic {
             return coerce(Short.valueOf((short) ((Character) obj).charValue()));
         }
 
-        throw new IllegalArgumentException(MessageFactory.get("error.convert",
-                obj, obj.getClass(), "Number"));
+        throw MESSAGES.errorConvertingWithException(obj, obj.getClass(), "Number");
     }
 
     protected abstract Number coerce(final String str);

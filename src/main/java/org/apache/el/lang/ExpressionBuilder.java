@@ -17,6 +17,8 @@
 
 package org.apache.el.lang;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.security.AccessController;
@@ -43,7 +45,6 @@ import org.apache.el.parser.ELParser;
 import org.apache.el.parser.Node;
 import org.apache.el.parser.NodeVisitor;
 import org.apache.el.util.ConcurrentCache;
-import org.apache.el.util.MessageFactory;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
@@ -114,7 +115,7 @@ public final class ExpressionBuilder implements NodeVisitor {
     private static final Node createNodeInternal(String expr)
             throws ELException {
         if (expr == null) {
-            throw new ELException(MessageFactory.get("error.null"));
+            throw new ELException(MESSAGES.errorNullExpression());
         }
 
 		Node n = (cache != null) ? cache.get(expr) : unlimitedCache.get(expr);
@@ -138,8 +139,7 @@ public final class ExpressionBuilder implements NodeVisitor {
                             type = child.getClass();
                         else {
                             if (!type.equals(child.getClass())) {
-                                throw new ELException(MessageFactory.get(
-                                        "error.mixed", expr));
+                                throw new ELException(MESSAGES.errorMixedExpression(expr));
                             }
                         }
                     }
@@ -155,8 +155,7 @@ public final class ExpressionBuilder implements NodeVisitor {
                     unlimitedCache.put(expr, n);
                 }
             } catch (Exception e) {
-                throw new ELException(
-                        MessageFactory.get("error.parseFail", expr), e);
+                throw new ELException(MESSAGES.errorParse(expr), e);
             }
         }
         return n;
@@ -202,19 +201,17 @@ public final class ExpressionBuilder implements NodeVisitor {
             AstFunction funcNode = (AstFunction) node;
 
             if (this.fnMapper == null) {
-                throw new ELException(MessageFactory.get("error.fnMapper.null"));
+                throw new ELException(MESSAGES.missingFunctionMapper());
             }
             Method m = fnMapper.resolveFunction(funcNode.getPrefix(), funcNode
                     .getLocalName());
             if (m == null) {
-                throw new ELException(MessageFactory.get(
-                        "error.fnMapper.method", funcNode.getOutputName()));
+                throw new ELException(MESSAGES.functionNotFound(funcNode.getOutputName()));
             }
             int pcnt = m.getParameterTypes().length;
             if (node.jjtGetNumChildren() != pcnt) {
-                throw new ELException(MessageFactory.get(
-                        "error.fnMapper.paramcount", funcNode.getOutputName(),
-                        "" + pcnt, "" + node.jjtGetNumChildren()));
+                throw new ELException(MESSAGES.functionWrongParameterCount(funcNode.getOutputName(),
+                        pcnt, node.jjtGetNumChildren()));
             }
         } else if (node instanceof AstIdentifier && this.varMapper != null) {
             String variable = ((AstIdentifier) node).getImage();
@@ -235,8 +232,7 @@ public final class ExpressionBuilder implements NodeVisitor {
             Class<?>[] expectedParamTypes) throws ELException {
         Node n = this.build();
         if (!n.isParametersProvided() && expectedParamTypes == null) {
-            throw new NullPointerException(MessageFactory
-                    .get("error.method.nullParms"));
+            throw new NullPointerException(MESSAGES.nullParameterTypes());
         }
         if (n instanceof AstValue || n instanceof AstIdentifier) {
             return new MethodExpressionImpl(expression, n, this.fnMapper,

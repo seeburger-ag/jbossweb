@@ -18,6 +18,8 @@
 
 package org.apache.el.parser;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import javax.el.ELException;
 import javax.el.MethodExpression;
 import javax.el.MethodInfo;
@@ -28,7 +30,6 @@ import javax.el.ValueReference;
 import javax.el.VariableMapper;
 
 import org.apache.el.lang.EvaluationContext;
-import org.apache.el.util.MessageFactory;
 import org.apache.el.util.Validation;
 
 
@@ -53,8 +54,7 @@ public final class AstIdentifier extends SimpleNode {
         ctx.setPropertyResolved(false);
         Class<?> result = ctx.getELResolver().getType(ctx, null, this.image);
         if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled.null", this.image));
+            throw new PropertyNotFoundException(MESSAGES.errorNullBaseObject(this.image));
         }
         return result;
     }
@@ -71,8 +71,7 @@ public final class AstIdentifier extends SimpleNode {
         ctx.setPropertyResolved(false);
         Object result = ctx.getELResolver().getValue(ctx, null, this.image);
         if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled.null", this.image));
+            throw new PropertyNotFoundException(MESSAGES.errorNullBaseObject(this.image));
         }
         return result;
     }
@@ -89,8 +88,7 @@ public final class AstIdentifier extends SimpleNode {
         ctx.setPropertyResolved(false);
         boolean result = ctx.getELResolver().isReadOnly(ctx, null, this.image);
         if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled.null", this.image));
+            throw new PropertyNotFoundException(MESSAGES.errorNullBaseObject(this.image));
         }
         return result;
     }
@@ -109,8 +107,7 @@ public final class AstIdentifier extends SimpleNode {
         ctx.setPropertyResolved(false);
         ctx.getELResolver().setValue(ctx, null, this.image, value);
         if (!ctx.isPropertyResolved()) {
-            throw new PropertyNotFoundException(MessageFactory.get(
-                    "error.resolver.unhandled.null", this.image));
+            throw new PropertyNotFoundException(MESSAGES.errorNullBaseObject(this.image));
         }
     }
 
@@ -130,8 +127,7 @@ public final class AstIdentifier extends SimpleNode {
     @Override
     public void setImage(String image) {
         if (!Validation.isIdentifier(image)) {
-            throw new ELException(MessageFactory.get("error.identifier.notjava",
-                    image));
+            throw new ELException(MESSAGES.errorNotJavaIdentifier(image));
         }
         this.image = image;
     }

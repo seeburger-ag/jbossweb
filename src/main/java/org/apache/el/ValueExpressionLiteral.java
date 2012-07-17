@@ -17,6 +17,8 @@
 
 package org.apache.el;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -27,7 +29,6 @@ import javax.el.PropertyNotWritableException;
 import javax.el.ValueExpression;
 
 import org.apache.el.lang.ELSupport;
-import org.apache.el.util.MessageFactory;
 import org.apache.el.util.ReflectionUtil;
 
 
@@ -59,8 +60,7 @@ public final class ValueExpressionLiteral extends ValueExpression implements
 
     @Override
     public void setValue(ELContext context, Object value) {
-        throw new PropertyNotWritableException(MessageFactory.get(
-                "error.value.literal.write", this.value));
+        throw new PropertyNotWritableException(MESSAGES.errorPropertyNotWritable(this.value));
     }
 
     @Override
