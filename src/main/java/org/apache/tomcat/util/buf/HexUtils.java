@@ -17,8 +17,9 @@
 
 package org.apache.tomcat.util.buf;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.ByteArrayOutputStream;
-import org.apache.tomcat.util.res.StringManager;
 
 /**
  * Library of utility methods useful in dealing with converting byte arrays
@@ -66,13 +67,6 @@ public final class HexUtils {
       (byte) 'c', (byte) 'd', (byte) 'e', (byte) 'f' };
 
 
-    /**
-     * The string manager for this package.
-     */
-    private static StringManager sm =
-	StringManager.getManager("org.apache.tomcat.util.buf.res");
-
-
     // --------------------------------------------------------- Static Methods
 
 
@@ -88,35 +82,32 @@ public final class HexUtils {
      */
     public static byte[] convert(String digits) {
 
-	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	for (int i = 0; i < digits.length(); i += 2) {
-	    char c1 = digits.charAt(i);
-	    if ((i+1) >= digits.length())
-		throw new IllegalArgumentException
-		    (sm.getString("hexUtil.odd"));
-	    char c2 = digits.charAt(i + 1);
-	    byte b = 0;
-	    if ((c1 >= '0') && (c1 <= '9'))
-		b += ((c1 - '0') * 16);
-	    else if ((c1 >= 'a') && (c1 <= 'f'))
-		b += ((c1 - 'a' + 10) * 16);
-	    else if ((c1 >= 'A') && (c1 <= 'F'))
-		b += ((c1 - 'A' + 10) * 16);
-	    else
-		throw new IllegalArgumentException
-		    (sm.getString("hexUtil.bad"));
-	    if ((c2 >= '0') && (c2 <= '9'))
-		b += (c2 - '0');
-	    else if ((c2 >= 'a') && (c2 <= 'f'))
-		b += (c2 - 'a' + 10);
-	    else if ((c2 >= 'A') && (c2 <= 'F'))
-		b += (c2 - 'A' + 10);
-	    else
-		throw new IllegalArgumentException
-		    (sm.getString("hexUtil.bad"));
-	    baos.write(b);
-	}
-	return (baos.toByteArray());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        for (int i = 0; i < digits.length(); i += 2) {
+            char c1 = digits.charAt(i);
+            if ((i+1) >= digits.length())
+                throw MESSAGES.hexaOdd();
+            char c2 = digits.charAt(i + 1);
+            byte b = 0;
+            if ((c1 >= '0') && (c1 <= '9'))
+                b += ((c1 - '0') * 16);
+            else if ((c1 >= 'a') && (c1 <= 'f'))
+                b += ((c1 - 'a' + 10) * 16);
+            else if ((c1 >= 'A') && (c1 <= 'F'))
+                b += ((c1 - 'A' + 10) * 16);
+            else
+                throw MESSAGES.hexaBad();
+            if ((c2 >= '0') && (c2 <= '9'))
+                b += (c2 - '0');
+            else if ((c2 >= 'a') && (c2 <= 'f'))
+                b += (c2 - 'a' + 10);
+            else if ((c2 >= 'A') && (c2 <= 'F'))
+                b += (c2 - 'A' + 10);
+            else
+                throw MESSAGES.hexaBad();
+            baos.write(b);
+        }
+        return (baos.toByteArray());
 
     }
 
@@ -148,28 +139,28 @@ public final class HexUtils {
      *  is included
      */
     public static int convert2Int( byte[] hex ) {
-	// Code from Ajp11, from Apache's JServ
-    
-	// assert b.length==4
-	// assert valid data
-	int len;
-	if(hex.length < 4 ) return 0;
-	if( DEC[hex[0]]<0 )
-	    throw new IllegalArgumentException(sm.getString("hexUtil.bad"));
-	len = DEC[hex[0]];
-	len = len << 4;
-	if( DEC[hex[1]]<0 )
-	    throw new IllegalArgumentException(sm.getString("hexUtil.bad"));
-	len += DEC[hex[1]];
-	len = len << 4;
-	if( DEC[hex[2]]<0 )
-	    throw new IllegalArgumentException(sm.getString("hexUtil.bad"));
-	len += DEC[hex[2]];
-	len = len << 4;
-	if( DEC[hex[3]]<0 )
-	    throw new IllegalArgumentException(sm.getString("hexUtil.bad"));
-	len += DEC[hex[3]];
-	return len;
+        // Code from Ajp11, from Apache's JServ
+
+        // assert b.length==4
+        // assert valid data
+        int len;
+        if(hex.length < 4 ) return 0;
+        if( DEC[hex[0]]<0 )
+            throw MESSAGES.hexaBad();
+        len = DEC[hex[0]];
+        len = len << 4;
+        if( DEC[hex[1]]<0 )
+            throw MESSAGES.hexaBad();
+        len += DEC[hex[1]];
+        len = len << 4;
+        if( DEC[hex[2]]<0 )
+            throw MESSAGES.hexaBad();
+        len += DEC[hex[2]];
+        len = len << 4;
+        if( DEC[hex[3]]<0 )
+            throw MESSAGES.hexaBad();
+        len += DEC[hex[3]];
+        return len;
     }
 
 

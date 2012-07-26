@@ -44,7 +44,7 @@ import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.net.AprEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.AprEndpoint.Handler;
-import org.apache.tomcat.util.res.StringManager;
+import org.jboss.web.CoyoteLogger;
 
 
 /**
@@ -57,15 +57,6 @@ import org.apache.tomcat.util.res.StringManager;
  */
 public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
 
-    protected static org.jboss.logging.Logger log = 
-        org.jboss.logging.Logger.getLogger(Http11AprProtocol.class);
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
     public Http11AprProtocol() {
         setSoLinger(Constants.DEFAULT_CONNECTION_LINGER);
         setSoTimeout(Constants.DEFAULT_CONNECTION_TIMEOUT);
@@ -76,15 +67,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     /** Pass config info
      */
     public void setAttribute( String name, Object value ) {
-        if( log.isTraceEnabled())
-            log.trace(sm.getString("http11protocol.setattribute", name, value));
-
         attributes.put(name, value);
     }
 
     public Object getAttribute( String key ) {
-        if( log.isTraceEnabled())
-            log.trace(sm.getString("http11protocol.getattribute", key));
         return attributes.get(key);
     }
 
@@ -120,11 +106,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         try {
             endpoint.init();
         } catch (Exception ex) {
-            log.error(sm.getString("http11protocol.endpoint.initerror"), ex);
+            CoyoteLogger.HTTP_LOGGER.errorInitializingEndpoint(ex);
             throw ex;
         }
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("http11protocol.init", getName()));
+        CoyoteLogger.HTTP_LOGGER.initHttpConnector(getName());
 
     }
 
@@ -136,14 +121,14 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             if( this.domain != null ) {
                 try {
                     tpOname=new ObjectName
-                    (domain + ":" + "type=ThreadPool,name=" + getName());
+                            (domain + ":" + "type=ThreadPool,name=" + getName());
                     Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
                 } catch (Exception e) {
-                    log.error("Can't register threadpool" );
+                    CoyoteLogger.HTTP_LOGGER.errorRegisteringPool(e);
                 }
                 rgOname=new ObjectName
-                (domain + ":type=GlobalRequestProcessor,name=" + getName());
+                        (domain + ":type=GlobalRequestProcessor,name=" + getName());
                 Registry.getRegistry(null, null).registerComponent
                 ( cHandler.global, rgOname, null );
             }
@@ -151,18 +136,17 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         try {
             endpoint.start();
         } catch (Exception ex) {
-            log.error(sm.getString("http11protocol.endpoint.starterror"), ex);
+            CoyoteLogger.HTTP_LOGGER.errorStartingEndpoint(ex);
             throw ex;
         }
-        if(log.isInfoEnabled())
-            log.info(sm.getString("http11protocol.start", getName()));
+        CoyoteLogger.HTTP_LOGGER.startHttpConnector(getName());
     }
 
     public void pause() throws Exception {
         try {
             endpoint.pause();
         } catch (Exception ex) {
-            log.error(sm.getString("http11protocol.endpoint.pauseerror"), ex);
+            CoyoteLogger.HTTP_LOGGER.errorPausingEndpoint(ex);
             throw ex;
         }
         canDestroy = false;
@@ -188,28 +172,25 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                 canDestroy = true;
             }
         }
-        if(log.isInfoEnabled())
-            log.info(sm.getString("http11protocol.pause", getName()));
+        CoyoteLogger.HTTP_LOGGER.pauseHttpConnector(getName());
     }
 
     public void resume() throws Exception {
         try {
             endpoint.resume();
         } catch (Exception ex) {
-            log.error(sm.getString("http11protocol.endpoint.resumeerror"), ex);
+            CoyoteLogger.HTTP_LOGGER.errorResumingEndpoint(ex);
             throw ex;
         }
-        if(log.isInfoEnabled())
-            log.info(sm.getString("http11protocol.resume", getName()));
+        CoyoteLogger.HTTP_LOGGER.resumeHttpConnector(getName());
     }
 
     public void destroy() throws Exception {
-        if(log.isInfoEnabled())
-            log.info(sm.getString("http11protocol.stop", getName()));
+        CoyoteLogger.HTTP_LOGGER.stopHttpConnector(getName());
         if (canDestroy) {
             endpoint.destroy();
         } else {
-            log.warn(sm.getString("http11protocol.cannotDestroy", getName()));
+            CoyoteLogger.HTTP_LOGGER.cannotDestroyHttpProtocol(getName());
             try {
                 RequestInfo[] states = cHandler.global.getRequestProcessors();
                 for (int i = 0; i < states.length; i++) {
@@ -218,7 +199,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     }
                 }
             } catch (Exception ex) {
-                log.error(sm.getString("http11protocol.cannotDestroy", getName()), ex);
+                CoyoteLogger.HTTP_LOGGER.cannotDestroyHttpProtocolWithException(getName(), ex);
                 throw ex;
             }
         }
@@ -587,14 +568,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     state = result.event(status);
                 } catch (java.net.SocketException e) {
                     // SocketExceptions are normal
-                    Http11AprProtocol.log.debug
-                        (sm.getString
-                            ("http11protocol.proto.socketexception.debug"), e);
+                    CoyoteLogger.HTTP_LOGGER.socketException(e);
                 } catch (java.io.IOException e) {
                     // IOExceptions are normal
-                    Http11AprProtocol.log.debug
-                        (sm.getString
-                            ("http11protocol.proto.ioexception.debug"), e);
+                    CoyoteLogger.HTTP_LOGGER.socketException(e);
                 }
                 // Future developers: if you discover any other
                 // rare-but-nonfatal exceptions, catch them here, and log as
@@ -603,8 +580,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     // any other exception or error is odd. Here we log it
                     // with "ERROR" level, so it will show up even on
                     // less-than-verbose logs.
-                    Http11AprProtocol.log.error
-                        (sm.getString("http11protocol.proto.error"), e);
+                    CoyoteLogger.HTTP_LOGGER.socketError(e);
                 } finally {
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
@@ -651,14 +627,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
 
             } catch (java.net.SocketException e) {
                 // SocketExceptions are normal
-                Http11AprProtocol.log.debug
-                    (sm.getString
-                     ("http11protocol.proto.socketexception.debug"), e);
+                CoyoteLogger.HTTP_LOGGER.socketException(e);
             } catch (java.io.IOException e) {
                 // IOExceptions are normal
-                Http11AprProtocol.log.debug
-                    (sm.getString
-                     ("http11protocol.proto.ioexception.debug"), e);
+                CoyoteLogger.HTTP_LOGGER.socketException(e);
             }
             // Future developers: if you discover any other
             // rare-but-nonfatal exceptions, catch them here, and log as
@@ -667,8 +639,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                 // any other exception or error is odd. Here we log it
                 // with "ERROR" level, so it will show up even on
                 // less-than-verbose logs.
-                Http11AprProtocol.log.error
-                    (sm.getString("http11protocol.proto.error"), e);
+                CoyoteLogger.HTTP_LOGGER.socketError(e);
             }
             recycledProcessors.offer(processor);
             return SocketState.CLOSED;
@@ -703,13 +674,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         ObjectName rpName = new ObjectName
                             (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getJmxName() + ",name=HttpRequest" + count);
-                        if (log.isDebugEnabled()) {
-                            log.debug("Register " + rpName);
-                        }
                         Registry.getRegistry(null, null).registerComponent(rp, rpName, null);
                         rp.setRpName(rpName);
                     } catch (Exception e) {
-                        log.warn("Error registering request");
+                        CoyoteLogger.HTTP_LOGGER.errorRegisteringRequest(e);
                     }
                 }
             }
@@ -722,13 +690,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                 synchronized (this) {
                     try {
                         ObjectName rpName = rp.getRpName();
-                        if (log.isDebugEnabled()) {
-                            log.debug("Unregister " + rpName);
-                        }
                         Registry.getRegistry(null, null).unregisterComponent(rpName);
                         rp.setRpName(null);
                     } catch (Exception e) {
-                        log.warn("Error unregistering request", e);
+                        CoyoteLogger.HTTP_LOGGER.errorUnregisteringRequest(e);
                     }
                 }
             }

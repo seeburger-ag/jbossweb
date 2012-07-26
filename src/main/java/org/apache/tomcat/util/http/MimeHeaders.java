@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.util.http;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Enumeration;
@@ -326,7 +328,7 @@ public class MimeHeaders {
         int len = headers.length;
         if (count >= len) {
             if (count >= MAX_COUNT) {
-                throw new IllegalStateException("Header count exceeded allowed maximum: " + MAX_COUNT);
+                throw MESSAGES.maxHeadersFail(MAX_COUNT);
             }
             // expand header list array
             MimeHeaderField tmp[] = new MimeHeaderField[count * 2];

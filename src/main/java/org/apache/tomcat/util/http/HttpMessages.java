@@ -17,7 +17,10 @@
 
 package org.apache.tomcat.util.http;
 
-import org.apache.tomcat.util.res.StringManager;
+import java.io.InputStream;
+import java.util.Properties;
+
+import org.jboss.web.CoyoteLogger;
 
 /**
  * Handle (internationalized) HTTP messages.
@@ -29,10 +32,18 @@ import org.apache.tomcat.util.res.StringManager;
  * @author costin@eng.sun.com
  */
 public class HttpMessages {
-    // XXX move message resources in this package
-    protected static StringManager sm =
-        StringManager.getManager("org.apache.tomcat.util.http.res");
 	
+    protected static Properties statusMessages = new Properties();
+    
+    static {
+        try {
+            InputStream is = HttpMessages.class.getClassLoader().getResourceAsStream("org/apache/tomcat/util/http/HttpMessages.properties");
+            statusMessages.load(is);
+        } catch (Exception e) {
+            CoyoteLogger.HTTP_LOGGER.errorLoadingMessages(e);
+        }
+    }
+    
     static String st_200=null;
     static String st_302=null;
     static String st_400=null;
@@ -53,19 +64,19 @@ public class HttpMessages {
 	// are pre-defined? The user doesn't see them most of the time
 	switch( status ) {
 	case 200:
-	    if( st_200==null ) st_200=sm.getString( "sc.200");
+	    if( st_200==null ) st_200=statusMessages.getProperty( "sc.200");
 	    return st_200;
 	case 302:
-	    if( st_302==null ) st_302=sm.getString( "sc.302");
+	    if( st_302==null ) st_302=statusMessages.getProperty( "sc.302");
 	    return st_302;
 	case 400:
-	    if( st_400==null ) st_400=sm.getString( "sc.400");
+	    if( st_400==null ) st_400=statusMessages.getProperty( "sc.400");
 	    return st_400;
 	case 404:
-	    if( st_404==null ) st_404=sm.getString( "sc.404");
+	    if( st_404==null ) st_404=statusMessages.getProperty( "sc.404");
 	    return st_404;
 	}
-	return sm.getString("sc."+ status);
+	return statusMessages.getProperty("sc."+ status);
     }
 
     /**

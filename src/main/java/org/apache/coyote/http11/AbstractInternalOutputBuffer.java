@@ -33,8 +33,6 @@ import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.HttpMessages;
 import org.apache.tomcat.util.http.MimeHeaders;
-import org.apache.tomcat.util.res.StringManager;
-import org.jboss.logging.Logger;
 
 /**
  * {@code AbstractInternalOutputBuffer}
@@ -44,16 +42,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:nbenothm@redhat.com">Nabil Benothman</a>
  */
 public abstract class AbstractInternalOutputBuffer implements OutputBuffer {
-
-	/**
-	 * 
-	 */
-	protected static final Logger log = Logger.getLogger(AbstractInternalOutputBuffer.class);
-
-	/**
-	 * The string manager for this package.
-	 */
-	protected static StringManager sm = StringManager.getManager(Constants.Package);
 
 	/**
 	 * Associated Coyote response.

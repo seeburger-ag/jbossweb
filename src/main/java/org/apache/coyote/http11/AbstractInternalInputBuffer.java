@@ -21,6 +21,8 @@
  */
 package org.apache.coyote.http11;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,8 +32,6 @@ import org.apache.coyote.InputBuffer;
 import org.apache.coyote.Request;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.MimeHeaders;
-import org.apache.tomcat.util.res.StringManager;
-import org.jboss.logging.Logger;
 
 /**
  * {@code AbstractInternalInputBuffer}
@@ -41,16 +41,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:nbenothm@redhat.com">Nabil Benothman</a>
  */
 public abstract class AbstractInternalInputBuffer implements InputBuffer {
-
-	/**
-	 * 
-	 */
-	protected static final Logger log = Logger.getLogger(AbstractInternalInputBuffer.class);
-
-	/**
-	 * The string manager for this package.
-	 */
-	protected static StringManager sm = StringManager.getManager(Constants.Package);
 
 	/**
 	 * Associated Coyote request.
@@ -325,7 +315,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill())
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 			}
 
 			chr = buf[pos++];
@@ -345,7 +335,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 
@@ -363,7 +353,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 			if (buf[pos] == Constants.SP || buf[pos] == Constants.HT) {
@@ -387,7 +377,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 
@@ -420,7 +410,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 			if (buf[pos] == Constants.SP || buf[pos] == Constants.HT) {
@@ -442,7 +432,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 
@@ -491,7 +481,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill())
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 			}
 
 			chr = buf[pos];
@@ -520,7 +510,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 
@@ -554,7 +544,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 				// Read new bytes if needed
 				if (pos >= lastValid) {
 					if (!fill()) {
-						throw new EOFException(sm.getString("iib.eof.error"));
+						throw new EOFException(MESSAGES.eofError());
 					}
 				}
 
@@ -573,7 +563,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 				// Read new bytes if needed
 				if (pos >= lastValid) {
 					if (!fill()) {
-						throw new EOFException(sm.getString("iib.eof.error"));
+						throw new EOFException(MESSAGES.eofError());
 					}
 				}
 
@@ -600,7 +590,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 

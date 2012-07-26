@@ -22,6 +22,7 @@ import java.io.StringWriter;
 
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * A collection of cookies - reusable and tuned for server side performance.
@@ -34,9 +35,6 @@ import org.apache.tomcat.util.buf.MessageBytes;
  */
 public final class Cookies { // extends MultiMap {
 
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger(Cookies.class );
-    
     // expected average number of cookies per request
     public static final int INITIAL_SIZE=4; 
     ServerCookie scookies[]=new ServerCookie[INITIAL_SIZE];
@@ -146,13 +144,8 @@ public final class Cookies { // extends MultiMap {
 
             // Uncomment to test the new parsing code
             if( cookieValue.getType() != MessageBytes.T_BYTES ) {
-                Exception e = new Exception();
-                log.warn("Cookies: Parsing cookie as String. Expected bytes.",
-                        e);
                 cookieValue.toBytes();
             }
-            if(log.isDebugEnabled())
-                log.debug("Cookies: Parsing b[]: " + cookieValue.toString());
             ByteChunk bc=cookieValue.getByteChunk();
             processCookieHeader( bc.getBytes(),
                                  bc.getOffset(),
@@ -161,7 +154,6 @@ public final class Cookies { // extends MultiMap {
         }
     }
 
-    // XXX will be refactored soon!
     private static boolean equals( String s, byte b[], int start, int end) {
         int blen = end-start;
         if (b == null || blen != s.length()) {
@@ -337,8 +329,7 @@ public final class Cookies { // extends MultiMap {
                         // INVALID COOKIE, advance to next delimiter
                         // The starting character of the cookie value was
                         // not valid.
-                        log.info("Cookies: Invalid cookie. " +
-                                "Value not a token or quoted value");
+                        CoyoteLogger.HTTP_LOGGER.invalidCookieHeader(new String(bytes, off, len));
                         while (pos < end && bytes[pos] != ';' && 
                                bytes[pos] != ',') 
                             {pos++; }
@@ -419,7 +410,7 @@ public final class Cookies { // extends MultiMap {
                 } 
 
                 // Unknown cookie, complain
-                log.info("Cookies: Unknown Special Cookie");
+                CoyoteLogger.HTTP_LOGGER.invalidSpecialCookie(new String(bytes, nameStart, nameEnd - nameStart));
 
             } else { // Normal Cookie
                 sc = addCookie();

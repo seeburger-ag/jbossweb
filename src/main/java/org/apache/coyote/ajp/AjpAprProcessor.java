@@ -22,6 +22,8 @@
 
 package org.apache.coyote.ajp;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -48,7 +50,7 @@ import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.net.AprEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.AprEndpoint.Handler.SocketState;
-import org.apache.tomcat.util.res.StringManager;
+import org.jboss.web.CoyoteLogger;
 
 
 /**
@@ -63,19 +65,6 @@ import org.apache.tomcat.util.res.StringManager;
  * @author Bill Barker
  */
 public class AjpAprProcessor implements ActionHook {
-
-
-    /**
-     * Logger.
-     */
-    protected static org.jboss.logging.Logger log
-        = org.jboss.logging.Logger.getLogger(AjpAprProcessor.class);
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------------- Constructors
@@ -385,7 +374,7 @@ public class AjpAprProcessor implements ActionHook {
         } catch (InterruptedIOException e) {
             error = true;
         } catch (Throwable t) {
-            log.error(sm.getString("http11processor.request.process"), t);
+            CoyoteLogger.AJP_LOGGER.errorProcessingRequest(t);
             // 500 - Internal Server Error
             response.setStatus(500);
             error = true;
@@ -453,9 +442,7 @@ public class AjpAprProcessor implements ActionHook {
                     continue;
                 } else if(type != Constants.JK_AJP13_FORWARD_REQUEST) {
                     // Usually the servlet didn't read the previous request body
-                    if(log.isDebugEnabled()) {
-                        log.debug("Unexpected message: "+type);
-                    }
+                    CoyoteLogger.AJP_LOGGER.unexpectedAjpMessage(type);
                     error = true;
                     break;
                 }
@@ -466,7 +453,7 @@ public class AjpAprProcessor implements ActionHook {
                 error = true;
                 break;
             } catch (Throwable t) {
-                log.debug(sm.getString("ajpprocessor.header.error"), t);
+                CoyoteLogger.AJP_LOGGER.errorParsingAjpHeaderMessage(t);
                 // 400 - Bad Request
                 response.setStatus(400);
                 error = true;
@@ -477,7 +464,7 @@ public class AjpAprProcessor implements ActionHook {
             try {
                 prepareRequest();
             } catch (Throwable t) {
-                log.debug(sm.getString("ajpprocessor.request.prepare"), t);
+                CoyoteLogger.AJP_LOGGER.errorPreparingAjpRequest(t);
                 // 400 - Internal Server Error
                 response.setStatus(400);
                 error = true;
@@ -491,7 +478,7 @@ public class AjpAprProcessor implements ActionHook {
                 } catch (InterruptedIOException e) {
                     error = true;
                 } catch (Throwable t) {
-                    log.error(sm.getString("ajpprocessor.request.process"), t);
+                    CoyoteLogger.AJP_LOGGER.errorProcessingRequest(t);
                     // 500 - Internal Server Error
                     response.setStatus(500);
                     error = true;
@@ -628,7 +615,7 @@ public class AjpAprProcessor implements ActionHook {
                         }
                     }
                 } catch (java.security.cert.CertificateException e) {
-                    log.error(sm.getString("ajpprocessor.certs.fail"), e);
+                    CoyoteLogger.AJP_LOGGER.errorProcessingCertificates(e);
                     return;
                 }
                 request.setAttribute(org.apache.tomcat.util.net.Constants.CERTIFICATE_KEY, jsseCerts);
@@ -1128,7 +1115,7 @@ public class AjpAprProcessor implements ActionHook {
             if (nRead > 0) {
                 inputBuffer.limit(inputBuffer.limit() + nRead);
             } else {
-                throw new IOException(sm.getString("ajpprotocol.failedread"));
+                throw new IOException(MESSAGES.failedRead());
             }
         }
 
@@ -1164,7 +1151,7 @@ public class AjpAprProcessor implements ActionHook {
                 if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
                     return false;
                 } else {
-                    throw new IOException(sm.getString("ajpprotocol.failedread"));
+                    throw new IOException(MESSAGES.failedRead());
                 }
             }
         }
@@ -1245,7 +1232,6 @@ public class AjpAprProcessor implements ActionHook {
             boolean useAvailableData)
         throws IOException {
 
-        byte[] buf = message.getBuffer();
         int headerLength = message.getHeaderLength();
 
         if (first) {
@@ -1257,7 +1243,7 @@ public class AjpAprProcessor implements ActionHook {
         }
         inputBuffer.get(message.getBuffer(), 0, headerLength);
         if (message.processHeader() < 0) {
-            throw new IOException(sm.getString("ajpprotocol.badmessage"));
+            throw new IOException(MESSAGES.invalidAjpMessage());
         }
         read(message.getLen());
         inputBuffer.get(message.getBuffer(), headerLength, message.getLen());
@@ -1299,7 +1285,7 @@ public class AjpAprProcessor implements ActionHook {
         throws IOException {
         if (outputBuffer.position() > 0) {
             if (Socket.sendbb(socket, 0, outputBuffer.position()) < 0) {
-                throw new IOException(sm.getString("ajpprocessor.failedsend"));
+                throw new IOException(MESSAGES.failedWrite());
             }
             outputBuffer.clear();
         }

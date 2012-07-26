@@ -26,8 +26,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.tomcat.util.res.StringManager;
-
 /**
  * {@code AbstractEndpoint}
  * 
@@ -36,8 +34,6 @@ import org.apache.tomcat.util.res.StringManager;
  * @author <a href="mailto:nbenothm@redhat.com">Nabil Benothman</a>
  */
 public abstract class AbstractEndpoint {
-
-	protected static StringManager sm = StringManager.getManager("org.apache.tomcat.util.net.res");
 
 	/**
 	 * The default socket timeout = 60 sec

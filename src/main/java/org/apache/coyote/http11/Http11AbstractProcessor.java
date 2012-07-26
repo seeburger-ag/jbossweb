@@ -36,7 +36,7 @@ import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.net.SSLSupport;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.NioEndpoint.Handler.SocketState;
-import org.apache.tomcat.util.res.StringManager;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code Http11AbstractProcessor}
@@ -46,17 +46,6 @@ import org.apache.tomcat.util.res.StringManager;
  * @author <a href="mailto:nbenothm@redhat.com">Nabil Benothman</a>
  */
 public abstract class Http11AbstractProcessor implements ActionHook {
-
-	/**
-	 * Logger.
-	 */
-	protected static org.jboss.logging.Logger log = org.jboss.logging.Logger
-			.getLogger(Http11AbstractProcessor.class);
-
-	/**
-	 * The string manager for this package.
-	 */
-	protected static StringManager sm = StringManager.getManager(Constants.Package);
 
 	protected static final boolean CHUNK_ON_CLOSE = Boolean.valueOf(
 			System.getProperty("org.apache.coyote.http11.Http11Processor.CHUNK_ON_CLOSE", "false"))
@@ -285,7 +274,7 @@ public abstract class Http11AbstractProcessor implements ActionHook {
 			Pattern nRule = Pattern.compile(userAgent);
 			noCompressionUserAgents = addREArray(noCompressionUserAgents, nRule);
 		} catch (PatternSyntaxException pse) {
-			log.error(sm.getString("http11processor.regexp.error", userAgent), pse);
+		    CoyoteLogger.HTTP_LOGGER.errorParsingRegexp(userAgent, pse);
 		}
 	}
 
@@ -438,7 +427,7 @@ public abstract class Http11AbstractProcessor implements ActionHook {
 			Pattern nRule = Pattern.compile(userAgent);
 			restrictedUserAgents = addREArray(restrictedUserAgents, nRule);
 		} catch (PatternSyntaxException pse) {
-			log.error(sm.getString("http11processor.regexp.error", userAgent), pse);
+            CoyoteLogger.HTTP_LOGGER.errorParsingRegexp(userAgent, pse);
 		}
 	}
 

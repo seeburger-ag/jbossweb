@@ -56,7 +56,7 @@ import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.net.AprEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.AprEndpoint.Handler.SocketState;
-import org.apache.tomcat.util.res.StringManager;
+import org.jboss.web.CoyoteLogger;
 
 
 /**
@@ -65,19 +65,6 @@ import org.apache.tomcat.util.res.StringManager;
  * @author Remy Maucherat
  */
 public class Http11AprProcessor implements ActionHook {
-
-
-    /**
-     * Logger.
-     */
-    protected static org.jboss.logging.Logger log
-        = org.jboss.logging.Logger.getLogger(Http11AprProcessor.class);
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     protected static final boolean CHUNK_ON_CLOSE = 
@@ -425,7 +412,7 @@ public class Http11AprProcessor implements ActionHook {
             noCompressionUserAgents =
                 addREArray(noCompressionUserAgents, nRule);
         } catch (PatternSyntaxException pse) {
-            log.error(sm.getString("http11processor.regexp.error", userAgent), pse);
+            CoyoteLogger.HTTP_LOGGER.errorParsingRegexp(userAgent, pse);
         }
     }
 
@@ -529,10 +516,10 @@ public class Http11AprProcessor implements ActionHook {
             } else if (obj instanceof OutputFilter) {
                 outputBuffer.addFilter((OutputFilter) obj);
             } else {
-                log.warn(sm.getString("http11processor.filter.unknown", className));
+                CoyoteLogger.HTTP_LOGGER.unknownFilter(className);
             }
         } catch (Exception e) {
-            log.error(sm.getString("http11processor.filter.error", className), e);
+            CoyoteLogger.HTTP_LOGGER.errorInitializingFilter(className, e);
         }
     }
 
@@ -611,7 +598,7 @@ public class Http11AprProcessor implements ActionHook {
             Pattern nRule = Pattern.compile(userAgent);
             restrictedUserAgents = addREArray(restrictedUserAgents, nRule);
         } catch (PatternSyntaxException pse) {
-            log.error(sm.getString("http11processor.regexp.error", userAgent), pse);
+            CoyoteLogger.HTTP_LOGGER.errorParsingRegexp(userAgent, pse);
         }
     }
 
@@ -781,7 +768,7 @@ public class Http11AprProcessor implements ActionHook {
         } catch (InterruptedIOException e) {
             error = true;
         } catch (Throwable t) {
-            log.error(sm.getString("http11processor.request.process"), t);
+            CoyoteLogger.HTTP_LOGGER.errorProcessingRequest(t);
             // 500 - Internal Server Error
             response.setStatus(500);
             error = true;
@@ -866,9 +853,7 @@ public class Http11AprProcessor implements ActionHook {
                 error = true;
                 break;
             } catch (Throwable t) {
-                if (log.isDebugEnabled()) {
-                    log.debug(sm.getString("http11processor.header.parse"), t);
-                }
+                CoyoteLogger.HTTP_LOGGER.errorParsingHeader(t);
                 // 400 - Bad Request
                 response.setStatus(400);
                 error = true;
@@ -879,9 +864,7 @@ public class Http11AprProcessor implements ActionHook {
             try {
                 prepareRequest();
             } catch (Throwable t) {
-                if (log.isDebugEnabled()) {
-                    log.debug(sm.getString("http11processor.request.prepare"), t);
-                }
+                CoyoteLogger.HTTP_LOGGER.errorPreparingRequest(t);
                 // 400 - Internal Server Error
                 response.setStatus(400);
                 error = true;
@@ -907,7 +890,7 @@ public class Http11AprProcessor implements ActionHook {
                 } catch (InterruptedIOException e) {
                     error = true;
                 } catch (Throwable t) {
-                    log.error(sm.getString("http11processor.request.process"), t);
+                    CoyoteLogger.HTTP_LOGGER.errorProcessingRequest(t);
                     // 500 - Internal Server Error
                     response.setStatus(500);
                     error = true;
@@ -983,7 +966,7 @@ public class Http11AprProcessor implements ActionHook {
         } catch (IOException e) {
             error = true;
         } catch (Throwable t) {
-            log.error(sm.getString("http11processor.request.finish"), t);
+            CoyoteLogger.HTTP_LOGGER.errorFinishingRequest(t);
             // 500 - Internal Server Error
             response.setStatus(500);
             error = true;
@@ -993,7 +976,7 @@ public class Http11AprProcessor implements ActionHook {
         } catch (IOException e) {
             error = true;
         } catch (Throwable t) {
-            log.error(sm.getString("http11processor.response.finish"), t);
+            CoyoteLogger.HTTP_LOGGER.errorFinishingResponse(t);
             error = true;
         }
 
@@ -1092,7 +1075,7 @@ public class Http11AprProcessor implements ActionHook {
                     long sa = Address.get(Socket.APR_REMOTE, socket);
                     remoteAddr = Address.getip(sa);
                 } catch (Exception e) {
-                    log.warn(sm.getString("http11processor.socket.info"), e);
+                    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
                 }
             }
             request.remoteAddr().setString(remoteAddr);
@@ -1105,7 +1088,7 @@ public class Http11AprProcessor implements ActionHook {
                     long sa = Address.get(Socket.APR_LOCAL, socket);
                     localName = Address.getnameinfo(sa, 0);
                 } catch (Exception e) {
-                    log.warn(sm.getString("http11processor.socket.info"), e);
+                    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
                 }
             }
             request.localName().setString(localName);
@@ -1122,7 +1105,7 @@ public class Http11AprProcessor implements ActionHook {
                         remoteHost = remoteAddr;
                     }
                 } catch (Exception e) {
-                    log.warn(sm.getString("http11processor.socket.info"), e);
+                    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
                 }
             }
             request.remoteHost().setString(remoteHost);
@@ -1135,7 +1118,7 @@ public class Http11AprProcessor implements ActionHook {
                     long sa = Address.get(Socket.APR_LOCAL, socket);
                     localAddr = Address.getip(sa);
                 } catch (Exception e) {
-                    log.warn(sm.getString("http11processor.socket.info"), e);
+                    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
                 }
             }
 
@@ -1150,7 +1133,7 @@ public class Http11AprProcessor implements ActionHook {
                     Sockaddr addr = Address.getInfo(sa);
                     remotePort = addr.port;
                 } catch (Exception e) {
-                    log.warn(sm.getString("http11processor.socket.info"), e);
+                    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
                 }
             }
             request.setRemotePort(remotePort);
@@ -1164,7 +1147,7 @@ public class Http11AprProcessor implements ActionHook {
                     Sockaddr addr = Address.getInfo(sa);
                     localPort = addr.port;
                 } catch (Exception e) {
-                    log.warn(sm.getString("http11processor.socket.info"), e);
+                    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
                 }
             }
             request.setLocalPort(localPort);
@@ -1204,7 +1187,7 @@ public class Http11AprProcessor implements ActionHook {
                         request.setAttribute(org.apache.tomcat.util.net.Constants.SESSION_ID_KEY, sslO);
                     }
                 } catch (Exception e) {
-                    log.warn(sm.getString("http11processor.socket.ssl"), e);
+                    CoyoteLogger.HTTP_LOGGER.errorGettingSslAttributes(e);
                 }
             }
 
@@ -1244,7 +1227,7 @@ public class Http11AprProcessor implements ActionHook {
                         }
                     } 
                 } catch (Exception e) {
-                    log.warn(sm.getString("http11processor.socket.ssl"), e);
+                    CoyoteLogger.HTTP_LOGGER.errorGettingSslAttributes(e);
                 }
             }
 

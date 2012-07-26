@@ -24,7 +24,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
 import org.apache.tomcat.util.IntrospectionUtils;
-import org.apache.tomcat.util.res.StringManager;
+import org.apache.catalina.util.StringManager;
 
 /**
  * Base class for filters that provides generic initialisation and a simple

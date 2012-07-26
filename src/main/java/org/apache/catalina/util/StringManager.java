@@ -227,6 +227,16 @@ public class StringManager {
         Object[] args = new Object[] {arg1, arg2, arg3, arg4};
         return getString(key, args);
     }
+    public String getString(String key, Object arg1, Object arg2,
+            Object arg3, Object arg4, Object arg5) {
+        Object[] args = new Object[] {arg1, arg2, arg3, arg4, arg5};
+        return getString(key, args);
+    }
+    public String getString(String key, Object arg1, Object arg2,
+            Object arg3, Object arg4, Object arg5, Object arg6) {
+        Object[] args = new Object[] {arg1, arg2, arg3, arg4, arg5, arg6};
+        return getString(key, args);
+    }
     // --------------------------------------------------------------
     // STATIC SUPPORT METHODS
     // --------------------------------------------------------------

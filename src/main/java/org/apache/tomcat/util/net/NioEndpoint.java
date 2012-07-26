@@ -24,7 +24,6 @@ package org.apache.tomcat.util.net;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.BindException;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -46,7 +45,7 @@ import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.tomcat.util.net.NioEndpoint.Handler.SocketState;
 import org.apache.tomcat.util.net.jsse.NioJSSESocketChannelFactory;
-import org.jboss.logging.Logger;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code NioEndpoint} NIO2 endpoint, providing the following services:
@@ -60,8 +59,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:nbenothm@redhat.com">Nabil Benothman</a>
  */
 public class NioEndpoint extends AbstractEndpoint {
-
-	protected static Logger logger = Logger.getLogger(NioEndpoint.class);
 
 	private AsynchronousServerSocketChannel listener;
 	private ConcurrentHashMap<Long, NioChannel> connections;
@@ -227,14 +224,8 @@ public class NioEndpoint extends AbstractEndpoint {
 		this.serverSocketChannelFactory.init();
 
 		if (listener == null) {
-			try {
-				listener = this.serverSocketChannelFactory.createServerChannel(port, backlog,
-						address, reuseAddress);
-			} catch (BindException be) {
-				logger.fatal(be.getMessage(), be);
-				throw new BindException(be.getMessage() + " "
-						+ (address == null ? "<null>" : address.toString()) + ":" + port);
-			}
+		    listener = this.serverSocketChannelFactory.createServerChannel(port, backlog,
+		            address, reuseAddress);
 		}
 
 		initialized = true;
@@ -304,7 +295,7 @@ public class NioEndpoint extends AbstractEndpoint {
 			try {
 				listener.close();
 			} catch (IOException e) {
-				logger.error(sm.getString("endpoint.err.close"), e);
+			    CoyoteLogger.UTIL_LOGGER.errorClosingSocket(e);
 			} finally {
 				listener = null;
 			}
@@ -367,15 +358,11 @@ public class NioEndpoint extends AbstractEndpoint {
 			serverSocketChannelFactory.initChannel(channel);
 			return true;
 		} catch (Throwable t) {
-			// logger.error(t.getMessage(), t);
-			if (logger.isDebugEnabled()) {
-				if (t instanceof SSLHandshakeException) {
-					logger.debug(sm.getString("endpoint.err.handshake"), t);
-				} else {
-					logger.debug(sm.getString("endpoint.err.unexpected"), t);
-				}
-			}
-
+		    if (t instanceof SSLHandshakeException) {
+		        CoyoteLogger.UTIL_LOGGER.handshakeFailed(t);
+		    } else {
+		        CoyoteLogger.UTIL_LOGGER.unexpectedError(t);
+		    }
 			return false;
 		}
 	}
@@ -473,7 +460,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-			logger.error(sm.getString("endpoint.process.fail"), t);
+            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
 		return true;
@@ -498,7 +485,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-			logger.error(sm.getString("endpoint.process.fail"), t);
+            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
 	}
@@ -515,7 +502,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-			logger.error(sm.getString("endpoint.process.fail"), t);
+            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
 	}
@@ -600,9 +587,7 @@ public class NioEndpoint extends AbstractEndpoint {
 			try {
 				channel.close();
 			} catch (IOException e) {
-				if (logger.isDebugEnabled()) {
-					logger.debug(e.getMessage(), e);
-				}
+	            CoyoteLogger.UTIL_LOGGER.errorClosingSocket(e);
 			} finally {
 				if (this.connections.remove(channel.getId()) != null) {
 					this.counter.decrementAndGet();
@@ -663,15 +648,15 @@ public class NioEndpoint extends AbstractEndpoint {
 					}
 					// If a problem occurs, close the channel right away
 					if (!ok) {
-						logger.info("Fail processing the channel");
+		                CoyoteLogger.UTIL_LOGGER.errorProcessingChannel();
 						closeChannel(channel);
 					}
 				} catch (Exception exp) {
 					if (running) {
-						logger.error(sm.getString("endpoint.accept.fail"), exp);
+					    CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(exp);
 					}
 				} catch (Throwable t) {
-					logger.error(sm.getString("endpoint.accept.fail"), t);
+                    CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
 				}
 			}
 		}
@@ -716,14 +701,11 @@ public class NioEndpoint extends AbstractEndpoint {
 				serverSocketChannelFactory.handshake(channel);
 
 				if (!processChannel(channel, null)) {
-					logger.info("Fail processing the channel");
+                    CoyoteLogger.UTIL_LOGGER.errorProcessingChannel();
 					closeChannel(channel);
 				}
 			} catch (Exception exp) {
-				if (logger.isDebugEnabled()) {
-					logger.debug(exp.getMessage(), exp);
-				}
-
+                CoyoteLogger.UTIL_LOGGER.errorProcessingChannelDebug(exp);
 				closeChannel(channel);
 			} finally {
 				this.recycle();
@@ -1051,10 +1033,7 @@ public class NioEndpoint extends AbstractEndpoint {
 					closeChannel(channel);
 				}
 			} catch (Throwable th) {
-				logger.error(th.getMessage(), th);
-				if (logger.isDebugEnabled()) {
-					logger.debug(th.getMessage(), th);
-				}
+                CoyoteLogger.UTIL_LOGGER.errorProcessingChannelWithException(th);
 			} finally {
 				this.recycle();
 			}
@@ -1350,9 +1329,7 @@ public class NioEndpoint extends AbstractEndpoint {
 					ch.awaitRead(ch, getCompletionHandler());
 				} catch (Exception e) {
 					// Ignore
-					if (logger.isDebugEnabled()) {
-						logger.debug(e.getMessage(), e);
-					}
+	                CoyoteLogger.UTIL_LOGGER.errorAwaitingRead(e);
 				}
 			} else if (info.write()) {
 				remove(info);
@@ -1363,9 +1340,7 @@ public class NioEndpoint extends AbstractEndpoint {
 				remove(info);
 				// TODO
 			} else {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Unknown Event");
-				}
+                CoyoteLogger.UTIL_LOGGER.unknownEvent();
 				remove(info);
 				if (!processChannel(ch, SocketStatus.ERROR)) {
 					closeChannel(ch);

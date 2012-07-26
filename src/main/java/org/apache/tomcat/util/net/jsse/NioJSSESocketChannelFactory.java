@@ -21,6 +21,8 @@
  */
 package org.apache.tomcat.util.net.jsse;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -64,7 +66,7 @@ import javax.net.ssl.X509KeyManager;
 
 import org.apache.tomcat.util.net.DefaultNioServerSocketChannelFactory;
 import org.apache.tomcat.util.net.NioChannel;
-import org.apache.tomcat.util.res.StringManager;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code NioJSSESocketChannelFactory}
@@ -85,8 +87,6 @@ import org.apache.tomcat.util.res.StringManager;
  */
 public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFactory {
 
-	private static StringManager sm = StringManager
-			.getManager("org.apache.tomcat.util.net.jsse.res");
 	private static final boolean RFC_5746_SUPPORTED;
 	// defaults
 	private static final String defaultProtocol = "TLS";
@@ -478,16 +478,14 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 			}
 			ks.load(istream, storePass);
 		} catch (FileNotFoundException fnfe) {
-			log.error(sm.getString("jsse.keystore_load_failed", type, path, fnfe.getMessage()),
-					fnfe);
+		    CoyoteLogger.UTIL_LOGGER.errorLoadingKeystore(type, path, fnfe.getMessage());
 			throw fnfe;
 		} catch (IOException ioe) {
-			log.error(sm.getString("jsse.keystore_load_failed", type, path, ioe.getMessage()), ioe);
+		    CoyoteLogger.UTIL_LOGGER.errorLoadingKeystoreWithException(type, path, ioe.getMessage(), ioe);
 			throw ioe;
 		} catch (Exception ex) {
-			String msg = sm.getString("jsse.keystore_load_failed", type, path, ex.getMessage());
-			log.error(msg, ex);
-			throw new IOException(msg);
+            CoyoteLogger.UTIL_LOGGER.errorLoadingKeystoreWithException(type, path, ex.getMessage(), ex);
+			throw new IOException(ex);
 		} finally {
 			if (istream != null) {
 				try {
@@ -520,7 +518,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 
 		KeyStore ks = getKeystore(keystoreType, keystoreProvider, keystorePass);
 		if (keyAlias != null && !ks.isKeyEntry(keyAlias)) {
-			throw new IOException(sm.getString("jsse.alias_no_key_entry", keyAlias));
+			throw new IOException(MESSAGES.noKeyAlias(keyAlias));
 		}
 
 		KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
@@ -807,8 +805,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 			// Will never get here - no client can connect to an unbound port
 		} catch (SSLException ssle) {
 			// SSL configuration is invalid. Possibly cert doesn't match ciphers
-			IOException ioe = new IOException(sm.getString("jsse.invalid_ssl_conf",
-					ssle.getMessage()));
+			IOException ioe = new IOException(MESSAGES.invalidSSLConfiguration(ssle.getMessage()));
 			ioe.initCause(ssle);
 			throw ioe;
 		} catch (Exception e) {

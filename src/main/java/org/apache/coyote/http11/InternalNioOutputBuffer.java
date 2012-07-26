@@ -21,6 +21,8 @@
  */
 package org.apache.coyote.http11;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
@@ -31,6 +33,7 @@ import org.apache.coyote.Response;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code InternalNioOutputBuffer}
@@ -161,8 +164,8 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 				close(channel);
 			}
 		} catch (Throwable t) {
-			if (log.isDebugEnabled()) {
-				log.debug(t.getMessage(), t);
+			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+	             CoyoteLogger.HTTP_LOGGER.errorWithBlockingWrite(t);
 			}
 		}
 
@@ -184,8 +187,8 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 			// Perform the write operation
 			this.channel.write(this.bbuf, timeout, unit, this.channel, this.completionHandler);
 		} catch (Throwable t) {
-			if (log.isDebugEnabled()) {
-				log.debug(t.getMessage(), t);
+			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(t);
 			}
 		}
 	}
@@ -218,7 +221,7 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 			this.bbuf.clear();
 			this.bbuf.put(Constants.ACK_BYTES).flip();
 			if (this.write(writeTimeout, TimeUnit.MILLISECONDS) < 0) {
-				throw new IOException(sm.getString("oob.failedwrite"));
+				throw new IOException(MESSAGES.failedWrite());
 			}
 		}
 	}
@@ -242,7 +245,7 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 		// If non blocking (event) and there are leftover bytes,
 		// and lastWrite was 0 -> error
 		if (leftover.getLength() > 0 && !(Http11NioProcessor.containerThread.get() == Boolean.TRUE)) {
-			throw new IOException(sm.getString("oob.backlog"));
+			throw new IOException(MESSAGES.invalidBacklog());
 		}
 
 		if (lastActiveFilter == -1) {
@@ -285,12 +288,12 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 					}
 					bbuf.clear();
 					if (res < 0) {
-						throw new IOException(sm.getString("oob.failedwrite"));
+						throw new IOException(MESSAGES.failedWrite());
 					}
 				}
 				leftover.recycle();
 			} else {
-				throw new IOException(sm.getString("oob.backlog"));
+				throw new IOException(MESSAGES.invalidBacklog());
 			}
 		}
 
@@ -314,7 +317,7 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 			}
 
 			if (res < 0) {
-				throw new IOException(sm.getString("oob.failedwrite"));
+				throw new IOException(MESSAGES.failedWrite());
 			}
 		}
 	}
@@ -341,7 +344,7 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 					@Override
 					public void completed(Integer result, Void attachment) {
 						if (result < 0) {
-							failed(new IOException(sm.getString("oob.failedwrite")), attachment);
+							failed(new IOException(MESSAGES.failedWrite()), attachment);
 							return;
 						}
 						response.setLastWrite(result);

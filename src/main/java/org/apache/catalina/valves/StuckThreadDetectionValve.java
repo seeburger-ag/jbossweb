@@ -29,7 +29,7 @@ import javax.servlet.ServletException;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.tomcat.util.res.StringManager;
+import org.apache.catalina.util.StringManager;
 import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 

@@ -18,6 +18,8 @@
 
 package org.apache.coyote.http11;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.EOFException;
 import java.net.SocketTimeoutException;
@@ -29,7 +31,6 @@ import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.net.AprEndpoint;
-import org.apache.tomcat.util.res.StringManager;
 
 import org.apache.coyote.InputBuffer;
 import org.apache.coyote.Request;
@@ -72,16 +73,6 @@ public class InternalAprInputBuffer implements InputBuffer {
         swallowInput = true;
         
     }
-
-
-    // -------------------------------------------------------------- Variables
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------- Instance Variables
@@ -417,7 +408,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                     return false;
                 }
                 if (!fill())
-                    throw new EOFException(sm.getString("iib.eof.error"));
+                    throw new EOFException(MESSAGES.eofError());
             }
 
             chr = buf[pos++];
@@ -434,7 +425,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                 return false;
             }
             if (!fill())
-                throw new EOFException(sm.getString("iib.eof.error"));
+                throw new EOFException(MESSAGES.eofError());
         }
 
         //
@@ -449,7 +440,7 @@ public class InternalAprInputBuffer implements InputBuffer {
             // Read new bytes if needed
             if (pos >= lastValid) {
                 if (!fill())
-                    throw new EOFException(sm.getString("iib.eof.error"));
+                    throw new EOFException(MESSAGES.eofError());
             }
 
             // Spec says single SP but it also says be tolerant of HT
@@ -467,7 +458,7 @@ public class InternalAprInputBuffer implements InputBuffer {
         	// Read new bytes if needed
         	if (pos >= lastValid) {
         		if (!fill())
-        			throw new EOFException(sm.getString("iib.eof.error"));
+        			throw new EOFException(MESSAGES.eofError());
         	}
         	if (buf[pos] == Constants.SP || buf[pos] == Constants.HT) {
         		pos++;
@@ -492,7 +483,7 @@ public class InternalAprInputBuffer implements InputBuffer {
             // Read new bytes if needed
             if (pos >= lastValid) {
                 if (!fill())
-                    throw new EOFException(sm.getString("iib.eof.error"));
+                    throw new EOFException(MESSAGES.eofError());
             }
 
             // Spec says single SP but it also says be tolerant of HT
@@ -528,7 +519,7 @@ public class InternalAprInputBuffer implements InputBuffer {
         	// Read new bytes if needed
         	if (pos >= lastValid) {
         		if (!fill())
-        			throw new EOFException(sm.getString("iib.eof.error"));
+        			throw new EOFException(MESSAGES.eofError());
         	}
         	if (buf[pos] == Constants.SP || buf[pos] == Constants.HT) {
         		pos++;
@@ -551,7 +542,7 @@ public class InternalAprInputBuffer implements InputBuffer {
             // Read new bytes if needed
             if (pos >= lastValid) {
                 if (!fill())
-                    throw new EOFException(sm.getString("iib.eof.error"));
+                    throw new EOFException(MESSAGES.eofError());
             }
 
             if (buf[pos] == Constants.CR) {
@@ -611,7 +602,7 @@ public class InternalAprInputBuffer implements InputBuffer {
             // Read new bytes if needed
             if (pos >= lastValid) {
                 if (!fill())
-                    throw new EOFException(sm.getString("iib.eof.error"));
+                    throw new EOFException(MESSAGES.eofError());
             }
 
             chr = buf[pos];
@@ -645,7 +636,7 @@ public class InternalAprInputBuffer implements InputBuffer {
             // Read new bytes if needed
             if (pos >= lastValid) {
                 if (!fill())
-                    throw new EOFException(sm.getString("iib.eof.error"));
+                    throw new EOFException(MESSAGES.eofError());
             }
 
             if (buf[pos] == Constants.COLON) {
@@ -682,7 +673,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                 // Read new bytes if needed
                 if (pos >= lastValid) {
                     if (!fill())
-                        throw new EOFException(sm.getString("iib.eof.error"));
+                        throw new EOFException(MESSAGES.eofError());
                 }
 
                 if ((buf[pos] == Constants.SP) || (buf[pos] == Constants.HT)) {
@@ -701,7 +692,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                 // Read new bytes if needed
                 if (pos >= lastValid) {
                     if (!fill())
-                        throw new EOFException(sm.getString("iib.eof.error"));
+                        throw new EOFException(MESSAGES.eofError());
                 }
 
                 if (buf[pos] == Constants.CR) {
@@ -728,7 +719,7 @@ public class InternalAprInputBuffer implements InputBuffer {
             // Read new bytes if needed
             if (pos >= lastValid) {
                 if (!fill())
-                    throw new EOFException(sm.getString("iib.eof.error"));
+                    throw new EOFException(MESSAGES.eofError());
             }
 
             chr = buf[pos];
@@ -802,8 +793,7 @@ public class InternalAprInputBuffer implements InputBuffer {
         if (parsingHeader) {
 
             if (lastValid == buf.length) {
-                throw new IllegalArgumentException
-                    (sm.getString("iib.requestheadertoolarge.error"));
+                throw MESSAGES.requestHeaderTooLarge();
             }
 
             bbuf.clear();
@@ -816,7 +806,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                 if ((-nRead) == Status.EAGAIN) {
                     return false;
                 } else {
-                    throw new IOException(sm.getString("iib.failedread"));
+                    throw new IOException(MESSAGES.failedRead());
                 }
             }
 
@@ -839,7 +829,7 @@ public class InternalAprInputBuffer implements InputBuffer {
                 lastValid = pos + nRead;
             } else if (nRead <= 0) {
                 if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
-                    throw new SocketTimeoutException(sm.getString("iib.failedread"));
+                    throw new SocketTimeoutException(MESSAGES.failedRead());
                 } else if ((-nRead) == Status.EAGAIN && nonBlocking) {
                     // As asynchronous reads are forbidden, this test is not useful
                     // && (Http11AprProcessor.containerThread.get() == Boolean.TRUE)
@@ -855,14 +845,14 @@ public class InternalAprInputBuffer implements InputBuffer {
                             lastValid = pos + nRead;
                         } else if (nRead <= 0) {
                             if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
-                                throw new SocketTimeoutException(sm.getString("iib.failedread"));
+                                throw new SocketTimeoutException(MESSAGES.failedRead());
                             } else {
-                                throw new IOException(sm.getString("iib.failedread"));
+                                throw new IOException(MESSAGES.failedRead());
                             }
                         }
                     }
                 } else {
-                    throw new IOException(sm.getString("iib.failedread"));
+                    throw new IOException(MESSAGES.failedRead());
                 }
             }
             available = false;

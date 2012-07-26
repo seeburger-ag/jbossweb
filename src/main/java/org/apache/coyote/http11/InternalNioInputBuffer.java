@@ -21,6 +21,8 @@
  */
 package org.apache.coyote.http11;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -35,6 +37,7 @@ import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code InternalNioInputBuffer}
@@ -208,7 +211,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 					return false;
 				}
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 
@@ -225,7 +228,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 				return false;
 			}
 			if (!fill()) {
-				throw new EOFException(sm.getString("iib.eof.error"));
+				throw new EOFException(MESSAGES.eofError());
 			}
 		}
 
@@ -239,7 +242,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 
@@ -257,7 +260,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 			if (buf[pos] == Constants.SP || buf[pos] == Constants.HT) {
@@ -279,7 +282,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill())
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 			}
 
 			// Spec says single SP but it also says be tolerant of HT
@@ -311,7 +314,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill())
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 			}
 			if (buf[pos] == Constants.SP || buf[pos] == Constants.HT) {
 				pos++;
@@ -332,7 +335,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			// Read new bytes if needed
 			if (pos >= lastValid) {
 				if (!fill()) {
-					throw new EOFException(sm.getString("iib.eof.error"));
+					throw new EOFException(MESSAGES.eofError());
 				}
 			}
 
@@ -404,9 +407,9 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 				bbuf.get(buf, pos, nRead);
 				lastValid = pos + nRead;
 			} else if (nRead == NioChannel.OP_STATUS_CLOSED) {
-				throw new IOException(sm.getString("iib.failedread"));
+				throw new IOException(MESSAGES.failedRead());
 			} else if (nRead == NioChannel.OP_STATUS_READ_TIMEOUT) {
-				throw new SocketTimeoutException(sm.getString("iib.failedread"));
+				throw new SocketTimeoutException(MESSAGES.failedRead());
 			}
 		}
 
@@ -421,7 +424,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 
 		if (parsingHeader) {
 			if (lastValid == buf.length) {
-				throw new IllegalArgumentException(sm.getString("iib.requestheadertoolarge.error"));
+				throw new IllegalArgumentException(MESSAGES.requestHeaderTooLarge());
 			}
 		} else {
 			if (buf.length - end < 4500) {
@@ -457,8 +460,8 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		try {
 			ch.read(bb, ch, this.completionHandler);
 		} catch (Throwable t) {
-			if (log.isDebugEnabled()) {
-				log.debug("An error occurs when trying a non-blocking read ", t);
+			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(t);
 			}
 		}
 	}
@@ -487,8 +490,8 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 				close(channel);
 			}
 		} catch (Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("An error occurs when trying a blocking read " + e.getMessage());
+			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                CoyoteLogger.HTTP_LOGGER.errorWithBlockingRead(e);
 			}
 		}
 		return nr;

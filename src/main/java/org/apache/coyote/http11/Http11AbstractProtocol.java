@@ -32,7 +32,6 @@ import javax.net.ssl.SSLContext;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.net.SSLImplementation;
-import org.apache.tomcat.util.res.StringManager;
 
 /**
  * {@code Http11AbstractProtocol}
@@ -46,14 +45,6 @@ import org.apache.tomcat.util.res.StringManager;
  * @author <a href="mailto:nbenothm@redhat.com">Nabil Benothman</a>
  */
 public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRegistration {
-
-	protected static org.jboss.logging.Logger log = org.jboss.logging.Logger
-			.getLogger(Http11NioProtocol.class);
-
-	/**
-	 * The string manager for this package.
-	 */
-	protected static StringManager sm = StringManager.getManager(Constants.Package);
 
 	protected HashMap<String, Object> attributes = new HashMap<String, Object>();
 	// *
@@ -152,9 +143,6 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	 */
 	@Override
 	public void setAttribute(String name, Object value) {
-		if (log.isTraceEnabled())
-			log.trace(sm.getString("http11protocol.setattribute", name, value));
-
 		attributes.put(name, value);
 	}
 
@@ -165,8 +153,6 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	 */
 	@Override
 	public Object getAttribute(String key) {
-		if (log.isTraceEnabled())
-			log.trace(sm.getString("http11protocol.getattribute", key));
 		return attributes.get(key);
 	}
 

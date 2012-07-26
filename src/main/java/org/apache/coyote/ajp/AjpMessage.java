@@ -17,10 +17,12 @@
 
 package org.apache.coyote.ajp;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
-import org.apache.tomcat.util.res.StringManager;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * A single packet for communication between the web server and the
@@ -40,13 +42,6 @@ public class AjpMessage {
 
     protected static org.jboss.logging.Logger log =
         org.jboss.logging.Logger.getLogger(AjpMessage.class);
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     // ------------------------------------------------------------ Constructor
 
@@ -162,8 +157,7 @@ public class AjpMessage {
      */
     public void appendBytes(MessageBytes mb) {
         if (mb == null) {
-            log.error(sm.getString("ajpmessage.null"), 
-                    new NullPointerException());
+            CoyoteLogger.AJP_LOGGER.cannotAppendNull();
             appendInt(0);
             appendByte(0);
             return;
@@ -186,8 +180,7 @@ public class AjpMessage {
      */
     public void appendByteChunk(ByteChunk bc) {
         if (bc == null) {
-            log.error(sm.getString("ajpmessage.null"), 
-                    new NullPointerException());
+            CoyoteLogger.AJP_LOGGER.cannotAppendNull();
             appendInt(0);
             appendByte(0);
             return;
@@ -202,8 +195,7 @@ public class AjpMessage {
      */
     public void appendCharChunk(CharChunk cc) {
         if (cc == null) {
-            log.error(sm.getString("ajpmessage.null"), 
-                    new NullPointerException());
+            CoyoteLogger.AJP_LOGGER.cannotAppendNull();
             appendInt(0);
             appendByte(0);
             return;
@@ -237,8 +229,7 @@ public class AjpMessage {
      */
     public void appendString(String str) {
         if (str == null) {
-            log.error(sm.getString("ajpmessage.null"), 
-                    new NullPointerException());
+            CoyoteLogger.AJP_LOGGER.cannotAppendNull();
             appendInt(0);
             appendByte(0);
             return;
@@ -275,8 +266,7 @@ public class AjpMessage {
      */
     public void appendBytes(byte[] b, int off, int numBytes) {
         if (pos + numBytes + 3 > buf.length) {
-            log.error(sm.getString("ajpmessage.overflow", "" + numBytes, "" + pos),
-                    new ArrayIndexOutOfBoundsException());
+            CoyoteLogger.AJP_LOGGER.ajpMessageOverflow(numBytes, pos);
             if (log.isDebugEnabled()) {
                 dump("Overflow/coBytes");
             }
@@ -343,7 +333,7 @@ public class AjpMessage {
     public int getBytes(byte[] dest) {
         int length = getInt();
         if (pos + length > buf.length) {
-            log.error(sm.getString("ajpmessage.read", "" + length));
+            CoyoteLogger.AJP_LOGGER.ajpMessageUnderflow(length);
             return 0;
         }
 	
@@ -392,7 +382,7 @@ public class AjpMessage {
         len = getInt();
         // Verify message signature
         if ((mark != 0x1234) && (mark != 0x4142)) {
-            log.error(sm.getString("ajpmessage.invalid", "" + mark));
+            CoyoteLogger.AJP_LOGGER.invalidAjpMessage(mark);
             if (log.isDebugEnabled()) {
                 dump("In: ");
             }

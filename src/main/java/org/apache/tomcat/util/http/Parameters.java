@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -28,19 +30,13 @@ import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.buf.UDecoder;
-import org.apache.tomcat.util.res.StringManager;
+import org.jboss.web.CoyoteLogger;
 
 /**
  *
  * @author Costin Manolache
  */
 public final class Parameters {
-
-    protected static org.jboss.logging.Logger log = org.jboss.logging.Logger
-            .getLogger(Parameters.class);
-
-    protected static final StringManager sm =
-        StringManager.getManager("org.apache.tomcat.util.http");
 
     protected static final int MAX_COUNT = 
         Integer.valueOf(System.getProperty("org.apache.tomcat.util.http.Parameters.MAX_COUNT", "512")).intValue();
@@ -84,16 +80,10 @@ public final class Parameters {
 
     public void setEncoding( String s ) {
         encoding=s;
-        if(log.isDebugEnabled()) {
-            log.debug( "Set encoding to " + s );
-        }
     }
 
     public void setQueryStringEncoding( String s ) {
         queryStringEncoding=s;
-        if(log.isDebugEnabled()) {
-            log.debug( "Set query string encoding to " + s );
-        }
     }
 
     public boolean isParseFailed() {
@@ -169,11 +159,6 @@ public final class Parameters {
             return;
         }
 
-        if(log.isDebugEnabled()) {
-            log.debug("Decoding query " + decodedQuery + " " +
-                    queryStringEncoding);
-        }
-
         try {
             decodedQuery.duplicate( queryMB );
         } catch (IOException e) {
@@ -196,8 +181,7 @@ public final class Parameters {
             // Processing this parameter will push us over the limit. ISE is
             // what Request.parseParts() uses for requests that are too big
             parseFailed = true;
-            throw new IllegalStateException(sm.getString(
-                    "parameters.maxCountFail", Integer.valueOf(limit)));
+            throw MESSAGES.maxParametersFail(limit);
         }
 
         ArrayList<String> values = paramHashValues.get(key);
@@ -231,9 +215,8 @@ public final class Parameters {
 
     private void processParameters(byte bytes[], int start, int len, String enc) {
 
-        if(log.isDebugEnabled()) {
-            log.debug(sm.getString("parameters.bytes",
-                    new String(bytes, start, len, DEFAULT_CHARSET)));
+        if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+            CoyoteLogger.HTTP_LOGGER.startProcessingParameter(new String(bytes, start, len, DEFAULT_CHARSET));
         }
 
         int decodeFailCount = 0;
@@ -300,24 +283,21 @@ public final class Parameters {
                 }
             }
 
-            if (log.isDebugEnabled() && valueStart == -1) {
-                log.debug(sm.getString("parameters.noequal",
-                        Integer.valueOf(nameStart), Integer.valueOf(nameEnd),
-                        new String(bytes, nameStart, nameEnd-nameStart,
-                                DEFAULT_CHARSET)));
+            if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled() && valueStart == -1) {
+                CoyoteLogger.HTTP_LOGGER.parameterMissingEqual(nameStart, nameEnd, new String(bytes, nameStart, nameEnd-nameStart, DEFAULT_CHARSET));
             }
 
             if (nameEnd <= nameStart ) {
                 if (valueStart == -1) {
                     // &&
-                    if (log.isDebugEnabled()) {
-                        log.debug(sm.getString("parameters.emptyChunk"));
+                    if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                        CoyoteLogger.HTTP_LOGGER.emptyParamterChunk();
                     }
                     // Do not flag as error
                     continue;
                 }
                 // &=foo&
-                if (log.isDebugEnabled()) {
+                if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
                     String extract;
                     if (valueEnd >= nameStart) {
                         extract = new String(bytes, nameStart, valueEnd
@@ -325,10 +305,7 @@ public final class Parameters {
                     } else {
                         extract = "";
                     }
-                    String message = sm.getString("parameters.invalidChunk",
-                            Integer.valueOf(nameStart),
-                            Integer.valueOf(valueEnd), extract);
-                    log.debug(message);
+                    CoyoteLogger.HTTP_LOGGER.parameterInvalid(nameStart, valueEnd, extract);
                 }
                 parseFailed = true;
                 continue;
@@ -345,7 +322,7 @@ public final class Parameters {
             // Take copies as if anything goes wrong originals will be
             // corrupted. This means original values can be logged.
             // For performance - only done for debug
-            if (log.isDebugEnabled()) {
+            if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
                 try {
                     origName.append(bytes, nameStart, nameEnd - nameStart);
                     if (valueStart >= 0) {
@@ -356,7 +333,7 @@ public final class Parameters {
                 } catch (IOException ioe) {
                     // Should never happen...
                     parseFailed = true;
-                    log.error(sm.getString("parameters.copyFail"), ioe);
+                    CoyoteLogger.HTTP_LOGGER.parametersCopyFailed();
                 }
             }
 
@@ -384,27 +361,25 @@ public final class Parameters {
             } catch (IOException e) {
                 parseFailed = true;
                 decodeFailCount++;
-                if (log.isDebugEnabled()) {
-                    log.debug(sm.getString("parameters.decodeFail.debug",
-                            origName.toString(), origValue.toString()), e);
+                if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                    CoyoteLogger.HTTP_LOGGER.parameterDecodingFailed(origName.toString(), origValue.toString());
                 }
             }
 
             tmpName.recycle();
             tmpValue.recycle();
             // Only recycle copies if we used them
-            if (log.isDebugEnabled()) {
+            if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
                 origName.recycle();
                 origValue.recycle();
             }
         }
 
-        if (decodeFailCount > 1 && log.isDebugEnabled()) {
-            log.debug(sm.getString("parameters.multipleDecodingFail",
-                    Integer.valueOf(decodeFailCount)));
+        if (decodeFailCount > 1 && CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+            CoyoteLogger.HTTP_LOGGER.parametersDecodingFailures(decodeFailCount);
         }
         if (parseFailed) {
-            throw new IllegalStateException(sm.getString("parameters.failed"));
+            CoyoteLogger.HTTP_LOGGER.parametersProcessingFailed();
         }
     }
 

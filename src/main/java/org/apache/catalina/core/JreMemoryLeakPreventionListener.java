@@ -33,7 +33,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
-import org.apache.tomcat.util.res.StringManager;
+import org.apache.catalina.util.StringManager;
 
 /**
  * Provide a workaround for known places where the Java Runtime environment can

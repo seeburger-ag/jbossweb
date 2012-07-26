@@ -17,9 +17,7 @@
 
 package org.apache.tomcat.util.buf;
 
-import java.io.CharArrayWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.BitSet;
 
 /** Efficient implementation for encoders.
@@ -35,9 +33,6 @@ import java.util.BitSet;
  */
 public final class UEncoder {
 
-    private static org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(UEncoder.class);
-    
     // Not static - the set may differ ( it's better than adding
     // an extra check for "/", "+", etc
     private BitSet safeChars=null;
@@ -47,7 +42,6 @@ public final class UEncoder {
     private CharChunk output=null;
 
     private String encoding="UTF8";
-    private static final int debug=0;
     
     public UEncoder() {
         initSafeChars();
@@ -82,10 +76,8 @@ public final class UEncoder {
         for (int i = start; i < end; i++) {
             char c = s.charAt(i);
             if (safeChars.get(c)) {
-                if( debug > 0 ) log("Safe: " + (char)c);
                 output.append(c);
             } else {
-                if( debug > 0 ) log("Unsafe:  " + (char)c);
                 cb.append(c);
                 c2b.convert(cb, bb);
 
@@ -95,7 +87,6 @@ public final class UEncoder {
                     if ((i+1) < end) {
                         char d = s.charAt(i+1);
                         if (d >= 0xDC00 && d <= 0xDFFF) {
-                            if( debug > 0 ) log("Unsafe:  " + d);
                             cb.append(d);
                             c2b.convert(cb, bb);
                             i++;
@@ -126,43 +117,34 @@ public final class UEncoder {
     
     // -------------------- Internal implementation --------------------
     
-    // 
-    private void init() {
-	
-    }
-    
     private void initSafeChars() {
-	safeChars=new BitSet(128);
-	int i;
-	for (i = 'a'; i <= 'z'; i++) {
-	    safeChars.set(i);
-	}
-	for (i = 'A'; i <= 'Z'; i++) {
-	    safeChars.set(i);
-	}
-	for (i = '0'; i <= '9'; i++) {
-	    safeChars.set(i);
-	}
-	//safe
-	safeChars.set('$');
-	safeChars.set('-');
-	safeChars.set('_');
-	safeChars.set('.');
+        safeChars=new BitSet(128);
+        int i;
+        for (i = 'a'; i <= 'z'; i++) {
+            safeChars.set(i);
+        }
+        for (i = 'A'; i <= 'Z'; i++) {
+            safeChars.set(i);
+        }
+        for (i = '0'; i <= '9'; i++) {
+            safeChars.set(i);
+        }
+        //safe
+        safeChars.set('$');
+        safeChars.set('-');
+        safeChars.set('_');
+        safeChars.set('.');
 
-	// Dangerous: someone may treat this as " "
-	// RFC1738 does allow it, it's not reserved
-	//    safeChars.set('+');
-	//extra
-	safeChars.set('!');
-	safeChars.set('*');
-	safeChars.set('\'');
-	safeChars.set('(');
-	safeChars.set(')');
-	safeChars.set(',');	
+        // Dangerous: someone may treat this as " "
+        // RFC1738 does allow it, it's not reserved
+        //    safeChars.set('+');
+        //extra
+        safeChars.set('!');
+        safeChars.set('*');
+        safeChars.set('\'');
+        safeChars.set('(');
+        safeChars.set(')');
+        safeChars.set(',');	
     }
 
-    private static void log( String s ) {
-        if (log.isDebugEnabled())
-            log.debug("Encoder: " + s );
-    }
 }

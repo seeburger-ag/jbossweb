@@ -22,6 +22,8 @@
 
 package org.apache.tomcat.util.net;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,8 +41,7 @@ import org.apache.tomcat.jni.SSLContext;
 import org.apache.tomcat.jni.SSLSocket;
 import org.apache.tomcat.jni.Socket;
 import org.apache.tomcat.jni.Status;
-import org.apache.tomcat.util.res.StringManager;
-import org.jboss.logging.Logger;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * APR endpoint, providing the following services:
@@ -55,14 +56,6 @@ import org.jboss.logging.Logger;
  * @author Remy Maucherat
  */
 public class AprEndpoint {
-
-
-    // -------------------------------------------------------------- Constants
-
-    protected static Logger log = Logger.getLogger(AprEndpoint.class);
-
-    protected static StringManager sm =
-        StringManager.getManager("org.apache.tomcat.util.net.res");
 
 
     // ----------------------------------------------------------------- Fields
@@ -581,12 +574,12 @@ public class AprEndpoint {
             // Bind the server socket
             int ret = Socket.bind(serverSock, inetAddress);
             if (ret != 0) {
-                throw new Exception(sm.getString("endpoint.init.bind", "" + ret, Error.strerror(ret)));
+                throw MESSAGES.socketBindFailed(ret, Error.strerror(ret));
             }
             // Start listening on the server socket
             ret = Socket.listen(serverSock, backlog);
             if (ret != 0) {
-                throw new Exception(sm.getString("endpoint.init.listen", "" + ret, Error.strerror(ret)));
+                throw MESSAGES.socketListenFailed(ret, Error.strerror(ret));
             }
             if (OS.IS_WIN32 || OS.IS_WIN64) {
                 // On Windows set the reuseaddr flag after the bind/listen
@@ -634,8 +627,7 @@ public class AprEndpoint {
                     SSLContext.setOptions(sslContext, SSL.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
                 else {
                     // OpenSSL does not support unsafe legacy renegotiation.
-                    log.warn(sm.getString("endpoint.warn.noInsecureReneg",
-                                          SSL.versionString()));
+                    CoyoteLogger.UTIL_LOGGER.noInsecureRengotiation(SSL.versionString());
                 }
             }
             // List the ciphers that the client is permitted to negotiate
@@ -848,20 +840,16 @@ public class AprEndpoint {
             if (sslContext != 0) {
                 SSLSocket.attach(sslContext, socket);
                 if (SSLSocket.handshake(socket) != 0) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(sm.getString("endpoint.err.handshake") + ": " + SSL.getLastError());
-                    }
+                    CoyoteLogger.UTIL_LOGGER.handshakeFailed(SSL.getLastError());
                     return false;
                 }
             }
 
         } catch (Throwable t) {
-            if (log.isDebugEnabled()) {
-                if (step == 2) {
-                    log.debug(sm.getString("endpoint.err.handshake"), t);
-                } else {
-                    log.debug(sm.getString("endpoint.err.unexpected"), t);
-                }
+            if (step == 2) {
+                CoyoteLogger.UTIL_LOGGER.handshakeFailed(t);
+            } else {
+                CoyoteLogger.UTIL_LOGGER.unexpectedError(t);
             }
             // Tell to close the socket
             return false;
@@ -886,9 +874,7 @@ public class AprEndpoint {
             if ((maxThreads > 0) && (curThreads < maxThreads)) {
                 curThreadsBusy++;
                 if (curThreadsBusy == maxThreads) {
-                    log.info(sm.getString("endpoint.info.maxThreads",
-                            Integer.toString(maxThreads), address,
-                            Integer.toString(port)));
+                    CoyoteLogger.UTIL_LOGGER.maxThreadsReached(maxThreads, address, port);
                 }
                 return (newWorkerThread());
             } else {
@@ -962,10 +948,10 @@ public class AprEndpoint {
             return Poll.create(size, pool, 0, (timeout > 0) ? (timeout * 1000) : -1);
         } catch (Error e) {
             if (Status.APR_STATUS_IS_EINVAL(e.getError())) {
-                log.info(sm.getString("endpoint.poll.limitedpollsize", "" + size));
+                CoyoteLogger.UTIL_LOGGER.limitedPollerSize(size);
                 return 0;
             } else {
-                log.error(sm.getString("endpoint.poll.initfail"), e);
+                CoyoteLogger.UTIL_LOGGER.errorCreatingPoller(e);
                 return -1;
             }
         }
@@ -990,7 +976,7 @@ public class AprEndpoint {
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that
             // the pool and its queue are full
-            log.error(sm.getString("endpoint.process.fail"), t);
+            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
             return false;
         }
         return true;
@@ -1015,7 +1001,7 @@ public class AprEndpoint {
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that
             // the pool and its queue are full
-            log.error(sm.getString("endpoint.process.fail"), t);
+            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
             return false;
         }
         return true;
@@ -1040,7 +1026,7 @@ public class AprEndpoint {
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that
             // the pool and its queue are full
-            log.error(sm.getString("endpoint.process.fail"), t);
+            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
             return false;
         }
         return true;
@@ -1120,7 +1106,7 @@ public class AprEndpoint {
                                     // Ignore
                                 }
                             } catch (Throwable t) {
-                                log.error(sm.getString("endpoint.accept.fail"), t);
+                                CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
                             }
                         }
                     }
@@ -1140,7 +1126,7 @@ public class AprEndpoint {
                             Socket.destroy(socket);
                         }
                     } catch (Throwable t) {
-                        log.error(sm.getString("endpoint.accept.fail"), t);
+                        CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
                     }
 
                 }
@@ -1686,7 +1672,7 @@ public class AprEndpoint {
                     } catch (InterruptedException e) {
                         // Ignore
                     } catch (Throwable t) {
-                        log.error(sm.getString("endpoint.maintain.error"), t);
+                        CoyoteLogger.UTIL_LOGGER.errorProcessingSocketTimeout(t);
                     }
                 }
 
@@ -1764,7 +1750,7 @@ public class AprEndpoint {
                                     // the list with the read flag.
                                     timeouts.remove(info.socket);
                                     Socket.destroy(info.socket);
-                                    log.error(sm.getString("endpoint.poll.error"));
+                                    CoyoteLogger.UTIL_LOGGER.errorPollingSocket();
                                 }
                             }
                             info = localAddList.get();
@@ -1810,7 +1796,7 @@ public class AprEndpoint {
                                         }
                                     } else {
                                         // Unknown event
-                                        log.warn(sm.getString("endpoint.poll.flags", "" + desc[n*2]));
+                                        CoyoteLogger.UTIL_LOGGER.errorPollingSocketCode(desc[n*2]);
                                         if (!processSocket(desc[n*2+1], SocketStatus.ERROR)) {
                                             // Close socket and clear pool
                                             Socket.destroy(desc[n*2+1]);
@@ -1828,7 +1814,7 @@ public class AprEndpoint {
                                     }
                                 } else {
                                     // Unknown event
-                                    log.warn(sm.getString("endpoint.poll.flags", "" + desc[n*2]));
+                                    CoyoteLogger.UTIL_LOGGER.errorPollingSocketCode(desc[n*2]);
                                     // Close socket and clear pool
                                     Socket.destroy(desc[n*2+1]);
                                 }
@@ -1840,7 +1826,7 @@ public class AprEndpoint {
                                 if (errn >  Status.APR_OS_START_USERERR) {
                                     errn -=  Status.APR_OS_START_USERERR;
                                 }
-                                log.error(sm.getString("endpoint.poll.fail", "" + errn, Error.strerror(errn)));
+                                CoyoteLogger.UTIL_LOGGER.pollerFailure(errn, Error.strerror(errn));
                                 // Destroy and reallocate the poller
                                 reset = true;
                             }
@@ -1869,9 +1855,9 @@ public class AprEndpoint {
 
                 } catch (Throwable t) {
                     if (maintain == 0) {
-                        log.error(sm.getString("endpoint.maintain.error"), t);
+                        CoyoteLogger.UTIL_LOGGER.errorProcessingSocketTimeout(t);
                     } else {
-                        log.error(sm.getString("endpoint.poll.error"), t);
+                        CoyoteLogger.UTIL_LOGGER.errorPollingSocketWithException(t);
                     }
                 }
 
@@ -2212,7 +2198,7 @@ public class AprEndpoint {
                     }
                 }
             } catch (Exception e) {
-                log.error(sm.getString("endpoint.sendfile.error"), e);
+                CoyoteLogger.UTIL_LOGGER.errorSendingFile(e);
                 return false;
             }
             // Add socket to the list. Newly added sockets will wait
@@ -2279,7 +2265,7 @@ public class AprEndpoint {
                                     sendfileData.put(new Long(data.socket), data);
                                     sendfileCount++;
                                 } else {
-                                    log.warn(sm.getString("endpoint.sendfile.addfail", "" + rv, Error.strerror(rv)));
+                                    CoyoteLogger.UTIL_LOGGER.errorSendingFile(rv, Error.strerror(rv));
                                     // Can't do anything: close the socket right away
                                     Socket.destroy(data.socket);
                                 }
@@ -2343,7 +2329,7 @@ public class AprEndpoint {
                             if (errn >  Status.APR_OS_START_USERERR) {
                                 errn -=  Status.APR_OS_START_USERERR;
                             }
-                            log.error(sm.getString("endpoint.poll.fail", "" + errn, Error.strerror(errn)));
+                            CoyoteLogger.UTIL_LOGGER.pollerFailure(errn, Error.strerror(errn));
                             // Handle poll critical failure
                             synchronized (this) {
                                 destroy();
@@ -2369,7 +2355,7 @@ public class AprEndpoint {
                         }
                     }
                 } catch (Throwable t) {
-                    log.error(sm.getString("endpoint.poll.error"), t);
+                    CoyoteLogger.UTIL_LOGGER.errorPollingSocketWithException(t);
                 }
             }
 

@@ -44,7 +44,7 @@ import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.net.AprEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.AprEndpoint.Handler;
-import org.apache.tomcat.util.res.StringManager;
+import org.jboss.web.CoyoteLogger;
 
 
 /**
@@ -59,16 +59,6 @@ public class AjpAprProtocol
     implements ProtocolHandler, MBeanRegistration {
     
     
-    protected static org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(AjpAprProtocol.class);
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
     // ------------------------------------------------------------ Constructor
 
 
@@ -124,16 +114,10 @@ public class AjpAprProtocol
      * Pass config info
      */
     public void setAttribute(String name, Object value) {
-        if (log.isTraceEnabled()) {
-            log.trace(sm.getString("ajpprotocol.setattribute", name, value));
-        }
         attributes.put(name, value);
     }
 
     public Object getAttribute(String key) {
-        if (log.isTraceEnabled()) {
-            log.trace(sm.getString("ajpprotocol.getattribute", key));
-        }
         return attributes.get(key);
     }
 
@@ -175,11 +159,8 @@ public class AjpAprProtocol
         try {
             endpoint.init();
         } catch (Exception ex) {
-            log.error(sm.getString("ajpprotocol.endpoint.initerror"), ex);
+            CoyoteLogger.AJP_LOGGER.errorInitializingEndpoint(ex);
             throw ex;
-        }
-        if (log.isDebugEnabled()) {
-            log.debug(sm.getString("ajpprotocol.init", getName()));
         }
     }
 
@@ -189,34 +170,32 @@ public class AjpAprProtocol
             if (this.domain != null ) {
                 try {
                     tpOname = new ObjectName
-                    (domain + ":" + "type=ThreadPool,name=" + getName());
+                            (domain + ":" + "type=ThreadPool,name=" + getName());
                     Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
                 } catch (Exception e) {
-                    log.error("Can't register threadpool" );
+                    CoyoteLogger.AJP_LOGGER.errorRegisteringPool(e);
                 }
                 rgOname = new ObjectName
-                (domain + ":type=GlobalRequestProcessor,name=" + getName());
-                Registry.getRegistry(null, null).registerComponent
-                (cHandler.global, rgOname, null);
+                        (domain + ":type=GlobalRequestProcessor,name=" + getName());
+                Registry.getRegistry(null, null).registerComponent(cHandler.global, rgOname, null);
             }
         }
 
         try {
             endpoint.start();
         } catch (Exception ex) {
-            log.error(sm.getString("ajpprotocol.endpoint.starterror"), ex);
+            CoyoteLogger.AJP_LOGGER.errorStartingEndpoint(ex);
             throw ex;
         }
-        if (log.isInfoEnabled())
-            log.info(sm.getString("ajpprotocol.start", getName()));
+        CoyoteLogger.AJP_LOGGER.startingAjpProtocol(getName());
     }
 
     public void pause() throws Exception {
         try {
             endpoint.pause();
         } catch (Exception ex) {
-            log.error(sm.getString("ajpprotocol.endpoint.pauseerror"), ex);
+            CoyoteLogger.AJP_LOGGER.errorPausingEndpoint(ex);
             throw ex;
         }
         canDestroy = false;
@@ -242,28 +221,25 @@ public class AjpAprProtocol
                 canDestroy = true;
             }
         }
-        if (log.isInfoEnabled())
-            log.info(sm.getString("ajpprotocol.pause", getName()));
+        CoyoteLogger.AJP_LOGGER.pausingAjpProtocol(getName());
     }
 
     public void resume() throws Exception {
         try {
             endpoint.resume();
         } catch (Exception ex) {
-            log.error(sm.getString("ajpprotocol.endpoint.resumeerror"), ex);
+            CoyoteLogger.AJP_LOGGER.errorResumingEndpoint(ex);
             throw ex;
         }
-        if (log.isInfoEnabled())
-            log.info(sm.getString("ajpprotocol.resume", getName()));
+        CoyoteLogger.AJP_LOGGER.resumingAjpProtocol(getName());
     }
 
     public void destroy() throws Exception {
-        if (log.isInfoEnabled())
-            log.info(sm.getString("ajpprotocol.stop", getName()));
+        CoyoteLogger.AJP_LOGGER.stoppingAjpProtocol(getName());
         if (canDestroy) {
             endpoint.destroy();
         } else {
-            log.warn(sm.getString("ajpprotocol.cannotDestroy", getName()));
+            CoyoteLogger.AJP_LOGGER.cannotDestroyAjpProtocol(getName());
             try {
                 RequestInfo[] states = cHandler.global.getRequestProcessors();
                 for (int i = 0; i < states.length; i++) {
@@ -272,7 +248,7 @@ public class AjpAprProtocol
                     }
                 }
             } catch (Exception ex) {
-                log.error(sm.getString("ajpprotocol.cannotDestroy", getName()), ex);
+                CoyoteLogger.AJP_LOGGER.cannotDestroyAjpProtocolWithException(getName(), ex);
                 throw ex;
             }
         }
@@ -439,14 +415,10 @@ public class AjpAprProtocol
                     state = result.event(status);
                 } catch (java.net.SocketException e) {
                     // SocketExceptions are normal
-                    AjpAprProcessor.log.debug
-                        (sm.getString
-                            ("ajpprotocol.proto.socketexception.debug"), e);
+                    CoyoteLogger.AJP_LOGGER.socketException(e);
                 } catch (java.io.IOException e) {
                     // IOExceptions are normal
-                    AjpAprProcessor.log.debug
-                        (sm.getString
-                            ("ajpprotocol.proto.ioexception.debug"), e);
+                    CoyoteLogger.AJP_LOGGER.socketException(e);
                 }
                 // Future developers: if you discover any other
                 // rare-but-nonfatal exceptions, catch them here, and log as
@@ -455,8 +427,7 @@ public class AjpAprProtocol
                     // any other exception or error is odd. Here we log it
                     // with "ERROR" level, so it will show up even on
                     // less-than-verbose logs.
-                    AjpAprProcessor.log.error
-                        (sm.getString("ajpprotocol.proto.error"), e);
+                    CoyoteLogger.AJP_LOGGER.socketError(e);
                 } finally {
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
@@ -499,14 +470,10 @@ public class AjpAprProtocol
 
             } catch(java.net.SocketException e) {
                 // SocketExceptions are normal
-                AjpAprProtocol.log.debug
-                    (sm.getString
-                     ("ajpprotocol.proto.socketexception.debug"), e);
+                CoyoteLogger.AJP_LOGGER.socketException(e);
             } catch (java.io.IOException e) {
                 // IOExceptions are normal
-                AjpAprProtocol.log.debug
-                    (sm.getString
-                     ("ajpprotocol.proto.ioexception.debug"), e);
+                CoyoteLogger.AJP_LOGGER.socketException(e);
             }
             // Future developers: if you discover any other
             // rare-but-nonfatal exceptions, catch them here, and log as
@@ -515,8 +482,7 @@ public class AjpAprProtocol
                 // any other exception or error is odd. Here we log it
                 // with "ERROR" level, so it will show up even on
                 // less-than-verbose logs.
-                AjpAprProtocol.log.error
-                    (sm.getString("ajpprotocol.proto.error"), e);
+                CoyoteLogger.AJP_LOGGER.socketError(e);
             }
             recycledProcessors.offer(processor);
             return SocketState.CLOSED;
@@ -541,13 +507,10 @@ public class AjpAprProtocol
                         ObjectName rpName = new ObjectName
                         (proto.getDomain() + ":type=RequestProcessor,worker="
                                 + proto.getJmxName() + ",name=AjpRequest" + count);
-                        if (log.isDebugEnabled()) {
-                            log.debug("Register " + rpName);
-                        }
                         Registry.getRegistry(null, null).registerComponent(rp, rpName, null);
                         rp.setRpName(rpName);
                     } catch (Exception e) {
-                        log.warn("Error registering request");
+                        CoyoteLogger.AJP_LOGGER.errorRegisteringRequest(e);
                     }
                 }
             }
@@ -560,13 +523,10 @@ public class AjpAprProtocol
                 synchronized (this) {
                     try {
                         ObjectName rpName = rp.getRpName();
-                        if (log.isDebugEnabled()) {
-                            log.debug("Unregister " + rpName);
-                        }
                         Registry.getRegistry(null, null).unregisterComponent(rpName);
                         rp.setRpName(null);
                     } catch (Exception e) {
-                        log.warn("Error unregistering request", e);
+                        CoyoteLogger.AJP_LOGGER.errorUnregisteringRequest(e);
                     }
                 }
             }

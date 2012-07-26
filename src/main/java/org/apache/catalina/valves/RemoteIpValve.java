@@ -28,7 +28,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 
-import org.apache.tomcat.util.res.StringManager;
+import org.apache.catalina.util.StringManager;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.Constants;

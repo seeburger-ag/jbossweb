@@ -46,6 +46,7 @@ import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
 import org.apache.tomcat.util.net.NioEndpoint.Handler.SocketState;
 import org.apache.tomcat.util.net.SocketStatus;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code Http11NioProcessor}
@@ -151,10 +152,10 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			} else if (obj instanceof OutputFilter) {
 				outputBuffer.addFilter((OutputFilter) obj);
 			} else {
-				log.warn(sm.getString("http11processor.filter.unknown", className));
+			    CoyoteLogger.HTTP_LOGGER.unknownFilter(className);
 			}
 		} catch (Exception e) {
-			log.error(sm.getString("http11processor.filter.error", className), e);
+		    CoyoteLogger.HTTP_LOGGER.errorInitializingFilter(className, e);
 		}
 	}
 
@@ -228,7 +229,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		} catch (InterruptedIOException e) {
 			error = true;
 		} catch (Throwable t) {
-			log.error(sm.getString("http11processor.request.process"), t);
+		    CoyoteLogger.HTTP_LOGGER.errorProcessingRequest(t);
 			// 500 - Internal Server Error
 			response.setStatus(500);
 			error = true;
@@ -321,9 +322,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 				error = true;
 				break;
 			} catch (Throwable t) {
-				if (log.isDebugEnabled()) {
-					log.debug(sm.getString("http11processor.header.parse"), t);
-				}
+			    CoyoteLogger.HTTP_LOGGER.errorParsingHeader(t);
 				// 400 - Bad Request
 				response.setStatus(400);
 				error = true;
@@ -333,9 +332,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			try {
 				prepareRequest();
 			} catch (Throwable t) {
-				if (log.isDebugEnabled()) {
-					log.debug(sm.getString("http11processor.request.prepare"), t);
-				}
+			    CoyoteLogger.HTTP_LOGGER.errorPreparingRequest(t);
 				// 500 - Internal Server Error
 				response.setStatus(500);
 				error = true;
@@ -362,7 +359,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 				} catch (InterruptedIOException e) {
 					error = true;
 				} catch (Throwable t) {
-					log.error(sm.getString("http11processor.request.process"), t);
+                    CoyoteLogger.HTTP_LOGGER.errorProcessingRequest(t);
 					// 500 - Internal Server Error
 					response.setStatus(500);
 					error = true;
@@ -440,7 +437,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		} catch (IOException e) {
 			error = true;
 		} catch (Throwable t) {
-			log.error(sm.getString("http11processor.request.finish"), t);
+		    CoyoteLogger.HTTP_LOGGER.errorFinishingRequest(t);
 			// 500 - Internal Server Error
 			response.setStatus(500);
 			error = true;
@@ -450,7 +447,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		} catch (IOException e) {
 			error = true;
 		} catch (Throwable t) {
-			log.error(sm.getString("http11processor.response.finish"), t);
+            CoyoteLogger.HTTP_LOGGER.errorFinishingResponse(t);
 			error = true;
 		}
 	}
@@ -551,7 +548,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			try {
 				remoteAddr = ((InetSocketAddress) this.channel.getRemoteAddress()).getHostName();
 			} catch (Exception e) {
-				log.warn(sm.getString("http11processor.socket.info"), e);
+			    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
 			}
 		}
 		request.remoteAddr().setString(remoteAddr);
@@ -565,7 +562,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			try {
 				localName = ((InetSocketAddress) this.channel.getLocalAddress()).getHostName();
 			} catch (Exception e) {
-				log.warn(sm.getString("http11processor.socket.info"), e);
+                CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
 			}
 		}
 		request.localName().setString(localName);
@@ -584,7 +581,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 					remoteHost = remoteAddr;
 				}
 			} catch (Exception e) {
-				log.warn(sm.getString("http11processor.socket.info"), e);
+                CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
 			}
 		}
 		request.remoteHost().setString(remoteHost);
@@ -599,7 +596,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 				localAddr = ((InetSocketAddress) this.channel.getLocalAddress()).getAddress()
 						.getHostAddress();
 			} catch (Exception e) {
-				log.warn(sm.getString("http11processor.socket.info"), e);
+                CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
 			}
 		}
 
@@ -614,7 +611,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			try {
 				remotePort = ((InetSocketAddress) this.channel.getRemoteAddress()).getPort();
 			} catch (Exception e) {
-				log.warn(sm.getString("http11processor.socket.info"), e);
+                CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
 			}
 		}
 		request.setRemotePort(remotePort);
@@ -628,7 +625,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			try {
 				localPort = ((InetSocketAddress) this.channel.getLocalAddress()).getPort();
 			} catch (Exception e) {
-				log.warn(sm.getString("http11processor.socket.info"), e);
+                CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
 			}
 		}
 		request.setLocalPort(localPort);
@@ -654,7 +651,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 					request.setAttribute(org.apache.tomcat.util.net.Constants.SESSION_ID_KEY, sslO);
 			}
 		} catch (Exception e) {
-			log.warn(sm.getString("http11processor.socket.ssl"), e);
+            CoyoteLogger.HTTP_LOGGER.errorGettingSslAttributes(e);
 		}
 	}
 
@@ -676,7 +673,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 					request.setAttribute(org.apache.tomcat.util.net.Constants.CERTIFICATE_KEY, sslO);
 				}
 			} catch (Exception e) {
-				log.warn(sm.getString("http11processor.socket.ssl"), e);
+	            CoyoteLogger.HTTP_LOGGER.errorGettingSslAttributes(e);
 			}
 		}
 	}

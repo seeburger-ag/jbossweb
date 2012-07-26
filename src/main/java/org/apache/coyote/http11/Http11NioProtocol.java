@@ -22,7 +22,6 @@
 package org.apache.coyote.http11;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.nio.channels.ClosedChannelException;
@@ -99,7 +98,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				endpoint.setServerSocketChannelFactory(socketFactory);
 			}
 		} catch (Exception ex) {
-			log.error(sm.getString("http11protocol.socketfactory.initerror"), ex);
+		    CoyoteLogger.HTTP_LOGGER.errorInitializingSocketFactory(ex);
 			throw ex;
 		}
 
@@ -116,11 +115,11 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 			// endpoint.setKeepAliveTimeout(this.timeout);
 			endpoint.init();
 		} catch (Exception ex) {
-			log.error(sm.getString("http11protocol.endpoint.initerror"), ex);
+		    CoyoteLogger.HTTP_LOGGER.errorInitializingEndpoint(ex);
 			throw ex;
 		}
 
-        CoyoteLogger.ROOT_LOGGER.initConnector(getName());
+        CoyoteLogger.HTTP_LOGGER.initHttpConnector(getName());
 	}
 
 	/*
@@ -136,7 +135,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					tpOname = new ObjectName(domain + ":" + "type=ThreadPool,name=" + getName());
 					Registry.getRegistry(null, null).registerComponent(endpoint, tpOname, null);
 				} catch (Exception e) {
-					log.error("Can't register threadpool");
+				    CoyoteLogger.HTTP_LOGGER.errorRegisteringPool(e);
 				}
 				rgOname = new ObjectName(domain + ":type=GlobalRequestProcessor,name=" + getName());
 				Registry.getRegistry(null, null).registerComponent(cHandler.global, rgOname, null);
@@ -145,11 +144,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		try {
 			endpoint.start();
 		} catch (Exception ex) {
-			log.error(sm.getString("http11protocol.endpoint.starterror"), ex);
+		    CoyoteLogger.HTTP_LOGGER.errorStartingEndpoint(ex);
 			throw ex;
 		}
-
-		CoyoteLogger.ROOT_LOGGER.startConnector(getName());
+		CoyoteLogger.HTTP_LOGGER.startHttpConnector(getName());
 	}
 
 	/*
@@ -162,7 +160,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		try {
 			endpoint.pause();
 		} catch (Exception ex) {
-			log.error(sm.getString("http11protocol.endpoint.pauseerror"), ex);
+		    CoyoteLogger.HTTP_LOGGER.errorPausingEndpoint(ex);
 			throw ex;
 		}
 		canDestroy = false;
@@ -188,8 +186,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				canDestroy = true;
 			}
 		}
-
-		log.info(sm.getString("http11protocol.pause", getName()));
+		CoyoteLogger.HTTP_LOGGER.pauseHttpConnector(getName());
 	}
 
 	/*
@@ -202,11 +199,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		try {
 			endpoint.resume();
 		} catch (Exception ex) {
-			log.error(sm.getString("http11protocol.endpoint.resumeerror"), ex);
+		    CoyoteLogger.HTTP_LOGGER.errorResumingEndpoint(ex);
 			throw ex;
 		}
-
-		log.info(sm.getString("http11protocol.resume", getName()));
+		CoyoteLogger.HTTP_LOGGER.resumeHttpConnector(getName());
 	}
 
 	/*
@@ -216,11 +212,11 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 	 */
 	@Override
 	public void destroy() throws Exception {
-		log.info(sm.getString("http11protocol.stop", getName()));
+	    CoyoteLogger.HTTP_LOGGER.stopHttpConnector(getName());
 		if (canDestroy) {
 			endpoint.destroy();
 		} else {
-			log.warn(sm.getString("http11protocol.cannotDestroy", getName()));
+		    CoyoteLogger.HTTP_LOGGER.cannotDestroyHttpProtocol(getName());
 			try {
 				RequestInfo[] states = cHandler.global.getRequestProcessors();
 				for (int i = 0; i < states.length; i++) {
@@ -229,7 +225,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					}
 				}
 			} catch (Exception ex) {
-				log.error(sm.getString("http11protocol.cannotDestroy", getName()), ex);
+			    CoyoteLogger.HTTP_LOGGER.cannotDestroyHttpProtocolWithException(getName(), ex);
 				throw ex;
 			}
 		}
@@ -241,23 +237,22 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.coyote.http11.Http11AbstractProtocol#getName()
-	 */
-	public String getName() {
-		String encodedAddr = "";
-		if (getAddress() != null) {
-			encodedAddr = "" + getAddress();
-			try {
-				encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-'), "UTF-8") + "-";
-			} catch (UnsupportedEncodingException e) {
-				log.warn("UTF-8 encoding is not supported");
-			}
-		}
-		return ("http-" + encodedAddr + endpoint.getPort());
-	}
+    public String getJmxName() {
+        String encodedAddr = "";
+        if (getAddress() != null) {
+            encodedAddr = "" + getAddress();
+            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-').replace(':', '_').replace('%', '-')) + "-";
+        }
+        return ("http-" + encodedAddr + endpoint.getPort());
+    }
+
+    public String getName() {
+        String encodedAddr = "";
+        if (getAddress() != null) {
+            encodedAddr = getAddress() + ":";
+        }
+        return ("http-" + encodedAddr + endpoint.getPort());
+    }
 
 	/**
 	 * @return the executor
@@ -826,12 +821,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					state = processor.event(status);
 				} catch (java.net.SocketException e) {
 					// SocketExceptions are normal
-					Http11NioProtocol.log.debug(
-							sm.getString("http11protocol.proto.socketexception.debug"), e);
+				    CoyoteLogger.HTTP_LOGGER.socketException(e);
 				} catch (java.io.IOException e) {
 					// IOExceptions are normal
-					Http11NioProtocol.log.debug(
-							sm.getString("http11protocol.proto.ioexception.debug"), e);
+                    CoyoteLogger.HTTP_LOGGER.socketException(e);
 				}
 				// Future developers: if you discover any other
 				// rare-but-nonfatal exceptions, catch them here, and log as
@@ -840,7 +833,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					// any other exception or error is odd. Here we log it
 					// with "ERROR" level, so it will show up even on
 					// less-than-verbose logs.
-					Http11NioProtocol.log.error(sm.getString("http11protocol.proto.error"), e);
+                    CoyoteLogger.HTTP_LOGGER.socketError(e);
 				} finally {
 					if (state != SocketState.LONG) {
 						connections.remove(channel.getId());
@@ -932,12 +925,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 			} catch (IOException e) {
 				if (e instanceof java.net.SocketException) {
 					// SocketExceptions are normal
-					Http11NioProtocol.log.debug(
-							sm.getString("http11protocol.proto.socketexception.debug"), e);
+                    CoyoteLogger.HTTP_LOGGER.socketException(e);
 				} else {
 					// IOExceptions are normal
-					Http11NioProtocol.log.debug(
-							sm.getString("http11protocol.proto.ioexception.debug"), e);
+                    CoyoteLogger.HTTP_LOGGER.socketException(e);
 				}
 			}
 			// Future developers: if you discover any other
@@ -947,7 +938,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				// any other exception or error is odd. Here we log it
 				// with "ERROR" level, so it will show up even on
 				// less-than-verbose logs.
-				Http11NioProtocol.log.error(sm.getString("http11protocol.proto.error"), e);
+                CoyoteLogger.HTTP_LOGGER.socketError(e);
 			}
 			recycledProcessors.offer(processor);
 			return SocketState.CLOSED;
@@ -985,16 +976,12 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					try {
 						long count = registerCount.incrementAndGet();
 						ObjectName rpName = new ObjectName(proto.getDomain()
-								+ ":type=RequestProcessor,worker=" + proto.getName()
+								+ ":type=RequestProcessor,worker=" + proto.getJmxName()
 								+ ",name=HttpRequest" + count);
-						if (log.isDebugEnabled()) {
-							log.debug("Register " + rpName);
-						}
 						Registry.getRegistry(null, null).registerComponent(rp, rpName, null);
 						rp.setRpName(rpName);
 					} catch (Exception e) {
-						e.printStackTrace();
-						log.warn("Error registering request");
+					    CoyoteLogger.HTTP_LOGGER.errorRegisteringRequest(e);
 					}
 				}
 			}
@@ -1010,14 +997,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				synchronized (this) {
 					try {
 						ObjectName rpName = rp.getRpName();
-						if (log.isDebugEnabled()) {
-							log.debug("Unregister " + rpName);
-						}
 						Registry.getRegistry(null, null).unregisterComponent(rpName);
 						rp.setRpName(null);
 					} catch (Exception e) {
-						e.printStackTrace();
-						log.warn("Error unregistering request", e);
+					    CoyoteLogger.HTTP_LOGGER.errorUnregisteringRequest(e);
 					}
 				}
 			}

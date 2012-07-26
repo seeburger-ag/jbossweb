@@ -17,6 +17,8 @@
 
 package org.apache.coyote.http11;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -27,7 +29,6 @@ import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.HttpMessages;
 import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.net.AprEndpoint;
-import org.apache.tomcat.util.res.StringManager;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.OutputBuffer;
@@ -80,16 +81,6 @@ public class InternalAprOutputBuffer
         HttpMessages.getMessage(200);
 
     }
-
-
-    // -------------------------------------------------------------- Variables
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------- Instance Variables
@@ -405,7 +396,7 @@ public class InternalAprOutputBuffer
 
         if (!committed) {
             if (Socket.send(socket, Constants.ACK_BYTES, 0, Constants.ACK_BYTES.length) < 0)
-                throw new IOException(sm.getString("oob.failedwrite"));
+                throw new IOException(MESSAGES.failedWrite());
         }
 
     }
@@ -548,7 +539,7 @@ public class InternalAprOutputBuffer
         // If non blocking (event) and there are leftover bytes, 
         // and lastWrite was 0 -> error
         if (leftover.getLength() > 0 && !(Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
-            throw new IOException(sm.getString("oob.backlog"));
+            throw new IOException(MESSAGES.invalidBacklog());
         }
 
         if (lastActiveFilter == -1)
@@ -735,7 +726,7 @@ public class InternalAprOutputBuffer
                     }
                 }
                 if (res < 0) {
-                    throw new IOException(sm.getString("oob.failedwrite"));
+                    throw new IOException(MESSAGES.failedWrite());
                 }
                 response.setLastWrite(res);
                 if (pos < end) {
@@ -768,7 +759,7 @@ public class InternalAprOutputBuffer
                 }
             }
             if (res < 0) {
-                throw new IOException(sm.getString("oob.failedwrite"));
+                throw new IOException(MESSAGES.failedWrite());
             }
             response.setLastWrite(res);
         }
@@ -812,7 +803,7 @@ public class InternalAprOutputBuffer
                 bbuf.clear();
                 Socket.timeoutSet(socket, 0);
             } else {
-                throw new IOException(sm.getString("oob.backlog"));
+                throw new IOException(MESSAGES.invalidBacklog());
             }
         }
         
@@ -856,7 +847,7 @@ public class InternalAprOutputBuffer
             response.setLastWrite(res);
             bbuf.clear();
             if (res < 0) {
-                throw new IOException(sm.getString("oob.failedwrite"));
+                throw new IOException(MESSAGES.failedWrite());
             }
         }
         
