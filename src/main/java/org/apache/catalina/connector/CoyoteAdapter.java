@@ -55,6 +55,7 @@ import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.Host;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
@@ -547,11 +548,13 @@ public class CoyoteAdapter
             res.setMessage("Context not mapped");
             return false;
         }
-        if (connector.getAllowedHosts() != null 
-                && !connector.getAllowedHosts().contains(request.getMappingData().host)) {
-            res.setStatus(403);
-            res.setMessage("Host access is forbidden through this connector");
-            return false;
+        if (connector.getAllowedHosts() != null) {
+            Host host = (Host) request.getMappingData().host;
+            if (!connector.getAllowedHosts().contains(host.getName())) {
+                res.setStatus(403);
+                res.setMessage("Host access is forbidden through this connector");
+                return false;
+            }
         }
 
         // Filter trace method
