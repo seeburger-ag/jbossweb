@@ -319,7 +319,8 @@ public class AjpProtocol
      * Should authentication be done in the native webserver layer, 
      * or in the Servlet container ?
      */
-    protected boolean tomcatAuthentication = true;
+    protected boolean tomcatAuthentication = 
+        Boolean.valueOf(System.getProperty("org.apache.coyote.ajp.AprProcessor.TOMCATAUTHENTICATION", "true")).booleanValue();
     public boolean getTomcatAuthentication() { return tomcatAuthentication; }
     public void setTomcatAuthentication(boolean tomcatAuthentication) { this.tomcatAuthentication = tomcatAuthentication; }
 
