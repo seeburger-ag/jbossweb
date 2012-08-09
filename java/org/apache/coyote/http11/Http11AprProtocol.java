@@ -136,14 +136,14 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             if( this.domain != null ) {
                 try {
                     tpOname=new ObjectName
-                    (domain + ":" + "type=ThreadPool,name=" + getName());
+                    (domain + ":" + "type=ThreadPool,name=" + getJmxName());
                     Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
                 } catch (Exception e) {
                     log.error("Can't register threadpool" );
                 }
                 rgOname=new ObjectName
-                (domain + ":type=GlobalRequestProcessor,name=" + getName());
+                (domain + ":type=GlobalRequestProcessor,name=" + getJmxName());
                 Registry.getRegistry(null, null).registerComponent
                 ( cHandler.global, rgOname, null );
             }
