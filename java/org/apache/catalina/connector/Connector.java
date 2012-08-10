@@ -270,7 +270,7 @@ public class Connector
       * Allowed virtual hosts.
       */
      protected Set<String> allowedHosts = null;
-     protected Set<String> allowedHostsIgnoreCase = new HashSet();
+     protected Set<String> allowedHostsIgnoreCase = null;
 
      protected static HashMap<String, String> replacements = new HashMap<String, String>();
      static {
@@ -393,7 +393,11 @@ public class Connector
     public void setAllowedHosts(Set<String> allowedHosts) {
 
         this.allowedHosts = allowedHosts;
-        addAllowedHostsToLowerCaseSet();
+        if (allowedHosts != null) {
+            this.allowedHostsIgnoreCase = new HashSet();
+            addAllowedHostsToLowerCaseSet();
+        } else
+        this.allowedHostsIgnoreCase = null;
     }
     
     private void addAllowedHostsToLowerCaseSet() {
