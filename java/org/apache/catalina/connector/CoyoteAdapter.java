@@ -548,7 +548,7 @@ public class CoyoteAdapter
         }
         if (connector.getAllowedHosts() != null) {
             Host host = (Host) request.getMappingData().host;
-            if (!connector.getAllowedHosts().contains(host.getName())) {
+            if (!connector.getAllowedHostsIgnoreCase().contains(host.getName())) {
                 res.setStatus(403);
                 res.setMessage("Host access is forbidden through this connector");
                 return false;
