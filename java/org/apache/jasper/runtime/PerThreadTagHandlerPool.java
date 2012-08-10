@@ -119,17 +119,7 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
         if (ptd.current < (ptd.handlers.length - 1)) {
             ptd.handlers[++ptd.current] = handler;
         } else {
-            try {
-                handler.release();
-            } finally {
-                if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-                    try {
-                        instanceManager.destroyInstance(handler);
-                    } catch (Exception e) {
-                        // Ignore
-                    }
-                }
-            }
+            handler.release();
         }
     }
 
