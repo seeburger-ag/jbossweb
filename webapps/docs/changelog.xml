@@ -15,43 +15,9 @@
   </properties>
 
 <body>
-
-<section name="JBoss Web 7.7.0.Alpha1 (remm)">
-  <subsection name="Catalina">
-    <changelog>
-      <fix>
-         <jboss-jira>AS7-4469</jboss-jira>: Rebase SSL valve used by mod_headers. (remm)
-      </fix>
-      <fix>
-         <jboss-jira>AS7-4469</jboss-jira>: Fix SSL session id attribute name (standardized in Servlet 3). (remm)
-      </fix>
-      <fix>
-         Use the thread listener bind/unbind in the background process. (remm)
-      </fix>
-      <fix>
-         <jboss-jira>JBPAPP-9126</jboss-jira>: Set the context classloader as soon as possible on newly
-         created threads. (remm)
-      </fix>
-      <fix>
-         <jboss-jira>AS7-4232</jboss-jira>: Modify async error processing based on a stricter spec 
-         interpretation. (remm)
-      </fix>
-    </changelog>
-  </subsection>
+<section name="JBoss Web 7.0.16.Final (remm)">
   <subsection name="Coyote">
     <changelog>
-      <fix>
-         <jboss-jira>JBPAPP-8505</jboss-jira>: Add back the multi files logic for Windows. (jfclere/mturk)
-      </fix>
-      <fix>
-         <jboss-jira>AS7-3851</jboss-jira>: Cleanup IPv6 logging. (remm)
-      </fix>
-      <fix>
-         <jira>234</jira>: Fix parameters encoding processing issue introduced when rebasing. (remm)
-      </fix>
-      <add>
-         Protocol upgrade API. (remm)
-      </add>
       <fix>
          <jboss-jira>AS7-4151</jboss-jira>: Add system property to configure AJP packet size, and another
          for endpoint max threads. (remm)
@@ -59,12 +25,13 @@
       <fix>
          <jboss-jira>AS7-4566</jboss-jira>: Add system property to configure connection timeout. (remm)
       </fix>
-      <add>
-         NIO 2 HTTP connector. (benothman)
-      </add>
-      <add>
-         Drop java.io connectors (AJP and HTTP). AJP now requires native. (remm)
-      </add>
+      <fix>
+         Drop fix for <jboss-jira>AS7-4566</jboss-jira> (problem with IPv6 on shutdown on JDK 6). (remm)
+      </fix>
+      <fix>
+         <jboss-jira>JBPAPP-9126</jboss-jira>: Set the context classloader as soon as possible on newly
+         created threads. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">
@@ -80,6 +47,58 @@
       </fix>
       <fix>
          <jira>242</jira>: Fix rare leak with tag pooling. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.0.15.Final (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         <jboss-jira>AS7-4469</jboss-jira>: Rebase SSL valve used by mod_headers. (remm)
+      </fix>
+      <fix>
+         <jboss-jira>AS7-4469</jboss-jira>: Fix SSL session id attribute name (standardized in Servlet 3). (remm)
+      </fix>
+      <fix>
+         Use the thread listener bind/unbind in the background process. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <add>
+         <jira>238</jira>: Add startUpgrade hook to allow reading and writing raw bytes during the upgrade process. (remm)
+      </add>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.0.14.Final (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         <jboss-jira>AS7-3834</jboss-jira>: Socket bind for JIoEndpoint fails on shutdown when using link-local IPv6 address. (jfclere)
+      </fix>
+      <fix>
+         <jboss-jira>JBPAPP-8505</jboss-jira>: Add back the multi files logic for Windows. (jfclere/mturk)
+      </fix>
+      <add>
+         Protocol upgrade API. (remm)
+      </add>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.0.13.Final (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         <jboss-jira>AS7-3851</jboss-jira>: Cleanup IPv6 logging. (remm)
+      </fix>
+      <fix>
+         <jira>234</jira>: Fix parameters encoding processing issue introduced when rebasing. (remm)
       </fix>
     </changelog>
   </subsection>
