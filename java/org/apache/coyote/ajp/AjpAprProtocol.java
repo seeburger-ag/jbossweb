@@ -345,7 +345,7 @@ public class AjpAprProtocol
      * Should authentication be done in the native webserver layer, 
      * or in the Servlet container ?
      */
-    protected boolean tomcatAuthentication = true;
+    protected boolean tomcatAuthentication = Constants.DEFAULT_TOMCAT_AUTHENTICATION;
     public boolean getTomcatAuthentication() { return tomcatAuthentication; }
     public void setTomcatAuthentication(boolean tomcatAuthentication) { this.tomcatAuthentication = tomcatAuthentication; }
 

@@ -168,6 +168,12 @@ Or edit the standalone.xml and add afiter the <code>extensions</code>:
       <p>Server Identity stringr: the <code>Server:</code> header. The default value is 
       <code>Apache-Coyote/1.1</code>.</p>
     </property>
+
+    <property name="org.apache.coyote.ajp.DEFAULT_TOMCAT_AUTHENTICATION">
+      <p>Perform authentication in the application server rather than in the frontend
+      web server. The default value is <code>true</code>.</p>
+    </property>
+
   </properties>
 
 </section>
