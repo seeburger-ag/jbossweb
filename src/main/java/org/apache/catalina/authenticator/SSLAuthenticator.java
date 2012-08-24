@@ -19,6 +19,8 @@
 package org.apache.catalina.authenticator;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
@@ -127,7 +129,7 @@ public class SSLAuthenticator
             if (getContainer().getLogger().isDebugEnabled())
                 getContainer().getLogger().debug("  No certificates included with this request");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                               sm.getString("authenticator.certificates"));
+                               MESSAGES.missingRequestCertificate());
             return (false);
         }
 
@@ -137,7 +139,7 @@ public class SSLAuthenticator
             if (getContainer().getLogger().isDebugEnabled())
                 getContainer().getLogger().debug("  Realm.authenticate() returned false");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                               sm.getString("authenticator.unauthorized"));
+                               MESSAGES.certificateAuthenticationFailure());
             return (false);
         }
 

@@ -40,6 +40,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.util.MD5Encoder;
 import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 
@@ -483,8 +484,7 @@ public class DigestAuthenticator
                             currentTime - eldest.getValue().getTimestamp() <
                             getNonceValidity()) {
                         // Replay attack is possible
-                        log.warn(sm.getString(
-                                "digestAuthenticator.cacheRemove"));
+                        CatalinaLogger.AUTH_LOGGER.digestCacheRemove();
                         lastLog = currentTime + LOG_SUPPRESS_TIME;
                     }
                     return true;

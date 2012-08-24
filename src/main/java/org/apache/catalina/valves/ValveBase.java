@@ -80,13 +80,6 @@ public abstract class ValveBase
     protected Valve next = null;
 
 
-    /**
-     * The string manager for this package.
-     */
-    protected final static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
     //-------------------------------------------------------------- Properties
 
 

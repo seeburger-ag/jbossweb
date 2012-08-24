@@ -16,6 +16,8 @@
  */
 package org.apache.catalina.valves;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Map;
@@ -135,8 +137,7 @@ public class CrawlerSessionManagerValve extends ValveBase
 
         // Validate and update our current component state
         if (started)
-            throw new LifecycleException(sm
-                    .getString("accessLogValve.alreadyStarted"));
+            throw new LifecycleException(MESSAGES.valveAlreadyStarted());
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -148,8 +149,7 @@ public class CrawlerSessionManagerValve extends ValveBase
 
         // Validate and update our current component state
         if (!started)
-            throw new LifecycleException(sm
-                    .getString("accessLogValve.notStarted"));
+            throw new LifecycleException(MESSAGES.valveNotStarted());
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
         

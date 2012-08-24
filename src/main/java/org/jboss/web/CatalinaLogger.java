@@ -45,4 +45,47 @@ public interface CatalinaLogger extends BasicLogger {
      */
     CatalinaLogger ROOT_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina");
 
+    /**
+     * A logger with the category of the package name.
+     */
+    CatalinaLogger AUTH_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.authenticator");
+
+    /**
+     * A logger with the category of the package name.
+     */
+    CatalinaLogger VALVES_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.valves");
+
+    /**
+     * A logger with the category of the package name.
+     */
+    CatalinaLogger REALM_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.realm");
+
+    @LogMessage(level = WARN)
+    @Message(id = 1000, value = "A valid entry has been removed from client nonce cache to make room for new entries. A replay attack is now possible. To prevent the possibility of replay attacks, reduce nonceValidity or increase cnonceCacheSize. Further warnings of this type will be suppressed for 5 minutes.")
+    void digestCacheRemove();
+
+    @LogMessage(level = WARN)
+    @Message(id = 1001, value = "Failed to process certificate string [%s] to create a java.security.cert.X509Certificate object")
+    void certificateProcessingFailed(String certificate, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1002, value = "The SSL provider specified on the connector associated with this request of [%s] is invalid. The certificate data could not be processed.")
+    void missingSecurityProvider(String provider, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1003, value = "Error digesting user credentials.")
+    void errorDigestingCredentials(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1004, value = "Failed realm [%s] JMX registration.")
+    void failedRealmJmxRegistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1005, value = "Failed realm [%s] JMX unregistration.")
+    void failedRealmJmxUnregistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1006, value = "Missing parent [%s].")
+    void missingParentJmxRegistration(Object objectName, @Cause Throwable t);
+
 }

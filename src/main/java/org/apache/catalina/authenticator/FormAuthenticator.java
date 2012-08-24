@@ -19,6 +19,8 @@
 package org.apache.catalina.authenticator;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
@@ -258,8 +260,7 @@ public class FormAuthenticator
                 saveRequest(request, session);
             } catch (IOException ioe) {
                 log.debug("Request body too big to save during authentication");
-                response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                        sm.getString("authenticator.requestBodyTooBig"));
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, MESSAGES.requestBodyTooLarge());
                 return (false);
             }
             forwardToLoginPage(request, response, config);
@@ -294,7 +295,7 @@ public class FormAuthenticator
                     ("User took so long to log on the session expired");
             if (landingPage == null) {
                 response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT,
-                        sm.getString("authenticator.sessionExpired"));
+                        MESSAGES.sessionTimeoutDuringAuthentication());
             } else {
                 // Make the authenticator think the user originally requested
                 // the landing page
@@ -323,7 +324,7 @@ public class FormAuthenticator
         if (requestURI == null)
             if (landingPage == null) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        sm.getString("authenticator.formlogin"));
+                        MESSAGES.invalidFormLoginDirectReference());
             } else {
                 // Make the authenticator think the user originally requested
                 // the landing page
@@ -361,7 +362,7 @@ public class FormAuthenticator
         try {
             disp.forward(request.getRequest(), response);
         } catch (Throwable t) {
-            String msg = sm.getString("formAuthenticator.forwardLoginFail");
+            String msg = MESSAGES.errorForwardingToFormLogin();
             log.warn(msg, t);
             request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -388,7 +389,7 @@ public class FormAuthenticator
         try {
             disp.forward(request.getRequest(), response);
         } catch (Throwable t) {
-            String msg = sm.getString("formAuthenticator.forwardErrorFail");
+            String msg = MESSAGES.errorForwardingToFormError();
             log.warn(msg, t);
             request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,

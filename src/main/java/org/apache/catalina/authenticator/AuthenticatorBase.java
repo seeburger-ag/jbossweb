@@ -19,6 +19,8 @@
 package org.apache.catalina.authenticator;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
@@ -145,13 +147,6 @@ public abstract class AuthenticatorBase
 
 
     /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
-    /**
      * The SingleSignOn implementation in our request processing chain,
      * if there is one.
      */
@@ -226,8 +221,7 @@ public abstract class AuthenticatorBase
     public void setContainer(Container container) {
 
         if (!(container instanceof Context))
-            throw new IllegalArgumentException
-                (sm.getString("authenticator.notContext"));
+            throw MESSAGES.authenticatorNeedsContext();
 
         super.setContainer(container);
         this.context = (Context) container;
@@ -774,8 +768,7 @@ public abstract class AuthenticatorBase
 
         // Validate and update our current component state
         if (started)
-            throw new LifecycleException
-                (sm.getString("authenticator.alreadyStarted"));
+            throw new LifecycleException(MESSAGES.authenticatorAlreadyStarted());
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -819,8 +812,7 @@ public abstract class AuthenticatorBase
 
         // Validate and update our current component state
         if (!started)
-            throw new LifecycleException
-                (sm.getString("authenticator.notStarted"));
+            throw new LifecycleException(MESSAGES.authenticatorNotStarted());
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 

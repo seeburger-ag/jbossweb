@@ -29,6 +29,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.tomcat.util.buf.EncodingToCharset;
 import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * When using mod_proxy_http, the client SSL information is not included in the
@@ -105,9 +106,9 @@ public class SSLValve extends ValveBase {
                 jsseCerts = new X509Certificate[1];
                 jsseCerts[0] = cert;
             } catch (java.security.cert.CertificateException e) {
-                log.warn(sm.getString("sslValve.certError", strcerts), e);
+                CatalinaLogger.VALVES_LOGGER.certificateProcessingFailed(strcerts, e);
             } catch (NoSuchProviderException e) {
-                log.error(sm.getString("sslValve.invalidProvider", providerName), e);
+                CatalinaLogger.VALVES_LOGGER.missingSecurityProvider(providerName, e);
             }
             request.setAttribute(Globals.CERTIFICATES_ATTR, jsseCerts);
         }

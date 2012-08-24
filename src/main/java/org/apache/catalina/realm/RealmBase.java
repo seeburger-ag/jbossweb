@@ -19,6 +19,8 @@
 package org.apache.catalina.realm;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -38,7 +40,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
@@ -55,9 +56,9 @@ import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.util.HexUtils;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.MD5Encoder;
-import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * Simple implementation of <b>Realm</b> that reads an XML file to configure
@@ -70,8 +71,6 @@ import org.jboss.logging.Logger;
 
 public abstract class RealmBase
     implements Lifecycle, Realm, MBeanRegistration {
-
-    private static Logger log = Logger.getLogger(RealmBase.class);
 
     // ----------------------------------------------------- Instance Variables
 
@@ -131,13 +130,6 @@ public abstract class RealmBase
      * MD5 message digest provider.
      */
     protected static MessageDigest md5Helper;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -321,14 +313,12 @@ public abstract class RealmBase
         }
         if(! validated ) {
             if (containerLog.isTraceEnabled()) {
-                containerLog.trace(sm.getString("realmBase.authenticateFailure",
-                                                username));
+                containerLog.trace(MESSAGES.userNotAuthenticated(username));
             }
             return null;
         }
         if (containerLog.isTraceEnabled()) {
-            containerLog.trace(sm.getString("realmBase.authenticateSuccess",
-                                            username));
+            containerLog.trace(MESSAGES.userAuthenticated(username));
         }
 
         return getPrincipal(username);
@@ -386,8 +376,7 @@ public abstract class RealmBase
             try {
                 valueBytes = serverDigestValue.getBytes(getDigestEncoding());
             } catch (UnsupportedEncodingException uee) {
-                log.error("Illegal digestEncoding: " + getDigestEncoding(), uee);
-                throw new IllegalArgumentException(uee.getMessage());
+                throw MESSAGES.illegalDigestEncoding(getDigestEncoding(), uee);
             }
         }
 
@@ -397,8 +386,8 @@ public abstract class RealmBase
             serverDigest = md5Encoder.encode(md5Helper.digest(valueBytes));
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Digest : " + clientDigest + " Username:" + username 
+        if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+            CatalinaLogger.REALM_LOGGER.debug("Digest : " + clientDigest + " Username:" + username 
                     + " ClientSigest:" + clientDigest + " nOnce:" + nOnce 
                     + " nc:" + nc + " cnonce:" + cnonce + " qop:" + qop 
                     + " realm:" + realm + "md5a2:" + md5a2 
@@ -426,18 +415,18 @@ public abstract class RealmBase
             return (null);
 
         // Check the validity of each certificate in the chain
-        if (log.isDebugEnabled())
-            log.debug("Authenticating client certificate chain");
+        if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+            CatalinaLogger.REALM_LOGGER.debug("Authenticating client certificate chain");
         if (validate) {
             for (int i = 0; i < certs.length; i++) {
-                if (log.isDebugEnabled())
-                    log.debug(" Checking validity for '" +
+                if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                    CatalinaLogger.REALM_LOGGER.debug(" Checking validity for '" +
                         certs[i].getSubjectDN().getName() + "'");
                 try {
                     certs[i].checkValidity();
                 } catch (Exception e) {
-                    if (log.isDebugEnabled())
-                        log.debug("  Validity exception", e);
+                    if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                        CatalinaLogger.REALM_LOGGER.debug("  Validity exception", e);
                     return (null);
                 }
             }
@@ -472,8 +461,8 @@ public abstract class RealmBase
         // Are there any defined security constraints?
         SecurityConstraint constraints[] = context.findConstraints();
         if ((constraints == null) || (constraints.length == 0)) {
-            if (log.isDebugEnabled())
-                log.debug("  No applicable constraints defined");
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                CatalinaLogger.REALM_LOGGER.debug("  No applicable constraints defined");
             return (null);
         }
 
@@ -492,8 +481,8 @@ public abstract class RealmBase
 		continue;
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("  Checking constraint '" + constraints[i] +
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.REALM_LOGGER.debug("  Checking constraint '" + constraints[i] +
                     "' against " + method + " " + uri + " --> " +
                     constraints[i].included(uri, method));
 	    }
@@ -539,8 +528,8 @@ public abstract class RealmBase
 		continue;
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("  Checking constraint '" + constraints[i] +
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.REALM_LOGGER.debug("  Checking constraint '" + constraints[i] +
                     "' against " + method + " " + uri + " --> " +
                     constraints[i].included(uri, method));
 	    }
@@ -608,8 +597,8 @@ public abstract class RealmBase
 		continue;
             }
             
-            if (log.isDebugEnabled()) {
-                log.debug("  Checking constraint '" + constraints[i] +
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.REALM_LOGGER.debug("  Checking constraint '" + constraints[i] +
                     "' against " + method + " " + uri + " --> " +
                     constraints[i].included(uri, method));
 	    }
@@ -668,8 +657,8 @@ public abstract class RealmBase
 		continue;
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("  Checking constraint '" + constraints[i] +
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.REALM_LOGGER.debug("  Checking constraint '" + constraints[i] +
                     "' against " + method + " " + uri + " --> " +
                     constraints[i].included(uri, method));
 	    }
@@ -701,8 +690,8 @@ public abstract class RealmBase
 
         if(results == null) {
             // No applicable security constraint was found
-            if (log.isDebugEnabled())
-                log.debug("  No applicable constraint located");
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                CatalinaLogger.REALM_LOGGER.debug("  No applicable constraint located");
         }
         return resultsToArray(results);
     }
@@ -749,19 +738,19 @@ public abstract class RealmBase
             String requestURI = request.getRequestPathMB().toString();
             String loginPage = config.getLoginPage();
             if (loginPage.equals(requestURI)) {
-                if (log.isDebugEnabled())
-                    log.debug(" Allow access to login page " + loginPage);
+                if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                    CatalinaLogger.REALM_LOGGER.debug(" Allow access to login page " + loginPage);
                 return (true);
             }
             String errorPage = config.getErrorPage();
             if (errorPage.equals(requestURI)) {
-                if (log.isDebugEnabled())
-                    log.debug(" Allow access to error page " + errorPage);
+                if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                    CatalinaLogger.REALM_LOGGER.debug(" Allow access to error page " + errorPage);
                 return (true);
             }
             if (requestURI.endsWith(Constants.FORM_ACTION)) {
-                if (log.isDebugEnabled())
-                    log.debug(" Allow access to username/password submission");
+                if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                    CatalinaLogger.REALM_LOGGER.debug(" Allow access to username/password submission");
                 return (true);
             }
         }
@@ -784,41 +773,41 @@ public abstract class RealmBase
             if (roles == null)
                 roles = new String[0];
 
-            if (log.isDebugEnabled())
-                log.debug("  Checking roles " + principal);
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                CatalinaLogger.REALM_LOGGER.debug("  Checking roles " + principal);
 
             if (roles.length == 0 && !constraint.getAllRoles()) {
                 if(constraint.getAuthConstraint()) {
-                    if( log.isDebugEnabled() )
-                        log.debug("No roles ");
+                    if( CatalinaLogger.REALM_LOGGER.isDebugEnabled() )
+                        CatalinaLogger.REALM_LOGGER.debug("No roles ");
                     status = false; // No listed roles means no access at all
                     denyFromAll = true;
                     break;
                 } else {
-                    if(log.isDebugEnabled())
-                        log.debug("Passing all access");
+                    if(CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                        CatalinaLogger.REALM_LOGGER.debug("Passing all access");
                     status = true;
                 }
             } else if (principal == null) {
-                if (log.isDebugEnabled())
-                    log.debug("  No user authenticated, cannot grant access");
+                if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                    CatalinaLogger.REALM_LOGGER.debug("  No user authenticated, cannot grant access");
             } else {
                 for (int j = 0; j < roles.length; j++) {
                     if (hasRole(principal, roles[j])) {
                         status = true;
-                        if( log.isDebugEnabled() )
-                            log.debug( "Role found:  " + roles[j]);
+                        if( CatalinaLogger.REALM_LOGGER.isDebugEnabled() )
+                            CatalinaLogger.REALM_LOGGER.debug( "Role found:  " + roles[j]);
                     } else {
-                        if( log.isDebugEnabled() )
-                            log.debug( "No role found:  " + roles[j]);
+                        if( CatalinaLogger.REALM_LOGGER.isDebugEnabled() )
+                            CatalinaLogger.REALM_LOGGER.debug( "No role found:  " + roles[j]);
                     }
                 }
             }
         }
 
         if (!denyFromAll && allRolesMode != AllRolesMode.STRICT_MODE && !status && principal != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Checking for all roles mode: " + allRolesMode);
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.REALM_LOGGER.debug("Checking for all roles mode: " + allRolesMode);
             }
             // Check for an all roles(role-name="*")
             for (int i = 0; i < constraints.length; i++) {
@@ -827,8 +816,8 @@ public abstract class RealmBase
                 // If the all roles mode exists, sets
                 if (constraint.getAllRoles()) {
                     if (allRolesMode == AllRolesMode.AUTH_ONLY_MODE) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Granting access for role-name=*, auth-only");
+                        if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+                            CatalinaLogger.REALM_LOGGER.debug("Granting access for role-name=*, auth-only");
                         }
                         status = true;
                         break;
@@ -837,8 +826,8 @@ public abstract class RealmBase
                     // For AllRolesMode.STRICT_AUTH_ONLY_MODE there must be zero roles
                     roles = request.getContext().findSecurityRoles();
                     if (roles.length == 0 && allRolesMode == AllRolesMode.STRICT_AUTH_ONLY_MODE) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Granting access for role-name=*, strict auth-only");
+                        if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+                            CatalinaLogger.REALM_LOGGER.debug("Granting access for role-name=*, strict auth-only");
                         }
                         status = true;
                         break;
@@ -849,9 +838,7 @@ public abstract class RealmBase
         
         // Return a "Forbidden" message denying access to this resource
         if(!status) {
-            response.sendError
-                (HttpServletResponse.SC_FORBIDDEN,
-                 sm.getString("realmBase.forbidden"));
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, MESSAGES.forbiddenAccess());
         }
         return status;
 
@@ -878,16 +865,16 @@ public abstract class RealmBase
 
         GenericPrincipal gp = (GenericPrincipal) principal;
         if (!(gp.getRealm() == this)) {
-            if(log.isDebugEnabled())
-                log.debug("Different realm " + this + " " + gp.getRealm());//    return (false);
+            if(CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                CatalinaLogger.REALM_LOGGER.debug("Different realm " + this + " " + gp.getRealm());//    return (false);
         }
         boolean result = gp.hasRole(role);
-        if (log.isDebugEnabled()) {
+        if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
             String name = principal.getName();
             if (result)
-                log.debug(sm.getString("realmBase.hasRoleSuccess", name, role));
+                CatalinaLogger.REALM_LOGGER.debug(MESSAGES.userHasRole(name, role));
             else
-                log.debug(sm.getString("realmBase.hasRoleFailure", name, role));
+                CatalinaLogger.REALM_LOGGER.debug(MESSAGES.userDoesNotHaveRole(name, role));
         }
         return (result);
 
@@ -913,29 +900,29 @@ public abstract class RealmBase
 
         // Is there a relevant user data constraint?
         if (constraints == null || constraints.length == 0) {
-            if (log.isDebugEnabled())
-                log.debug("  No applicable security constraint defined");
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                CatalinaLogger.REALM_LOGGER.debug("  No applicable security constraint defined");
             return (true);
         }
         for(int i=0; i < constraints.length; i++) {
             SecurityConstraint constraint = constraints[i];
             String userConstraint = constraint.getUserConstraint();
             if (userConstraint == null) {
-                if (log.isDebugEnabled())
-                    log.debug("  No applicable user data constraint defined");
+                if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                    CatalinaLogger.REALM_LOGGER.debug("  No applicable user data constraint defined");
                 return (true);
             }
             if (userConstraint.equals(Constants.NONE_TRANSPORT)) {
-                if (log.isDebugEnabled())
-                    log.debug("  User data constraint has no restrictions");
+                if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                    CatalinaLogger.REALM_LOGGER.debug("  User data constraint has no restrictions");
                 return (true);
             }
 
         }
         // Validate the request against the user data constraint
         if (request.getRequest().isSecure()) {
-            if (log.isDebugEnabled())
-                log.debug("  User data constraint already satisfied");
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                CatalinaLogger.REALM_LOGGER.debug("  User data constraint already satisfied");
             return (true);
         }
         // Initialize variables we need to determine the appropriate action
@@ -943,8 +930,8 @@ public abstract class RealmBase
 
         // Is redirecting disabled?
         if (redirectPort <= 0) {
-            if (log.isDebugEnabled())
-                log.debug("  SSL redirect is disabled");
+            if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                CatalinaLogger.REALM_LOGGER.debug("  SSL redirect is disabled");
             response.sendError
                 (HttpServletResponse.SC_FORBIDDEN,
                  request.getRequestURI());
@@ -974,8 +961,8 @@ public abstract class RealmBase
             file.append('?');
             file.append(queryString);
         }
-        if (log.isDebugEnabled())
-            log.debug("  Redirecting to " + file.toString());
+        if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+            CatalinaLogger.REALM_LOGGER.debug("  Redirecting to " + file.toString());
         response.sendRedirect(file.toString());
         return (false);
 
@@ -1044,8 +1031,8 @@ public abstract class RealmBase
 
         // Validate and update our current component state
         if (started) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("realmBase.alreadyStarted"));
+            if(CatalinaLogger.REALM_LOGGER.isInfoEnabled())
+                CatalinaLogger.REALM_LOGGER.info(MESSAGES.realmAlreadyStarted());
             return;
         }
         if( !initialized ) {
@@ -1059,8 +1046,7 @@ public abstract class RealmBase
             try {
                 md = MessageDigest.getInstance(digest);
             } catch (NoSuchAlgorithmException e) {
-                throw new LifecycleException
-                    (sm.getString("realmBase.algorithm", digest), e);
+                throw new LifecycleException(MESSAGES.invalidMessageDigest(digest), e);
             }
         }
 
@@ -1081,8 +1067,8 @@ public abstract class RealmBase
 
         // Validate and update our current component state
         if (!started) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("realmBase.notStarted"));
+            if(CatalinaLogger.REALM_LOGGER.isInfoEnabled())
+                CatalinaLogger.REALM_LOGGER.info(MESSAGES.realmNotStarted());
             return;
         }
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
@@ -1102,10 +1088,10 @@ public abstract class RealmBase
             if ( oname!=null ) {   
                 try {   
                     Registry.getRegistry(null, null).unregisterComponent(oname); 
-                    if(log.isDebugEnabled())
-                        log.debug( "unregistering realm " + oname );   
-                } catch( Exception ex ) {   
-                    log.error( "Can't unregister realm " + oname, ex);   
+                    if(CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                        CatalinaLogger.REALM_LOGGER.debug( "unregistering realm " + oname );   
+                } catch( Exception ex ) {
+                    CatalinaLogger.REALM_LOGGER.failedRealmJmxUnregistration(oname, ex);   
                 }      
             }
         }
@@ -1141,15 +1127,14 @@ public abstract class RealmBase
                     try {
                         bytes = credentials.getBytes(getDigestEncoding());
                     } catch (UnsupportedEncodingException uee) {
-                        log.error("Illegal digestEncoding: " + getDigestEncoding(), uee);
-                        throw new IllegalArgumentException(uee.getMessage());
+                        throw MESSAGES.illegalDigestEncoding(getDigestEncoding(), uee);
                     }
                 }
                 md.update(bytes);
 
                 return (HexUtils.convert(md.digest()));
             } catch (Exception e) {
-                log.error(sm.getString("realmBase.digest"), e);
+                CatalinaLogger.REALM_LOGGER.errorDigestingCredentials(e);
                 return (credentials);
             }
         }
@@ -1168,8 +1153,7 @@ public abstract class RealmBase
             try {
                 md5Helper = MessageDigest.getInstance("MD5");
             } catch (NoSuchAlgorithmException e) {
-                log.error("Couldn't get MD5 digest: ", e);
-                throw new IllegalStateException(e.getMessage());
+                throw MESSAGES.noMD5Digest(e);
             }
         }
 
@@ -1188,8 +1172,7 @@ public abstract class RealmBase
             try {
                 valueBytes = digestValue.getBytes(getDigestEncoding());
             } catch (UnsupportedEncodingException uee) {
-                log.error("Illegal digestEncoding: " + getDigestEncoding(), uee);
-                throw new IllegalArgumentException(uee.getMessage());
+                throw MESSAGES.illegalDigestEncoding(getDigestEncoding(), uee);
             }
         }
 
@@ -1286,7 +1269,7 @@ public abstract class RealmBase
             // Digest the credentials and return as hexadecimal
             return (HexUtils.convert(md.digest()));
         } catch(Exception ex) {
-            log.error(ex);
+            CatalinaLogger.REALM_LOGGER.errorDigestingCredentials(ex);
             return credentials;
         }
 
@@ -1405,12 +1388,12 @@ public abstract class RealmBase
                                 host + path);
                     }
                     if( mserver.isRegistered(parent ))  {
-                        if(log.isDebugEnabled())
-                            log.debug("Register with " + parent);
+                        if(CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                            CatalinaLogger.REALM_LOGGER.debug("Register with " + parent);
                         mserver.setAttribute(parent, new Attribute("realm", this));
                     }
                 } catch (Exception e) {
-                    log.error("Parent not available yet: " + parent);  
+                    CatalinaLogger.REALM_LOGGER.missingParentJmxRegistration(parent, e);
                 }
             }
 
@@ -1421,10 +1404,10 @@ public abstract class RealmBase
                     oname=new ObjectName(cb.getDomain()+":type=Realm" +
                             getRealmSuffix() + cb.getContainerSuffix());
                     Registry.getRegistry(null, null).registerComponent(this, oname, null );
-                    if(log.isDebugEnabled())
-                        log.debug("Register Realm "+oname);
+                    if(CatalinaLogger.REALM_LOGGER.isDebugEnabled())
+                        CatalinaLogger.REALM_LOGGER.debug("Register Realm "+oname);
                 } catch (Throwable e) {
-                    log.error( "Can't register " + oname, e);
+                    CatalinaLogger.REALM_LOGGER.failedRealmJmxRegistration(oname, e);
                 }
             }
         }
