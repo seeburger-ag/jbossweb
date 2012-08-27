@@ -62,8 +62,6 @@ import org.jboss.web.CatalinaLogger;
  */
 public class SSLValve extends ValveBase {
 
-    private static Logger log = Logger.getLogger(SSLValve.class);
-
     //------------------------------------------------------ Constructor
     public SSLValve() {
     }

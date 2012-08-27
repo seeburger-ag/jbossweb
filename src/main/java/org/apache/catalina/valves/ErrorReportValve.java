@@ -19,6 +19,8 @@
 package org.apache.catalina.valves;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -30,7 +32,6 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 
 /**
  * <p>Implementation of a Valve that outputs HTML error pages.</p>
@@ -60,13 +61,6 @@ public class ErrorReportValve
      */
     private static final String info =
         "org.apache.catalina.valves.ErrorReportValve/1.0";
-
-
-    /**
-     * The StringManager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------------------- Properties
@@ -164,10 +158,36 @@ public class ErrorReportValve
 
         // Do nothing if there is no report for the specified status code
         String report = null;
-        try {
-            report = sm.getString("http." + statusCode, message);
-        } catch (Throwable t) {
-            ;
+        switch (statusCode) {
+        case 404: report = MESSAGES.http404(message); break;
+        case 500: report = MESSAGES.http500(message); break;
+        case 400: report = MESSAGES.http400(message); break;
+        case 401: report = MESSAGES.http401(message); break;
+        case 402: report = MESSAGES.http402(message); break;
+        case 403: report = MESSAGES.http403(message); break;
+        case 405: report = MESSAGES.http405(message); break;
+        case 406: report = MESSAGES.http406(message); break;
+        case 407: report = MESSAGES.http407(message); break;
+        case 408: report = MESSAGES.http408(message); break;
+        case 409: report = MESSAGES.http409(message); break;
+        case 410: report = MESSAGES.http410(message); break;
+        case 411: report = MESSAGES.http411(message); break;
+        case 412: report = MESSAGES.http412(message); break;
+        case 413: report = MESSAGES.http413(message); break;
+        case 414: report = MESSAGES.http414(message); break;
+        case 415: report = MESSAGES.http415(message); break;
+        case 416: report = MESSAGES.http416(message); break;
+        case 417: report = MESSAGES.http417(message); break;
+        case 422: report = MESSAGES.http422(message); break;
+        case 423: report = MESSAGES.http423(message); break;
+        case 501: report = MESSAGES.http501(message); break;
+        case 502: report = MESSAGES.http502(message); break;
+        case 503: report = MESSAGES.http503(message); break;
+        case 504: report = MESSAGES.http504(message); break;
+        case 505: report = MESSAGES.http505(message); break;
+        case 507: report = MESSAGES.http507(message); break;
+        default:
+            return;
         }
         if (report == null)
             return;
@@ -176,29 +196,28 @@ public class ErrorReportValve
 
         sb.append("<html><head><title>");
         sb.append(ServerInfo.getServerInfo()).append(" - ");
-        sb.append(sm.getString("errorReportValve.errorReport"));
+        sb.append(MESSAGES.errorReport());
         sb.append("</title>");
         sb.append("<style><!--");
         sb.append(org.apache.catalina.util.TomcatCSS.TOMCAT_CSS);
         sb.append("--></style> ");
         sb.append("</head><body>");
         sb.append("<h1>");
-        sb.append(sm.getString("errorReportValve.statusHeader",
-                               "" + statusCode, message)).append("</h1>");
+        sb.append(MESSAGES.statusHeader(statusCode, message)).append("</h1>");
         sb.append("<HR size=\"1\" noshade=\"noshade\">");
         sb.append("<p><b>type</b> ");
         if (throwable != null) {
-            sb.append(sm.getString("errorReportValve.exceptionReport"));
+            sb.append(MESSAGES.exceptionReport());
         } else {
-            sb.append(sm.getString("errorReportValve.statusReport"));
+            sb.append(MESSAGES.statusReport());
         }
         sb.append("</p>");
         sb.append("<p><b>");
-        sb.append(sm.getString("errorReportValve.message"));
+        sb.append(MESSAGES.statusMessage());
         sb.append("</b> <u>");
         sb.append(message).append("</u></p>");
         sb.append("<p><b>");
-        sb.append(sm.getString("errorReportValve.description"));
+        sb.append(MESSAGES.statusDescritpion());
         sb.append("</b> <u>");
         sb.append(report);
         sb.append("</u></p>");
@@ -207,7 +226,7 @@ public class ErrorReportValve
 
             String stackTrace = getPartialServletStackTrace(throwable);
             sb.append("<p><b>");
-            sb.append(sm.getString("errorReportValve.exception"));
+            sb.append(MESSAGES.statusException());
             sb.append("</b> <pre>");
             sb.append(RequestUtil.filter(stackTrace));
             sb.append("</pre></p>");
@@ -217,7 +236,7 @@ public class ErrorReportValve
             while (rootCause != null && (loops < 10)) {
                 stackTrace = getPartialServletStackTrace(rootCause);
                 sb.append("<p><b>");
-                sb.append(sm.getString("errorReportValve.rootCause"));
+                sb.append(MESSAGES.statusRootCause());
                 sb.append("</b> <pre>");
                 sb.append(RequestUtil.filter(stackTrace));
                 sb.append("</pre></p>");
@@ -227,10 +246,9 @@ public class ErrorReportValve
             }
 
             sb.append("<p><b>");
-            sb.append(sm.getString("errorReportValve.note"));
+            sb.append(MESSAGES.statusNote());
             sb.append("</b> <u>");
-            sb.append(sm.getString("errorReportValve.rootCauseInLogs",
-                                   ServerInfo.getServerInfo()));
+            sb.append(MESSAGES.statusRootCauseInLogs(ServerInfo.getServerInfo()));
             sb.append("</u></p>");
 
         }

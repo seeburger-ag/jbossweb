@@ -50,9 +50,8 @@ import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -79,7 +78,6 @@ import org.jboss.logging.Logger;
 public abstract class AuthenticatorBase
     extends ValveBase
     implements Authenticator, Lifecycle {
-    private static Logger log = Logger.getLogger(AuthenticatorBase.class);
 
 
     // ----------------------------------------------------- Instance Variables
@@ -301,8 +299,8 @@ public abstract class AuthenticatorBase
         // Is there an SSO session against which we can try to reauthenticate?
         String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
         if (ssoId != null) {
-            if (log.isDebugEnabled())
-                log.debug("SSO Id " + ssoId + " set; attempting " +
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug("SSO Id " + ssoId + " set; attempting " +
                           "reauthentication");
             /* Try to reauthenticate using data cached by SSO.  If this fails,
                either the original SSO logon was of DIGEST or SSL (which
@@ -340,8 +338,8 @@ public abstract class AuthenticatorBase
     public void invoke(Request request, Response response)
         throws IOException, ServletException {
 
-        if (log.isDebugEnabled())
-            log.debug("Security checking request " +
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+            CatalinaLogger.AUTH_LOGGER.debug("Security checking request " +
                 request.getMethod() + " " + request.getRequestURI());
         LoginConfig config = this.context.getLoginConfig();
 
@@ -353,8 +351,8 @@ public abstract class AuthenticatorBase
                 if (session != null) {
                     principal = session.getPrincipal();
                     if (principal != null) {
-                        if (log.isDebugEnabled())
-                            log.debug("We have cached auth type " +
+                        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                            CatalinaLogger.AUTH_LOGGER.debug("We have cached auth type " +
                                 session.getAuthType() +
                                 " for principal " +
                                 session.getPrincipal());
@@ -373,8 +371,8 @@ public abstract class AuthenticatorBase
         if (requestURI.startsWith(contextPath) &&
             requestURI.endsWith(Constants.FORM_ACTION)) {
             if (!authenticate(request, response, config)) {
-                if (log.isDebugEnabled())
-                    log.debug(" Failed authenticate() test ??" + requestURI );
+                if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                    CatalinaLogger.AUTH_LOGGER.debug(" Failed authenticate() test ??" + requestURI );
                 return;
             }
         }
@@ -386,8 +384,8 @@ public abstract class AuthenticatorBase
        
         if ((constraints == null) /* &&
             (!Constants.FORM_METHOD.equals(config.getAuthMethod())) */ ) {
-            if (log.isDebugEnabled())
-                log.debug(" Not subject to any constraint");
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug(" Not subject to any constraint");
             getNext().invoke(request, response);
             return;
         }
@@ -413,13 +411,13 @@ public abstract class AuthenticatorBase
 
         int i;
         // Enforce any user data constraint for this security constraint
-        if (log.isDebugEnabled()) {
-            log.debug(" Calling hasUserDataPermission()");
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+            CatalinaLogger.AUTH_LOGGER.debug(" Calling hasUserDataPermission()");
         }
         if (!realm.hasUserDataPermission(request, response,
                                          constraints)) {
-            if (log.isDebugEnabled()) {
-                log.debug(" Failed hasUserDataPermission() test");
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.AUTH_LOGGER.debug(" Failed hasUserDataPermission() test");
             }
             /*
              * ASSERT: Authenticator already set the appropriate
@@ -443,12 +441,12 @@ public abstract class AuthenticatorBase
         }
              
         if(authRequired) {  
-            if (log.isDebugEnabled()) {
-                log.debug(" Calling authenticate()");
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.AUTH_LOGGER.debug(" Calling authenticate()");
             }
             if (!authenticate(request, response, config)) {
-                if (log.isDebugEnabled()) {
-                    log.debug(" Failed authenticate() test");
+                if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+                    CatalinaLogger.AUTH_LOGGER.debug(" Failed authenticate() test");
                 }
                 /*
                  * ASSERT: Authenticator already set the appropriate
@@ -459,14 +457,14 @@ public abstract class AuthenticatorBase
             } 
         }
     
-        if (log.isDebugEnabled()) {
-            log.debug(" Calling accessControl()");
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+            CatalinaLogger.AUTH_LOGGER.debug(" Calling accessControl()");
         }
         if (!realm.hasResourcePermission(request, response,
                                          constraints,
                                          this.context)) {
-            if (log.isDebugEnabled()) {
-                log.debug(" Failed accessControl() test");
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.AUTH_LOGGER.debug(" Failed accessControl() test");
             }
             /*
              * ASSERT: AccessControl method has already set the
@@ -477,8 +475,8 @@ public abstract class AuthenticatorBase
         }
     
         // Any and all specified constraints have been satisfied
-        if (log.isDebugEnabled()) {
-            log.debug(" Successfully passed all security constraints");
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+            CatalinaLogger.AUTH_LOGGER.debug(" Successfully passed all security constraints");
         }
         getNext().invoke(request, response);
 
@@ -566,8 +564,8 @@ public abstract class AuthenticatorBase
         if (reauthenticated) {
             associate(ssoId, request.getSessionInternal(true));
 
-            if (log.isDebugEnabled()) {
-                log.debug(" Reauthenticated cached principal '" +
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.AUTH_LOGGER.debug(" Reauthenticated cached principal '" +
                           request.getUserPrincipal().getName() +
                           "' with auth type '" +  request.getAuthType() + "'");
             }
@@ -594,8 +592,8 @@ public abstract class AuthenticatorBase
                             Principal principal, String authType,
                             String username, String password) {
 
-        if (log.isDebugEnabled())
-            log.debug("Authenticated '" + principal.getName() + "' with type '"
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+            CatalinaLogger.AUTH_LOGGER.debug("Authenticated '" + principal.getName() + "' with type '"
                 + authType + "'");
 
         // Cache the authentication information in our request
@@ -790,11 +788,11 @@ public abstract class AuthenticatorBase
             if (sso == null)
                 parent = parent.getParent();
         }
-        if (log.isDebugEnabled()) {
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
             if (sso != null)
-                log.debug("Found SingleSignOn Valve at " + sso);
+                CatalinaLogger.AUTH_LOGGER.debug("Found SingleSignOn Valve at " + sso);
             else
-                log.debug("No SingleSignOn Valve is present");
+                CatalinaLogger.AUTH_LOGGER.debug("No SingleSignOn Valve is present");
         }
 
     }

@@ -19,6 +19,8 @@
 package org.apache.catalina.valves;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
@@ -30,7 +32,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 
 
 /**
@@ -56,13 +57,6 @@ public class SemaphoreValve
      */
     private static final String info =
         "org.apache.catalina.valves.SemaphoreValve/1.0";
-
-
-    /**
-     * The string manager for this package.
-     */
-    private StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -169,7 +163,7 @@ public class SemaphoreValve
         // Validate and update our current component state
         if (started)
             throw new LifecycleException
-                (sm.getString("semaphoreValve.alreadyStarted"));
+                (MESSAGES.valveAlreadyStarted());
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -191,7 +185,7 @@ public class SemaphoreValve
         // Validate and update our current component state
         if (!started)
             throw new LifecycleException
-                (sm.getString("semaphoreValve.notStarted"));
+                (MESSAGES.valveNotStarted());
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 

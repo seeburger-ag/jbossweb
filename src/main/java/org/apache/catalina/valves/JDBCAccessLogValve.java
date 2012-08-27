@@ -19,6 +19,8 @@
 package org.apache.catalina.valves;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -35,7 +37,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 
 /**
  * <p>
@@ -225,12 +226,6 @@ public final class JDBCAccessLogValve
      * The lifecycle event support for this component.
      */
     protected LifecycleSupport lifecycle = new LifecycleSupport(this);
-
-
-    /**
-     * The string manager for this package.
-     */
-    private StringManager sm = StringManager.getManager(Constants.Package);
 
 
     /**
@@ -517,7 +512,7 @@ public final class JDBCAccessLogValve
                 return;
               } catch (SQLException e) {
                 // Log the problem for posterity
-                  container.getLogger().error(sm.getString("jdbcAccessLogValve.exception"), e);
+                  container.getLogger().error(MESSAGES.jdbcAccessLogValveInsertError(), e);
 
                 // Close the connection so that it gets reopened next time
                 if (conn != null)
@@ -637,7 +632,7 @@ public final class JDBCAccessLogValve
         try {
             conn.close();
         } catch (SQLException e) {
-            container.getLogger().error(sm.getString("jdbcAccessLogValeve.close"), e); // Just log it here            
+            container.getLogger().error(MESSAGES.jdbcAccessLogValveConnectionCloseError(), e); // Just log it here            
         } finally {
            this.conn = null;
         }
@@ -653,7 +648,7 @@ public final class JDBCAccessLogValve
 
         if (started)
             throw new LifecycleException
-                (sm.getString("accessLogValve.alreadyStarted"));
+                (MESSAGES.valveAlreadyStarted());
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -676,7 +671,7 @@ public final class JDBCAccessLogValve
 
         if (!started)
             throw new LifecycleException
-                (sm.getString("accessLogValve.notStarted"));
+                (MESSAGES.valveNotStarted());
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
         

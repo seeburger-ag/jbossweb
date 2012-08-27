@@ -19,6 +19,8 @@
 package org.apache.catalina.valves;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -29,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.util.StringManager;
 
 /**
  * Implementation of a Valve that performs filtering based on comparing the
@@ -77,13 +78,6 @@ public abstract class RequestFilterValve
      */
     private static final String info =
         "org.apache.catalina.valves.RequestFilterValve/1.0";
-
-
-    /**
-     * The StringManager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------- Instance Variables
@@ -227,7 +221,7 @@ public abstract class RequestFilterValve
                 reList.add(Pattern.compile(pattern));
             } catch (PatternSyntaxException e) {
                 IllegalArgumentException iae = new IllegalArgumentException
-                    (sm.getString("requestFilterValve.syntax", pattern));
+                    (MESSAGES.requestFilterValvePatternError(pattern));
                 iae.initCause(e);
                 throw iae;
             }

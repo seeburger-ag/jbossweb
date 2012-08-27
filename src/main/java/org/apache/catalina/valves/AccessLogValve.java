@@ -19,6 +19,8 @@
 package org.apache.catalina.valves;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -27,7 +29,6 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -42,7 +43,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.coyote.RequestInfo;
 import org.jboss.logging.Logger;
 
@@ -188,13 +188,6 @@ public class AccessLogValve
      * Buffered logging.
      */
     private boolean buffered = true;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -848,8 +841,7 @@ public class AccessLogValve
 
         // Validate and update our current component state
         if (started)
-            throw new LifecycleException(sm
-                    .getString("accessLogValve.alreadyStarted"));
+            throw new LifecycleException(MESSAGES.valveAlreadyStarted());
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -889,8 +881,7 @@ public class AccessLogValve
 
         // Validate and update our current component state
         if (!started)
-            throw new LifecycleException(sm
-                    .getString("accessLogValve.notStarted"));
+            throw new LifecycleException(MESSAGES.valveNotStarted());
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
         

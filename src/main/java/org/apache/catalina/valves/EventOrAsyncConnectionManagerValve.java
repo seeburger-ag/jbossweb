@@ -19,6 +19,8 @@
 package org.apache.catalina.valves;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +40,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.jboss.servlet.http.HttpEvent;
 
 
@@ -65,13 +66,6 @@ public class EventOrAsyncConnectionManagerValve
      */
     protected static final String info =
         "org.apache.catalina.valves.CometConnectionManagerValve/1.0";
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -154,7 +148,7 @@ public class EventOrAsyncConnectionManagerValve
         // Validate and update our current component state
         if (started)
             throw new LifecycleException
-                (sm.getString("semaphoreValve.alreadyStarted"));
+                (MESSAGES.valveAlreadyStarted());
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -178,7 +172,7 @@ public class EventOrAsyncConnectionManagerValve
         // Validate and update our current component state
         if (!started)
             throw new LifecycleException
-                (sm.getString("semaphoreValve.notStarted"));
+                (MESSAGES.valveNotStarted());
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
@@ -210,9 +204,7 @@ public class EventOrAsyncConnectionManagerValve
                 try {
                     request.getEvent().close();
                 } catch (Exception e) {
-                    container.getLogger().warn(
-                            sm.getString("cometConnectionManagerValve.event"),
-                            e);
+                    container.getLogger().warn(MESSAGES.eventValveExceptionDuringEvent(), e);
                 }
             }
             cometRequests.clear();
@@ -359,8 +351,7 @@ public class EventOrAsyncConnectionManagerValve
                 try {
                     req.getEvent().close();
                 } catch (Exception e) {
-                    req.getWrapper().getParent().getLogger().warn(sm.getString(
-                            "cometConnectionManagerValve.listenerEvent"), e);
+                    req.getWrapper().getParent().getLogger().warn(MESSAGES.eventValveSessionListenerException(), e);
                 }
             }
         }
