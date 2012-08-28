@@ -169,6 +169,20 @@ public final class SavedRequest {
 
     
     /**
+     * The decoded request URI associated with this Request.
+     */
+    private String decodedRequestURI = null;
+
+    public String getDecodedRequestURI() {
+        return (this.decodedRequestURI);
+    }
+
+    public void setDecodedRequestURI(String decodedRequestURI) {
+        this.decodedRequestURI = decodedRequestURI;
+    }
+
+    
+    /**
      * The body of this request.
      */
     private ByteChunk body = null;
