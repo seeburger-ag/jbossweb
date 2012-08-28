@@ -108,132 +108,6 @@ public interface CatalinaMessages {
     @Message(id = 21, value = "Missing MD5 digest")
     IllegalArgumentException noMD5Digest(@Cause NoSuchAlgorithmException e);
 
-    @Message(id = 22, value = "The client may continue (%s).")
-    String http100(String resource);
-
-    @Message(id = 23, value = "The server is switching protocols according to the 'Upgrade' header (%s).")
-    String http101(String resource);
-
-    @Message(id = 24, value = "The request succeeded and a new resource (%s) has been created on the server.")
-    String http201(String resource);
-
-    @Message(id = 25, value = "This request was accepted for processing, but has not been completed (%s).")
-    String http202(String resource);
-
-    @Message(id = 26, value = "The meta information presented by the client did not originate from the server (%s).")
-    String http203(String resource);
-
-    @Message(id = 27, value = "The request succeeded but there is no information to return (%s).")
-    String http204(String resource);
-
-    @Message(id = 28, value = "The client should reset the document view which caused this request to be sent (%s).")
-    String http205(String resource);
-
-    @Message(id = 29, value = "The server has fulfilled a partial GET request for this resource (%s).")
-    String http206(String resource);
-
-    @Message(id = 30, value = "Multiple status values have been returned (%s).")
-    String http207(String resource);
-
-    @Message(id = 31, value = "The requested resource (%s) corresponds to any one of a set of representations, each with its own specific location.")
-    String http300(String resource);
-
-    @Message(id = 32, value = "The requested resource (%s) has moved permanently to a new location.")
-    String http301(String resource);
-
-    @Message(id = 33, value = "The requested resource (%s) has moved temporarily to a new location.")
-    String http302(String resource);
-
-    @Message(id = 34, value = "The response to this request can be found under a different URI (%s).")
-    String http303(String resource);
-
-    @Message(id = 35, value = "The requested resource (%s) is available and has not been modified.")
-    String http304(String resource);
-
-    @Message(id = 36, value = "The requested resource (%s) must be accessed through the proxy given by the 'Location' header.")
-    String http305(String resource);
-
-    @Message(id = 37, value = "The request sent by the client was syntactically incorrect (%s).")
-    String http400(String resource);
-
-    @Message(id = 38, value = "This request requires HTTP authentication (%s).")
-    String http401(String resource);
-
-    @Message(id = 39, value = "Payment is required for access to this resource (%s).")
-    String http402(String resource);
-
-    @Message(id = 40, value = "Access to the specified resource (%s) has been forbidden.")
-    String http403(String resource);
-
-    @Message(id = 41, value = "The requested resource (%s) is not available.")
-    String http404(String resource);
-
-    @Message(id = 42, value = "The specified HTTP method is not allowed for the requested resource (%s).")
-    String http405(String resource);
-
-    @Message(id = 43, value = "The resource identified by this request is only capable of generating responses with characteristics not acceptable according to the request 'Accept' headers (%s).")
-    String http406(String resource);
-
-    @Message(id = 44, value = "The client must first authenticate itself with the proxy (%s).")
-    String http407(String resource);
-
-    @Message(id = 45, value = "The client did not produce a request within the time that the server was prepared to wait (%s).")
-    String http408(String resource);
-
-    @Message(id = 46, value = "The request could not be completed due to a conflict with the current state of the resource (%s).")
-    String http409(String resource);
-
-    @Message(id = 47, value = "The requested resource (%s) is no longer available, and no forwarding address is known.")
-    String http410(String resource);
-
-    @Message(id = 48, value = "This request cannot be handled without a defined content length (%s).")
-    String http411(String resource);
-
-    @Message(id = 49, value = "A specified precondition has failed for this request (%s).")
-    String http412(String resource);
-
-    @Message(id = 50, value = "The request entity is larger than the server is willing or able to process (%s).")
-    String http413(String resource);
-
-    @Message(id = 51, value = "The server refused this request because the request URI was too long (%s).")
-    String http414(String resource);
-
-    @Message(id = 52, value = "The server refused this request because the request entity is in a format not supported by the requested resource for the requested method (%s).")
-    String http415(String resource);
-
-    @Message(id = 53, value = "The requested byte range cannot be satisfied (%s).")
-    String http416(String resource);
-
-    @Message(id = 54, value = "The expectation given in the 'Expect' request header (%s) could not be fulfilled.")
-    String http417(String resource);
-
-    @Message(id = 55, value = "The server understood the content type and syntax of the request but was unable to process the contained instructions (%s).")
-    String http422(String resource);
-
-    @Message(id = 56, value = "The source or destination resource of a method is locked (%s).")
-    String http423(String resource);
-
-    @Message(id = 57, value = "The server encountered an internal error (%s) that prevented it from fulfilling this request.")
-    String http500(String resource);
-
-    @Message(id = 58, value = "The server does not support the functionality needed to fulfill this request (%s).")
-    String http501(String resource);
-
-    @Message(id = 59, value = "This server received an invalid response from a server it consulted when acting as a proxy or gateway (%s).")
-    String http502(String resource);
-
-    @Message(id = 60, value = "The requested service (%s) is not currently available.")
-    String http503(String resource);
-
-    @Message(id = 61, value = "The server received a timeout from an upstream server while acting as a gateway or proxy (%s).")
-    String http504(String resource);
-
-    @Message(id = 62, value = "The server does not support the requested HTTP protocol version (%s).")
-    String http505(String resource);
-
-    @Message(id = 63, value = "The resource does not have sufficient space to record the state of the resource after execution of this method (%s).")
-    String http507(String resource);
-
     @Message(id = 64, value = "Error report")
     String errorReport();
 
@@ -278,5 +152,173 @@ public interface CatalinaMessages {
 
     @Message(id = 78, value = "Syntax error in request filter pattern %s")
     String requestFilterValvePatternError(String pattern);
+
+    @Message(id = 100, value = "The client may continue.")
+    String http100();
+
+    @Message(id = 101, value = "The server is switching protocols according to the 'Upgrade' header.")
+    String http101();
+
+    @Message(id = 102, value = "The server has accepted the complete request, but has not yet completed it.")
+    String http102();
+
+    @Message(id = 103, value = "The request succeeded and a new resource has been created on the server.")
+    String http201();
+
+    @Message(id = 104, value = "This request was accepted for processing, but has not been completed.")
+    String http202();
+
+    @Message(id = 105, value = "The meta information presented by the client did not originate from the server.")
+    String http203();
+
+    @Message(id = 106, value = "The request succeeded but there is no information to return.")
+    String http204();
+
+    @Message(id = 107, value = "The client should reset the document view which caused this request to be sent.")
+    String http205();
+
+    @Message(id = 108, value = "The server has fulfilled a partial GET request for this resource.")
+    String http206();
+
+    @Message(id = 109, value = "Multiple status values have been returned.")
+    String http207();
+
+    @Message(id = 110, value = "This collection binding was already reported.")
+    String http208();
+
+    @Message(id = 111, value = "The response is a representation of the result of one or more instance-manipulations applied to the current instance.")
+    String http226();
+
+    @Message(id = 112, value = "The requested resource corresponds to any one of a set of representations, each with its own specific location.")
+    String http300();
+
+    @Message(id = 113, value = "The requested resource has moved permanently to a new location.")
+    String http301();
+
+    @Message(id = 114, value = "The requested resource has moved temporarily to a new location.")
+    String http302();
+
+    @Message(id = 115, value = "The response to this request can be found under a different URI (%s).")
+    String http303();
+
+    @Message(id = 116, value = "The requested resource is available and has not been modified.")
+    String http304();
+
+    @Message(id = 117, value = "The requested resource must be accessed through the proxy given by the 'Location' header.")
+    String http305();
+
+    @Message(id = 118, value = "The requested resource resides temporarily under a different URI.")
+    String http307();
+
+    @Message(id = 119, value = "The target resource has been assigned a new permanent URI and any future references to this resource SHOULD use one of the returned URIs.")
+    String http308();
+
+    @Message(id = 120, value = "The request sent by the client was syntactically incorrect.")
+    String http400();
+
+    @Message(id = 121, value = "This request requires HTTP authentication.")
+    String http401();
+
+    @Message(id = 122, value = "Payment is required for access to this resource.")
+    String http402();
+
+    @Message(id = 123, value = "Access to the specified resource has been forbidden.")
+    String http403();
+
+    @Message(id = 124, value = "The requested resource is not available.")
+    String http404();
+
+    @Message(id = 125, value = "The specified HTTP method is not allowed for the requested resource.")
+    String http405();
+
+    @Message(id = 126, value = "The resource identified by this request is only capable of generating responses with characteristics not acceptable according to the request 'Accept' headers.")
+    String http406();
+
+    @Message(id = 127, value = "The client must first authenticate itself with the proxy.")
+    String http407();
+
+    @Message(id = 128, value = "The client did not produce a request within the time that the server was prepared to wait.")
+    String http408();
+
+    @Message(id = 129, value = "The request could not be completed due to a conflict with the current state of the resource.")
+    String http409();
+
+    @Message(id = 130, value = "The requested resource is no longer available, and no forwarding address is known.")
+    String http410();
+
+    @Message(id = 131, value = "This request cannot be handled without a defined content length.")
+    String http411();
+
+    @Message(id = 132, value = "A specified precondition has failed for this request.")
+    String http412();
+
+    @Message(id = 133, value = "The request entity is larger than the server is willing or able to process.")
+    String http413();
+
+    @Message(id = 134, value = "The server refused this request because the request URI was too long.")
+    String http414();
+
+    @Message(id = 135, value = "The server refused this request because the request entity is in a format not supported by the requested resource for the requested method.")
+    String http415();
+
+    @Message(id = 136, value = "The requested byte range cannot be satisfied.")
+    String http416();
+
+    @Message(id = 137, value = "The expectation given in the 'Expect' request header could not be fulfilled.")
+    String http417();
+
+    @Message(id = 138, value = "The server understood the content type and syntax of the request but was unable to process the contained instructions.")
+    String http422();
+
+    @Message(id = 139, value = "The source or destination resource of a method is locked.")
+    String http423();
+
+    @Message(id = 140, value = "The method could not be performed on the resource because the requested action depended on another action and that action failed.")
+    String http424();
+
+    @Message(id = 141, value = "The request can only be completed after a protocol upgrade.")
+    String http426();
+
+    @Message(id = 142, value = "The request is required to be conditional.")
+    String http428();
+
+    @Message(id = 143, value = "The user has sent too many requests in a given amount of time.")
+    String http429();
+
+    @Message(id = 144, value = "The server refused this request because the request header fields are too large.")
+    String http431();
+
+    @Message(id = 145, value = "The server encountered an internal error that prevented it from fulfilling this request.")
+    String http500();
+
+    @Message(id = 146, value = "The server does not support the functionality needed to fulfill this request.")
+    String http501();
+
+    @Message(id = 147, value = "This server received an invalid response from a server it consulted when acting as a proxy or gateway.")
+    String http502();
+
+    @Message(id = 148, value = "The requested service is not currently available.")
+    String http503();
+
+    @Message(id = 149, value = "The server received a timeout from an upstream server while acting as a gateway or proxy.")
+    String http504();
+
+    @Message(id = 150, value = "The server does not support the requested HTTP protocol version.")
+    String http505();
+
+    @Message(id = 151, value = "The chosen variant resource is configured to engage in transparent content negotiation itself, and is therefore not a proper end point in the negotiation process.")
+    String http506();
+
+    @Message(id = 152, value = "The resource does not have sufficient space to record the state of the resource after execution of this method.")
+    String http507();
+
+    @Message(id = 153, value = "The server terminated an operation because it encountered an infinite loop.")
+    String http508();
+
+    @Message(id = 154, value = "The policy for accessing the resource has not been met in the request.")
+    String http510();
+
+    @Message(id = 155, value = "The client needs to authenticate to gain network access.")
+    String http511();
 
 }

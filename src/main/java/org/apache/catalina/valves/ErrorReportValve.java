@@ -23,6 +23,7 @@ import static org.jboss.web.CatalinaMessages.MESSAGES;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Scanner;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -153,39 +154,57 @@ public class ErrorReportValve
             return;
 
         String message = RequestUtil.filter(response.getMessage());
-        if (message == null)
-            message = "";
+        if (message == null) {
+            if (throwable != null) {
+                String exceptionMessage = throwable.getMessage();
+                if (exceptionMessage != null && exceptionMessage.length() > 0) {
+                    message = RequestUtil.filter((new Scanner(exceptionMessage)).nextLine());
+                }
+            }
+            if (message == null) {
+                message = "";
+            }
+        }
 
         // Do nothing if there is no report for the specified status code
         String report = null;
         switch (statusCode) {
-        case 404: report = MESSAGES.http404(message); break;
-        case 500: report = MESSAGES.http500(message); break;
-        case 400: report = MESSAGES.http400(message); break;
-        case 401: report = MESSAGES.http401(message); break;
-        case 402: report = MESSAGES.http402(message); break;
-        case 403: report = MESSAGES.http403(message); break;
-        case 405: report = MESSAGES.http405(message); break;
-        case 406: report = MESSAGES.http406(message); break;
-        case 407: report = MESSAGES.http407(message); break;
-        case 408: report = MESSAGES.http408(message); break;
-        case 409: report = MESSAGES.http409(message); break;
-        case 410: report = MESSAGES.http410(message); break;
-        case 411: report = MESSAGES.http411(message); break;
-        case 412: report = MESSAGES.http412(message); break;
-        case 413: report = MESSAGES.http413(message); break;
-        case 414: report = MESSAGES.http414(message); break;
-        case 415: report = MESSAGES.http415(message); break;
-        case 416: report = MESSAGES.http416(message); break;
-        case 417: report = MESSAGES.http417(message); break;
-        case 422: report = MESSAGES.http422(message); break;
-        case 423: report = MESSAGES.http423(message); break;
-        case 501: report = MESSAGES.http501(message); break;
-        case 502: report = MESSAGES.http502(message); break;
-        case 503: report = MESSAGES.http503(message); break;
-        case 504: report = MESSAGES.http504(message); break;
-        case 505: report = MESSAGES.http505(message); break;
-        case 507: report = MESSAGES.http507(message); break;
+        case 404: report = MESSAGES.http404(); break;
+        case 500: report = MESSAGES.http500(); break;
+        case 400: report = MESSAGES.http400(); break;
+        case 403: report = MESSAGES.http403(); break;
+        case 401: report = MESSAGES.http401(); break;
+        case 402: report = MESSAGES.http402(); break;
+        case 405: report = MESSAGES.http405(); break;
+        case 406: report = MESSAGES.http406(); break;
+        case 407: report = MESSAGES.http407(); break;
+        case 408: report = MESSAGES.http408(); break;
+        case 409: report = MESSAGES.http409(); break;
+        case 410: report = MESSAGES.http410(); break;
+        case 411: report = MESSAGES.http411(); break;
+        case 412: report = MESSAGES.http412(); break;
+        case 413: report = MESSAGES.http413(); break;
+        case 414: report = MESSAGES.http414(); break;
+        case 415: report = MESSAGES.http415(); break;
+        case 416: report = MESSAGES.http416(); break;
+        case 417: report = MESSAGES.http417(); break;
+        case 422: report = MESSAGES.http422(); break;
+        case 423: report = MESSAGES.http423(); break;
+        case 424: report = MESSAGES.http424(); break;
+        case 426: report = MESSAGES.http426(); break;
+        case 428: report = MESSAGES.http428(); break;
+        case 429: report = MESSAGES.http429(); break;
+        case 431: report = MESSAGES.http431(); break;
+        case 501: report = MESSAGES.http501(); break;
+        case 502: report = MESSAGES.http502(); break;
+        case 503: report = MESSAGES.http503(); break;
+        case 504: report = MESSAGES.http504(); break;
+        case 505: report = MESSAGES.http505(); break;
+        case 506: report = MESSAGES.http506(); break;
+        case 507: report = MESSAGES.http507(); break;
+        case 508: report = MESSAGES.http508(); break;
+        case 510: report = MESSAGES.http510(); break;
+        case 511: report = MESSAGES.http511(); break;
         default:
             return;
         }
