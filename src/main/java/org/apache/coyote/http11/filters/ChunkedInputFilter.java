@@ -17,6 +17,8 @@
 
 package org.apache.coyote.http11.filters;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 
 import org.apache.coyote.InputBuffer;
@@ -276,22 +278,22 @@ public class ChunkedInputFilter implements InputFilter {
                 // In non blocking mode, no new chunk follows, even if data was present
                 int n = readBytes();
                 if (n < 0) {
-                    throw new IOException("Invalid chunk header");
+                    throw MESSAGES.invalidChunkHeader();
                 } else if (n == 0) {
                     return false;
                 }
             }
 
             if (buf[pos] == Constants.CR) {
-                if (crfound) throw new IOException("Invalid CRLF, two CR characters encountered.");
+                if (crfound) throw MESSAGES.invalidCrlfTwoCr();
                 crfound = true;
             } else if (buf[pos] == Constants.LF) {
-                if (!crfound) throw new IOException("Invalid CRLF, no CR character encountered.");
+                if (!crfound) throw MESSAGES.invalidCrlfNoCr();
                 eol = true;
             } else if (buf[pos] == Constants.SEMI_COLON) {
                 trailer = true;
             } else if (buf[pos] < 0) {
-                throw new IOException("Invalid chunk header");
+                throw MESSAGES.invalidChunkHeader();
             } else if (!trailer) { 
                 //don't read data after the trailer
                 if (HexUtils.DEC[buf[pos] & 0xff] != -1) {
@@ -301,7 +303,7 @@ public class ChunkedInputFilter implements InputFilter {
                 } else {
                     //we shouldn't allow invalid, non hex characters
                     //in the chunked header
-                    throw new IOException("Invalid chunk header");
+                    throw MESSAGES.invalidChunkHeader();
                 }
             }
 
@@ -310,7 +312,7 @@ public class ChunkedInputFilter implements InputFilter {
         }
 
         if (!readDigit || (result < 0))
-            throw new IOException("Invalid chunk header");
+            throw MESSAGES.invalidChunkHeader();
 
         if (result == 0)
             endChunk = true;
@@ -335,17 +337,17 @@ public class ChunkedInputFilter implements InputFilter {
 
             if (pos >= lastValid) {
                 if (readBytes() <= 0)
-                    throw new IOException("Invalid CRLF");
+                    throw MESSAGES.invalidCrlf();
             }
 
             if (buf[pos] == Constants.CR) {
-                if (crfound) throw new IOException("Invalid CRLF, two CR characters encountered.");
+                if (crfound) throw MESSAGES.invalidCrlfTwoCr();
                 crfound = true;
             } else if (buf[pos] == Constants.LF) {
-                if (!crfound) throw new IOException("Invalid CRLF, no CR character encountered.");
+                if (!crfound) throw MESSAGES.invalidCrlfNoCr();
                 eol = true;
             } else {
-                throw new IOException("Invalid CRLF");
+                throw MESSAGES.invalidCrlf();
             }
 
             pos++;

@@ -22,6 +22,8 @@
 
 package org.jboss.web;
 
+import java.io.IOException;
+
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -89,5 +91,17 @@ public interface CoyoteMessages {
 
     @Message(id = 2016, value = "Backlog is present")
     String invalidBacklog();
+
+    @Message(id = 2017, value = "Invalid CRLF, no CR character encountered")
+    IOException invalidCrlfNoCr();
+
+    @Message(id = 2018, value = "Invalid CRLF, two CR characters encountered")
+    IOException invalidCrlfTwoCr();
+
+    @Message(id = 2019, value = "Invalid CRLF")
+    IOException invalidCrlf();
+
+    @Message(id = 2019, value = "Invalid chunk header")
+    IOException invalidChunkHeader();
 
 }
