@@ -23,17 +23,9 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.util.StringManager;
 import org.jboss.servlet.http.HttpEvent;
 
 public class HttpEventImpl implements HttpEvent {
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     public HttpEventImpl(Request request, Response response) {
         this.request = request;

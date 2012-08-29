@@ -47,6 +47,8 @@
 package org.apache.catalina.connector;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -106,7 +108,6 @@ import org.apache.catalina.deploy.Multipart;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.ParameterMap;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.StringParser;
 import org.apache.coyote.ActionCode;
 import org.apache.tomcat.util.buf.B2CConverter;
@@ -125,6 +126,7 @@ import org.apache.tomcat.util.http.fileupload.FileUploadBase.SizeLimitExceededEx
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.apache.tomcat.util.http.mapper.MappingData;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -214,13 +216,6 @@ public class Request
 
 
     protected static final TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -1218,8 +1213,7 @@ public class Request
     public ServletInputStream getInputStream() throws IOException {
 
         if (usingReader)
-            throw new IllegalStateException
-                (sm.getString("coyoteRequest.getInputStream.ise"));
+            throw MESSAGES.readerAlreadyUsed();
 
         if (applicationInputStream != null) {
             return applicationInputStream;
@@ -1373,8 +1367,7 @@ public class Request
     public BufferedReader getReader() throws IOException {
 
         if (usingInputStream)
-            throw new IllegalStateException
-                (sm.getString("coyoteRequest.getReader.ise"));
+            throw MESSAGES.inputStreamAlreadyUsed();
 
         if (applicationReader != null) {
             return applicationReader;
@@ -1631,7 +1624,7 @@ public class Request
             try {
                 listener.attributeRemoved(event);
             } catch (Throwable t) {
-                context.getLogger().error(sm.getString("coyoteRequest.attributeEvent"), t);
+                context.getLogger().error(MESSAGES.attributesEventListenerException(), t);
                 // Error valve will pick this execption up and display it to user
                 attributes.put(RequestDispatcher.ERROR_EXCEPTION, t);
             }
@@ -1649,8 +1642,7 @@ public class Request
 	
         // Name cannot be null
         if (name == null)
-            throw new IllegalArgumentException
-                (sm.getString("coyoteRequest.setAttribute.namenull"));
+            throw MESSAGES.attributeNameNotSpecified();
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -1715,7 +1707,7 @@ public class Request
                     listener.attributeAdded(event);
                 }
             } catch (Throwable t) {
-                context.getLogger().error(sm.getString("coyoteRequest.attributeEvent"), t);
+                context.getLogger().error(MESSAGES.attributesEventListenerException(), t);
                 // Error valve will pick this execption up and display it to user
                 attributes.put(RequestDispatcher.ERROR_EXCEPTION, t);
             }
@@ -2633,8 +2625,7 @@ public class Request
         if ((response != null) &&
             context.getCookies() &&
             response.getResponse().isCommitted()) {
-            throw new IllegalStateException
-              (sm.getString("coyoteRequest.sessionCreateCommitted"));
+            throw MESSAGES.cannotCreateSession();
         }
 
         // Verify that the submitted session id exists in one of the host's web applications
@@ -2831,10 +2822,7 @@ public class Request
                 try {
                     parseMultipart();
                 } catch (Exception e) {
-                    if (context.getLogger().isDebugEnabled()) {
-                        context.getLogger().debug(
-                                sm.getString("coyoteRequest.parseMultipart"), e);
-                    }
+                    CatalinaLogger.CONNECTOR_LOGGER.exceptionProcessingMultipart(e);
                 }
             }
             return;
@@ -2845,10 +2833,7 @@ public class Request
         if (len > 0) {
             int maxPostSize = connector.getMaxPostSize();
             if ((maxPostSize > 0) && (len > maxPostSize)) {
-                if (context.getLogger().isDebugEnabled()) {
-                    context.getLogger().debug(
-                            sm.getString("coyoteRequest.postTooLarge"));
-                }
+                CatalinaLogger.CONNECTOR_LOGGER.postDataTooLarge();
                 return;
             }
             byte[] formData = null;
@@ -2865,10 +2850,7 @@ public class Request
                 }
             } catch (IOException e) {
                 // Client disconnect
-                if (context.getLogger().isDebugEnabled()) {
-                    context.getLogger().debug(
-                            sm.getString("coyoteRequest.parseParameters"), e);
-                }
+                CatalinaLogger.CONNECTOR_LOGGER.exceptionProcessingParameters(e);
                 return;
             }
             parameters.processParameters(formData, 0, len);
@@ -2879,10 +2861,7 @@ public class Request
                 formData = readChunkedPostBody();
             } catch (IOException e) {
                 // Client disconnect
-                if (context.getLogger().isDebugEnabled()) {
-                    context.getLogger().debug(
-                            sm.getString("coyoteRequest.parseParameters"), e);
-                }
+                CatalinaLogger.CONNECTOR_LOGGER.exceptionProcessingParameters(e);
                 return;
             }
             if (formData != null) {
@@ -2907,8 +2886,7 @@ public class Request
             if (connector.getMaxPostSize() > 0 &&
                     (body.getLength() + len) > connector.getMaxPostSize()) {
                 // Too much data
-                throw new IllegalArgumentException(
-                        sm.getString("coyoteRequest.postTooLarge"));
+                throw MESSAGES.postDataTooLarge();
             }
             if (len > 0) {
                 body.append(buffer, 0, len);
@@ -2960,7 +2938,7 @@ public class Request
             contentType = contentType.trim();
         }
         if (!("multipart/form-data".equals(contentType)))
-            throw new ServletException(sm.getString("coyoteRequest.notMultipart"));
+            throw new ServletException(MESSAGES.notMultipart());
 
         File location = null;
         if (config.getLocation() == null || config.getLocation().length() == 0) {
@@ -2995,11 +2973,11 @@ public class Request
                 parts.put(fileItem.getFieldName(), new StandardPart(fileItem, config));
             }
         } catch(FileSizeLimitExceededException e) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.parseMultipart"), e);
+            throw MESSAGES.multipartProcessingFailed(e);
         } catch(SizeLimitExceededException e) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.parseMultipart"), e);
+            throw MESSAGES.multipartProcessingFailed(e);
         } catch (FileUploadException e) {
-            throw new IOException(sm.getString("coyoteRequest.parseMultipart"), e);
+            throw MESSAGES.multipartIoProcessingFailed(e);
         }
 
     }
@@ -3200,17 +3178,17 @@ public class Request
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
         if (CHECK_ASYNC && !isAsyncSupported()) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.noAsync"));
+            throw MESSAGES.noAsync();
         }
         // ISE if response is closed
         if (response.isClosed() || context == null) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.closed"));
+            throw MESSAGES.asyncClose();
         }
         // ISE if this method is called again without any asynchronous dispatch
         // ISE if called outside of the subsequent dispatch
         // ISE if called again within the scope of the same dispatch
         if (!canStartAsync) {
-            throw new IllegalStateException(sm.getString("coyoteRequest.cannotStartAsync"));
+            throw MESSAGES.cannotStartAsync();
         }
         LinkedHashMap<AsyncListener, AsyncListenerRegistration> localAsyncListeners = asyncListeners;
         asyncListeners = new LinkedHashMap<AsyncListener, AsyncListenerRegistration>();
@@ -3220,8 +3198,7 @@ public class Request
             try {
                 asyncListener.onStartAsync(asyncEvent);
             } catch (IOException e) {
-                throw new IllegalStateException(sm.getString("coyoteRequest.onStartAsyncError", 
-                        asyncListener.getClass().getName()), e);
+                throw MESSAGES.errorStartingAsync(asyncListener.getClass().getName(), e);
             }
         }
         canStartAsync = false;
@@ -3240,21 +3217,21 @@ public class Request
         if (context != null && context.getAuthenticator() != null) {
             return context.getAuthenticator().authenticate(this, response);
         } else {
-            throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
+            throw new ServletException(MESSAGES.noAuthenticator());
         }
     }
 
     public void login(String username, String password) throws ServletException {
         if (userPrincipal != null) {
-            throw new ServletException(sm.getString("coyoteRequest.authFailed"));
+            throw new ServletException(MESSAGES.authenticationFailure());
         }
         if (context != null && context.getAuthenticator() != null) {
             context.getAuthenticator().login(this, username, password);
         } else {
-            throw new ServletException(sm.getString("coyoteRequest.noAuthenticator"));
+            throw new ServletException(MESSAGES.noAuthenticator());
         }
         if (userPrincipal == null) {
-            throw new ServletException(sm.getString("coyoteRequest.authFailed"));
+            throw new ServletException(MESSAGES.authenticationFailure());
         }
     }
 
@@ -3271,7 +3248,7 @@ public class Request
             try {
                 gp.logout();
             } catch (Exception e) {
-                throw new ServletException(sm.getString("coyoteRequest.logoutfail"), e);
+                throw new ServletException(MESSAGES.logoutFailure(), e);
             }
         }
     }
@@ -3318,7 +3295,7 @@ public class Request
 
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append(sm.getString("coyoteRequest.servletStack", Thread.currentThread().getName()));
+        buf.append("Current Servlet stack for thread ").append(Thread.currentThread().getName());
         if (eventMode) {
             buf.append(" [event]");
         }
@@ -3390,7 +3367,7 @@ public class Request
                 if (servletContext != null) {
                     path = requestURI.substring(servletContext.getContextPath().length());
                 } else {
-                    throw new IllegalStateException(sm.getString("coyoteRequest.dispatchNoServletContext", requestURI));
+                    throw MESSAGES.cannotFindDispatchContext(requestURI);
                 }
             }
             resume();
@@ -3506,7 +3483,7 @@ public class Request
             try {
                 listenerInstance = (T) context.getInstanceManager().newInstance(clazz);
             } catch (Exception e) {
-                throw new ServletException(sm.getString("coyoteRequest.createListener", clazz.getName()), e);
+                throw new ServletException(MESSAGES.listenerCreationFailed(clazz.getName()), e);
             }
             return listenerInstance;
         }

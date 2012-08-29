@@ -22,6 +22,7 @@
 
 package org.jboss.web;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 
@@ -105,8 +106,119 @@ public interface CatalinaMessages {
     @Message(id = 21, value = "Illegal digest encoding %s")
     IllegalArgumentException illegalDigestEncoding(String digest, @Cause UnsupportedEncodingException e);
 
-    @Message(id = 21, value = "Missing MD5 digest")
+    @Message(id = 22, value = "Missing MD5 digest")
     IllegalArgumentException noMD5Digest(@Cause NoSuchAlgorithmException e);
+
+    @Message(id = 23, value = "Protocol handler initialization failed")
+    String protocolHandlerInitFailed(@Cause Throwable t);
+
+    @Message(id = 24, value = "Protocol handler start failed")
+    String protocolHandlerStartFailed(@Cause Throwable t);
+
+    @Message(id = 25, value = "Protocol handler destroy failed")
+    String protocolHandlerDestroyFailed(@Cause Throwable t);
+
+    @Message(id = 26, value = "Failed to instatiate protocol handler")
+    IllegalArgumentException protocolHandlerInstantiationFailed(@Cause Throwable t);
+
+    @Message(id = 27, value = "getWriter() has already been called for this response")
+    IllegalStateException writerAlreadyUsed();
+
+    @Message(id = 28, value = "getOutputStream() has already been called for this response")
+    IllegalStateException outputStreamAlreadyUsed();
+
+    @Message(id = 29, value = "Cannot reset buffer after response has been committed")
+    IllegalStateException cannotResetBuffer();
+
+    @Message(id = 30, value = "Cannot change buffer size after data has been written")
+    IllegalStateException cannotChangeBufferSize();
+
+    @Message(id = 31, value = "Cannot call sendError() after the response has been committed")
+    IllegalStateException cannotSendError();
+
+    @Message(id = 32, value = "Cannot call sendRedirect() after the response has been committed")
+    IllegalStateException cannotSendRedirect();
+
+    @Message(id = 33, value = "Cannot call sendUpgrade() after the response has been committed")
+    IllegalStateException cannotSendUpgrade();
+
+    @Message(id = 34, value = "Cannot upgrade from HTTP/1.1 without IO events")
+    IllegalStateException cannotUpgradeWithoutEvents();
+
+    @Message(id = 35, value = "Cannot upgrade from HTTP/1.1 is not using an HttpEventServlet")
+    IllegalStateException cannotUpgradeWithoutEventServlet();
+
+    @Message(id = 36, value = "Cannot call sendFile() after the response has been committed")
+    IllegalStateException cannotSendFile();
+
+    @Message(id = 37, value = "Sendfile is disabled")
+    IllegalStateException noSendFile();
+
+    @Message(id = 38, value = "Invalid path for sendfile %s")
+    IllegalStateException invalidSendFilePath(String path);
+
+    @Message(id = 39, value = "getReader() has already been called for this request")
+    IllegalStateException readerAlreadyUsed();
+
+    @Message(id = 40, value = "getInputStream() has already been called for this request")
+    IllegalStateException inputStreamAlreadyUsed();
+
+    @Message(id = 41, value = "Exception thrown by attributes event listener")
+    String attributesEventListenerException();
+
+    @Message(id = 42, value = "Cannot call setAttribute with a null name")
+    IllegalStateException attributeNameNotSpecified();
+
+    @Message(id = 43, value = "Cannot create a session after the response has been committed")
+    IllegalStateException cannotCreateSession();
+
+    @Message(id = 44, value = "Parameters were not parsed because the size of the posted data was too big. Use the maxPostSize attribute of the connector to resolve this if the application should accept large POSTs.")
+    IllegalStateException postDataTooLarge();
+
+    @Message(id = 45, value = "The request is not multipart content")
+    String notMultipart();
+
+    @Message(id = 46, value = "Exception thrown whilst processing multipart")
+    IllegalStateException multipartProcessingFailed(@Cause Throwable t);
+
+    @Message(id = 47, value = "Exception thrown whilst processing multipart")
+    IOException multipartIoProcessingFailed(@Cause Throwable t);
+
+    @Message(id = 48, value = "The servlet or filters that are being used by this request do not support async operation")
+    IllegalStateException noAsync();
+
+    @Message(id = 49, value = "Response has been closed already")
+    IllegalStateException asyncClose();
+
+    @Message(id = 50, value = "Cannot start async")
+    IllegalStateException cannotStartAsync();
+
+    @Message(id = 51, value = "Error invoking onStartAsync on listener of class {0}")
+    IllegalStateException errorStartingAsync(String listenerClassName, @Cause Throwable t);
+
+    @Message(id = 52, value = "No authenticator available for programmatic login")
+    String noAuthenticator();
+
+    @Message(id = 53, value = "Failed to authenticate a principal")
+    String authenticationFailure();
+
+    @Message(id = 54, value = "Exception logging out user")
+    String logoutFailure();
+
+    @Message(id = 55, value = "Could not determine or access context for server absolute URI %s")
+    IllegalStateException cannotFindDispatchContext(String uri);
+
+    @Message(id = 56, value = "Failed to instantiate class %s")
+    String listenerCreationFailed(String className);
+
+    @Message(id = 57, value = "The request object has been recycled and is no longer associated with this facade")
+    IllegalStateException nullRequestFacade();
+
+    @Message(id = 58, value = "The response object has been recycled and is no longer associated with this facade")
+    IllegalStateException nullResponseFacade();
+
+    @Message(id = 60, value = "Stream closed")
+    IOException streamClosed();
 
     @Message(id = 64, value = "Error report")
     String errorReport();

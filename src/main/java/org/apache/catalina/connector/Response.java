@@ -19,6 +19,8 @@
 package org.apache.catalina.connector;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,7 +48,6 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.DateTool;
-import org.apache.catalina.util.StringManager;
 import org.apache.coyote.ActionCode;
 import org.apache.naming.resources.CacheEntry;
 import org.apache.naming.resources.ProxyDirContext;
@@ -89,13 +90,6 @@ public class Response
      */
     protected static final String info =
         "org.apache.coyote.tomcat5.CoyoteResponse/1.0";
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------- Instance Variables
@@ -572,8 +566,7 @@ public class Response
         throws IOException {
 
         if (usingWriter)
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.getOutputStream.ise"));
+            throw MESSAGES.writerAlreadyUsed();
 
         if (applicationOutputStream != null) {
             return applicationOutputStream;
@@ -612,8 +605,7 @@ public class Response
         throws IOException {
 
         if (usingOutputStream)
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.getWriter.ise"));
+            throw MESSAGES.outputStreamAlreadyUsed();
 
         if (applicationWriter != null) {
             return applicationWriter;
@@ -686,8 +678,7 @@ public class Response
     public void resetBuffer() {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.resetBuffer.ise"));
+            throw MESSAGES.cannotResetBuffer();
 
         outputBuffer.reset();
 
@@ -729,8 +720,7 @@ public class Response
     public void setBufferSize(int size) {
 
         if (isCommitted() || !outputBuffer.isNew())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.setBufferSize.ise"));
+            throw MESSAGES.cannotChangeBufferSize();
 
         outputBuffer.setBufferSize(size);
 
@@ -1278,8 +1268,7 @@ public class Response
         throws IOException {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.sendError.ise"));
+            throw MESSAGES.cannotSendError();
 
         // Ignore any call from an included servlet
         if (included)
@@ -1317,8 +1306,7 @@ public class Response
         throws IOException {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.sendRedirect.ise"));
+            throw MESSAGES.cannotSendRedirect();
 
         // Ignore any call from an included servlet
         if (included)
@@ -1345,16 +1333,13 @@ public class Response
     public void startUpgrade() {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.upgrade.ise"));
+            throw MESSAGES.cannotSendUpgrade();
 
         if (!connector.hasIoEvents())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.upgrade.noEvents"));
+            throw MESSAGES.cannotUpgradeWithoutEvents();
 
         if (!request.isEventMode() || request.getAsyncContext() != null)
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.upgrade.noHttpEventServlet"));
+            throw MESSAGES.cannotUpgradeWithoutEventServlet();
 
         // Ignore any call from an included servlet
         if (included)
@@ -1369,16 +1354,13 @@ public class Response
             throws IOException {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.upgrade.ise"));
+            throw MESSAGES.cannotSendUpgrade();
 
         if (!connector.hasIoEvents())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.upgrade.noEvents"));
+            throw MESSAGES.cannotUpgradeWithoutEvents();
 
         if (!request.isEventMode() || request.getAsyncContext() != null)
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.upgrade.noHttpEventServlet"));
+            throw MESSAGES.cannotUpgradeWithoutEventServlet();
 
         // Ignore any call from an included servlet
         if (included)
@@ -1397,15 +1379,14 @@ public class Response
     public void sendFile(String path, String absolutePath, long start, long end) {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.sendFile.ise"));
+            throw MESSAGES.cannotSendFile();
 
         // Ignore any call from an included servlet
         if (included)
             return; 
 
         if (!request.hasSendfile())
-            throw new IllegalStateException(sm.getString("coyoteResponse.sendFile.no"));
+            throw MESSAGES.noSendFile();
 
         if (Globals.IS_SECURITY_ENABLED) {
             if (path != null) {
@@ -1422,7 +1403,7 @@ public class Response
                 try {
                     canonicalPath = new File(absolutePath).getCanonicalPath();
                 } catch (IOException e) {
-                    throw new IllegalArgumentException(sm.getString("coyoteResponse.sendFile.path"));
+                    throw MESSAGES.invalidSendFilePath(absolutePath);
                 }
                 System.getSecurityManager().checkRead(canonicalPath);
                 coyoteResponse.setSendfilePath(absolutePath);

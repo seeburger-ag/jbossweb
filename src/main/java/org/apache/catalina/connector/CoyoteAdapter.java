@@ -54,13 +54,11 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request.AsyncListenerRegistration;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
@@ -71,8 +69,8 @@ import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.Cookies;
 import org.apache.tomcat.util.http.ServerCookie;
 import org.apache.tomcat.util.net.SocketStatus;
-import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -87,7 +85,6 @@ import org.jboss.servlet.http.HttpEvent;
 public class CoyoteAdapter
     implements Adapter 
  {
-    private static Logger log = Logger.getLogger(CoyoteAdapter.class);
 
     // -------------------------------------------------------------- Constants
 
@@ -126,13 +123,6 @@ public class CoyoteAdapter
      * The CoyoteConnector with which this processor is associated.
      */
     private Connector connector = null;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -277,7 +267,7 @@ public class CoyoteAdapter
                 if (!error && read && request.ready()) {
                     // If this was a read and not all bytes have been read, or if no data
                     // was read from the connector, then it is an error
-                    log.error(sm.getString("coyoteAdapter.read"));
+                    CatalinaLogger.CONNECTOR_LOGGER.servletDidNotReadAvailableData();
                     request.getEvent().setType(HttpEvent.EventType.ERROR);
                     error = true;
                     connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
@@ -297,7 +287,7 @@ public class CoyoteAdapter
                 return (!error);
             } catch (Throwable t) {
                 if (!(t instanceof IOException)) {
-                    log.error(sm.getString("coyoteAdapter.service"), t);
+                    CatalinaLogger.CONNECTOR_LOGGER.exceptionDuringService(t);
                 }
                 error = true;
                 return false;
@@ -390,7 +380,7 @@ public class CoyoteAdapter
                         try {
                             asyncListener.onComplete(asyncEvent);
                         } catch (Throwable t) {
-                            log.error(sm.getString("coyoteAdapter.complete", asyncListener.getClass()), t);
+                            CatalinaLogger.CONNECTOR_LOGGER.exceptionDuringComplete(asyncListener.getClass().getName(), t);
                         }
                     }
                 }
@@ -405,7 +395,7 @@ public class CoyoteAdapter
         } catch (IOException e) {
             ;
         } catch (Throwable t) {
-            log.error(sm.getString("coyoteAdapter.service"), t);
+            CatalinaLogger.CONNECTOR_LOGGER.exceptionDuringService(t);
         } finally {
             req.getRequestProcessor().setWorkerThreadName(null);
             // Recycle the wrapper request and response
@@ -749,7 +739,7 @@ public class CoyoteAdapter
                 }
             } catch (Exception e) {
                 // Ignore
-                log.error("Invalid URI encoding; using HTTP default");
+                CatalinaLogger.CONNECTOR_LOGGER.invalidEncodingUseHttpDefault(e);
                 connector.setURIEncoding(null);
             }
             if (conv != null) {
@@ -759,7 +749,7 @@ public class CoyoteAdapter
                                  cc.getLength());
                     return;
                 } catch (IOException e) {
-                    log.error("Invalid URI character encoding; trying ascii");
+                    CatalinaLogger.CONNECTOR_LOGGER.invalidEncoding(e);
                     cc.recycle();
                 }
             }

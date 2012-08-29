@@ -17,6 +17,8 @@
 
 package org.apache.catalina.connector;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.security.AccessController;
@@ -26,7 +28,6 @@ import java.util.HashMap;
 import java.util.Locale;
 
 import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.util.StringManager;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Request;
 import org.apache.tomcat.util.buf.B2CConverter;
@@ -47,13 +48,6 @@ public class InputBuffer extends Reader
 
 
     // -------------------------------------------------------------- Constants
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     public static final String DEFAULT_ENCODING = 
@@ -364,7 +358,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw MESSAGES.streamClosed();
 
         return bb.substract();
     }
@@ -374,7 +368,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw MESSAGES.streamClosed();
 
         return bb.substract(b, off, len);
     }
@@ -426,7 +420,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw MESSAGES.streamClosed();
 
         return cb.substract();
     }
@@ -442,7 +436,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw MESSAGES.streamClosed();
 
         return cb.substract(cbuf, off, len);
     }
@@ -452,7 +446,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw MESSAGES.streamClosed();
 
         if (n < 0) {
             throw new IllegalArgumentException();
@@ -487,7 +481,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw MESSAGES.streamClosed();
 
         return (available() > 0);
     }
@@ -502,7 +496,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw MESSAGES.streamClosed();
 
         if (cb.getLength() <= 0) {
             cb.setOffset(0);
@@ -527,7 +521,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (closed)
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw MESSAGES.streamClosed();
 
         if (state == CHAR_STATE) {
             if (markPos < 0) {

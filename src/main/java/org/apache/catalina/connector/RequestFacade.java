@@ -18,6 +18,8 @@
 
 package org.apache.catalina.connector;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.AccessController;
@@ -44,7 +46,6 @@ import javax.servlet.http.Part;
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.ApplicationFilterChain;
 import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.util.StringManager;
 
 /**
  * Facade class that wraps a Coyote request object.  
@@ -231,13 +232,6 @@ public class RequestFacade implements HttpServletRequest {
     protected Request request = null;
 
 
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -264,8 +258,7 @@ public class RequestFacade implements HttpServletRequest {
     public Object getAttribute(String name) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getAttribute(name);
@@ -275,8 +268,7 @@ public class RequestFacade implements HttpServletRequest {
     public Enumeration getAttributeNames() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -291,8 +283,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getCharacterEncoding() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -308,8 +299,7 @@ public class RequestFacade implements HttpServletRequest {
             throws java.io.UnsupportedEncodingException {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         request.setCharacterEncoding(env);
@@ -319,8 +309,7 @@ public class RequestFacade implements HttpServletRequest {
     public int getContentLength() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getContentLength();
@@ -330,8 +319,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getContentType() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getContentType();
@@ -341,8 +329,7 @@ public class RequestFacade implements HttpServletRequest {
     public ServletInputStream getInputStream() throws IOException {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getInputStream();
@@ -352,8 +339,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getParameter(String name) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -368,8 +354,7 @@ public class RequestFacade implements HttpServletRequest {
     public Enumeration getParameterNames() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -384,8 +369,7 @@ public class RequestFacade implements HttpServletRequest {
     public String[] getParameterValues(String name) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         String[] ret = null;
@@ -411,8 +395,7 @@ public class RequestFacade implements HttpServletRequest {
     public Map getParameterMap() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -427,8 +410,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getProtocol() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getProtocol();
@@ -438,8 +420,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getScheme() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getScheme();
@@ -449,8 +430,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getServerName() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getServerName();
@@ -460,8 +440,7 @@ public class RequestFacade implements HttpServletRequest {
     public int getServerPort() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getServerPort();
@@ -471,8 +450,7 @@ public class RequestFacade implements HttpServletRequest {
     public BufferedReader getReader() throws IOException {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getReader();
@@ -482,8 +460,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getRemoteAddr() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getRemoteAddr();
@@ -493,8 +470,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getRemoteHost() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getRemoteHost();
@@ -504,8 +480,7 @@ public class RequestFacade implements HttpServletRequest {
     public void setAttribute(String name, Object o) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         request.setAttribute(name, o);
@@ -515,8 +490,7 @@ public class RequestFacade implements HttpServletRequest {
     public void removeAttribute(String name) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         request.removeAttribute(name);
@@ -526,8 +500,7 @@ public class RequestFacade implements HttpServletRequest {
     public Locale getLocale() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -542,8 +515,7 @@ public class RequestFacade implements HttpServletRequest {
     public Enumeration getLocales() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -558,8 +530,7 @@ public class RequestFacade implements HttpServletRequest {
     public boolean isSecure() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.isSecure();
@@ -569,8 +540,7 @@ public class RequestFacade implements HttpServletRequest {
     public RequestDispatcher getRequestDispatcher(String path) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -584,8 +554,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getRealPath(String path) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getRealPath(path);
@@ -595,8 +564,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getAuthType() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getAuthType();
@@ -606,8 +574,7 @@ public class RequestFacade implements HttpServletRequest {
     public Cookie[] getCookies() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         Cookie[] ret = null;
@@ -633,8 +600,7 @@ public class RequestFacade implements HttpServletRequest {
     public long getDateHeader(String name) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getDateHeader(name);
@@ -644,8 +610,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getHeader(String name) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getHeader(name);
@@ -655,8 +620,7 @@ public class RequestFacade implements HttpServletRequest {
     public Enumeration getHeaders(String name) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -671,8 +635,7 @@ public class RequestFacade implements HttpServletRequest {
     public Enumeration getHeaderNames() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (Globals.IS_SECURITY_ENABLED){
@@ -687,8 +650,7 @@ public class RequestFacade implements HttpServletRequest {
     public int getIntHeader(String name) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getIntHeader(name);
@@ -698,8 +660,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getMethod() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getMethod();
@@ -709,8 +670,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getPathInfo() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getPathInfo();
@@ -720,8 +680,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getPathTranslated() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getPathTranslated();
@@ -731,8 +690,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getContextPath() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getContextPath();
@@ -742,8 +700,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getQueryString() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getQueryString();
@@ -753,8 +710,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getRemoteUser() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getRemoteUser();
@@ -764,8 +720,7 @@ public class RequestFacade implements HttpServletRequest {
     public boolean isUserInRole(String role) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.isUserInRole(role);
@@ -775,8 +730,7 @@ public class RequestFacade implements HttpServletRequest {
     public java.security.Principal getUserPrincipal() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getUserPrincipal();
@@ -786,8 +740,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getRequestedSessionId() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getRequestedSessionId();
@@ -797,8 +750,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getRequestURI() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getRequestURI();
@@ -808,8 +760,7 @@ public class RequestFacade implements HttpServletRequest {
     public StringBuffer getRequestURL() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getRequestURL();
@@ -819,8 +770,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getServletPath() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getServletPath();
@@ -830,8 +780,7 @@ public class RequestFacade implements HttpServletRequest {
     public HttpSession getSession(boolean create) {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         if (SecurityUtil.isPackageProtectionEnabled()){
@@ -845,8 +794,7 @@ public class RequestFacade implements HttpServletRequest {
     public HttpSession getSession() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return getSession(true);
@@ -856,8 +804,7 @@ public class RequestFacade implements HttpServletRequest {
     public boolean isRequestedSessionIdValid() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.isRequestedSessionIdValid();
@@ -867,8 +814,7 @@ public class RequestFacade implements HttpServletRequest {
     public boolean isRequestedSessionIdFromCookie() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.isRequestedSessionIdFromCookie();
@@ -878,8 +824,7 @@ public class RequestFacade implements HttpServletRequest {
     public boolean isRequestedSessionIdFromURL() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.isRequestedSessionIdFromURL();
@@ -889,8 +834,7 @@ public class RequestFacade implements HttpServletRequest {
     public boolean isRequestedSessionIdFromUrl() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.isRequestedSessionIdFromURL();
@@ -900,8 +844,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getLocalAddr() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getLocalAddr();
@@ -911,8 +854,7 @@ public class RequestFacade implements HttpServletRequest {
     public String getLocalName() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getLocalName();
@@ -922,8 +864,7 @@ public class RequestFacade implements HttpServletRequest {
     public int getLocalPort() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getLocalPort();
@@ -933,8 +874,7 @@ public class RequestFacade implements HttpServletRequest {
     public int getRemotePort() {
 
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getRemotePort();
@@ -943,8 +883,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public AsyncContext getAsyncContext() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getAsyncContext();
@@ -953,8 +892,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public ServletContext getServletContext() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getServletContext();
@@ -963,8 +901,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public boolean isAsyncStarted() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.isAsyncStarted();
@@ -973,8 +910,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public boolean isAsyncSupported() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.isAsyncSupported();
@@ -983,8 +919,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public AsyncContext startAsync() throws IllegalStateException {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.startAsync();
@@ -994,8 +929,7 @@ public class RequestFacade implements HttpServletRequest {
     public AsyncContext startAsync(ServletRequest servletRequest,
             ServletResponse servletResponse) throws IllegalStateException {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.startAsync(servletRequest, servletResponse);
@@ -1004,8 +938,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public DispatcherType getDispatcherType() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getDispatcherType();
@@ -1017,8 +950,7 @@ public class RequestFacade implements HttpServletRequest {
      */
     public ApplicationFilterChain getFilterChain() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
         return request.getFilterChain();
     }
@@ -1031,8 +963,7 @@ public class RequestFacade implements HttpServletRequest {
      */
     public void setFilterChain(ApplicationFilterChain filterChain) {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
         request.setFilterChain(filterChain);
     }
@@ -1043,8 +974,7 @@ public class RequestFacade implements HttpServletRequest {
      */
     public void nextFilterChain() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
         request.nextFilterChain();
     }
@@ -1055,8 +985,7 @@ public class RequestFacade implements HttpServletRequest {
      */
     public void releaseFilterChain() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
         request.releaseFilterChain();
     }
@@ -1065,8 +994,7 @@ public class RequestFacade implements HttpServletRequest {
     public boolean authenticate(HttpServletResponse response) throws IOException,
             ServletException {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.authenticate(response);
@@ -1075,8 +1003,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public void login(String username, String password) throws ServletException {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         request.login(username, password);
@@ -1085,8 +1012,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public void logout() throws ServletException {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         request.logout();
@@ -1095,8 +1021,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public Part getPart(String name) throws IOException, ServletException {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getPart(name);
@@ -1105,8 +1030,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public Collection<Part> getParts() throws IOException, ServletException {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.getParts();
@@ -1114,8 +1038,7 @@ public class RequestFacade implements HttpServletRequest {
 
     public boolean hasSendfile() {
         if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
+            throw MESSAGES.nullRequestFacade();
         }
 
         return request.hasSendfile();

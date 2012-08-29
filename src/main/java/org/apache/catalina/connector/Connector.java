@@ -18,6 +18,8 @@
 
 package org.apache.catalina.connector;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.util.Set;
 
@@ -33,12 +35,11 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Service;
 import org.apache.catalina.core.AprLifecycleListener;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -53,8 +54,6 @@ import org.jboss.logging.Logger;
 public class Connector
     implements Lifecycle, MBeanRegistration
 {
-    private static Logger log = Logger.getLogger(Connector.class);
-
 
     /**
      * Alternate flag to enable recycling of facades.
@@ -86,9 +85,7 @@ public class Connector
             Class<?> clazz = Class.forName(protocolHandlerClassName);
             this.protocolHandler = (ProtocolHandler) clazz.newInstance();
         } catch (Exception e) {
-            throw new IllegalArgumentException
-                (sm.getString
-                 ("coyoteConnector.protocolHandlerInstantiationFailed", e));
+            throw MESSAGES.protocolHandlerInstantiationFailed(e);
         }
     }
 
@@ -181,13 +178,6 @@ public class Connector
      * through this connector.
      */
     protected boolean secure = false;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -946,9 +936,8 @@ public class Connector
         throws LifecycleException
     {
         if (initialized) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("coyoteConnector.alreadyInitialized"));
-           return;
+            CatalinaLogger.CONNECTOR_LOGGER.connectorAlreadyInitialized();
+            return;
         }
 
         this.initialized = true;
@@ -962,10 +951,8 @@ public class Connector
                     .registerComponent(this, oname, null);
                     controller=oname;
                 } catch (Exception e) {
-                    log.error( "Error registering connector ", e);
+                    CatalinaLogger.CONNECTOR_LOGGER.failedConnectorJmxRegistration(oname, e);
                 }
-                if(log.isDebugEnabled())
-                    log.debug("Creating name for connector " + oname);
             }
         }
 
@@ -979,9 +966,7 @@ public class Connector
         try {
             protocolHandler.init();
         } catch (Exception e) {
-            throw new LifecycleException
-                (sm.getString
-                 ("coyoteConnector.protocolHandlerInitializationFailed", e));
+            throw new LifecycleException(MESSAGES.protocolHandlerInitFailed(e));
         }
     }
 
@@ -994,8 +979,7 @@ public class Connector
         try {
             protocolHandler.pause();
         } catch (Exception e) {
-            log.error(sm.getString
-                      ("coyoteConnector.protocolHandlerPauseFailed"), e);
+            CatalinaLogger.CONNECTOR_LOGGER.protocolHandlerPauseFailed(e);
         }
     }
 
@@ -1008,8 +992,7 @@ public class Connector
         try {
             protocolHandler.resume();
         } catch (Exception e) {
-            log.error(sm.getString
-                      ("coyoteConnector.protocolHandlerResumeFailed"), e);
+            CatalinaLogger.CONNECTOR_LOGGER.protocolHandlerResumeFailed(e);
         }
     }
 
@@ -1025,8 +1008,7 @@ public class Connector
 
         // Validate and update our current state
         if (started ) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("coyoteConnector.alreadyStarted"));
+            CatalinaLogger.CONNECTOR_LOGGER.connectorAlreadyStarted();
             return;
         }
         lifecycle.fireLifecycleEvent(START_EVENT, null);
@@ -1041,27 +1023,18 @@ public class Connector
                     Registry.getRegistry(null, null).registerComponent
                     (protocolHandler, createObjectName(this.domain,"ProtocolHandler"), null);
                 } catch (Exception ex) {
-                    log.error(sm.getString
-                            ("coyoteConnector.protocolRegistrationFailed"), ex);
+                    CatalinaLogger.CONNECTOR_LOGGER.failedProtocolJmxRegistration(oname, ex);
                 }
             } else {
-                if(log.isInfoEnabled())
-                    log.info(sm.getString
-                            ("coyoteConnector.cannotRegisterProtocol"));
+                CatalinaLogger.CONNECTOR_LOGGER.failedProtocolJmxRegistration();
             }
         }
 
         try {
             protocolHandler.start();
         } catch (Exception e) {
-            String errPrefix = "";
-            if(this.service != null) {
-                errPrefix += "service.getName(): \"" + this.service.getName() + "\"; ";
-            }
-
             throw new LifecycleException
-                (errPrefix + " " + sm.getString
-                 ("coyoteConnector.protocolHandlerStartFailed", e));
+                (MESSAGES.protocolHandlerStartFailed(e));
         }
 
     }
@@ -1076,7 +1049,7 @@ public class Connector
 
         // Validate and update our current state
         if (!started) {
-            log.error(sm.getString("coyoteConnector.notStarted"));
+            CatalinaLogger.CONNECTOR_LOGGER.connectorNotStarted();
             return;
 
         }
@@ -1088,16 +1061,13 @@ public class Connector
                 Registry.getRegistry(null, null).unregisterComponent
                 (createObjectName(this.domain,"ProtocolHandler"));
             } catch (MalformedObjectNameException e) {
-                log.error( sm.getString
-                        ("coyoteConnector.protocolUnregistrationFailed"), e);
+                CatalinaLogger.CONNECTOR_LOGGER.failedProtocolJmxUnregistration(oname, e);
             }
         }
         try {
             protocolHandler.destroy();
         } catch (Exception e) {
-            throw new LifecycleException
-                (sm.getString
-                 ("coyoteConnector.protocolHandlerDestroyFailed", e));
+            throw new LifecycleException(MESSAGES.protocolHandlerDestroyFailed(e));
         }
 
     }
@@ -1145,15 +1115,13 @@ public class Connector
                 stop();
             }
         } catch( Throwable t ) {
-            log.error( "Unregistering - can't stop", t);
+            CatalinaLogger.CONNECTOR_LOGGER.connectorStopFailed(t);
         }
     }
 
     public void destroy() throws Exception {
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
             if( oname!=null && controller==oname ) {
-                if(log.isDebugEnabled())
-                    log.debug("Unregister itself " + oname );
                 Registry.getRegistry(null, null).unregisterComponent(oname);
             }
         }

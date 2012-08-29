@@ -18,6 +18,8 @@
 
 package org.apache.catalina.connector;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.AccessController;
@@ -33,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.util.StringManager;
 import org.jboss.servlet.http.UpgradableHttpServletResponse;
 
 /**
@@ -107,13 +108,6 @@ public class ResponseFacade
 
 
     /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
-    /**
      * The wrapped response.
      */
     protected Response response = null;
@@ -142,8 +136,7 @@ public class ResponseFacade
     public void finish() {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         response.setSuspended(true);
@@ -153,8 +146,7 @@ public class ResponseFacade
     public boolean isFinished() {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.isSuspended();
@@ -167,8 +159,7 @@ public class ResponseFacade
     public String getCharacterEncoding() {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.getCharacterEncoding();
@@ -242,8 +233,7 @@ public class ResponseFacade
     public int getBufferSize() {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.getBufferSize();
@@ -298,8 +288,7 @@ public class ResponseFacade
     public boolean isCommitted() {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return (response.isAppCommitted());
@@ -329,8 +318,7 @@ public class ResponseFacade
     public Locale getLocale() {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.getLocale();
@@ -350,8 +338,7 @@ public class ResponseFacade
     public boolean containsHeader(String name) {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.containsHeader(name);
@@ -361,8 +348,7 @@ public class ResponseFacade
     public String encodeURL(String url) {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.encodeURL(url);
@@ -372,8 +358,7 @@ public class ResponseFacade
     public String encodeRedirectURL(String url) {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.encodeRedirectURL(url);
@@ -383,8 +368,7 @@ public class ResponseFacade
     public String encodeUrl(String url) {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.encodeURL(url);
@@ -394,8 +378,7 @@ public class ResponseFacade
     public String encodeRedirectUrl(String url) {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.encodeRedirectURL(url);
@@ -570,8 +553,7 @@ public class ResponseFacade
     public String getContentType() {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.getContentType();
@@ -581,8 +563,7 @@ public class ResponseFacade
     public void setCharacterEncoding(String arg0) {
 
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         response.setCharacterEncoding(arg0);
@@ -591,8 +572,7 @@ public class ResponseFacade
 
     public String getHeader(String name) {
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.getHeader(name);
@@ -601,8 +581,7 @@ public class ResponseFacade
 
     public Collection<String> getHeaderNames() {
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.getHeaderNames();
@@ -611,8 +590,7 @@ public class ResponseFacade
 
     public Collection<String> getHeaders(String name) {
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.getHeaders(name);
@@ -621,8 +599,7 @@ public class ResponseFacade
 
     public int getStatus() {
         if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
+            throw MESSAGES.nullResponseFacade();
         }
 
         return response.getStatus();
