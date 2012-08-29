@@ -302,6 +302,7 @@ public class FormAuthenticator
                 String uri = request.getContextPath() + landingPage;
                 SavedRequest saved = new SavedRequest();
                 saved.setRequestURI(uri);
+                saved.setDecodedRequestURI(uri);
                 request.getSessionInternal(true).setNote(
                         Constants.FORM_REQUEST_NOTE, saved);
                 response.sendRedirect(response.encodeRedirectURL(uri));
@@ -331,6 +332,7 @@ public class FormAuthenticator
                 String uri = request.getContextPath() + landingPage;
                 SavedRequest saved = new SavedRequest();
                 saved.setRequestURI(uri);
+                saved.setDecodedRequestURI(uri);
                 session.setNote(Constants.FORM_REQUEST_NOTE, saved);
                 response.sendRedirect(response.encodeRedirectURL(uri));
             }
