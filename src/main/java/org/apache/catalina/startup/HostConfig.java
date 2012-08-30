@@ -22,10 +22,6 @@ package org.apache.catalina.startup;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.management.ObjectName;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Engine;
@@ -33,8 +29,6 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.modeler.Registry;
 
 
 /**
@@ -48,9 +42,6 @@ import org.apache.tomcat.util.modeler.Registry;
 public class HostConfig
     implements LifecycleListener {
     
-    protected static org.jboss.logging.Logger log=
-         org.jboss.logging.Logger.getLogger( HostConfig.class );
-
     // ----------------------------------------------------- Instance Variables
 
 
@@ -84,13 +75,6 @@ public class HostConfig
     protected Host host = null;
 
     
-    /**
-     * The string resources for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
     /**
      * List of applications which are being serviced, and shouldn't be 
      * deployed/undeployed/redeployed at the moment.
@@ -156,12 +140,7 @@ public class HostConfig
     public void lifecycleEvent(LifecycleEvent event) {
 
         // Identify the context we are associated with
-        try {
-            host = (Host) event.getLifecycle();
-        } catch (ClassCastException e) {
-            log.error(sm.getString("hostConfig.cce", event.getLifecycle()), e);
-            return;
-        }
+        host = (Host) event.getLifecycle();
         
         if (event.getType().equals(Lifecycle.PERIODIC_EVENT))
             check();
@@ -267,10 +246,6 @@ public class HostConfig
      * Process a "start" event for this Host.
      */
     public void start() {
-
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("hostConfig.start"));
-
     }
 
 
@@ -278,9 +253,6 @@ public class HostConfig
      * Process a "stop" event for this Host.
      */
     public void stop() {
-
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("hostConfig.stop"));
 
         undeployApps();
 
@@ -294,10 +266,6 @@ public class HostConfig
      * Undeploy all deployed applications.
      */
     protected void undeployApps() {
-
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("hostConfig.undeploying"));
-
     }
 
 

@@ -16,6 +16,8 @@
 
 package org.apache.catalina.filters;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * <p>
@@ -1019,8 +1022,6 @@ public class ExpiresFilter extends FilterBase {
 
     private static final String HEADER_LAST_MODIFIED = "Last-Modified";
 
-    private static Logger log = Logger.getLogger(ExpiresFilter.class);
-
     private static final String PARAMETER_EXPIRES_BY_TYPE = "ExpiresByType";
 
     private static final String PARAMETER_EXPIRES_DEFAULT = "ExpiresDefault";
@@ -1180,11 +1181,7 @@ public class ExpiresFilter extends FilterBase {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
             if (response.isCommitted()) {
-                if (log.isDebugEnabled()) {
-                    log.debug(sm.getString(
-                            "expiresFilter.responseAlreadyCommited",
-                            httpRequest.getRequestURL()));
-                }
+                CatalinaLogger.FILTERS_LOGGER.expiresResponseAlreadyCommitted(httpRequest.getRequestURI());
                 chain.doFilter(request, response);
             } else {
                 XHttpServletResponse xResponse = new XHttpServletResponse(
@@ -1298,9 +1295,7 @@ public class ExpiresFilter extends FilterBase {
             }
             break;
         default:
-            throw new IllegalStateException(sm.getString(
-                    "expiresFilter.unsupportedStartingPoint",
-                    configuration.getStartingPoint()));
+            throw MESSAGES.expiresUnsupportedStartingPoint("" + configuration.getStartingPoint());
         }
         for (Duration duration : configuration.getDurations()) {
             calendar.add(duration.getUnit().getCalendardField(),
@@ -1333,19 +1328,12 @@ public class ExpiresFilter extends FilterBase {
                 } else if (name.equalsIgnoreCase(PARAMETER_EXPIRES_EXCLUDED_RESPONSE_STATUS_CODES)) {
                     this.excludedResponseStatusCodes = commaDelimitedListToIntArray(value);
                 } else {
-                    log.warn(sm.getString(
-                            "expiresFilter.unknownParameterIgnored", name,
-                            value));
+                    CatalinaLogger.FILTERS_LOGGER.expiresUnknownParameter(name, value);
                 }
             } catch (RuntimeException e) {
-                throw new ServletException(sm.getString(
-                        "expiresFilter.exceptionProcessingParameter", name,
-                        value), e);
+                throw new ServletException(MESSAGES.expiresExceptionProcessingParameter(name, value), e);
             }
         }
-
-        log.debug(sm.getString("expiresFilter.filterInitialized",
-                this.toString()));
     }
 
     /**
@@ -1359,24 +1347,13 @@ public class ExpiresFilter extends FilterBase {
         boolean expirationHeaderHasBeenSet = response.containsHeader(HEADER_EXPIRES) ||
                 contains(response.getCacheControlHeader(), "max-age");
         if (expirationHeaderHasBeenSet) {
-            if (log.isDebugEnabled()) {
-                log.debug(sm.getString(
-                        "expiresFilter.expirationHeaderAlreadyDefined",
-                        request.getRequestURI(),
-                        Integer.valueOf(response.getStatus()),
-                        response.getContentType()));
-            }
+            CatalinaLogger.FILTERS_LOGGER.expiresHeaderAlreadyDefined(request.getRequestURI(), response.getStatus(), response.getContentType());
             return false;
         }
 
         for (int skippedStatusCode : this.excludedResponseStatusCodes) {
             if (response.getStatus() == skippedStatusCode) {
-                if (log.isDebugEnabled()) {
-                    log.debug(sm.getString("expiresFilter.skippedStatusCode",
-                            request.getRequestURI(),
-                            Integer.valueOf(response.getStatus()),
-                            response.getContentType()));
-                }
+                CatalinaLogger.FILTERS_LOGGER.expiresSkipStatusCode(request.getRequestURI(), response.getStatus(), response.getContentType());
                 return false;
             }
         }
@@ -1440,8 +1417,7 @@ public class ExpiresFilter extends FilterBase {
         try {
             currentToken = tokenizer.nextToken();
         } catch (NoSuchElementException e) {
-            throw new IllegalStateException(sm.getString(
-                    "expiresFilter.startingPointNotFound", line));
+            throw MESSAGES.expiresStartingPointNotFound(line);
         }
 
         StartingPoint startingPoint;
@@ -1463,15 +1439,13 @@ public class ExpiresFilter extends FilterBase {
             tokenizer = new StringTokenizer(currentToken.substring(1) +
                     " seconds", " ");
         } else {
-            throw new IllegalStateException(sm.getString(
-                    "expiresFilter.startingPointInvalid", currentToken, line));
+            throw MESSAGES.expiresInvalidStartingPoint(currentToken, line);
         }
 
         try {
             currentToken = tokenizer.nextToken();
         } catch (NoSuchElementException e) {
-            throw new IllegalStateException(sm.getString(
-                    "Duration not found in directive '{}'", line));
+            throw MESSAGES.expiresDurationNotFound(line);
         }
 
         if ("plus".equalsIgnoreCase(currentToken)) {
@@ -1479,8 +1453,7 @@ public class ExpiresFilter extends FilterBase {
             try {
                 currentToken = tokenizer.nextToken();
             } catch (NoSuchElementException e) {
-                throw new IllegalStateException(sm.getString(
-                        "Duration not found in directive '{}'", line));
+                throw MESSAGES.expiresDurationNotFound(line);
             }
         }
 
@@ -1491,18 +1464,13 @@ public class ExpiresFilter extends FilterBase {
             try {
                 amount = Integer.parseInt(currentToken);
             } catch (NumberFormatException e) {
-                throw new IllegalStateException(sm.getString(
-                        "Invalid duration (number) '{}' in directive '{}'",
-                        currentToken, line));
+                throw MESSAGES.expiresInvalidDuration(currentToken, line);
             }
 
             try {
                 currentToken = tokenizer.nextToken();
             } catch (NoSuchElementException e) {
-                throw new IllegalStateException(
-                        sm.getString(
-                                "Duration unit not found after amount {} in directive '{}'",
-                                Integer.valueOf(amount), line));
+                throw MESSAGES.expiresDurationUnitNotFound(amount, line);
             }
             DurationUnit durationUnit;
             if ("years".equalsIgnoreCase(currentToken)) {
@@ -1526,10 +1494,7 @@ public class ExpiresFilter extends FilterBase {
                     "seconds".equalsIgnoreCase(currentToken)) {
                 durationUnit = DurationUnit.SECOND;
             } else {
-                throw new IllegalStateException(
-                        sm.getString(
-                                "Invalid duration unit (years|months|weeks|days|hours|minutes|seconds) '{}' in directive '{}'",
-                                currentToken, line));
+                throw MESSAGES.expiresInvalidDurationUnit(currentToken, line);
             }
 
             Duration duration = new Duration(amount, durationUnit);

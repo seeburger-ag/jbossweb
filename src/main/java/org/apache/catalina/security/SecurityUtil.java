@@ -69,21 +69,9 @@ public final class SecurityUtil{
     private static HashMap<Object,Method[]> objectCache =
         new HashMap<Object,Method[]>();
         
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( SecurityUtil.class );
-    
-    private static String PACKAGE = "org.apache.catalina.security";
-    
     private static boolean packageDefinitionEnabled =  
          (System.getProperty("package.definition") == null && 
            System.getProperty("package.access")  == null) ? false : true;
-    
-    /**
-     * The string resources for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(PACKAGE);    
-    
     
     /**
      * Perform work as a particular </code>Subject</code>. Here the work
@@ -312,10 +300,6 @@ public final class SecurityUtil{
                                 .getTargetException();
             } else {
                 e = pe;
-            }
-            
-            if (log.isDebugEnabled()){
-                log.debug(sm.getString("SecurityUtil.doAsPrivilege"), e); 
             }
             
             if (e instanceof UnavailableException)

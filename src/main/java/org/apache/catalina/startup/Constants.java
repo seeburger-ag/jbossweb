@@ -29,8 +29,6 @@ package org.apache.catalina.startup;
 
 public final class Constants {
 
-    public static final String Package = "org.apache.catalina.startup";
-
     public static final String ApplicationContextXml = "META-INF/context.xml";
     public static final String ApplicationWebXml = "/WEB-INF/web.xml";
     public static final String DefaultContextXml = "conf/context.xml";

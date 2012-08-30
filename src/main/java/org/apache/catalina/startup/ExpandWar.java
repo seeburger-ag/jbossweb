@@ -18,16 +18,13 @@
 
 package org.apache.catalina.startup;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.channels.FileChannel;
 
-import org.apache.catalina.util.StringManager;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * Expand out a WAR in a Host's appBase.
@@ -39,15 +36,6 @@ import org.jboss.logging.Logger;
  */
 
 public class ExpandWar {
-
-    private static Logger log = Logger.getLogger(ExpandWar.class);
-
-    /**
-     * The string resources for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     /**
      * Copy the specified file or directory to the destination.
@@ -83,8 +71,7 @@ public class ExpandWar {
                     oc = (new FileOutputStream(fileDest)).getChannel();
                     ic.transferTo(0, ic.size(), oc);
                 } catch (IOException e) {
-                    log.error(sm.getString
-                            ("expandWar.copy", fileSrc, fileDest), e);
+                    CatalinaLogger.STARTUP_LOGGER.fileCopyError(fileSrc, fileDest, e);
                     result = false;
                 } finally {
                     if (ic != null) {
@@ -138,8 +125,7 @@ public class ExpandWar {
             }
         }
         if (logFailure && !result) {
-            log.error(sm.getString(
-                    "expandWar.deleteFailed", dir.getAbsolutePath()));
+            CatalinaLogger.STARTUP_LOGGER.fileDeleteError(dir.getAbsolutePath());
         }
         return result;
     }
@@ -186,8 +172,7 @@ public class ExpandWar {
         }
         
         if (logFailure && !result) {
-            log.error(sm.getString(
-                    "expandWar.deleteFailed", dir.getAbsolutePath()));
+            CatalinaLogger.STARTUP_LOGGER.fileDeleteError(dir.getAbsolutePath());
         }
         
         return result;

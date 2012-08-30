@@ -19,6 +19,8 @@
 package org.apache.catalina.util;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -121,13 +123,6 @@ public final class ResourceSet extends HashSet {
     }
 
 
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager("org.apache.catalina.util");
-
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -142,8 +137,7 @@ public final class ResourceSet extends HashSet {
     public boolean add(Object o) {
 
         if (locked)
-            throw new IllegalStateException
-              (sm.getString("resourceSet.locked"));
+            throw MESSAGES.lockedResourceSet();
         return (super.add(o));
 
     }
@@ -157,8 +151,7 @@ public final class ResourceSet extends HashSet {
     public void clear() {
 
         if (locked)
-            throw new IllegalStateException
-              (sm.getString("resourceSet.locked"));
+            throw MESSAGES.lockedResourceSet();
         super.clear();
 
     }
@@ -175,8 +168,7 @@ public final class ResourceSet extends HashSet {
     public boolean remove(Object o) {
 
         if (locked)
-            throw new IllegalStateException
-              (sm.getString("resourceSet.locked"));
+            throw MESSAGES.lockedResourceSet();
         return (super.remove(o));
 
     }

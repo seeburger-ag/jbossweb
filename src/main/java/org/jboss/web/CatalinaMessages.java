@@ -217,7 +217,7 @@ public interface CatalinaMessages {
     @Message(id = 58, value = "The response object has been recycled and is no longer associated with this facade")
     IllegalStateException nullResponseFacade();
 
-    @Message(id = 60, value = "Stream closed")
+    @Message(id = 59, value = "Stream closed")
     IOException streamClosed();
 
     @Message(id = 64, value = "Error report")
@@ -264,6 +264,75 @@ public interface CatalinaMessages {
 
     @Message(id = 78, value = "Syntax error in request filter pattern %s")
     String requestFilterValvePatternError(String pattern);
+
+    @Message(id = 79, value = "The property %s is not defined for filters of type %s")
+    String propertyNotFound(String property, String className);
+
+    @Message(id = 80, value = "Unable to create Random source using class %s")
+    String cannotCreateRandom(String className);
+
+    @Message(id = 81, value = "Unsupported startingPoint %s")
+    IllegalStateException expiresUnsupportedStartingPoint(String startingPoint);
+
+    @Message(id = 82, value = "Exception processing configuration parameter %s: %s")
+    String expiresExceptionProcessingParameter(String name, String value);
+
+    @Message(id = 83, value = "Starting point (access|now|modification|a<seconds>|m<seconds>) not found in directive %s")
+    IllegalStateException expiresStartingPointNotFound(String line);
+
+    @Message(id = 84, value = "Invalid starting point (access|now|modification|a<seconds>|m<seconds>) %s in directive %s")
+    IllegalStateException expiresInvalidStartingPoint(String token, String line);
+
+    @Message(id = 85, value = "Duration not found in directive %s")
+    IllegalStateException expiresDurationNotFound(String line);
+
+    @Message(id = 86, value = "Invalid duration (number) %s in directive %s")
+    IllegalStateException expiresInvalidDuration(String token, String line);
+
+    @Message(id = 87, value = "Duration unit not found after amount %s in directive %s")
+    IllegalStateException expiresDurationUnitNotFound(int amount, String line);
+
+    @Message(id = 86, value = "Invalid duration unit (years|months|weeks|days|hours|minutes|seconds) %s in directive %s")
+    IllegalStateException expiresInvalidDurationUnit(String token, String line);
+
+    @Message(id = 87, value = "Request filter invalid pattern %s")
+    IllegalArgumentException requestFilterInvalidPattern(String pattern, @Cause Throwable t);
+
+    @Message(id = 88, value = "The requested resource (%s) is not available")
+    String resourceNotAvailable(String resource);
+
+    @Message(id = 89, value = "Directory Listing For %s")
+    String listingDirectoryTitle(String directory);
+
+    @Message(id = 90, value = "Up To %s")
+    String listingDirectoryParent(String directory);
+
+    @Message(id = 91, value = "Filename")
+    String listingFilename();
+
+    @Message(id = 92, value = "Size")
+    String listingSize();
+
+    @Message(id = 93, value = "Last Modified")
+    String listingLastModified();
+
+    @Message(id = 94, value = "JAXP initialization failed")
+    String jaxpInitializationFailed();
+
+    @Message(id = 95, value = "Ignored external entity %s %s")
+    String ignoredExternalEntity(String publicId, String systemId);
+
+    @Message(id = 96, value = "No modifications are allowed to a locked ParameterMap")
+    IllegalStateException lockedParameterMap();
+
+    @Message(id = 97, value = "No modifications are allowed to a locked ResourceSet")
+    IllegalStateException lockedResourceSet();
+
+    @Message(id = 98, value = "Bad hexadecimal digit")
+    IllegalArgumentException badHexDigit();
+
+    @Message(id = 99, value = "Odd number of hexadecimal digits")
+    IllegalArgumentException oddNomberOfHexDigits();
 
     @Message(id = 100, value = "The client may continue.")
     String http100();

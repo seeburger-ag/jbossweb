@@ -19,6 +19,8 @@
 package org.apache.catalina.servlets;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -63,7 +65,6 @@ import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.naming.resources.CacheEntry;
 import org.apache.naming.resources.ProxyDirContext;
@@ -202,13 +203,6 @@ public class DefaultServlet
      * JNDI resources name.
      */
     protected static final String RESOURCES_JNDI_NAME = "java:/comp/Resources";
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -654,8 +648,7 @@ public class DefaultServlet
                 // We're included, and the response.sendError() below is going
                 // to be ignored by the resource that is including us.
                 // Therefore, throw an exception to notify the error.
-                throw new FileNotFoundException(sm.getString("defaultServlet.missingResource",
-                        RequestUtil.filter(requestUri)));
+                throw new FileNotFoundException(MESSAGES.resourceNotAvailable(RequestUtil.filter(requestUri)));
             }
 
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
@@ -1254,7 +1247,7 @@ public class DefaultServlet
         sb.append("<html>\r\n");
         sb.append("<head>\r\n");
         sb.append("<title>");
-        sb.append(sm.getString("directory.title", name));
+        sb.append(MESSAGES.listingDirectoryTitle(name));
         sb.append("</title>\r\n");
         sb.append("<STYLE><!--");
         sb.append(org.apache.catalina.util.TomcatCSS.TOMCAT_CSS);
@@ -1262,7 +1255,7 @@ public class DefaultServlet
         sb.append("</head>\r\n");
         sb.append("<body>");
         sb.append("<h1>");
-        sb.append(sm.getString("directory.title", name));
+        sb.append(MESSAGES.listingDirectoryTitle(name));
 
         // Render the link to our parent (if required)
         String parentDirectory = name;
@@ -1282,7 +1275,7 @@ public class DefaultServlet
                 sb.append("/");
             sb.append("\">");
             sb.append("<b>");
-            sb.append(sm.getString("directory.parent", parent));
+            sb.append(MESSAGES.listingDirectoryParent(parent));
             sb.append("</b>");
             sb.append("</a>");
         }
@@ -1296,13 +1289,13 @@ public class DefaultServlet
         // Render the column headings
         sb.append("<tr>\r\n");
         sb.append("<td align=\"left\"><font size=\"+1\"><strong>");
-        sb.append(sm.getString("directory.filename"));
+        sb.append(MESSAGES.listingFilename());
         sb.append("</strong></font></td>\r\n");
         sb.append("<td align=\"center\"><font size=\"+1\"><strong>");
-        sb.append(sm.getString("directory.size"));
+        sb.append(MESSAGES.listingSize());
         sb.append("</strong></font></td>\r\n");
         sb.append("<td align=\"right\"><font size=\"+1\"><strong>");
-        sb.append(sm.getString("directory.lastModified"));
+        sb.append(MESSAGES.listingLastModified());
         sb.append("</strong></font></td>\r\n");
         sb.append("</tr>");
 

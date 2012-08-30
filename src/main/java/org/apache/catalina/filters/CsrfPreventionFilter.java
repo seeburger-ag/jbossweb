@@ -17,6 +17,8 @@
 
 package org.apache.catalina.filters;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.HashSet;
@@ -103,16 +105,13 @@ public class CsrfPreventionFilter extends FilterBase {
             Class<?> clazz = Class.forName(randomClass);
             randomSource = (Random) clazz.newInstance();
         } catch (ClassNotFoundException e) {
-            ServletException se = new ServletException(sm.getString(
-                    "csrfPrevention.invalidRandomClass", randomClass), e);
+            ServletException se = new ServletException(MESSAGES.cannotCreateRandom(randomClass), e);
             throw se;
         } catch (InstantiationException e) {
-            ServletException se = new ServletException(sm.getString(
-                    "csrfPrevention.invalidRandomClass", randomClass), e);
+            ServletException se = new ServletException(MESSAGES.cannotCreateRandom(randomClass), e);
             throw se;
         } catch (IllegalAccessException e) {
-            ServletException se = new ServletException(sm.getString(
-                    "csrfPrevention.invalidRandomClass", randomClass), e);
+            ServletException se = new ServletException(MESSAGES.cannotCreateRandom(randomClass), e);
             throw se;
         }
     }

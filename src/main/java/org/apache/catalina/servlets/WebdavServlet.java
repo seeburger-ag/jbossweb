@@ -19,6 +19,8 @@
 package org.apache.catalina.servlets;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
@@ -299,8 +301,7 @@ public class WebdavServlet
             documentBuilder.setEntityResolver(
                     new WebdavResolver(this.getServletContext()));
         } catch(ParserConfigurationException e) {
-            throw new ServletException
-                (sm.getString("webdavservlet.jaxpfailed"));
+            throw new ServletException(MESSAGES.jaxpInitializationFailed());
         }
         return documentBuilder;
     }
@@ -2799,8 +2800,7 @@ public class WebdavServlet
         }
      
         public InputSource resolveEntity (String publicId, String systemId) {
-            context.log(sm.getString("webdavservlet.enternalEntityIgnored",
-                    publicId, systemId));
+            context.log(MESSAGES.ignoredExternalEntity(publicId, systemId));
             return new InputSource(
                     new StringReader("Ignored external entity"));
         }

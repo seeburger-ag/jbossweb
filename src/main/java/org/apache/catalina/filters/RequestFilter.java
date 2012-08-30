@@ -19,6 +19,8 @@
 package org.apache.catalina.filters;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -209,10 +211,7 @@ public abstract class RequestFilter
             try {
                 reList.add(Pattern.compile(pattern));
             } catch (PatternSyntaxException e) {
-                IllegalArgumentException iae = new IllegalArgumentException
-                    (sm.getString("requestFilterFilter.syntax", pattern));
-                iae.initCause(e);
-                throw iae;
+                throw MESSAGES.requestFilterInvalidPattern(pattern, e);
             }
             list = list.substring(comma + 1);
         }
@@ -305,7 +304,7 @@ public abstract class RequestFilter
     private void sendErrorWhenNotHttp(ServletResponse response)
             throws IOException {
         response.setContentType(PLAIN_TEXT_MIME_TYPE);
-        response.getWriter().write(sm.getString("http.403"));
+        response.getWriter().write(MESSAGES.http403());
         response.getWriter().flush();
     }
 

@@ -82,7 +82,7 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
-import org.apache.catalina.util.StringManager;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * Startup event listener for a <b>Context</b> that configures the properties
@@ -95,9 +95,6 @@ import org.apache.catalina.util.StringManager;
 
 public class ContextConfig
     implements LifecycleListener {
-
-    protected static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( ContextConfig.class );
 
     // ----------------------------------------------------- Instance Variables
 
@@ -126,13 +123,6 @@ public class ContextConfig
      * Track any fatal errors during startup configuration processing.
      */
     protected boolean ok = false;
-
-
-    /**
-     * The string resources for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -170,12 +160,7 @@ public class ContextConfig
     public void lifecycleEvent(LifecycleEvent event) {
 
         // Identify the context we are associated with
-        try {
-            context = (Context) event.getLifecycle();
-        } catch (ClassCastException e) {
-            log.error(sm.getString("contextConfig.cce", event.getLifecycle()), e);
-            return;
-        }
+        context = (Context) event.getLifecycle();
 
         // Process the event that has occurred
         if (event.getType().equals(Lifecycle.START_EVENT)) {
@@ -260,7 +245,7 @@ public class ContextConfig
 
         // Has a Realm been configured for us to authenticate against?
         if (context.getRealm() == null) {
-            log.error(sm.getString("contextConfig.missingRealm"));
+            CatalinaLogger.STARTUP_LOGGER.noRealmFound();
             ok = false;
             return;
         }
@@ -284,14 +269,12 @@ public class ContextConfig
                         authenticators = new Properties();
                         authenticators.load(is);
                     } else {
-                        log.error(sm.getString(
-                                "contextConfig.authenticatorResources"));
+                        CatalinaLogger.STARTUP_LOGGER.cannotFindAuthenticatoMappings();
                         ok=false;
                         return;
                     }
                 } catch (IOException e) {
-                    log.error(sm.getString(
-                                "contextConfig.authenticatorResources"), e);
+                    CatalinaLogger.STARTUP_LOGGER.failedLoadingAuthenticatoMappings(e);
                     ok = false;
                     return;
                 }
@@ -302,8 +285,7 @@ public class ContextConfig
             authenticatorName =
                     authenticators.getProperty(loginConfig.getAuthMethod());
             if (authenticatorName == null) {
-                log.error(sm.getString("contextConfig.authenticatorMissing",
-                                 loginConfig.getAuthMethod()));
+                CatalinaLogger.STARTUP_LOGGER.noAuthenticatorForAuthMethod(loginConfig.getAuthMethod());
                 ok = false;
                 return;
             }
@@ -313,10 +295,7 @@ public class ContextConfig
                 Class authenticatorClass = Class.forName(authenticatorName);
                 authenticator = (Valve) authenticatorClass.newInstance();
             } catch (Throwable t) {
-                log.error(sm.getString(
-                                    "contextConfig.authenticatorInstantiate",
-                                    authenticatorName),
-                          t);
+                CatalinaLogger.STARTUP_LOGGER.failedLoadingAuthenticator(authenticatorName, t);
                 ok = false;
             }
         }
@@ -328,11 +307,7 @@ public class ContextConfig
             Pipeline pipeline = ((ContainerBase) context).getPipeline();
             if (pipeline != null) {
                 ((ContainerBase) context).addValve(authenticator);
-                if (log.isDebugEnabled()) {
-                    log.debug(sm.getString(
-                                    "contextConfig.authenticatorConfigured",
-                                    loginConfig.getAuthMethod()));
-                }
+                CatalinaLogger.STARTUP_LOGGER.authenticatorConfigured(loginConfig.getAuthMethod());
             }
         }
 
@@ -385,8 +360,6 @@ public class ContextConfig
      * Process a "init" event for this Context.
      */
     protected void init() {
-            if (log.isDebugEnabled())
-            log.debug(sm.getString("contextConfig.init"));
         context.setConfigured(false);
         ok = true;
     }
@@ -404,9 +377,6 @@ public class ContextConfig
      */
     protected void start() {
         // Called from StandardContext.start()
-
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("contextConfig.start"));
 
         // Process the default and application web.xml files
         if (ok) {
@@ -434,25 +404,25 @@ public class ContextConfig
         }
 
         // Dump the contents of this pipeline if requested
-        if ((log.isDebugEnabled()) && (context instanceof ContainerBase)) {
-            log.debug("Pipeline Configuration:");
+        if ((CatalinaLogger.STARTUP_LOGGER.isDebugEnabled()) && (context instanceof ContainerBase)) {
+            CatalinaLogger.STARTUP_LOGGER.debug("Pipeline Configuration:");
             Pipeline pipeline = ((ContainerBase) context).getPipeline();
             Valve valves[] = null;
             if (pipeline != null)
                 valves = pipeline.getValves();
             if (valves != null) {
                 for (int i = 0; i < valves.length; i++) {
-                    log.debug("  " + valves[i].getInfo());
+                    CatalinaLogger.STARTUP_LOGGER.debug("  " + valves[i].getInfo());
                 }
             }
-            log.debug("======================");
+            CatalinaLogger.STARTUP_LOGGER.debug("======================");
         }
 
         // Make our application available if no problems were encountered
         if (ok) {
             context.setConfigured(true);
         } else {
-            log.error(sm.getString("contextConfig.unavailable"));
+            CatalinaLogger.STARTUP_LOGGER.contextUnavailable();
             context.setConfigured(false);
         }
 
@@ -469,9 +439,6 @@ public class ContextConfig
      * Process a "stop" event for this Context.
      */
     protected void stop() {
-
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("contextConfig.stop"));
 
         int i;
 
@@ -579,8 +546,6 @@ public class ContextConfig
      */
     protected void destroy() {
         // Called from StandardContext.destroy()
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("contextConfig.destroy"));
 
         // Changed to getWorkPath per Bugzilla 35819.
         String workDir = ((StandardContext) context).getWorkPath();
@@ -740,7 +705,7 @@ public class ContextConfig
             for (int j = 0; j < roles.length; j++) {
                 if (!"*".equals(roles[j]) &&
                     !context.findSecurityRole(roles[j])) {
-                    log.info(sm.getString("contextConfig.role.auth", roles[j]));
+                    CatalinaLogger.STARTUP_LOGGER.roleValidationAuth(roles[j]);
                     context.addSecurityRole(roles[j]);
                 }
             }
@@ -752,14 +717,14 @@ public class ContextConfig
             Wrapper wrapper = (Wrapper) wrappers[i];
             String runAs = wrapper.getRunAs();
             if ((runAs != null) && !context.findSecurityRole(runAs)) {
-                log.info(sm.getString("contextConfig.role.runas", runAs));
+                CatalinaLogger.STARTUP_LOGGER.roleValidationRunAs(runAs);
                 context.addSecurityRole(runAs);
             }
             String names[] = wrapper.findSecurityReferences();
             for (int j = 0; j < names.length; j++) {
                 String link = wrapper.findSecurityReference(names[j]);
                 if ((link != null) && !context.findSecurityRole(link)) {
-                    log.info(sm.getString("contextConfig.role.link", link));
+                    CatalinaLogger.STARTUP_LOGGER.roleValidationLink(link);
                     context.addSecurityRole(link);
                 }
             }

@@ -23,7 +23,6 @@ import org.apache.catalina.Engine;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.util.StringManager;
 
 
 /**
@@ -37,10 +36,6 @@ import org.apache.catalina.util.StringManager;
 public class EngineConfig
     implements LifecycleListener {
 
-
-    protected static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( EngineConfig.class );
-
     // ----------------------------------------------------- Instance Variables
 
 
@@ -48,13 +43,6 @@ public class EngineConfig
      * The Engine we are associated with.
      */
     protected Engine engine = null;
-
-
-    /**
-     * The string resources for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // --------------------------------------------------------- Public Methods
@@ -68,12 +56,7 @@ public class EngineConfig
     public void lifecycleEvent(LifecycleEvent event) {
 
         // Identify the engine we are associated with
-        try {
-            engine = (Engine) event.getLifecycle();
-        } catch (ClassCastException e) {
-            log.error(sm.getString("engineConfig.cce", event.getLifecycle()), e);
-            return;
-        }
+        engine = (Engine) event.getLifecycle();
 
         // Process the event that has occurred
         if (event.getType().equals(Lifecycle.START_EVENT))
@@ -91,10 +74,6 @@ public class EngineConfig
      * Process a "start" event for this Engine.
      */
     protected void start() {
-
-        if (engine.getLogger().isDebugEnabled())
-            engine.getLogger().debug(sm.getString("engineConfig.start"));
-
     }
 
 
@@ -102,10 +81,6 @@ public class EngineConfig
      * Process a "stop" event for this Engine.
      */
     protected void stop() {
-
-        if (engine.getLogger().isDebugEnabled())
-            engine.getLogger().debug(sm.getString("engineConfig.stop"));
-
     }
 
 

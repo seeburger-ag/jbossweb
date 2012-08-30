@@ -19,6 +19,8 @@
 package org.apache.catalina.util;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -121,13 +123,6 @@ public final class ParameterMap extends HashMap {
     }
 
 
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager("org.apache.catalina.util");
-
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -140,8 +135,7 @@ public final class ParameterMap extends HashMap {
     public void clear() {
 
         if (locked)
-            throw new IllegalStateException
-                (sm.getString("parameterMap.locked"));
+            throw MESSAGES.lockedParameterMap();
         super.clear();
 
     }
@@ -163,8 +157,7 @@ public final class ParameterMap extends HashMap {
     public Object put(Object key, Object value) {
 
         if (locked)
-            throw new IllegalStateException
-                (sm.getString("parameterMap.locked"));
+            throw MESSAGES.lockedParameterMap();
         return (super.put(key, value));
 
     }
@@ -182,8 +175,7 @@ public final class ParameterMap extends HashMap {
     public void putAll(Map map) {
 
         if (locked)
-            throw new IllegalStateException
-                (sm.getString("parameterMap.locked"));
+            throw MESSAGES.lockedParameterMap();
         super.putAll(map);
 
     }
@@ -202,8 +194,7 @@ public final class ParameterMap extends HashMap {
     public Object remove(Object key) {
 
         if (locked)
-            throw new IllegalStateException
-                (sm.getString("parameterMap.locked"));
+            throw MESSAGES.lockedParameterMap();
         return (super.remove(key));
 
     }

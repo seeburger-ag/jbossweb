@@ -27,6 +27,8 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.Logger.Level.DEBUG;
 
+import java.io.File;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -65,6 +67,16 @@ public interface CatalinaLogger extends BasicLogger {
      * A logger with the category of the package name.
      */
     CatalinaLogger CONNECTOR_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.connector");
+
+    /**
+     * A logger with the category of the package name.
+     */
+    CatalinaLogger FILTERS_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.filters");
+
+    /**
+     * A logger with the category of the package name.
+     */
+    CatalinaLogger STARTUP_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.startup");
 
     @LogMessage(level = WARN)
     @Message(id = 1000, value = "A valid entry has been removed from client nonce cache to make room for new entries. A replay attack is now possible. To prevent the possibility of replay attacks, reduce nonceValidity or increase cnonceCacheSize. Further warnings of this type will be suppressed for 5 minutes.")
@@ -169,5 +181,69 @@ public interface CatalinaLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 1024, value = "Exception thrown whilst processing POSTed parameters")
     void exceptionProcessingParameters(@Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1025, value = "Request [%s], can not apply ExpiresFilter on already committed response.")
+    void expiresResponseAlreadyCommitted(String uri);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1026, value = "Unknown parameter %s with value %s is ignored.")
+    void expiresUnknownParameter(String name, String value);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1027, value = "Request [%s] with response status %s content-type %s, expiration header already defined")
+    void expiresHeaderAlreadyDefined(String uri, int statusCode, String contentType);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1028, value = "Request [%s] with response status %s content-type %s, skip expiration header generation for given status")
+    void expiresSkipStatusCode(String uri, int statusCode, String contentType);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1029, value = "Error copying %s to %s")
+    void fileCopyError(File src, File dest, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1030, value = "%s could not be completely deleted. The presence of the remaining files may cause problems")
+    void fileDeleteError(String delete);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1031, value = "No Realm has been configured to authenticate against")
+    void noRealmFound();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1032, value = "Cannot load authenticators mapping list")
+    void cannotFindAuthenticatoMappings();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1033, value = "Cannot load authenticators mapping list")
+    void failedLoadingAuthenticatoMappings(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1034, value = "Cannot configure an authenticator for method %s")
+    void noAuthenticatorForAuthMethod(String authMethod);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1035, value = "Cannot instantiate an authenticator of class %s")
+    void failedLoadingAuthenticator(String className, @Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1036, value = "Configured an authenticator for method %s")
+    void authenticatorConfigured(String authMethod);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1037, value = "Marking this application unavailable due to previous error(s)")
+    void contextUnavailable();
+
+    @LogMessage(level = INFO)
+    @Message(id = 1038, value = "Security role name %s used in an <auth-constraint> without being defined in a <security-role>")
+    void roleValidationAuth(String roleName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1039, value = "Security role name %s used in a <role-link> without being defined in a <security-role>")
+    void roleValidationRunAs(String roleName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1040, value = "Security role name %s used in a <run-as> without being defined in a <security-role>")
+    void roleValidationLink(String roleName);
 
 }
