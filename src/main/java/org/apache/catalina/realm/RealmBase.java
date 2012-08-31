@@ -566,14 +566,15 @@ public abstract class RealmBase
                     }
                 }
                 if(matched) {
-                    found = true;
                     if(length > longest) {
+                        found = false;
                         if(results != null) {
                             results.clear();
                         }
                         longest = length;
                     }
                     if(collection[j].findMethod(method)) {
+                        found = true;
                         if(results == null) {
                             results = new ArrayList();
                         }
@@ -699,7 +700,7 @@ public abstract class RealmBase
      * Convert an ArrayList to a SecurityContraint [].
      */
     private SecurityConstraint [] resultsToArray(ArrayList results) {
-        if(results == null) {
+        if(results == null || results.size() == 0) {
             return null;
         }
         SecurityConstraint [] array = new SecurityConstraint[results.size()];

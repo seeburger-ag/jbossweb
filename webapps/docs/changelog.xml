@@ -36,6 +36,9 @@
          <jboss-jira>AS7-4232</jboss-jira>: Modify async error processing based on a stricter spec 
          interpretation. (remm)
       </fix>
+      <fix>
+         <bug>53801</bug>: Fix some edge case with overlapping security constraints. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
