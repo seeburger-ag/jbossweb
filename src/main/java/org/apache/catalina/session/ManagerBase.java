@@ -40,9 +40,8 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -55,7 +54,6 @@ import org.jboss.logging.Logger;
  */
 
 public abstract class ManagerBase implements Manager, MBeanRegistration {
-    protected Logger log = Logger.getLogger(ManagerBase.class);
 
     private static final char[] SESSION_ID_ALPHABET = 
         System.getProperty("org.apache.catalina.session.ManagerBase.SESSION_ID_ALPHABET", 
@@ -154,12 +152,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
      * checks will occur).
      */
     protected int processExpiresFrequency = 6;
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     /**
      * The property change support for this component.
@@ -384,16 +376,16 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         Session sessions[] = findSessions();
         int expireHere = 0 ;
         
-        if(log.isDebugEnabled())
-            log.debug("Start expire sessions " + getName() + " at " + timeNow + " sessioncount " + sessions.length);
+        if(CatalinaLogger.SESSION_LOGGER.isDebugEnabled())
+            CatalinaLogger.SESSION_LOGGER.debug("Start expire sessions " + getName() + " at " + timeNow + " sessioncount " + sessions.length);
         for (int i = 0; i < sessions.length; i++) {
             if (sessions[i] != null && !sessions[i].isValid()) {
                 expireHere++;
             }
         }
         long timeEnd = System.currentTimeMillis();
-        if(log.isDebugEnabled())
-             log.debug("End expire sessions " + getName() + " processingTime " + (timeEnd - timeNow) + " expired sessions: " + expireHere);
+        if(CatalinaLogger.SESSION_LOGGER.isDebugEnabled())
+            CatalinaLogger.SESSION_LOGGER.debug("End expire sessions " + getName() + " processingTime " + (timeEnd - timeNow) + " expired sessions: " + expireHere);
         processingTime += ( timeEnd - timeNow );
 
     }
@@ -411,8 +403,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         if( initialized ) return;
         initialized=true;        
         
-        log = Logger.getLogger(ManagerBase.class);
-        
         StandardContext ctx=(StandardContext)this.getContainer();
         distributable = ctx.getDistributable();
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
@@ -429,13 +419,13 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
                             + path + ",host=" + hst.getName());
                     Registry.getRegistry(null, null).registerComponent(this, oname, null );
                 } catch (Exception e) {
-                    log.error("Error registering ",e);
+                    CatalinaLogger.SESSION_LOGGER.failedSessionManagerJmxRegistration(oname, e);
                 }
             }
         }
         
-        if(log.isDebugEnabled())
-            log.debug("Registering " + oname );
+        if(CatalinaLogger.SESSION_LOGGER.isDebugEnabled())
+            CatalinaLogger.SESSION_LOGGER.debug("Registering " + oname );
                
     }
 
@@ -811,8 +801,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public String getSessionAttribute( String sessionId, String key ) {
         Session s = (Session) sessions.get(sessionId);
         if( s==null ) {
-            if(log.isInfoEnabled())
-                log.info("Session not found " + sessionId);
             return null;
         }
         Object o=s.getSession().getAttribute(key);
@@ -836,9 +824,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public HashMap getSession(String sessionId) {
         Session s = (Session) sessions.get(sessionId);
         if (s == null) {
-            if (log.isInfoEnabled()) {
-                log.info("Session not found " + sessionId);
-            }
             return null;
         }
 
@@ -860,8 +845,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public void expireSession( String sessionId ) {
         Session s=(Session)sessions.get(sessionId);
         if( s==null ) {
-            if(log.isInfoEnabled())
-                log.info("Session not found " + sessionId);
             return;
         }
         s.expire();
@@ -871,8 +854,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public String getLastAccessedTime( String sessionId ) {
         Session s=(Session)sessions.get(sessionId);
         if( s==null ) {
-            if(log.isInfoEnabled())
-                log.info("Session not found " + sessionId);
             return "";
         }
         return new Date(s.getLastAccessedTime()).toString();
@@ -881,8 +862,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     public String getCreationTime( String sessionId ) {
         Session s=(Session)sessions.get(sessionId);
         if( s==null ) {
-            if(log.isInfoEnabled())
-                log.info("Session not found " + sessionId);
             return "";
         }
         return new Date(s.getCreationTime()).toString();

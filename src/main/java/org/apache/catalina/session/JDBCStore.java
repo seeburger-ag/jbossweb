@@ -17,6 +17,8 @@
 
 package org.apache.catalina.session;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Loader;
@@ -471,7 +473,7 @@ public class JDBCStore
                     // Break out after the finally block
                     numberOfTries = 0;
                 } catch (SQLException e) {
-                    manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".SQLException", e));
+                    manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDatabaseError(), e);
                     keys = new String[0];
                     // Close the connection so that it gets reopened next time
                     if (dbConnection != null)
@@ -530,7 +532,7 @@ public class JDBCStore
                     // Break out after the finally block
                     numberOfTries = 0;
                 } catch (SQLException e) {
-                    manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".SQLException", e));
+                    manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDatabaseError(), e);
                     if (dbConnection != null)
                         close(dbConnection);
                 } finally {
@@ -605,20 +607,19 @@ public class JDBCStore
                         }
 
                         if (manager.getContainer().getLogger().isDebugEnabled()) {
-                            manager.getContainer().getLogger().debug(sm.getString(getStoreName() + ".loading",
-                                    id, sessionTable));
+                            manager.getContainer().getLogger().debug(MESSAGES.jdbcStoreSessionLoad(id, sessionTable));
                         }
 
                         _session = (StandardSession) manager.createEmptySession();
                         _session.readObjectData(ois);
                         _session.setManager(manager);
                       } else if (manager.getContainer().getLogger().isDebugEnabled()) {
-                        manager.getContainer().getLogger().debug(getStoreName() + ": No persisted data object found");
+                        manager.getContainer().getLogger().debug(MESSAGES.jdbcStoreIdNotFound());
                     }
                     // Break out after the finally block
                     numberOfTries = 0;
                 } catch (SQLException e) {
-                    manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".SQLException", e));
+                    manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDatabaseError(), e);
                     if (dbConnection != null)
                         close(dbConnection);
                 } finally {
@@ -679,7 +680,7 @@ public class JDBCStore
                     // Break out after the finally block
                     numberOfTries = 0;
                 } catch (SQLException e) {
-                    manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".SQLException", e));
+                    manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDatabaseError(), e);
                     if (dbConnection != null)
                         close(dbConnection);
                 } finally {
@@ -690,7 +691,7 @@ public class JDBCStore
         }
 
         if (manager.getContainer().getLogger().isDebugEnabled()) {
-            manager.getContainer().getLogger().debug(sm.getString(getStoreName() + ".removing", id, sessionTable));
+            manager.getContainer().getLogger().debug(MESSAGES.jdbcStoreSessionRemove(id, sessionTable));
         }
     }
 
@@ -721,7 +722,7 @@ public class JDBCStore
                     // Break out after the finally block
                     numberOfTries = 0;
                 } catch (SQLException e) {
-                    manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".SQLException", e));
+                    manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDatabaseError(), e);
                     if (dbConnection != null)
                         close(dbConnection);
                 } finally {
@@ -789,7 +790,7 @@ public class JDBCStore
                     // Break out after the finally block
                     numberOfTries = 0;
                 } catch (SQLException e) {
-                    manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".SQLException", e));
+                    manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDatabaseError(), e);
                     if (dbConnection != null)
                         close(dbConnection);
                 } catch (IOException e) {
@@ -812,8 +813,7 @@ public class JDBCStore
         }
 
         if (manager.getContainer().getLogger().isDebugEnabled()) {
-            manager.getContainer().getLogger().debug(sm.getString(getStoreName() + ".saving",
-                    session.getIdInternal(), sessionTable));
+            manager.getContainer().getLogger().debug(MESSAGES.jdbcStoreSessionSave(session.getIdInternal(), sessionTable));
         }
     }
 
@@ -829,15 +829,14 @@ public class JDBCStore
     protected Connection getConnection() {
         try {
             if (dbConnection == null || dbConnection.isClosed()) {
-                manager.getContainer().getLogger().info(sm.getString(getStoreName() + ".checkConnectionDBClosed"));
+                manager.getContainer().getLogger().info(MESSAGES.jdbcStoreConnectionWasClosed());
                 open();
                 if (dbConnection == null || dbConnection.isClosed()) {
-                    manager.getContainer().getLogger().info(sm.getString(getStoreName() + ".checkConnectionDBReOpenFail"));
+                    manager.getContainer().getLogger().info(MESSAGES.jdbcStoreConnectionReopenFailed());
                 }
             }
         } catch (SQLException ex) {
-            manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".checkConnectionSQLException",
-                    ex.toString()));
+            manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDatabaseError(), ex);
         }
 
         return dbConnection;
@@ -861,14 +860,11 @@ public class JDBCStore
                 Class clazz = Class.forName(driverName);
                 driver = (Driver) clazz.newInstance();
             } catch (ClassNotFoundException ex) {
-                manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".checkConnectionClassNotFoundException",
-                        ex.toString()));
+                manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDriverFailure(driverName), ex);
             } catch (InstantiationException ex) {
-                manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".checkConnectionClassNotFoundException",
-                        ex.toString()));
+                manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDriverFailure(driverName), ex);
             } catch (IllegalAccessException ex) {
-                manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".checkConnectionClassNotFoundException",
-                        ex.toString()));
+                manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDriverFailure(driverName), ex);
             }
         }
 
@@ -941,7 +937,7 @@ public class JDBCStore
         try {
             dbConnection.close();
         } catch (SQLException e) {
-            manager.getContainer().getLogger().error(sm.getString(getStoreName() + ".close", e.toString())); // Just log it here
+            manager.getContainer().getLogger().error(MESSAGES.jdbcStoreDatabaseError(), e);
         } finally {
             this.dbConnection = null;
         }

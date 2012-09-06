@@ -78,6 +78,11 @@ public interface CatalinaLogger extends BasicLogger {
      */
     CatalinaLogger STARTUP_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.startup");
 
+    /**
+     * A logger with the category of the package name.
+     */
+    CatalinaLogger SESSION_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.session");
+
     @LogMessage(level = WARN)
     @Message(id = 1000, value = "A valid entry has been removed from client nonce cache to make room for new entries. A replay attack is now possible. To prevent the possibility of replay attacks, reduce nonceValidity or increase cnonceCacheSize. Further warnings of this type will be suppressed for 5 minutes.")
     void digestCacheRemove();
@@ -245,5 +250,81 @@ public interface CatalinaLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 1040, value = "Security role name %s used in a <run-as> without being defined in a <security-role>")
     void roleValidationLink(String roleName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1041, value = "Failed session manager [%s] JMX registration.")
+    void failedSessionManagerJmxRegistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1042, value = "Exception loading persisted sessions.")
+    void managerLoadFailed(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1043, value = "Exception unloading persisted sessions.")
+    void managerUnloadFailed(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1044, value = "Invalid session timeout setting %s")
+    void managerInvalidSessionTimeout(String timeoutValue);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1045, value = "Exception checking load state for session %s")
+    void persistentManagerIsLoadedException(String sessionId, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1046, value = "Exception clearing session store")
+    void persistentManagerStoreClearException(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1047, value = "Error loading persisted sessions")
+    void persistentManagerLoadFailed(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1048, value = "Error removing session %s")
+    void persistentManagerSessionRemoveFailed(String sessionId, @Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1049, value = "Unloading %s sessions")
+    void persistentManagerSessionUnloadCount(int count);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1050, value = "Error swapping in session %s")
+    void persistentManagerSwapInFailed(String sessionId, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1051, value = "Error swapping out session %s")
+    void persistentManagerSwapOutFailed(String sessionId, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1052, value = "Swapped in invalid session %s")
+    void persistentManagerSwapInInvalid(String sessionId);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1053, value = "Swapped in session %s")
+    void sessionSwapIn(String sessionId);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1054, value = "Error saving session %s to store")
+    void persistentManagerStoreSaveError(String sessionId, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1055, value = "No store is configured, persistence disabled")
+    void noStoreConfigured();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1056, value = "Swapping session %s to Store, idle for %s seconds")
+    void sessionSwapOut(String sessionId, int idle);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1057, value = "Too many active sessions [%s] looking for idle sessions to swap out")
+    void persistentManagerCheckIdle(int activeCount);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1058, value = "Swapping out session %s, idle for %s seconds too many sessions active")
+    void persistentManagerSwapIdleSession(String sessionId, int idle);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1059, value = "Backing up session %s to Store, idle for %s seconds")
+    void persistentManagerBackupSession(String sessionId, int idle);
 
 }

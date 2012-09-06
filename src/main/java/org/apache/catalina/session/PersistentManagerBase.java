@@ -18,6 +18,8 @@
 
 package org.apache.catalina.session;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -36,7 +38,8 @@ import org.apache.catalina.Session;
 import org.apache.catalina.Store;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.LifecycleSupport;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
+
 /**
  * Extends the <b>ManagerBase</b> class to implement most of the
  * functionality required by a Manager which supports any kind of
@@ -54,8 +57,6 @@ import org.jboss.logging.Logger;
 public abstract class PersistentManagerBase
     extends ManagerBase
     implements Lifecycle, PropertyChangeListener {
-
-    private static Logger log = Logger.getLogger(PersistentManagerBase.class);
 
     // ---------------------------------------------------- Security Classes
 
@@ -370,7 +371,7 @@ public abstract class PersistentManagerBase
             if ( super.findSession(id) != null )
                 return true;
         } catch (IOException e) {
-            log.error("checking isLoaded for id, " + id + ", "+e.getMessage(), e);
+            CatalinaLogger.SESSION_LOGGER.persistentManagerIsLoadedException(id, e);
         }
         return false;
     }
@@ -524,15 +525,13 @@ public abstract class PersistentManagerBase
                     AccessController.doPrivileged(new PrivilegedStoreClear());
                 }catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.error("Exception clearing the Store: " + exception);
-                    exception.printStackTrace();                        
+                    CatalinaLogger.SESSION_LOGGER.persistentManagerStoreClearException(exception);
                 }
             } else {
                 store.clear();
             }
         } catch (IOException e) {
-            log.error("Exception clearing the Store: " + e);
-            e.printStackTrace();
+            CatalinaLogger.SESSION_LOGGER.persistentManagerStoreClearException(e);
         }
 
     }
@@ -546,8 +545,8 @@ public abstract class PersistentManagerBase
         long timeNow = System.currentTimeMillis();
         Session sessions[] = findSessions();
         int expireHere = 0 ;
-        if(log.isDebugEnabled())
-             log.debug("Start expire sessions " + getName() + " at " + timeNow + " sessioncount " + sessions.length);
+        if(CatalinaLogger.SESSION_LOGGER.isDebugEnabled())
+            CatalinaLogger.SESSION_LOGGER.debug("Start expire sessions " + getName() + " at " + timeNow + " sessioncount " + sessions.length);
         for (int i = 0; i < sessions.length; i++) {
             if (!sessions[i].isValid()) {
                 expiredSessions++;
@@ -560,8 +559,8 @@ public abstract class PersistentManagerBase
         }
         
         long timeEnd = System.currentTimeMillis();
-        if(log.isDebugEnabled())
-             log.debug("End expire sessions " + getName() + " processingTime " + (timeEnd - timeNow) + " expired sessions: " + expireHere);
+        if(CatalinaLogger.SESSION_LOGGER.isDebugEnabled())
+            CatalinaLogger.SESSION_LOGGER.debug("End expire sessions " + getName() + " processingTime " + (timeEnd - timeNow) + " expired sessions: " + expireHere);
         processingTime += (timeEnd - timeNow);
         
     }
@@ -658,15 +657,13 @@ public abstract class PersistentManagerBase
                         AccessController.doPrivileged(new PrivilegedStoreKeys());
                 }catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.error("Exception in the Store during load: "
-                              + exception);
-                    exception.printStackTrace();                        
+                    CatalinaLogger.SESSION_LOGGER.persistentManagerLoadFailed(exception);                        
                 }
             } else {
                 ids = store.keys();
             }
         } catch (IOException e) {
-            log.error("Can't load sessions from store, " + e.getMessage(), e);
+            CatalinaLogger.SESSION_LOGGER.persistentManagerLoadFailed(e);                        
             return;
         }
 
@@ -674,14 +671,11 @@ public abstract class PersistentManagerBase
         if (n == 0)
             return;
 
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("persistentManager.loading", String.valueOf(n)));
-
         for (int i = 0; i < n; i++)
             try {
                 swapIn(ids[i]);
             } catch (IOException e) {
-                log.error("Failed load session from store, " + e.getMessage(), e);
+                CatalinaLogger.SESSION_LOGGER.persistentManagerLoadFailed(e);                        
             }
 
     }
@@ -716,16 +710,13 @@ public abstract class PersistentManagerBase
                     AccessController.doPrivileged(new PrivilegedStoreRemove(id));
                 }catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.error("Exception in the Store during removeSession: "
-                              + exception);
-                    exception.printStackTrace();                        
+                    CatalinaLogger.SESSION_LOGGER.persistentManagerSessionRemoveFailed(id, exception);
                 }
             } else {
                  store.remove(id);
             }               
         } catch (IOException e) {
-            log.error("Exception removing session  " + e.getMessage());
-            e.printStackTrace();
+            CatalinaLogger.SESSION_LOGGER.persistentManagerSessionRemoveFailed(id, e);
         }        
     }
 
@@ -748,9 +739,7 @@ public abstract class PersistentManagerBase
         if (n == 0)
             return;
 
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("persistentManager.unloading",
-                             String.valueOf(n)));
+        CatalinaLogger.SESSION_LOGGER.persistentManagerSessionUnloadCount(n);
 
         for (int i = 0; i < n; i++)
             try {
@@ -810,9 +799,7 @@ public abstract class PersistentManagerBase
                                     new PrivilegedStoreLoad(id));
                         } catch (PrivilegedActionException ex) {
                             Exception e = ex.getException();
-                            log.error(sm.getString(
-                                    "persistentManager.swapInException", id),
-                                    e);
+                            CatalinaLogger.SESSION_LOGGER.persistentManagerSwapInFailed(id, e);
                             if (e instanceof IOException){
                                 throw (IOException)e;
                             } else if (e instanceof ClassNotFoundException) {
@@ -823,24 +810,18 @@ public abstract class PersistentManagerBase
                          session = store.load(id);
                     }
                 } catch (ClassNotFoundException e) {
-                    String msg = sm.getString(
-                            "persistentManager.deserializeError", id);
-                    log.error(msg, e);
-                    throw new IllegalStateException(msg, e);
+                    throw MESSAGES.persistentManagerDeserializeError(id, e);
                 }
 
                 if (session != null && !session.isValid()) {
-                    log.error(sm.getString(
-                            "persistentManager.swapInInvalid", id));
+                    CatalinaLogger.SESSION_LOGGER.persistentManagerSwapInInvalid(id);
                     session.expire();
                     removeSession(id);
                     session = null;
                 }
 
                 if (session != null) {
-                    if(log.isDebugEnabled())
-                        log.debug(sm.getString("persistentManager.swapIn", id));
-
+                    CatalinaLogger.SESSION_LOGGER.sessionSwapIn(id);
                     session.setManager(this);
                     // make sure the listeners know about it.
                     ((StandardSession)session).tellNew();
@@ -904,16 +885,13 @@ public abstract class PersistentManagerBase
                     AccessController.doPrivileged(new PrivilegedStoreSave(session));
                 }catch(PrivilegedActionException ex){
                     Exception exception = ex.getException();
-                    log.error("Exception in the Store during writeSession: "
-                              + exception);
-                    exception.printStackTrace();                        
+                    CatalinaLogger.SESSION_LOGGER.persistentManagerStoreSaveError(session.getIdInternal(), exception);
                 }
             } else {
                  store.save(session);
             }   
         } catch (IOException e) {
-            log.error(sm.getString
-                ("persistentManager.serializeError", session.getIdInternal(), e));
+            CatalinaLogger.SESSION_LOGGER.persistentManagerStoreSaveError(session.getIdInternal(), e);
             throw e;
         }
 
@@ -970,7 +948,6 @@ public abstract class PersistentManagerBase
 
         // Validate and update our current component state
         if (started) {
-            log.info(sm.getString("standardManager.alreadyStarted"));
             return;
         }
         if( ! initialized )
@@ -980,7 +957,7 @@ public abstract class PersistentManagerBase
         started = true;
 
         if (store == null)
-            log.error("No Store configured, persistence disabled");
+            CatalinaLogger.SESSION_LOGGER.noStoreConfigured();
         else if (store instanceof Lifecycle)
             ((Lifecycle)store).start();
 
@@ -997,12 +974,8 @@ public abstract class PersistentManagerBase
      */
    public void stop() throws LifecycleException {
 
-        if (log.isDebugEnabled())
-            log.debug("Stopping");
-
         // Validate and update our current component state
         if (!isStarted()) {
-            log.info(sm.getString("standardManager.notStarted"));
             return;
         }
         
@@ -1052,8 +1025,7 @@ public abstract class PersistentManagerBase
                 setMaxInactiveInterval
                     ( ((Integer) event.getNewValue()).intValue()*60 );
             } catch (NumberFormatException e) {
-                log.error(sm.getString("standardManager.sessionTimeout",
-                                 event.getNewValue().toString()));
+                CatalinaLogger.SESSION_LOGGER.managerInvalidSessionTimeout(event.getNewValue().toString());
             }
         }
 
@@ -1089,10 +1061,7 @@ public abstract class PersistentManagerBase
                             // Session is currently being accessed - skip it
                             continue;
                         }
-                        if (log.isDebugEnabled())
-                            log.debug(sm.getString
-                                ("persistentManager.swapMaxIdle",
-                                 session.getIdInternal(), new Integer(timeIdle)));
+                        CatalinaLogger.SESSION_LOGGER.sessionSwapOut(session.getIdInternal(), timeIdle);
                         try {
                             swapOut(session);
                         } catch (IOException e) {
@@ -1120,10 +1089,7 @@ public abstract class PersistentManagerBase
         if (getMaxActiveSessions() >= sessions.length)
             return;
 
-        if(log.isDebugEnabled())
-            log.debug(sm.getString
-                ("persistentManager.tooManyActive",
-                 new Integer(sessions.length)));
+        CatalinaLogger.SESSION_LOGGER.persistentManagerCheckIdle(sessions.length);
 
         int toswap = sessions.length - getMaxActiveSessions();
         long timeNow = System.currentTimeMillis();
@@ -1139,10 +1105,7 @@ public abstract class PersistentManagerBase
                         // Session is currently being accessed - skip it
                         continue;
                     }
-                    if(log.isDebugEnabled())
-                        log.debug(sm.getString
-                            ("persistentManager.swapTooManyActive",
-                             session.getIdInternal(), new Integer(timeIdle)));
+                    CatalinaLogger.SESSION_LOGGER.persistentManagerSwapIdleSession(session.getIdInternal(), timeIdle);
                     try {
                         swapOut(session);
                     } catch (IOException e) {
@@ -1177,11 +1140,7 @@ public abstract class PersistentManagerBase
                     int timeIdle = // Truncate, do not round up
                         (int) ((timeNow - session.getLastAccessedTime()) / 1000L);
                     if (timeIdle > maxIdleBackup) {
-                        if (log.isDebugEnabled())
-                            log.debug(sm.getString
-                                ("persistentManager.backupMaxIdle",
-                                session.getIdInternal(), new Integer(timeIdle)));
-    
+                        CatalinaLogger.SESSION_LOGGER.persistentManagerBackupSession(session.getIdInternal(), timeIdle);
                         try {
                             writeSession(session);
                         } catch (IOException e) {

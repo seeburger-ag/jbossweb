@@ -19,6 +19,8 @@
 package org.apache.catalina.session;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -54,7 +56,6 @@ import org.apache.catalina.SessionListener;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.StringManager;
 
 /**
  * Standard implementation of the <b>Session</b> interface.  This object is
@@ -238,13 +239,6 @@ public class StandardSession
 
 
     /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
-    /**
      * The HTTP session context associated with this session.
      */
     protected static HttpSessionContext sessionContext = null;
@@ -379,8 +373,7 @@ public class StandardSession
                     } catch (Exception e) {
                         ;
                     }
-                    manager.getContainer().getLogger().error
-                        (sm.getString("standardSession.sessionEvent"), t);
+                    manager.getContainer().getLogger().error(MESSAGES.sessionEventListenerException(), t);
                 }
             }
         }
@@ -410,8 +403,7 @@ public class StandardSession
     public long getThisAccessedTime() {
 
         if (!isValidInternal()) {
-            throw new IllegalStateException
-                (sm.getString("standardSession.getThisAccessedTime.ise"));
+            throw MESSAGES.invalidSession();
         }
 
         return (this.thisAccessedTime);
@@ -434,8 +426,7 @@ public class StandardSession
     public long getLastAccessedTime() {
 
         if (!isValidInternal()) {
-            throw new IllegalStateException
-                (sm.getString("standardSession.getLastAccessedTime.ise"));
+            throw MESSAGES.invalidSession();
         }
 
         return (lastAccessedTime + creationTime);
@@ -695,8 +686,7 @@ public class StandardSession
                         } catch (Exception e) {
                             ;
                         }
-                        manager.getContainer().getLogger().error
-                            (sm.getString("standardSession.sessionEvent"), t);
+                        manager.getContainer().getLogger().error(MESSAGES.sessionEventListenerException(), t);
                     }
                 }
             }
@@ -737,9 +727,7 @@ public class StandardSession
                 try {
                     gp.logout();
                 } catch (Exception e) {
-                    manager.getContainer().getLogger().error(
-                            sm.getString("standardSession.logoutfail"),
-                            e);
+                    manager.getContainer().getLogger().error(MESSAGES.sessionLogoutException(), e);
                 }
             }
 
@@ -777,8 +765,7 @@ public class StandardSession
                     ((HttpSessionActivationListener)attribute)
                         .sessionWillPassivate(event);
                 } catch (Throwable t) {
-                    manager.getContainer().getLogger().error
-                        (sm.getString("standardSession.attributeEvent"), t);
+                    manager.getContainer().getLogger().error(MESSAGES.sessionAttributeEventListenerException(), t);
                 }
             }
         }
@@ -812,8 +799,7 @@ public class StandardSession
                     ((HttpSessionActivationListener)attribute)
                         .sessionDidActivate(event);
                 } catch (Throwable t) {
-                    manager.getContainer().getLogger().error
-                        (sm.getString("standardSession.attributeEvent"), t);
+                    manager.getContainer().getLogger().error(MESSAGES.sessionAttributeEventListenerException(), t);
                 }
             }
         }
@@ -970,8 +956,7 @@ public class StandardSession
     public long getCreationTime() {
 
         if (!isValidInternal())
-            throw new IllegalStateException
-                (sm.getString("standardSession.getCreationTime.ise"));
+            throw MESSAGES.invalidSession();
 
         return (this.creationTime);
 
@@ -1025,8 +1010,7 @@ public class StandardSession
     public Object getAttribute(String name) {
 
         if (!isValidInternal())
-            throw new IllegalStateException
-                (sm.getString("standardSession.getAttribute.ise"));
+            throw MESSAGES.invalidSession();
 
         if (name == null) {
             return null;
@@ -1047,8 +1031,7 @@ public class StandardSession
     public Enumeration getAttributeNames() {
 
         if (!isValidInternal())
-            throw new IllegalStateException
-                (sm.getString("standardSession.getAttributeNames.ise"));
+            throw MESSAGES.invalidSession();
 
         return (new Enumerator(attributes.keySet(), true));
 
@@ -1087,8 +1070,7 @@ public class StandardSession
     public String[] getValueNames() {
 
         if (!isValidInternal())
-            throw new IllegalStateException
-                (sm.getString("standardSession.getValueNames.ise"));
+            throw MESSAGES.invalidSession();
 
         return (keys());
 
@@ -1104,8 +1086,7 @@ public class StandardSession
     public void invalidate() {
 
         if (!isValidInternal())
-            throw new IllegalStateException
-                (sm.getString("standardSession.invalidate.ise"));
+            throw MESSAGES.invalidSession();
 
         // Cause this session to expire
         expire();
@@ -1126,8 +1107,7 @@ public class StandardSession
     public boolean isNew() {
 
         if (!isValidInternal())
-            throw new IllegalStateException
-                (sm.getString("standardSession.isNew.ise"));
+            throw MESSAGES.invalidSession();
 
         return (this.isNew);
 
@@ -1201,8 +1181,7 @@ public class StandardSession
 
         // Validate our current state
         if (!isValidInternal())
-            throw new IllegalStateException
-                (sm.getString("standardSession.removeAttribute.ise"));
+            throw MESSAGES.invalidSession();
 
         removeAttributeInternal(name, notify);
 
@@ -1275,8 +1254,7 @@ public class StandardSession
 
         // Name cannot be null
         if (name == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardSession.setAttribute.namenull"));
+            throw MESSAGES.sessionAttributeNameIsNull();
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -1286,12 +1264,10 @@ public class StandardSession
 
         // Validate our current state
         if (!isValidInternal())
-            throw new IllegalStateException
-                (sm.getString("standardSession.setAttribute.ise"));
+            throw MESSAGES.invalidSession();
         if ((manager != null) && manager.getDistributable() &&
           !(value instanceof Serializable))
-            throw new IllegalArgumentException
-                (sm.getString("standardSession.setAttribute.iae", name));
+            throw MESSAGES.sessionAttributeIsNotSerializable(name);
 
         // Construct an event with the new value
         HttpSessionBindingEvent event = null;
@@ -1305,8 +1281,7 @@ public class StandardSession
                 try {
                     ((HttpSessionBindingListener) value).valueBound(event);
                 } catch (Throwable t){
-                    manager.getContainer().getLogger().error
-                    (sm.getString("standardSession.bindingEvent"), t); 
+                    manager.getContainer().getLogger().error(MESSAGES.sessionBindingEventListenerException(), t); 
                 }
             }
         }
@@ -1321,8 +1296,7 @@ public class StandardSession
                 ((HttpSessionBindingListener) unbound).valueUnbound
                     (new HttpSessionBindingEvent(getSession(), name));
             } catch (Throwable t) {
-                manager.getContainer().getLogger().error
-                    (sm.getString("standardSession.bindingEvent"), t);
+                manager.getContainer().getLogger().error(MESSAGES.sessionBindingEventListenerException(), t);
             }
         }
         
@@ -1372,8 +1346,7 @@ public class StandardSession
                 } catch (Exception e) {
                     ;
                 }
-                manager.getContainer().getLogger().error
-                    (sm.getString("standardSession.attributeEvent"), t);
+                manager.getContainer().getLogger().error(MESSAGES.sessionAttributeEventListenerException(), t);
             }
         }
 
@@ -1506,8 +1479,7 @@ public class StandardSession
                 stream.writeObject(saveValues.get(i));
             } catch (NotSerializableException e) {
                 manager.getContainer().getLogger().warn
-                    (sm.getString("standardSession.notSerializable",
-                     saveNames.get(i), id), e);
+                    (MESSAGES.sessionAttributeSerializationException(saveNames.get(i), id), e);
                 stream.writeObject(NOT_SERIALIZED);
                 if (manager.getContainer().getLogger().isDebugEnabled())
                     manager.getContainer().getLogger().debug
@@ -1633,8 +1605,7 @@ public class StandardSession
                 } catch (Exception e) {
                     ;
                 }
-                manager.getContainer().getLogger().error
-                    (sm.getString("standardSession.attributeEvent"), t);
+                manager.getContainer().getLogger().error(MESSAGES.sessionAttributeEventListenerException(), t);
             }
         }
 

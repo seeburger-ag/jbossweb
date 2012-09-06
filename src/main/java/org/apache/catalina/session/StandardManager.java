@@ -18,6 +18,8 @@
 
 package org.apache.catalina.session;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -48,6 +50,8 @@ import org.apache.catalina.Session;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CustomObjectInputStream;
 import org.apache.catalina.util.LifecycleSupport;
+import org.jboss.web.CatalinaLogger;
+
 /**
  * Standard implementation of the <b>Manager</b> interface that provides
  * simple session persistence across restarts of this component (such as
@@ -290,8 +294,7 @@ public class StandardManager
         if ((maxActiveSessions >= 0) &&
             (sessions.size() >= maxActiveSessions)) {
             rejectedSessions++;
-            throw new IllegalStateException
-                (sm.getString("standardManager.createSession.ise"));
+            throw MESSAGES.managerMaxActiveSessions();
         }
 
         return (super.createSession(sessionId, random));
@@ -319,9 +322,6 @@ public class StandardManager
                 } else if (exception instanceof IOException){
                     throw (IOException)exception;
                 }
-                if (log.isDebugEnabled())
-                    log.debug("Unreported exception in load() "
-                        + exception);
             }
         } else {
             doLoad();
@@ -339,9 +339,6 @@ public class StandardManager
      * @exception IOException if an input/output error occurs
      */
     protected void doLoad() throws ClassNotFoundException, IOException {
-        if (log.isDebugEnabled())
-            log.debug("Start: Loading persisted sessions");
-
         // Initialize our internal data structures
         sessions.clear();
 
@@ -349,8 +346,6 @@ public class StandardManager
         File file = file();
         if (file == null)
             return;
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("standardManager.loading", pathname));
         FileInputStream fis = null;
         ObjectInputStream ois = null;
         Loader loader = null;
@@ -363,20 +358,14 @@ public class StandardManager
             if (loader != null)
                 classLoader = loader.getClassLoader();
             if (classLoader != null) {
-                if (log.isDebugEnabled())
-                    log.debug("Creating custom object input stream for class loader ");
                 ois = new CustomObjectInputStream(bis, classLoader);
             } else {
-                if (log.isDebugEnabled())
-                    log.debug("Creating standard object input stream");
                 ois = new ObjectInputStream(bis);
             }
         } catch (FileNotFoundException e) {
-            if (log.isDebugEnabled())
-                log.debug("No persisted data file found");
             return;
         } catch (IOException e) {
-            log.error(sm.getString("standardManager.loading.ioe", e), e);
+            CatalinaLogger.SESSION_LOGGER.managerLoadFailed(e);
             if (ois != null) {
                 try {
                     ois.close();
@@ -393,8 +382,6 @@ public class StandardManager
             try {
                 Integer count = (Integer) ois.readObject();
                 int n = count.intValue();
-                if (log.isDebugEnabled())
-                    log.debug("Loading " + n + " persisted sessions");
                 for (int i = 0; i < n; i++) {
                     StandardSession session = getNewSession();
                     session.readObjectData(ois);
@@ -406,7 +393,7 @@ public class StandardManager
                     }
                 }
             } catch (ClassNotFoundException e) {
-                log.error(sm.getString("standardManager.loading.cnfe", e), e);
+                CatalinaLogger.SESSION_LOGGER.managerLoadFailed(e);
                 if (ois != null) {
                     try {
                         ois.close();
@@ -417,7 +404,7 @@ public class StandardManager
                 }
                 throw e;
             } catch (IOException e) {
-                log.error(sm.getString("standardManager.loading.ioe", e), e);
+                CatalinaLogger.SESSION_LOGGER.managerLoadFailed(e);
                 if (ois != null) {
                     try {
                         ois.close();
@@ -441,9 +428,6 @@ public class StandardManager
                     file.delete();
             }
         }
-
-        if (log.isDebugEnabled())
-            log.debug("Finish: Loading persisted sessions");
     }
 
 
@@ -463,9 +447,6 @@ public class StandardManager
                 if (exception instanceof IOException){
                     throw (IOException)exception;
                 }
-                if (log.isDebugEnabled())
-                    log.debug("Unreported exception in unLoad() "
-                        + exception);
             }
         } else {
             doUnload();
@@ -482,22 +463,17 @@ public class StandardManager
      */
     protected void doUnload() throws IOException {
 
-        if (log.isDebugEnabled())
-            log.debug("Unloading persisted sessions");
-
         // Open an output stream to the specified pathname, if any
         File file = file();
         if (file == null)
             return;
-        if (log.isDebugEnabled())
-            log.debug(sm.getString("standardManager.unloading", pathname));
         FileOutputStream fos = null;
         ObjectOutputStream oos = null;
         try {
             fos = new FileOutputStream(file.getAbsolutePath());
             oos = new ObjectOutputStream(new BufferedOutputStream(fos));
         } catch (IOException e) {
-            log.error(sm.getString("standardManager.unloading.ioe", e), e);
+            CatalinaLogger.SESSION_LOGGER.managerUnloadFailed(e);
             if (oos != null) {
                 try {
                     oos.close();
@@ -512,8 +488,6 @@ public class StandardManager
         // Write the number of active sessions, followed by the details
         ArrayList list = new ArrayList();
         synchronized (sessions) {
-            if (log.isDebugEnabled())
-                log.debug("Unloading " + sessions.size() + " sessions");
             try {
                 oos.writeObject(new Integer(sessions.size()));
                 Iterator elements = sessions.values().iterator();
@@ -525,7 +499,7 @@ public class StandardManager
                     session.writeObjectData(oos);
                 }
             } catch (IOException e) {
-                log.error(sm.getString("standardManager.unloading.ioe", e), e);
+                CatalinaLogger.SESSION_LOGGER.managerUnloadFailed(e);
                 if (oos != null) {
                     try {
                         oos.close();
@@ -556,8 +530,6 @@ public class StandardManager
         }
 
         // Expire all the sessions we just wrote
-        if (log.isDebugEnabled())
-            log.debug("Expiring " + list.size() + " persisted sessions");
         Iterator expires = list.iterator();
         while (expires.hasNext()) {
             StandardSession session = (StandardSession) expires.next();
@@ -569,10 +541,6 @@ public class StandardManager
                 session.recycle();
             }
         }
-
-        if (log.isDebugEnabled())
-            log.debug("Unloading complete");
-
     }
 
 
@@ -637,7 +605,7 @@ public class StandardManager
         try {
             load();
         } catch (Throwable t) {
-            log.error(sm.getString("standardManager.managerLoad"), t);
+            CatalinaLogger.SESSION_LOGGER.managerLoadFailed(t);
         }
 
     }
@@ -664,7 +632,7 @@ public class StandardManager
         try {
             unload();
         } catch (Throwable t) {
-            log.error(sm.getString("standardManager.managerUnload"), t);
+            CatalinaLogger.SESSION_LOGGER.managerUnloadFailed(t);
         }
 
         // Expire all active sessions
@@ -711,8 +679,7 @@ public class StandardManager
                 setMaxInactiveInterval
                     ( ((Integer) event.getNewValue()).intValue()*60 );
             } catch (NumberFormatException e) {
-                log.error(sm.getString("standardManager.sessionTimeout",
-                                 event.getNewValue().toString()));
+                CatalinaLogger.SESSION_LOGGER.managerInvalidSessionTimeout(event.getNewValue().toString());
             }
         }
 

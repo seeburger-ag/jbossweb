@@ -19,6 +19,8 @@
 package org.apache.catalina.session;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -34,7 +36,6 @@ import javax.servlet.ServletContext;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Session;
 import org.apache.catalina.Store;
@@ -254,8 +255,7 @@ public final class FileStore
             return (null);
         }
         if (manager.getContainer().getLogger().isDebugEnabled()) {
-            manager.getContainer().getLogger().debug(sm.getString(getStoreName()+".loading",
-                             id, file.getAbsolutePath()));
+            manager.getContainer().getLogger().debug(MESSAGES.fileStoreSessionLoad(id, file.getAbsolutePath()));
         }
 
         FileInputStream fis = null;
@@ -276,7 +276,7 @@ public final class FileStore
                 ois = new ObjectInputStream(bis);
         } catch (FileNotFoundException e) {
             if (manager.getContainer().getLogger().isDebugEnabled())
-                manager.getContainer().getLogger().debug("No persisted data file found");
+                manager.getContainer().getLogger().debug(MESSAGES.fileStoreFileNotFound());
             return (null);
         } catch (IOException e) {
             if (ois != null) {
@@ -325,8 +325,7 @@ public final class FileStore
             return;
         }
         if (manager.getContainer().getLogger().isDebugEnabled()) {
-            manager.getContainer().getLogger().debug(sm.getString(getStoreName()+".removing",
-                             id, file.getAbsolutePath()));
+            manager.getContainer().getLogger().debug(MESSAGES.fileStoreSessionRemove(id, file.getAbsolutePath()));
         }
         file.delete();
 
@@ -349,8 +348,8 @@ public final class FileStore
             return;
         }
         if (manager.getContainer().getLogger().isDebugEnabled()) {
-            manager.getContainer().getLogger().debug(sm.getString(getStoreName()+".saving",
-                             session.getIdInternal(), file.getAbsolutePath()));
+            manager.getContainer().getLogger().debug
+                (MESSAGES.fileStoreSessionSave(session.getIdInternal(), file.getAbsolutePath()));
         }
         FileOutputStream fos = null;
         ObjectOutputStream oos = null;
@@ -404,8 +403,7 @@ public final class FileStore
                     servletContext.getAttribute(ServletContext.TEMPDIR);
                 file = new File(work, this.directory);
             } else {
-                throw new IllegalArgumentException
-                    ("Parent Container is not a Context");
+                throw MESSAGES.parentNotContext();
             }
         }
         if (!file.exists() || !file.isDirectory()) {

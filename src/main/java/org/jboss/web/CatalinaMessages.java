@@ -502,4 +502,79 @@ public interface CatalinaMessages {
     @Message(id = 155, value = "The client needs to authenticate to gain network access.")
     String http511();
 
+    @Message(id = 200, value = "Store has already been started")
+    String storeAlreadyStarted();
+
+    @Message(id = 201, value = "Store has not yet been started")
+    String storeNotStarted();
+
+    @Message(id = 202, value = "Loading Session %s from file %s")
+    String fileStoreSessionLoad(String sessionId, String file);
+
+    @Message(id = 203, value = "Saving Session %s to file %s")
+    String fileStoreSessionSave(String sessionId, String file);
+
+    @Message(id = 204, value = "Removing Session %s at file %s")
+    String fileStoreSessionRemove(String sessionId, String file);
+
+    @Message(id = 205, value = "No persisted data file found")
+    String fileStoreFileNotFound();
+
+    @Message(id = 206, value = "Parent Container is not a Context")
+    IllegalArgumentException parentNotContext();
+
+    @Message(id = 207, value = "JDBC Store SQL exception")
+    String jdbcStoreDatabaseError();
+
+    @Message(id = 202, value = "Loading Session %s from file %s")
+    String jdbcStoreSessionLoad(String sessionId, String table);
+
+    @Message(id = 203, value = "Saving Session %s to file %s")
+    String jdbcStoreSessionSave(String sessionId, String table);
+
+    @Message(id = 204, value = "Removing Session %s at file %s")
+    String jdbcStoreSessionRemove(String sessionId, String table);
+
+    @Message(id = 205, value = "No persisted data object found")
+    String jdbcStoreIdNotFound();
+
+    @Message(id = 206, value = "The database connection is null or was found to be closed. Trying to re-open it.")
+    String jdbcStoreConnectionWasClosed();
+
+    @Message(id = 207, value = "The re-open on the database failed. The database could be down.")
+    String jdbcStoreConnectionReopenFailed();
+
+    @Message(id = 208, value = "JDBC driver class not found %s")
+    String jdbcStoreDriverFailure(String className);
+
+    @Message(id = 209, value = "Session creation failed due to too many active sessions")
+    IllegalStateException managerMaxActiveSessions();
+
+    @Message(id = 210, value = "Error deserializing Session %s")
+    IllegalStateException persistentManagerDeserializeError(String sessionId, @Cause Throwable t);
+
+    @Message(id = 211, value = "Session event listener threw exception")
+    String sessionEventListenerException();
+
+    @Message(id = 212, value = "Session already invalidated")
+    IllegalStateException invalidSession();
+
+    @Message(id = 213, value = "Exception logging out user when expiring session")
+    String sessionLogoutException();
+
+    @Message(id = 214, value = "Session attribute event listener threw exception")
+    String sessionAttributeEventListenerException();
+
+    @Message(id = 215, value = "Session attribute name cannot be null")
+    IllegalArgumentException sessionAttributeNameIsNull();
+
+    @Message(id = 216, value = "Non-serializable attribute %s")
+    IllegalArgumentException sessionAttributeIsNotSerializable(String name);
+
+    @Message(id = 214, value = "Session binding event listener threw exception")
+    String sessionBindingEventListenerException();
+
+    @Message(id = 214, value = "Cannot serialize session attribute %s for session %s")
+    String sessionAttributeSerializationException(Object attribute, String sessionId);
+
 }

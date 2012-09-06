@@ -17,6 +17,8 @@
 
 package org.apache.catalina.session;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -27,7 +29,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Store;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 
 /**
  * Abstract implementation of the Store interface to
@@ -66,11 +67,6 @@ public abstract class StoreBase
      * The property change support for this component.
      */
     protected PropertyChangeSupport support = new PropertyChangeSupport(this);
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm = StringManager.getManager(Constants.Package);
 
     /**
      * The Manager with which this JDBCStore is associated.
@@ -238,8 +234,7 @@ public abstract class StoreBase
     public void start() throws LifecycleException {
         // Validate and update our current component state
         if (started)
-            throw new LifecycleException
-                (sm.getString(getStoreName()+".alreadyStarted"));
+            throw new LifecycleException(MESSAGES.storeAlreadyStarted());
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -257,8 +252,7 @@ public abstract class StoreBase
     public void stop() throws LifecycleException {
         // Validate and update our current component state
         if (!started)
-            throw new LifecycleException
-                (sm.getString(getStoreName()+".notStarted"));
+            throw new LifecycleException(MESSAGES.storeNotStarted());
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
