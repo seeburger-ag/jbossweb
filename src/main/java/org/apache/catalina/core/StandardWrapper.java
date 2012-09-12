@@ -18,6 +18,8 @@
 
 package org.apache.catalina.core;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -63,6 +65,7 @@ import org.apache.catalina.util.InstanceSupport;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.PeriodicEventListener;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * Standard implementation of the <b>Wrapper</b> interface that represents
@@ -76,9 +79,6 @@ import org.apache.tomcat.util.modeler.Registry;
 public class StandardWrapper
     extends ContainerBase
     implements ServletConfig, Wrapper, NotificationEmitter {
-
-    protected static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( StandardWrapper.class );
 
     protected static final String[] DEFAULT_SERVLET_METHODS = new String[] {
                                                     "GET", "HEAD", "POST" };
@@ -598,8 +598,7 @@ public class StandardWrapper
 
         if ((container != null) &&
             !(container instanceof Context))
-            throw new IllegalArgumentException
-                (sm.getString("standardWrapper.notContext"));
+            throw MESSAGES.wrapperParentMustBeContext();
         if (container instanceof StandardContext) {
             unloadDelay = ((StandardContext)container).getUnloadDelay();
         }
@@ -847,8 +846,7 @@ public class StandardWrapper
      */
     public void addChild(Container child) {
 
-        throw new IllegalStateException
-            (sm.getString("standardWrapper.notChild"));
+        throw MESSAGES.wrapperHasNoChild();
 
     }
 
@@ -942,7 +940,7 @@ public class StandardWrapper
         // If we are currently unloading this servlet, throw an exception
         if (unloading)
             throw new ServletException
-              (sm.getString("standardWrapper.unloading", getName()));
+              (MESSAGES.cannotAllocateServletWhileUnloading(getName()));
 
         // Load and initialize our instance if necessary
         if (instance == null) {
@@ -953,7 +951,7 @@ public class StandardWrapper
                     } catch (ServletException e) {
                         throw e;
                     } catch (Throwable e) {
-                        throw new ServletException(sm.getString("standardWrapper.allocate"), e);
+                        throw new ServletException(MESSAGES.cannotAllocateServletInstance(), e);
                     }
                 }
             }
@@ -975,7 +973,7 @@ public class StandardWrapper
                         throw e;
                     } catch (Throwable e) {
                         throw new ServletException
-                            (sm.getString("standardWrapper.allocate"), e);
+                            (MESSAGES.cannotAllocateServletInstance(), e);
                     }
                 } else {
                     try {
@@ -1147,7 +1145,7 @@ public class StandardWrapper
             if (actualClass == null) {
                 unavailable(null);
                 throw new ServletException
-                    (sm.getString("standardWrapper.notClass", getName()));
+                    (MESSAGES.noClassSpecifiedForServlet(getName()));
             }
 
             if (servletInstance == null) {
@@ -1158,19 +1156,13 @@ public class StandardWrapper
                     unavailable(null);
                     // Restore the context ClassLoader
                     throw new ServletException
-                    (sm.getString("standardWrapper.notServlet", actualClass), e);
+                        (MESSAGES.specifiedClassIsNotServlet(actualClass), e);
                 } catch (Throwable e) {
                     unavailable(null);
-
-                    // Added extra log statement for Bugzilla 36630:
-                    // http://issues.apache.org/bugzilla/show_bug.cgi?id=36630
-                    if(log.isDebugEnabled()) {
-                        log.debug(sm.getString("standardWrapper.instantiate", actualClass), e);
-                    }
-
+                    CatalinaLogger.CORE_LOGGER.errorInstantiatingServletClass(actualClass, e);
                     // Restore the context ClassLoader
                     throw new ServletException
-                    (sm.getString("standardWrapper.instantiate", actualClass), e);
+                        (MESSAGES.errorInstantiatingServletClass(actualClass), e);
                 }
             } else {
                 servlet = servletInstance;
@@ -1232,11 +1224,10 @@ public class StandardWrapper
                 throw f;
             } catch (Throwable f) {
                 throwable = f;
-                getServletContext().log("StandardWrapper.Throwable", f );
                 // If the servlet wanted to be unavailable it would have
                 // said so, so do not call unavailable(null).
                 throw new ServletException
-                    (sm.getString("standardWrapper.initException", getName()), f);
+                    (MESSAGES.errorInitializingServlet(getName()), f);
             } finally {
                 instanceSupport.fireInstanceEvent(InstanceEvent.AFTER_INIT_EVENT,
                         servlet, throwable);
@@ -1334,7 +1325,7 @@ public class StandardWrapper
      *  to mark this servlet as permanently unavailable
      */
     public void unavailable(UnavailableException unavailable) {
-        getServletContext().log(sm.getString("standardWrapper.unavailable", getName()));
+        getServletContext().log(MESSAGES.markingServletUnavailable(getName()));
         if (unavailable == null)
             setAvailable(Long.MAX_VALUE);
         else if (unavailable.isPermanent())
@@ -1396,9 +1387,7 @@ public class StandardWrapper
             nInstances = 0;
             fireContainerEvent("unload", this);
             unloading = false;
-            throw new ServletException
-                (sm.getString("standardWrapper.destroyException", getName()),
-                 t);
+            throw new ServletException(MESSAGES.errorDestroyingServlet(getName()), t);
         }
 
         // Deregister the destroyed instance
@@ -1422,9 +1411,7 @@ public class StandardWrapper
                 nInstances = 0;
                 unloading = false;
                 fireContainerEvent("unload", this);
-                throw new ServletException
-                    (sm.getString("standardWrapper.destroyException",
-                                  getName()), t);
+                throw new ServletException(MESSAGES.errorDestroyingServlet(getName()), t);
             }
             instancePool = null;
             nInstances = 0;
@@ -1681,8 +1668,7 @@ public class StandardWrapper
         try {
             unload();
         } catch (ServletException e) {
-            getServletContext().log(sm.getString
-                      ("standardWrapper.unloadException", getName()), e);
+            getServletContext().log(MESSAGES.errorUnloadingServlet(getName()), e);
         }
 
         // Shut down this component
@@ -1744,7 +1730,7 @@ public class StandardWrapper
                 broadcaster.sendNotification(notification);
             }
         } catch( Exception ex ) {
-            log.info("Error registering servlet with jmx " + this, ex);
+            CatalinaLogger.CORE_LOGGER.failedServletJmxRegistration(this, ex);
         }
 
         if (isJspServlet) {
@@ -1758,8 +1744,7 @@ public class StandardWrapper
                 Registry.getRegistry(null, null)
                     .registerComponent(instance, jspMonitorON, null);
             } catch( Exception ex ) {
-                log.info("Error registering JSP monitoring with jmx " +
-                         instance, ex);
+                CatalinaLogger.CORE_LOGGER.failedServletJspMonitorJmxRegistration(instance, ex);
             }
         }
     }

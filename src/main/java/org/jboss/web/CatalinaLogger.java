@@ -83,6 +83,11 @@ public interface CatalinaLogger extends BasicLogger {
      */
     CatalinaLogger SESSION_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.session");
 
+    /**
+     * A logger with the category of the package name.
+     */
+    CatalinaLogger CORE_LOGGER = Logger.getMessageLogger(CatalinaLogger.class, "org.apache.catalina.core");
+
     @LogMessage(level = WARN)
     @Message(id = 1000, value = "A valid entry has been removed from client nonce cache to make room for new entries. A replay attack is now possible. To prevent the possibility of replay attacks, reduce nonceValidity or increase cnonceCacheSize. Further warnings of this type will be suppressed for 5 minutes.")
     void digestCacheRemove();
@@ -326,5 +331,209 @@ public interface CatalinaLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 1059, value = "Backing up session %s to Store, idle for %s seconds")
     void persistentManagerBackupSession(String sessionId, int idle);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1060, value = "JMX registration failed for filter of type [%s] and name [%s]")
+    void filterJmxRegistrationFailed(String filterClass, String filterName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1061, value = "JMX unregistration failed for filter of type [%s] and name [%s]")
+    void filterJmxUnregistrationFailed(String filterClass, String filterName, @Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1062, value = "Failed to initialize the SSLEngine")
+    void aprSslEngineInitFailed(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1063, value = "Failed to initialize the SSLEngine")
+    void aprSslEngineInitFailed();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1064, value = "The native library which allows optimal performance in production environments was not found on the java.library.path: %s")
+    void aprInitFailed(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1065, value = "The native library which allows optimal performance in production environments was not found on the java.library.path: %s")
+    void aprInitFailed();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1066, value = "An incompatible version %s.%s.%s of the native library is installed, while JBoss Web requires version %s.%s.%s")
+    void aprInvalidVersion(int major, int minor, int patch, int requiredMajor, int requiredMinor, int requiredPatch);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1067, value = "An older version %s.%s.%s of the native library is installed, while JBoss Web recommends version greater than %s.%s.%s")
+    void aprRecommendedVersion(int major, int minor, int patch, int requiredMajor, int requiredMinor, int requiredPatch);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1068, value = "Loaded native library %s.%s.%s with APR capabilities: IPv6 [%s], sendfile [%s], random [%s]")
+    void aprInit(int major, int minor, int patch, boolean hasIp6, boolean hasSendfile, boolean hasRandom);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1069, value = "Error stopping loader")
+    void errorStoppingLoader(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1070, value = "Error starting loader")
+    void errorStartingLoader(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1071, value = "Error stopping manager")
+    void errorStoppingManager(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1072, value = "Error starting manager")
+    void errorStartingManager(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1073, value = "Error stopping cluster")
+    void errorStoppingCluster(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1074, value = "Error starting cluster")
+    void errorStartingCluster(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1075, value = "Error stopping realm")
+    void errorStoppingRealm(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1076, value = "Error starting realm")
+    void errorStartingRealm(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1077, value = "Error starting realm")
+    void errorStoppingChild(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1078, value = "Container %s has already been started")
+    void containerAlreadyStarted(String name);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1079, value = "Container %s has not been started")
+    void containerNotStarted(String name);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1080, value = "Failed container [%s] JMX unregistration")
+    void failedContainerJmxUnregistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1081, value = "Error invoking periodic operation")
+    void errorInPeriodicOperation(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1082, value = "Background processing error in [%s]")
+    void backgroundProcessingError(Object component, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1083, value = "Failed engine [%s] JMX registration")
+    void failedEngineJmxRegistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1084, value = "Error setting up service")
+    void failedServiceCreation(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1085, value = "Failed loding specified error report valve class: %s")
+    void invalidErrorReportValveClass(String className, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1086, value = "Failed host [%s] JMX registration")
+    void failedHostJmxRegistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1087, value = "Error instantiating servlet class %s")
+    void errorInstantiatingServletClass(String className, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1088, value = "Failed Servlet [%s] JMX registration")
+    void failedServletJmxRegistration(Object object, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1089, value = "Failed Servlet [%s] JSP monitoring JMX registration")
+    void failedServletJspMonitorJmxRegistration(Object object, @Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1090, value = "Form login page %s must start with a ''/'' in Servlet 2.4")
+    void loginPageStartsWithSlash(String loginPage);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1091, value = "Error page location %s must start with a ''/'' in Servlet 2.4")
+    void errorPageStartsWithSlash(String errorPage);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1092, value = "Failed access to work directory for Context %s")
+    void failedObtainingWorkDirectory(String name, @Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1093, value = "The listener %s is already configured for this context, the duplicate definition has been ignored")
+    void duplicateListener(String listenerClass);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1094, value = "JSP file %s must start with a ''/'' in Servlet 2.4")
+    void jspFileStartsWithSlash(String jspFile);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1095, value = "Cannot find JSP Servlet, so ignoring jsp-property-group mappings")
+    void missingJspServlet();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1096, value = "Error stopping context")
+    void errorStoppingContext(String name, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1097, value = "Error starting context")
+    void errorStartingContext(String name, @Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1098, value = "Starting filter %s")
+    void startingFilter(String filterName);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1099, value = "Stopping filter %s")
+    void stoppingFilter(String filterName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1100, value = "Error starting context")
+    void errorStartingResources(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1101, value = "Error stopping context")
+    void errorStoppingResources(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1102, value = "Error initializing resources")
+    void errorInitializingResources(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1103, value = "Error detected during context start, will stop it")
+    void errorStartingContextWillStop(String name);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1104, value = "Error performing failed context start cleanup")
+    void errorStartingContextCleanup(String name, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1105, value = "Error resetting context")
+    void errorResettingContext(String name, @Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1106, value = "URL pattern %s must start with a ''/'' in Servlet 2.4")
+    void urlPatternStartsWithSlash(String urlPattern);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1107, value = "Suspicious url pattern: %s in context %s - see section SRV.11.2 of the Servlet specification")
+    void suspiciousUrlPattern(String contextName, String urlPattern);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1108, value = "Context %s object name creation failed")
+    void contextObjectNameCreationFailed(String contextName, @Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1108, value = "Context %s JMX registration failed")
+    void contextJmxRegistrationFailed(String contextName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1109, value = "Cannot find context %s parent Host JMX name")
+    void cannotFindContextJmxParentName(String name);
 
 }

@@ -47,6 +47,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
@@ -66,7 +68,6 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.InstanceSupport;
-import org.apache.catalina.util.StringManager;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventFilter;
 import org.jboss.servlet.http.HttpEventFilterChain;
@@ -164,13 +165,6 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
      * The servlet to be executed by this chain.
      */
     private Servlet servlet = null;
-
-
-   /**
-     * The string manager for our package.
-     */
-    private static final StringManager sm =
-      StringManager.getManager(Constants.Package);
 
 
     /**
@@ -290,7 +284,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                 throw e;
             } catch (Throwable e) {
                 throwable = e;
-                throw new ServletException(sm.getString("filterChain.filter"), e);
+                throw new ServletException(MESSAGES.filterException(), e);
             } finally {
                 pointer--;
                 if (filter != null) {
@@ -343,8 +337,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
             throw e;
         } catch (Throwable e) {
             throwable = e;
-            throw new ServletException
-              (sm.getString("filterChain.servlet"), e);
+            throw new ServletException(MESSAGES.servletException(), e);
         } finally {
             pointer--;
             if (Globals.STRICT_SERVLET_COMPLIANCE) {
@@ -462,8 +455,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
                 throw e;
             } catch (Throwable e) {
                 throwable = e;
-                throw new ServletException
-                    (sm.getString("filterChain.filter"), e);
+                throw new ServletException(MESSAGES.filterException(), e);
             } finally {
                 pointer--;
                 if (filter != null) {
@@ -504,8 +496,7 @@ public final class ApplicationFilterChain implements FilterChain, HttpEventFilte
             throw e;
         } catch (Throwable e) {
             throwable = e;
-            throw new ServletException
-                (sm.getString("filterChain.servlet"), e);
+            throw new ServletException(MESSAGES.servletException(), e);
         } finally {
             pointer--;
             support.fireInstanceEvent(InstanceEvent.AFTER_SERVICE_EVENT,

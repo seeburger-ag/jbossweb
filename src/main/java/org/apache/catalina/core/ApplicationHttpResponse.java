@@ -26,9 +26,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.apache.catalina.util.StringManager;
-
-
 /**
  * Wrapper around a <code>javax.servlet.http.HttpServletResponse</code>
  * that transforms an application response object (which might be the original
@@ -94,13 +91,6 @@ class ApplicationHttpResponse extends HttpServletResponseWrapper {
      */
     protected static final String info =
         "org.apache.catalina.core.ApplicationHttpResponse/1.0";
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------ ServletResponse Methods

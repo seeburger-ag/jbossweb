@@ -24,9 +24,8 @@ import java.lang.reflect.Method;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.jni.Library;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 
@@ -42,15 +41,6 @@ import org.jboss.logging.Logger;
 
 public class AprLifecycleListener
     implements LifecycleListener {
-
-    private static Logger log = Logger.getLogger(AprLifecycleListener.class);
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     // ---------------------------------------------- Constants
 
@@ -82,10 +72,10 @@ public class AprLifecycleListener
                 try {
                     initializeSSL();
                 } catch (Throwable t) {
-                    if (!log.isDebugEnabled()) {
-                        log.info(sm.getString("aprListener.sslInit"));
+                    if (!CatalinaLogger.CORE_LOGGER.isDebugEnabled()) {
+                        CatalinaLogger.CORE_LOGGER.aprSslEngineInitFailed();
                     } else {
-                        log.debug(sm.getString("aprListener.sslInit"), t);
+                        CatalinaLogger.CORE_LOGGER.aprSslEngineInitFailed(t);
                     }
                 }
             }
@@ -114,47 +104,26 @@ public class AprLifecycleListener
             minor = clazz.getField("TCN_MINOR_VERSION").getInt(null);
             patch = clazz.getField("TCN_PATCH_VERSION").getInt(null);
         } catch (Throwable t) {
-            if (!log.isDebugEnabled()) {
-                log.info(sm.getString("aprListener.aprInit",
-                        System.getProperty("java.library.path")));
+            if (!CatalinaLogger.CORE_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.CORE_LOGGER.aprInitFailed();
             } else {
-                log.debug(sm.getString("aprListener.aprInit",
-                        System.getProperty("java.library.path")), t);
+                CatalinaLogger.CORE_LOGGER.aprInitFailed(t);
             }
             return false;
         }
         if ((major != TCN_REQUIRED_MAJOR)  ||
             (minor != TCN_REQUIRED_MINOR) ||
             (patch <  TCN_REQUIRED_PATCH)) {
-            log.error(sm.getString("aprListener.tcnInvalid", major + "."
-                    + minor + "." + patch,
-                    TCN_REQUIRED_MAJOR + "." +
-                    TCN_REQUIRED_MINOR + "." +
-                    TCN_REQUIRED_PATCH));
+            CatalinaLogger.CORE_LOGGER.aprInvalidVersion(major, minor, patch, 
+                    TCN_REQUIRED_MAJOR, TCN_REQUIRED_MINOR, TCN_REQUIRED_PATCH);
             return false;
         }
         if (patch <  TCN_RECOMMENDED_PV) {
-            if (!log.isDebugEnabled()) {
-                log.info(sm.getString("aprListener.tcnVersion", major + "."
-                        + minor + "." + patch,
-                        TCN_REQUIRED_MAJOR + "." +
-                        TCN_REQUIRED_MINOR + "." +
-                        TCN_RECOMMENDED_PV));
-            } else {
-                log.debug(sm.getString("aprListener.tcnVersion", major + "."
-                        + minor + "." + patch,
-                        TCN_REQUIRED_MAJOR + "." +
-                        TCN_REQUIRED_MINOR + "." +
-                        TCN_RECOMMENDED_PV));
-            }
+            CatalinaLogger.CORE_LOGGER.aprRecommendedVersion(major, minor, patch, 
+                    TCN_REQUIRED_MAJOR, TCN_REQUIRED_MINOR, TCN_RECOMMENDED_PV);
         }
-        if (log.isDebugEnabled()) {
-            log.debug(sm.getString("aprListener.tcnValid", major + "."
-                    + minor + "." + patch));
-            // Log APR flags
-            log.debug(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
-                    Library.APR_HAS_RANDOM));
-        }
+        CatalinaLogger.CORE_LOGGER.aprInit(major, minor, patch, Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
+                    Library.APR_HAS_RANDOM);
         return true;
     }
 

@@ -47,6 +47,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -97,7 +99,6 @@ import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResourceSet;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.Resource;
 import org.apache.tomcat.util.buf.CharChunk;
@@ -172,13 +173,6 @@ public class ApplicationContext
      * The merged context initialization parameters for this Context.
      */
     private Map parameters = null;
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-      StringManager.getManager(Constants.Package);
 
 
     /**
@@ -436,9 +430,7 @@ public class ApplicationContext
         if (path.startsWith("?"))
             path = "/" + path;
         if (!path.startsWith("/"))
-            throw new IllegalArgumentException
-                (sm.getString
-                 ("applicationContext.requestDispatcher.iae", path));
+            throw MESSAGES.invalidDispatcherPath(path);
 
         // Get query string
         String queryString = null;
@@ -494,7 +486,7 @@ public class ApplicationContext
             }
         } catch (Exception e) {
             // Should never happen
-            log(sm.getString("applicationContext.mapping.error"), e);
+            log(MESSAGES.dispatcherMappingError(), e);
             return (null);
         }
 
@@ -528,7 +520,7 @@ public class ApplicationContext
         throws MalformedURLException {
 
         if (path == null || (Globals.STRICT_SERVLET_COMPLIANCE && !path.startsWith("/"))) {
-            throw new MalformedURLException(sm.getString("applicationContext.requestDispatcher.iae", path));
+            throw new MalformedURLException(MESSAGES.invalidDispatcherPathString(path));
         }
         
         path = RequestUtil.normalize(path);
@@ -615,8 +607,7 @@ public class ApplicationContext
             return null;
         }
         if (!path.startsWith("/")) {
-            throw new IllegalArgumentException
-                (sm.getString("applicationContext.resourcePaths.iae", path));
+            throw MESSAGES.invalidDispatcherPath(path);
         }
 
         path = RequestUtil.normalize(path);
@@ -783,7 +774,7 @@ public class ApplicationContext
                 context.fireContainerEvent("afterContextAttributeRemoved",
                                            listener);
                 // FIXME - should we do anything besides log these?
-                log(sm.getString("applicationContext.attributeEvent"), t);
+                log(MESSAGES.servletContextAttributeListenerException(), t);
             }
         }
 
@@ -801,8 +792,7 @@ public class ApplicationContext
 
         // Name cannot be null
         if (name == null)
-            throw new IllegalArgumentException
-                (sm.getString("applicationContext.setAttribute.namenull"));
+            throw new IllegalArgumentException(MESSAGES.servletContextAttributeNameIsNull());
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -863,7 +853,7 @@ public class ApplicationContext
                     context.fireContainerEvent("afterContextAttributeAdded",
                                                listener);
                 // FIXME - should we do anything besides log these?
-                log(sm.getString("applicationContext.attributeEvent"), t);
+                log(MESSAGES.servletContextAttributeListenerException(), t);
             }
         }
 
@@ -873,11 +863,10 @@ public class ApplicationContext
     public FilterRegistration.Dynamic addFilter(String filterName, String className)
             throws IllegalArgumentException, IllegalStateException {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         if (context.findFilterDef(filterName) != null) {
             return null;
@@ -895,11 +884,10 @@ public class ApplicationContext
 
     public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         if (context.findFilterDef(filterName) != null) {
             return null;
@@ -935,11 +923,10 @@ public class ApplicationContext
     public ServletRegistration.Dynamic addServlet(String servletName, String className)
             throws IllegalArgumentException, IllegalStateException {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         if (context.findChild(servletName) != null) {
             return null;
@@ -962,11 +949,10 @@ public class ApplicationContext
 
     public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         if (context.findChild(servletName) != null) {
             return null;
@@ -991,7 +977,7 @@ public class ApplicationContext
 
     public FilterRegistration getFilterRegistration(String filterName) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         ApplicationFilterConfig filterConfig = context.findApplicationFilterConfig(filterName);
         if (filterConfig == null) {
@@ -1009,7 +995,7 @@ public class ApplicationContext
 
     public ServletRegistration getServletRegistration(String servletName) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         Wrapper wrapper = (Wrapper) context.findChild(servletName);
         if (wrapper != null) {
@@ -1022,7 +1008,7 @@ public class ApplicationContext
 
     public Map<String, FilterRegistration> getFilterRegistrations() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         HashMap<String, FilterRegistration> result = 
             new HashMap<String, FilterRegistration>();
@@ -1036,7 +1022,7 @@ public class ApplicationContext
 
     public Map<String, ServletRegistration> getServletRegistrations() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         HashMap<String, ServletRegistration> result = 
             new HashMap<String, ServletRegistration>();
@@ -1051,14 +1037,14 @@ public class ApplicationContext
 
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         return context.getDefaultSessionTrackingModes();
     }
 
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         return context.getSessionTrackingModes();
     }
@@ -1066,7 +1052,7 @@ public class ApplicationContext
 
     public SessionCookieConfig getSessionCookieConfig() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         return context.getSessionCookie();
     }
@@ -1075,12 +1061,12 @@ public class ApplicationContext
     public <T extends Filter> T createFilter(Class<T> c)
             throws ServletException {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         try {
             return (T) context.getInstanceManager().newInstance(c);
         } catch (Throwable e) {
-            throw new ServletException(sm.getString("applicationContext.create"), e);
+            throw new ServletException(MESSAGES.contextObjectCreationError(), e);
         }
     }
 
@@ -1088,23 +1074,22 @@ public class ApplicationContext
     public <T extends Servlet> T createServlet(Class<T> c)
             throws ServletException {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         try {
             return (T) context.getInstanceManager().newInstance(c);
         } catch (Throwable e) {
-            throw new ServletException(sm.getString("applicationContext.create"), e);
+            throw new ServletException(MESSAGES.contextObjectCreationError(), e);
         }
     }
 
 
     public boolean setInitParameter(String name, String value) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         mergeParameters();
         if (parameters.get(name) != null) {
@@ -1118,24 +1103,20 @@ public class ApplicationContext
 
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         // Check that only supported tracking modes have been requested
         for (SessionTrackingMode sessionTrackingMode : sessionTrackingModes) {
             if (!getDefaultSessionTrackingModes().contains(sessionTrackingMode)) {
-                throw new IllegalArgumentException(sm.getString(
-                        "applicationContext.setSessionTracking.iae",
-                        sessionTrackingMode.toString(), getContextPath()));
+                throw MESSAGES.unsupportedSessionTrackingMode(sessionTrackingMode.toString(), getContextPath());
             }
         }
         // If SSL is specified, it should be the only one used
         if (sessionTrackingModes.contains(SessionTrackingMode.SSL) && sessionTrackingModes.size() > 1) {
-            throw new IllegalArgumentException(sm.getString(
-                    "applicationContext.setSessionTracking.ssl", getContextPath()));
+            throw MESSAGES.sslSessionTrackingModeIsExclusive(getContextPath());
         }
         context.setSessionTrackingModes(sessionTrackingModes);
     }
@@ -1143,24 +1124,21 @@ public class ApplicationContext
 
     public void addListener(String className) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         EventListener listenerInstance = null;
         try {
             Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
             listenerInstance = (EventListener) context.getInstanceManager().newInstance(clazz);
         } catch (Throwable t) {
-            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
-                    className, getContextPath()), t);
+            throw MESSAGES.invalidContextListener(className, getContextPath(), t);
         }
         checkListenerType(listenerInstance);
         if (context.getApplicationLifecycleListeners() != null && listenerInstance instanceof ServletContextListener) {
-            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
-                    className, getContextPath()));
+            throw MESSAGES.invalidContextListener(className, getContextPath());
         }
         context.addApplicationListenerInstance(listenerInstance);
     }
@@ -1168,16 +1146,14 @@ public class ApplicationContext
 
     public <T extends EventListener> void addListener(T listener) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         checkListenerType(listener);
         if (context.getApplicationLifecycleListeners() != null && listener instanceof ServletContextListener) {
-            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
-                    listener.getClass().getName(), getContextPath()));
+            throw MESSAGES.invalidContextListener(listener.getClass().getName(), getContextPath());
         }
         context.addApplicationListenerInstance(listener);
     }
@@ -1185,23 +1161,20 @@ public class ApplicationContext
 
     public void addListener(Class<? extends EventListener> listenerClass) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         EventListener listenerInstance = null;
         try {
             listenerInstance = (EventListener) context.getInstanceManager().newInstance(listenerClass);
         } catch (Exception e) {
-            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
-                    listenerClass.getName(), getContextPath()), e);
+            throw MESSAGES.invalidContextListener(listenerClass.getName(), getContextPath(), e);
         }
         checkListenerType(listenerInstance);
         if (context.getApplicationLifecycleListeners() != null && listenerInstance instanceof ServletContextListener) {
-            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
-                    listenerClass.getName(), getContextPath()));
+            throw MESSAGES.invalidContextListener(listenerClass.getName(), getContextPath());
         }
         context.addApplicationListenerInstance(listenerInstance);
     }
@@ -1210,17 +1183,16 @@ public class ApplicationContext
     public <T extends EventListener> T createListener(Class<T> clazz)
             throws ServletException {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         T listenerInstance = null;
         try {
             listenerInstance = (T) context.getInstanceManager().newInstance(clazz);
         } catch (Throwable t) {
-            throw new ServletException(sm.getString("applicationContext.create"), t);
+            throw new ServletException(MESSAGES.contextObjectCreationError(), t);
         }
         checkListenerType(listenerInstance);
         return listenerInstance;
@@ -1229,7 +1201,7 @@ public class ApplicationContext
 
     public ClassLoader getClassLoader() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         return context.getLoader().getClassLoader();
     }
@@ -1237,7 +1209,7 @@ public class ApplicationContext
 
     public JspConfigDescriptor getJspConfigDescriptor() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         ArrayList<TaglibDescriptor> taglibDescriptors = new ArrayList<TaglibDescriptor>();
         String[] taglibURIs = context.findTaglibs();
@@ -1259,7 +1231,7 @@ public class ApplicationContext
 
     public int getEffectiveMajorVersion() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         return context.getVersionMajor();
     }
@@ -1267,23 +1239,21 @@ public class ApplicationContext
 
     public int getEffectiveMinorVersion() {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         return context.getVersionMinor();
     }
 
     public void declareRoles(String... roleNames) {
         if (restricted) {
-            throw new UnsupportedOperationException(sm.getString("applicationContext.restricted"));
+            throw MESSAGES.restrictedListenerCannotCallMethod();
         }
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("applicationContext.alreadyInitialized",
-                            getContextPath()));
+            throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
         for (String role: roleNames) {
             if (role == null || "".equals(role)) {
-                throw new IllegalArgumentException(sm.getString("applicationContext.emptyRole",
-                        getContextPath()));
+                throw MESSAGES.invalidEmptyRole(getContextPath());
             }
             context.addSecurityRole(role);
         }
@@ -1298,8 +1268,7 @@ public class ApplicationContext
                 && !(listener instanceof ServletRequestAttributeListener)
                 && !(listener instanceof HttpSessionListener)
                 && !(listener instanceof HttpSessionAttributeListener)) {
-            throw new IllegalArgumentException(sm.getString("applicationContext.badListenerClass", 
-                    listener.getClass().getName(), getContextPath()));
+            throw MESSAGES.invalidContextListener(listener.getClass().getName(), getContextPath());
         }
     }
     

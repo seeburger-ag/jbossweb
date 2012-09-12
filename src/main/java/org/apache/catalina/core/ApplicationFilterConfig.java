@@ -47,6 +47,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -74,8 +76,8 @@ import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -89,12 +91,6 @@ import org.apache.tomcat.util.modeler.Registry;
 
 public final class ApplicationFilterConfig implements FilterConfig, Serializable {
 
-
-    protected static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( ApplicationFilterConfig.class );
-
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     // ----------------------------------------------------------- Constructors
 
@@ -258,10 +254,10 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
     public boolean addMappingForServletNames(EnumSet<DispatcherType> dispatcherTypes, 
             boolean isMatchAfter, String... servletNames) {
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+            throw MESSAGES.cannotAddFilterRegistrationAfterInit(context.getPath());
         }
         if (servletNames == null || servletNames.length == 0) {
-            throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
+            throw MESSAGES.invalidFilterRegistrationArguments();
         }
         FilterMap filterMap = new FilterMap(); 
         for (String servletName : servletNames) {
@@ -286,10 +282,10 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter,
             String... urlPatterns) {
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+            throw MESSAGES.cannotAddFilterRegistrationAfterInit(context.getPath());
         }
         if (urlPatterns == null || urlPatterns.length == 0) {
-            throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
+            throw MESSAGES.invalidFilterRegistrationArguments();
         }
         FilterMap filterMap = new FilterMap(); 
         for (String urlPattern : urlPatterns) {
@@ -350,7 +346,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
     public void setAsyncSupported(boolean asyncSupported) {
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+            throw MESSAGES.cannotAddFilterRegistrationAfterInit(context.getPath());
         }
         filterDef.setAsyncSupported(asyncSupported);
         context.addFilterDef(filterDef);
@@ -365,10 +361,10 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
     public boolean setInitParameter(String name, String value) {
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+            throw MESSAGES.cannotAddFilterRegistrationAfterInit(context.getPath());
         }
         if (name == null || value == null) {
-            throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
+            throw MESSAGES.invalidFilterRegistrationArguments();
         }
         if (filterDef.getInitParameter(name) != null) {
             return false;
@@ -381,10 +377,10 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
 
     public Set<String> setInitParameters(Map<String, String> initParameters) {
         if (!context.isStarting()) {
-            throw new IllegalStateException(sm.getString("filterRegistration.ise", context.getPath()));
+            throw MESSAGES.cannotAddFilterRegistrationAfterInit(context.getPath());
         }
         if (initParameters == null) {
-            throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
+            throw MESSAGES.invalidFilterRegistrationArguments();
         }
         Set<String> conflicts = new HashSet<String>();
         Iterator<String> parameterNames = initParameters.keySet().iterator();
@@ -395,7 +391,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             } else {
                 String value = initParameters.get(parameterName);
                 if (value == null) {
-                    throw new IllegalArgumentException(sm.getString("filterRegistration.iae"));
+                    throw MESSAGES.invalidFilterRegistrationArguments();
                 }
                 filterDef.addInitParameter(parameterName, value);
             }
@@ -497,7 +493,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
                 try {
                     SecurityUtil.doAsPrivilege("destroy", filter);
                 } catch(java.lang.Exception ex){
-                    context.getLogger().error("ApplicationFilterConfig.doAsPrivilege", ex);
+                    context.getLogger().error(MESSAGES.doAsPrivilegeException(), ex);
                 }
                 SecurityUtil.remove(filter);
             } else {
@@ -506,7 +502,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             try {
                 ((StandardContext) context).getInstanceManager().destroyInstance(this.filter);
             } catch (Exception e) {
-                context.getLogger().error("ApplicationFilterConfig.preDestroy", e);
+                context.getLogger().error(MESSAGES.preDestroyException(), e);
             }
         }
         this.filter = null;
@@ -545,8 +541,7 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
             Registry.getRegistry(null, null).registerComponent(this, oname,
                     null);
         } catch (Exception ex) {
-            log.info(sm.getString("applicationFilterConfig.jmxRegsiterFail",
-                    getFilterClass(), getFilterName()), ex);
+            CatalinaLogger.CORE_LOGGER.filterJmxRegistrationFailed(getFilterClass(), getFilterName(), ex);
         }
     }
     
@@ -555,14 +550,8 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
         if (oname != null) {
             try {
                 Registry.getRegistry(null, null).unregisterComponent(oname);
-                if(log.isDebugEnabled())
-                    log.debug(sm.getString(
-                            "applicationFilterConfig.jmxUnregsiter",
-                            getFilterClass(), getFilterName()));
             } catch(Exception ex) {
-                log.error(sm.getString(
-                        "applicationFilterConfig.jmxUnregsiterFail",
-                        getFilterClass(), getFilterName()), ex);
+                CatalinaLogger.CORE_LOGGER.filterJmxUnregistrationFailed(getFilterClass(), getFilterName(), ex);
             }
         }
 

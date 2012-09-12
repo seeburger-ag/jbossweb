@@ -19,6 +19,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.util.Locale;
 
 import javax.management.MBeanServer;
@@ -32,6 +34,7 @@ import org.apache.catalina.Valve;
 import org.apache.catalina.startup.HostConfig;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -48,10 +51,6 @@ public class StandardHost
     extends ContainerBase
     implements Host  
  {
-    /* Why do we implement deployer and delegate to deployer ??? */
-
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( StandardHost.class );
     
     // ----------------------------------------------------------- Constructors
 
@@ -280,8 +279,7 @@ public class StandardHost
     public void setName(String name) {
 
         if (name == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.nullName"));
+            throw MESSAGES.hostNameIsNull();
 
         name = name.toLowerCase(Locale.ENGLISH);      // Internally all names are lower case
 
@@ -351,8 +349,7 @@ public class StandardHost
     public void addChild(Container child) {
 
         if (!(child instanceof Context))
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.notContext"));
+            throw MESSAGES.hostChildMustBeContext();
         super.addChild(child);
 
     }
@@ -447,23 +444,6 @@ public class StandardHost
         if( ! initialized )
             init();
 
-        // Look for a realm - that may have been configured earlier. 
-        // If the realm is added after context - it'll set itself.
-        if( realm == null ) {
-            ObjectName realmName=null;
-            try {
-                realmName=new ObjectName( domain + ":type=Realm,host=" + getName());
-                if( mserver.isRegistered(realmName ) ) {
-                    mserver.invoke(realmName, "init", 
-                            new Object[] {},
-                            new String[] {}
-                    );            
-                }
-            } catch( Throwable t ) {
-                log.debug("No realm for this host " + realmName);
-            }
-        }
-            
         // Set error report valve
         if ((errorReportValveClass != null)
             && (!errorReportValveClass.equals(""))) {
@@ -483,9 +463,7 @@ public class StandardHost
                         errorReportValveObjectName = ((ValveBase)valve).getObjectName() ;
                     }
             } catch (Throwable t) {
-                log.error(sm.getString
-                    ("standardHost.invalidErrorReportValveClass", 
-                     errorReportValveClass), t);
+                CatalinaLogger.CORE_LOGGER.invalidErrorReportValveClass(errorReportValveClass, t);
             }
         }
 
@@ -525,42 +503,31 @@ public class StandardHost
         if( initialized ) return;
         initialized=true;
         
-        // already registered.
-        if( getParent() == null ) {
-            try {
-                // Register with the Engine
-                ObjectName serviceName=new ObjectName(domain + 
-                                        ":type=Engine");
-
-                HostConfig deployer = new HostConfig();
-                addLifecycleListener(deployer);                
-                if( mserver.isRegistered( serviceName )) {
-                    if(log.isDebugEnabled())
-                        log.debug("Registering "+ serviceName +" with the Engine");
-                    mserver.invoke( serviceName, "addChild",
-                            new Object[] { this },
-                            new String[] { "org.apache.catalina.Container" } );
-                }
-            } catch( Exception ex ) {
-                log.error("Host registering failed!",ex);
-            }
-        }
-        
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
             if( oname==null ) {
                 // not registered in JMX yet - standalone mode
                 try {
                     StandardEngine engine=(StandardEngine)parent;
                     domain=engine.getName();
-                    if(log.isDebugEnabled())
-                        log.debug( "Register host " + getName() + " with domain "+ domain );
                     oname=new ObjectName(domain + ":type=Host,host=" +
                             this.getName());
                     controller = oname;
-                    Registry.getRegistry(null, null)
-                    .registerComponent(this, oname, null);
+                    if( getParent() == null ) {
+                        // Register with the Engine
+                        ObjectName serviceName=new ObjectName(domain + 
+                                ":type=Engine");
+
+                        HostConfig deployer = new HostConfig();
+                        addLifecycleListener(deployer);                
+                        if( mserver.isRegistered( serviceName )) {
+                            mserver.invoke( serviceName, "addChild",
+                                    new Object[] { this },
+                                    new String[] { "org.apache.catalina.Container" } );
+                        }
+                    }
+                    Registry.getRegistry(null, null).registerComponent(this, oname, null);
                 } catch( Throwable t ) {
-                    log.error("Host registering failed!", t );
+                    CatalinaLogger.CORE_LOGGER.failedHostJmxRegistration(oname, t);
                 }
             }
         }
@@ -590,8 +557,6 @@ public class StandardHost
     public ObjectName createObjectName(String domain, ObjectName parent)
         throws Exception
     {
-        if( log.isDebugEnabled())
-            log.debug("Create ObjectName " + domain + " " + parent );
         return new ObjectName( domain + ":type=Host,host=" + getName());
     }
 

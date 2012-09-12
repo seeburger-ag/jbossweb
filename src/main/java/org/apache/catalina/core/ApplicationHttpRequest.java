@@ -40,7 +40,6 @@ import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
-import org.apache.catalina.util.StringManager;
 
 
 /**
@@ -78,13 +77,6 @@ class ApplicationHttpRequest extends HttpServletRequestWrapper {
         AsyncContext.ASYNC_REQUEST_URI, AsyncContext.ASYNC_CONTEXT_PATH, 
         AsyncContext.ASYNC_SERVLET_PATH, AsyncContext.ASYNC_PATH_INFO, 
         AsyncContext.ASYNC_QUERY_STRING };
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------------- Constructors

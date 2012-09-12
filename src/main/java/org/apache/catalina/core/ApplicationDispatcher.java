@@ -18,6 +18,8 @@
 
 package org.apache.catalina.core;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.AccessController;
@@ -49,7 +51,6 @@ import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.InstanceSupport;
-import org.apache.catalina.util.StringManager;
 
 /**
  * Standard implementation of <code>RequestDispatcher</code> that allows a
@@ -280,13 +281,6 @@ public final class ApplicationDispatcher
 
 
     /**
-     * The StringManager for this package.
-     */
-    private static final StringManager sm =
-      StringManager.getManager(Constants.Package);
-
-
-    /**
      * The InstanceSupport instance associated with our Wrapper (used to
      * send "before dispatch" and "after dispatch" events.
      */
@@ -495,8 +489,7 @@ public final class ApplicationDispatcher
         
         // Reset any output that has been buffered, but keep headers/cookies
         if (response.isCommitted()) {
-            throw new IllegalStateException
-                (sm.getString("applicationDispatcher.forward.ise"));
+            throw MESSAGES.cannotForwardAfterCommit();
         }
         try {
             response.resetBuffer();
@@ -776,12 +769,11 @@ public final class ApplicationDispatcher
                     try {
                         listener.requestInitialized(event);
                     } catch (Throwable t) {
-                        context.getLogger().error(sm.getString("requestListenerValve.requestInit",
-                                         instances[i].getClass().getName()), t);
+                        context.getLogger().error
+                            (MESSAGES.requestListenerInitException(instances[i].getClass().getName()), t);
                         request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                         servletException = new ServletException
-                            (sm.getString("requestListenerValve.requestInit",
-                                wrapper.getName()), t);
+                            (MESSAGES.requestListenerInitException(instances[i].getClass().getName()), t);
                     }
                 }
             }
@@ -791,15 +783,12 @@ public final class ApplicationDispatcher
 
         // Check for the servlet being marked unavailable
         if (wrapper.isUnavailable()) {
-            wrapper.getLogger().warn(
-                    sm.getString("applicationDispatcher.isUnavailable", 
-                    wrapper.getName()));
+            wrapper.getLogger().warn(MESSAGES.servletIsUnavailable(wrapper.getName()));
             long available = wrapper.getAvailable();
             if ((available > 0L) && (available < Long.MAX_VALUE))
                 hresponse.setDateHeader("Retry-After", available);
-            hresponse.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, sm
-                    .getString("applicationDispatcher.isUnavailable", wrapper
-                            .getName()));
+            hresponse.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, 
+                    MESSAGES.servletIsUnavailable(wrapper.getName()));
             unavailable = true;
         }
 
@@ -809,16 +798,14 @@ public final class ApplicationDispatcher
                 servlet = wrapper.allocate();
             }
         } catch (ServletException e) {
-            wrapper.getLogger().error(sm.getString("applicationDispatcher.allocateException",
-                             wrapper.getName()), StandardWrapper.getRootCause(e));
+            wrapper.getLogger().error(MESSAGES.servletAllocateException(wrapper.getName()), 
+                    StandardWrapper.getRootCause(e));
             servletException = e;
             servlet = null;
         } catch (Throwable e) {
-            wrapper.getLogger().error(sm.getString("applicationDispatcher.allocateException",
-                             wrapper.getName()), e);
+            wrapper.getLogger().error(MESSAGES.servletAllocateException(wrapper.getName()), e);
             servletException = new ServletException
-                (sm.getString("applicationDispatcher.allocateException",
-                              wrapper.getName()), e);
+                (MESSAGES.servletAllocateException(wrapper.getName()), e);
             servlet = null;
         }
                 
@@ -843,24 +830,20 @@ public final class ApplicationDispatcher
         } catch (ClientAbortException e) {
             ioException = e;
         } catch (IOException e) {
-            wrapper.getLogger().error(sm.getString("applicationDispatcher.serviceException",
-                             wrapper.getName()), e);
+            wrapper.getLogger().error(MESSAGES.servletServiceException(wrapper.getName()), e);
             ioException = e;
         } catch (UnavailableException e) {
-            wrapper.getLogger().error(sm.getString("applicationDispatcher.serviceException",
-                             wrapper.getName()), e);
+            wrapper.getLogger().error(MESSAGES.servletServiceException(wrapper.getName()), e);
             servletException = e;
             wrapper.unavailable(e);
         } catch (ServletException e) {
             Throwable rootCause = StandardWrapper.getRootCause(e);
             if (!(rootCause instanceof ClientAbortException)) {
-                wrapper.getLogger().error(sm.getString("applicationDispatcher.serviceException",
-                        wrapper.getName()), rootCause);
+                wrapper.getLogger().error(MESSAGES.servletServiceException(wrapper.getName()), rootCause);
             }
             servletException = e;
         } catch (RuntimeException e) {
-            wrapper.getLogger().error(sm.getString("applicationDispatcher.serviceException",
-                             wrapper.getName()), e);
+            wrapper.getLogger().error(MESSAGES.servletServiceException(wrapper.getName()), e);
             runtimeException = e;
         } finally {
             if (jspFile != null) {
@@ -880,15 +863,12 @@ public final class ApplicationDispatcher
                 wrapper.deallocate(servlet);
             }
         } catch (ServletException e) {
-            wrapper.getLogger().error(sm.getString("applicationDispatcher.deallocateException",
-                             wrapper.getName()), e);
+            wrapper.getLogger().error(MESSAGES.servletDeallocateException(wrapper.getName()), e);
             servletException = e;
         } catch (Throwable e) {
-            wrapper.getLogger().error(sm.getString("applicationDispatcher.deallocateException",
-                             wrapper.getName()), e);
+            wrapper.getLogger().error(MESSAGES.servletDeallocateException(wrapper.getName()), e);
             servletException = new ServletException
-                (sm.getString("applicationDispatcher.deallocateException",
-                              wrapper.getName()), e);
+                (MESSAGES.servletDeallocateException(wrapper.getName()), e);
         }
 
 
@@ -906,12 +886,10 @@ public final class ApplicationDispatcher
                     try {
                         listener.requestDestroyed(event);
                     } catch (Throwable t) {
-                        context.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
-                                instances[i].getClass().getName()), t);
+                        context.getLogger().error(MESSAGES.requestListenerDestroyException(instances[i].getClass().getName()), t);
                         request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                         servletException = new ServletException
-                            (sm.getString("requestListenerValve.requestDestroy",
-                                    wrapper.getName()), t);
+                            (MESSAGES.requestListenerDestroyException(instances[i].getClass().getName()), t);
                     }
                 }
             }
@@ -1143,8 +1121,7 @@ public final class ApplicationDispatcher
             }
         }
         if (!same) {
-            throw new ServletException(sm.getString(
-                    "applicationDispatcher.specViolation.request"));
+            throw new ServletException(MESSAGES.notOriginalRequestInDispatcher());
         }
         
         same = false;
@@ -1172,8 +1149,7 @@ public final class ApplicationDispatcher
         }
 
         if (!same) {
-            throw new ServletException(sm.getString(
-                    "applicationDispatcher.specViolation.response"));
+            throw new ServletException(MESSAGES.notOriginalResponseInDispatcher());
         }
     }
 

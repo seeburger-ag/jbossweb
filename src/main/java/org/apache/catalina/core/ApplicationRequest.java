@@ -28,7 +28,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
 
 import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.StringManager;
 
 
 /**
@@ -91,13 +90,6 @@ class ApplicationRequest extends ServletRequestWrapper {
      * wrapped request, but updates are allowed.
      */
     protected HashMap attributes = new HashMap();
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------- ServletRequest Methods

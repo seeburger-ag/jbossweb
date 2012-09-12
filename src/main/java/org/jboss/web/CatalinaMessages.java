@@ -571,10 +571,229 @@ public interface CatalinaMessages {
     @Message(id = 216, value = "Non-serializable attribute %s")
     IllegalArgumentException sessionAttributeIsNotSerializable(String name);
 
-    @Message(id = 214, value = "Session binding event listener threw exception")
+    @Message(id = 217, value = "Session binding event listener threw exception")
     String sessionBindingEventListenerException();
 
-    @Message(id = 214, value = "Cannot serialize session attribute %s for session %s")
+    @Message(id = 218, value = "Cannot serialize session attribute %s for session %s")
     String sessionAttributeSerializationException(Object attribute, String sessionId);
+
+    @Message(id = 219, value = "Path %s does not start with a '/' character")
+    IllegalArgumentException invalidDispatcherPath(String path);
+
+    @Message(id = 220, value = "Dispatcher mapping error")
+    String dispatcherMappingError();
+
+    @Message(id = 221, value = "Path %s does not start with a '/' character")
+    String invalidDispatcherPathString(String path);
+
+    @Message(id = 222, value = "Exception thrown by attributes event listener")
+    String servletContextAttributeListenerException();
+
+    @Message(id = 223, value = "Attribute name cannot be null")
+    String servletContextAttributeNameIsNull();
+
+    @Message(id = 224, value = "The listener that attempted to call this method is restricted")
+    UnsupportedOperationException restrictedListenerCannotCallMethod();
+
+    @Message(id = 225, value = "Context %s is already initialized")
+    IllegalStateException contextAlreadyInitialized(String context);
+
+    @Message(id = 226, value = "Error creating instance")
+    String contextObjectCreationError();
+
+    @Message(id = 227, value = "Bad listener class %s for context %s")
+    IllegalArgumentException invalidContextListener(String className, String path);
+
+    @Message(id = 228, value = "Bad listener class %s for context %s")
+    IllegalArgumentException invalidContextListener(String className, String path, @Cause Throwable t);
+
+    @Message(id = 229, value = "The session tracking mode %s requested for context %s is not supported by that context")
+    IllegalArgumentException unsupportedSessionTrackingMode(String sessionTracking, String path);
+
+    @Message(id = 230, value = "The session tracking mode SSL requested for context %s cannot be combined with other tracking modes")
+    IllegalArgumentException sslSessionTrackingModeIsExclusive(String path);
+
+    @Message(id = 231, value = "Invalid empty role specified for context %s")
+    IllegalArgumentException invalidEmptyRole(String path);
+
+    @Message(id = 232, value = "Cannot forward after response has been committed")
+    IllegalStateException cannotForwardAfterCommit();
+
+    @Message(id = 233, value = "Exception sending request initialized lifecycle event to listener instance of class %s")
+    String requestListenerInitException(String className);
+
+    @Message(id = 234, value = "Servlet %s is currently unavailable")
+    String servletIsUnavailable(String wrapperName);
+
+    @Message(id = 235, value = "Allocate exception for servlet %s")
+    String servletAllocateException(String wrapperName);
+
+    @Message(id = 236, value = "Servlet.service() for servlet %s threw exception")
+    String servletServiceException(String wrapperName);
+
+    @Message(id = 237, value = "Deallocate exception for servlet %s")
+    String servletDeallocateException(String wrapperName);
+
+    @Message(id = 238, value = "Exception sending request destroyed lifecycle event to listener instance of class %s")
+    String requestListenerDestroyException(String className);
+
+    @Message(id = 239, value = "Original SevletRequest or wrapped original ServletRequest not passed to RequestDispatcher in violation of SRV.8.2 and SRV.14.2.5.1")
+    String notOriginalRequestInDispatcher();
+
+    @Message(id = 240, value = "Original SevletResponse or wrapped original ServletResponse not passed to RequestDispatcher in violation of SRV.8.2 and SRV.14.2.5.1")
+    String notOriginalResponseInDispatcher();
+
+    @Message(id = 241, value = "Context %s has already been initialized")
+    IllegalStateException cannotAddFilterRegistrationAfterInit(String contextName);
+
+    @Message(id = 242, value = "Illegal null or empty argument specified")
+    IllegalArgumentException invalidFilterRegistrationArguments();
+
+    @Message(id = 243, value = "Context %s has already been initialized")
+    IllegalStateException cannotAddServletRegistrationAfterInit(String contextName);
+
+    @Message(id = 244, value = "Illegal null or empty argument specified")
+    IllegalArgumentException invalidServletRegistrationArguments();
+
+    @Message(id = 245, value = "Priveleged action exception")
+    String doAsPrivilegeException();
+
+    @Message(id = 246, value = "Exception processing component pre destroy")
+    String preDestroyException();
+
+    @Message(id = 247, value = "Filter execution threw an exception")
+    String filterException();
+
+    @Message(id = 248, value = "Servlet execution threw an exception")
+    String servletException();
+
+    @Message(id = 249, value = "Child container name cannot be null")
+    IllegalArgumentException containerChildWithNullName();
+
+    @Message(id = 250, value = "Child container with name %s already exists")
+    IllegalArgumentException containerChildNameNotUnique(String name);
+
+    @Message(id = 251, value = "Failed to start child container %s")
+    IllegalStateException containerChildStartFailed(String name, @Cause Throwable t);
+
+    @Message(id = 252, value = "Child of an Engine must be a Host")
+    IllegalArgumentException engineChildMustBeHost();
+
+    @Message(id = 253, value = "Engine cannot have a parent Container")
+    IllegalArgumentException engineHasNoParent();
+
+    @Message(id = 254, value = "Host name is required")
+    IllegalArgumentException hostNameIsNull();
+
+    @Message(id = 255, value = "Child of a Host must be a Context")
+    IllegalArgumentException hostChildMustBeContext();
+
+    @Message(id = 256, value = "Parent of a Wrapper must be a Context")
+    IllegalArgumentException wrapperParentMustBeContext();
+
+    @Message(id = 257, value = "A Wrapper cannot have a child container")
+    IllegalArgumentException wrapperHasNoChild();
+
+    @Message(id = 258, value = "Cannot allocate servlet %s because it is being unloaded")
+    String cannotAllocateServletWhileUnloading(String name);
+
+    @Message(id = 259, value = "Error allocating a servlet instance")
+    String cannotAllocateServletInstance();
+
+    @Message(id = 260, value = "No servlet class has been specified for servlet %s")
+    String noClassSpecifiedForServlet(String name);
+
+    @Message(id = 261, value = "Class %s is not a Servlet")
+    String specifiedClassIsNotServlet(String className);
+
+    @Message(id = 262, value = "Error instantiating servlet class %s")
+    String errorInstantiatingServletClass(String className);
+
+    @Message(id = 263, value = "Servlet.init() for servlet %s threw exception")
+    String errorInitializingServlet(String name);
+
+    @Message(id = 264, value = "Marking servlet %s as unavailable")
+    String markingServletUnavailable(String name);
+
+    @Message(id = 265, value = "Servlet.destroy() for servlet %s threw exception")
+    String errorDestroyingServlet(String name);
+
+    @Message(id = 266, value = "Servlet %s threw unload exception")
+    String errorUnloadingServlet(String name);
+
+    @Message(id = 267, value = "LoginConfig cannot be null")
+    IllegalArgumentException nullLoginConfig();
+
+    @Message(id = 268, value = "Form login page %s must start with a ''/'")
+    IllegalArgumentException loginPageMustStartWithSlash(String loginPage);
+
+    @Message(id = 269, value = "Error page location %s must start with a ''/''")
+    IllegalArgumentException errorPageMustStartWithSlash(String errorPage);
+
+    @Message(id = 270, value = "%s is not a subclass of StandardWrapper")
+    IllegalArgumentException invalidWrapperClass(String wrapperClass);
+
+    @Message(id = 271, value = "Cannot set resources after Context startup")
+    IllegalStateException cannotSetResourcesAfterStart();
+
+    @Message(id = 272, value = "Child of a Context must be a Wrapper")
+    IllegalArgumentException contextChildMustBeWrapper();
+
+    @Message(id = 273, value = "JSP file %s must start with a ''/''")
+    IllegalArgumentException jspFileMustStartWithSlash(String jspFile);
+
+    @Message(id = 274, value = "Invalid <url-pattern> %s in security constraint")
+    IllegalArgumentException invalidSecurityConstraintUrlPattern(String urlPattern);
+
+    @Message(id = 275, value = "ErrorPage cannot be null")
+    IllegalArgumentException nullErrorPage();
+
+    @Message(id = 276, value = "Filter mapping specifies an unknown filter name %s")
+    IllegalArgumentException unknownFilterNameInMapping(String filterName);
+
+    @Message(id = 277, value = "Filter mapping must specify either a <url-pattern> or a <servlet-name>")
+    IllegalArgumentException missingFilterMapping();
+
+    @Message(id = 278, value = "Invalid <url-pattern> %s in filter mapping")
+    IllegalArgumentException invalidFilterMappingUrlPattern(String urlPattern);
+
+    @Message(id = 279, value = "Both parameter name and parameter value are required")
+    IllegalArgumentException missingParameterNameOrValue();
+
+    @Message(id = 280, value = "Duplicate context initialization parameter %s")
+    IllegalArgumentException duplicateContextParameters(String name);
+
+    @Message(id = 281, value = "Servlet mapping specifies an unknown Servlet name %s")
+    IllegalArgumentException unknownServletNameInMapping(String servletName);
+
+    @Message(id = 282, value = "Invalid <url-pattern> %s in Servlet mapping")
+    IllegalArgumentException invalidServletMappingUrlPattern(String urlPattern);
+
+    @Message(id = 283, value = "Create wrapper failed")
+    IllegalStateException errorCreatingWrapper(@Cause Throwable t);
+
+    @Message(id = 284, value = "Exception starting filter %s")
+    String errorStartingFilter(String filterName);
+
+    @Message(id = 285, value = "Error configuring application listener of class %s")
+    String errorInstatiatingApplicationListener(String listenerClass);
+
+    @Message(id = 286, value = "Skipped installing application listeners due to previous error(s)")
+    String skippingApplicationListener();
+
+    @Message(id = 287, value = "Exception sending context initialized event to listener instance of class %s")
+    String errorSendingContextInitializedEvent(String listenerClass);
+
+    @Message(id = 287, value = "Exception sending context destroyed event to listener instance of class %s")
+    String errorSendingContextDestroyedEvent(String listenerClass);
+
+    @Message(id = 288, value = "Error destroying application listener of class %s")
+    String errorDestroyingApplicationListener(String listenerClass);
+
+    @Message(id = 289, value = "Servlet %s threw load() exception")
+    String errorLoadingServlet(String servletName);
+
+    @Message(id = 290, value = "Error initializing context")
+    String errorInitializingContext();
 
 }

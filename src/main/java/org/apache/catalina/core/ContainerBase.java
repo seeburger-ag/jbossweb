@@ -19,6 +19,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -55,10 +57,10 @@ import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -123,9 +125,6 @@ import org.jboss.logging.Logger;
 
 public abstract class ContainerBase
     implements Container, Lifecycle, Pipeline, MBeanRegistration {
-
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( ContainerBase.class );
 
     /**
      * Container array type.
@@ -256,13 +255,6 @@ public abstract class ContainerBase
 
 
     /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
-    /**
      * Has this component been started?
      */
     protected boolean started = false;
@@ -375,7 +367,7 @@ public abstract class ContainerBase
             try {
                 ((Lifecycle) oldLoader).stop();
             } catch (LifecycleException e) {
-                log.error("ContainerBase.setLoader: stop: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStoppingLoader(e);
             }
         }
 
@@ -387,7 +379,7 @@ public abstract class ContainerBase
             try {
                 ((Lifecycle) loader).start();
             } catch (LifecycleException e) {
-                log.error("ContainerBase.setLoader: start: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStartingLoader(e);
             }
         }
 
@@ -447,7 +439,7 @@ public abstract class ContainerBase
             try {
                 ((Lifecycle) oldManager).stop();
             } catch (LifecycleException e) {
-                log.error("ContainerBase.setManager: stop: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStoppingManager(e);
             }
         }
 
@@ -459,7 +451,7 @@ public abstract class ContainerBase
             try {
                 ((Lifecycle) manager).start();
             } catch (LifecycleException e) {
-                log.error("ContainerBase.setManager: start: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStartingManager(e);
             }
         }
 
@@ -511,7 +503,7 @@ public abstract class ContainerBase
             try {
                 ((Lifecycle) oldCluster).stop();
             } catch (LifecycleException e) {
-                log.error("ContainerBase.setCluster: stop: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStoppingCluster(e);
             }
         }
 
@@ -524,7 +516,7 @@ public abstract class ContainerBase
             try {
                 ((Lifecycle) cluster).start();
             } catch (LifecycleException e) {
-                log.error("ContainerBase.setCluster: start: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStartingCluster(e);
             }
         }
 
@@ -700,7 +692,7 @@ public abstract class ContainerBase
             try {
                 ((Lifecycle) oldRealm).stop();
             } catch (LifecycleException e) {
-                log.error("ContainerBase.setRealm: stop: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStoppingRealm(e);
             }
         }
 
@@ -712,7 +704,7 @@ public abstract class ContainerBase
             try {
                 ((Lifecycle) realm).start();
             } catch (LifecycleException e) {
-                log.error("ContainerBase.setRealm: start: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStartingRealm(e);
             }
         }
 
@@ -796,13 +788,10 @@ public abstract class ContainerBase
 
     private synchronized void addChildInternal(Container child) {
 
-        if( log.isDebugEnabled() )
-            log.debug("Add child " + child + " " + this);
-
         if (child.getName() == null)
-            throw new IllegalArgumentException(sm.getString("containerBase.addChild.nullName"));
+            throw MESSAGES.containerChildWithNullName();
         if (children.get(child.getName()) != null)
-            throw new IllegalArgumentException(sm.getString("containerBase.addChild.notUnique", child.getName()));
+            throw MESSAGES.containerChildNameNotUnique(child.getName());
 
         child.setParent(this);  // May throw IAE
         children.put(child.getName(), child);
@@ -814,7 +803,7 @@ public abstract class ContainerBase
                 ((Lifecycle) child).start();
                 success = true;
             } catch (LifecycleException e) {
-                throw new IllegalStateException(sm.getString("containerBase.addChild.start", child.getName()), e);
+                throw MESSAGES.containerChildStartFailed(child.getName(), e);
             } finally {
                 if (!success) {
                     children.remove(child.getName());
@@ -930,7 +919,7 @@ public abstract class ContainerBase
                     ((Lifecycle) child).stop();
                 }
             } catch (LifecycleException e) {
-                log.error("ContainerBase.removeChild: stop: ", e);
+                CatalinaLogger.CORE_LOGGER.errorStoppingChild(e);
             }
         }
         
@@ -1011,8 +1000,7 @@ public abstract class ContainerBase
 
         // Validate and update our current component state
         if (started) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("containerBase.alreadyStarted", logName()));
+            CatalinaLogger.CORE_LOGGER.containerAlreadyStarted(logName());
             return;
         }
         
@@ -1070,8 +1058,7 @@ public abstract class ContainerBase
 
         // Validate and update our current component state
         if (!started) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("containerBase.notStarted", logName()));
+            CatalinaLogger.CORE_LOGGER.containerNotStarted(logName());
             return;
         }
 
@@ -1139,16 +1126,17 @@ public abstract class ContainerBase
      */ 
     public void init() throws Exception {
 
-        if( this.getParent() == null ) {
-            // "Life" update
-            ObjectName parentName=getParentName();
+        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
+            if( this.getParent() == null ) {
+                // "Life" update
+                ObjectName parentName=getParentName();
 
-            //log.info("Register " + parentName );
-            if( parentName != null && 
-                    mserver.isRegistered(parentName)) 
-            {
-                mserver.invoke(parentName, "addChild", new Object[] { this },
-                        new String[] {"org.apache.catalina.Container"});
+                if( parentName != null && 
+                        mserver.isRegistered(parentName)) 
+                {
+                    mserver.invoke(parentName, "addChild", new Object[] { this },
+                            new String[] {"org.apache.catalina.Container"});
+                }
             }
         }
         initialized=true;
@@ -1169,13 +1157,10 @@ public abstract class ContainerBase
             if ( oname != null ) {
                 try {
                     if( controller == oname ) {
-                        Registry.getRegistry(null, null)
-                        .unregisterComponent(oname);
-                        if(log.isDebugEnabled())
-                            log.debug("unregistering " + oname);
+                        Registry.getRegistry(null, null).unregisterComponent(oname);
                     }
                 } catch( Throwable t ) {
-                    log.error("Error unregistering ", t );
+                    CatalinaLogger.CORE_LOGGER.failedContainerJmxUnregistration(oname, t);
                 }
             }
         }
@@ -1302,28 +1287,28 @@ public abstract class ContainerBase
             try {
                 cluster.backgroundProcess();
             } catch (Exception e) {
-                log.warn(sm.getString("containerBase.backgroundProcess.cluster", cluster), e);                
+                CatalinaLogger.CORE_LOGGER.backgroundProcessingError(cluster, e);
             }
         }
         if (loader != null) {
             try {
                 loader.backgroundProcess();
             } catch (Exception e) {
-                log.warn(sm.getString("containerBase.backgroundProcess.loader", loader), e);                
+                CatalinaLogger.CORE_LOGGER.backgroundProcessingError(loader, e);
             }
         }
         if (manager != null) {
             try {
                 manager.backgroundProcess();
             } catch (Exception e) {
-                log.warn(sm.getString("containerBase.backgroundProcess.manager", manager), e);                
+                CatalinaLogger.CORE_LOGGER.backgroundProcessingError(manager, e);
             }
         }
         if (realm != null) {
             try {
                 realm.backgroundProcess();
             } catch (Exception e) {
-                log.warn(sm.getString("containerBase.backgroundProcess.realm", realm), e);                
+                CatalinaLogger.CORE_LOGGER.backgroundProcessingError(realm, e);
             }
         }
         Valve current = pipeline.getFirst();
@@ -1331,7 +1316,7 @@ public abstract class ContainerBase
             try {
                 current.backgroundProcess();
             } catch (Exception e) {
-                log.warn(sm.getString("containerBase.backgroundProcess.valve", current), e);                
+                CatalinaLogger.CORE_LOGGER.backgroundProcessingError(current, e);
             }
             current = current.getNext();
         }
@@ -1486,8 +1471,6 @@ public abstract class ContainerBase
     public ObjectName createObjectName(String domain, ObjectName parent)
         throws Exception
     {
-        if( log.isDebugEnabled())
-            log.debug("Create ObjectName " + domain + " " + parent );
         return null;
     }
 
@@ -1604,7 +1587,7 @@ public abstract class ContainerBase
                 }
                 container.backgroundProcess();
             } catch (Throwable t) {
-                log.error("Exception invoking periodic operation: ", t);
+                CatalinaLogger.CORE_LOGGER.errorInPeriodicOperation(t);
             } finally {
                 if (container instanceof Context) {
                     ((Context) container).getThreadBindingListener().unbind();

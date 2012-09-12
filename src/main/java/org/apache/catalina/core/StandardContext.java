@@ -18,6 +18,8 @@
 
 package org.apache.catalina.core;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +38,6 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.management.AttributeNotFoundException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanRegistrationException;
@@ -97,7 +98,7 @@ import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.WARDirContext;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * Standard implementation of the <b>Context</b> interface.  Each
@@ -113,7 +114,6 @@ public class StandardContext
     extends ContainerBase
     implements Context, NotificationEmitter
 {
-    protected static Logger log = Logger.getLogger(StandardContext.class);
 
     // ----------------------------------------------------------- Constructors
 
@@ -1269,32 +1269,23 @@ public class StandardContext
 
         // Validate the incoming property value
         if (config == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.loginConfig.required"));
+            throw MESSAGES.nullLoginConfig();
         String loginPage = config.getLoginPage();
         if ((loginPage != null) && !loginPage.startsWith("/")) {
             if (isServlet22()) {
-                if(log.isDebugEnabled())
-                    log.debug(sm.getString("standardContext.loginConfig.loginWarning",
-                                 loginPage));
+                CatalinaLogger.CORE_LOGGER.loginPageStartsWithSlash(loginPage);
                 config.setLoginPage("/" + loginPage);
             } else {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.loginConfig.loginPage",
-                                  loginPage));
+                throw MESSAGES.loginPageMustStartWithSlash(loginPage);
             }
         }
         String errorPage = config.getErrorPage();
         if ((errorPage != null) && !errorPage.startsWith("/")) {
             if (isServlet22()) {
-                if(log.isDebugEnabled())
-                    log.debug(sm.getString("standardContext.loginConfig.errorWarning",
-                                 errorPage));
+                CatalinaLogger.CORE_LOGGER.errorPageStartsWithSlash(errorPage);
                 config.setErrorPage("/" + errorPage);
             } else {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.loginConfig.errorPage",
-                                  errorPage));
+                throw MESSAGES.errorPageMustStartWithSlash(errorPage);
             }
         }
 
@@ -1604,9 +1595,7 @@ public class StandardContext
         try {
             wrapperClass = Class.forName(wrapperClassName);         
             if (!StandardWrapper.class.isAssignableFrom(wrapperClass)) {
-                throw new IllegalArgumentException(
-                    sm.getString("standardContext.invalidWrapperClass",
-                                 wrapperClassName));
+                throw MESSAGES.invalidWrapperClass(wrapperClassName);
             }
         } catch (ClassNotFoundException cnfe) {
             throw new IllegalArgumentException(cnfe.getMessage());
@@ -1623,8 +1612,7 @@ public class StandardContext
     public void setResources(DirContext resources) {
 
         if (started) {
-            throw new IllegalStateException
-                (sm.getString("standardContext.resources.started"));
+            throw MESSAGES.cannotSetResourcesAfterStart();
         }
 
         DirContext oldResources = this.webappResources;
@@ -1712,7 +1700,7 @@ public class StandardContext
                 workDir = new File(catalinaHomePath,
                         getWorkDir());
             } catch (IOException e) {
-                log.warn("Exception obtaining work path for " + getPath());
+                CatalinaLogger.CORE_LOGGER.failedObtainingWorkDirectory(getPath(), e);
             }
         }
         return workDir.getAbsolutePath();
@@ -1763,7 +1751,7 @@ public class StandardContext
         String results[] = new String[applicationListeners.length + 1];
         for (int i = 0; i < applicationListeners.length; i++) {
             if (listener.equals(applicationListeners[i])) {
-                log.info(sm.getString("standardContext.duplicateListener", listener));
+                CatalinaLogger.CORE_LOGGER.duplicateListener(listener);
                 if (!restricted && restrictedApplicationListeners.contains(listener)) {
                     restrictedApplicationListeners.remove(listener);
                 }
@@ -1799,7 +1787,7 @@ public class StandardContext
         EventListener results[] = new EventListener[applicationListenerInstances.length + 1];
         for (int i = 0; i < applicationListenerInstances.length; i++) {
             if (listener.equals(applicationListenerInstances[i])) {
-                log.info(sm.getString("standardContext.duplicateListener", listener));
+                CatalinaLogger.CORE_LOGGER.duplicateListener(listener.getClass().getName());
                 return;
             }
             results[i] = applicationListenerInstances[i];
@@ -1847,8 +1835,7 @@ public class StandardContext
         Wrapper oldJspServlet = null;
 
         if (!(child instanceof Wrapper)) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.notWrapper"));
+            throw MESSAGES.contextChildMustBeWrapper();
         }
 
         Wrapper wrapper = (Wrapper) child;
@@ -1865,13 +1852,10 @@ public class StandardContext
         String jspFile = wrapper.getJspFile();
         if ((jspFile != null) && !jspFile.startsWith("/")) {
             if (isServlet22()) {
-                if(log.isDebugEnabled())
-                    log.debug(sm.getString("standardContext.wrapper.warning", 
-                                       jspFile));
+                CatalinaLogger.CORE_LOGGER.jspFileStartsWithSlash(jspFile);
                 wrapper.setJspFile("/" + jspFile);
             } else {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.wrapper.error", jspFile));
+                throw MESSAGES.jspFileMustStartWithSlash(jspFile);
             }
         }
 
@@ -1902,10 +1886,7 @@ public class StandardContext
             for (int j = 0; j < patterns.length; j++) {
                 patterns[j] = adjustURLPattern(patterns[j]);
                 if (!validateURLPattern(patterns[j]))
-                    throw new IllegalArgumentException
-                        (sm.getString
-                         ("standardContext.securityConstraint.pattern",
-                          patterns[j]));
+                    throw MESSAGES.invalidSecurityConstraintUrlPattern(patterns[j]);
             }
         }
 
@@ -1929,19 +1910,14 @@ public class StandardContext
     public void addErrorPage(ErrorPage errorPage) {
         // Validate the input parameters
         if (errorPage == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.errorPage.required"));
+            throw MESSAGES.nullErrorPage();
         String location = errorPage.getLocation();
         if ((location != null) && !location.startsWith("/")) {
             if (isServlet22()) {
-                if(log.isDebugEnabled())
-                    log.debug(sm.getString("standardContext.errorPage.warning",
-                                 location));
+                CatalinaLogger.CORE_LOGGER.errorPageStartsWithSlash(location);
                 errorPage.setLocation("/" + location);
             } else {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.errorPage.error",
-                                  location));
+                throw MESSAGES.errorPageMustStartWithSlash(location);
             }
         }
 
@@ -2037,14 +2013,12 @@ public class StandardContext
         String[] servletNames = filterMap.getServletNames();
         String[] urlPatterns = filterMap.getURLPatterns();
         if (findFilterDef(filterName) == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.name", filterName));
+            throw MESSAGES.unknownFilterNameInMapping(filterName);
 
         if (!filterMap.getMatchAllServletNames() && 
             !filterMap.getMatchAllUrlPatterns() && 
             (servletNames.length == 0) && (urlPatterns.length == 0))
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.either"));
+            throw MESSAGES.missingFilterMapping();
         // FIXME: Older spec revisions may still check this
         /*
         if ((servletNames.length != 0) && (urlPatterns.length != 0))
@@ -2053,9 +2027,7 @@ public class StandardContext
         */
         for (int i = 0; i < urlPatterns.length; i++) {
             if (!validateURLPattern(urlPatterns[i])) {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.filterMap.pattern",
-                            urlPatterns[i]));
+                throw MESSAGES.invalidFilterMappingUrlPattern(urlPatterns[i]);
             }
         }
     }
@@ -2095,8 +2067,7 @@ public class StandardContext
         if( findChild(servletName) != null) {
             addServletMapping(pattern, servletName, true);
         } else {
-            if(log.isDebugEnabled())
-                log.debug("Skiping " + pattern + " , no servlet " + servletName);
+            CatalinaLogger.CORE_LOGGER.missingJspServlet();
         }
     }
 
@@ -2180,11 +2151,9 @@ public class StandardContext
     public void addParameter(String name, String value) {
         // Validate the proposed context initialization parameter
         if ((name == null) || (value == null))
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.parameter.required"));
+            throw MESSAGES.missingParameterNameOrValue();
         if (parameters.get(name) != null)
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.parameter.duplicate", name));
+            throw MESSAGES.duplicateContextParameters(name);
 
         // Add this parameter to our defined set
         parameters.put(name, value);
@@ -2252,12 +2221,10 @@ public class StandardContext
         // Validate the proposed mapping
         Wrapper wrapper = (Wrapper) findChild(name);
         if (findChild(name) == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.servletMap.name", name));
+            throw MESSAGES.unknownServletNameInMapping(name);
         pattern = adjustURLPattern(RequestUtil.URLDecode(pattern));
         if (!validateURLPattern(pattern))
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.servletMap.pattern", pattern));
+            throw MESSAGES.invalidServletMappingUrlPattern(pattern);
 
         // Add this mapping to our registered set
         String name2 = (String) servletMappings.get(pattern);
@@ -2363,7 +2330,7 @@ public class StandardContext
             try {
                 wrapper = (Wrapper) wrapperClass.newInstance();
             } catch (Throwable t) {
-                throw new IllegalStateException(sm.getString("standardContext.createWrapper.failed"), t);
+                throw MESSAGES.errorCreatingWrapper(t);
             }
         } else {
             wrapper = new StandardWrapper();
@@ -2376,7 +2343,7 @@ public class StandardContext
                     (InstanceListener) clazz.newInstance();
                 wrapper.addInstanceListener(listener);
             } catch (Throwable t) {
-                throw new IllegalStateException(sm.getString("standardContext.createWrapper.failed"), t);
+                throw MESSAGES.errorCreatingWrapper(t);
             }
         }
 
@@ -2388,7 +2355,7 @@ public class StandardContext
                 if (wrapper instanceof Lifecycle)
                     ((Lifecycle) wrapper).addLifecycleListener(listener);
             } catch (Throwable t) {
-                throw new IllegalStateException(sm.getString("standardContext.createWrapper.failed"), t);
+                throw MESSAGES.errorCreatingWrapper(t);
             }
         }
 
@@ -2399,7 +2366,7 @@ public class StandardContext
                     (ContainerListener) clazz.newInstance();
                 wrapper.addContainerListener(listener);
             } catch (Throwable t) {
-                throw new IllegalStateException(sm.getString("standardContext.createWrapper.failed"), t);
+                throw MESSAGES.errorCreatingWrapper(t);
             }
         }
 
@@ -2751,15 +2718,7 @@ public class StandardContext
 
         // Validate our current component state
         if (!started)
-            throw new IllegalStateException
-                (sm.getString("containerBase.notStarted", logName()));
-
-        // Make sure reloading is enabled
-        //      if (!reloadable)
-        //          throw new IllegalStateException
-        //              (sm.getString("standardContext.notReloadable"));
-        if(log.isInfoEnabled())
-            log.info(sm.getString("standardContext.reloadingStarted"));
+            return;
 
         // Stop accepting requests temporarily
         setPaused(true);
@@ -2767,13 +2726,13 @@ public class StandardContext
         try {
             stop();
         } catch (LifecycleException e) {
-            log.error(sm.getString("standardContext.stoppingContext"), e);
+            CatalinaLogger.CORE_LOGGER.errorStoppingContext(getName(), e);
         }
 
         try {
             start();
         } catch (LifecycleException e) {
-            log.error(sm.getString("standardContext.startingContext"), e);
+            CatalinaLogger.CORE_LOGGER.errorStartingContext(getName(), e);
         }
 
         setPaused(false);
@@ -2864,8 +2823,7 @@ public class StandardContext
     public void removeChild(Container child) {
 
         if (!(child instanceof Wrapper)) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.notWrapper"));
+            throw MESSAGES.contextChildMustBeWrapper();
         }
 
         super.removeChild(child);
@@ -3241,8 +3199,6 @@ public class StandardContext
      */
     protected boolean filterStart() {
 
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Starting filters");
         // Instantiate and record a FilterConfig for each defined filter
         boolean ok = true;
         Iterator<ApplicationFilterConfig> filterConfigsIterator = 
@@ -3252,25 +3208,23 @@ public class StandardContext
             try {
                 filterConfig.getFilter();
             } catch (Throwable t) {
-                getLogger().error
-                (sm.getString("standardContext.filterStart", name), t);
+                getLogger().error(MESSAGES.errorStartingFilter(filterConfig.getFilterName()), t);
                 ok = false;
             }
         }
         Iterator<String> names = filterDefs.keySet().iterator();
         while (names.hasNext()) {
             String name = names.next();
+            CatalinaLogger.CORE_LOGGER.startingFilter(name);
             if (getLogger().isDebugEnabled())
                 getLogger().debug(" Starting filter '" + name + "'");
             ApplicationFilterConfig filterConfig = null;
             try {
-                filterConfig = new ApplicationFilterConfig
-                (this, (FilterDef) filterDefs.get(name));
+                filterConfig = new ApplicationFilterConfig(this, (FilterDef) filterDefs.get(name));
                 filterConfig.getFilter();
                 filterConfigs.put(name, filterConfig);
             } catch (Throwable t) {
-                getLogger().error
-                (sm.getString("standardContext.filterStart", name), t);
+                getLogger().error(MESSAGES.errorStartingFilter(name), t);
                 ok = false;
             }
         }
@@ -3287,15 +3241,11 @@ public class StandardContext
      */
     protected boolean filterStop() {
 
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Stopping filters");
-
         // Release all Filter and FilterConfig instances
         Iterator<String> names = filterConfigs.keySet().iterator();
         while (names.hasNext()) {
             String name = names.next();
-            if (getLogger().isDebugEnabled())
-                getLogger().debug(" Stopping filter '" + name + "'");
+            CatalinaLogger.CORE_LOGGER.stoppingFilter(name);
             ApplicationFilterConfig filterConfig =
                 (ApplicationFilterConfig) filterConfigs.get(name);
             filterConfig.release();
@@ -3326,24 +3276,16 @@ public class StandardContext
      */
     public boolean contextListenerStart() {
 
-        if (log.isDebugEnabled())
-            log.debug("Configuring application event listeners");
-
         // Instantiate the required listeners
         String listeners[] = findApplicationListeners();
         EventListener listenerInstances[] = applicationListenerInstances;
         EventListener results[] = new EventListener[listeners.length + listenerInstances.length];
         boolean ok = true;
         for (int i = 0; i < listeners.length; i++) {
-            if (getLogger().isDebugEnabled())
-                getLogger().debug(" Configuring event listener class '" +
-                    listeners[i] + "'");
             try {
                 results[i] = (EventListener) instanceManager.newInstance(listeners[i]);
             } catch (Throwable t) {
-                getLogger().error
-                    (sm.getString("standardContext.applicationListener",
-                                  listeners[i]), t);
+                getLogger().error(MESSAGES.errorInstatiatingApplicationListener(listeners[i]), t);
                 ok = false;
             }
         }
@@ -3352,7 +3294,7 @@ public class StandardContext
         }
         applicationListenerInstances = new EventListener[0];
         if (!ok) {
-            getLogger().error(sm.getString("standardContext.applicationSkipped"));
+            getLogger().error(MESSAGES.skippingApplicationListener());
             return (false);
         }
 
@@ -3370,9 +3312,6 @@ public class StandardContext
         setApplicationLifecycleListeners(contextLifecycleListeners.toArray());
 
         // Send application start events
-
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Sending application start events");
 
         Object instances[] = getApplicationLifecycleListeners();
         if (instances == null || instances.length == 0)
@@ -3394,8 +3333,7 @@ public class StandardContext
             } catch (Throwable t) {
                 fireContainerEvent("afterContextInitialized", listener);
                 getLogger().error
-                    (sm.getString("standardContext.listenerStart",
-                                  instances[i].getClass().getName()), t);
+                    (MESSAGES.errorSendingContextInitializedEvent(instances[i].getClass().getName()), t);
                 ok = false;
             } finally {
                 context.setRestricted(false);
@@ -3413,9 +3351,6 @@ public class StandardContext
      */
     public boolean listenerStart() {
 
-        if (log.isDebugEnabled())
-            log.debug("Configuring application event listeners");
-
         // Instantiate the required listeners
         Object listeners[] = listenersInstances;
         EventListener listenerInstances[] = applicationListenerInstances;
@@ -3425,9 +3360,7 @@ public class StandardContext
             try {
                 results[i] = (EventListener) listeners[i];
             } catch (Throwable t) {
-                getLogger().error
-                    (sm.getString("standardContext.applicationListener",
-                                  listeners[i]), t);
+                getLogger().error(MESSAGES.errorInstatiatingApplicationListener(listeners[i].getClass().getName()), t);
                 ok = false;
             }
         }
@@ -3435,7 +3368,7 @@ public class StandardContext
             results[i + listeners.length] = listenerInstances[i];
         }
         if (!ok) {
-            getLogger().error(sm.getString("standardContext.applicationSkipped"));
+            getLogger().error(MESSAGES.skippingApplicationListener());
             return (false);
         }
         this.listenersInstances = results;
@@ -3470,9 +3403,6 @@ public class StandardContext
      */
     public boolean listenerStop() {
 
-        if (log.isDebugEnabled())
-            log.debug("Sending application stop events");
-
         boolean ok = true;
         Object listeners[] = getApplicationLifecycleListeners();
         if (listeners != null && (listeners.length > 0)) {
@@ -3491,8 +3421,7 @@ public class StandardContext
                     } catch (Throwable t) {
                         fireContainerEvent("afterContextDestroyed", listener);
                         getLogger().error
-                            (sm.getString("standardContext.listenerStop",
-                                listeners[i].getClass().getName()), t);
+                            (MESSAGES.errorSendingContextDestroyedEvent(listeners[i].getClass().getName()), t);
                         ok = false;
                     }
                 }
@@ -3509,8 +3438,7 @@ public class StandardContext
                     getInstanceManager().destroyInstance(listeners[i]);
                 } catch (Throwable t) {
                     getLogger().error
-                        (sm.getString("standardContext.listenerStop",
-                            listeners[i].getClass().getName()), t);
+                        (MESSAGES.errorDestroyingApplicationListener(listeners[i].getClass().getName()), t);
                     ok = false;
                 }
             }
@@ -3572,7 +3500,7 @@ public class StandardContext
             }
             this.resources = proxyDirContext;
         } catch (Throwable t) {
-            log.error(sm.getString("standardContext.resourcesStart"), t);
+            CatalinaLogger.CORE_LOGGER.errorStartingResources(t);
             ok = false;
         }
 
@@ -3611,7 +3539,7 @@ public class StandardContext
                 }
             }
         } catch (Throwable t) {
-            log.error(sm.getString("standardContext.resourcesStop"), t);
+            CatalinaLogger.CORE_LOGGER.errorStoppingResources(t);
             ok = false;
         }
 
@@ -3654,8 +3582,7 @@ public class StandardContext
                 try {
                     wrapper.load();
                 } catch (ServletException e) {
-                    getLogger().error(sm.getString("standardWrapper.loadException",
-                                      getName()), StandardWrapper.getRootCause(e));
+                    getLogger().error(MESSAGES.errorLoadingServlet(wrapper.getName()), StandardWrapper.getRootCause(e));
                     // NOTE: load errors (including a servlet that throws
                     // UnavailableException from tht init() method) are NOT
                     // fatal to application startup
@@ -3673,17 +3600,16 @@ public class StandardContext
      */
     public synchronized void start() throws LifecycleException {
         if (started) {
+            CatalinaLogger.CORE_LOGGER.containerAlreadyStarted(logName());
             return;
         }
         if( !initialized ) { 
             try {
                 init();
             } catch( Exception ex ) {
-                throw new LifecycleException("Error initializaing ", ex);
+                throw new LifecycleException(MESSAGES.errorInitializingContext(), ex);
             }
         }
-        if(log.isDebugEnabled())
-            log.debug("Starting " + ("".equals(getName()) ? "ROOT" : getName()));
 
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
             // Set JMX object name for proper pipeline registration
@@ -3707,21 +3633,18 @@ public class StandardContext
 
         // Add missing components as necessary
         if (webappResources == null) {   // (1) Required by Loader
-            if (log.isDebugEnabled())
-                log.debug("Configuring default Resources");
             try {
                 if ((docBase != null) && (docBase.endsWith(".war")) && (!(new File(getBasePath())).isDirectory()))
                     setResources(new WARDirContext());
                 else
                     setResources(new FileDirContext());
             } catch (IllegalArgumentException e) {
-                log.error("Error initializing resources: " + e.getMessage());
+                CatalinaLogger.CORE_LOGGER.errorInitializingResources(e);
                 ok = false;
             }
         }
         if (ok) {
             if (!resourcesStart()) {
-                log.error( "Error in resourceStart()");
                 ok = false;
             }
         }
@@ -3731,10 +3654,6 @@ public class StandardContext
 
         // Post work directory
         postWorkDirectory();
-
-        // Standard container startup
-        if (log.isDebugEnabled())
-            log.debug("Processing standard container startup");
 
         // Binding thread
         ClassLoader oldCCL = bindThread();
@@ -3820,7 +3739,7 @@ public class StandardContext
         } catch (Throwable t) {
             // This can happen in rare cases with custom components
             ok = false;
-            log.error(sm.getString("standardContext.startFailed", getName()), t);
+            CatalinaLogger.CORE_LOGGER.errorStartingContext(getName(), t);
         } finally {
             // Unbinding thread
             unbindThread(oldCCL);
@@ -3848,7 +3767,6 @@ public class StandardContext
             // Configure and call application event listeners
             if (ok) {
                 if (!contextListenerStart()) {
-                    log.error( "Error listenerStart");
                     ok = false;
                 }
             }
@@ -3863,7 +3781,6 @@ public class StandardContext
             // Configure and call application filters
             if (ok) {
                 if (!filterStart()) {
-                    log.error( "Error filterStart");
                     ok = false;
                 }
             }
@@ -3875,7 +3792,6 @@ public class StandardContext
             
             if (ok) {
                 if (!listenerStart()) {
-                    log.error( "Error listenerStart");
                     ok = false;
                 }
             }
@@ -3897,7 +3813,7 @@ public class StandardContext
         } catch (Throwable t) {
             // This can happen in rare cases with custom components
             ok = false;
-            log.error(sm.getString("standardContext.startFailed", getName()), t);
+            CatalinaLogger.CORE_LOGGER.errorStartingContext(getName(), t);
         } finally {
             // Unbinding thread
             unbindThread(oldCCL);
@@ -3908,15 +3824,13 @@ public class StandardContext
 
         // Set available status depending upon startup success
         if (ok) {
-            if (log.isDebugEnabled())
-                log.debug("Starting completed");
             setAvailable(true);
         } else {
-            log.error(sm.getString("standardContext.startFailed", getName()));
+            CatalinaLogger.CORE_LOGGER.errorStartingContextWillStop(getName());
             try {
                 stop();
             } catch (Throwable t) {
-                log.error(sm.getString("standardContext.startCleanup"), t);
+                CatalinaLogger.CORE_LOGGER.errorStartingContextCleanup(getName(), t);
             }
             setAvailable(false);
         }
@@ -3954,8 +3868,7 @@ public class StandardContext
 
         // Validate and update our current component state
         if (!started) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("containerBase.notStarted", logName()));
+            CatalinaLogger.CORE_LOGGER.containerNotStarted(logName());
             return;
         }
 
@@ -4001,9 +3914,6 @@ public class StandardContext
             // Finalize our character set mapper
             setCharsetMapper(null);
 
-            // Normal container shutdown processing
-            if (log.isDebugEnabled())
-                log.debug("Processing standard container shutdown");
             // Notify our interested LifecycleListeners
             lifecycle.fireLifecycleEvent(STOP_EVENT, null);
             started = false;
@@ -4058,14 +3968,11 @@ public class StandardContext
         try {
             resetContext();
         } catch( Exception ex ) {
-            log.error( "Error reseting context " + this + " " + ex, ex );
+            CatalinaLogger.CORE_LOGGER.errorResettingContext(getName(), ex);
         }
         
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
-
-        if (log.isDebugEnabled())
-            log.debug("Stopping complete");
 
     }
 
@@ -4114,9 +4021,6 @@ public class StandardContext
         instanceManager = null;
         
         authenticator = null;
-        
-        if(log.isDebugEnabled())
-            log.debug("resetContext " + oname);
     }
 
     /**
@@ -4156,9 +4060,7 @@ public class StandardContext
             return (urlPattern);
         if (!isServlet22())
             return (urlPattern);
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("standardContext.urlPattern.patternWarning",
-                         urlPattern));
+        CatalinaLogger.CORE_LOGGER.urlPatternStartsWithSlash(urlPattern);
         return ("/" + urlPattern);
 
     }
@@ -4532,12 +4434,10 @@ public class StandardContext
      * See Bugzilla 34805, 43079 & 43080
      */
     protected void checkUnusualURLPattern(String urlPattern) {
-        if (log.isInfoEnabled()) {
+        if (CatalinaLogger.CORE_LOGGER.isInfoEnabled()) {
             if(urlPattern.endsWith("*") && (urlPattern.length() < 2 ||
                     urlPattern.charAt(urlPattern.length()-2) != '/')) {
-                log.info("Suspicious url pattern: \"" + urlPattern + "\"" +
-                        " in context [" + getName() + "] - see" +
-                " section SRV.11.2 of the Servlet specification" );
+                CatalinaLogger.CORE_LOGGER.suspiciousUrlPattern(getName(), urlPattern);
             }
         }
     }
@@ -4625,8 +4525,6 @@ public class StandardContext
                 getJ2EEServer();
 
         onameStr="j2eeType=WebModule,name=" + name + suffix;
-        if( log.isDebugEnabled())
-            log.debug("Registering " + onameStr + " for " + oname);
         
         // default case - no domain explictely set.
         if( getDomain() == null ) domain=hst.getDomain();
@@ -4644,17 +4542,12 @@ public class StandardContext
                 controller = oname;
             }
         } catch(Exception ex) {
-            if(log.isInfoEnabled())
-                log.info("Error registering ctx with jmx " + this + " " +
-                     oname + " " + ex.toString(), ex );
+            CatalinaLogger.CORE_LOGGER.contextObjectNameCreationFailed(getName(), ex);
         }
     }
 
     protected void registerJMX() {
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("Checking for " + oname );
-            }
             if(! Registry.getRegistry(null, null)
                 .getMBeanServer().isRegistered(oname)) {
                 controller = oname;
@@ -4675,9 +4568,7 @@ public class StandardContext
                 ((StandardWrapper)children[i]).registerJMX( this );
             }
         } catch (Exception ex) {
-            if(log.isInfoEnabled())
-                log.info("Error registering wrapper with jmx " + this + " " +
-                    oname + " " + ex.toString(), ex );
+            CatalinaLogger.CORE_LOGGER.contextJmxRegistrationFailed(getName(), ex);
         }
     }
 
@@ -4708,7 +4599,7 @@ public class StandardContext
             try {
                 stop();
             } catch( Exception ex ) {
-                log.error( "error stopping ", ex);
+                CatalinaLogger.CORE_LOGGER.errorStoppingContext(getName(), ex);
             }
         }
     }
@@ -4740,11 +4631,12 @@ public class StandardContext
         // "Life" update
         String path=oname.getKeyProperty("name");
         if( path == null ) {
-            log.error( "No name attribute " +name );
+            CatalinaLogger.CORE_LOGGER.cannotFindContextJmxParentName(getName());
             return null;
         }
         if( ! path.startsWith( "//")) {
-            log.error("Invalid name " + name);
+            CatalinaLogger.CORE_LOGGER.cannotFindContextJmxParentName(getName());
+            return null;
         }
         path=path.substring(2);
         int delim=path.indexOf( "/" );
@@ -4758,8 +4650,6 @@ public class StandardContext
                 this.setName(path);
             }
         } else {
-            if(log.isDebugEnabled())
-                log.debug("Setting path " +  path );
             this.setName( path );
         }
         // XXX The service and domain should be the same.

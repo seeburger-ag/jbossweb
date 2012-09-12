@@ -19,8 +19,8 @@
 package org.apache.catalina.core;
 
 
-import java.io.File;
-import java.util.List;
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.util.Locale;
 
 import javax.management.MBeanServer;
@@ -33,8 +33,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Service;
 import org.apache.tomcat.util.modeler.Registry;
-import org.apache.tomcat.util.modeler.modules.MbeansSource;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * Standard implementation of the <b>Engine</b> interface.  Each
@@ -49,8 +48,6 @@ import org.jboss.logging.Logger;
 public class StandardEngine
     extends ContainerBase
     implements Engine {
-
-    private static Logger log = Logger.getLogger(StandardEngine.class);
 
     // ----------------------------------------------------------- Constructors
 
@@ -100,20 +97,6 @@ public class StandardEngine
      * otherwise we loose some flexibility.
      */
     private String baseDir = null;
-
-    /** Optional mbeans config file. This will replace the "hacks" in
-     * jk and ServerListener. The mbeans file will support (transparent) 
-     * persistence - soon. It'll probably replace jk2.properties and could
-     * replace server.xml. Of course - the same beans could be loaded and 
-     * managed by an external entity - like the embedding app - which
-     *  can use a different persistence mechanism.
-     */ 
-    private String mbeansFile = null;
-    
-    /** Mbeans loaded by the engine.  
-     */ 
-    private List mbeans;
-    
 
     /**
      * The JVM Route ID for this Tomcat instance. All Route ID's must be unique
@@ -204,14 +187,6 @@ public class StandardEngine
         this.service = service;
     }
 
-    public String getMbeansFile() {
-        return mbeansFile;
-    }
-
-    public void setMbeansFile(String mbeansFile) {
-        this.mbeansFile = mbeansFile;
-    }
-
     public String getBaseDir() {
         if( baseDir==null ) {
             baseDir=System.getProperty("catalina.base");
@@ -238,8 +213,7 @@ public class StandardEngine
     public void addChild(Container child) {
 
         if (!(child instanceof Host))
-            throw new IllegalArgumentException
-                (sm.getString("standardEngine.notHost"));
+            throw MESSAGES.engineChildMustBeHost();
         super.addChild(child);
 
     }
@@ -264,8 +238,7 @@ public class StandardEngine
      */
     public void setParent(Container container) {
 
-        throw new IllegalArgumentException
-            (sm.getString("standardEngine.notParent"));
+        throw MESSAGES.engineHasNoParent();
 
     }
 
@@ -283,53 +256,15 @@ public class StandardEngine
                     if (domain==null) {
                         domain=getName();
                     }
-                    if(log.isDebugEnabled())
-                        log.debug( "Register " + domain );
                     oname=new ObjectName(domain + ":type=Engine");
                     controller=oname;
                     Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null);
                 } catch( Throwable t ) {
-                    log.info("Error registering ", t );
-                }
-            }
-
-            if( mbeansFile == null ) {
-                String defaultMBeansFile=getBaseDir() + "/conf/tomcat5-mbeans.xml";
-                File f=new File( defaultMBeansFile );
-                if( f.exists() ) mbeansFile=f.getAbsolutePath();
-            }
-            if( mbeansFile != null ) {
-                readEngineMbeans();
-            }
-            if( mbeans != null ) {
-                try {
-                    Registry.getRegistry(null, null).invoke(mbeans, "init", false);
-                } catch (Exception e) {
-                    log.error("Error in init() for " + mbeansFile, e);
+                    CatalinaLogger.CORE_LOGGER.failedEngineJmxRegistration(oname, t);
                 }
             }
         }
-        
-        // not needed since the following if statement does the same thing the right way
-        // remove later after checking
-        //if( service==null ) {
-        //    try {
-        //        ObjectName serviceName=getParentName();        
-        //        if( mserver.isRegistered( serviceName )) {
-        //            log.info("Registering with the service ");
-        //            try {
-        //                mserver.invoke( serviceName, "setContainer",
-        //                        new Object[] { this },
-        //                        new String[] { "org.apache.catalina.Container" } );
-        //            } catch( Exception ex ) {
-        //               ex.printStackTrace();
-        //            }
-        //        }
-        //    } catch( Exception ex ) {
-        //        log.error("Error registering with service ");
-        //    }
-        //}
         
         if( service==null ) {
             // for consistency...: we are probably in embeded mode
@@ -338,7 +273,7 @@ public class StandardEngine
                 service.setContainer( this );
                 service.initialize();
             } catch( Throwable t ) {
-                log.error(t);
+                CatalinaLogger.CORE_LOGGER.failedServiceCreation(t);
             }
         }
         
@@ -353,26 +288,15 @@ public class StandardEngine
         ((StandardService)service).destroy();
 
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( mbeans != null ) {
+            if ( oname != null ) {
                 try {
-                    Registry.getRegistry(null, null)
-                    .invoke(mbeans, "destroy", false);
-                } catch (Exception e) {
-                    log.error(sm.getString("standardEngine.unregister.mbeans.failed" ,mbeansFile), e);
-                }
-            }
-            // 
-            if( mbeans != null ) {
-                try {
-                    for( int i=0; i<mbeans.size() ; i++ ) {
-                        Registry.getRegistry(null, null)
-                        .unregisterComponent((ObjectName)mbeans.get(i));
+                    if( controller == oname ) {
+                        Registry.getRegistry(null, null).unregisterComponent(oname);
                     }
-                } catch (Exception e) {
-                    log.error(sm.getString("standardEngine.unregister.mbeans.failed", mbeansFile), e);
+                } catch( Throwable t ) {
+                    CatalinaLogger.CORE_LOGGER.failedContainerJmxUnregistration(oname, t);
                 }
             }
-
             // force all metadata to be reloaded.
             // That doesn't affect existing beans. We should make it per
             // registry - and stop using the static.
@@ -393,53 +317,11 @@ public class StandardEngine
             init();
         }
 
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            // Look for a realm - that may have been configured earlier. 
-            // If the realm is added after context - it'll set itself.
-            if( realm == null ) {
-                ObjectName realmName=null;
-                try {
-                    realmName=new ObjectName( domain + ":type=Realm");
-                    if( mserver.isRegistered(realmName ) ) {
-                        mserver.invoke(realmName, "init", 
-                                new Object[] {},
-                                new String[] {}
-                        );            
-                    }
-                } catch( Throwable t ) {
-                    log.debug("No realm for this engine " + realmName);
-                }
-            }
-
-            if( mbeans != null ) {
-                try {
-                    Registry.getRegistry(null, null)
-                    .invoke(mbeans, "start", false);
-                } catch (Exception e) {
-                    log.error("Error in start() for " + mbeansFile, e);
-                }
-            }
-        }
-
         // Standard container startup
         super.start();
 
     }
     
-    public void stop() throws LifecycleException {
-        super.stop();
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( mbeans != null ) {
-                try {
-                    Registry.getRegistry(null, null).invoke(mbeans, "stop", false);
-                } catch (Exception e) {
-                    log.error("Error in stop() for " + mbeansFile, e);
-                }
-            }
-        }
-    }
-
-
     /**
      * Return a String representation of this component.
      */
@@ -482,31 +364,9 @@ public class StandardEngine
     public ObjectName createObjectName(String domain, ObjectName parent)
         throws Exception
     {
-        if( log.isDebugEnabled())
-            log.debug("Create ObjectName " + domain + " " + parent );
         return new ObjectName( domain + ":type=Engine");
     }
 
-    
-    private void readEngineMbeans() {
-        try {
-            MbeansSource mbeansMB=new MbeansSource();
-            File mbeansF=new File( mbeansFile );
-            mbeansMB.setSource(mbeansF);
-            
-            Registry.getRegistry(null, null).registerComponent
-                (mbeansMB, domain + ":type=MbeansFile", null);
-            mbeansMB.load();
-            mbeansMB.init();
-            mbeansMB.setRegistry(Registry.getRegistry(null, null));
-            mbeans=mbeansMB.getMBeans();
-            
-        } catch( Throwable t ) {
-            log.error( "Error loading " + mbeansFile, t );
-        }
-        
-    }
-    
     public String getDomain() {
         if (domain!=null) {
             return domain;
