@@ -27,7 +27,6 @@ import javax.servlet.http.Cookie;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.util.StringManager;
 import org.jboss.logging.Logger;
 
 
@@ -56,13 +55,6 @@ public class RequestDumperValve
      */
     private static final String info =
         "org.apache.catalina.valves.RequestDumperValve/1.0";
-
-
-    /**
-     * The StringManager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------------------- Properties

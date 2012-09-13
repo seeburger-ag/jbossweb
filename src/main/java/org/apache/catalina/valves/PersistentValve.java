@@ -19,6 +19,8 @@
 package org.apache.catalina.valves;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -31,7 +33,6 @@ import org.apache.catalina.Store;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.session.PersistentManager;
-import org.apache.catalina.util.StringManager;
 
 
 /**
@@ -59,13 +60,6 @@ public class PersistentValve
      */
     private static final String info =
         "org.apache.catalina.valves.PersistentValve/1.0";
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------------------- Properties
@@ -101,9 +95,8 @@ public class PersistentValve
         // Select the Context to be used for this Request
         Context context = request.getContext();
         if (context == null) {
-            response.sendError
-                (HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                 sm.getString("standardHost.noContext"));
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    MESSAGES.noContext());
             return;
         }
 

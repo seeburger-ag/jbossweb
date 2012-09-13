@@ -17,6 +17,8 @@
 
 package org.apache.catalina.valves;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,12 +30,11 @@ import java.util.regex.PatternSyntaxException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.valves.Constants;
 import org.apache.catalina.valves.RequestFilterValve;
 import org.apache.catalina.valves.ValveBase;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * <p>
@@ -357,17 +358,6 @@ public class RemoteIpValve extends ValveBase {
     private static final String info = "org.apache.catalina.connector.RemoteIpValve/1.0";
     
     /**
-     * Logger
-     */
-    private static org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(RemoteIpValve.class);
-    
-    /**
-     * The StringManager for this package.
-     */
-    protected static final StringManager sm = StringManager.getManager(Constants.Package);
-    
-    /**
      * Convert a given comma delimited list of regular expressions into an array of compiled {@link Pattern}
      * 
      * @return array of patterns (not <code>null</code>)
@@ -379,7 +369,7 @@ public class RemoteIpValve extends ValveBase {
             try {
                 patternsList.add(Pattern.compile(pattern));
             } catch (PatternSyntaxException e) {
-                throw new IllegalArgumentException(sm.getString("remoteIpValve.syntax", pattern), e);
+                throw MESSAGES.remoteIpValvePatternError(pattern, e);
             }
         }
         return patternsList.toArray(new Pattern[0]);
@@ -620,8 +610,8 @@ public class RemoteIpValve extends ValveBase {
                 }
             }
             
-            if (log.isDebugEnabled()) {
-                log.debug("Incoming request " + request.getRequestURI() + " with originalRemoteAddr '" + originalRemoteAddr
+            if (CatalinaLogger.VALVES_LOGGER.isDebugEnabled()) {
+                CatalinaLogger.VALVES_LOGGER.debug("Incoming request " + request.getRequestURI() + " with originalRemoteAddr '" + originalRemoteAddr
                           + "', originalRemoteHost='" + originalRemoteHost + "', originalSecure='" + originalSecure + "', originalScheme='"
                           + originalScheme + "' will be seen as newRemoteAddr='" + request.getRemoteAddr() + "', newRemoteHost='"
                           + request.getRemoteHost() + "', newScheme='" + request.getScheme() + "', newSecure='" + request.isSecure() + "'");

@@ -25,9 +25,7 @@ package org.jboss.web.php;
 import java.lang.reflect.Method;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
-import org.apache.catalina.util.StringManager;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.WebLogger;
 
 /**
  * Implementation of <code>LifecycleListener</code> that will init and
@@ -40,14 +38,6 @@ import org.jboss.logging.Logger;
 
 public class LifecycleListener
     implements org.apache.catalina.LifecycleListener {
-
-    private static Logger log = Logger.getLogger(LifecycleListener.class);
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     // -------------------------------------------------------------- Constants
 
@@ -85,24 +75,15 @@ public class LifecycleListener
                 minor = clazz.getField("PHP_MINOR_VERSION").getInt(null);
                 patch = clazz.getField("PHP_PATCH_VERSION").getInt(null);
             } catch (Throwable t) {
-                if (!log.isDebugEnabled()) {
-                    log.info(sm.getString("listener.initialize",
-                             System.getProperty("java.library.path")));
-                }
-                else {
-                    log.debug(sm.getString("listener.initialize",
-                              System.getProperty("java.library.path")), t);
-                }
+                WebLogger.ROOT_LOGGER.errorInitializingPhpLibrary(System.getProperty("java.library.path"), t);
                 return;
             }
             // Check if the PHP Native module matches required version.
             if ((major != REQUIRED_MAJOR) ||
                 (minor != REQUIRED_MINOR) ||
                 (patch <  REQUIRED_PATCH)) {
-                log.error(sm.getString("listener.invalid", major + "."
-                          + minor + "." + patch, REQUIRED_MAJOR + "."
-                          + REQUIRED_MINOR + "."
-                          + REQUIRED_PATCH));
+                WebLogger.ROOT_LOGGER.invalidPhpLibrary(major, minor, patch, 
+                        REQUIRED_MAJOR, REQUIRED_MINOR, REQUIRED_PATCH);
             }
         }
         else if (Lifecycle.AFTER_STOP_EVENT.equals(event.getType())) {
@@ -113,12 +94,7 @@ public class LifecycleListener
                 method.invoke(null, (Object []) null);
             }
             catch (Throwable t) {
-                if (!log.isDebugEnabled()) {
-                    log.info(sm.getString("listener.terminate"));
-                }
-                else {
-                    log.debug(sm.getString("listener.terminate"), t);
-                }
+                WebLogger.ROOT_LOGGER.errorTerminatingPhpLibrary(t);
             }
         }
     }

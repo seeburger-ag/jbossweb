@@ -21,8 +21,7 @@ package org.apache.catalina.core;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.util.StringManager;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -36,15 +35,6 @@ import org.jboss.logging.Logger;
 
 public class JasperListener
     implements LifecycleListener {
-
-    private static Logger log = Logger.getLogger(JasperListener.class);
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     // ---------------------------------------------- LifecycleListener Methods
 
@@ -64,7 +54,7 @@ public class JasperListener
                               this.getClass().getClassLoader());
             } catch (Throwable t) {
                 // Should not occur, obviously
-                log.warn("Couldn't initialize Jasper", t);
+                CatalinaLogger.CORE_LOGGER.jspContainerInitializationFailed(t);
             }
             // Another possibility is to do directly:
             // JspFactory.setDefaultFactory(new JspFactoryImpl());

@@ -19,6 +19,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -27,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.Host;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.servlet.http.HttpEvent;
 
@@ -55,13 +56,6 @@ final class StandardEngineValve
      */
     private static final String info =
         "org.apache.catalina.core.StandardEngineValve/1.0";
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------------------- Properties
@@ -100,8 +94,7 @@ final class StandardEngineValve
         if (host == null) {
             response.sendError
                 (HttpServletResponse.SC_BAD_REQUEST,
-                 sm.getString("standardEngine.noHost", 
-                              request.getServerName()));
+                 MESSAGES.noHost(request.getServerName()));
             return;
         }
 

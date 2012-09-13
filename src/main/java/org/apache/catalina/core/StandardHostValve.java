@@ -19,6 +19,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 
 import javax.servlet.RequestDispatcher;
@@ -36,11 +38,10 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.ErrorPage;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
-import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEvent.EventType;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -58,9 +59,6 @@ import org.jboss.servlet.http.HttpEvent.EventType;
 final class StandardHostValve
     extends ValveBase {
 
-
-    private static Logger log = Logger.getLogger(StandardHostValve.class);
-
     // ----------------------------------------------------- Instance Variables
 
 
@@ -69,13 +67,6 @@ final class StandardHostValve
      */
     private static final String info =
         "org.apache.catalina.core.StandardHostValve/1.0";
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------------------- Properties
@@ -114,7 +105,7 @@ final class StandardHostValve
         if (context == null) {
             response.sendError
                 (HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                 sm.getString("standardHost.noContext"));
+                 MESSAGES.noContext());
             return;
         }
 
@@ -142,8 +133,7 @@ final class StandardHostValve
                 try {
                     listener.requestInitialized(event);
                 } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("standardContext.requestListener.requestInit",
-                                     instances[i].getClass().getName()), t);
+                    container.getLogger().error(MESSAGES.requestListenerInitException(instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
                     sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                     return;
@@ -184,8 +174,7 @@ final class StandardHostValve
                 try {
                     listener.requestDestroyed(event);
                 } catch (Throwable t2) {
-                    container.getLogger().error(sm.getString("standardContext.requestListener.requestDestroy",
-                                     instances[i].getClass().getName()), t2);
+                    container.getLogger().error(MESSAGES.requestListenerDestroyException(instances[i].getClass().getName()), t2);
                     ServletRequest sreq = request.getRequest();
                     sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t2);
                 }
@@ -245,8 +234,7 @@ final class StandardHostValve
                 try {
                     listener.requestInitialized(event2);
                 } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("requestListenerValve.requestInit",
-                                     instances[i].getClass().getName()), t);
+                    container.getLogger().error(MESSAGES.requestListenerInitException(instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
                     sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                     Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
@@ -303,8 +291,7 @@ final class StandardHostValve
                 try {
                     listener.requestDestroyed(event2);
                 } catch (Throwable t) {
-                    container.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
-                                     instances[i].getClass().getName()), t);
+                    container.getLogger().error(MESSAGES.requestListenerDestroyException(instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
                     sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                 }
@@ -349,11 +336,7 @@ final class StandardHostValve
 
         // If this is an aborted request from a client just log it and return
         if (realError instanceof ClientAbortException ) {
-            if (log.isDebugEnabled()) {
-                log.debug
-                    (sm.getString("standardHost.clientAbort",
-                        realError.getCause().getMessage()));
-            }
+            CatalinaLogger.CORE_LOGGER.clientAbortException(realError.getCause().getMessage());
             return;
         }
 

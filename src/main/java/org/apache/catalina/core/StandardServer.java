@@ -33,10 +33,9 @@ import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.buf.StringCache;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 
@@ -50,8 +49,6 @@ import org.jboss.logging.Logger;
 public final class StandardServer
     implements Lifecycle, Server, MBeanRegistration 
  {
-    private static Logger log = Logger.getLogger(StandardServer.class);
-   
 
     // ------------------------------------------------------------ Constructor
 
@@ -83,13 +80,6 @@ public final class StandardServer
      * The set of Services associated with this Server.
      */
     private Service services[] = new Service[0];
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -156,7 +146,7 @@ public final class StandardServer
                 try {
                     service.initialize();
                 } catch (LifecycleException e) {
-                    log.error(e);
+                    CatalinaLogger.CORE_LOGGER.errorInitializingService(e);
                 }
             }
 
@@ -164,7 +154,7 @@ public final class StandardServer
                 try {
                     ((Lifecycle) service).start();
                 } catch (LifecycleException e) {
-                    ;
+                    CatalinaLogger.CORE_LOGGER.errorStartingService(e);
                 }
             }
 
@@ -344,7 +334,6 @@ public final class StandardServer
 
         // Validate and update our current component state
         if (started) {
-            log.debug(sm.getString("standardServer.start.started"));
             return;
         }
 
@@ -412,7 +401,6 @@ public final class StandardServer
         throws LifecycleException 
     {
         if (initialized) {
-                log.info(sm.getString("standardServer.initialize.initialized"));
             return;
         }
         lifecycle.fireLifecycleEvent(INIT_EVENT, null);
@@ -425,7 +413,7 @@ public final class StandardServer
                     Registry.getRegistry(null, null)
                     .registerComponent(this, oname, null );
                 } catch (Exception e) {
-                    log.error("Error registering ",e);
+                    CatalinaLogger.CORE_LOGGER.failedServerJmxRegistration(oname, e);
                 }
             }
 
@@ -436,7 +424,7 @@ public final class StandardServer
                 Registry.getRegistry(null, null)
                 .registerComponent(new StringCache(), oname2, null );
             } catch (Exception e) {
-                log.error("Error registering ",e);
+                CatalinaLogger.CORE_LOGGER.failedServerJmxRegistration(oname, e);
             }
         }
 

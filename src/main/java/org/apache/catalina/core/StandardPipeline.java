@@ -31,11 +31,9 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -54,8 +52,6 @@ import org.jboss.logging.Logger;
 public class StandardPipeline
     implements Pipeline, Contained, Lifecycle 
  {
-
-    private static Logger log = Logger.getLogger(StandardPipeline.class);
 
     // ----------------------------------------------------------- Constructors
 
@@ -109,13 +105,6 @@ public class StandardPipeline
      * The lifecycle event support for this component.
      */
     protected LifecycleSupport lifecycle = new LifecycleSupport(this);
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -215,8 +204,7 @@ public class StandardPipeline
 
         // Validate and update our current component state
         if (started) {
-            if(log.isDebugEnabled())
-                log.debug(sm.getString("standardPipeline.alreadyStarted"));
+            CatalinaLogger.CORE_LOGGER.pipelineAlreadyStarted();
             return;
         }
 
@@ -258,8 +246,7 @@ public class StandardPipeline
 
         // Validate and update our current component state
         if (!started) {
-            if(log.isDebugEnabled())
-                log.debug(sm.getString("standardPipeline.notStarted"));
+            CatalinaLogger.CORE_LOGGER.pipelineNotStarted();
             return;
         }
 
@@ -311,7 +298,7 @@ public class StandardPipeline
                         (((ContainerBase)container).getJmxName());
                 }
             } catch( Throwable t ) {
-                log.info( "Can't register valve " + valve , t );
+                CatalinaLogger.CORE_LOGGER.failedValveJmxRegistration(valve, t);
             }
         }
     }
@@ -331,7 +318,7 @@ public class StandardPipeline
                         ((ValveBase)valve).setObjectName(null);
                     }
                 } catch( Throwable t ) {
-                    log.info( "Can't unregister valve " + valve , t );
+                    CatalinaLogger.CORE_LOGGER.failedValveJmxUnregistration(valve, t);
                 }
             }
         }
@@ -376,7 +363,7 @@ public class StandardPipeline
                 try {
                     ((Lifecycle) oldBasic).stop();
                 } catch (LifecycleException e) {
-                    log.error("StandardPipeline.setBasic: stop", e);
+                    CatalinaLogger.CORE_LOGGER.errorStoppingValve(e);
                 }
             }
             if (oldBasic instanceof Contained) {
@@ -398,7 +385,7 @@ public class StandardPipeline
             try {
                 ((Lifecycle) valve).start();
             } catch (LifecycleException e) {
-                log.error("StandardPipeline.setBasic: start", e);
+                CatalinaLogger.CORE_LOGGER.errorStartingValve(e);
                 return;
             }
         }
@@ -449,7 +436,7 @@ public class StandardPipeline
                 try {
                     ((Lifecycle) valve).start();
                 } catch (LifecycleException e) {
-                    log.error("StandardPipeline.addValve: start: ", e);
+                    CatalinaLogger.CORE_LOGGER.errorStartingValve(e);
                 }
             }
             // Register the newly added valve
@@ -552,7 +539,7 @@ public class StandardPipeline
                 try {
                     ((Lifecycle) valve).stop();
                 } catch (LifecycleException e) {
-                    log.error("StandardPipeline.removeValve: stop: ", e);
+                    CatalinaLogger.CORE_LOGGER.errorStoppingValve(e);
                 }
             }
             // Unregister the removed valave

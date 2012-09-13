@@ -19,6 +19,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
@@ -40,10 +42,9 @@ import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.util.Base64;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -57,15 +58,12 @@ import org.jboss.logging.Logger;
 public class StandardService
         implements Lifecycle, Service, MBeanRegistration 
  {
-    private static Logger log = Logger.getLogger(StandardService.class);
-   
 
     /**
      * Alternate flag to enable delaying startup of connectors in embedded mode.
      */
     public static final boolean DELAY_CONNECTOR_STARTUP =
         Boolean.valueOf(System.getProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "true")).booleanValue();
-
 
     // ----------------------------------------------------- Instance Variables
 
@@ -87,13 +85,6 @@ public class StandardService
      * The lifecycle event support for this component.
      */
     private LifecycleSupport lifecycle = new LifecycleSupport(this);
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     /**
      * The <code>Server</code> that owns this Service, if any.
@@ -351,7 +342,7 @@ public class StandardService
                     try {
                         connector.init();
                     } catch (LifecycleException e) {
-                        log.error("Connector.initialize", e);
+                        CatalinaLogger.CORE_LOGGER.errorInitializingConnector(e);
                     }
                 }
 
@@ -359,7 +350,7 @@ public class StandardService
                     try {
                         ((Lifecycle) connector).start();
                     } catch (LifecycleException e) {
-                        log.error("Connector.start", e);
+                        CatalinaLogger.CORE_LOGGER.errorStartingConnector(e);
                     }
                 }
             }
@@ -425,7 +416,7 @@ public class StandardService
                     try {
                         ((Lifecycle) connectors[j]).stop();
                     } catch (LifecycleException e) {
-                        log.error("Connector.stop", e);
+                        CatalinaLogger.CORE_LOGGER.errorStoppingConnector(e);
                     }
                 }
             }
@@ -520,7 +511,7 @@ public class StandardService
                     try {
                         ex.start();
                     } catch (LifecycleException x) {
-                        log.error("Executor.start", x);
+                        CatalinaLogger.CORE_LOGGER.errorStartingExecutor(x);
                     }
             }
         }
@@ -563,7 +554,7 @@ public class StandardService
                 try {
                     ex.stop();
                 } catch (LifecycleException e) {
-                    log.error("Executor.stop", e);
+                    CatalinaLogger.CORE_LOGGER.errorStoppingExecutor(e);
                 }
             }
         }
@@ -583,8 +574,9 @@ public class StandardService
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
-        if (log.isInfoEnabled() && started) {
-            log.info(sm.getString("standardService.start.started"));
+        if (started) {
+            CatalinaLogger.CORE_LOGGER.serviceAlreadyStarted();
+            return;
         }
         
         if( ! initialized )
@@ -592,8 +584,7 @@ public class StandardService
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("standardService.start.name", this.name));
+        CatalinaLogger.CORE_LOGGER.startingService(name);
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -641,6 +632,7 @@ public class StandardService
 
         // Validate and update our current component state
         if (!started) {
+            CatalinaLogger.CORE_LOGGER.serviceNotStarted();
             return;
         }
 
@@ -657,8 +649,7 @@ public class StandardService
         }
 
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("standardService.stop.name", this.name));
+        CatalinaLogger.CORE_LOGGER.stoppingService(name);
         started = false;
 
         // Stop our defined Container second
@@ -720,8 +711,6 @@ public class StandardService
     {
         // Service shouldn't be used with embeded, so it doesn't matter
         if (initialized) {
-            if(log.isInfoEnabled())
-                log.info(sm.getString("standardService.initialize.initialized"));
             return;
         }
         initialized = true;
@@ -746,7 +735,7 @@ public class StandardService
                     }
 
                 } catch (Exception e) {
-                    log.error(sm.getString("standardService.register.failed",domain),e);
+                    CatalinaLogger.CORE_LOGGER.failedServiceJmxRegistration(domain, e);
                 }
             }
         }
@@ -786,7 +775,7 @@ public class StandardService
         try {
             initialize();
         } catch( Throwable t ) {
-            log.error(sm.getString("standardService.initialize.failed",domain),t);
+            CatalinaLogger.CORE_LOGGER.errorInitializingService(t);
         }
     }
 

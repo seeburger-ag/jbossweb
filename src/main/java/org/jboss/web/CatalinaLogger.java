@@ -28,6 +28,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.Logger.Level.DEBUG;
 
 import java.io.File;
+import java.util.Date;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -535,5 +536,121 @@ public interface CatalinaLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 1109, value = "Cannot find context %s parent Host JMX name")
     void cannotFindContextJmxParentName(String name);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1110, value = "JSP container initialization failed")
+    void jspContainerInitializationFailed(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1111, value = "Thread %s (id=%s) has been active for %s milliseconds (since %s) to serve the same request for %s and may be stuck (configured threshold for this StuckThreadDetectionValve is %s seconds). There is/are %s thread(s) in total that are monitored by this Valve and may be stuck.")
+    void stuckThreadDetected(String threadName, long threadId, long active, Date start, String requestUri, int threshold, int stuckCount, @Cause Throwable stackTrace);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1112, value = "Thread %s (id=%s) was previously reported to be stuck but has completed. It was active for approximately %s milliseconds. There is/are still %s thread(s) that are monitored by this Valve and may be stuck.")
+    void stuckThreadCompleted(String threadName, long threadId, long active, int stuckCount);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1113, value = "Failed to trigger creation of the GC Daemon thread during start to prevent possible memory leaks. This is expected on non-Sun JVMs.")
+    void errorCreatingGcDaemon(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1114, value = "Error whilst attempting to prevent memory leak in javax.security.auth.Policy class")
+    void errorLoadingPolicy(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1115, value = "Failed to disable Jar URL connection caching by default")
+    void errorDisablingUrlConnectionCaching(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1116, value = "Error whilst attempting to prevent memory leaks during XML parsing")
+    void errorLoadingJaxp(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1117, value = "Failed to trigger creation of the com.sun.jndi.ldap.LdapPoolManager class during Tomcat start to prevent possible memory leaks. This is expected on non-Sun JVMs.")
+    void errorLoadingLdapPoolManager(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 1118, value = "Failed to load class %s during Tomcat start to prevent possible memory leaks.")
+    void errorLoadingLeakClass(String className, @Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1119, value = "Client abort exception: %s")
+    void clientAbortException(String message);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1120, value = "Pipeline already started")
+    void pipelineAlreadyStarted();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1121, value = "Pipeline has not been started")
+    void pipelineNotStarted();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1122, value = "Failed valve [%s] JMX registration.")
+    void failedValveJmxRegistration(Object valve, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1123, value = "Failed valve [%s] JMX unregistration.")
+    void failedValveJmxUnregistration(Object valve, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1124, value = "Error stopping valve")
+    void errorStoppingValve(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1125, value = "Error starting valve")
+    void errorStartingValve(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1126, value = "Error starting service")
+    void errorStartingService(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1127, value = "Error initializing service")
+    void errorInitializingService(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1128, value = "Failed service [%s] JMX registration.")
+    void failedServiceJmxRegistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1129, value = "Error starting connector")
+    void errorStartingConnector(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1130, value = "Error initializing connector")
+    void errorInitializingConnector(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1131, value = "Error stopping connector")
+    void errorStoppingConnector(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1132, value = "Error starting executor")
+    void errorStartingExecutor(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1133, value = "Error stopping executor")
+    void errorStoppingExecutor(@Cause Throwable t);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1134, value = "This service has already been started")
+    void serviceAlreadyStarted();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1135, value = "This service has not been started")
+    void serviceNotStarted();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1136, value = "Starting service %s")
+    void startingService(String serviceName);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 1137, value = "Stopping service %s")
+    void stoppingService(String serviceName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1138, value = "Failed server [%s] JMX registration.")
+    void failedServerJmxRegistration(Object objectName, @Cause Throwable t);
 
 }

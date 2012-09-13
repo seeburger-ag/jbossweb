@@ -22,6 +22,8 @@
 
 package org.jboss.web.php;
 
+import static org.jboss.web.WebMessages.MESSAGES;
+
 import java.io.IOException;
 
 import javax.servlet.ServletConfig;
@@ -31,8 +33,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.Globals;
-import org.apache.catalina.util.StringManager;
+import org.jboss.web.WebLogger;
 
 /**
  * Handler.
@@ -55,13 +56,6 @@ public class Handler extends HttpServlet
      * is null, this filter instance is not currently configured.
      */
     private ServletConfig servletConfig = null;
-
-    /**
-     * The string manager for this package.
-     */
-    private StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     /** Are doing source sysntax highlight. */
     protected boolean syntaxHighlight = false;
@@ -102,25 +96,15 @@ public class Handler extends HttpServlet
             // try to load the library.
             try {
                 Library.initialize(null);
-            } catch(Exception e) {
-                e.printStackTrace();
+            } catch(Throwable t) {
+                WebLogger.ROOT_LOGGER.errorInitializingPhpLibrary(System.getProperty("java.library.path"), t);
             }
         }
 
         if (!Library.isInitialized())
-            throw new UnavailableException
-                (sm.getString("handler.missing"));
+            throw new UnavailableException(MESSAGES.errorLoadingPhp());
 
         this.servletConfig = servletConfig;
-
-        // Verify that we were not accessed using the invoker servlet
-        String servletName = servletConfig.getServletName();
-        if (servletName == null)
-            servletName = "";
-        if (servletName.startsWith("org.apache.catalina.INVOKER."))
-            throw new UnavailableException
-                ("Cannot invoke Handler through the invoker");
-
 
         // Set our properties from the initialization parameters
         String value = null;
@@ -139,7 +123,6 @@ public class Handler extends HttpServlet
         } catch (Throwable t) {
             // Nothing.
         }
-        log("init: loglevel set to " + debug);
 
         value = servletConfig.getInitParameter("parameterEncoding");
         if (value != null) {

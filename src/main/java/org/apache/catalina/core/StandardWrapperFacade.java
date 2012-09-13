@@ -47,6 +47,8 @@
 package org.apache.catalina.core;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -64,7 +66,6 @@ import javax.servlet.ServletSecurityElement;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.deploy.Multipart;
-import org.apache.catalina.util.StringManager;
 
 
 /**
@@ -76,13 +77,6 @@ import org.apache.catalina.util.StringManager;
 
 public class StandardWrapperFacade
     implements ServletRegistration, ServletConfig {
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     public static class Dynamic extends StandardWrapperFacade
@@ -155,11 +149,10 @@ public class StandardWrapperFacade
     public Set<String> addMapping(String... urlPatterns) {
         Set<String> conflicts = new HashSet<String>();
         if (!((Context) wrapper.getParent()).isStarting()) {
-            throw new IllegalStateException(sm.getString
-                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+            throw MESSAGES.cannotAddServletRegistrationAfterInit(((Context) wrapper.getParent()).getPath());
         }
         if (urlPatterns == null || urlPatterns.length == 0) {
-            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+            throw MESSAGES.invalidServletRegistrationArguments();
         }
         for (String urlPattern : urlPatterns) {
             if (((Context) wrapper.getParent()).findServletMapping(urlPattern) != null) {
@@ -177,8 +170,7 @@ public class StandardWrapperFacade
 
     public void setAsyncSupported(boolean asyncSupported) {
         if (!((Context) wrapper.getParent()).isStarting()) {
-            throw new IllegalStateException(sm.getString
-                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+            throw MESSAGES.cannotAddServletRegistrationAfterInit(((Context) wrapper.getParent()).getPath());
         }
         wrapper.setAsyncSupported(asyncSupported);
     }
@@ -191,11 +183,10 @@ public class StandardWrapperFacade
 
     public boolean setInitParameter(String name, String value) {
         if (!((Context) wrapper.getParent()).isStarting()) {
-            throw new IllegalStateException(sm.getString
-                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+            throw MESSAGES.cannotAddServletRegistrationAfterInit(((Context) wrapper.getParent()).getPath());
         }
         if (name == null || value == null) {
-            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+            throw MESSAGES.invalidServletRegistrationArguments();
         }
         if (wrapper.findInitParameter(name) == null) {
             wrapper.addInitParameter(name, value);
@@ -208,11 +199,10 @@ public class StandardWrapperFacade
 
     public Set<String> setInitParameters(Map<String, String> initParameters) {
         if (!((Context) wrapper.getParent()).isStarting()) {
-            throw new IllegalStateException(sm.getString
-                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+            throw MESSAGES.cannotAddServletRegistrationAfterInit(((Context) wrapper.getParent()).getPath());
         }
         if (initParameters == null) {
-            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+            throw MESSAGES.invalidServletRegistrationArguments();
         }
         Set<String> conflicts = new HashSet<String>();
         Iterator<String> parameterNames = initParameters.keySet().iterator();
@@ -223,7 +213,7 @@ public class StandardWrapperFacade
             } else {
                 String value = initParameters.get(parameterName);
                 if (value == null) {
-                    throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+                    throw MESSAGES.invalidServletRegistrationArguments();
                 }
                 wrapper.addInitParameter(parameterName, value);
             }
@@ -234,8 +224,7 @@ public class StandardWrapperFacade
 
     public void setLoadOnStartup(int loadOnStartup) {
         if (!((Context) wrapper.getParent()).isStarting()) {
-            throw new IllegalStateException(sm.getString
-                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+            throw MESSAGES.cannotAddServletRegistrationAfterInit(((Context) wrapper.getParent()).getPath());
         }
         wrapper.setLoadOnStartup(loadOnStartup);
     }
@@ -277,33 +266,30 @@ public class StandardWrapperFacade
 
     public void setRunAsRole(String roleName) {
         if (!((Context) wrapper.getParent()).isStarting()) {
-            throw new IllegalStateException(sm.getString
-                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+            throw MESSAGES.cannotAddServletRegistrationAfterInit(((Context) wrapper.getParent()).getPath());
         }
         if (roleName == null) {
-            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+            throw MESSAGES.invalidServletRegistrationArguments();
         }
         wrapper.setRunAs(roleName);
     }
     
     public Set<String> setServletSecurity(ServletSecurityElement servletSecurity) {
         if (!((Context) wrapper.getParent()).isStarting()) {
-            throw new IllegalStateException(sm.getString
-                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+            throw MESSAGES.cannotAddServletRegistrationAfterInit(((Context) wrapper.getParent()).getPath());
         }
         if (servletSecurity == null) {
-            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+            throw MESSAGES.invalidServletRegistrationArguments();
         }
         return wrapper.setServletSecurity(servletSecurity);
     }
     
     public void setMultipartConfig(MultipartConfigElement multipartConfig) {
         if (!((Context) wrapper.getParent()).isStarting()) {
-            throw new IllegalStateException(sm.getString
-                    ("servletRegistration.ise", ((Context) wrapper.getParent()).getPath()));
+            throw MESSAGES.cannotAddServletRegistrationAfterInit(((Context) wrapper.getParent()).getPath());
         }
         if (multipartConfig == null) {
-            throw new IllegalArgumentException(sm.getString("servletRegistration.iae"));
+            throw MESSAGES.invalidServletRegistrationArguments();
         }
         Multipart multipart = new Multipart();
         multipart.setLocation(multipartConfig.getLocation());

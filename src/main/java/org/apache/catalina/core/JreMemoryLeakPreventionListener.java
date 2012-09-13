@@ -33,7 +33,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.util.StringManager;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * Provide a workaround for known places where the Java Runtime environment can
@@ -50,11 +50,6 @@ import org.apache.catalina.util.StringManager;
  * caching by default.
  */
 public class JreMemoryLeakPreventionListener implements LifecycleListener {
-
-    private static org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(JreMemoryLeakPreventionListener.class);
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     /**
      * Protect against the memory leak caused when the first call to
@@ -293,27 +288,18 @@ public class JreMemoryLeakPreventionListener implements LifecycleListener {
                     } catch (ClassNotFoundException e) {
                         if (System.getProperty("java.vendor").startsWith(
                                 "Sun")) {
-                            log.error(sm.getString(
-                                    "jreLeakListener.gcDaemonFail"), e);
-                        } else {
-                            log.debug(sm.getString(
-                                    "jreLeakListener.gcDaemonFail"), e);
+                            CatalinaLogger.CORE_LOGGER.errorCreatingGcDaemon(e);
                         }
                     } catch (SecurityException e) {
-                        log.error(sm.getString("jreLeakListener.gcDaemonFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorCreatingGcDaemon(e);
                     } catch (NoSuchMethodException e) {
-                        log.error(sm.getString("jreLeakListener.gcDaemonFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorCreatingGcDaemon(e);
                     } catch (IllegalArgumentException e) {
-                        log.error(sm.getString("jreLeakListener.gcDaemonFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorCreatingGcDaemon(e);
                     } catch (IllegalAccessException e) {
-                        log.error(sm.getString("jreLeakListener.gcDaemonFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorCreatingGcDaemon(e);
                     } catch (InvocationTargetException e) {
-                        log.error(sm.getString("jreLeakListener.gcDaemonFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorCreatingGcDaemon(e);
                     }
                 }
 
@@ -334,17 +320,13 @@ public class JreMemoryLeakPreventionListener implements LifecycleListener {
                         // Ignore. Don't need call to getPolicy() to be
                         // successful, just need to trigger static initializer.
                     } catch (NoSuchMethodException e) {
-                        log.warn(sm.getString("jreLeakListener.authPolicyFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorLoadingPolicy(e);
                     } catch (IllegalArgumentException e) {
-                        log.warn(sm.getString("jreLeakListener.authPolicyFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorLoadingPolicy(e);
                     } catch (IllegalAccessException e) {
-                        log.warn(sm.getString("jreLeakListener.authPolicyFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorLoadingPolicy(e);
                     } catch (InvocationTargetException e) {
-                        log.warn(sm.getString("jreLeakListener.authPolicyFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorLoadingPolicy(e);
                     }
                 }
 
@@ -394,11 +376,9 @@ public class JreMemoryLeakPreventionListener implements LifecycleListener {
                         URLConnection uConn = url.openConnection();
                         uConn.setDefaultUseCaches(false);
                     } catch (MalformedURLException e) {
-                        log.error(sm.getString(
-                                "jreLeakListener.jarUrlConnCacheFail"), e);
+                        CatalinaLogger.CORE_LOGGER.errorDisablingUrlConnectionCaching(e);
                     } catch (IOException e) {
-                        log.error(sm.getString(
-                                "jreLeakListener.jarUrlConnCacheFail"), e);
+                        CatalinaLogger.CORE_LOGGER.errorDisablingUrlConnectionCaching(e);
                     }
                 }
 
@@ -413,8 +393,7 @@ public class JreMemoryLeakPreventionListener implements LifecycleListener {
                     try {
                         factory.newDocumentBuilder();
                     } catch (ParserConfigurationException e) {
-                        log.error(sm.getString("jreLeakListener.xmlParseFail"),
-                                e);
+                        CatalinaLogger.CORE_LOGGER.errorLoadingJaxp(e);
                     }
                 }
 
@@ -424,11 +403,7 @@ public class JreMemoryLeakPreventionListener implements LifecycleListener {
                     } catch (ClassNotFoundException e) {
                         if (System.getProperty("java.vendor").startsWith(
                                 "Sun")) {
-                            log.error(sm.getString(
-                                    "jreLeakListener.ldapPoolManagerFail"), e);
-                        } else {
-                            log.debug(sm.getString(
-                                    "jreLeakListener.ldapPoolManagerFail"), e);
+                            CatalinaLogger.CORE_LOGGER.errorLoadingLdapPoolManager(e);
                         }
                     }
                 }
@@ -441,9 +416,7 @@ public class JreMemoryLeakPreventionListener implements LifecycleListener {
                         try {
                             Class.forName(classNameToLoad);
                         } catch (ClassNotFoundException e) {
-                            log.error(
-                                sm.getString("jreLeakListener.classToInitializeFail",
-                                    classNameToLoad), e);
+                            CatalinaLogger.CORE_LOGGER.errorLoadingLeakClass(classNameToLoad, e);
                             // continue with next class to load
                         }
                     }

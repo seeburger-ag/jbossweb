@@ -796,4 +796,31 @@ public interface CatalinaMessages {
     @Message(id = 290, value = "Error initializing context")
     String errorInitializingContext();
 
+    @Message(id = 291, value = "No Context was mapped to process this request")
+    String noContext();
+
+    @Message(id = 292, value = "Syntax error in IP filter pattern %s")
+    IllegalArgumentException remoteIpValvePatternError(String pattern, @Cause Throwable t);
+
+    @Message(id = 293, value = "No host [%s] mapped")
+    String noHost(String host);
+
+    @Message(id = 294, value = "Servlet %s does not have any instance support")
+    IllegalStateException missingInstanceSupport(String servletName);
+
+    @Message(id = 295, value = "This application is not currently available")
+    String unavailable();
+
+    @Message(id = 296, value = "Error acknowledging request for Servlet %s")
+    String errorAcknowledgingRequest(String servletName);
+
+    @Message(id = 297, value = "Async listener processing for servlet %s threw exception")
+    String asyncListenerError(String servletName);
+
+    @Message(id = 298, value = "Async runnable processing for servlet %s threw exception")
+    String asyncRunnableError(String servletName);
+
+    @Message(id = 299, value = "Async dispatch processing for servlet %s threw exception")
+    String asyncDispatchError(String servletName);
+
 }

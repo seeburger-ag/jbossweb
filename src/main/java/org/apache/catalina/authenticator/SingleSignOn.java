@@ -19,6 +19,8 @@
 package org.apache.catalina.authenticator;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
@@ -37,7 +39,6 @@ import org.apache.catalina.SessionListener;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 
 
@@ -102,13 +103,6 @@ public class SingleSignOn
      * associated with them.
      */
     protected Map<Session,String> reverse = new HashMap<Session,String>();
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected final static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -277,8 +271,7 @@ public class SingleSignOn
 
         // Validate and update our current component state
         if (started)
-            throw new LifecycleException
-                (sm.getString("authenticator.alreadyStarted"));
+            throw new LifecycleException(MESSAGES.valveAlreadyStarted());
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -297,8 +290,7 @@ public class SingleSignOn
 
         // Validate and update our current component state
         if (!started)
-            throw new LifecycleException
-                (sm.getString("authenticator.notStarted"));
+            throw new LifecycleException(MESSAGES.valveNotStarted());
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
