@@ -101,7 +101,7 @@ public interface CoyoteMessages {
     @Message(id = 2019, value = "Invalid CRLF")
     IOException invalidCrlf();
 
-    @Message(id = 2019, value = "Invalid chunk header")
+    @Message(id = 2020, value = "Invalid chunk header")
     IOException invalidChunkHeader();
 
 }

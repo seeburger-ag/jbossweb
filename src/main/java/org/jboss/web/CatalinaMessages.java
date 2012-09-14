@@ -193,7 +193,7 @@ public interface CatalinaMessages {
     @Message(id = 50, value = "Cannot start async")
     IllegalStateException cannotStartAsync();
 
-    @Message(id = 51, value = "Error invoking onStartAsync on listener of class {0}")
+    @Message(id = 51, value = "Error invoking onStartAsync on listener of class %s")
     IllegalStateException errorStartingAsync(String listenerClassName, @Cause Throwable t);
 
     @Message(id = 52, value = "No authenticator available for programmatic login")
@@ -292,12 +292,6 @@ public interface CatalinaMessages {
     @Message(id = 87, value = "Duration unit not found after amount %s in directive %s")
     IllegalStateException expiresDurationUnitNotFound(int amount, String line);
 
-    @Message(id = 86, value = "Invalid duration unit (years|months|weeks|days|hours|minutes|seconds) %s in directive %s")
-    IllegalStateException expiresInvalidDurationUnit(String token, String line);
-
-    @Message(id = 87, value = "Request filter invalid pattern %s")
-    IllegalArgumentException requestFilterInvalidPattern(String pattern, @Cause Throwable t);
-
     @Message(id = 88, value = "The requested resource (%s) is not available")
     String resourceNotAvailable(String resource);
 
@@ -379,7 +373,7 @@ public interface CatalinaMessages {
     @Message(id = 114, value = "The requested resource has moved temporarily to a new location.")
     String http302();
 
-    @Message(id = 115, value = "The response to this request can be found under a different URI (%s).")
+    @Message(id = 115, value = "The response to this request can be found under a different URI.")
     String http303();
 
     @Message(id = 116, value = "The requested resource is available and has not been modified.")
@@ -526,24 +520,6 @@ public interface CatalinaMessages {
     @Message(id = 207, value = "JDBC Store SQL exception")
     String jdbcStoreDatabaseError();
 
-    @Message(id = 202, value = "Loading Session %s from file %s")
-    String jdbcStoreSessionLoad(String sessionId, String table);
-
-    @Message(id = 203, value = "Saving Session %s to file %s")
-    String jdbcStoreSessionSave(String sessionId, String table);
-
-    @Message(id = 204, value = "Removing Session %s at file %s")
-    String jdbcStoreSessionRemove(String sessionId, String table);
-
-    @Message(id = 205, value = "No persisted data object found")
-    String jdbcStoreIdNotFound();
-
-    @Message(id = 206, value = "The database connection is null or was found to be closed. Trying to re-open it.")
-    String jdbcStoreConnectionWasClosed();
-
-    @Message(id = 207, value = "The re-open on the database failed. The database could be down.")
-    String jdbcStoreConnectionReopenFailed();
-
     @Message(id = 208, value = "JDBC driver class not found %s")
     String jdbcStoreDriverFailure(String className);
 
@@ -605,7 +581,7 @@ public interface CatalinaMessages {
     IllegalArgumentException invalidContextListener(String className, String path);
 
     @Message(id = 228, value = "Bad listener class %s for context %s")
-    IllegalArgumentException invalidContextListener(String className, String path, @Cause Throwable t);
+    IllegalArgumentException invalidContextListenerWithException(String className, String path, @Cause Throwable t);
 
     @Message(id = 229, value = "The session tracking mode %s requested for context %s is not supported by that context")
     IllegalArgumentException unsupportedSessionTrackingMode(String sessionTracking, String path);
@@ -784,9 +760,6 @@ public interface CatalinaMessages {
     @Message(id = 287, value = "Exception sending context initialized event to listener instance of class %s")
     String errorSendingContextInitializedEvent(String listenerClass);
 
-    @Message(id = 287, value = "Exception sending context destroyed event to listener instance of class %s")
-    String errorSendingContextDestroyedEvent(String listenerClass);
-
     @Message(id = 288, value = "Error destroying application listener of class %s")
     String errorDestroyingApplicationListener(String listenerClass);
 
@@ -822,5 +795,32 @@ public interface CatalinaMessages {
 
     @Message(id = 299, value = "Async dispatch processing for servlet %s threw exception")
     String asyncDispatchError(String servletName);
+
+    @Message(id = 300, value = "Loading Session %s from file %s")
+    String jdbcStoreSessionLoad(String sessionId, String table);
+
+    @Message(id = 301, value = "Saving Session %s to file %s")
+    String jdbcStoreSessionSave(String sessionId, String table);
+
+    @Message(id = 302, value = "Removing Session %s at file %s")
+    String jdbcStoreSessionRemove(String sessionId, String table);
+
+    @Message(id = 303, value = "No persisted data object found")
+    String jdbcStoreIdNotFound();
+
+    @Message(id = 304, value = "The database connection is null or was found to be closed. Trying to re-open it.")
+    String jdbcStoreConnectionWasClosed();
+
+    @Message(id = 305, value = "The re-open on the database failed. The database could be down.")
+    String jdbcStoreConnectionReopenFailed();
+
+    @Message(id = 306, value = "Exception sending context destroyed event to listener instance of class %s")
+    String errorSendingContextDestroyedEvent(String listenerClass);
+
+    @Message(id = 307, value = "Invalid duration unit (years|months|weeks|days|hours|minutes|seconds) %s in directive %s")
+    IllegalStateException expiresInvalidDurationUnit(String token, String line);
+
+    @Message(id = 308, value = "Request filter invalid pattern %s")
+    IllegalArgumentException requestFilterInvalidPattern(String pattern, @Cause Throwable t);
 
 }

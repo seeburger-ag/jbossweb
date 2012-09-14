@@ -75,7 +75,7 @@ public class AprLifecycleListener
                     if (!CatalinaLogger.CORE_LOGGER.isDebugEnabled()) {
                         CatalinaLogger.CORE_LOGGER.aprSslEngineInitFailed();
                     } else {
-                        CatalinaLogger.CORE_LOGGER.aprSslEngineInitFailed(t);
+                        CatalinaLogger.CORE_LOGGER.aprSslEngineInitFailedWithThrowable(t);
                     }
                 }
             }
@@ -105,9 +105,9 @@ public class AprLifecycleListener
             patch = clazz.getField("TCN_PATCH_VERSION").getInt(null);
         } catch (Throwable t) {
             if (!CatalinaLogger.CORE_LOGGER.isDebugEnabled()) {
-                CatalinaLogger.CORE_LOGGER.aprInitFailed();
+                CatalinaLogger.CORE_LOGGER.aprInitFailed(System.getProperty("java.library.path"));
             } else {
-                CatalinaLogger.CORE_LOGGER.aprInitFailed(t);
+                CatalinaLogger.CORE_LOGGER.aprInitFailedWithThrowable(System.getProperty("java.library.path"), t);
             }
             return false;
         }

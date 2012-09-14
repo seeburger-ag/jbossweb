@@ -1134,7 +1134,7 @@ public class ApplicationContext
             Class<?> clazz = context.getLoader().getClassLoader().loadClass(className);
             listenerInstance = (EventListener) context.getInstanceManager().newInstance(clazz);
         } catch (Throwable t) {
-            throw MESSAGES.invalidContextListener(className, getContextPath(), t);
+            throw MESSAGES.invalidContextListenerWithException(className, getContextPath(), t);
         }
         checkListenerType(listenerInstance);
         if (context.getApplicationLifecycleListeners() != null && listenerInstance instanceof ServletContextListener) {
@@ -1170,7 +1170,7 @@ public class ApplicationContext
         try {
             listenerInstance = (EventListener) context.getInstanceManager().newInstance(listenerClass);
         } catch (Exception e) {
-            throw MESSAGES.invalidContextListener(listenerClass.getName(), getContextPath(), e);
+            throw MESSAGES.invalidContextListenerWithException(listenerClass.getName(), getContextPath(), e);
         }
         checkListenerType(listenerInstance);
         if (context.getApplicationLifecycleListeners() != null && listenerInstance instanceof ServletContextListener) {

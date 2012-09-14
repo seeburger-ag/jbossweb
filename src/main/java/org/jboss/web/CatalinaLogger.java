@@ -141,10 +141,6 @@ public interface CatalinaLogger extends BasicLogger {
     @Message(id = 1012, value = "The connector has already been started")
     void connectorAlreadyStarted();
 
-    @LogMessage(level = ERROR)
-    @Message(id = 1012, value = "Failed protocol handler [%s] JMX registration.")
-    void failedProtocolJmxRegistration(Object objectName, @Cause Throwable t);
-
     @LogMessage(level = INFO)
     @Message(id = 1013, value = "Cannot proceed with protocol handler JMX registration.")
     void failedProtocolJmxRegistration();
@@ -343,7 +339,7 @@ public interface CatalinaLogger extends BasicLogger {
 
     @LogMessage(level = DEBUG)
     @Message(id = 1062, value = "Failed to initialize the SSLEngine")
-    void aprSslEngineInitFailed(@Cause Throwable t);
+    void aprSslEngineInitFailedWithThrowable(@Cause Throwable t);
 
     @LogMessage(level = INFO)
     @Message(id = 1063, value = "Failed to initialize the SSLEngine")
@@ -351,11 +347,11 @@ public interface CatalinaLogger extends BasicLogger {
 
     @LogMessage(level = DEBUG)
     @Message(id = 1064, value = "The native library which allows optimal performance in production environments was not found on the java.library.path: %s")
-    void aprInitFailed(@Cause Throwable t);
+    void aprInitFailedWithThrowable(String libraryPath, @Cause Throwable t);
 
     @LogMessage(level = INFO)
     @Message(id = 1065, value = "The native library which allows optimal performance in production environments was not found on the java.library.path: %s")
-    void aprInitFailed();
+    void aprInitFailed(String libraryPath);
 
     @LogMessage(level = ERROR)
     @Message(id = 1066, value = "An incompatible version %s.%s.%s of the native library is installed, while JBoss Web requires version %s.%s.%s")
@@ -478,11 +474,11 @@ public interface CatalinaLogger extends BasicLogger {
     void missingJspServlet();
 
     @LogMessage(level = ERROR)
-    @Message(id = 1096, value = "Error stopping context")
+    @Message(id = 1096, value = "Error stopping context %s")
     void errorStoppingContext(String name, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1097, value = "Error starting context")
+    @Message(id = 1097, value = "Error starting context %s")
     void errorStartingContext(String name, @Cause Throwable t);
 
     @LogMessage(level = DEBUG)
@@ -506,15 +502,15 @@ public interface CatalinaLogger extends BasicLogger {
     void errorInitializingResources(@Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1103, value = "Error detected during context start, will stop it")
+    @Message(id = 1103, value = "Error detected during context %s start, will stop it")
     void errorStartingContextWillStop(String name);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1104, value = "Error performing failed context start cleanup")
+    @Message(id = 1104, value = "Error performing failed context %s start cleanup")
     void errorStartingContextCleanup(String name, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1105, value = "Error resetting context")
+    @Message(id = 1105, value = "Error resetting context %s")
     void errorResettingContext(String name, @Cause Throwable t);
 
     @LogMessage(level = DEBUG)
@@ -528,10 +524,6 @@ public interface CatalinaLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 1108, value = "Context %s object name creation failed")
     void contextObjectNameCreationFailed(String contextName, @Cause Throwable t);
-
-    @LogMessage(level = INFO)
-    @Message(id = 1108, value = "Context %s JMX registration failed")
-    void contextJmxRegistrationFailed(String contextName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
     @Message(id = 1109, value = "Cannot find context %s parent Host JMX name")
@@ -652,5 +644,13 @@ public interface CatalinaLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 1138, value = "Failed server [%s] JMX registration.")
     void failedServerJmxRegistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1139, value = "Context %s JMX registration failed")
+    void contextJmxRegistrationFailed(String contextName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1140, value = "Failed protocol handler [%s] JMX registration.")
+    void failedProtocolJmxRegistration(Object objectName, @Cause Throwable t);
 
 }
