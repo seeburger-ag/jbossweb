@@ -17,6 +17,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.ByteArrayOutputStream;
@@ -39,7 +41,6 @@ import javax.servlet.jsp.tagext.BodyContent;
 
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
-import org.apache.jasper.compiler.Localizer;
 
 /**
  * Bunch of util methods that are used by code generated for useBean,
@@ -336,8 +337,7 @@ public class JspRuntimeLibrary {
 	    if ( method != null ) {
 		if (type.isArray()) {
                     if (request == null) {
-			throw new JasperException(
-		            Localizer.getMessage("jsp.error.beans.setproperty.noindexset"));
+			throw new JasperException(MESSAGES.failedSettingBeanIndexedProperty());
                     }
 		    Class t = type.getComponentType();
 		    String[] values = request.getParameterValues(param);
@@ -362,16 +362,9 @@ public class JspRuntimeLibrary {
 	}
         if (!ignoreMethodNF && (method == null)) {
             if (type == null) {
-		throw new JasperException(
-                    Localizer.getMessage("jsp.error.beans.noproperty",
-					 prop,
-					 bean.getClass().getName()));
+                throw new JasperException(MESSAGES.cannotFindBeanProperty(prop, bean.getClass().getName()));
             } else {
-		throw new JasperException(
-	            Localizer.getMessage("jsp.error.beans.nomethod.setproperty",
-					 prop,
-					 type.getName(),
-					 bean.getClass().getName()));
+                throw new JasperException(MESSAGES.cannotSetBeanProperty(prop, type.getName(), bean.getClass().getName()));
             }
         }
     }
@@ -600,8 +593,7 @@ public class JspRuntimeLibrary {
     public static Object handleGetProperty(Object o, String prop)
     throws JasperException {
         if (o == null) {
-	    throw new JasperException(
-	            Localizer.getMessage("jsp.error.beans.nullbean"));
+	    throw new JasperException(MESSAGES.nullBean());
         }
 	Object value = null;
         try {
@@ -783,25 +775,16 @@ public class JspRuntimeLibrary {
 		}
             } else {        
                 // just in case introspection silently fails.
-                throw new JasperException(
-                    Localizer.getMessage("jsp.error.beans.nobeaninfo",
-					 beanClass.getName()));
+                throw new JasperException(MESSAGES.cannotFindBeanInfo(beanClass.getName()));
             }
         } catch (Exception ex) {
             throw new JasperException (ex);
         }
         if (method == null) {
             if (type == null) {
-		throw new JasperException(
-                        Localizer.getMessage("jsp.error.beans.noproperty",
-					     prop,
-					     beanClass.getName()));
+                throw new JasperException(MESSAGES.cannotFindBeanProperty(prop, beanClass.getName()));
             } else {
-		throw new JasperException(
-		    Localizer.getMessage("jsp.error.beans.nomethod.setproperty",
-					 prop,
-					 type.getName(),
-					 beanClass.getName()));
+                throw new JasperException(MESSAGES.cannotSetBeanProperty(prop, type.getName(), beanClass.getName()));
             }
         }
         return method;
@@ -827,22 +810,16 @@ public class JspRuntimeLibrary {
                 }
             } else {        
                 // just in case introspection silently fails.
-		throw new JasperException(
-                    Localizer.getMessage("jsp.error.beans.nobeaninfo",
-					 beanClass.getName()));
+		throw new JasperException(MESSAGES.cannotFindBeanInfo(beanClass.getName()));
 	    }
 	} catch (Exception ex) {
 	    throw new JasperException (ex);
 	}
         if (method == null) {
             if (type == null) {
-		throw new JasperException(
-                    Localizer.getMessage("jsp.error.beans.noproperty", prop,
-					 beanClass.getName()));
+                throw new JasperException(MESSAGES.cannotFindBeanProperty(prop, beanClass.getName()));
             } else {
-		throw new JasperException(
-                    Localizer.getMessage("jsp.error.beans.nomethod", prop,
-					 beanClass.getName()));
+                throw new JasperException(MESSAGES.cannotGetBeanProperty(prop, beanClass.getName()));
             }
         }
 
@@ -862,10 +839,8 @@ public class JspRuntimeLibrary {
 	    pe.setAsText(attrValue);
 	    return pe.getValue();
 	} catch (Exception ex) {
-	    throw new JasperException(
-                Localizer.getMessage("jsp.error.beans.property.conversion",
-				     attrValue, attrClass.getName(), attrName,
-				     ex.getMessage()));
+	    throw new JasperException(MESSAGES.errorConvertingBeanProperty
+	            (attrValue, attrClass.getName(), attrName, ex.getMessage()));
 	}
     }
 
@@ -880,14 +855,11 @@ public class JspRuntimeLibrary {
 		propEditor.setAsText(attrValue);
 		return propEditor.getValue();
 	    } else {
-		throw new IllegalArgumentException(
-                    Localizer.getMessage("jsp.error.beans.propertyeditor.notregistered"));
+		throw MESSAGES.noRegisteredPropertyEditor();
 	    }
 	} catch (IllegalArgumentException ex) {
-	    throw new JasperException(
-                Localizer.getMessage("jsp.error.beans.property.conversion",
-				     attrValue, attrClass.getName(), attrName,
-				     ex.getMessage()));
+	    throw new JasperException(MESSAGES.errorConvertingBeanProperty
+                (attrValue, attrClass.getName(), attrName, ex.getMessage()));
 	}
     }
 

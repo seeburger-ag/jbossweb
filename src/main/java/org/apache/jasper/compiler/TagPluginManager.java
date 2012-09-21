@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.util.HashMap;
 
@@ -89,8 +91,8 @@ public class TagPluginManager {
             }
 
             if (!TAG_PLUGINS_ROOT_ELEM.equals(reader.getLocalName())) {
-                err.jspError("jsp.error.plugin.wrongRootElement", TAG_PLUGINS_XML,
-                        TAG_PLUGINS_ROOT_ELEM);
+                err.jspError(MESSAGES.wrongRootElement(TAG_PLUGINS_XML,
+                        TAG_PLUGINS_ROOT_ELEM));
             }
 
             tagPlugins = new HashMap<String, TagPlugin>();
@@ -106,11 +108,11 @@ public class TagPluginManager {
                         } else if ("plugin-class".equals(childClementName)) {
                             pluginClassName = reader.getElementText().trim();
                         } else {
-                            err.jspError("jsp.error.invalid.tagplugin", TAG_PLUGINS_XML);
+                            err.jspError(MESSAGES.invalidTagPlugin(TAG_PLUGINS_XML));
                         }
                     }
                     if (tagClassName == null || pluginClassName == null) {
-                        err.jspError("jsp.error.invalid.tagplugin", TAG_PLUGINS_XML);
+                        err.jspError(MESSAGES.invalidTagPlugin(TAG_PLUGINS_XML));
                     }
                     TagPlugin tagPlugin = null;
                     try {
@@ -126,11 +128,11 @@ public class TagPluginManager {
 
                 } else {
                     // All other elements are invalid
-                    err.jspError("jsp.error.invalid.tagplugin", TAG_PLUGINS_XML);
+                    err.jspError(MESSAGES.invalidTagPlugin(TAG_PLUGINS_XML));
                 }
             }
         } catch (XMLStreamException e) {
-            err.jspError("jsp.error.invalid.tagplugin", TAG_PLUGINS_XML, e);
+            err.jspError(MESSAGES.invalidTagPlugin(TAG_PLUGINS_XML), e);
         } catch (FactoryConfigurationError e) {
             throw new JasperException(e);
         } finally {

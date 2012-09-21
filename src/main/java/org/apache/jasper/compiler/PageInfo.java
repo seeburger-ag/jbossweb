@@ -16,6 +16,8 @@
  */
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -377,9 +379,9 @@ class PageInfo {
 
         if (!"java".equalsIgnoreCase(value)) {
             if (pagedir)
-                err.jspError(n, "jsp.error.page.language.nonjava");
+                err.jspError(n.getStart(), MESSAGES.unsupportedPageDirectiveLanguage());
             else
-                err.jspError(n, "jsp.error.tag.language.nonjava");
+                err.jspError(n.getStart(), MESSAGES.unsupportedTagDirectiveLanguage());
         }
 
         language = value;
@@ -459,12 +461,12 @@ class PageInfo {
             buffer = 0;
         else {
             if (value == null || !value.endsWith("kb"))
-                err.jspError(n, "jsp.error.page.invalid.buffer");
+                err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveBufferSize());
             try {
                 Integer k = new Integer(value.substring(0, value.length()-2));
                 buffer = k.intValue() * 1024;
             } catch (NumberFormatException e) {
-                err.jspError(n, "jsp.error.page.invalid.buffer");
+                err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveBufferSize());
             }
         }
 
@@ -478,12 +480,12 @@ class PageInfo {
             buffer = 0;
         else {
             if (value == null || !value.endsWith("kb"))
-                err.jspError("jsp.error.page.invalid.buffer");
+                err.jspError(MESSAGES.invalidPageDirectiveBufferSize());
             try {
                 Integer k = new Integer(value.substring(0, value.length()-2));
                 buffer = k.intValue() * 1024;
             } catch (NumberFormatException e) {
-                err.jspError("jsp.error.page.invalid.buffer");
+                err.jspError(MESSAGES.invalidPageDirectiveBufferSize());
             }
         }
 
@@ -510,7 +512,7 @@ class PageInfo {
         else if ("false".equalsIgnoreCase(value))
             isSession = false;
         else
-            err.jspError(n, "jsp.error.page.invalid.session");
+            err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveSession());
 
         session = value;
     }
@@ -535,7 +537,7 @@ class PageInfo {
         else if ("false".equalsIgnoreCase(value))
             isAutoFlush = false;
         else
-            err.jspError(n, "jsp.error.autoFlush.invalid");
+            err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveAutoFlush());
 
         autoFlush = value;
     }
@@ -560,7 +562,7 @@ class PageInfo {
         else if ("false".equalsIgnoreCase(value))
             isThreadSafe = false;
         else
-            err.jspError(n, "jsp.error.page.invalid.isthreadsafe");
+            err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveIsThreadSafe());
 
         isThreadSafeValue = value;
     }
@@ -609,7 +611,7 @@ class PageInfo {
         else if ("false".equalsIgnoreCase(value))
             isErrorPage = false;
         else
-            err.jspError(n, "jsp.error.page.invalid.iserrorpage");
+            err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveIsErrorPage());
 
         isErrorPageValue = value;
     }
@@ -636,9 +638,9 @@ class PageInfo {
             isELIgnored = false;
         else {
             if (pagedir)
-                err.jspError(n, "jsp.error.page.invalid.iselignored");
+                err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveIsElIgnored());
             else
-                err.jspError(n, "jsp.error.tag.invalid.iselignored");
+                err.jspError(n.getStart(), MESSAGES.invalidTagDirectiveIsElIgnored());
         }
 
         isELIgnoredValue = value;
@@ -657,9 +659,9 @@ class PageInfo {
             deferredSyntaxAllowedAsLiteral = false;
         else {
             if (pagedir)
-                err.jspError(n, "jsp.error.page.invalid.deferredsyntaxallowedasliteral");
+                err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveDeferredSyntaxAllowedAsLiteral());
             else
-                err.jspError(n, "jsp.error.tag.invalid.deferredsyntaxallowedasliteral");
+                err.jspError(n.getStart(), MESSAGES.invalidTagDirectiveDeferredSyntaxAllowedAsLiteral());
         }
 
         deferredSyntaxAllowedAsLiteralValue = value;
@@ -678,9 +680,9 @@ class PageInfo {
             trimDirectiveWhitespaces = false;
         else {
             if (pagedir)
-                err.jspError(n, "jsp.error.page.invalid.trimdirectivewhitespaces");
+                err.jspError(n.getStart(), MESSAGES.invalidPageDirectiveTrimDirectiveWhitespaces());
             else
-                err.jspError(n, "jsp.error.tag.invalid.trimdirectivewhitespaces");
+                err.jspError(n.getStart(), MESSAGES.invalidTagDirectiveTrimDirectiveWhitespaces());
         }
 
         trimDirectiveWhitespacesValue = value;

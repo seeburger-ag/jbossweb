@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -99,7 +101,7 @@ public class JavacErrorDetail {
                 if (jspLines.length < jspBeginLineNum) {
                     // Avoid ArrayIndexOutOfBoundsException
                     // Probably bug 48494 but could be some other cause
-                    jspExtract = Localizer.getMessage("jsp.error.bug48494");
+                    jspExtract = MESSAGES.errorDisplayingJspExtract();
                     return;
                 }
                 

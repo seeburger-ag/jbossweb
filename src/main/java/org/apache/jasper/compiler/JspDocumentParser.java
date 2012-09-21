@@ -16,6 +16,8 @@
  */
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.CharArrayWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -204,14 +206,14 @@ class JspDocumentParser
             pageNodes = new Node.Nodes(dummyRoot);
 
         } catch (IOException ioe) {
-            jspDocParser.err.jspError("jsp.error.data.file.read", path, ioe);
+            jspDocParser.err.jspError(MESSAGES.errorReadingFile(path), ioe);
         } catch (SAXParseException e) {
             jspDocParser.err.jspError
                 (new Mark(jspDocParser.ctxt, path, e.getLineNumber(),
                           e.getColumnNumber()),
-                 e.getMessage());
+                          MESSAGES.errorParsingFile(path), e);
         } catch (Exception e) {
-            jspDocParser.err.jspError(e);
+            jspDocParser.err.jspError(MESSAGES.errorParsingFile(path), e);
         }
 
         return pageNodes;
@@ -279,7 +281,7 @@ class JspDocumentParser
         if (JSP_URI.equals(uri) && TEXT_ACTION.equals(current.getLocalName())
                                 && "jsp".equals(currentPrefix)) {
             throw new SAXParseException(
-                Localizer.getMessage("jsp.error.text.has_subelement"),
+                MESSAGES.invalidJspTextSubelements(),
                 locator);
         }
 
@@ -537,10 +539,7 @@ class JspDocumentParser
                     lastCh = 0;
                     for (;; i++) {
                         if (i >= charBuffer.length()) {
-                            throw new SAXParseException(
-                                Localizer.getMessage(
-                                    "jsp.error.unterminated",
-                                    (char) elType + "{"),
+                            throw new SAXParseException(MESSAGES.unterminatedTag((char) elType + "{"),
                                 locator);
 
                         }
@@ -668,9 +667,7 @@ class JspDocumentParser
                     for (int i = 0; i < children.size(); i++) {
                         Node child = children.getNode(i);
                         if (!(child instanceof Node.NamedAttribute)) {
-                            throw new SAXParseException(Localizer.getMessage(
-                                    "jasper.error.emptybodycontent.nonempty",
-                                    current.qName), locator); 
+                            throw new SAXParseException(MESSAGES.invalidEmptyTagSubelements(current.qName), locator); 
                         }
                     }
                 }
@@ -787,8 +784,7 @@ class JspDocumentParser
         try {
             taglibInfo = getTaglibInfo(prefix, uri);
         } catch (JasperException je) {
-            throw new SAXParseException(
-                Localizer.getMessage("jsp.error.could.not.add.taglibraries", je.getMessage()),
+            throw new SAXParseException(MESSAGES.errorAddingTagLibraries(je.getMessage()),
                 locator,
                 je);
         }
@@ -835,8 +831,7 @@ class JspDocumentParser
 
         if (localName.equals(ROOT_ACTION)) {
             if (!(current instanceof Node.Root)) {
-                throw new SAXParseException(
-                    Localizer.getMessage("jsp.error.nested_jsproot"),
+                throw new SAXParseException(MESSAGES.nestedJspRoot(),
                     locator);
             }
             node =
@@ -852,10 +847,7 @@ class JspDocumentParser
             }
         } else if (localName.equals(PAGE_DIRECTIVE_ACTION)) {
             if (isTagFile) {
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.action.istagfile",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidDirectiveInTagFile(localName),
                     locator);
             }
             node =
@@ -885,10 +877,7 @@ class JspDocumentParser
             if (scriptlessBodyNode != null) {
                 // We're nested inside a node whose body is
                 // declared to be scriptless
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.no.scriptlets",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidScriptingElement(),
                     locator);
             }
             node =
@@ -902,10 +891,7 @@ class JspDocumentParser
             if (scriptlessBodyNode != null) {
                 // We're nested inside a node whose body is
                 // declared to be scriptless
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.no.scriptlets",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidScriptingElement(),
                     locator);
             }
             node =
@@ -919,10 +905,7 @@ class JspDocumentParser
             if (scriptlessBodyNode != null) {
                 // We're nested inside a node whose body is
                 // declared to be scriptless
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.no.scriptlets",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidScriptingElement(),
                     locator);
             }
             node =
@@ -1039,10 +1022,7 @@ class JspDocumentParser
                     current);
         } else if (localName.equals(TAG_DIRECTIVE_ACTION)) {
             if (!isTagFile) {
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.action.isnottagfile",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidDirectiveInTagFile(localName),
                     locator);
             }
             node =
@@ -1060,10 +1040,7 @@ class JspDocumentParser
             }
         } else if (localName.equals(ATTRIBUTE_DIRECTIVE_ACTION)) {
             if (!isTagFile) {
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.action.isnottagfile",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidDirectiveInTagFile(localName),
                     locator);
             }
             node =
@@ -1076,10 +1053,7 @@ class JspDocumentParser
                     current);
         } else if (localName.equals(VARIABLE_DIRECTIVE_ACTION)) {
             if (!isTagFile) {
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.action.isnottagfile",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidDirectiveInTagFile(localName),
                     locator);
             }
             node =
@@ -1092,10 +1066,7 @@ class JspDocumentParser
                     current);
         } else if (localName.equals(INVOKE_ACTION)) {
             if (!isTagFile) {
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.action.isnottagfile",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidActionInTagFile(localName),
                     locator);
             }
             node =
@@ -1108,10 +1079,7 @@ class JspDocumentParser
                     current);
         } else if (localName.equals(DOBODY_ACTION)) {
             if (!isTagFile) {
-                throw new SAXParseException(
-                    Localizer.getMessage(
-                        "jsp.error.action.isnottagfile",
-                        localName),
+                throw new SAXParseException(MESSAGES.invalidActionInTagFile(localName),
                     locator);
             }
             node =
@@ -1140,10 +1108,7 @@ class JspDocumentParser
                     start,
                     current);
         } else {
-            throw new SAXParseException(
-                Localizer.getMessage(
-                    "jsp.error.xml.badStandardAction",
-                    localName),
+            throw new SAXParseException(MESSAGES.invalidStandardAction(localName),
                 locator);
         }
 
@@ -1174,8 +1139,7 @@ class JspDocumentParser
         TagInfo tagInfo = tagLibInfo.getTag(localName);
         TagFileInfo tagFileInfo = tagLibInfo.getTagFile(localName);
         if (tagInfo == null && tagFileInfo == null) {
-            throw new SAXException(
-                Localizer.getMessage("jsp.error.xml.bad_tag", localName, uri));
+            throw new SAXException(MESSAGES.unknownTag(localName, uri));
         }
         Class tagHandlerClass = null;
         if (tagInfo != null) {
@@ -1184,10 +1148,7 @@ class JspDocumentParser
                 tagHandlerClass =
                     ctxt.getClassLoader().loadClass(handlerClassName);
             } catch (Exception e) {
-                throw new SAXException(
-                    Localizer.getMessage("jsp.error.loadclass.taghandler",
-                                         handlerClassName,
-                                         qName),
+                throw new SAXException(MESSAGES.errorLoadingTagHandler(handlerClassName, qName),
                     e);
             }
         }
@@ -1318,11 +1279,7 @@ class JspDocumentParser
                         elemType = DECLARATION_ACTION;
                     if (scriptingElem instanceof Node.Expression)
                         elemType = EXPRESSION_ACTION;
-                    String msg =
-                        Localizer.getMessage(
-                            "jsp.error.parse.xml.scripting.invalid.body",
-                            elemType);
-                    throw new SAXException(msg);
+                    throw new SAXException(MESSAGES.invalidScriptingBody(elemType));
                 }
             }
         }
@@ -1345,12 +1302,11 @@ class JspDocumentParser
         try {
             parserController.parse(fname, parent, null);
         } catch (FileNotFoundException fnfe) {
-            throw new SAXParseException(
-                Localizer.getMessage("jsp.error.file.not.found", fname),
+            throw new SAXParseException(MESSAGES.fileNotFound(fname),
                 locator,
                 fnfe);
         } catch (Exception e) {
-            throw new SAXException(e);
+            throw new SAXException(MESSAGES.errorParsingFile(fname), e);
         }
     }
 

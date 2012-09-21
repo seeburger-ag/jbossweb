@@ -17,6 +17,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -42,7 +44,6 @@ import javax.servlet.jsp.el.VariableResolver;
 import javax.servlet.jsp.tagext.BodyContent;
 import javax.servlet.jsp.tagext.VariableInfo;
 
-import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.util.Enumerator;
 
 /**
@@ -101,8 +102,7 @@ public class JspContextWrapper extends PageContext implements VariableResolver {
 	public Object getAttribute(String name) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		return pageAttributes.get(name);
@@ -111,8 +111,7 @@ public class JspContextWrapper extends PageContext implements VariableResolver {
 	public Object getAttribute(String name, int scope) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (scope == PAGE_SCOPE) {
@@ -125,8 +124,7 @@ public class JspContextWrapper extends PageContext implements VariableResolver {
 	public void setAttribute(String name, Object value) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (value != null) {
@@ -139,8 +137,7 @@ public class JspContextWrapper extends PageContext implements VariableResolver {
 	public void setAttribute(String name, Object value, int scope) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (scope == PAGE_SCOPE) {
@@ -157,8 +154,7 @@ public class JspContextWrapper extends PageContext implements VariableResolver {
 	public Object findAttribute(String name) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		Object o = pageAttributes.get(name);
@@ -180,8 +176,7 @@ public class JspContextWrapper extends PageContext implements VariableResolver {
 	public void removeAttribute(String name) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		pageAttributes.remove(name);
@@ -195,8 +190,7 @@ public class JspContextWrapper extends PageContext implements VariableResolver {
 	public void removeAttribute(String name, int scope) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (scope == PAGE_SCOPE) {
@@ -209,8 +203,7 @@ public class JspContextWrapper extends PageContext implements VariableResolver {
 	public int getAttributesScope(String name) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (pageAttributes.get(name) != null) {

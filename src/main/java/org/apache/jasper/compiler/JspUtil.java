@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -205,7 +207,7 @@ public class JspUtil {
             throws JasperException {
     if (scope != null && !scope.equals("page") && !scope.equals("request")
         && !scope.equals("session") && !scope.equals("application")) {
-        err.jspError(n, "jsp.error.invalid.scope", scope);
+        err.jspError(n.getStart(), MESSAGES.invalidScope(scope));
     }
     }
 
@@ -244,8 +246,7 @@ public class JspUtil {
                     temp.addElement( attrName );
             // Check if this value appear in the attribute of the node
             if (n.getAttributeValue(attrName) != null) {
-            err.jspError(n, "jsp.error.duplicate.name.jspattribute",
-                    attrName);
+            err.jspError(n.getStart(), MESSAGES.duplicateAttribute(attrName));
             }
                 }
                 else {
@@ -280,8 +281,7 @@ public class JspUtil {
 
     // If mandatory attribute is missing then the exception is thrown
     if (!valid)
-        err.jspError(start, "jsp.error.mandatory.attribute", typeOfTag,
-             missingAttribute);
+        err.jspError(start, MESSAGES.missingMandatoryAttribute(typeOfTag, missingAttribute));
 
     // Check to see if there are any more attributes for the specified tag.
         int attrLeftLength = temp.size();
@@ -301,8 +301,7 @@ public class JspUtil {
         }
         }
         if (!valid)
-        err.jspError(start, "jsp.error.invalid.attribute", typeOfTag,
-                 attribute);
+        err.jspError(start, MESSAGES.invalidAttribute(typeOfTag, attribute));
     }
     // XXX *could* move EL-syntax validation here... (sb)
     }
@@ -815,7 +814,7 @@ public class JspUtil {
         String jarEntryName = fname.substring(1, fname.length());
         ZipEntry jarEntry = jarFile.getEntry(jarEntryName);
         if (jarEntry == null) {
-        err.jspError("jsp.error.file.not.found", fname);
+        err.jspError(MESSAGES.fileNotFound(fname));
         }
         in = jarFile.getInputStream(jarEntry);
     } else {
@@ -823,7 +822,7 @@ public class JspUtil {
     }
 
     if (in == null) {
-        err.jspError("jsp.error.file.not.found", fname);
+        err.jspError(MESSAGES.fileNotFound(fname));
     }
 
     return in;
@@ -871,7 +870,7 @@ public class JspUtil {
         
         index = path.lastIndexOf(".tag");
         if (index == -1) {
-            err.jspError("jsp.error.tagfile.badSuffix", path);
+            err.jspError(MESSAGES.invalidTagFileName(path));
         }
 
         //It's tempting to remove the ".tag" suffix here, but we can't.
@@ -894,7 +893,7 @@ public class JspUtil {
         className = getClassNameBase(urn);
         begin = index + META_INF_TAGS.length();
         } else {
-        err.jspError("jsp.error.tagfile.illegalPath", path);
+        err.jspError(MESSAGES.invalidTagFileDirectory(path));
         }
     }
 
@@ -1066,7 +1065,7 @@ public class JspUtil {
         try {
             reader = new InputStreamReader(in, encoding);
         } catch (UnsupportedEncodingException ex) {
-            err.jspError("jsp.error.unsupported.encoding", encoding);
+            err.jspError(MESSAGES.unsupportedEncoding(encoding));
         }
 
         return reader;

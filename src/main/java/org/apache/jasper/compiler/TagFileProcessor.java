@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -147,7 +149,7 @@ class TagFileProcessor {
 
         public void visit(Node.TagDirective n) throws JasperException {
 
-            JspUtil.checkAttributes("Tag directive", n, tagDirectiveAttrs, err);
+            JspUtil.checkAttributes(TagConstants.TAG_DIRECTIVE_ACTION, n, tagDirectiveAttrs, err);
 
             bodycontent = checkConflict(n, bodycontent, "body-content");
             if (bodycontent != null
@@ -157,8 +159,7 @@ class TagFileProcessor {
                             .equalsIgnoreCase(TagInfo.BODY_CONTENT_TAG_DEPENDENT)
                     && !bodycontent
                             .equalsIgnoreCase(TagInfo.BODY_CONTENT_SCRIPTLESS)) {
-                err.jspError(n, "jsp.error.tagdirective.badbodycontent",
-                        bodycontent);
+                err.jspError(n.getStart(), MESSAGES.invalidBodyContentInTagDirective(bodycontent));
             }
             dynamicAttrsMapName = checkConflict(n, dynamicAttrsMapName,
                     "dynamic-attributes");
@@ -179,8 +180,8 @@ class TagFileProcessor {
             String attrValue = n.getAttributeValue(attr);
             if (attrValue != null) {
                 if (oldAttrValue != null && !oldAttrValue.equals(attrValue)) {
-                    err.jspError(n, "jsp.error.tag.conflict.attr", attr,
-                            oldAttrValue, attrValue);
+                    err.jspError(n.getStart(), MESSAGES.invalidConflictingTagDirectiveAttributeValues(attr,
+                            oldAttrValue, attrValue));
                 }
                 result = attrValue;
             }
@@ -189,7 +190,7 @@ class TagFileProcessor {
 
         public void visit(Node.AttributeDirective n) throws JasperException {
 
-            JspUtil.checkAttributes("Attribute directive", n,
+            JspUtil.checkAttributes(TagConstants.ATTRIBUTE_DIRECTIVE_ACTION, n,
                     attributeDirectiveAttrs, err);
 
             // JSP 2.1 Table JSP.8-3
@@ -204,7 +205,7 @@ class TagFileProcessor {
             String deferredValueType = n.getAttributeValue("deferredValueType");
             if (deferredValueType != null) {
                 if (deferredValueSpecified && !deferredValue) {
-                    err.jspError(n, "jsp.error.deferredvaluetypewithoutdeferredvalue");
+                    err.jspError(n.getStart(), MESSAGES.cannotUseValueTypeWithoutDeferredValue());
                 } else {
                     deferredValue = true;
                 }
@@ -227,7 +228,7 @@ class TagFileProcessor {
                     .getAttributeValue("deferredMethodSignature");
             if (deferredMethodSignature != null) {
                 if (deferredMethodSpecified && !deferredMethod) {
-                    err.jspError(n, "jsp.error.deferredmethodsignaturewithoutdeferredmethod");
+                    err.jspError(n.getStart(), MESSAGES.cannotUseMethodSignatureWithoutDeferredMethod());
                 } else {
                     deferredMethod = true;
                 }
@@ -236,7 +237,7 @@ class TagFileProcessor {
             }
 
             if (deferredMethod && deferredValue) {
-                err.jspError(n, "jsp.error.deferredmethodandvalue");
+                err.jspError(n.getStart(), MESSAGES.cannotUseBothDeferredValueAndMethod());
             }
             
             String attrName = n.getAttributeValue("name");
@@ -254,13 +255,13 @@ class TagFileProcessor {
                 // type is fixed to "JspFragment" and a translation error
                 // must occur if specified.
                 if (type != null) {
-                    err.jspError(n, "jsp.error.fragmentwithtype");
+                    err.jspError(n.getStart(), MESSAGES.cannotUseFragmentWithType());
                 }
                 // rtexprvalue is fixed to "true" and a translation error
                 // must occur if specified.
                 rtexprvalue = true;
                 if (rtexprvalueString != null) {
-                    err.jspError(n, "jsp.error.frgmentwithrtexprvalue");
+                    err.jspError(n.getStart(), MESSAGES.cannotUseFragmentWithRtexprValue());
                 }
             } else {
                 if (type == null)
@@ -276,7 +277,7 @@ class TagFileProcessor {
             if (("2.0".equals(tagLibInfo.getRequiredVersion()) || ("1.2".equals(tagLibInfo.getRequiredVersion())))
                     && (deferredMethodSpecified || deferredMethod
                             || deferredValueSpecified || deferredValue)) {
-                err.jspError("jsp.error.invalid.version", path);
+                err.jspError(MESSAGES.invalidTagFileJspVersion(path));
             }
             
             TagAttributeInfo tagAttributeInfo = new TagAttributeInfo(attrName,
@@ -288,24 +289,24 @@ class TagFileProcessor {
 
         public void visit(Node.VariableDirective n) throws JasperException {
 
-            JspUtil.checkAttributes("Variable directive", n,
+            JspUtil.checkAttributes(TagConstants.VARIABLE_DIRECTIVE_ACTION, n,
                     variableDirectiveAttrs, err);
 
             String nameGiven = n.getAttributeValue("name-given");
             String nameFromAttribute = n
                     .getAttributeValue("name-from-attribute");
             if (nameGiven == null && nameFromAttribute == null) {
-                err.jspError("jsp.error.variable.either.name");
+                err.jspError(MESSAGES.mustSpecifyVariableDirectiveEitherName());
             }
 
             if (nameGiven != null && nameFromAttribute != null) {
-                err.jspError("jsp.error.variable.both.name");
+                err.jspError(MESSAGES.mustNotSpecifyVariableDirectiveBothName());
             }
 
             String alias = n.getAttributeValue("alias");
             if (nameFromAttribute != null && alias == null
                     || nameFromAttribute == null && alias != null) {
-                err.jspError("jsp.error.variable.alias");
+                err.jspError(MESSAGES.mustNotSpecifyVariableDirectiveBothOrNoneName());
             }
 
             String className = n.getAttributeValue("variable-class");
@@ -450,8 +451,8 @@ class TagFileProcessor {
             if (nameEntry != null) {
                 if (type != TAG_DYNAMIC || nameEntry.getType() != TAG_DYNAMIC) {
                     int line = nameEntry.getNode().getStart().getLineNumber();
-                    err.jspError(n, "jsp.error.tagfile.nameNotUnique", type,
-                            nameEntry.getType(), Integer.toString(line));
+                    err.jspError(n.getStart(), MESSAGES.invalidDuplicateNames(type,
+                            nameEntry.getType(), line));
                 }
             } else {
                 table.put(name, new NameEntry(type, n, attr));
@@ -471,18 +472,16 @@ class TagFileProcessor {
                         .get(nameFrom);
                 Node nameFromNode = nameFromEntry.getNode();
                 if (nameEntry == null) {
-                    err.jspError(nameFromNode,
-                            "jsp.error.tagfile.nameFrom.noAttribute", nameFrom);
+                    err.jspError(nameFromNode.getStart(),
+                            MESSAGES.cannotFindAttribute(nameFrom));
                 } else {
                     Node node = nameEntry.getNode();
                     TagAttributeInfo tagAttr = nameEntry.getTagAttributeInfo();
                     if (!"java.lang.String".equals(tagAttr.getTypeName())
                             || !tagAttr.isRequired()
                             || tagAttr.canBeRequestTime()) {
-                        err.jspError(nameFromNode,
-                                "jsp.error.tagfile.nameFrom.badAttribute",
-                                nameFrom, Integer.toString(node.getStart()
-                                        .getLineNumber()));
+                        err.jspError(nameFromNode.getStart(), MESSAGES.invalidAttributeFound(node.getStart()
+                                        .getLineNumber(), nameFrom));
                     }
                 }
             }
@@ -546,9 +545,9 @@ class TagFileProcessor {
         try {
             page = pc.parseTagFileDirectives(path, tagFileJarUrl);
         } catch (FileNotFoundException e) {
-            err.jspError("jsp.error.file.not.found", path);
+            err.jspError(MESSAGES.fileNotFound(path));
         } catch (IOException e) {
-            err.jspError("jsp.error.file.not.found", path);
+            err.jspError(MESSAGES.fileNotFound(path));
         }
 
         TagFileDirectiveVisitor tagFileVisitor = new TagFileDirectiveVisitor(pc

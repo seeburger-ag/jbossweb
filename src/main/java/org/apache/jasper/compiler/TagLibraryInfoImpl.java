@@ -46,6 +46,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
@@ -71,7 +73,6 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
-import org.jboss.logging.Logger;
 
 /**
  * Implementation of the TagLibraryInfo class from the JSP spec.
@@ -90,9 +91,6 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
     public static final int ABS_URI = 0;
     public static final int ROOT_REL_URI = 1;
     public static final int NOROOT_REL_URI = 2;
-
-    // Logger
-    private Logger log = Logger.getLogger(TagLibraryInfoImpl.class);
 
     private JspCompilationContext ctxt;
     
@@ -157,7 +155,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
 
         URL jarFileUrl = null;
         if (location == null) {
-            err.jspError("jsp.error.file.not.found", uriIn);
+            err.jspError(MESSAGES.fileNotFound(uriIn));
         }
         if (location[0] != null && location[0].endsWith(".jar")) {
             try {
@@ -166,7 +164,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                     jarFileUrl = new URL("jar:" + jarUrl + "!/");
                 }
             } catch (MalformedURLException ex) {
-                err.jspError("jsp.error.file.not.found", uriIn);
+                err.jspError(MESSAGES.fileNotFound(uriIn));
             }
         }
         
@@ -174,7 +172,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
             ((HashMap<String, org.apache.catalina.deploy.jsp.TagLibraryInfo>) 
             ctxt.getServletContext().getAttribute(Globals.JSP_TAG_LIBRARIES)).get(uri);
         if (tagLibraryInfo == null) {
-            err.jspError("jsp.error.file.not.found", uriIn);
+            err.jspError(MESSAGES.fileNotFound(uriIn));
         }
 
         ArrayList<TagInfo> tagInfos = new ArrayList<TagInfo>();
@@ -203,19 +201,17 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
         for (int i = 0; i < functionInfosArray.length; i++) {
             FunctionInfo functionInfo = createFunctionInfo(functionInfosArray[i]);
             if (functionInfos.containsKey(functionInfo.getName())) {
-                err.jspError("jsp.error.tld.fn.duplicate.name", functionInfo.getName(),
-                        uri);
+                err.jspError(MESSAGES.duplicateTagLibraryFunctionName(functionInfo.getName(),
+                        uri));
             }
             functionInfos.put(functionInfo.getName(), functionInfo);
         }
         
         if (tlibversion == null) {
-            err.jspError("jsp.error.tld.mandatory.element.missing",
-                    "tlib-version");
+            err.jspError(MESSAGES.missingRequiredTagLibraryElement("tlib-version", uri));
         }
         if (jspversion == null) {
-            err.jspError("jsp.error.tld.mandatory.element.missing",
-                    "jsp-version");
+            err.jspError(MESSAGES.missingRequiredTagLibraryElement("jsp-version", uri));
         }
 
         this.tags = tagInfos.toArray(new TagInfo[0]);
@@ -236,8 +232,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
 
         int uriType = uriType(uri);
         if (uriType == ABS_URI) {
-            err.jspError("jsp.error.taglibDirective.absUriCannotBeResolved",
-                    uri);
+            err.jspError(MESSAGES.unresolvableAbsoluteUri(uri));
         } else if (uriType == NOROOT_REL_URI) {
             uri = ctxt.resolveRelativeUri(uri);
             if (uri != null) {
@@ -252,11 +247,10 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
             try {
                 url = ctxt.getResource(location[0]);
             } catch (Exception ex) {
-                err.jspError("jsp.error.tld.unable_to_get_jar", location[0], ex
-                        .toString());
+                err.jspError(MESSAGES.errorAccessingJar(location[0]), ex);
             }
             if (url == null) {
-                err.jspError("jsp.error.tld.missing_jar", location[0]);
+                err.jspError(MESSAGES.missingJar(location[0]));
             }
             location[0] = url.toString();
             location[1] = "META-INF/taglib.tld";
@@ -297,8 +291,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                 Class teiClass = ctxt.getClassLoader().loadClass(teiClassName);
                 tei = (TagExtraInfo) teiClass.newInstance();
             } catch (Exception e) {
-                err.jspError("jsp.error.teiclass.instantiation", teiClassName,
-                        e);
+                err.jspError(MESSAGES.errorLoadingTagExtraInfo(teiClassName), e);
             }
         }
 
@@ -416,7 +409,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
             // it has been removed
             ctxt.setTagFileJarUrl(path, jarFileUrl);
         } else if (!path.startsWith("/WEB-INF/tags")) {
-            err.jspError("jsp.error.tagfile.illegalPath", path);
+            err.jspError(MESSAGES.invalidTagFileDirectory(path));
         }
         TagInfo tagInfo = TagFileProcessor.parseTagFileDirectives(
                 parserController, name, path, jarFileUrl, this);
@@ -458,8 +451,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                         .loadClass(validatorClass);
                 tlv = (TagLibraryValidator) tlvClass.newInstance();
             } catch (Exception e) {
-                err.jspError("jsp.error.tlvclass.instantiation",
-                        validatorClass, e);
+                err.jspError(MESSAGES.errorLoadingTagLibraryValidator(validatorClass), e);
             }
         }
         if (tlv != null) {

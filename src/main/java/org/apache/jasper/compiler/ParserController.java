@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -226,8 +228,7 @@ class ParserController implements TagConstants {
             if (jspConfigPageEnc != null && !jspConfigPageEnc.equals(sourceEnc)
                     && (!jspConfigPageEnc.startsWith("UTF-16")
                             || !sourceEnc.startsWith("UTF-16"))) {
-                err.jspError("jsp.error.prolog_config_encoding_mismatch",
-                        sourceEnc, jspConfigPageEnc);
+                err.jspError(MESSAGES.encodingConflict(sourceEnc, jspConfigPageEnc));
             }
         }
 

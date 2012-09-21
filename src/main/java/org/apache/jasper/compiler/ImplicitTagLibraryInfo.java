@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -82,7 +84,7 @@ class ImplicitTagLibraryInfo extends TagLibraryInfo {
         jspversion = JSP_VERSION;
 
         if (!tagdir.startsWith(WEB_INF_TAGS)) {
-            err.jspError("jsp.error.invalid.tagdir", tagdir);
+            err.jspError(MESSAGES.invalidTagFileDirectory(tagdir));
         }
 
         // Determine the value of the <short-name> subelement of the
@@ -151,21 +153,21 @@ class ImplicitTagLibraryInfo extends TagLibraryInfo {
                                     reader.getElementText();
                                 } else {
                                     // All other elements are invalid
-                                    err.jspError("jsp.error.invalid.implicit", path);
+                                    err.jspError(MESSAGES.invalidImplicitTld(path));
                                 }
                             }
 
                             try {
                                 double version = Double.parseDouble(this.jspversion);
                                 if (version < 2.0) {
-                                    err.jspError("jsp.error.invalid.implicit.version", path);
+                                    err.jspError(MESSAGES.invalidImplicitTldVersion(path));
                                 }
                             } catch (NumberFormatException e) {
-                                err.jspError("jsp.error.invalid.implicit.version", path);
+                                err.jspError(MESSAGES.invalidImplicitTldVersion(path));
                             }
                         }
                     } catch (XMLStreamException e) {
-                        err.jspError("jsp.error.invalid.implicit", path, e);
+                        err.jspError(MESSAGES.invalidImplicitTld(path), e);
                     } finally {
                         if (is != null) {
                             try {

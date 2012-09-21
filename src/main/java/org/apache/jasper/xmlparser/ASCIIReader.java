@@ -17,10 +17,11 @@
 
 package org.apache.jasper.xmlparser;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
-import org.apache.jasper.compiler.Localizer;
 
 /**
  * A simple ASCII byte reader. This is an optimized reader for reading
@@ -86,8 +87,7 @@ public class ASCIIReader
     public int read() throws IOException {
         int b0 = fInputStream.read();
         if (b0 > 0x80) {
-            throw new IOException(Localizer.getMessage("jsp.error.xml.invalidASCII",
-						       Integer.toString(b0)));
+            throw MESSAGES.invalidByteRead(b0);
         }
         return b0;
     } // read():int
@@ -114,8 +114,7 @@ public class ASCIIReader
         for (int i = 0; i < count; i++) {
             int b0 = (0xff & fBuffer[i]); // Convert to unsigned
             if (b0 > 0x80) {
-                throw new IOException(Localizer.getMessage("jsp.error.xml.invalidASCII",
-							   Integer.toString(b0)));
+                throw MESSAGES.invalidByteRead(b0);
             }
             ch[offset + i] = (char)b0;
         }

@@ -17,6 +17,8 @@
 
 package org.apache.jasper.servlet;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
@@ -31,10 +33,9 @@ import org.apache.jasper.Constants;
 import org.apache.jasper.EmbeddedServletOptions;
 import org.apache.jasper.Options;
 import org.apache.jasper.compiler.JspRuntimeContext;
-import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.security.SecurityUtil;
 import org.apache.tomcat.PeriodicEventListener;
-import org.jboss.logging.Logger;
+import org.jboss.web.JasperLogger;
 
 /**
  * The JSP engine (a.k.a Jasper).
@@ -53,9 +54,6 @@ import org.jboss.logging.Logger;
  * @author Glenn Nielsen
  */
 public class JspServlet extends HttpServlet implements PeriodicEventListener {
-
-    // Logger
-    private Logger log = Logger.getLogger(JspServlet.class);
 
     private ServletContext context;
     private ServletConfig config;
@@ -91,8 +89,7 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
                     Object[] args = { config, context };
                     options = (Options) ctor.newInstance(args);
                 } catch (Throwable e) {
-                    // Need to localize this.
-                    log.warn("Failed to load engineOptionsClass", e);
+                    JasperLogger.SERVLET_LOGGER.failedLoadingOptions(engineOptionsName, e);
                     // Use the default Options implementation
                     options = new EmbeddedServletOptions(config, context);
                 }
@@ -102,12 +99,6 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
             }
         }
         rctxt = new JspRuntimeContext(context, options);
-        
-        if (log.isDebugEnabled()) {
-            log.debug(Localizer.getMessage("jsp.message.scratch.dir.is",
-                    options.getScratchDir().toString()));
-            log.debug(Localizer.getMessage("jsp.message.dont.modify.servlets"));
-        }
     }
 
 
@@ -264,10 +255,6 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
     }
 
     public void destroy() {
-        if (log.isDebugEnabled()) {
-            log.debug("JspServlet.destroy()");
-        }
-
         rctxt.destroy();
     }
 
@@ -298,7 +285,7 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
                         if (includeRequestUri != null) {
                             // This file was included. Throw an exception as
                             // a response.sendError() will be ignored
-                            String msg = Localizer.getMessage("jsp.error.file.not.found", jspUri);
+                            String msg = MESSAGES.fileNotFound(jspUri);
                             // Strictly, filtering this is an application
                             // responsibility but just in case...
                             throw new ServletException(SecurityUtil.filter(msg));
@@ -308,9 +295,7 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
                                         HttpServletResponse.SC_NOT_FOUND,
                                         request.getRequestURI());
                             } catch (IllegalStateException ise) {
-                                log.error(Localizer.getMessage(
-                                        "jsp.error.file.not.found",
-                                        jspUri));
+                                JasperLogger.SERVLET_LOGGER.fileNotFound(jspUri);
                             }
                         }
                         return;

@@ -17,6 +17,8 @@
 
 package org.apache.jasper;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
@@ -33,10 +35,10 @@ import org.apache.catalina.Globals;
 import org.apache.jasper.compiler.Compiler;
 import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.JspUtil;
-import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.compiler.ServletWriter;
 import org.apache.jasper.servlet.JasperLoader;
 import org.apache.jasper.servlet.JspServletWrapper;
+import org.jboss.web.JasperLogger;
 
 /**
  * A place holder for various things that are used through out the JSP
@@ -53,9 +55,6 @@ import org.apache.jasper.servlet.JspServletWrapper;
  * @author Kin-man Chung
  */
 public class JspCompilationContext {
-
-    protected org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(JspCompilationContext.class);
 
     protected Map<String, URL> tagFileJarUrls;
     protected boolean isPackagedTagFile;
@@ -240,7 +239,7 @@ public class JspCompilationContext {
             }
         }
         if (jspCompiler == null) {
-            throw new IllegalStateException(Localizer.getMessage("jsp.error.compiler"));
+            throw MESSAGES.noJavaCompiler();
         }
         jspCompiler.init(this, jsw);
         return jspCompiler;
@@ -251,13 +250,13 @@ public class JspCompilationContext {
         try {
             compiler = (Compiler) Class.forName(className).newInstance();
         } catch (InstantiationException e) {
-            log.warn(Localizer.getMessage("jsp.error.compiler"), e);
+            JasperLogger.ROOT_LOGGER.failedLoadingJavaCompiler(className, e);
         } catch (IllegalAccessException e) {
-            log.warn(Localizer.getMessage("jsp.error.compiler"), e);
+            JasperLogger.ROOT_LOGGER.failedLoadingJavaCompiler(className, e);
         } catch (NoClassDefFoundError e) {
-            log.info(Localizer.getMessage("jsp.error.compiler"), e);
+            JasperLogger.ROOT_LOGGER.failedLoadingJavaCompiler(className, e);
         } catch (ClassNotFoundException e) {
-            log.info(Localizer.getMessage("jsp.error.compiler"), e);
+            JasperLogger.ROOT_LOGGER.failedLoadingJavaCompiler(className, e);
         }
         return compiler;
     }
@@ -616,8 +615,7 @@ public class JspCompilationContext {
                 }
                 throw ex;
             } catch (Exception ex) {
-                JasperException je = new JasperException(
-                            Localizer.getMessage("jsp.error.unable.compile"),
+                JasperException je = new JasperException(MESSAGES.failedClassCompilation(),
                             ex);
                 // Cache compilation exception
                 jsw.setCompilationException(je);
@@ -637,10 +635,10 @@ public class JspCompilationContext {
             String name = getFQCN();
             servletClass = jspLoader.loadClass(name);
         } catch (ClassNotFoundException cex) {
-            throw new JasperException(Localizer.getMessage("jsp.error.unable.load"),
+            throw new JasperException(MESSAGES.failedClassLoading(),
                                       cex);
         } catch (Exception ex) {
-            throw new JasperException(Localizer.getMessage("jsp.error.unable.compile"),
+            throw new JasperException(MESSAGES.failedClassCompilation(),
                                       ex);
         }
         removed = 0;
@@ -694,10 +692,10 @@ public class JspCompilationContext {
                 baseUrl = base.toURI().toURL();
                 outputDir = base.getAbsolutePath() + File.separator + path + File.separator;
                 if (!makeOutputDir()) {
-                    throw new IllegalStateException(Localizer.getMessage("jsp.error.outputfolder"));
+                    throw new IllegalStateException(MESSAGES.noOutputFolder());
                 }
             } catch (MalformedURLException e) {
-                throw new IllegalStateException(Localizer.getMessage("jsp.error.outputfolder"), e);
+                throw new IllegalStateException(MESSAGES.badOutputFolderUrl(e));
             }
     }
     

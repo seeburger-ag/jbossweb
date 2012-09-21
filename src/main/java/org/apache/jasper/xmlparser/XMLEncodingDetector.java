@@ -25,6 +25,8 @@
 
 package org.apache.jasper.xmlparser;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.EOFException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -224,8 +226,7 @@ public class XMLEncodingDetector {
                     return new UCSReader(inputStream, UCSReader.UCS4LE);
                 }
             } else {
-                err.jspError("jsp.error.xml.encodingByteOrderUnsupported",
-			     encoding);
+                err.jspError(MESSAGES.unsupportedByteOrderForEncoding(encoding));
             }
         }
         if (ENCODING.equals("ISO-10646-UCS-2")) {
@@ -237,8 +238,7 @@ public class XMLEncodingDetector {
                     return new UCSReader(inputStream, UCSReader.UCS2LE);
                 }
             } else {
-                err.jspError("jsp.error.xml.encodingByteOrderUnsupported",
-			     encoding);
+                err.jspError(MESSAGES.unsupportedByteOrderForEncoding(encoding));
             }
         }
 
@@ -246,7 +246,7 @@ public class XMLEncodingDetector {
         boolean validIANA = XMLChar.isValidIANAEncoding(encoding);
         boolean validJava = XMLChar.isValidJavaEncoding(encoding);
         if (!validIANA || (fAllowJavaEncodings && !validJava)) {
-            err.jspError("jsp.error.xml.encodingDeclInvalid", encoding);
+            err.jspError(MESSAGES.invalidEncodingDeclared(encoding));
             // NOTE: AndyH suggested that, on failure, we use ISO Latin 1
             //       because every byte is a valid ISO Latin 1 character.
             //       It may not translate correctly but if we failed on
@@ -264,7 +264,7 @@ public class XMLEncodingDetector {
             if (fAllowJavaEncodings) {
 		javaEncoding = encoding;
             } else {
-                err.jspError("jsp.error.xml.encodingDeclInvalid", encoding);
+                err.jspError(MESSAGES.invalidEncodingDeclared(encoding));
                 // see comment above.
                 javaEncoding = "ISO8859_1";
             }
@@ -1329,10 +1329,11 @@ public class XMLEncodingDetector {
                 case STATE_VERSION: {
                     if (name == fVersionSymbol) {
                         if (!sawSpace) {
-                            reportFatalError(scanningTextDecl
-                                       ? "jsp.error.xml.spaceRequiredBeforeVersionInTextDecl"
-                                       : "jsp.error.xml.spaceRequiredBeforeVersionInXMLDecl",
-                                             null);
+                            if (scanningTextDecl) {
+                                MESSAGES.requiredSpaceBeforeVersionInTextDeclaration();
+                            } else {
+                                MESSAGES.requiredSpaceBeforeVersionInXmlDeclaration();
+                            }
                         }
                         version = fString.toString();
                         state = STATE_ENCODING;
@@ -1340,27 +1341,26 @@ public class XMLEncodingDetector {
                             // REVISIT: XML REC says we should throw an error
 			    // in such cases.
                             // some may object the throwing of fatalError.
-                            err.jspError("jsp.error.xml.versionNotSupported",
-					 version);
+                            err.jspError(MESSAGES.unsupportedXmlVersion(version));
                         }
                     } else if (name == fEncodingSymbol) {
                         if (!scanningTextDecl) {
-                            err.jspError("jsp.error.xml.versionInfoRequired");
+                            err.jspError(MESSAGES.noXmlVersion());
                         }
                         if (!sawSpace) {
-                            reportFatalError(scanningTextDecl
-                                      ? "jsp.error.xml.spaceRequiredBeforeEncodingInTextDecl"
-                                      : "jsp.error.xml.spaceRequiredBeforeEncodingInXMLDecl",
-                                             null);
+                            if (scanningTextDecl) {
+                                MESSAGES.requiredSpaceBeforeEncodingInTextDeclaration();
+                            } else {
+                                MESSAGES.requiredSpaceBeforeEncodingInXmlDeclaration();
+                            }
                         }
                         encoding = fString.toString();
                         state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
                     } else {
                         if (scanningTextDecl) {
-                            err.jspError("jsp.error.xml.encodingDeclRequired");
-                        }
-                        else {
-                            err.jspError("jsp.error.xml.versionInfoRequired");
+                            err.jspError(MESSAGES.requiredEncodingDeclaration());
+                        } else {
+                            err.jspError(MESSAGES.requiredVersionDeclaration());
                         }
                     }
                     break;
@@ -1368,10 +1368,11 @@ public class XMLEncodingDetector {
                 case STATE_ENCODING: {
                     if (name == fEncodingSymbol) {
                         if (!sawSpace) {
-                            reportFatalError(scanningTextDecl
-                                      ? "jsp.error.xml.spaceRequiredBeforeEncodingInTextDecl"
-                                      : "jsp.error.xml.spaceRequiredBeforeEncodingInXMLDecl",
-                                             null);
+                            if (scanningTextDecl) {
+                                err.jspError(MESSAGES.requiredSpaceBeforeEncodingInTextDeclaration());
+                            } else {
+                                err.jspError(MESSAGES.requiredSpaceBeforeEncodingInXmlDeclaration());
+                            }
                         }
                         encoding = fString.toString();
                         state = scanningTextDecl ? STATE_DONE : STATE_STANDALONE;
@@ -1379,62 +1380,62 @@ public class XMLEncodingDetector {
                         //       entity scanner
                     } else if (!scanningTextDecl && name == fStandaloneSymbol) {
                         if (!sawSpace) {
-                            err.jspError("jsp.error.xml.spaceRequiredBeforeStandalone");
+                            err.jspError(MESSAGES.requiredSpaceBeforeStandaloneInXmlDeclaration());
                         }
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            err.jspError("jsp.error.xml.sdDeclInvalid");
+                            err.jspError(MESSAGES.invalidStandaloneDeclaration(standalone));
                         }
                     } else {
-                        err.jspError("jsp.error.xml.encodingDeclRequired");
+                        err.jspError(MESSAGES.requiredEncodingDeclaration());
                     }
                     break;
                 }
                 case STATE_STANDALONE: {
                     if (name == fStandaloneSymbol) {
                         if (!sawSpace) {
-                            err.jspError("jsp.error.xml.spaceRequiredBeforeStandalone");
+                            err.jspError(MESSAGES.requiredSpaceBeforeStandaloneInXmlDeclaration());
                         }
                         standalone = fString.toString();
                         state = STATE_DONE;
                         if (!standalone.equals("yes") && !standalone.equals("no")) {
-                            err.jspError("jsp.error.xml.sdDeclInvalid");
+                            err.jspError(MESSAGES.invalidStandaloneDeclaration(standalone));
                         }
                     } else {
-			err.jspError("jsp.error.xml.encodingDeclRequired");
+                        err.jspError(MESSAGES.requiredEncodingDeclaration());
                     }
                     break;
                 }
                 default: {
-                    err.jspError("jsp.error.xml.noMorePseudoAttributes");
+                    err.jspError(MESSAGES.invalidPseudoAttribute());
                 }
             }
             sawSpace = skipSpaces();
         }
         // REVISIT: should we remove this error reporting?
         if (scanningTextDecl && state != STATE_DONE) {
-            err.jspError("jsp.error.xml.morePseudoAttributes");
+            err.jspError(MESSAGES.missingPseudoAttribute());
         }
         
         // If there is no data in the xml or text decl then we fail to report
 	// error for version or encoding info above.
         if (scanningTextDecl) {
             if (!dataFoundForTarget && encoding == null) {
-                err.jspError("jsp.error.xml.encodingDeclRequired");
+                err.jspError(MESSAGES.requiredEncodingDeclaration());
             }
         } else {
             if (!dataFoundForTarget && version == null) {
-                err.jspError("jsp.error.xml.versionInfoRequired");
+                err.jspError(MESSAGES.requiredVersionDeclaration());
             }
         }
 
         // end
         if (!skipChar('?')) {
-            err.jspError("jsp.error.xml.xmlDeclUnterminated");
+            err.jspError(MESSAGES.malformedXmlDeclaration());
         }
         if (!skipChar('>')) {
-            err.jspError("jsp.error.xml.xmlDeclUnterminated");
+            err.jspError(MESSAGES.malformedXmlDeclaration());
 
         }
         
@@ -1467,22 +1468,24 @@ public class XMLEncodingDetector {
 
         String name = scanName();
         if (name == null) {
-            err.jspError("jsp.error.xml.pseudoAttrNameExpected");
+            err.jspError(MESSAGES.missingPseudoAttributeName());
         }
         skipSpaces();
         if (!skipChar('=')) {
-            reportFatalError(scanningTextDecl ?
-			     "jsp.error.xml.eqRequiredInTextDecl"
-                             : "jsp.error.xml.eqRequiredInXMLDecl",
-			     name);
+            if (scanningTextDecl) {
+                err.jspError(MESSAGES.missingEqualsInTextDeclaration(name));
+            } else {
+                err.jspError(MESSAGES.missingEqualsInXmlDeclaration(name));
+            }
         }
         skipSpaces();
         int quote = peekChar();
         if (quote != '\'' && quote != '"') {
-            reportFatalError(scanningTextDecl ?
-			     "jsp.error.xml.quoteRequiredInTextDecl"
-                             : "jsp.error.xml.quoteRequiredInXMLDecl" ,
-			     name);
+            if (scanningTextDecl) {
+                err.jspError(MESSAGES.missingQuoteInTextDeclaration(name));
+            } else {
+                err.jspError(MESSAGES.missingQuoteInXmlDeclaration(name));
+            }
         }
         scanChar();
         int c = scanLiteral(quote, value);
@@ -1498,10 +1501,11 @@ public class XMLEncodingDetector {
                         scanSurrogates(fStringBuffer2);
                     }
                     else if (XMLChar.isInvalid(c)) {
-                        String key = scanningTextDecl
-                            ? "jsp.error.xml.invalidCharInTextDecl"
-			    : "jsp.error.xml.invalidCharInXMLDecl";
-                        reportFatalError(key, Integer.toString(c, 16));
+                        if (scanningTextDecl) {
+                            err.jspError(MESSAGES.invalidCharInTextDeclaration(Integer.toString(c, 16)));
+                        } else {
+                            err.jspError(MESSAGES.invalidCharInXmlDeclaration(Integer.toString(c, 16)));
+                        }
                         scanChar();
                     }
                 }
@@ -1511,10 +1515,11 @@ public class XMLEncodingDetector {
             value.setValues(fStringBuffer2);
         }
         if (!skipChar(quote)) {
-            reportFatalError(scanningTextDecl ?
-			     "jsp.error.xml.closeQuoteMissingInTextDecl"
-                             : "jsp.error.xml.closeQuoteMissingInXMLDecl",
-			     name);
+            if (scanningTextDecl) {
+                err.jspError(MESSAGES.missingClosingQuoteInTextDeclaration(name));
+            } else {
+                err.jspError(MESSAGES.missingClosingQuoteInXmlDeclaration(name));
+            }
         }
 
         // return
@@ -1570,8 +1575,7 @@ public class XMLEncodingDetector {
                     if (XMLChar.isHighSurrogate(c)) {
                         scanSurrogates(fStringBuffer);
                     } else if (XMLChar.isInvalid(c)) {
-                        err.jspError("jsp.error.xml.invalidCharInPI",
-				     Integer.toHexString(c));
+                        err.jspError(MESSAGES.invalidCharInProcessingInstruction(Integer.toHexString(c)));
                         scanChar();
                     }
                 }
@@ -1598,8 +1602,7 @@ public class XMLEncodingDetector {
         int high = scanChar();
         int low = peekChar();
         if (!XMLChar.isLowSurrogate(low)) {
-            err.jspError("jsp.error.xml.invalidCharInContent",
-			 Integer.toString(high, 16));
+            err.jspError(MESSAGES.invalidCharInContent(Integer.toString(high, 16)));
             return false;
         }
         scanChar();
@@ -1609,8 +1612,7 @@ public class XMLEncodingDetector {
 
         // supplemental character must be a valid XML character
         if (!XMLChar.isValid(c)) {
-            err.jspError("jsp.error.xml.invalidCharInContent",
-			 Integer.toString(c, 16)); 
+            err.jspError(MESSAGES.invalidCharInContent(Integer.toString(c, 16))); 
             return false;
         }
 
@@ -1620,16 +1622,6 @@ public class XMLEncodingDetector {
 
         return true;
 
-    }
-
-    // Adapted from:
-    // org.apache.xerces.impl.XMLScanner.reportFatalError
-    /**
-     * Convenience function used in all XML scanners.
-     */
-    private void reportFatalError(String msgId, String arg)
-                throws JasperException {
-        err.jspError(msgId, arg);
     }
 
 }

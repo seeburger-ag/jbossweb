@@ -17,8 +17,16 @@
 
 package org.apache.jasper.compiler;
 
-import java.util.*;
-import javax.servlet.jsp.tagext.*;
+import static org.jboss.web.JasperMessages.MESSAGES;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.jsp.tagext.TagVariableInfo;
+import javax.servlet.jsp.tagext.VariableInfo;
+
 import org.apache.jasper.JasperException;
 
 /**
@@ -122,8 +130,8 @@ class ScriptingVariabler {
                         varName = n.getTagData().getAttributeString(
                                 tagVarInfos[i].getNameFromAttribute());
                         if (varName == null) {
-                            err.jspError(n, "jsp.error.scripting.variable.missing_name",
-                                    tagVarInfos[i].getNameFromAttribute());
+                            err.jspError(n.getStart(), MESSAGES.cannotFindVariableNameFromAttribute
+                                    (tagVarInfos[i].getNameFromAttribute()));
                         }
                     }
 

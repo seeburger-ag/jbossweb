@@ -17,6 +17,8 @@
 package org.apache.jasper.compiler;
 
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.util.HashMap;
 
 import org.apache.jasper.JasperException;
@@ -47,7 +49,7 @@ public class BeanRepository {
 
         if (!(scope == null || scope.equals("page") || scope.equals("request") 
                 || scope.equals("session") || scope.equals("application"))) {
-            errDispatcher.jspError(n, "jsp.error.usebean.badScope");
+            errDispatcher.jspError(n.getStart(), MESSAGES.badScopeForUseBean());
         }
 
         beanTypes.put(s, type);

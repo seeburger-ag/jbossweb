@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.CharArrayWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,8 +31,7 @@ import java.net.MalformedURLException;
 
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.JasperLogger;
 
 /**
  * JspReader is an input buffer for the JSP parser. It should allow
@@ -49,11 +50,6 @@ import org.jboss.logging.Logger;
  */
 
 class JspReader {
-
-    /**
-     * Logger.
-     */
-    private Logger log = Logger.getLogger(JspReader.class);
 
     /**
      * The current spot in the file.
@@ -444,10 +440,10 @@ class JspReader {
                 }
                 // Check end of quote, skip closing quote:
                 if (ch == -1) {
-                    err.jspError(mark(), "jsp.error.quotes.unterminated");
+                    err.jspError(mark(), MESSAGES.unterminatedQuotes());
                 }
             } else {
-                err.jspError(mark(), "jsp.error.attr.quoted");
+                err.jspError(mark(), MESSAGES.unquotedAttributeValue());
             }
         } else {
             if (!isDelimiter()) {
@@ -578,13 +574,11 @@ class JspReader {
                 try {
                     reader.close();
                 } catch (Exception any) {
-                    if(log.isDebugEnabled()) {
-                        log.debug("Exception closing reader: ", any);
-                    }
+                    JasperLogger.COMPILER_LOGGER.errorClosingReader(any);
                 }
             }
 
-            err.jspError("jsp.error.file.already.registered", file);
+            err.jspError(MESSAGES.invalidRecursiveInclude(file));
         }
 
         currFileId = fileid;
@@ -603,18 +597,15 @@ class JspReader {
                                    longName, encoding);
             }
         } catch (Throwable ex) {
-            log.error("Exception parsing file ", ex);
             // Pop state being constructed:
             popFile();
-            err.jspError("jsp.error.file.cannot.read", file);
+            err.jspError(MESSAGES.errorReadingFile(file));
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (Exception any) {
-                    if(log.isDebugEnabled()) {
-                        log.debug("Exception closing reader: ", any);
-                    }
+                    JasperLogger.COMPILER_LOGGER.errorClosingReader(any);
                 }
             }
         }
@@ -639,7 +630,7 @@ class JspReader {
         String fName = getFile(currFileId);
         currFileId = unregisterSourceFile(fName);
         if (currFileId < -1) {
-            err.jspError("jsp.error.file.not.registered", fName);
+            err.jspError(MESSAGES.invalidInclude(fName));
         }
 
         Mark previous = current.popStream();

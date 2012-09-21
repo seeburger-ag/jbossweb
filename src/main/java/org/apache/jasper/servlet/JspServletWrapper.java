@@ -17,6 +17,8 @@
 
 package org.apache.jasper.servlet;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -37,12 +39,10 @@ import org.apache.jasper.Options;
 import org.apache.jasper.compiler.ErrorDispatcher;
 import org.apache.jasper.compiler.JavacErrorDetail;
 import org.apache.jasper.compiler.JspRuntimeContext;
-import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.runtime.InstanceManagerFactory;
 import org.apache.jasper.runtime.JspSourceDependent;
 import org.apache.tomcat.InstanceManager;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.JasperLogger;
 
 /**
  * The JSP engine (a.k.a Jasper).
@@ -63,9 +63,6 @@ import org.jboss.logging.Logger;
  */
 
 public class JspServletWrapper {
-
-    // Logger
-    private Logger log = Logger.getLogger(JspServletWrapper.class);
 
     private Servlet theServlet;
     private String jspUri;
@@ -291,9 +288,8 @@ public class JspServletWrapper {
             if ((available > 0L) && (available < Long.MAX_VALUE)) {
                 if (available > System.currentTimeMillis()) {
                     response.setDateHeader("Retry-After", available);
-                    response.sendError
-                        (HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-                         Localizer.getMessage("jsp.error.unavailable"));
+                    response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                         MESSAGES.unavailable());
                     return;
                 } else {
                     // Wait period has expired. Reset.
@@ -423,8 +419,7 @@ public class JspServletWrapper {
                 instanceManager.destroyInstance(theServlet);
             } catch (Exception e) {
                 // Log any exception, since it can't be passed along
-                log.error(Localizer.getMessage("jsp.error.file.not.found",
-                        e.getMessage()), e);
+                JasperLogger.SERVLET_LOGGER.errorDestroyingServletInstance(e);
             }
         }
     }
@@ -495,16 +490,11 @@ public class JspServletWrapper {
                 }
 
                 if (options.getDisplaySourceFragment()) {
-                    return new JasperException(Localizer.getMessage
-                            ("jsp.exception", detail.getJspFileName(),
-                                    "" + jspLineNumber) +
-                                    "\n\n" + detail.getJspExtract() +
-                                    "\n\nStacktrace:", ex);
+                    return new JasperException(MESSAGES.jspExceptionWithDetails(detail.getJspFileName(), 
+                            jspLineNumber, detail.getJspExtract()), ex);
                     
                 } else {
-                    return new JasperException(Localizer.getMessage
-                            ("jsp.exception", detail.getJspFileName(),
-                                    "" + jspLineNumber), ex);
+                    return new JasperException(MESSAGES.jspException(detail.getJspFileName(), jspLineNumber), ex);
                 }
             }
         } catch (Exception je) {

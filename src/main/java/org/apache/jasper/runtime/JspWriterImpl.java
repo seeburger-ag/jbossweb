@@ -17,6 +17,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.security.AccessController;
@@ -26,7 +28,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.jsp.JspWriter;
 
 import org.apache.jasper.Constants;
-import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.security.SecurityUtil;
 
 /**
@@ -126,43 +127,28 @@ public class JspWriterImpl extends JspWriter {
         }
     }
     
-    private String getLocalizeMessage(final String message){
-        if (SecurityUtil.isPackageProtectionEnabled()){
-            return (String)AccessController.doPrivileged(new PrivilegedAction(){
-                public Object run(){
-                    return Localizer.getMessage(message); 
-                }
-            });
-        } else {
-            return Localizer.getMessage(message);
-        }
-    }
-    
     /**
      * Discard the output buffer.
      */
     public final void clear() throws IOException {
         if ((bufferSize == 0) && (out != null))
             // clear() is illegal after any unbuffered output (JSP.5.5)
-            throw new IllegalStateException(
-                    getLocalizeMessage("jsp.error.ise_on_clear"));
+            throw MESSAGES.cannotClearWithNoBuffer();
         if (flushed)
-            throw new IOException(
-                    getLocalizeMessage("jsp.error.attempt_to_clear_flushed_buffer"));
+            throw MESSAGES.cannotClearAfterFlush();
         ensureOpen();
         nextChar = 0;
     }
     
     public void clearBuffer() throws IOException {
         if (bufferSize == 0)
-            throw new IllegalStateException(
-                    getLocalizeMessage("jsp.error.ise_on_clear"));
+            throw MESSAGES.cannotClearWithNoBuffer();
         ensureOpen();
         nextChar = 0;
     }
     
     private final void bufferOverflow() throws IOException {
-        throw new IOException(getLocalizeMessage("jsp.error.overflow"));
+        throw MESSAGES.bufferOverflow();
     }
     
     /**

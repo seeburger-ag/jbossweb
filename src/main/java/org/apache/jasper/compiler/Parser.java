@@ -16,6 +16,8 @@
  */
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.CharArrayWriter;
 import java.io.FileNotFoundException;
 import java.net.URL;
@@ -182,20 +184,19 @@ class Parser implements TagConstants {
             String prefix = qName.substring(0, index);
             uri = pageInfo.getURI(prefix);
             if (uri == null) {
-                err.jspError(reader.mark(),
-                        "jsp.error.attribute.invalidPrefix", prefix);
+                err.jspError(reader.mark(), MESSAGES.invalidAttributePrefix(prefix));
             }
             localName = qName.substring(index + 1);
         }
 
         reader.skipSpaces();
         if (!reader.matches("="))
-            err.jspError(reader.mark(), "jsp.error.attribute.noequal");
+            err.jspError(reader.mark(), MESSAGES.missingEqual());
 
         reader.skipSpaces();
         char quote = (char) reader.nextChar();
         if (quote != '\'' && quote != '"')
-            err.jspError(reader.mark(), "jsp.error.attribute.noquote");
+            err.jspError(reader.mark(), MESSAGES.missingQuote());
 
         String watchString = "";
         if (reader.matches("<%="))
@@ -237,7 +238,7 @@ class Parser implements TagConstants {
         Mark start = reader.mark();
         Mark stop = reader.skipUntilIgnoreEsc(watch);
         if (stop == null) {
-            err.jspError(start, "jsp.error.attribute.unterminated", watch);
+            err.jspError(start, MESSAGES.unterminatedAttribute(watch));
         }
 
         String ret = null;
@@ -295,9 +296,9 @@ class Parser implements TagConstants {
         try {
             parserController.parse(file, parent, jarFileUrl);
         } catch (FileNotFoundException ex) {
-            err.jspError(start, "jsp.error.file.not.found", file);
+            err.jspError(start, MESSAGES.fileNotFound(file));
         } catch (Exception ex) {
-            err.jspError(parent, "jsp.error.include.exception", file, ex);
+            err.jspError(parent.getStart(), MESSAGES.errorIncluding(file), ex);
         }
     }
 
@@ -365,15 +366,13 @@ class Parser implements TagConstants {
         if (prefix != null) {
             Mark prevMark = pageInfo.getNonCustomTagPrefix(prefix);
             if (prevMark != null) {
-                err.jspError(reader.mark(), "jsp.error.prefix.use_before_dcl",
-                        prefix, prevMark.getFile(), ""
-                                + prevMark.getLineNumber());
+                err.jspError(reader.mark(), MESSAGES.prefixAlreadyInUse
+                        (prefix, prevMark.getFile(), prevMark.getLineNumber()));
             }
             if (uri != null) {
                 String uriPrev = pageInfo.getURI(prefix);
                 if (uriPrev != null && !uriPrev.equals(uri)) {
-                    err.jspError(reader.mark(), "jsp.error.prefix.refined",
-                            prefix, uri, uriPrev);
+                    err.jspError(reader.mark(), MESSAGES.prefixRedefinition(prefix, uri, uriPrev));
                 }
                 if (pageInfo.getTaglib(uri) == null) {
                     TagLibraryInfoImpl impl = null;
@@ -431,8 +430,7 @@ class Parser implements TagConstants {
         if (reader.matches("page")) {
             directive = "&lt;%@ page";
             if (isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.directive.istagfile",
-                        directive);
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInTagFile(directive));
             }
             parsePageDirective(parent);
         } else if (reader.matches("include")) {
@@ -449,31 +447,28 @@ class Parser implements TagConstants {
         } else if (reader.matches("tag")) {
             directive = "&lt;%@ tag";
             if (!isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.directive.isnottagfile",
-                        directive);
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInPage(directive));
             }
             parseTagDirective(parent);
         } else if (reader.matches("attribute")) {
             directive = "&lt;%@ attribute";
             if (!isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.directive.isnottagfile",
-                        directive);
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInPage(directive));
             }
             parseAttributeDirective(parent);
         } else if (reader.matches("variable")) {
             directive = "&lt;%@ variable";
             if (!isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.directive.isnottagfile",
-                        directive);
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInPage(directive));
             }
             parseVariableDirective(parent);
         } else {
-            err.jspError(reader.mark(), "jsp.error.invalid.directive");
+            err.jspError(reader.mark(), MESSAGES.invalidDirective());
         }
 
         reader.skipSpaces();
         if (!reader.matches("%>")) {
-            err.jspError(start, "jsp.error.unterminated", directive);
+            err.jspError(start, MESSAGES.unterminatedTag(directive));
         }
     }
 
@@ -497,8 +492,7 @@ class Parser implements TagConstants {
         if (reader.matches("page")) {
             eTag = "jsp:directive.page";
             if (isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.directive.istagfile",
-                        "&lt;" + eTag);
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInTagFile("&lt;" + eTag));
             }
             parsePageDirective(parent);
         } else if (reader.matches("include")) {
@@ -507,36 +501,33 @@ class Parser implements TagConstants {
         } else if (reader.matches("tag")) {
             eTag = "jsp:directive.tag";
             if (!isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.directive.isnottagfile",
-                        "&lt;" + eTag);
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInPage("&lt;" + eTag));
             }
             parseTagDirective(parent);
         } else if (reader.matches("attribute")) {
             eTag = "jsp:directive.attribute";
             if (!isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.directive.isnottagfile",
-                        "&lt;" + eTag);
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInPage("&lt;" + eTag));
             }
             parseAttributeDirective(parent);
         } else if (reader.matches("variable")) {
             eTag = "jsp:directive.variable";
             if (!isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.directive.isnottagfile",
-                        "&lt;" + eTag);
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInPage("&lt;" + eTag));
             }
             parseVariableDirective(parent);
         } else {
-            err.jspError(reader.mark(), "jsp.error.invalid.directive");
+            err.jspError(reader.mark(), MESSAGES.invalidDirective());
         }
 
         reader.skipSpaces();
         if (reader.matches(">")) {
             reader.skipSpaces();
             if (!reader.matchesETag(eTag)) {
-                err.jspError(start, "jsp.error.unterminated", "&lt;" + eTag);
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;" + eTag));
             }
         } else if (!reader.matches("/>")) {
-            err.jspError(start, "jsp.error.unterminated", "&lt;" + eTag);
+            err.jspError(start, MESSAGES.unterminatedTag("&lt;" + eTag));
         }
     }
 
@@ -587,7 +578,7 @@ class Parser implements TagConstants {
         start = reader.mark();
         Mark stop = reader.skipUntil("--%>");
         if (stop == null) {
-            err.jspError(start, "jsp.error.unterminated", "&lt;%--");
+            err.jspError(start, MESSAGES.unterminatedTag("&lt;%--"));
         }
 
         new Node.Comment(reader.getText(start, stop), start, parent);
@@ -600,7 +591,7 @@ class Parser implements TagConstants {
         start = reader.mark();
         Mark stop = reader.skipUntil("%>");
         if (stop == null) {
-            err.jspError(start, "jsp.error.unterminated", "&lt;%!");
+            err.jspError(start, MESSAGES.unterminatedTag("&lt;%!"));
         }
 
         new Node.Declaration(parseScriptText(reader.getText(start, stop)),
@@ -617,8 +608,7 @@ class Parser implements TagConstants {
         reader.skipSpaces();
         if (!reader.matches("/>")) {
             if (!reader.matches(">")) {
-                err.jspError(start, "jsp.error.unterminated",
-                        "&lt;jsp:declaration&gt;");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:declaration&gt;"));
             }
             Mark stop;
             String text;
@@ -626,8 +616,7 @@ class Parser implements TagConstants {
                 start = reader.mark();
                 stop = reader.skipUntil("<");
                 if (stop == null) {
-                    err.jspError(start, "jsp.error.unterminated",
-                            "&lt;jsp:declaration&gt;");
+                    err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:declaration&gt;"));
                 }
                 text = parseScriptText(reader.getText(start, stop));
                 new Node.Declaration(text, start, parent);
@@ -635,7 +624,7 @@ class Parser implements TagConstants {
                     start = reader.mark();
                     stop = reader.skipUntil("]]>");
                     if (stop == null) {
-                        err.jspError(start, "jsp.error.unterminated", "CDATA");
+                        err.jspError(start, MESSAGES.unterminatedTag("CDATA"));
                     }
                     text = parseScriptText(reader.getText(start, stop));
                     new Node.Declaration(text, start, parent);
@@ -645,8 +634,7 @@ class Parser implements TagConstants {
             }
 
             if (!reader.matchesETagWithoutLessThan("jsp:declaration")) {
-                err.jspError(start, "jsp.error.unterminated",
-                        "&lt;jsp:declaration&gt;");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:declaration&gt;"));
             }
         }
     }
@@ -658,7 +646,7 @@ class Parser implements TagConstants {
         start = reader.mark();
         Mark stop = reader.skipUntil("%>");
         if (stop == null) {
-            err.jspError(start, "jsp.error.unterminated", "&lt;%=");
+            err.jspError(start, MESSAGES.unterminatedTag("&lt;%="));
         }
 
         new Node.Expression(parseScriptText(reader.getText(start, stop)),
@@ -673,8 +661,7 @@ class Parser implements TagConstants {
         reader.skipSpaces();
         if (!reader.matches("/>")) {
             if (!reader.matches(">")) {
-                err.jspError(start, "jsp.error.unterminated",
-                        "&lt;jsp:expression&gt;");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:expression&gt;"));
             }
             Mark stop;
             String text;
@@ -682,8 +669,7 @@ class Parser implements TagConstants {
                 start = reader.mark();
                 stop = reader.skipUntil("<");
                 if (stop == null) {
-                    err.jspError(start, "jsp.error.unterminated",
-                            "&lt;jsp:expression&gt;");
+                    err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:expression&gt;"));
                 }
                 text = parseScriptText(reader.getText(start, stop));
                 new Node.Expression(text, start, parent);
@@ -691,7 +677,7 @@ class Parser implements TagConstants {
                     start = reader.mark();
                     stop = reader.skipUntil("]]>");
                     if (stop == null) {
-                        err.jspError(start, "jsp.error.unterminated", "CDATA");
+                        err.jspError(start, MESSAGES.unterminatedTag("CDATA"));
                     }
                     text = parseScriptText(reader.getText(start, stop));
                     new Node.Expression(text, start, parent);
@@ -700,8 +686,7 @@ class Parser implements TagConstants {
                 }
             }
             if (!reader.matchesETagWithoutLessThan("jsp:expression")) {
-                err.jspError(start, "jsp.error.unterminated",
-                        "&lt;jsp:expression&gt;");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:expression&gt;"));
             }
         }
     }
@@ -725,7 +710,7 @@ class Parser implements TagConstants {
                 currentChar = reader.nextChar();
             }
             if (currentChar == -1)
-                err.jspError(start, "jsp.error.unterminated", type + "{");
+                err.jspError(start, MESSAGES.unterminatedTag(type + "{"));
             if (currentChar == '"' && !singleQuoted)
                 doubleQuoted = !doubleQuoted;
             if (currentChar == '\'' && !doubleQuoted)
@@ -742,7 +727,7 @@ class Parser implements TagConstants {
         start = reader.mark();
         Mark stop = reader.skipUntil("%>");
         if (stop == null) {
-            err.jspError(start, "jsp.error.unterminated", "&lt;%");
+            err.jspError(start, MESSAGES.unterminatedTag("&lt;%"));
         }
 
         new Node.Scriptlet(parseScriptText(reader.getText(start, stop)), start,
@@ -757,8 +742,7 @@ class Parser implements TagConstants {
         reader.skipSpaces();
         if (!reader.matches("/>")) {
             if (!reader.matches(">")) {
-                err.jspError(start, "jsp.error.unterminated",
-                        "&lt;jsp:scriptlet&gt;");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:scriptlet&gt;"));
             }
             Mark stop;
             String text;
@@ -766,8 +750,7 @@ class Parser implements TagConstants {
                 start = reader.mark();
                 stop = reader.skipUntil("<");
                 if (stop == null) {
-                    err.jspError(start, "jsp.error.unterminated",
-                            "&lt;jsp:scriptlet&gt;");
+                    err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:scriptlet&gt;"));
                 }
                 text = parseScriptText(reader.getText(start, stop));
                 new Node.Scriptlet(text, start, parent);
@@ -775,7 +758,7 @@ class Parser implements TagConstants {
                     start = reader.mark();
                     stop = reader.skipUntil("]]>");
                     if (stop == null) {
-                        err.jspError(start, "jsp.error.unterminated", "CDATA");
+                        err.jspError(start, MESSAGES.unterminatedTag("CDATA"));
                     }
                     text = parseScriptText(reader.getText(start, stop));
                     new Node.Scriptlet(text, start, parent);
@@ -785,8 +768,7 @@ class Parser implements TagConstants {
             }
 
             if (!reader.matchesETagWithoutLessThan("jsp:scriptlet")) {
-                err.jspError(start, "jsp.error.unterminated",
-                        "&lt;jsp:scriptlet&gt;");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:scriptlet&gt;"));
             }
         }
     }
@@ -796,7 +778,7 @@ class Parser implements TagConstants {
      */
     private void parseParam(Node parent) throws JasperException {
         if (!reader.matches("<jsp:param")) {
-            err.jspError(reader.mark(), "jsp.error.paramexpected");
+            err.jspError(reader.mark(), MESSAGES.missingParamAction());
         }
         Attributes attrs = parseAttributes();
         reader.skipSpaces();
@@ -909,14 +891,13 @@ class Parser implements TagConstants {
                 if (!reader.matchesETag(tag)) {
                     // Body not allowed
                     err.jspError(reader.mark(),
-                            "jsp.error.jspbody.emptybody.only", "&lt;" + tag);
+                            MESSAGES.invalidEmptyBodyTag("&lt;" + tag));
                 }
             } else {
-                err.jspError(reader.mark(), "jsp.error.jspbody.emptybody.only",
-                        "&lt;" + tag);
+                err.jspError(reader.mark(), MESSAGES.invalidEmptyBodyTag("&lt;" + tag));
             }
         } else {
-            err.jspError(reader.mark(), "jsp.error.unterminated", "&lt;" + tag);
+            err.jspError(reader.mark(), MESSAGES.unterminatedTag("&lt;" + tag));
         }
     }
 
@@ -963,7 +944,7 @@ class Parser implements TagConstants {
         }
 
         if (!reader.matches(">")) {
-            err.jspError(reader.mark(), "jsp.error.unterminated", "&lt;" + tag);
+            err.jspError(reader.mark(), MESSAGES.unterminatedTag("&lt;" + tag));
         }
 
         if (reader.matchesETag(tag)) {
@@ -1003,16 +984,14 @@ class Parser implements TagConstants {
             parseJspBody(parent, bodyType);
             reader.skipSpaces();
             if (!reader.matchesETag(tag)) {
-                err.jspError(reader.mark(), "jsp.error.unterminated", "&lt;"
-                        + tag);
+                err.jspError(reader.mark(), MESSAGES.unterminatedTag("&lt;" + tag));
             }
 
             result = true;
         } else if (result && !reader.matchesETag(tag)) {
             // If we have <jsp:attribute> but something other than
             // <jsp:body> or the end tag, translation error.
-            err.jspError(reader.mark(), "jsp.error.jspbody.required", "&lt;"
-                    + tag);
+            err.jspError(reader.mark(), MESSAGES.invalidTagBody("&lt;" + tag));
         }
 
         return result;
@@ -1092,14 +1071,12 @@ class Parser implements TagConstants {
             parseForward(parent);
         } else if (reader.matches(INVOKE_ACTION)) {
             if (!isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.action.isnottagfile",
-                        "&lt;jsp:invoke");
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInPage("&lt;jsp:invoke"));
             }
             parseInvoke(parent);
         } else if (reader.matches(DOBODY_ACTION)) {
             if (!isTagFile) {
-                err.jspError(reader.mark(), "jsp.error.action.isnottagfile",
-                        "&lt;jsp:doBody");
+                err.jspError(reader.mark(), MESSAGES.invalidDirectiveInPage("&lt;jsp:doBody"));
             }
             parseDoBody(parent);
         } else if (reader.matches(GET_PROPERTY_ACTION)) {
@@ -1113,19 +1090,19 @@ class Parser implements TagConstants {
         } else if (reader.matches(ELEMENT_ACTION)) {
             parseElement(parent);
         } else if (reader.matches(ATTRIBUTE_ACTION)) {
-            err.jspError(start, "jsp.error.namedAttribute.invalidUse");
+            err.jspError(start, MESSAGES.invalidJspAttribute());
         } else if (reader.matches(BODY_ACTION)) {
-            err.jspError(start, "jsp.error.jspbody.invalidUse");
+            err.jspError(start, MESSAGES.invalidJspBody());
         } else if (reader.matches(FALLBACK_ACTION)) {
-            err.jspError(start, "jsp.error.fallback.invalidUse");
+            err.jspError(start, MESSAGES.invalidJspFallback());
         } else if (reader.matches(PARAMS_ACTION)) {
-            err.jspError(start, "jsp.error.params.invalidUse");
+            err.jspError(start, MESSAGES.invalidJspParams());
         } else if (reader.matches(PARAM_ACTION)) {
-            err.jspError(start, "jsp.error.param.invalidUse");
+            err.jspError(start, MESSAGES.invalidJspParam());
         } else if (reader.matches(OUTPUT_ACTION)) {
-            err.jspError(start, "jsp.error.jspoutput.invalidUse");
+            err.jspError(start, MESSAGES.invalidJspOutput());
         } else {
-            err.jspError(start, "jsp.error.badStandardAction");
+            err.jspError(start, MESSAGES.invalidStandardAction());
         }
     }
 
@@ -1173,7 +1150,7 @@ class Parser implements TagConstants {
         String uri = pageInfo.getURI(prefix);
         if (uri == null) {
             if (pageInfo.isErrorOnUndeclaredNamespace()) {
-                err.jspError(start, "jsp.error.bad_tag", shortTagName, prefix);
+                err.jspError(start, MESSAGES.unknownTagPrefix(shortTagName, prefix));
             }
             reader.reset(start);
             // Remember the prefix for later error checking
@@ -1185,7 +1162,7 @@ class Parser implements TagConstants {
         TagInfo tagInfo = tagLibInfo.getTag(shortTagName);
         TagFileInfo tagFileInfo = tagLibInfo.getTagFile(shortTagName);
         if (tagInfo == null && tagFileInfo == null) {
-            err.jspError(start, "jsp.error.bad_tag", shortTagName, prefix);
+            err.jspError(start, MESSAGES.unknownTagPrefix(shortTagName, prefix));
         }
         Class tagHandlerClass = null;
         if (tagInfo != null) {
@@ -1196,8 +1173,7 @@ class Parser implements TagConstants {
                 tagHandlerClass = ctxt.getClassLoader().loadClass(
                         handlerClassName);
             } catch (Exception e) {
-                err.jspError(start, "jsp.error.loadclass.taghandler",
-                        handlerClassName, tagName);
+                err.jspError(start, MESSAGES.errorLoadingTagHandler(handlerClassName, tagName));
             }
         }
 
@@ -1311,8 +1287,7 @@ class Parser implements TagConstants {
         reader.skipSpaces();
         if (!reader.matches("/>")) {
             if (!reader.matches(">")) {
-                err.jspError(start, "jsp.error.unterminated",
-                        "&lt;jsp:text&gt;");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:text&gt;"));
             }
             CharArrayWriter ttext = new CharArrayWriter();
             while (reader.hasMoreInput()) {
@@ -1325,7 +1300,7 @@ class Parser implements TagConstants {
                     start = reader.mark();
                     Mark stop = reader.skipUntil("]]>");
                     if (stop == null) {
-                        err.jspError(start, "jsp.error.unterminated", "CDATA");
+                        err.jspError(start, MESSAGES.unterminatedTag("CDATA"));
                     }
                     String text = reader.getText(start, stop);
                     ttext.write(text, 0, text.length());
@@ -1366,10 +1341,9 @@ class Parser implements TagConstants {
             new Node.TemplateText(ttext.toString(), start, parent);
 
             if (!reader.hasMoreInput()) {
-                err.jspError(start, "jsp.error.unterminated",
-                        "&lt;jsp:text&gt;");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:text&gt;"));
             } else if (!reader.matchesETagWithoutLessThan("jsp:text")) {
-                err.jspError(start, "jsp.error.jsptext.badcontent");
+                err.jspError(start, MESSAGES.badContent());
             }
         }
     }
@@ -1446,17 +1420,17 @@ class Parser implements TagConstants {
         } else if (reader.matches("<jsp:directive.")) {
             parseXMLDirective(parent);
         } else if (reader.matches("<%!")) {
-            err.jspError(reader.mark(), "jsp.error.no.scriptlets");
+            err.jspError(reader.mark(), MESSAGES.invalidScriptingElement());
         } else if (reader.matches("<jsp:declaration")) {
-            err.jspError(reader.mark(), "jsp.error.no.scriptlets");
+            err.jspError(reader.mark(), MESSAGES.invalidScriptingElement());
         } else if (reader.matches("<%=")) {
-            err.jspError(reader.mark(), "jsp.error.no.scriptlets");
+            err.jspError(reader.mark(), MESSAGES.invalidScriptingElement());
         } else if (reader.matches("<jsp:expression")) {
-            err.jspError(reader.mark(), "jsp.error.no.scriptlets");
+            err.jspError(reader.mark(), MESSAGES.invalidScriptingElement());
         } else if (reader.matches("<%")) {
-            err.jspError(reader.mark(), "jsp.error.no.scriptlets");
+            err.jspError(reader.mark(), MESSAGES.invalidScriptingElement());
         } else if (reader.matches("<jsp:scriptlet")) {
-            err.jspError(reader.mark(), "jsp.error.no.scriptlets");
+            err.jspError(reader.mark(), MESSAGES.invalidScriptingElement());
         } else if (reader.matches("<jsp:text")) {
             parseXMLTemplateText(parent);
         } else if (!pageInfo.isELIgnored() && reader.matches("${")) {
@@ -1492,40 +1466,29 @@ class Parser implements TagConstants {
         } else if (reader.matches("<jsp:directive.")) {
             parseXMLDirective(parent);
         } else if (reader.matches("<%!")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Declarations");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("&lt;%!"));
         } else if (reader.matches("<jsp:declaration")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Declarations");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("&lt;jsp:declaration"));
         } else if (reader.matches("<%=")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Expressions");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("&lt;%="));
         } else if (reader.matches("<jsp:expression")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Expressions");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("&lt;jsp:expression"));
         } else if (reader.matches("<%")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Scriptlets");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("&lt;%"));
         } else if (reader.matches("<jsp:scriptlet")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Scriptlets");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("&lt;jsp:scriptlet"));
         } else if (reader.matches("<jsp:text")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "&lt;jsp:text");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("&lt;jsp:text"));
         } else if (!pageInfo.isELIgnored() && reader.matches("${")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Expression language");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("${"));
         } else if (!pageInfo.isELIgnored()
                 && !pageInfo.isDeferredSyntaxAllowedAsLiteral()
                 && reader.matches("#{")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Expression language");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("#{"));
         } else if (reader.matches("<jsp:")) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Standard actions");
+            err.jspError(reader.mark(), MESSAGES.invalidTemplateTextBody("&lt;jsp:"));
         } else if (parseCustomTag(parent)) {
-            err.jspError(reader.mark(), "jsp.error.not.in.template",
-                    "Custom actions");
+            err.jspError(reader.mark(), MESSAGES.invalidTagInTemplateTextBody());
         } else {
             checkUnbalancedEndTag();
             parseTemplateText(parent);
@@ -1543,7 +1506,7 @@ class Parser implements TagConstants {
 
         // Check for unbalanced standard actions
         if (reader.matches("jsp:")) {
-            err.jspError(start, "jsp.error.unbalanced.endtag", "jsp:");
+            err.jspError(start, MESSAGES.unbalancedEndTag("jsp:"));
         }
 
         // Check for unbalanced custom actions
@@ -1554,7 +1517,7 @@ class Parser implements TagConstants {
             return;
         }
 
-        err.jspError(start, "jsp.error.unbalanced.endtag", tagName);
+        err.jspError(start, MESSAGES.unbalancedEndTag(tagName));
     }
 
     /**
@@ -1565,7 +1528,7 @@ class Parser implements TagConstants {
         Mark bodyStart = reader.mark();
         Mark bodyEnd = reader.skipUntilETag(tag);
         if (bodyEnd == null) {
-            err.jspError(start, "jsp.error.unterminated", "&lt;" + tag);
+            err.jspError(start, MESSAGES.unterminatedTag("&lt;" + tag));
         }
         new Node.TemplateText(reader.getText(bodyStart, bodyEnd), bodyStart,
                 parent);
@@ -1582,7 +1545,7 @@ class Parser implements TagConstants {
         reader.skipSpaces();
         if (!reader.matches("/>")) {
             if (!reader.matches(">")) {
-                err.jspError(start, "jsp.error.unterminated", "&lt;jsp:body");
+                err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:body"));
             }
             parseBody(bodyNode, "jsp:body", bodyType);
         }
@@ -1599,16 +1562,14 @@ class Parser implements TagConstants {
             parseTagDependentBody(parent, tag);
         } else if (bodyType.equalsIgnoreCase(TagInfo.BODY_CONTENT_EMPTY)) {
             if (!reader.matchesETag(tag)) {
-                err.jspError(start, "jasper.error.emptybodycontent.nonempty",
-                        tag);
+                err.jspError(start, MESSAGES.invalidEmptyTagSubelements(tag));
             }
         } else if (bodyType == JAVAX_BODY_CONTENT_PLUGIN) {
             // (note the == since we won't recognize JAVAX_*
             // from outside this module).
             parsePluginTags(parent);
             if (!reader.matchesETag(tag)) {
-                err.jspError(reader.mark(), "jsp.error.unterminated", "&lt;"
-                        + tag);
+                err.jspError(reader.mark(), MESSAGES.unterminatedTag("&lt;" + tag));
             }
         } else if (bodyType.equalsIgnoreCase(TagInfo.BODY_CONTENT_JSP)
                 || bodyType.equalsIgnoreCase(TagInfo.BODY_CONTENT_SCRIPTLESS)
@@ -1622,10 +1583,9 @@ class Parser implements TagConstants {
                 // Check for nested jsp:body or jsp:attribute
                 if (tag.equals("jsp:body") || tag.equals("jsp:attribute")) {
                     if (reader.matches("<jsp:attribute")) {
-                        err.jspError(reader.mark(),
-                                "jsp.error.nested.jspattribute");
+                        err.jspError(reader.mark(), MESSAGES.invalidJspAttributeNesting());
                     } else if (reader.matches("<jsp:body")) {
-                        err.jspError(reader.mark(), "jsp.error.nested.jspbody");
+                        err.jspError(reader.mark(), MESSAGES.invalidJspBodyNesting());
                     }
                 }
 
@@ -1643,9 +1603,9 @@ class Parser implements TagConstants {
                     parseElementsTemplateText(parent);
                 }
             }
-            err.jspError(start, "jsp.error.unterminated", "&lt;" + tag);
+            err.jspError(start, MESSAGES.unterminatedTag("&lt;" + tag));
         } else {
-            err.jspError(start, "jasper.error.bad.bodycontent.type");
+            err.jspError(start, MESSAGES.invalidBodyContentType());
         }
     }
 
@@ -1662,8 +1622,7 @@ class Parser implements TagConstants {
             reader.skipSpaces();
             if (!reader.matches("/>")) {
                 if (!reader.matches(">")) {
-                    err.jspError(start, "jsp.error.unterminated",
-                            "&lt;jsp:attribute");
+                    err.jspError(start, MESSAGES.unterminatedTag("&lt;jsp:attribute"));
                 }
                 if (namedAttributeNode.isTrim()) {
                     reader.skipSpaces();

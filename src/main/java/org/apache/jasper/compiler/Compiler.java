@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -159,7 +161,7 @@ public abstract class Compiler {
                             errDispatcher, true);
                 }
             } catch (NumberFormatException ex) {
-                errDispatcher.jspError(ex);
+                errDispatcher.jspError(MESSAGES.malformedLibraryVersionNumber(), ex);
             }
         }
 
@@ -304,8 +306,7 @@ public abstract class Compiler {
 		    osw = new OutputStreamWriter(
 		            new FileOutputStream(javaFileName), javaEncoding);
 		} catch (UnsupportedEncodingException ex) {
-		    errDispatcher.jspError("jsp.error.needAlternateJavaEncoding",
-		            javaEncoding);
+		    errDispatcher.jspError(MESSAGES.needAlternateEncoding(javaEncoding));
 		}
 
 		writer = new ServletWriter(new PrintWriter(osw));

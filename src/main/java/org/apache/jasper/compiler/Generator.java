@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -1226,7 +1228,7 @@ class Generator {
                     // depending on a compiler flag.
                     if (ctxt.getOptions()
                             .getErrorOnUseBeanInvalidClassAttribute()) {
-                        err.jspError(n, "jsp.error.invalid.bean", klass);
+                        err.jspError(n.getStart(), MESSAGES.invalidUseBeanAttributeClass(klass));
                     }
                     if (canonicalName == null) {
                         // Doing our best here to get a canonical name
@@ -2829,8 +2831,8 @@ class Generator {
             } else {
                 m = handlerInfo.getSetterMethod(localName);
                 if (m == null) {
-                    err.jspError(n, "jsp.error.unable.to_find_method", attr
-                            .getName());
+                    err.jspError(n.getStart(), MESSAGES.cannotFindSetterMethod(attr
+                            .getName()));
                 }
                 c = m.getParameterTypes();
                 // XXX assert(c.length > 0)
@@ -3924,8 +3926,7 @@ class Generator {
                                 .getPropertyEditorClass());
                 }
             } catch (IntrospectionException ie) {
-                err.jspError(n, "jsp.error.introspect.taghandler",
-                        tagHandlerClass.getName(), ie);
+                err.jspError(n.getStart(), MESSAGES.errorIntrospectingTagHandler(tagHandlerClass.getName()), ie);
             }
         }
 

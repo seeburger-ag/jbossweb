@@ -55,6 +55,7 @@ import javax.servlet.ServletContext;
 import org.apache.catalina.Globals;
 import org.apache.jasper.JasperException;
 import org.jboss.logging.Logger;
+import org.jboss.web.JasperLogger;
 
 /**
  * Handles the jsp-config element in WEB_INF/web.xml.  This is used
@@ -149,9 +150,7 @@ public class JspConfig {
                             boolean isStar = "*".equals(extension);
                             if ((path == null && (extension == null || isStar))
                                     || (path != null && !isStar)) {
-                                log.warn(Localizer.getMessage(
-                                        "jsp.warning.bad.urlpattern.propertygroup",
-                                        urlPattern));
+                                JasperLogger.COMPILER_LOGGER.invalidJspPropertyGroupsUrlPattern(urlPattern);
                                 continue;
                             }
                         }

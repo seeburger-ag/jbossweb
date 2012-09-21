@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 /**
  * Converts a JSP attribute value into the unquoted equivalent. The attribute
  * may contain EL expressions, in which case care needs to be taken to avoid any
@@ -303,9 +305,7 @@ public class AttributeParser {
             i+=3;
             return '>';
         } else if (ch == quote && strict) {
-            String msg = Localizer.getMessage("jsp.error.attribute.noescape",
-                    input, ""+ quote);
-            throw new IllegalArgumentException(msg);
+            throw MESSAGES.missingEscaping(input, "" + quote);
         } else {
             ++i;
         }

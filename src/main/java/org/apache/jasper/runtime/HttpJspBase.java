@@ -17,6 +17,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.IOException;
 
 import javax.servlet.ServletConfig;
@@ -25,9 +27,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.HttpJspPage;
-import javax.servlet.jsp.JspFactory;
-
-import org.apache.jasper.compiler.Localizer;
 
 /**
  * This is the super class of all JSP-generated servlets.
@@ -53,7 +52,7 @@ public abstract class HttpJspBase
     }
     
     public String getServletInfo() {
-	return Localizer.getMessage("jsp.engine.info");
+	return MESSAGES.jspInfo();
     }
 
     public final void destroy() {

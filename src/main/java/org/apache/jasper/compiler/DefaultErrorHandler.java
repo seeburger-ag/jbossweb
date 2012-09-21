@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import org.apache.jasper.JasperException;
 
 /**
@@ -63,34 +65,24 @@ class DefaultErrorHandler implements ErrorHandler {
             return;
         }
         
-        Object[] args = null;
         StringBuilder buf = new StringBuilder();
-        
         for (int i=0; i < details.length; i++) {
             if (details[i].getJspBeginLineNumber() >= 0) {
-                args = new Object[] {
-                        new Integer(details[i].getJspBeginLineNumber()), 
-                        details[i].getJspFileName() };
                 buf.append("\n\n");
-                buf.append(Localizer.getMessage("jsp.error.single.line.number",
-                        args));
+                buf.append(MESSAGES.errorInJspFile(details[i].getJspBeginLineNumber(), details[i].getJspFileName()));
                 buf.append("\n");
                 buf.append(details[i].getErrorMessage());
                 buf.append("\n");
                 buf.append(details[i].getJspExtract());
             } else {
-                args = new Object[] {
-                        new Integer(details[i].getJavaLineNumber()) };
                 buf.append("\n\n");
-                buf.append(Localizer.getMessage("jsp.error.java.line.number",
-                        args));
+                buf.append(MESSAGES.errorInJavaFile(details[i].getJavaLineNumber()));
                 buf.append("\n");
                 buf.append(details[i].getErrorMessage());
             }
         }
         buf.append("\n\nStacktrace:");
-        throw new JasperException(
-                Localizer.getMessage("jsp.error.unable.compile") + ": " + buf);
+        throw new JasperException(MESSAGES.failedClassCompilation(buf.toString()));
     }
     
     /**
@@ -101,9 +93,7 @@ class DefaultErrorHandler implements ErrorHandler {
      */
     public void javacError(String errorReport, Exception exception)
     throws JasperException {
-        
-        throw new JasperException(
-                Localizer.getMessage("jsp.error.unable.compile"), exception);
+        throw new JasperException(MESSAGES.failedClassCompilation(), exception);
     }
     
 }

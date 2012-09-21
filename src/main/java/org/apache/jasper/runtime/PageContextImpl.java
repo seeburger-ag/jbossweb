@@ -17,6 +17,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.security.AccessController;
@@ -48,7 +50,6 @@ import javax.servlet.jsp.el.VariableResolver;
 import javax.servlet.jsp.tagext.BodyContent;
 
 import org.apache.jasper.Constants;
-import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.el.ELContextImpl;
 import org.apache.jasper.el.ExpressionEvaluatorImpl;
 import org.apache.jasper.el.FunctionMapperImpl;
@@ -188,8 +189,7 @@ public class PageContextImpl extends PageContext {
 				((JspWriterImpl) out).flushBuffer();
 			}
 		} catch (IOException ex) {
-            IllegalStateException ise = new IllegalStateException(Localizer.getMessage("jsp.error.flush"), ex);
-            throw ise;
+            throw MESSAGES.errorFlushingData(ex);
 		} finally {
 		    servlet = null;
 		    config = null;
@@ -209,8 +209,7 @@ public class PageContextImpl extends PageContext {
 	public Object getAttribute(final String name) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -232,8 +231,7 @@ public class PageContextImpl extends PageContext {
 	public Object getAttribute(final String name, final int scope) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -258,8 +256,7 @@ public class PageContextImpl extends PageContext {
 
 		case SESSION_SCOPE:
 			if (session == null) {
-				throw new IllegalStateException(Localizer
-						.getMessage("jsp.error.page.noSession"));
+				throw MESSAGES.cannotUseSessionScope();
 			}
 			return session.getAttribute(name);
 
@@ -267,15 +264,14 @@ public class PageContextImpl extends PageContext {
 			return context.getAttribute(name);
 
 		default:
-			throw new IllegalArgumentException("Invalid scope");
+			throw MESSAGES.invalidScope();
 		}
 	}
 
 	public void setAttribute(final String name, final Object attribute) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -301,8 +297,7 @@ public class PageContextImpl extends PageContext {
 	public void setAttribute(final String name, final Object o, final int scope) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -331,8 +326,7 @@ public class PageContextImpl extends PageContext {
 
 			case SESSION_SCOPE:
 				if (session == null) {
-					throw new IllegalStateException(Localizer
-							.getMessage("jsp.error.page.noSession"));
+					throw MESSAGES.cannotUseSessionScope();
 				}
 				session.setAttribute(name, o);
 				break;
@@ -342,7 +336,7 @@ public class PageContextImpl extends PageContext {
 				break;
 
 			default:
-				throw new IllegalArgumentException("Invalid scope");
+				throw MESSAGES.invalidScope();
 			}
 		} else {
 			removeAttribute(name, scope);
@@ -352,8 +346,7 @@ public class PageContextImpl extends PageContext {
 	public void removeAttribute(final String name, final int scope) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 		if (SecurityUtil.isPackageProtectionEnabled()) {
 			AccessController.doPrivileged(new PrivilegedAction() {
@@ -379,8 +372,7 @@ public class PageContextImpl extends PageContext {
 
 		case SESSION_SCOPE:
 			if (session == null) {
-				throw new IllegalStateException(Localizer
-						.getMessage("jsp.error.page.noSession"));
+				throw MESSAGES.cannotUseSessionScope();
 			}
 			session.removeAttribute(name);
 			break;
@@ -390,15 +382,14 @@ public class PageContextImpl extends PageContext {
 			break;
 
 		default:
-			throw new IllegalArgumentException("Invalid scope");
+			throw MESSAGES.invalidScope();
 		}
 	}
 
 	public int getAttributesScope(final String name) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -441,8 +432,7 @@ public class PageContextImpl extends PageContext {
 			return AccessController.doPrivileged(new PrivilegedAction() {
 				public Object run() {
 					if (name == null) {
-						throw new NullPointerException(Localizer
-								.getMessage("jsp.error.attribute.null_name"));
+						throw MESSAGES.nullAttributeName();
 					}
 
 					return doFindAttribute(name);
@@ -450,8 +440,7 @@ public class PageContextImpl extends PageContext {
 			});
 		} else {
 			if (name == null) {
-				throw new NullPointerException(Localizer
-						.getMessage("jsp.error.attribute.null_name"));
+				throw MESSAGES.nullAttributeName();
 			}
 
 			return doFindAttribute(name);
@@ -505,8 +494,7 @@ public class PageContextImpl extends PageContext {
 
 		case SESSION_SCOPE:
 			if (session == null) {
-				throw new IllegalStateException(Localizer
-						.getMessage("jsp.error.page.noSession"));
+				throw MESSAGES.cannotUseSessionScope();
 			}
 			return session.getAttributeNames();
 
@@ -514,15 +502,14 @@ public class PageContextImpl extends PageContext {
 			return context.getAttributeNames();
 
 		default:
-			throw new IllegalArgumentException("Invalid scope");
+			throw MESSAGES.invalidScope();
 		}
 	}
 
 	public void removeAttribute(final String name) {
 
 		if (name == null) {
-			throw new NullPointerException(Localizer
-					.getMessage("jsp.error.attribute.null_name"));
+			throw MESSAGES.nullAttributeName();
 		}
 
 		if (SecurityUtil.isPackageProtectionEnabled()) {
@@ -685,10 +672,7 @@ public class PageContextImpl extends PageContext {
 		try {
 			out.clear();
 		} catch (IOException ex) {
-			IllegalStateException ise = new IllegalStateException(Localizer
-					.getMessage("jsp.error.attempt_to_clear_flushed_buffer"));
-			ise.initCause(ex);
-			throw ise;
+			throw MESSAGES.illegalClearAfterFlush(ex);
 		}
 
 		// Make sure that the response object is not the wrapper for include

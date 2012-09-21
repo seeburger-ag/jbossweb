@@ -39,8 +39,7 @@ import org.apache.jasper.Options;
 import org.apache.jasper.runtime.JspFactoryImpl;
 import org.apache.jasper.security.SecurityClassLoad;
 import org.apache.jasper.servlet.JspServletWrapper;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.JasperLogger;
 
 /**
  * Class for tracking JSP compile time file dependencies when the
@@ -56,9 +55,6 @@ import org.jboss.logging.Logger;
  * @version $Revision: 1237 $
  */
 public final class JspRuntimeContext {
-
-    // Logger
-    private Logger log = Logger.getLogger(JspRuntimeContext.class);
 
     /*
      * Counts how many times the webapp's JSPs have been reloaded.
@@ -115,15 +111,8 @@ public final class JspRuntimeContext {
             parentClassLoader = this.getClass().getClassLoader();
         }
 
-	if (log.isDebugEnabled()) {
-	    if (parentClassLoader != null) {
-		log.debug(Localizer.getMessage("jsp.message.parent_class_loader_is",
-					       parentClassLoader.toString()));
-	    } else {
-		log.debug(Localizer.getMessage("jsp.message.parent_class_loader_is",
-					       "<none>"));
-	    }
-        }
+        JasperLogger.COMPILER_LOGGER.logParentClassLoader((parentClassLoader != null) 
+                ? parentClassLoader.toString() : "[none]");
 
         initClassPath();
 
@@ -347,9 +336,7 @@ public final class JspRuntimeContext {
 
         classpath = cpath.toString() + cp;
 
-        if(log.isDebugEnabled()) {
-            log.debug("Compilation classpath initialized: " + getClassPath());
-        }
+        JasperLogger.COMPILER_LOGGER.logCompilationClasspath(getClassPath());
     }
 
     /**

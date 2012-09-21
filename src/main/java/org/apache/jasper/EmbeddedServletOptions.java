@@ -26,9 +26,8 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 import org.apache.jasper.compiler.JspConfig;
-import org.apache.jasper.compiler.Localizer;
 import org.apache.jasper.compiler.TagPluginManager;
-import org.jboss.logging.Logger;
+import org.jboss.web.JasperLogger;
 
 /**
  * A class to hold all init parameters specific to the JSP engine. 
@@ -38,9 +37,6 @@ import org.jboss.logging.Logger;
  * @author Pierre Delisle
  */
 public final class EmbeddedServletOptions implements Options {
-    
-    // Logger
-    private Logger log = Logger.getLogger(EmbeddedServletOptions.class);
     
     private Properties settings = new Properties();
     
@@ -413,7 +409,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (keepgen.equalsIgnoreCase("false")) {
                 this.keepGenerated = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.keepgen"));
+                JasperLogger.ROOT_LOGGER.invalidKeepGeneratedValue(keepgen);
             }
         }
         
@@ -425,7 +421,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (trimsp.equalsIgnoreCase("false")) {
                 trimSpaces = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.trimspaces"));
+                JasperLogger.ROOT_LOGGER.invalidTrimSpacesValue(trimsp);
             }
         }
         
@@ -437,7 +433,7 @@ public final class EmbeddedServletOptions implements Options {
             if (poolingEnabledParam.equalsIgnoreCase("false")) {
                 this.isPoolingEnabled = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.enablePooling"));
+                JasperLogger.ROOT_LOGGER.invalidEnablePoolingValue(poolingEnabledParam);
             }
         }
         
@@ -448,7 +444,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (mapFile.equalsIgnoreCase("false")) {
                 this.mappedFile = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.mappedFile"));
+                JasperLogger.ROOT_LOGGER.invalidMappedFileValue(mapFile);
             }
         }
         
@@ -459,7 +455,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (senderr.equalsIgnoreCase("false")) {
                 this.sendErrorToClient = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.sendErrToClient"));
+                JasperLogger.ROOT_LOGGER.invalidSendErrToClientValue(senderr);
             }
         }
         
@@ -470,7 +466,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (debugInfo.equalsIgnoreCase("false")) {
                 this.classDebugInfo  = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.classDebugInfo"));
+                JasperLogger.ROOT_LOGGER.invalidClassDebugInfoValue(debugInfo);
             }
         }
         
@@ -479,7 +475,7 @@ public final class EmbeddedServletOptions implements Options {
             try {
                 this.checkInterval = Integer.parseInt(checkInterval);
             } catch(NumberFormatException ex) {
-                log.warn(Localizer.getMessage("jsp.warning.checkInterval"));
+                JasperLogger.ROOT_LOGGER.invalidCheckIntervalValue(checkInterval);
             }
         }
         
@@ -488,7 +484,7 @@ public final class EmbeddedServletOptions implements Options {
             try {
                 this.modificationTestInterval = Integer.parseInt(modificationTestInterval);
             } catch(NumberFormatException ex) {
-                log.warn(Localizer.getMessage("jsp.warning.modificationTestInterval"));
+                JasperLogger.ROOT_LOGGER.invalidModificationTestIntervalValue(modificationTestInterval);
             }
         }
         
@@ -499,7 +495,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (recompileOnFail.equalsIgnoreCase("false")) {
                 this.recompileOnFail = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.recompileOnFail"));
+                JasperLogger.ROOT_LOGGER.invalidRecompileOnFailValue(recompileOnFail);
             }
         }
         String development = config.getInitParameter("development");
@@ -509,7 +505,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (development.equalsIgnoreCase("false")) {
                 this.development = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.development"));
+                JasperLogger.ROOT_LOGGER.invalidDevelopmentValue(development);
             }
         }
         
@@ -520,7 +516,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (suppressSmap.equalsIgnoreCase("false")) {
                 isSmapSuppressed = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.suppressSmap"));
+                JasperLogger.ROOT_LOGGER.invalidSuppressSmapValue(suppressSmap);
             }
         }
         
@@ -531,7 +527,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (dumpSmap.equalsIgnoreCase("false")) {
                 isSmapDumped = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.dumpSmap"));
+                JasperLogger.ROOT_LOGGER.invalidDumpSmapValue(dumpSmap);
             }
         }
         
@@ -542,7 +538,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (genCharArray.equalsIgnoreCase("false")) {
                 genStringAsCharArray = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.genchararray"));
+                JasperLogger.ROOT_LOGGER.invalidGenStrAsCharArrayValue(genCharArray);
             }
         }
         
@@ -554,7 +550,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (errBeanClass.equalsIgnoreCase("false")) {
                 errorOnUseBeanInvalidClassAttribute = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.errBean"));
+                JasperLogger.ROOT_LOGGER.invalidErrorOnUseBeanInvalidClassAttributeValue(errBeanClass);
             }
         }
         
@@ -584,14 +580,13 @@ public final class EmbeddedServletOptions implements Options {
             }
         }      
         if (this.scratchDir == null) {
-            log.fatal(Localizer.getMessage("jsp.error.no.scratch.dir"));
+            JasperLogger.ROOT_LOGGER.missingWorkDirectory();
             return;
         }
         
         if (!(scratchDir.exists() && scratchDir.canRead() &&
                 scratchDir.canWrite() && scratchDir.isDirectory()))
-            log.fatal(Localizer.getMessage("jsp.error.bad.scratch.dir",
-                    scratchDir.getAbsolutePath()));
+            JasperLogger.ROOT_LOGGER.missingWorkDirectory(scratchDir.getAbsolutePath());
         
         this.compiler = config.getInitParameter("compiler");
         
@@ -622,7 +617,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (fork.equalsIgnoreCase("false")) {
                 this.fork = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.fork"));
+                JasperLogger.ROOT_LOGGER.invalidForkValue(fork);
             }
         }
         
@@ -633,7 +628,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (xpoweredBy.equalsIgnoreCase("false")) {
                 this.xpoweredBy = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.xpoweredBy"));
+                JasperLogger.ROOT_LOGGER.invalidXpoweredByValue(xpoweredBy);
             }
         }
         
@@ -644,7 +639,7 @@ public final class EmbeddedServletOptions implements Options {
             } else if (displaySourceFragment.equalsIgnoreCase("false")) {
                 this.displaySourceFragment = false;
             } else {
-                log.warn(Localizer.getMessage("jsp.warning.displaySourceFragment"));
+                JasperLogger.ROOT_LOGGER.invalidDisplaySourceFragmentValue(displaySourceFragment);
             }
         }
         
