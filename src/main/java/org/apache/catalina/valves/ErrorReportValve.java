@@ -224,7 +224,9 @@ public class ErrorReportValve
         sb.append("<h1>");
         sb.append(MESSAGES.statusHeader(statusCode, message)).append("</h1>");
         sb.append("<HR size=\"1\" noshade=\"noshade\">");
-        sb.append("<p><b>type</b> ");
+        sb.append("<p><b>");
+        sb.append(MESSAGES.statusType());
+        sb.append("</b> ");
         if (throwable != null) {
             sb.append(MESSAGES.exceptionReport());
         } else {

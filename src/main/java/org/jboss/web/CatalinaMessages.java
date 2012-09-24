@@ -823,4 +823,7 @@ public interface CatalinaMessages {
     @Message(id = 308, value = "Request filter invalid pattern %s")
     IllegalArgumentException requestFilterInvalidPattern(String pattern, @Cause Throwable t);
 
+    @Message(id = 309, value = "type")
+    String statusType();
+
 }
