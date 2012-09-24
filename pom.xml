@@ -171,6 +171,36 @@
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <!-- Plugin Repositories -->
+    <pluginRepositories>
+      <pluginRepository>
+        <id>nexus.jboss.org</id>
+        <name>JBoss Nexus Repository</name>
+        <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+        <releases>
+          <enabled>true</enabled>
+        </releases>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>
+      </pluginRepository>
+    </pluginRepositories>
+
     <!--<scm>
         <connection>scm:git:git@github.com:jbossas/jboss-web.git</connection>
         <developerConnection>scm:git:git@github.com:jbossas/jboss-web.git</developerConnection>
