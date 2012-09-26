@@ -41,7 +41,6 @@ import org.apache.coyote.RequestInfo;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
-import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.jsse.NioJSSEImplementation;
 import org.apache.tomcat.util.net.jsse.NioJSSESocketChannelFactory;
@@ -92,9 +91,9 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		// Verify the validity of the configured socket factory
 		try {
 			if (isSSLEnabled()) {
-				sslImplementation = SSLImplementation.getInstance(NioJSSEImplementation.class
-						.getName());
-				socketFactory = sslImplementation.getServerSocketChannelFactory();
+				sslImplementation = new NioJSSEImplementation();
+				//Possible pluggability ? SSLImplementation.getInstance(NioJSSEImplementation.class.getName());
+				socketFactory = ((NioJSSEImplementation) sslImplementation).getServerSocketChannelFactory();
 				endpoint.setServerSocketChannelFactory(socketFactory);
 			}
 		} catch (Exception ex) {
@@ -896,7 +895,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				}
 
 				if (proto.secure && (proto.sslImplementation != null)) {
-					processor.setSSLSupport(proto.sslImplementation.getSSLSupport(channel));
+					processor.setSSLSupport(((NioJSSEImplementation) proto.sslImplementation).getSSLSupport(channel));
 				} else {
 					processor.setSSLSupport(null);
 				}

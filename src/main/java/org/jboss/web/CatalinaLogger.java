@@ -653,4 +653,8 @@ public interface CatalinaLogger extends BasicLogger {
     @Message(id = 1140, value = "Failed protocol handler [%s] JMX registration.")
     void failedProtocolJmxRegistration(Object objectName, @Cause Throwable t);
 
+    @LogMessage(level = INFO)
+    @Message(id = 1141, value = "NIO 2 is not available, the java.io connector will be used insteaf")
+    void usingJavaIoConnector();
+
 }

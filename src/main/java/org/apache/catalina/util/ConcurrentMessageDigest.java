@@ -33,7 +33,7 @@ public class ConcurrentMessageDigest {
     private static final String MD5 = "MD5";
 
     private static final Map<String,Queue<MessageDigest>> queues =
-            new HashMap<>();
+            new HashMap<String,Queue<MessageDigest>>();
 
 
     private ConcurrentMessageDigest() {
@@ -95,7 +95,7 @@ public class ConcurrentMessageDigest {
         synchronized (queues) {
             if (!queues.containsKey(algorithm)) {
                 MessageDigest md = MessageDigest.getInstance(algorithm);
-                Queue<MessageDigest> queue = new ConcurrentLinkedQueue<>();
+                Queue<MessageDigest> queue = new ConcurrentLinkedQueue<MessageDigest>();
                 queue.add(md);
                 queues.put(algorithm, queue);
             }

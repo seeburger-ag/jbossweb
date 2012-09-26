@@ -112,7 +112,9 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 					break;
 				}
 			}
-		} catch (NoSuchAlgorithmException | KeyManagementException e) {
+		} catch (NoSuchAlgorithmException e) {
+            // Assume no RFC 5746 support
+		} catch (KeyManagementException e) {
 			// Assume no RFC 5746 support
 		}
 		RFC_5746_SUPPORTED = result;
@@ -362,7 +364,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 						for (int i = 0; supportedCiphers != null && i < supportedCiphers.length; i++) {
 							if (supportedCiphers[i].equals(cipher)) {
 								if (vec == null) {
-									vec = new Vector<>();
+									vec = new Vector<Object>();
 								}
 								vec.addElement(cipher);
 								break;
@@ -385,7 +387,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 					for (int i = 0; supportedCiphers != null && i < supportedCiphers.length; i++) {
 						if (supportedCiphers[i].equals(cipher)) {
 							if (vec == null) {
-								vec = new Vector<>();
+								vec = new Vector<Object>();
 							}
 							vec.addElement(cipher);
 							break;

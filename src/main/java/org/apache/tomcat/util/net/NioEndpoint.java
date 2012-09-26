@@ -187,15 +187,15 @@ public class NioEndpoint extends AbstractEndpoint {
 		}
 
 		if (this.connections == null) {
-			this.connections = new ConcurrentHashMap<>();
+			this.connections = new ConcurrentHashMap<Long, NioChannel>();
 		}
 
 		if (this.recycledChannelProcessors == null) {
-			this.recycledChannelProcessors = new ConcurrentLinkedQueue<>();
+			this.recycledChannelProcessors = new ConcurrentLinkedQueue<ChannelProcessor>();
 		}
 
 		if (this.recycledHandshakeProcessors == null) {
-			this.recycledHandshakeProcessors = new ConcurrentLinkedQueue<>();
+			this.recycledHandshakeProcessors = new ConcurrentLinkedQueue<HandshakeHandler>();
 		}
 
 		// If the executor is not set, create it with a fixed thread pool
@@ -1199,9 +1199,9 @@ public class NioEndpoint extends AbstractEndpoint {
 		 */
 		public void init() {
 			this.mutex = new Object();
-			this.channelList = new ConcurrentHashMap<>(this.size);
-			this.recycledChannelList = new ConcurrentLinkedQueue<>();
-			this.recycledCompletionHandlers = new ConcurrentLinkedQueue<>();
+			this.channelList = new ConcurrentHashMap<Long, ChannelInfo>(this.size);
+			this.recycledChannelList = new ConcurrentLinkedQueue<ChannelInfo>();
+			this.recycledCompletionHandlers = new ConcurrentLinkedQueue<CompletionHandler<Integer, NioChannel>>();
 		}
 
 		/**
@@ -1646,8 +1646,8 @@ public class NioEndpoint extends AbstractEndpoint {
 			this.size = maxThreads;
 			this.mutex = new Object();
 			this.counter = new AtomicInteger(0);
-			this.fileDatas = new ConcurrentLinkedQueue<>();
-			this.recycledFileDatas = new ConcurrentLinkedQueue<>();
+			this.fileDatas = new ConcurrentLinkedQueue<SendfileData>();
+			this.recycledFileDatas = new ConcurrentLinkedQueue<SendfileData>();
 		}
 
 		/**

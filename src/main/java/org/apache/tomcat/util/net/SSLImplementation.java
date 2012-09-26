@@ -80,26 +80,6 @@ abstract public class SSLImplementation {
         }
     }
 
-    /**
-     * @return the implementation name
-     */
     abstract public String getImplementationName();
-
-    /**
-     * 
-     * @return a new instance of {@link NioJSSESocketChannelFactory}
-     */
-    public abstract NioJSSESocketChannelFactory getServerSocketChannelFactory();
-
-    /**
-     * @param channel
-     * @return the {@link SSLSupport} attached to this channel
-     */
-    public abstract SSLSupport getSSLSupport(NioChannel channel);
-    
-    /**
-     * @param session
-     * @return the {@link SSLSupport} attached to this session
-     */
     abstract public SSLSupport getSSLSupport(SSLSession session);
 }
