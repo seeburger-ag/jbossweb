@@ -667,4 +667,7 @@ public interface JasperMessages {
     @Message(id = 4209, value = "An exception occurred processing JSP page %s at line %s")
     String jspException(String jsp, int line);
 
+    @Message(id = 4210, value = "Security exception for class %s")
+    String securityExceptionLoadingClass(String className);
+
 }

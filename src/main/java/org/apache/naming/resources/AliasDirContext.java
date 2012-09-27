@@ -18,6 +18,8 @@
 
 package org.apache.naming.resources;
 
+import static org.jboss.web.NamingMessages.MESSAGES;
+
 import java.io.File;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -58,8 +60,7 @@ public class AliasDirContext extends BaseDirContext {
      */
     public void addAlias(String path, BaseDirContext dirContext) {
         if (!path.startsWith("/")) {
-            throw new IllegalArgumentException(
-                    sm.getString("resources.invalidAliasPath", path));
+            throw MESSAGES.invalidAliasPath(path);
         }
         aliases.put(path, dirContext);
     }
@@ -70,8 +71,7 @@ public class AliasDirContext extends BaseDirContext {
      */
     public void removeAlias(String path) {
         if (!path.startsWith("/")) {
-            throw new IllegalArgumentException(
-                    sm.getString("resources.invalidAliasPath", path));
+            throw MESSAGES.invalidAliasPath(path);
         }
         aliases.remove(path);
     }
@@ -121,10 +121,10 @@ public class AliasDirContext extends BaseDirContext {
         for (String kvp : kvps) {
             String[] kv = kvp.split("=");
             if (kv.length != 2 || kv[0].length() == 0 || kv[1].length() == 0)
-                throw new IllegalArgumentException(sm.getString("resources.invalidAliasMapping", kvp));
+                throw MESSAGES.invalidAliasMapping(kvp);
             File aliasLoc = new File(kv[1]);
             if (!aliasLoc.exists()) {
-                throw new IllegalArgumentException(sm.getString("resources.invalidAliasNotExist", kv[1]));
+                throw MESSAGES.aliasNotFound(kv[1]);
             }
             BaseDirContext context;
             if (kv[1].endsWith(".war") && !(aliasLoc.isDirectory())) {
@@ -132,7 +132,7 @@ public class AliasDirContext extends BaseDirContext {
             } else if (aliasLoc.isDirectory()) {
                 context = new FileDirContext();
             } else {
-                throw new IllegalArgumentException(sm.getString("resources.invalidAliasFile", kv[1]));
+                throw MESSAGES.aliasNotFolder(kv[1]);
             }
             context.setDocBase(kv[1]);
             addAlias(kv[0], context);
@@ -175,7 +175,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.lookup(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public Object lookup(Name name) throws NamingException {
@@ -195,7 +195,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.list(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public NamingEnumeration list(Name name) throws NamingException {
@@ -207,7 +207,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.listBindings(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public NamingEnumeration listBindings(Name name) throws NamingException {
@@ -232,7 +232,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.getAttributes(result.aliasName, attrIds);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public Attributes getAttributes(Name name, String[] attrIds) throws NamingException {

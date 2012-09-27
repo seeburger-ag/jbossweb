@@ -30,15 +30,23 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
 /**
- * Logging IDs 6300-6500
+ * Logging IDs 6500-6700
  * @author Remy Maucherat
  */
 @MessageLogger(projectCode = "JBWEB")
-public interface ELLogger extends BasicLogger {
+public interface NamingLogger extends BasicLogger {
 
     /**
      * A logger with the category of the package name.
      */
-    ELLogger ROOT_LOGGER = Logger.getMessageLogger(ELLogger.class, "org.apache.el");
+    NamingLogger ROOT_LOGGER = Logger.getMessageLogger(NamingLogger.class, "org.apache.naming");
+
+    @LogMessage(level = WARN)
+    @Message(id = 6500, value = "Could not get directory listing for %s")
+    void failedListingFolder(String path);
+
+    @LogMessage(level = WARN)
+    @Message(id = 6501, value = "Error closing WAR %s")
+    void failedClosingWar(String path, @Cause Throwable t);
 
 }

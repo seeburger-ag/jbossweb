@@ -46,7 +46,6 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.naming.NamingEnumerationImpl;
-import org.apache.naming.StringManager;
 
 /**
  * Proxy Directory Context implementation. This implementation looks up the
@@ -114,12 +113,6 @@ public class ProxyDirContext implements DirContext {
      * Environment.
      */
     protected Hashtable<String, Object> env;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm = StringManager.getManager(Constants.Package);
 
 
     /**

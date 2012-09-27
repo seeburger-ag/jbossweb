@@ -18,6 +18,8 @@
 
 package org.apache.naming.resources;
 
+import static org.jboss.web.NamingMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -61,9 +63,6 @@ import org.apache.naming.NamingEntry;
 
 public class JARDirContext extends BaseDirContext {
 
-    private static org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(JARDirContext.class);
-    
     // ----------------------------------------------------------- Constructors
 
 
@@ -125,8 +124,7 @@ public class JARDirContext extends BaseDirContext {
 
         // Validate the format of the proposed document root
         if (jarFile == null)
-            throw new IllegalArgumentException
-            (sm.getString("resources.null"));
+            throw MESSAGES.invalidNullDocumentBase();
 
         this.prefix = prefix;
         if (prefix.startsWith("/")) {
@@ -189,7 +187,7 @@ public class JARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name.toString()));
         ZipEntry zipEntry = entry.getEntry();
         if (zipEntry.isDirectory())
             return new JARDirContext(base, entry);
@@ -274,7 +272,7 @@ public class JARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name.toString()));
         return new NamingContextEnumeration(list(entry).iterator());
     }
 
@@ -319,7 +317,7 @@ public class JARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name.toString()));
         return new NamingContextBindingsEnumeration(list(entry).iterator(),
                 this);
     }
@@ -435,7 +433,7 @@ public class JARDirContext extends BaseDirContext {
             entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name.toString()));
         
         ZipEntry zipEntry = entry.getEntry();
 

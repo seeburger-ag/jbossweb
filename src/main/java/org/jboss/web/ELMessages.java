@@ -24,7 +24,7 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
- * Logging IDs 6000-6500
+ * Logging IDs 6000-6300
  * @author Remy Maucherat
  */
 @MessageBundle(projectCode = "JBWEB")
