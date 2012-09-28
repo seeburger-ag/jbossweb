@@ -370,8 +370,10 @@ final class StandardHostValve
             if (custom(request, response, errorPage)) {
                 try {
                     response.flushBuffer();
+                } catch (ClientAbortException e) {
+                    // Ignore
                 } catch (IOException e) {
-                    container.getLogger().warn("Exception Processing " + errorPage, e);
+                    container.getLogger().warn(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), e);
                 }
             }
         } else {
@@ -445,7 +447,7 @@ final class StandardHostValve
                 } catch (ClientAbortException e) {
                     // Ignore
                 } catch (IOException e) {
-                    container.getLogger().warn("Exception Processing " + errorPage, e);
+                    container.getLogger().warn(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), e);
                 }
             }
         }
@@ -524,7 +526,7 @@ final class StandardHostValve
         } catch (Throwable t) {
 
             // Report our failure to process this custom page
-            container.getLogger().error("Exception Processing " + errorPage, t);
+            container.getLogger().error(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), t);
             return (false);
 
         }

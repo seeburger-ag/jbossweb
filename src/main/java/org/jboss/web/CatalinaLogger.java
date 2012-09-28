@@ -653,4 +653,40 @@ public interface CatalinaLogger extends BasicLogger {
     @Message(id = 1141, value = "NIO 2 is not available, the java.io connector will be used insteaf")
     void usingJavaIoConnector();
 
+    @LogMessage(level = ERROR)
+    @Message(id = 1142, value = "Access log rotation failed")
+    void errorRotatingAccessLog(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1143, value = "Error closing old log file")
+    void errorClosingOldAccessLog(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1144, value = "Pattern was just empty or whitespace")
+    void extendedAccessLogEmptyPattern();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1145, value = "Pattern parse error")
+    void extendedAccessLogPatternParseError(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1146, value = "Unable to decode with rest of chars starting: %s")
+    void extendedAccessLogUnknownToken(String token);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1147, value = "No closing ) found for in decode")
+    void extendedAccessLogMissingClosing();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1148, value = "The next characters couldn't be decoded: %s")
+    void extendedAccessLogCannotDecode(String chars);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1149, value = "X param for servlet request, couldn't decode value: %s")
+    void extendedAccessLogCannotDecodeXParamValue(String value);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1150, value = "X param in wrong format. Needs to be 'x-#(...)'")
+    void extendedAccessLogBadXParam();
+
 }

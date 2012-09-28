@@ -16,6 +16,8 @@
  */
 package org.apache.catalina.util;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -57,7 +59,7 @@ public class ConcurrentMessageDigest {
 
         Queue<MessageDigest> queue = queues.get(algorithm);
         if (queue == null) {
-            throw new IllegalStateException("Must call init() first");
+            throw MESSAGES.uninitializedMessageDigest();
         }
 
         MessageDigest md = queue.poll();
@@ -67,7 +69,7 @@ public class ConcurrentMessageDigest {
             } catch (NoSuchAlgorithmException e) {
                 // Ignore. Impossible if init() has been successfully called
                 // first.
-                throw new IllegalStateException("Must call init() first");
+                throw MESSAGES.uninitializedMessageDigest();
             }
         }
 
