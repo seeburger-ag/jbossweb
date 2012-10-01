@@ -160,4 +160,36 @@ public interface JasperLogger extends BasicLogger {
     @Message(id = 5026, value = "Compilation classpath: %s")
     void logCompilationClasspath(String classpath);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 5027, value = "Error reading source file %s")
+    void errorReadingSourceFile(String sourceFile, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 5028, value = "Error reading class file %s")
+    void errorReadingClassFile(String className, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 5029, value = "Unknown source JVM %s ignored")
+    void unknownSourceJvm(String version);
+
+    @LogMessage(level = WARN)
+    @Message(id = 5030, value = "Unknown target JVM %s ignored")
+    void unknownTargetJvm(String version);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 5031, value = "Error creating compiler report")
+    void errorCreatingCompilerReport(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 5032, value = "Compiler error")
+    void errorCompiling(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 5033, value = "Exception initializing page context")
+    void errorInitializingPageContext(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 5034, value = "Error loading core class")
+    void errorLoadingCoreClass(@Cause Throwable t);
+
 }

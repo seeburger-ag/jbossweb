@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.jboss.web.CoyoteLogger;
+
 // Depends: JDK1.1
 
 /**
@@ -30,9 +32,6 @@ import java.net.UnknownHostException;
  */
 public final class IntrospectionUtils {
 
-    
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( IntrospectionUtils.class );
     
     /**
      * Find a method with the right name If found, call the method ( if param is
@@ -138,7 +137,7 @@ public final class IntrospectionUtils {
             }
 
         } catch (IllegalArgumentException ex2) {
-            log.warn("IAE " + o + " " + name + " " + value, ex2);
+            CoyoteLogger.UTIL_LOGGER.errorSettingProperty(name, o, value, ex2);
         } catch (SecurityException ex1) {
             if (dbg > 0)
                 d("SecurityException for " + o.getClass() + " " + name + "="
@@ -192,7 +191,7 @@ public final class IntrospectionUtils {
             }
 
         } catch (IllegalArgumentException ex2) {
-            log.warn("IAE " + o + " " + name, ex2);
+            CoyoteLogger.UTIL_LOGGER.errorGettingProperty(name, o, ex2);
         } catch (SecurityException ex1) {
             if (dbg > 0)
                 d("SecurityException for " + o.getClass() + " " + name + ")");
@@ -289,7 +288,7 @@ public final class IntrospectionUtils {
     static final int dbg = 0;
 
     static void d(String s) {
-        if (log.isDebugEnabled())
-            log.debug("IntrospectionUtils: " + s);
+        if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled())
+            CoyoteLogger.UTIL_LOGGER.debug("IntrospectionUtils: " + s);
     }
 }

@@ -100,4 +100,64 @@ public interface CoyoteMessages {
     @Message(id = 2020, value = "Invalid chunk header")
     IOException invalidChunkHeader();
 
+    @Message(id = 2021, value = "Channel pattern must not be null")
+    NullPointerException invalidNullChannelPattern();
+
+    @Message(id = 2022, value = "Invalid message class, you can only publish messages created through the Bayeux.newMessage() method")
+    IllegalArgumentException invalidMessagePublish();
+
+    @Message(id = 2023, value = "Misconfigured server, must be configured to support Comet operations")
+    String invalidBayeuxConfiguration();
+
+    @Message(id = 2024, value = "No Bayeux message to send")
+    String noBayeuxMessage();
+
+    @Message(id = 2025, value = "Client doesn't support any appropriate connection type")
+    String noBayeuxConnectionType();
+
+    @Message(id = 2026, value = "Unable to fit %s bytes into the array. length:%s required length: %s")
+    ArrayIndexOutOfBoundsException errorGeneratingUuid(int uuidLength, int destLength, int reqLength);
+
+    @Message(id = 2027, value = "Invalid client id")
+    String invalidBayeuxClientId();
+
+    @Message(id = 2028, value = "Invalid handshake")
+    String invalidBayeuxHandshake();
+
+    @Message(id = 2029, value = "No Bayeux subscription")
+    String noBayeuxSubscription();
+
+    @Message(id = 2030, value = "Message data missing")
+    String noBayeuxMessageData();
+
+    @Message(id = 2031, value = "Invalid JSON object in data attribute")
+    String invalidBayeuxMessageData();
+
+    @Message(id = 2032, value = "Unsupported APR Version %s")
+    UnsatisfiedLinkError unsupportedAprVersion(String version);
+
+    @Message(id = 2033, value = "Missing APR threads support")
+    UnsatisfiedLinkError missingAprThreadsSupport();
+
+    @Message(id = 2034, value = "(Error on: ")
+    String aprError();
+
+    @Message(id = 2035, value = "Buffer length %s overflow with limit %s and no sink")
+    String bufferOverflow(int length, int limit);
+
+    @Message(id = 2036, value = "Unexpected EOF")
+    String unexpectedEof();
+
+    @Message(id = 2037, value = "Invalid HEX")
+    String invalidHex();
+
+    @Message(id = 2038, value = "Invalid slash")
+    String invalidSlash();
+
+    @Message(id = 2039, value = "Control character in cookie value or attribute")
+    IllegalArgumentException invalidControlCharacter();
+
+    @Message(id = 2040, value = "Invalid escape character in cookie value")
+    IllegalArgumentException invalidEscapeCharacter();
+
 }

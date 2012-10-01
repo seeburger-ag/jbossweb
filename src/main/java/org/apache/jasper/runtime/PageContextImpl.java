@@ -146,8 +146,7 @@ public class PageContextImpl extends PageContext {
 		if (request instanceof HttpServletRequest && needsSession)
 			this.session = ((HttpServletRequest) request).getSession();
 		if (needsSession && session == null)
-			throw new IllegalStateException(
-					"Page needs a session and none is available");
+			throw MESSAGES.pageNeedsSession();
 
 		// initialize the initial out ...
 		depth = -1;
@@ -753,7 +752,7 @@ public class PageContextImpl extends PageContext {
 	public void handlePageException(final Throwable t) throws IOException,
 			ServletException {
 		if (t == null)
-			throw new NullPointerException("null Throwable");
+			throw MESSAGES.nullThrowable();
 
 		if (SecurityUtil.isPackageProtectionEnabled()) {
 			try {

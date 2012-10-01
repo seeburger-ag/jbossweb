@@ -59,6 +59,11 @@ public interface CoyoteLogger extends BasicLogger {
      */
     CoyoteLogger AJP_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.ajp");
 
+    /**
+     * A logger with the category of the package name.
+     */
+    CoyoteLogger BAYEUX_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.tomcat.bayeux");
+
     @LogMessage(level = INFO)
     @Message(id = 3000, value = "Coyote HTTP/1.1 starting on: %s")
     void startHttpConnector(String name);
@@ -382,5 +387,25 @@ public interface CoyoteLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 3080, value = "Error initializing socket factory")
     void errorInitializingSocketFactory(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3081, value = "Check Bayeux exception")
+    void errorInCheckBayeux(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3082, value = "Error processing Bayeux")
+    void errorProcessingBayeux(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3083, value = "Message delivery error")
+    void errorDeliveringBayeux(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3084, value = "Failed setting property %s on object %s to %s")
+    void errorSettingProperty(String propertyName, Object object, String propertyValue, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3085, value = "Failed getting property %s on object %s")
+    void errorGettingProperty(String propertyName, Object object, @Cause Throwable t);
 
 }

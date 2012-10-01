@@ -35,6 +35,7 @@ import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.Options;
 import org.apache.jasper.servlet.JspServletWrapper;
+import org.jboss.web.JasperLogger;
 
 /**
  * Main JSP compiler class. This class uses Ant for compiling.
@@ -48,9 +49,6 @@ import org.apache.jasper.servlet.JspServletWrapper;
  */
 public abstract class Compiler {
     
-    protected org.jboss.logging.Logger log = org.jboss.logging.Logger
-            .getLogger(Compiler.class);
-
     // ----------------------------------------------------- Instance Variables
 
     protected JspCompilationContext ctxt;
@@ -102,7 +100,7 @@ public abstract class Compiler {
 
         t1 = t2 = t3 = t4 = 0;
 
-        if (log.isDebugEnabled()) {
+        if (JasperLogger.COMPILER_LOGGER.isDebugEnabled()) {
             t1 = System.currentTimeMillis();
         }
 
@@ -212,7 +210,7 @@ public abstract class Compiler {
             // directives we validated in pass 1
             Validator.validateExDirectives(this, pageNodes);
 
-            if (log.isDebugEnabled()) {
+            if (JasperLogger.COMPILER_LOGGER.isDebugEnabled()) {
                 t2 = System.currentTimeMillis();
             }
 
@@ -224,7 +222,7 @@ public abstract class Compiler {
             tfp = new TagFileProcessor();
             tfp.loadTagFiles(this, pageNodes);
 
-            if (log.isDebugEnabled()) {
+            if (JasperLogger.COMPILER_LOGGER.isDebugEnabled()) {
                 t3 = System.currentTimeMillis();
             }
 
@@ -252,9 +250,9 @@ public abstract class Compiler {
             // to be GC'd and save memory.
             ctxt.setWriter(null);
 
-            if (log.isDebugEnabled()) {
+            if (JasperLogger.COMPILER_LOGGER.isDebugEnabled()) {
                 t4 = System.currentTimeMillis();
-                log.debug("Generated " + javaFileName + " total=" + (t4 - t1)
+                JasperLogger.COMPILER_LOGGER.debug("Generated " + javaFileName + " total=" + (t4 - t1)
                         + " generate=" + (t4 - t3) + " validate=" + (t2 - t1));
             }
 
@@ -468,8 +466,8 @@ public abstract class Compiler {
             jsw.setServletClassLastModifiedTime(targetLastModified);
         }
         if (targetLastModified < jspRealLastModified) {
-            if (log.isDebugEnabled()) {
-                log.debug("Compiler: outdated: " + targetFile + " "
+            if (JasperLogger.COMPILER_LOGGER.isDebugEnabled()) {
+                JasperLogger.COMPILER_LOGGER.debug("Compiler: outdated: " + targetFile + " "
                         + targetLastModified);
             }
             return true;
@@ -543,8 +541,8 @@ public abstract class Compiler {
             String classFileName = ctxt.getClassFileName();
             if (classFileName != null) {
                 File classFile = new File(classFileName);
-                if (log.isDebugEnabled())
-                    log.debug("Deleting " + classFile);
+                if (JasperLogger.COMPILER_LOGGER.isDebugEnabled())
+                    JasperLogger.COMPILER_LOGGER.debug("Deleting " + classFile);
                 classFile.delete();
             }
         } catch (Exception e) {
@@ -554,8 +552,8 @@ public abstract class Compiler {
             String javaFileName = ctxt.getServletJavaFileName();
             if (javaFileName != null) {
                 File javaFile = new File(javaFileName);
-                if (log.isDebugEnabled())
-                    log.debug("Deleting " + javaFile);
+                if (JasperLogger.COMPILER_LOGGER.isDebugEnabled())
+                    JasperLogger.COMPILER_LOGGER.debug("Deleting " + javaFile);
                 javaFile.delete();
             }
         } catch (Exception e) {
@@ -568,8 +566,8 @@ public abstract class Compiler {
             String classFileName = ctxt.getClassFileName();
             if (classFileName != null) {
                 File classFile = new File(classFileName);
-                if (log.isDebugEnabled())
-                    log.debug("Deleting " + classFile);
+                if (JasperLogger.COMPILER_LOGGER.isDebugEnabled())
+                    JasperLogger.COMPILER_LOGGER.debug("Deleting " + classFile);
                 classFile.delete();
             }
         } catch (Exception e) {

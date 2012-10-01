@@ -98,4 +98,28 @@ public interface ELMessages {
     @Message(id = 6020, value = "Unable to find unambiguous method: %s.%s(%s)")
     String ambiguousMethod(Object base, Object method, String parameters);
 
+    @Message(id = 6021, value = "Invalid method expression: %s")
+    String invalidMethodExpression(String expression);
+
+    @Message(id = 6022, value = "Function mapper is null")
+    NullPointerException invalidNullFunctionMapper();
+
+    @Message(id = 6023, value = "Local name is null")
+    NullPointerException invalidNullLocalName();
+
+    @Message(id = 6024, value = "Method is null")
+    NullPointerException invalidNullMethod();
+
+    @Message(id = 6025, value = "Variable mapper is null")
+    NullPointerException invalidNullVariableMapper();
+
+    @Message(id = 6026, value = "Cannot set variables on factory")
+    UnsupportedOperationException cannotSetVariablesOnFactory();
+
+    @Message(id = 6027, value = "Identity '%s' was null and was unable to invoke")
+    String invalidNullIdentity(String image);
+
+    @Message(id = 6028, value = "Identity '%s' does not reference a MethodExpression instance, returned type: %s")
+    String invalidIdentityHasWrongType(String image, String returnedType);
+
 }
