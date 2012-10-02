@@ -46,6 +46,9 @@
       <fix>
          <bug>53801</bug>: Fix some edge case with overlapping security constraints. (markt)
       </fix>
+      <fix>
+         Add default error pages which got clarified. (markt)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">

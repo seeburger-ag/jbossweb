@@ -419,6 +419,10 @@ final class StandardHostValve
             return;
 
         ErrorPage errorPage = context.findErrorPage(statusCode);
+        if (errorPage == null) {
+            // Look for a default error page
+            errorPage = context.findErrorPage(0);
+        }
         if (errorPage != null) {
             response.setAppCommitted(false);
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
@@ -509,6 +513,7 @@ final class StandardHostValve
 
             // Reset the response (keeping the real error code and message)
             response.resetBuffer(true);
+            response.setContentLength(-1);
 
             // Forward control to the specified location
             ServletContext servletContext =
