@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.util.net.jsse;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +35,7 @@ import javax.security.cert.X509Certificate;
 
 import org.apache.tomcat.util.net.Constants;
 import org.apache.tomcat.util.net.SSLSupport;
+import org.jboss.web.CoyoteLogger;
 
 /** JSSESupport
 
@@ -51,9 +54,6 @@ import org.apache.tomcat.util.net.SSLSupport;
 
 class JSSESupport implements SSLSupport {
     
-    private static org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(JSSESupport.class);
-
     protected SSLSocket ssl;
     protected SSLSession session;
 
@@ -87,7 +87,7 @@ class JSSESupport implements SSLSupport {
         try {
             certs = session.getPeerCertificates();
         } catch( Throwable t ) {
-            log.debug("Error getting client certs",t);
+            CoyoteLogger.UTIL_LOGGER.debug("Error getting client certs", t);
             return null;
         }
         if( certs==null ) return null;
@@ -107,12 +107,12 @@ class JSSESupport implements SSLSupport {
                         new ByteArrayInputStream(buffer);
                     x509Certs[i] = (java.security.cert.X509Certificate) cf.generateCertificate(stream);
                 } catch(Exception ex) { 
-                    log.info("Error translating cert " + certs[i], ex);
+                    CoyoteLogger.UTIL_LOGGER.errorTranslatingCertificate(certs[i], ex);
                     return null;
                 }
             }
-            if(log.isTraceEnabled())
-                log.trace("Cert #" + i + " = " + x509Certs[i]);
+            if(CoyoteLogger.UTIL_LOGGER.isTraceEnabled())
+                CoyoteLogger.UTIL_LOGGER.trace("Cert #" + i + " = " + x509Certs[i]);
         }
         if(x509Certs.length < 1)
             return null;
@@ -144,7 +144,7 @@ class JSSESupport implements SSLSupport {
 
     protected void handShake() throws IOException {
         if( ssl.getWantClientAuth() ) {
-            log.debug("No client cert sent for want");
+            CoyoteLogger.UTIL_LOGGER.debug("No client cert sent for want");
         } else {
             ssl.setNeedClientAuth(true);
         }
@@ -152,7 +152,7 @@ class JSSESupport implements SSLSupport {
         if (ssl.getEnabledCipherSuites().length == 0) {
             // Handshake is never going to be successful.
             // Assume this is because handshakes are disabled
-            log.warn("SSL server initiated renegotiation is disabled, closing connection");
+            CoyoteLogger.UTIL_LOGGER.disabledSslRenegociation();
             session.invalidate();
             ssl.close();
             return;
@@ -166,12 +166,12 @@ class JSSESupport implements SSLSupport {
         ssl.startHandshake();
         int maxTries = 60; // 60 * 1000 = example 1 minute time out
         for (int i = 0; i < maxTries; i++) {
-        if(log.isTraceEnabled())
-            log.trace("Reading for try #" +i);
+        if(CoyoteLogger.UTIL_LOGGER.isTraceEnabled())
+            CoyoteLogger.UTIL_LOGGER.trace("Reading for try #" +i);
             try {
                 int x = in.read(b);
             } catch(SSLException sslex) {
-                log.info("SSL Error getting client Certs",sslex);
+                CoyoteLogger.UTIL_LOGGER.trace("SSL Error getting client Certs",sslex);
                 throw sslex;
             } catch (IOException e) {
                 // ignore - presumably the timeout
@@ -182,7 +182,7 @@ class JSSESupport implements SSLSupport {
         }
         ssl.setSoTimeout(oldTimeout);
         if (listener.completed == false) {
-            throw new SocketException("SSL Cert handshake timeout");
+            throw new SocketException(MESSAGES.sslHandshakeTimeout());
         }
 
     }

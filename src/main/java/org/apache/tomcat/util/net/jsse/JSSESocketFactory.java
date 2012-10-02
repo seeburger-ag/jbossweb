@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
@@ -95,9 +94,6 @@ public class JSSESocketFactory
     private static final String defaultKeyPass = "changeit";
     private static final int defaultSessionCacheSize = 0;
     private static final int defaultSessionTimeout = 86400;
-
-    static org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(JSSESocketFactory.class);
 
     static {
         boolean result = false;
@@ -177,7 +173,7 @@ public class JSSESocketFactory
         try {
              asock = (SSLSocket)socket.accept();
         } catch (SSLException e){
-          throw new SocketException("SSL handshake error" + e.toString());
+          throw new IOException(MESSAGES.sslHandshakeError(), e);
         }
         return asock;
     }
@@ -186,7 +182,7 @@ public class JSSESocketFactory
         // We do getSession instead of startHandshake() so we can call this multiple times
         SSLSession session = ((SSLSocket)sock).getSession();
         if (session.getCipherSuite().equals("SSL_NULL_WITH_NULL_NULL"))
-            throw new IOException("SSL handshake failed. Ciper suite in SSL Session is SSL_NULL_WITH_NULL_NULL");
+            throw new IOException(MESSAGES.invalidSslCipherSuite());
 
         if (!allowUnsafeLegacyRenegotiation && !RFC_5746_SUPPORTED) {
             // Prevent further handshakes by removing all cipher suites
@@ -308,15 +304,15 @@ public class JSSESocketFactory
         if(truststoreFile == null) {
             truststoreFile = System.getProperty("javax.net.ssl.trustStore");
         }
-        if(log.isDebugEnabled()) {
-            log.debug("Truststore = " + truststoreFile);
+        if(CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+            CoyoteLogger.UTIL_LOGGER.debug("Truststore = " + truststoreFile);
         }
         String truststorePassword = (String)attributes.get("truststorePass");
         if( truststorePassword == null) {
             truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
         }
-        if(log.isDebugEnabled()) {
-            log.debug("TrustPass = " + truststorePassword);
+        if(CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+            CoyoteLogger.UTIL_LOGGER.debug("TrustPass = " + truststorePassword);
         }
         String truststoreType = (String)attributes.get("truststoreType");
         if( truststoreType == null) {
@@ -325,8 +321,8 @@ public class JSSESocketFactory
         if(truststoreType == null) {
             truststoreType = keystoreType;
         }
-        if(log.isDebugEnabled()) {
-            log.debug("trustType = " + truststoreType);
+        if(CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+            CoyoteLogger.UTIL_LOGGER.debug("trustType = " + truststoreType);
         }
         String truststoreProvider =
             (String)attributes.get("truststoreProvider");
@@ -337,8 +333,8 @@ public class JSSESocketFactory
         if (truststoreProvider == null) {
             truststoreProvider = keystoreProvider;
         }
-        if(log.isDebugEnabled()) {
-            log.debug("trustProvider = " + truststoreProvider);
+        if(CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+            CoyoteLogger.UTIL_LOGGER.debug("trustProvider = " + truststoreProvider);
         }
 
         if (truststoreFile != null){
@@ -582,13 +578,13 @@ public class JSSESocketFactory
                 try {
                     xparams.setMaxPathLength(Integer.parseInt(trustLength));
                 } catch(Exception ex) {
-                    log.warn("Bad maxCertLength: "+trustLength);
+                    CoyoteLogger.UTIL_LOGGER.invalidMaxCertLength(trustLength);
                 }
             }
 
             params = xparams;
         } else {
-            throw new CRLException("CRLs not supported for type: "+algorithm);
+            throw new CRLException(MESSAGES.unsupportedCrl(algorithm));
         }
         return params;
     }

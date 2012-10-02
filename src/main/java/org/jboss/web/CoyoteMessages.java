@@ -160,4 +160,118 @@ public interface CoyoteMessages {
     @Message(id = 2040, value = "Invalid escape character in cookie value")
     IllegalArgumentException invalidEscapeCharacter();
 
+    @Message(id = 2041, value = "SSL handshake error")
+    String sslHandshakeError();
+
+    @Message(id = 2042, value = "SSL handshake failed, cipher suite in SSL Session is SSL_NULL_WITH_NULL_NULL")
+    String invalidSslCipherSuite();
+
+    @Message(id = 2043, value = "Certificate revocation list is not supported for algorithm %s")
+    String unsupportedCrl(String algorithm);
+
+    @Message(id = 2044, value = "SSL handshake timeout")
+    String sslHandshakeTimeout();
+
+    @Message(id = 2045, value = "Null SSL engine")
+    IllegalArgumentException nullSslEngine();
+
+    @Message(id = 2046, value = "Operation not supported")
+    RuntimeException operationNotSupported();
+
+    @Message(id = 2047, value = "Null handler")
+    IllegalArgumentException nullHandler();
+
+    @Message(id = 2048, value = "Unable to unwrap data, invalid status %s")
+    String errorUnwrappingData(String status);
+
+    @Message(id = 2049, value = "Handshake incomplete, you must complete handshake before read/write data")
+    IllegalStateException incompleteHandshake();
+
+    @Message(id = 2050, value = "Error encountered during handshake unwrap")
+    String errorUnwrappingHandshake();
+
+    @Message(id = 2051, value = "Error encountered during handshake wrap")
+    String errorWrappingHandshake();
+
+    @Message(id = 2052, value = "Unexpected status %s during handshake wrap")
+    String errorWrappingHandshakeStatus(String status);
+
+    @Message(id = 2053, value = "NOT_HANDSHAKING during handshake")
+    String notHandshaking();
+
+    @Message(id = 2054, value = "Error loading SSL implementation %s")
+    String errorLoadingSslImplementation(String className);
+
+    @Message(id = 2055, value = "No SSL implementation")
+    String noSslImplementation();
+
+    @Message(id = 2056, value = "URL with no protocol: %s")
+    String urlWithNoProtocol(String url);
+
+    @Message(id = 2057, value = "Error processing URL: %s")
+    String errorProcessingUrl(String cause);
+
+    @Message(id = 2058, value = "Invalid relative URL reference")
+    String invalidRelativeUrlReference();
+
+    @Message(id = 2059, value = "Closing ']' not found in IPV6 address %s")
+    String invalidIp6Address(String authority);
+
+    @Message(id = 2060, value = "Invalid IP address %s: %s")
+    String invalidIpAddress(String authority, String cause);
+
+    @Message(id = 2061, value = "Base path does not start with '/'")
+    String invalidBasePath();
+
+    @Message(id = 2062, value = "Cannot process source: %s")
+    IllegalStateException invalidSource(Object source);
+
+    @Message(id = 2063, value = "Attribute name is null")
+    String nullAttributeName();
+
+    @Message(id = 2064, value = "Error getting attribute %s")
+    String errorGettingAttribute(String name);
+
+    @Message(id = 2065, value = "Attribute name list is null")
+    String nullAttributeNameList();
+
+    @Message(id = 2066, value = "Method name is null")
+    String nullMethodName();
+
+    @Message(id = 2067, value = "Error invoking method %s")
+    String errorInvokingMethod(String name);
+
+    @Message(id = 2068, value = "Attribute is null")
+    String nullAttribute();
+
+    @Message(id = 2069, value = "Error setting attribute %s")
+    String errorSettingAttribute(String name);
+
+    @Message(id = 2070, value = "Null managed resource")
+    String nullManagedResource();
+
+    @Message(id = 2071, value = "Null listener")
+    String nullListener();
+
+    @Message(id = 2072, value = "Null notification")
+    String nullNotification();
+
+    @Message(id = 2073, value = "Null message")
+    String nullMessage();
+
+    @Message(id = 2074, value = "Too many hooks registered %s")
+    IllegalStateException tooManyHooks(int count);
+
+    @Message(id = 2075, value = "Cannot load model MBean %s")
+    String errorLoadingModelMbean(String className);
+
+    @Message(id = 2076, value = "Cannot instantiate model MBean %s")
+    String errorInstantiatingModelMbean(String className);
+
+    @Message(id = 2077, value = "No host found: %s")
+    IllegalStateException mapperHostNotFound(String hostName);
+
+    @Message(id = 2078, value = "No context found: %s")
+    IllegalStateException mapperContextNotFound(String contextPath);
+
 }

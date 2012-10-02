@@ -28,6 +28,7 @@ import javax.security.cert.X509Certificate;
 
 import org.apache.tomcat.util.net.Constants;
 import org.apache.tomcat.util.net.SSLSupport;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code NioJSSESupport}
@@ -37,9 +38,6 @@ import org.apache.tomcat.util.net.SSLSupport;
  * @author <a href="mailto:nbenothm@redhat.com">Nabil Benothman</a>
  */
 class NioJSSESupport implements SSLSupport {
-
-	private static org.jboss.logging.Logger log = org.jboss.logging.Logger
-			.getLogger(NioJSSESupport.class);
 
 	protected SecureNioChannel channel;
 	protected SSLSession session;
@@ -126,7 +124,7 @@ class NioJSSESupport implements SSLSupport {
 		try {
 			certs = session.getPeerCertificates();
 		} catch (Throwable t) {
-			log.debug("Error getting client certs", t);
+		    CoyoteLogger.UTIL_LOGGER.debug("Error getting client certs", t);
 			return null;
 		}
 		if (certs == null)
@@ -145,12 +143,12 @@ class NioJSSESupport implements SSLSupport {
 					x509Certs[i] = (java.security.cert.X509Certificate) cf
 							.generateCertificate(stream);
 				} catch (Exception ex) {
-					log.info("Error translating cert " + certs[i], ex);
+                    CoyoteLogger.UTIL_LOGGER.errorTranslatingCertificate(certs[i], ex);
 					return null;
 				}
 			}
-			if (log.isTraceEnabled())
-				log.trace("Cert #" + i + " = " + x509Certs[i]);
+			if (CoyoteLogger.UTIL_LOGGER.isTraceEnabled())
+			    CoyoteLogger.UTIL_LOGGER.trace("Cert #" + i + " = " + x509Certs[i]);
 		}
 		if (x509Certs.length < 1)
 			return null;

@@ -165,7 +165,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 			NioChannel channel = new SecureNioChannel(asyncChannel, engine);
 			return channel;
 		} catch (Exception e) {
-			throw new IOException(e);
+			throw new IOException(MESSAGES.sslHandshakeError(), e);
 		}
 	}
 
@@ -208,8 +208,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		sslChannel.handshake();
 
 		if (sslChannel.getSSLSession().getCipherSuite().equals("SSL_NULL_WITH_NULL_NULL")) {
-			throw new IOException(
-					"SSL handshake failed. Ciper suite in SSL Session is SSL_NULL_WITH_NULL_NULL");
+			throw new IOException(MESSAGES.invalidSslCipherSuite());
 		}
 	}
 
@@ -585,15 +584,15 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		if (truststoreFile == null) {
 			truststoreFile = System.getProperty("javax.net.ssl.trustStore");
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Truststore = " + truststoreFile);
+		if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+		    CoyoteLogger.UTIL_LOGGER.debug("Truststore = " + truststoreFile);
 		}
 		String truststorePassword = (String) attributes.get("truststorePass");
 		if (truststorePassword == null) {
 			truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("TrustPass = " + truststorePassword);
+		if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+		    CoyoteLogger.UTIL_LOGGER.debug("TrustPass = " + truststorePassword);
 		}
 		String truststoreType = (String) attributes.get("truststoreType");
 		if (truststoreType == null) {
@@ -602,8 +601,8 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		if (truststoreType == null) {
 			truststoreType = keystoreType;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("trustType = " + truststoreType);
+		if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+		    CoyoteLogger.UTIL_LOGGER.debug("trustType = " + truststoreType);
 		}
 		String truststoreProvider = (String) attributes.get("truststoreProvider");
 		if (truststoreProvider == null) {
@@ -612,8 +611,8 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		if (truststoreProvider == null) {
 			truststoreProvider = keystoreProvider;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("trustProvider = " + truststoreProvider);
+		if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+		    CoyoteLogger.UTIL_LOGGER.debug("trustProvider = " + truststoreProvider);
 		}
 
 		if (truststoreFile != null) {
@@ -652,13 +651,13 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 				try {
 					xparams.setMaxPathLength(Integer.parseInt(trustLength));
 				} catch (Exception ex) {
-					log.warn("Bad maxCertLength: " + trustLength);
+				    CoyoteLogger.UTIL_LOGGER.invalidMaxCertLength(trustLength);
 				}
 			}
 
 			params = xparams;
 		} else {
-			throw new CRLException("CRLs not supported for type: " + algorithm);
+			throw new CRLException(MESSAGES.unsupportedCrl(algorithm));
 		}
 		return params;
 	}

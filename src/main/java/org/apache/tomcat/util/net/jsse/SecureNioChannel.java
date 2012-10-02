@@ -18,6 +18,8 @@
 
 package org.apache.tomcat.util.net.jsse;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -72,7 +74,7 @@ public class SecureNioChannel extends NioChannel {
 	protected SecureNioChannel(AsynchronousSocketChannel channel, SSLEngine engine) {
 		super(channel);
 		if (engine == null) {
-			throw new NullPointerException("null SSLEngine parameter");
+			throw MESSAGES.nullSslEngine();
 		}
 
 		this.sslEngine = engine;
@@ -97,8 +99,7 @@ public class SecureNioChannel extends NioChannel {
 	@Deprecated
 	@Override
 	public Future<Integer> read(ByteBuffer dst) {
-		throw new RuntimeException("Operation not supported for class " + getClass().getName()
-				+ ". Use method readBytes(...) instead");
+		throw MESSAGES.operationNotSupported();
 	}
 
 	/*
@@ -203,7 +204,7 @@ public class SecureNioChannel extends NioChannel {
 		checkHandshake();
 
 		if (handler == null) {
-			throw new NullPointerException("'handler' parameter is null");
+			throw MESSAGES.nullHandler();
 		}
 		if ((offset < 0) || (length < 0) || (offset > dsts.length - length)) {
 			throw new IndexOutOfBoundsException();
@@ -257,8 +258,7 @@ public class SecureNioChannel extends NioChannel {
 	@Deprecated
 	@Override
 	public Future<Integer> write(ByteBuffer src) {
-		throw new RuntimeException("Operation not supported for class " + getClass().getName()
-				+ ". Use method writeBytes(...) instead");
+		throw MESSAGES.operationNotSupported();
 	}
 
 	/*
@@ -374,7 +374,7 @@ public class SecureNioChannel extends NioChannel {
 		checkHandshake();
 
 		if (handler == null) {
-			throw new NullPointerException("'handler' parameter is null");
+			throw MESSAGES.nullHandler();
 		}
 		if ((offset < 0) || (length < 0) || (offset > srcs.length - length)) {
 			throw new IndexOutOfBoundsException();
@@ -587,8 +587,7 @@ public class SecureNioChannel extends NioChannel {
 				// here we should trap BUFFER_OVERFLOW and call expand on the
 				// buffer for now, throw an exception, as we initialized the
 				// buffers in the constructor
-				throw new IOException(this + " Unable to unwrap data, invalid status: "
-						+ result.getStatus());
+				throw new IOException(MESSAGES.errorUnwrappingData(result.getStatus().toString()));
 			}
 			// continue to unwrapping as long as the input buffer has stuff
 		} while (src.position() != 0);
@@ -642,8 +641,7 @@ public class SecureNioChannel extends NioChannel {
 	 */
 	private void checkHandshake() {
 		if (!handshakeComplete) {
-			throw new IllegalStateException(
-					"Handshake incomplete, you must complete handshake before read/write data.");
+			throw MESSAGES.incompleteHandshake();
 		}
 	}
 
@@ -694,7 +692,7 @@ public class SecureNioChannel extends NioChannel {
 					nBytes = this.channel.read(this.netInBuffer).get();
 				}
 				if (nBytes < 0) {
-					throw new IOException(this + " : EOF encountered during handshake UNWRAP.");
+					throw new IOException(MESSAGES.errorUnwrappingHandshake());
 				} else {
 					boolean cont = false;
 					// Loop while we can perform pure SSLEngine data
@@ -745,14 +743,12 @@ public class SecureNioChannel extends NioChannel {
 					while (this.netOutBuffer.hasRemaining()) {
 						if (this.channel.write(this.netOutBuffer).get() < 0) {
 							// Handle closed channel
-							throw new IOException(this
-									+ " : EOF encountered during handshake WRAP.");
+							throw new IOException(MESSAGES.errorWrappingHandshake());
 						}
 					}
 				} else {
 					// Wrap should always work with our buffers
-					throw new IOException("Unexpected status:" + res.getStatus()
-							+ " during handshake WRAP.");
+					throw new IOException(MESSAGES.errorWrappingHandshakeStatus(res.getStatus().toString()));
 				}
 
 				break;
@@ -761,7 +757,7 @@ public class SecureNioChannel extends NioChannel {
 
 				break;
 			case NOT_HANDSHAKING:
-				throw new SSLHandshakeException("NOT_HANDSHAKING during handshake");
+				throw new SSLHandshakeException(MESSAGES.notHandshaking());
 			case FINISHED:
 				handshakeComplete = true;
 				break;

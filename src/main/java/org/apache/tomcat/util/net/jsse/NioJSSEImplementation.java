@@ -18,8 +18,6 @@
 
 package org.apache.tomcat.util.net.jsse;
 
-import java.net.Socket;
-
 import javax.net.ssl.SSLSession;
 
 import org.apache.tomcat.util.net.NioChannel;
@@ -36,9 +34,6 @@ import org.apache.tomcat.util.net.SSLSupport;
 public class NioJSSEImplementation extends SSLImplementation {
 
 	static final String SSLClass = "javax.net.ssl.SSLEngine";
-
-	static org.jboss.logging.Logger logger = org.jboss.logging.Logger
-			.getLogger(NioJSSEImplementation.class);
 
 	private NioJSSEFactory factory = null;
 
