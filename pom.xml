@@ -33,7 +33,7 @@
 
     <groupId>org.jboss.web</groupId>
     <artifactId>jbossweb</artifactId>
-    <version>7.2.0-SNAPSHOT</version>
+    <version>7.2.0.Alpha1</version>
 
     <name>JBoss Web</name>
     <description>Servlet 3.0 container</description>
@@ -179,26 +179,27 @@
             <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
             </snapshots>
         </repository>
     </repositories>
 
-    <!-- Plugin Repositories -->
     <pluginRepositories>
-      <pluginRepository>
-        <id>nexus.jboss.org</id>
-        <name>JBoss Nexus Repository</name>
-        <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-        <releases>
-          <enabled>true</enabled>
-        </releases>
-        <snapshots>
-          <enabled>false</enabled>
-        </snapshots>
-      </pluginRepository>
+        <pluginRepository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
     </pluginRepositories>
 
     <!--<scm>
