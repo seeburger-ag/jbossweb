@@ -772,4 +772,13 @@ public interface JasperMessages {
     @Message(id = 4244, value = "White space is required between the processing instruction target and data.")
     String requiredWhiteSpaceAfterPiTarget();
 
+    @Message(id = 4245, value = "In URL tags, when the \"context\" attribute is specified, values of both \"context\" and \"url\" must start with '/'.")
+    String invalidContextAndUrlValues();
+
+    @Message(id = 4246, value = "Unexpected internal error during &lt;import&gt: Target servlet called getWriter(), then getOutputStream()")
+    IllegalStateException usedOutputStreamAfterWriter();
+
+    @Message(id = 4247, value = "Unexpected internal error during &lt;import&gt: Target servlet called getOutputStream(), then getWriter()")
+    IllegalStateException usedWriterAfterOutputStream();
+
 }

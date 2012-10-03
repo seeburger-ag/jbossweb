@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload.disk;
 
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -472,8 +474,7 @@ public class DiskFileItem
                  * For whatever reason we cannot write the
                  * file to disk.
                  */
-                throw new FileUploadException(
-                    "Cannot write uploaded file to disk!");
+                throw new FileUploadException(MESSAGES.errorWritingUpload());
             }
         }
     }
