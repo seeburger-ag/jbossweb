@@ -16,6 +16,8 @@
  */
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -67,14 +69,14 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 
 	public void addELContextListener(ELContextListener listener) {
 		if (listener == null) {
-			throw new IllegalArgumentException("ELConextListener was null");
+			throw MESSAGES.nullElContextListener();
 		}
 		this.contextListeners.add(listener);
 	}
 
 	public static JspApplicationContextImpl getInstance(ServletContext context) {
 		if (context == null) {
-			throw new IllegalArgumentException("ServletContext was null");
+			throw MESSAGES.nullServletContext();
 		}
 		JspApplicationContextImpl impl = (JspApplicationContextImpl) context
 				.getAttribute(KEY);
@@ -87,7 +89,7 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 
 	public ELContextImpl createELContext(JspContext context) {
 		if (context == null) {
-			throw new IllegalArgumentException("JspContext was null");
+			throw MESSAGES.nullJspContext();
 		}
 
 		// create ELContext for JspContext
@@ -135,11 +137,10 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 
 	public void addELResolver(ELResolver resolver) throws IllegalStateException {
 		if (resolver == null) {
-			throw new IllegalArgumentException("ELResolver was null");
+			throw MESSAGES.nullElResolver();
 		}
 		if (this.instantiated) {
-			throw new IllegalStateException(
-					"cannot call addELResolver after the first request has been made");
+			throw MESSAGES.cannotAddElResolver();
 		}
 		this.resolvers.add(resolver);
 	}
