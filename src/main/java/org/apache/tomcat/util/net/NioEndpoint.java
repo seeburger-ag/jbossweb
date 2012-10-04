@@ -242,7 +242,7 @@ public class NioEndpoint extends AbstractEndpoint {
 			running = true;
 			paused = false;
 
-			// Start acceptor threads
+            // Start acceptor threads
 			for (int i = 0; i < acceptorThreadCount; i++) {
 				Thread acceptorThread = newThread(new Acceptor(), "Acceptor", daemon);
 				acceptorThread.start();
@@ -257,7 +257,7 @@ public class NioEndpoint extends AbstractEndpoint {
 			}
 
 			// Starting the event poller
-			this.eventPoller = new EventPoller(this.maxThreads);
+			this.eventPoller = new EventPoller(this.maxConnections);
 			this.eventPoller.init();
 			Thread eventPollerThread = newThread(this.eventPoller, "EventPoller", true);
 			eventPollerThread.start();
@@ -1639,7 +1639,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		 * Initialize the {@code Sendfile}
 		 */
 		protected void init() {
-			this.size = maxThreads;
+		    this.size = sendfileSize;
 			this.mutex = new Object();
 			this.counter = new AtomicInteger(0);
 			this.fileDatas = new ConcurrentLinkedQueue<SendfileData>();

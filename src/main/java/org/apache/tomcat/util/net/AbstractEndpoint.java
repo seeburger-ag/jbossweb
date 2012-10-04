@@ -89,13 +89,12 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Maximum amount of worker threads.
 	 */
-	protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 32 : 32 * Runtime
-			.getRuntime().availableProcessors();
+	protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 32 : ((Constants.MAX_THREADS == -1) ? 32 * Runtime.getRuntime().availableProcessors() : Constants.MAX_THREADS);
 
 	/**
 	 * The maximum number of connections
 	 */
-	protected int maxConnections = 1024;
+	protected int maxConnections = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 1024 : (32 * 1024);
 
 	/**
 	 * Priority of the acceptor and poller threads.
@@ -105,7 +104,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Size of the sendfile (= concurrent files which can be served).
 	 */
-	protected int sendfileSize = -1;
+	protected int sendfileSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 128 : (16 * 1024);
 
 	/**
 	 * Server socket port.
