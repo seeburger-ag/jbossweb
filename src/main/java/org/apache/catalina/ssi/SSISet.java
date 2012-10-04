@@ -17,6 +17,8 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.PrintWriter;
 /**
  * Implements the Server-side #set command
@@ -49,12 +51,12 @@ public class SSISet implements SSICommand {
                             substitutedValue);
                     lastModified = System.currentTimeMillis();
                 } else {
-                    ssiMediator.log("#set--no variable specified");
+                    ssiMediator.log(MESSAGES.ssiSetFailed());
                     writer.write(errorMessage);
                     throw new SSIStopProcessingException();
                 }
             } else {
-                ssiMediator.log("#set--Invalid attribute: " + paramName);
+                ssiMediator.log(MESSAGES.ssiInvalidAttribute("set", paramName));
                 writer.write(errorMessage);
                 throw new SSIStopProcessingException();
             }

@@ -1180,7 +1180,7 @@ public class DefaultServlet
 
         } catch (NamingException e) {
             // Something went wrong
-            throw new ServletException("Error accessing resource", e);
+            throw new ServletException(MESSAGES.resourceNotAvailable(cacheEntry.name), e);
         }
 
         sb.append("</entries>");
@@ -1210,7 +1210,7 @@ public class DefaultServlet
             osWriter.flush();
             return (new ByteArrayInputStream(stream.toByteArray()));
         } catch (TransformerException e) {
-            throw new ServletException("XSL transformer error", e);
+            throw new ServletException(MESSAGES.xslTransformerError(), e);
         }
     }
 
@@ -1355,7 +1355,7 @@ public class DefaultServlet
 
         } catch (NamingException e) {
             // Something went wrong
-            throw new ServletException("Error accessing resource", e);
+            throw new ServletException(MESSAGES.resourceNotAvailable(cacheEntry.name), e);
         }
 
         // Render the page footer

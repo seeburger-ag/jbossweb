@@ -1,23 +1,19 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.web;
@@ -39,7 +35,7 @@ import org.jboss.logging.MessageLogger;
 
 /**
  * Logging IDs 1000-2000
- * @author remm
+ * @author Remy Maucherat
  */
 @MessageLogger(projectCode = "JBWEB")
 public interface CatalinaLogger extends BasicLogger {
@@ -652,5 +648,45 @@ public interface CatalinaLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 1140, value = "Failed protocol handler [%s] JMX registration.")
     void failedProtocolJmxRegistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1141, value = "NIO 2 is not available, the java.io connector will be used insteaf")
+    void usingJavaIoConnector();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1142, value = "Access log rotation failed")
+    void errorRotatingAccessLog(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1143, value = "Error closing old log file")
+    void errorClosingOldAccessLog(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1144, value = "Pattern was just empty or whitespace")
+    void extendedAccessLogEmptyPattern();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1145, value = "Pattern parse error")
+    void extendedAccessLogPatternParseError(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1146, value = "Unable to decode with rest of chars starting: %s")
+    void extendedAccessLogUnknownToken(String token);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1147, value = "No closing ) found for in decode")
+    void extendedAccessLogMissingClosing();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1148, value = "The next characters couldn't be decoded: %s")
+    void extendedAccessLogCannotDecode(String chars);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1149, value = "X param for servlet request, couldn't decode value: %s")
+    void extendedAccessLogCannotDecodeXParamValue(String value);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1150, value = "X param in wrong format. Needs to be 'x-#(...)'")
+    void extendedAccessLogBadXParam();
 
 }

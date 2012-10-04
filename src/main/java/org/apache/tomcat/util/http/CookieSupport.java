@@ -19,6 +19,8 @@
 package org.apache.tomcat.util.http;
 
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 /**
  * Static constants for this package.
  */
@@ -137,8 +139,7 @@ public final class CookieSupport {
     public static final boolean isV0Separator(final char c) {
         if (c < 0x20 || c >= 0x7f) {
             if (c != 0x09) {
-                throw new IllegalArgumentException(
-                        "Control character in cookie value or attribute.");
+                throw MESSAGES.invalidControlCharacter();
             }
         }
 
@@ -174,8 +175,7 @@ public final class CookieSupport {
     public static final boolean isHttpSeparator(final char c) {
         if (c < 0x20 || c >= 0x7f) {
             if (c != 0x09) {
-                throw new IllegalArgumentException(
-                        "Control character in cookie value or attribute.");
+                throw MESSAGES.invalidControlCharacter();
             }
         }
 

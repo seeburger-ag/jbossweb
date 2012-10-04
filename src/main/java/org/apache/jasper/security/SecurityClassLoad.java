@@ -18,6 +18,8 @@
 
 package org.apache.jasper.security;
 
+import org.jboss.web.JasperLogger;
+
 /**
  * Static class used to preload java classes when using the
  * Java SecurityManager so that the defineClassInPackage
@@ -27,9 +29,6 @@ package org.apache.jasper.security;
  */
 
 public final class SecurityClassLoad {
-
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( SecurityClassLoad.class );
 
     public static void securityClassLoad(ClassLoader loader){
 
@@ -108,7 +107,7 @@ public final class SecurityClassLoad {
             loader.loadClass( basePackage +
                 "runtime.JspWriterImpl$1");
         } catch (ClassNotFoundException ex) {
-            log.error("SecurityClassLoad", ex);
+            JasperLogger.ROOT_LOGGER.errorLoadingCoreClass(ex);
         }
     }
 }
