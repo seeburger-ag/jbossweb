@@ -60,7 +60,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * 
 	 */
-	protected boolean reuseAddress = false;
+	protected boolean reuseAddress = Constants.REUSE_ADDRESS;
 
 	/**
 	 * Current worker threads busy count.
