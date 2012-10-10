@@ -902,7 +902,7 @@ public class AjpProcessor implements ActionHook {
             int port = 0;
             int mult = 1;
             for (int i = valueL - 1; i > colonPos; i--) {
-                int charValue = HexUtils.DEC[(int) valueB[i + valueS]];
+                int charValue = HexUtils.DEC[valueB[i + valueS] & 0xff];
                 if (charValue == -1) {
                     // Invalid character
                     error = true;
