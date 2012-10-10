@@ -19,13 +19,12 @@ package org.apache.coyote.http11.filters;
 
 import java.io.IOException;
 
-import org.apache.tomcat.util.buf.ByteChunk;
-import org.apache.tomcat.util.buf.HexUtils;
-
 import org.apache.coyote.InputBuffer;
 import org.apache.coyote.Request;
 import org.apache.coyote.http11.Constants;
 import org.apache.coyote.http11.InputFilter;
+import org.apache.tomcat.util.buf.ByteChunk;
+import org.apache.tomcat.util.buf.HexUtils;
 
 /**
  * Chunked input filter. Parses chunked data according to
@@ -123,7 +122,7 @@ public class ChunkedInputFilter implements InputFilter {
         if (endChunk)
             return -1;
 
-        if(needCRLFParse) {
+        if (needCRLFParse) {
             needCRLFParse = false;
             parseCRLF();
         }
@@ -154,7 +153,7 @@ public class ChunkedInputFilter implements InputFilter {
             chunk.setBytes(buf, pos, remaining);
             pos = pos + remaining;
             remaining = 0;
-            needCRLFParse = true;
+                needCRLFParse = true;
         }
 
         return result;
@@ -249,6 +248,7 @@ public class ChunkedInputFilter implements InputFilter {
 
         int result = 0;
         boolean eol = false;
+        boolean crfound = false;
         boolean readDigit = false;
         boolean trailer = false;
 
@@ -260,13 +260,16 @@ public class ChunkedInputFilter implements InputFilter {
             }
 
             if (buf[pos] == Constants.CR) {
+                if (crfound) throw new IOException("Invalid CRLF, two CR characters encountered.");
+                crfound = true;
             } else if (buf[pos] == Constants.LF) {
+                if (!crfound) throw new IOException("Invalid CRLF, no CR character encountered.");
                 eol = true;
             } else if (buf[pos] == Constants.SEMI_COLON) {
                 trailer = true;
             } else if (!trailer) { 
                 //don't read data after the trailer
-                if (HexUtils.DEC[buf[pos]] != -1) {
+                if (HexUtils.DEC[buf[pos] & 0xff] != -1) {
                     readDigit = true;
                     result *= 16;
                     result += HexUtils.DEC[buf[pos]];
@@ -303,6 +306,7 @@ public class ChunkedInputFilter implements InputFilter {
         throws IOException {
 
         boolean eol = false;
+        boolean crfound = false;
 
         while (!eol) {
 
@@ -312,7 +316,10 @@ public class ChunkedInputFilter implements InputFilter {
             }
 
             if (buf[pos] == Constants.CR) {
+                if (crfound) throw new IOException("Invalid CRLF, two CR characters encountered.");
+                crfound = true;
             } else if (buf[pos] == Constants.LF) {
+                if (!crfound) throw new IOException("Invalid CRLF, no CR character encountered.");
                 eol = true;
             } else {
                 throw new IOException("Invalid CRLF");
