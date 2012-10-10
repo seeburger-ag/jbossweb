@@ -16,6 +16,27 @@
 
 <body>
 
+<section name="JBoss Web 7.2.0.Alpha3 (remm)">
+  <subsection name="General">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         <jira>249</jira>: Respect URL session tracking when encoding. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.2.0.Alpha2 (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         NIO 2 connector should reuse addresses. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.2.0.Alpha1 (remm)">
   <subsection name="General">
     <changelog>
