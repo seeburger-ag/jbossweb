@@ -547,7 +547,8 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	private void requestHostAddressAttr() {
 		if (remoteAddr == null && (channel != null)) {
 			try {
-				remoteAddr = ((InetSocketAddress) this.channel.getRemoteAddress()).getHostName();
+				remoteAddr = ((InetSocketAddress) this.channel.getRemoteAddress()).getAddress()
+                        .getHostAddress();
 			} catch (Exception e) {
 			    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
 			}
