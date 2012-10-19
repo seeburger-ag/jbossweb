@@ -104,8 +104,6 @@ public final class SecurityClassLoad {
             loader.loadClass( basePackage +
                 "servlet.JspServletWrapper");
 
-            loader.loadClass( basePackage +
-                "runtime.JspWriterImpl$1");
         } catch (ClassNotFoundException ex) {
             JasperLogger.ROOT_LOGGER.errorLoadingCoreClass(ex);
         }

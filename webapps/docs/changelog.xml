@@ -32,6 +32,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+         <jira>251</jira>: Drop localization related class preload. (remm)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 7.2.0.Alpha2 (remm)">
