@@ -3215,17 +3215,19 @@ public class StandardContext
         Iterator<String> names = filterDefs.keySet().iterator();
         while (names.hasNext()) {
             String name = names.next();
-            CatalinaLogger.CORE_LOGGER.startingFilter(name);
-            if (getLogger().isDebugEnabled())
-                getLogger().debug(" Starting filter '" + name + "'");
-            ApplicationFilterConfig filterConfig = null;
-            try {
-                filterConfig = new ApplicationFilterConfig(this, (FilterDef) filterDefs.get(name));
-                filterConfig.getFilter();
-                filterConfigs.put(name, filterConfig);
-            } catch (Throwable t) {
-                getLogger().error(MESSAGES.errorStartingFilter(name), t);
-                ok = false;
+            ApplicationFilterConfig filterConfig = filterConfigs.get(name);
+            if (filterConfig == null) {
+                CatalinaLogger.CORE_LOGGER.startingFilter(name);
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug(" Starting filter '" + name + "'");
+                try {
+                    filterConfig = new ApplicationFilterConfig(this, (FilterDef) filterDefs.get(name));
+                    filterConfig.getFilter();
+                    filterConfigs.put(name, filterConfig);
+                } catch (Throwable t) {
+                    getLogger().error(MESSAGES.errorStartingFilter(name), t);
+                    ok = false;
+                }
             }
         }
 

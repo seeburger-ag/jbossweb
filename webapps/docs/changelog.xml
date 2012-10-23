@@ -23,6 +23,9 @@
       <fix>
          <jira>249</jira>: Respect URL session tracking when encoding. (remm)
       </fix>
+      <fix>
+         <jboss-jira>AS7-5802</jboss-jira>: Fix problem with duplicated filter instantiation when using a filter registration. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Coyote">
