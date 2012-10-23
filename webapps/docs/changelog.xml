@@ -16,6 +16,13 @@
 
 <body>
 <section name="JBoss Web 7.0.16.Final (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         <jboss-jira>AS7-5802</jboss-jira>: Fix problem with duplicated filter instantiation when using a filter registration. (remm)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Coyote">
     <changelog>
       <fix>

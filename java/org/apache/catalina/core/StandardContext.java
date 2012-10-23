@@ -3260,18 +3260,20 @@ public class StandardContext
         Iterator<String> names = filterDefs.keySet().iterator();
         while (names.hasNext()) {
             String name = names.next();
-            if (getLogger().isDebugEnabled())
-                getLogger().debug(" Starting filter '" + name + "'");
-            ApplicationFilterConfig filterConfig = null;
-            try {
-                filterConfig = new ApplicationFilterConfig
-                (this, (FilterDef) filterDefs.get(name));
-                filterConfig.getFilter();
-                filterConfigs.put(name, filterConfig);
-            } catch (Throwable t) {
-                getLogger().error
-                (sm.getString("standardContext.filterStart", name), t);
-                ok = false;
+            ApplicationFilterConfig filterConfig = filterConfigs.get(name);
+            if (filterConfig == null) {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug(" Starting filter '" + name + "'");
+                try {
+                    filterConfig = new ApplicationFilterConfig
+                            (this, (FilterDef) filterDefs.get(name));
+                    filterConfig.getFilter();
+                    filterConfigs.put(name, filterConfig);
+                } catch (Throwable t) {
+                    getLogger().error
+                    (sm.getString("standardContext.filterStart", name), t);
+                    ok = false;
+                }
             }
         }
 
