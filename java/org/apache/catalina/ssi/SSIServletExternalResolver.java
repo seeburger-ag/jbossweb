@@ -25,8 +25,6 @@ import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Locale;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -151,7 +149,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
 
     protected String getCGIVariable(String name) {
         String retVal = null;
-        String[] nameParts = name.toUpperCase(Locale.ENGLISH).split("_");
+        String[] nameParts = name.toUpperCase().split("_");
         int requiredParts = 2;
         if (nameParts.length == 1) {
             if (nameParts[0].equals("PATH")) {
@@ -197,7 +195,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
                     Enumeration acceptHeaders = req.getHeaders(accept);
                     if (acceptHeaders != null)
                         if (acceptHeaders.hasMoreElements()) {
-                            StringBuilder rv = new StringBuilder(
+                            StringBuffer rv = new StringBuffer(
                                     (String) acceptHeaders.nextElement());
                             while (acceptHeaders.hasMoreElements()) {
                                 rv.append(", ");
@@ -314,7 +312,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             } else if (nameParts[1].equals("PROTOCOL")) {
                 retVal = req.getProtocol();
             } else if (nameParts[1].equals("SOFTWARE")) {
-                StringBuilder rv = new StringBuilder(context.getServerInfo());
+                StringBuffer rv = new StringBuffer(context.getServerInfo());
                 rv.append(" ");
                 rv.append(System.getProperty("java.vm.name"));
                 rv.append("/");
