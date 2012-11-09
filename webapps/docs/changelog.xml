@@ -40,6 +40,12 @@
       <fix>
          <jira>251</jira>: Drop localization related class preload. (remm)
       </fix>
+      <fix>
+         <bug>54012</bug>: Allow tagplugins compatibility with tag files. (markt)
+      </fix>
+      <fix>
+         Misc minor optimizations. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>
