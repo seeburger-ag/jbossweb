@@ -33,6 +33,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.Manager;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
@@ -357,6 +358,14 @@ public class FormAuthenticator
      */
     protected void forwardToLoginPage(Request request, HttpServletResponse response, LoginConfig config)
         throws IOException {
+        if (changeSessionIdOnAuthentication) {
+            Session session = request.getSessionInternal(false);
+            if (session != null) {
+                Manager manager = request.getContext().getManager();
+                manager.changeSessionId(session, request.getRandom());
+                request.changeSessionId(session.getId());
+            }
+        }
         RequestDispatcher disp =
             context.getServletContext().getRequestDispatcher(config.getLoginPage());
         try {
