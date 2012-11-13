@@ -98,19 +98,19 @@ public interface CatalinaLogger extends BasicLogger {
     void missingSecurityProvider(String provider, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1003, value = "Error digesting user credentials.")
+    @Message(id = 1003, value = "Error digesting user credentials")
     void errorDigestingCredentials(@Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1004, value = "Failed realm [%s] JMX registration.")
+    @Message(id = 1004, value = "Failed realm [%s] JMX registration")
     void failedRealmJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1005, value = "Failed realm [%s] JMX unregistration.")
+    @Message(id = 1005, value = "Failed realm [%s] JMX unregistration")
     void failedRealmJmxUnregistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1006, value = "Missing parent [%s].")
+    @Message(id = 1006, value = "Missing parent [%s]")
     void missingParentJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = INFO)
@@ -118,11 +118,11 @@ public interface CatalinaLogger extends BasicLogger {
     void connectorAlreadyInitialized();
 
     @LogMessage(level = ERROR)
-    @Message(id = 1008, value = "Failed connector [%s] JMX registration.")
+    @Message(id = 1008, value = "Failed connector [%s] JMX registration")
     void failedConnectorJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1009, value = "Failed connector [%s] JMX unregistration.")
+    @Message(id = 1009, value = "Failed connector [%s] JMX unregistration")
     void failedConnectorJmxUnregistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
@@ -138,7 +138,7 @@ public interface CatalinaLogger extends BasicLogger {
     void connectorAlreadyStarted();
 
     @LogMessage(level = INFO)
-    @Message(id = 1013, value = "Cannot proceed with protocol handler JMX registration.")
+    @Message(id = 1013, value = "Cannot proceed with protocol handler JMX registration")
     void failedProtocolJmxRegistration();
 
     @LogMessage(level = INFO)
@@ -186,11 +186,11 @@ public interface CatalinaLogger extends BasicLogger {
     void exceptionProcessingParameters(@Cause Throwable t);
 
     @LogMessage(level = DEBUG)
-    @Message(id = 1025, value = "Request [%s], can not apply ExpiresFilter on already committed response.")
+    @Message(id = 1025, value = "Request [%s], can not apply ExpiresFilter on already committed response")
     void expiresResponseAlreadyCommitted(String uri);
 
     @LogMessage(level = WARN)
-    @Message(id = 1026, value = "Unknown parameter %s with value %s is ignored.")
+    @Message(id = 1026, value = "Unknown parameter %s with value %s is ignored")
     void expiresUnknownParameter(String name, String value);
 
     @LogMessage(level = DEBUG)
@@ -574,11 +574,11 @@ public interface CatalinaLogger extends BasicLogger {
     void pipelineNotStarted();
 
     @LogMessage(level = ERROR)
-    @Message(id = 1122, value = "Failed valve [%s] JMX registration.")
+    @Message(id = 1122, value = "Failed valve [%s] JMX registration")
     void failedValveJmxRegistration(Object valve, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1123, value = "Failed valve [%s] JMX unregistration.")
+    @Message(id = 1123, value = "Failed valve [%s] JMX unregistration")
     void failedValveJmxUnregistration(Object valve, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
@@ -598,7 +598,7 @@ public interface CatalinaLogger extends BasicLogger {
     void errorInitializingService(@Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1128, value = "Failed service [%s] JMX registration.")
+    @Message(id = 1128, value = "Failed service [%s] JMX registration")
     void failedServiceJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
@@ -638,7 +638,7 @@ public interface CatalinaLogger extends BasicLogger {
     void stoppingService(String serviceName);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1138, value = "Failed server [%s] JMX registration.")
+    @Message(id = 1138, value = "Failed server [%s] JMX registration")
     void failedServerJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = INFO)
@@ -646,11 +646,11 @@ public interface CatalinaLogger extends BasicLogger {
     void contextJmxRegistrationFailed(String contextName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1140, value = "Failed protocol handler [%s] JMX registration.")
+    @Message(id = 1140, value = "Failed protocol handler [%s] JMX registration")
     void failedProtocolJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = INFO)
-    @Message(id = 1141, value = "NIO 2 is not available, the java.io connector will be used insteaf")
+    @Message(id = 1141, value = "NIO 2 is not available, the java.io connector will be used instead")
     void usingJavaIoConnector();
 
     @LogMessage(level = ERROR)
