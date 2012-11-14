@@ -203,7 +203,7 @@ public abstract class Http11AbstractProcessor implements ActionHook {
 	/**
 	 * True if a read has been requested.
 	 */
-	protected boolean readNotifications = true;
+	protected boolean readNotifications = false;
 	/**
 	 * True if a write has been requested.
 	 */
@@ -480,7 +480,7 @@ public abstract class Http11AbstractProcessor implements ActionHook {
      */
 	public void recycle() {
 		timeout = -1;
-		readNotifications = true;
+		readNotifications = false;
 		writeNotification = false;
 		resumeNotification = false;
 		eventProcessing = true;

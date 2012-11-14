@@ -706,6 +706,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		if (param == Boolean.TRUE) {
 			outputBuffer.setNonBlocking(true);
 			inputBuffer.setNonBlocking(true);
+			readNotifications = true;
 		}
 	}
 
