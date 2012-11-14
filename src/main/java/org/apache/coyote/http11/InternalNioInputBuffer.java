@@ -401,6 +401,14 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			nRead = blockingRead(bbuf, readTimeout, unit);
 			if (nRead > 0) {
 				bbuf.flip();
+				if (nRead > (buf.length - end)) {
+				    // An alternative is to bbuf.setLimit(buf.length - end) before the read,
+				    // which may be less efficient
+	                buf = new byte[buf.length];
+	                end = 0;
+	                pos = end;
+	                lastValid = pos;
+				}
 				bbuf.get(buf, pos, nRead);
 				lastValid = pos + nRead;
 			} else if (nRead == NioChannel.OP_STATUS_CLOSED) {
@@ -421,18 +429,9 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 
 		if (parsingHeader) {
 			if (lastValid == buf.length) {
-				throw new IllegalArgumentException(MESSAGES.requestHeaderTooLarge());
+				throw MESSAGES.requestHeaderTooLarge();
 			}
 		} else {
-			if (buf.length - end < 4500) {
-				// In this case, the request header was really large, so we
-				// allocate a
-				// brand new one; the old one will get GCed when subsequent
-				// requests
-				// clear all references
-				buf = new byte[buf.length];
-				end = 0;
-			}
 			pos = end;
 			lastValid = pos;
 		}

@@ -139,12 +139,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 		lastActiveFilter = -1;
 		parsingHeader = true;
 		swallowInput = true;
-
-		if (headerBufferSize < (8 * 1024)) {
-			bbuf = ByteBuffer.allocateDirect(6 * 1500);
-		} else {
-			bbuf = ByteBuffer.allocateDirect((headerBufferSize / 1500 + 1) * 1500);
-		}
+		bbuf = ByteBuffer.allocateDirect(headerBufferSize);
 	}
 
 	/**
