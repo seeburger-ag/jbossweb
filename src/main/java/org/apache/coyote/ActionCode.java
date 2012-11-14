@@ -176,6 +176,11 @@ public final class ActionCode {
      */
     public static final ActionCode UPGRADE = new ActionCode(28);
     
+    /**
+     * Ask for a callback event without reenabling read events
+     */
+    public static final ActionCode ACTION_EVENT_WAKEUP = new ActionCode(29);
+    
     // ----------------------------------------------------------- Constructors
     int code;
 

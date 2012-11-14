@@ -652,7 +652,7 @@ public class AjpAprProcessor implements ActionHook {
             event = false;
         } else if (actionCode == ActionCode.ACTION_EVENT_SUSPEND) {
             // No action needed
-        } else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_WAKEUP) {
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
             if (!eventProcessing && !resumeNotification) {

@@ -1271,6 +1271,13 @@ public class Http11AprProcessor implements ActionHook {
                 endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
             }
             resumeNotification = true;
+        } else if (actionCode == ActionCode.ACTION_EVENT_WAKEUP) {
+            // An event is being processed already: adding for resume will be done
+            // when the socket gets back to the poller
+            if (!eventProcessing && !resumeNotification) {
+                endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
+            }
+            resumeNotification = true;
         } else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
             // An event is being processed already: adding for write will be done
             // when the socket gets back to the poller

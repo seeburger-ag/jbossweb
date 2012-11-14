@@ -730,8 +730,10 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	 * @param param
 	 *            the vent parameter
 	 */
-	private void resumeEvent(Object param) {
-		readNotifications = true;
+	private void resumeEvent(Object param, boolean read) {
+	    if (read) {
+	        readNotifications = true;
+	    }
 		// An event is being processed already: adding for resume will be
 		// done
 		// when the channel gets back to the poller
@@ -843,7 +845,10 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			suspendEvent();
 		} else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
 			// Resume event
-			resumeEvent(param);
+			resumeEvent(param, true);
+        } else if (actionCode == ActionCode.ACTION_EVENT_WAKEUP) {
+            // Resume event
+            resumeEvent(param, false);
 		} else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
 			// Write event
 			writeEvent(param);

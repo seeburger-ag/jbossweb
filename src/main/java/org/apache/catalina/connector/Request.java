@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
@@ -474,6 +475,12 @@ public class Request
      * Random generator.
      */
     protected Random random = null;
+
+    
+    /**
+     * Async listener instances.
+     */
+    protected LinkedList<AsyncListener> asyncListenerInstances = new LinkedList<AsyncListener>();
     
 
     // --------------------------------------------------------- Public Methods
@@ -484,6 +491,17 @@ public class Request
      * preparation for reuse of this object.
      */
     public void recycle() {
+
+        if (asyncContext != null && context != null) {
+            for (AsyncListener listener : asyncListenerInstances) {
+                try {
+                    context.getInstanceManager().destroyInstance(listener);
+                } catch (Throwable t) {
+                    context.getLogger().error(MESSAGES.preDestroyException(), t);
+                }
+            }
+            asyncListenerInstances.clear();
+        }
 
         context = null;
         wrapper = null;
@@ -2553,6 +2571,11 @@ public class Request
     }
     
     
+    public void wakeup() {
+        coyoteRequest.action(ActionCode.ACTION_EVENT_WAKEUP, null);
+    }
+
+
     public void suspend() {
         coyoteRequest.action(ActionCode.ACTION_EVENT_SUSPEND, null);
     }
@@ -3324,7 +3347,7 @@ public class Request
 
         public void complete() {
             setEventMode(false);
-            resume();
+            wakeup();
         }
 
         public void dispatch() {
@@ -3342,21 +3365,21 @@ public class Request
                     throw MESSAGES.cannotFindDispatchContext(requestURI);
                 }
             }
-            resume();
+            wakeup();
         }
 
         public void dispatch(String path) {
             this.servletContext = null;
             this.path = path;
             useAttributes = true;
-            resume();
+            wakeup();
         }
 
         public void dispatch(ServletContext servletContext, String path) {
             this.servletContext = servletContext;
             this.path = path;
             useAttributes = true;
-            resume();
+            wakeup();
         }
 
         public ServletRequest getRequest() {
@@ -3381,7 +3404,7 @@ public class Request
 
         public void start(Runnable runnable) {
             this.runnable = runnable;
-            resume();
+            wakeup();
         }
 
         public boolean isReady() {
@@ -3457,6 +3480,7 @@ public class Request
             } catch (Exception e) {
                 throw new ServletException(MESSAGES.listenerCreationFailed(clazz.getName()), e);
             }
+            asyncListenerInstances.add(listenerInstance);
             return listenerInstance;
         }
 
