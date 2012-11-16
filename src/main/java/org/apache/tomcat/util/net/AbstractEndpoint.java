@@ -1,24 +1,21 @@
-/**
- * JBoss, Home of Professional Open Source. Copyright 2011, Red Hat, Inc., and
- * individual contributors as indicated by the @author tags. See the
- * copyright.txt file in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.tomcat.util.net;
 
 import java.net.InetAddress;
@@ -63,7 +60,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * 
 	 */
-	protected boolean reuseAddress = false;
+	protected boolean reuseAddress = Constants.REUSE_ADDRESS;
 
 	/**
 	 * Current worker threads busy count.
@@ -92,13 +89,12 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Maximum amount of worker threads.
 	 */
-	protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 32 : 32 * Runtime
-			.getRuntime().availableProcessors();
+	protected int maxThreads = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 32 : ((Constants.MAX_THREADS == -1) ? 32 * Runtime.getRuntime().availableProcessors() : Constants.MAX_THREADS);
 
 	/**
 	 * The maximum number of connections
 	 */
-	protected int maxConnections = 1024;
+	protected int maxConnections = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 1024 : (32 * 1024);
 
 	/**
 	 * Priority of the acceptor and poller threads.
@@ -108,7 +104,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Size of the sendfile (= concurrent files which can be served).
 	 */
-	protected int sendfileSize = -1;
+	protected int sendfileSize = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 128 : (16 * 1024);
 
 	/**
 	 * Server socket port.
