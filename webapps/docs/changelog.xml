@@ -33,6 +33,9 @@
       <fix>
          <jira>250</jira>: Fix remote address, submitted by Cheng Fang. (remm)
       </fix>
+      <fix>
+         Fix various issues in the NIO2 connector related to async and event. (remm)
+      </fix>
     </changelog>
   </subsection>
   <subsection name="Jasper">

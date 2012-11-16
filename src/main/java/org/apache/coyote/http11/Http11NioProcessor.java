@@ -853,7 +853,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		} else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
 			// Write event
 			writeEvent(param);
-		} else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
+		} else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
 			// Timeout event
 			timeoutEvent(param);
 		} else if (actionCode == ActionCode.UPGRADE) {

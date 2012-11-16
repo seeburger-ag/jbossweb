@@ -23,6 +23,7 @@ import static org.jboss.web.CoyoteMessages.MESSAGES;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
+import java.nio.channels.WritePendingException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.coyote.ActionCode;
@@ -87,10 +88,16 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 				if (nBytes < 0) {
 					failed(new ClosedChannelException(), attachment);
 					return;
+				} else {
+                    response.setLastWrite(nBytes);
 				}
 
 				if (bbuf.hasRemaining()) {
-					attachment.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, attachment, this);
+				    try {
+				        attachment.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, attachment, this);
+				    } catch (WritePendingException e) {
+				        response.setLastWrite(0);
+				    }
 				} else {
 					// Clear the buffer when all bytes are written
 					clearBuffer();
