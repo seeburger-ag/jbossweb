@@ -1335,12 +1335,6 @@ public class NioEndpoint extends AbstractEndpoint {
 			} else if (info.wakeup()) {
 				remove(info);
 				// TODO
-			} else {
-                CoyoteLogger.UTIL_LOGGER.unknownEvent();
-				remove(info);
-				if (!processChannel(ch, SocketStatus.ERROR)) {
-					closeChannel(ch);
-				}
 			}
 
 			// Wake up all waiting threads

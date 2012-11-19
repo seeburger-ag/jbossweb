@@ -917,6 +917,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				} else {
 					recycledProcessors.offer(processor);
 				}
+	            processor.endProcessing();
 				return state;
 
 			} catch (IOException e) {
