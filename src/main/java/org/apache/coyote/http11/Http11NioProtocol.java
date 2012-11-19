@@ -890,6 +890,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				if (processor == null) {
 					processor = createProcessor();
 				}
+                processor.startProcessing();
 
 				if (proto.secure && (proto.sslImplementation != null)) {
 					processor.setSSLSupport(((NioJSSEImplementation) proto.sslImplementation).getSSLSupport(channel));
@@ -936,6 +937,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				// less-than-verbose logs.
                 CoyoteLogger.HTTP_LOGGER.socketError(e);
 			}
+            processor.endProcessing();
 			recycledProcessors.offer(processor);
 			return SocketState.CLOSED;
 		}

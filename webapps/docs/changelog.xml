@@ -16,8 +16,17 @@
 
 <body>
 
+<section name="JBoss Web 7.2.0.Alpha4 (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         Additional NIO2 event fixes. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.2.0.Alpha3 (remm)">
-  <subsection name="General">
   <subsection name="Catalina">
     <changelog>
       <fix>

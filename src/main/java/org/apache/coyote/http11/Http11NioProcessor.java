@@ -121,14 +121,14 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	 * Mark the start of processing
 	 */
 	public void startProcessing() {
-		eventProcessing = true;
+		processing = true;
 	}
 
 	/**
 	 * Mark the end of processing
 	 */
 	public void endProcessing() {
-		eventProcessing = false;
+		processing = false;
 	}
 
 	/**
@@ -415,7 +415,6 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 				recycle();
 				return SocketState.CLOSED;
 			} else {
-				eventProcessing = false;
 				return SocketState.LONG;
 			}
 		} else {
@@ -738,7 +737,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		// An event is being processed already: adding for resume will be
 		// done
 		// when the channel gets back to the poller
-		if (!eventProcessing && !resumeNotification) {
+        if (!processing && !resumeNotification) {
 			endpoint.addEventChannel(channel, keepAliveTimeout, false, false, true, true);
 		}
 		resumeNotification = true;
@@ -753,7 +752,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		// An event is being processed already: adding for write will be
 		// done
 		// when the channel gets back to the poller
-		if (!eventProcessing && !writeNotification) {
+		if (!processing && !writeNotification) {
 			endpoint.addEventChannel(channel, timeout, false, true, false, true);
 		}
 		writeNotification = true;

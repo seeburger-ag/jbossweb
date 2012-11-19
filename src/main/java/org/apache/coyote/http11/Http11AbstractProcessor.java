@@ -210,9 +210,9 @@ public abstract class Http11AbstractProcessor implements ActionHook {
 	protected boolean writeNotification = false;
 
 	/**
-	 * Event processing.
+	 * Processing.
 	 */
-	protected boolean eventProcessing = true;
+	protected boolean processing = false;
 
 	/**
 	 * Timeout.
@@ -483,7 +483,6 @@ public abstract class Http11AbstractProcessor implements ActionHook {
 		readNotifications = false;
 		writeNotification = false;
 		resumeNotification = false;
-		eventProcessing = true;
 	}
 
 	/**
@@ -1137,25 +1136,6 @@ public abstract class Http11AbstractProcessor implements ActionHook {
 	 */
 	public void setResumeNotification(boolean resumeNotification) {
 		this.resumeNotification = resumeNotification;
-	}
-
-	/**
-	 * Getter for eventProcessing
-	 * 
-	 * @return the eventProcessing
-	 */
-	public boolean getEventProcessing() {
-		return this.eventProcessing;
-	}
-
-	/**
-	 * Setter for the eventProcessing
-	 * 
-	 * @param eventProcessing
-	 *            the eventProcessing to set
-	 */
-	public void setEventProcessing(boolean eventProcessing) {
-		this.eventProcessing = eventProcessing;
 	}
 
 	/**
