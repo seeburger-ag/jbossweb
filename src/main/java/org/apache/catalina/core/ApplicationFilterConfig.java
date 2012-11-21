@@ -462,15 +462,15 @@ public final class ApplicationFilterConfig implements FilterConfig, Serializable
         
         if (this.filter != null)
         {
-            if (Globals.IS_SECURITY_ENABLED) {
-                try {
+            try {
+                if (Globals.IS_SECURITY_ENABLED) {
                     SecurityUtil.doAsPrivilege("destroy", filter);
-                } catch(java.lang.Exception ex){
-                    context.getLogger().error(MESSAGES.doAsPrivilegeException(), ex);
+                    SecurityUtil.remove(filter);
+                } else {
+                    filter.destroy();
                 }
-                SecurityUtil.remove(filter);
-            } else {
-                filter.destroy();
+            } catch(java.lang.Exception ex){
+                context.getLogger().error(MESSAGES.errorDestroyingFilter(getFilterName()), ex);
             }
             try {
                 ((StandardContext) context).getInstanceManager().destroyInstance(this.filter);

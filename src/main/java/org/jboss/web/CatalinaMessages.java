@@ -627,8 +627,8 @@ public interface CatalinaMessages {
     @Message(id = 244, value = "Illegal null or empty argument specified")
     IllegalArgumentException invalidServletRegistrationArguments();
 
-    @Message(id = 245, value = "Priveleged action exception")
-    String doAsPrivilegeException();
+    @Message(id = 245, value = "Error destroying filter %s")
+    String errorDestroyingFilter(String filterName);
 
     @Message(id = 246, value = "Exception processing component pre destroy")
     String preDestroyException();
@@ -968,5 +968,8 @@ public interface CatalinaMessages {
 
     @Message(id = 358, value = "Message digest non initialized")
     IllegalStateException uninitializedMessageDigest();
+
+    @Message(id = 359, value = "Exception releasing filter %s")
+    String errorStoppingFilter(String filterName);
 
 }
