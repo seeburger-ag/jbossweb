@@ -39,6 +39,7 @@ import java.util.TimeZone;
 import java.util.Vector;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
@@ -1576,6 +1577,12 @@ public class Response
 
         // Are we in a valid session that is not using cookies?
         final Request hreq = request;
+
+        // Is URL encoding permitted
+        if (!hreq.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.URL)) {
+            return false;
+        }
+
         final Session session = hreq.getSessionInternal(false);
         if (session == null)
             return (false);

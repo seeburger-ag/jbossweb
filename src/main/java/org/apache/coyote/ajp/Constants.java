@@ -44,6 +44,8 @@ public final class Constants {
     public static final int DEFAULT_CONNECTION_UPLOAD_TIMEOUT = 300000;
     public static final int DEFAULT_SERVER_SOCKET_TIMEOUT = 0;
     public static final boolean DEFAULT_TCP_NO_DELAY = true;
+    public static final boolean DEFAULT_TOMCAT_AUTHENTICATION = 
+            Boolean.valueOf(System.getProperty("org.apache.coyote.ajp.DEFAULT_TOMCAT_AUTHENTICATION", "true")).booleanValue();
 
     // Prefix codes for message types from server to container
     public static final byte JK_AJP13_FORWARD_REQUEST   = 2;

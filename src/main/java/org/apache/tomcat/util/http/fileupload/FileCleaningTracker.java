@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload;
 
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.File;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
@@ -84,7 +86,7 @@ public class FileCleaningTracker {
      */
     public void track(File file, Object marker, FileDeleteStrategy deleteStrategy) {
         if (file == null) {
-            throw new NullPointerException("The file must not be null");
+            throw MESSAGES.nullFile();
         }
         addTracker(file.getPath(), marker, deleteStrategy);
     }
@@ -114,7 +116,7 @@ public class FileCleaningTracker {
      */
     public void track(String path, Object marker, FileDeleteStrategy deleteStrategy) {
         if (path == null) {
-            throw new NullPointerException("The path must not be null");
+            throw MESSAGES.nullPath();
         }
         addTracker(path, marker, deleteStrategy);
     }
@@ -129,7 +131,7 @@ public class FileCleaningTracker {
     private synchronized void addTracker(String path, Object marker, FileDeleteStrategy deleteStrategy) {
         // synchronized block protects reaper
         if (exitWhenFinished) {
-            throw new IllegalStateException("No new trackers can be added once exitWhenFinished() is called");
+            throw MESSAGES.cannotAddTrackersOnceFinished();
         }
         if (reaper == null) {
             reaper = new Reaper();
