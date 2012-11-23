@@ -217,12 +217,8 @@ class NioJSSESupport implements SSLSupport {
 	 * @throws IOException
 	 */
 	protected void handShake() throws IOException {
-		if (channel != null && channel.handshakeComplete) {
-			return;
-		}
-
 		if (channel != null) {
-			channel.handshake();
+			channel.reHandshake();
 		}
 	}
 }

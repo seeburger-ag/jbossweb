@@ -29,6 +29,9 @@
       <fix>
          Additional NIO2 event fixes. (remm)
       </fix>
+      <fix>
+         Fix NIO2 client certificate renegociation. (remm)
+      </fix>
     </changelog>
   </subsection>
 </section>

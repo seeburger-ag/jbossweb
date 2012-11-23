@@ -38,6 +38,7 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSession;
 
 import org.apache.tomcat.util.net.NioChannel;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code SecureNioChannel}
@@ -652,6 +653,15 @@ public class SecureNioChannel extends NioChannel {
 	 * @throws SSLException
 	 */
 	protected void reHandshake() throws SSLException {
+        if (sslEngine.getWantClientAuth()) {
+            CoyoteLogger.UTIL_LOGGER.debug("No client cert sent for want");
+        } else {
+            if (!sslEngine.getNeedClientAuth()) {
+                sslEngine.setNeedClientAuth(true);
+            } else {
+                CoyoteLogger.UTIL_LOGGER.debug("Already need client cert");
+            }
+        }
 		handshakeComplete = false;
 		handshakeStatus = sslEngine.getHandshakeStatus();
 		try {
