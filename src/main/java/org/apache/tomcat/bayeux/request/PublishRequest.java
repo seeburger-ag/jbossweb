@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.bayeux.request;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -69,16 +71,16 @@ public class PublishRequest extends RequestBase implements BayeuxRequest {
      */
     public HttpError validate() {
         if(channel==null|| (!this.getTomcatBayeux().hasChannel(channel)))
-            return new HttpError(400,"Channel Id not valid.", null);
+            return new HttpError(400, MESSAGES.invalidBayeuxClientId(), null);
         if(data==null || data.length()==0)
-            return new HttpError(400,"Message data missing.", null);
+            return new HttpError(400, MESSAGES.noBayeuxMessageData(), null);
         try {
             this.msgData = new JSONObject(data);
         }catch (JSONException x) {
-            return new HttpError(400,"Invalid JSON object in data attribute.",x);
+            return new HttpError(400, MESSAGES.invalidBayeuxMessageData(), x);
         }
         if(clientId==null|| (!this.getTomcatBayeux().hasClient(clientId)))
-            return new HttpError(400,"Client Id not valid.", null);
+            return new HttpError(400, MESSAGES.invalidBayeuxClientId(), null);
         return null;//no error
     }
 

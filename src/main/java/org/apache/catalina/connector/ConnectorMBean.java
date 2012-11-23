@@ -17,6 +17,8 @@
 
 package org.apache.catalina.connector;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import javax.management.Attribute;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
@@ -81,8 +83,7 @@ public class ConnectorMBean extends BaseModelMBean {
 
         // Validate the input parameters
         if (name == null)
-            throw new RuntimeOperationsException(new IllegalArgumentException(
-                    "Attribute name is null"), "Attribute name is null");
+            throw new RuntimeOperationsException(MESSAGES.invalidNullAttributeName());
 
         Object result = null;
         try {
@@ -118,13 +119,11 @@ public class ConnectorMBean extends BaseModelMBean {
 
         // Validate the input parameters
         if (attribute == null)
-            throw new RuntimeOperationsException(new IllegalArgumentException(
-                    "Attribute is null"), "Attribute is null");
+            throw new RuntimeOperationsException(MESSAGES.invalidNullAttribute());
         String name = attribute.getName();
         Object value = attribute.getValue();
         if (name == null)
-            throw new RuntimeOperationsException(new IllegalArgumentException(
-                    "Attribute name is null"), "Attribute name is null");
+            throw new RuntimeOperationsException(MESSAGES.invalidNullAttributeName());
 
         try {
             Connector connector = (Connector) getManagedResource();

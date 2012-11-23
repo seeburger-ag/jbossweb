@@ -16,7 +16,80 @@
 
 <body>
 
-<section name="JBoss Web 7.7.0.Alpha1 (remm)">
+<section name="JBoss Web 7.2.0.Alpha4 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         Catch filter destroy errors. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         Additional NIO2 event fixes. (remm)
+      </fix>
+      <fix>
+         Fix NIO2 client certificate renegociation. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.2.0.Alpha3 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         <jira>249</jira>: Respect URL session tracking when encoding. (remm)
+      </fix>
+      <fix>
+         <jboss-jira>AS7-5802</jboss-jira>: Fix problem with duplicated filter instantiation when using a filter registration. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         <jira>250</jira>: Fix remote address, submitted by Cheng Fang. (remm)
+      </fix>
+      <fix>
+         Fix various issues in the NIO2 connector related to async and event. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+         <jira>251</jira>: Drop localization related class preload. (remm)
+      </fix>
+      <fix>
+         <bug>54012</bug>: Allow tagplugins compatibility with tag files. (markt)
+      </fix>
+      <fix>
+         Misc minor optimizations. (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.2.0.Alpha2 (remm)">
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         NIO 2 connector should reuse addresses. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
+<section name="JBoss Web 7.2.0.Alpha1 (remm)">
+  <subsection name="General">
+    <changelog>
+      <add>
+         Switch to JBoss Logging for i18n. (remm)
+      </add>
+    </changelog>
+  </subsection>
   <subsection name="Catalina">
     <changelog>
       <fix>
@@ -38,6 +111,9 @@
       </fix>
       <fix>
          <bug>53801</bug>: Fix some edge case with overlapping security constraints. (markt)
+      </fix>
+      <fix>
+         Add default error pages which got clarified. (markt)
       </fix>
     </changelog>
   </subsection>
@@ -64,9 +140,6 @@
       </fix>
       <add>
          NIO 2 HTTP connector. (benothman)
-      </add>
-      <add>
-         Drop java.io connectors (AJP and HTTP). AJP now requires native. (remm)
       </add>
     </changelog>
   </subsection>
