@@ -68,6 +68,7 @@ public class Http11Protocol
         setSoTimeout(Constants.DEFAULT_CONNECTION_TIMEOUT);
         //setServerSoTimeout(Constants.DEFAULT_SERVER_SOCKET_TIMEOUT);
         setTcpNoDelay(Constants.DEFAULT_TCP_NO_DELAY);
+        setKeepAliveTimeout(Constants.DEFAULT_KEEP_ALIVE_TIMEOUT);
     }
 
     

@@ -158,6 +158,15 @@ Closed connection to localhost:9999
       <code>2048</code> bytes.</p>
     </property>
 
+    <property name="org.apache.coyote.http11.DEFAULT_CONNECTION_TIMEOUT">
+      <p>Default socket timeout. The default value is <code>60000</code> ms.</p>
+    </property>
+
+    <property name="org.apache.coyote.http11.DEFAULT_KEEP_ALIVE_TIMEOUT">
+      <p>Default socket timeout for keep alive. The default value is <code>-1</code> ms,
+      which means it will use the default socket timeout.</p>
+    </property>
+
   </properties>
 
 </section>
