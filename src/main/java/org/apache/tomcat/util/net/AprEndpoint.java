@@ -21,6 +21,7 @@ package org.apache.tomcat.util.net;
 import static org.jboss.web.CoyoteMessages.MESSAGES;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Executor;
@@ -782,24 +783,23 @@ public class AprEndpoint {
     }
 
 
-    /**
-     * Unlock the server socket accept using a bogus connection.
-     */
     protected void unlockAccept() {
         java.net.Socket s = null;
+        InetSocketAddress saddr = null;
         try {
             // Need to create a connection to unlock the accept();
             if (address == null) {
-                s = new java.net.Socket("localhost", port);
+                saddr = new InetSocketAddress("localhost", port);
             } else {
-                s = new java.net.Socket(address, port);
-                // setting soLinger to a small value will help shutdown the
-                // connection quicker
-                s.setSoLinger(true, 0);
+                saddr = new InetSocketAddress(address, port);
             }
+            s = new java.net.Socket();
+            s.setSoLinger(true, 0);
+            s.connect(saddr, 2000);
             // If deferAccept is enabled, send at least one byte
             if (deferAccept) {
                 s.getOutputStream().write(" ".getBytes());
+                s.getOutputStream().flush();
             }
         } catch (Exception e) {
             // Ignore

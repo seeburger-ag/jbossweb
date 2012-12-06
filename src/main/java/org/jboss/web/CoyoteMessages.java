@@ -274,4 +274,7 @@ public interface CoyoteMessages {
     @Message(id = 2078, value = "No context found: %s")
     IllegalStateException mapperContextNotFound(String contextPath);
 
+    @Message(id = 2079, value = "Unexpected data read during handshake")
+    String sslHandshakeData();
+
 }

@@ -32,6 +32,12 @@
       <fix>
          Fix NIO2 client certificate renegociation. (remm)
       </fix>
+      <fix>
+         Fix java.io client certificate renegociation on Java 7. (markt)
+      </fix>
+      <fix>
+         Add short unlock accept timeout. (markt)
+      </fix>
     </changelog>
   </subsection>
 </section>

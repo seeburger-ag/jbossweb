@@ -19,6 +19,7 @@
 package org.apache.tomcat.util.net;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -286,16 +287,17 @@ public abstract class AbstractEndpoint {
 	 */
 	protected void unlockAccept() {
 		java.net.Socket s = null;
+        InetSocketAddress saddr = null;
 		try {
-			// Need to create a connection to unlock the accept();
-			if (address == null) {
-				s = new java.net.Socket("localhost", port);
-			} else {
-				s = new java.net.Socket(address, port);
-				// setting soLinger to a small value will help shutdown the
-				// connection quicker
-				s.setSoLinger(true, 0);
-			}
+            // Need to create a connection to unlock the accept();
+            if (address == null) {
+                saddr = new InetSocketAddress("localhost", port);
+            } else {
+                saddr = new InetSocketAddress(address, port);
+            }
+            s = new java.net.Socket();
+            s.setSoLinger(true, 0);
+            s.connect(saddr, 2000);
 			// If deferAccept is enabled, send at least one byte
 			if (deferAccept) {
 				s.getOutputStream().write(" ".getBytes());
