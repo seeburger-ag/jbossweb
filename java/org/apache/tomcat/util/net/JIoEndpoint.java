@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executor;
@@ -1072,21 +1073,20 @@ public class JIoEndpoint {
      * Unlock the accept by using a local connection.
      */
     protected void unlockAccept() {
-        Socket s = null;
+        java.net.Socket s = null;
+        InetSocketAddress saddr = null;
         try {
             // Need to create a connection to unlock the accept();
             if (address == null) {
-                s = new Socket("localhost", port);
+                saddr = new InetSocketAddress("localhost", port);
             } else {
-                s = new Socket(address, port);
-                // setting soLinger to a small value will help shutdown the
-                // connection quicker
-                s.setSoLinger(true, 0);
+                saddr = new InetSocketAddress(address, port);
             }
+            s = new java.net.Socket();
+            s.setSoLinger(true, 0);
+            s.connect(saddr, 2000);
         } catch (Exception e) {
-            if (log.isDebugEnabled()) {
-                log.debug(sm.getString("endpoint.debug.unlock", "" + port), e);
-            }
+            // Ignore
         } finally {
             if (s != null) {
                 try {

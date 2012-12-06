@@ -161,7 +161,7 @@ class JSSESupport implements SSLSupport {
         InputStream in = ssl.getInputStream();
         int oldTimeout = ssl.getSoTimeout();
         ssl.setSoTimeout(1000);
-        byte[] b = new byte[0];
+        byte[] b = new byte[1];
         listener.reset();
         ssl.startHandshake();
         int maxTries = 60; // 60 * 1000 = example 1 minute time out
@@ -169,7 +169,13 @@ class JSSESupport implements SSLSupport {
         if(log.isTraceEnabled())
             log.trace("Reading for try #" +i);
             try {
-                int x = in.read(b);
+                int read = in.read(b);
+                if (read > 0) {
+                    // Shouldn't happen as all input should have been swallowed
+                    // before trying to do the handshake. If it does, something
+                    // went wrong so lets bomb out now.
+                    throw new SSLException("Unecpected data during handshake");
+                }
             } catch(SSLException sslex) {
                 log.info("SSL Error getting client Certs",sslex);
                 throw sslex;
