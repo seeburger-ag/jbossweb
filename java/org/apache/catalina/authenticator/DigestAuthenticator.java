@@ -294,20 +294,20 @@ public class DigestAuthenticator extends AuthenticatorBase {
     /**
      * Generate a unique token. The token is generated according to the
      * following pattern. NOnceToken = Base64 ( MD5 ( client-IP ":"
-     * time-stamp ":" private-key ) ).
+     * client-port ":" time-stamp ":" private-key ) ).
      *
      * @param request HTTP Servlet request
      */
     protected String generateNonce(Request request) {
 
         long currentTime = System.currentTimeMillis();
+        int remotePort = request.getRemotePort();
 
+        String ipPortTimeKey =
+            request.getRemoteAddr() + ":" + remotePort + ":" + currentTime + ":" + getKey();
 
-        String ipTimeKey =
-            request.getRemoteAddr() + ":" + currentTime + ":" + getKey();
-
-        byte[] buffer = ConcurrentMessageDigest.digestMD5(ipTimeKey.getBytes());
-        String nonce = currentTime + ":" + MD5Encoder.encode(buffer);
+        byte[] buffer = ConcurrentMessageDigest.digestMD5(ipPortTimeKey.getBytes());
+        String nonce = currentTime + ":" + remotePort + ":" + MD5Encoder.encode(buffer);
 
         NonceInfo info = new NonceInfo(currentTime, 100);
         synchronized (nonces) {
@@ -567,13 +567,19 @@ public class DigestAuthenticator extends AuthenticatorBase {
             if (i < 0 || (i + 1) == nonce.length()) {
                 return false;
             }
+            int j = nonce.lastIndexOf(":");
+            if (i == j) {
+                return false;
+            }
             long nonceTime;
+            int remotePort;
             try {
                 nonceTime = Long.parseLong(nonce.substring(0, i));
+                remotePort = Integer.parseInt(nonce.substring(i + 1, j));
             } catch (NumberFormatException nfe) {
                 return false;
             }
-            String md5clientIpTimeKey = nonce.substring(i + 1);
+            String md5clientIpPortTimeKey = nonce.substring(j + 1);
             long currentTime = System.currentTimeMillis();
             if ((currentTime - nonceTime) > nonceValidity) {
                 nonceStale = true;
@@ -581,12 +587,12 @@ public class DigestAuthenticator extends AuthenticatorBase {
                     nonces.remove(nonce);
                 }
             }
-            String serverIpTimeKey =
-                request.getRemoteAddr() + ":" + nonceTime + ":" + key;
+            String serverIpPortTimeKey =
+                request.getRemoteAddr() + ":" + remotePort + ":" + nonceTime + ":" + key;
             byte[] buffer = ConcurrentMessageDigest.digestMD5(
-                    serverIpTimeKey.getBytes());
-            String md5ServerIpTimeKey = MD5Encoder.encode(buffer);
-            if (!md5ServerIpTimeKey.equals(md5clientIpTimeKey)) {
+                    serverIpPortTimeKey.getBytes());
+            String md5ServerIpPortTimeKey = MD5Encoder.encode(buffer);
+            if (!md5ServerIpPortTimeKey.equals(md5clientIpPortTimeKey)) {
                 return false;
             }
 
