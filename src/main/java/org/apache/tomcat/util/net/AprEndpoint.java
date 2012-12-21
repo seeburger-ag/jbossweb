@@ -234,6 +234,22 @@ public class AprEndpoint {
 
 
     /**
+     * Receive buffer.
+     */
+    protected int soReceiveBuffer = Constants.SO_RCV_BUFFER;
+    public int getSoReceiveBuffer() { return soReceiveBuffer; }
+    public void setSoReceiveBuffer(int soReceiveBuffer) { this.soReceiveBuffer = soReceiveBuffer; }
+
+
+    /**
+     * Send buffer.
+     */
+    protected int soSendBuffer = Constants.SO_SND_BUFFER;
+    public int getSoSendBuffer() { return soSendBuffer; }
+    public void setSoSendBuffer(int soSendBuffer) { this.soSendBuffer = soSendBuffer; }
+
+
+    /**
      * Keep-Alive timeout.
      */
     protected int keepAliveTimeout = -1;
@@ -830,6 +846,10 @@ public class AprEndpoint {
                 Socket.optSet(socket, Socket.APR_TCP_NODELAY, (tcpNoDelay ? 1 : 0));
             if (soTimeout > 0)
                 Socket.timeoutSet(socket, soTimeout * 1000);
+            if (soReceiveBuffer > 0)
+                Socket.optSet(socket, Socket.APR_SO_RCVBUF, soReceiveBuffer);
+            if (soSendBuffer > 0)
+                Socket.optSet(socket, Socket.APR_SO_SNDBUF, soSendBuffer);
 
             // 2: SSL handshake
             step = 2;

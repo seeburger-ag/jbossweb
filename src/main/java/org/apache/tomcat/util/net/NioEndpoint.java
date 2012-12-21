@@ -349,6 +349,12 @@ public class NioEndpoint extends AbstractEndpoint {
 			if (tcpNoDelay) {
 				channel.setOption(StandardSocketOptions.TCP_NODELAY, tcpNoDelay);
 			}
+            if (soReceiveBuffer > 0) {
+                channel.setOption(StandardSocketOptions.SO_RCVBUF, soReceiveBuffer);
+            }
+            if (soSendBuffer > 0) {
+                channel.setOption(StandardSocketOptions.SO_SNDBUF, soSendBuffer);
+            }
 
 			// Initialize the channel
 			serverSocketChannelFactory.initChannel(channel);

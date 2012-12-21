@@ -33,6 +33,12 @@ public final class Constants {
     public static final boolean REUSE_ADDRESS = 
             Boolean.valueOf(System.getProperty("org.apache.tomcat.util.net.REUSE_ADDRESS", "true")).booleanValue();
 
+    public static final int SO_RCV_BUFFER = 
+            Integer.valueOf(System.getProperty("org.apache.tomcat.util.net.SO_RCV_BUFFER", "-1")).intValue();
+
+    public static final int SO_SND_BUFFER = 
+            Integer.valueOf(System.getProperty("org.apache.tomcat.util.net.SO_SND_BUFFER", "-1")).intValue();
+
     /**
      * The Request attribute key for the cipher suite.
      */

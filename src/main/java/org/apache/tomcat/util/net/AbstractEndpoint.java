@@ -152,6 +152,20 @@ public abstract class AbstractEndpoint {
 	 */
 	protected int keepAliveTimeout = -1;
 
+    /**
+     * Receive buffer.
+     */
+    protected int soReceiveBuffer = Constants.SO_RCV_BUFFER;
+    public int getSoReceiveBuffer() { return soReceiveBuffer; }
+    public void setSoReceiveBuffer(int soReceiveBuffer) { this.soReceiveBuffer = soReceiveBuffer; }
+
+    /**
+     * Send buffer.
+     */
+    protected int soSendBuffer = Constants.SO_SND_BUFFER;
+    public int getSoSendBuffer() { return soSendBuffer; }
+    public void setSoSendBuffer(int soSendBuffer) { this.soSendBuffer = soSendBuffer; }
+
 	/**
 	 * The default is true - the created threads will be in daemon mode. If set
 	 * to false, the control thread will not be daemon - and will keep the
