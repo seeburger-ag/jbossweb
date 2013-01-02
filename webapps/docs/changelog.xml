@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.2.0.Beta2 (remm)">
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+         <bug>35410</bug>: Revert bugfix working around a null toString(). (markt)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.2.0.Beta1 (remm)">
   <subsection name="Catalina">
     <changelog>

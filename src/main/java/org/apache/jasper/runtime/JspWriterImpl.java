@@ -21,14 +21,11 @@ import static org.jboss.web.JasperMessages.MESSAGES;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import javax.servlet.ServletResponse;
 import javax.servlet.jsp.JspWriter;
 
 import org.apache.jasper.Constants;
-import org.apache.jasper.security.SecurityUtil;
 
 /**
  * Write text to a character-output stream, buffering characters so as
@@ -312,20 +309,6 @@ public class JspWriterImpl extends JspWriter {
                     flushBuffer();
                 else
                     bufferOverflow();
-        }
-    }
-    
-    /**
-     * Write a string.  This method cannot be inherited from the Writer class
-     * because it must suppress I/O exceptions.
-     */
-    public void write(String s) throws IOException {
-        // Simple fix for Bugzilla 35410
-        // Calling the other write function so as to init the buffer anyways
-        if(s == null) {
-            write(s, 0, 0);
-        } else {
-            write(s, 0, s.length());
         }
     }
     
