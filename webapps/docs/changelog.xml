@@ -22,6 +22,9 @@
       <fix>
          <bug>35410</bug>: Revert bugfix working around a null toString(). (markt)
       </fix>
+      <fix>
+         <bug>54370</bug>: NPE fix for EL method mapping with null parameters. (markt, remm)
+      </fix>
     </changelog>
   </subsection>
 </section>
