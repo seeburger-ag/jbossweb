@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<project name="JBoss Web Jasper-JDT" default="download" basedir=".">
+
+	<!-- ===================== Initialize Property Values =================== -->
+
+	<!-- See "build.properties.sample" in the top level directory for all     -->
+	<!-- property values you must customize for successful building!!!        -->
+	<property file="${user.home}/build.properties"/>
+	<property file="build.properties"/>
+
+	<property file="build.properties.default"/>
+
+	<!-- Project Properties -->
+	<property name="name"                  value="Jasper JDT" />
+	<property name="year"                  value="2013" />
+	<property name="version.major"         value="7" />
+	<property name="version.minor"         value="5" />
+	<property name="version.build"         value="0" />
+	<property name="version.patch"         value="0" />
+	<property name="version.tag"           value="SNAPSHOT" />
+	<property name="version"               value="${version.major}.${version.minor}.${version.build}.${version.tag}" />
+	<property name="version.number"        value="${version.major}.${version.minor}.${version.build}.${version.patch}" />
+
+	<property name="project"               value="jasper-jdt" />
+	<property name="final.name"            value="${project}-${version}" />
+	<property name="final-src.name"        value="${project}-${version}-src" />
+
+	<!-- Can't be lower - jsp uses templates -->
+	<property name="compile.source" value="1.6"/>
+
+    <property name="tomcat.jars"       value="${basedir}/output/jars"/>
+	<property name="jasper-jdt.home" value="${base.path}/jbossweb-deps/jdt" />
+	<property name="jasper-jdt.jar" value="${jasper-jdt.home}/jasper-jdt.jar"/>
+
+	<property name="jasper-jdt-src.home" value="${base.path}/jbossweb-deps/jdt-src" />
+	<property name="jasper-jdt-src.jar" value="${jasper-jdt-src.home}/jasper-jdt-src.jar"/>
+
+	<target name="clean"
+	     description="Clean depend src components">
+		<delete dir="${jasper-jdt.home}"/>
+		<delete dir="${jasper-jdt-src.home}"/>
+	</target>
+
+	<!-- Download and dependency building -->
+	<target name="proxyflags">
+		<!-- check proxy parameters. -->
+		<condition property="useproxy">
+			<equals arg1="${proxy.use}" arg2="on" />
+		</condition>
+	</target>
+
+	<target name="setproxy" depends="proxyflags" if="useproxy">
+		<taskdef name="setproxy"
+            classname="org.apache.tools.ant.taskdefs.optional.net.SetProxy" />
+		<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"
+              proxyuser="${proxy.user}" proxypassword="${proxy.password}" />
+		<echo message="Using ${proxy.host}:${proxy.port} to download ${sourcefile}"/>
+	</target>
+
+	<target name="testexist">
+		<echo message="Testing  for ${destfile}"/>
+		<available file="${destfile}" property="exist"/>
+	</target>
+
+	<target name="downloadgz" unless="exist" depends="setproxy,testexist">
+		<!-- Download and extract the package -->
+		<get src="${sourcefile}" dest="${base.path}/file.tar.gz" />
+		<gunzip src="${base.path}/file.tar.gz" dest="${base.path}/file.tar"/>
+		<untar src="${base.path}/file.tar" dest="${base.path}"/>
+		<delete file="${base.path}/file.tar"/>
+		<delete file="${base.path}/file.tar.gz"/>
+	</target>
+
+	<target name="downloadzip" unless="exist" depends="setproxy,testexist">
+		<!-- Download and extract the package -->
+		<get src="${sourcefile}" dest="${base.path}/file.zip" />
+		<mkdir dir="${destdir}" />
+		<unzip src="${base.path}/file.zip" dest="${destdir}"/>
+		<delete file="${base.path}/file.zip"/>
+	</target>
+
+	<target name="downloadfile" unless="exist" depends="setproxy,testexist">
+		<!-- Download extract the file -->
+		<mkdir dir="${destdir}" />
+		<get src="${sourcefile}" dest="${destfile}" />
+	</target>
+
+	<target name="download"
+          description="Builds and download dependent components">
+
+		<mkdir dir="${base.path}" />
+
+		<!-- Build Jasper JDT bundle -->
+		<antcall target="downloadzip">
+			<param name="sourcefile" value="${jdt.loc}"/>
+			<param name="destdir" value="${base.path}"/>
+		</antcall>
+		<mkdir dir="${jasper-jdt.home}"/>
+		<antcall target="build-jasper-jdt">
+			<param name="basedir" value="${jasper-jdt.home}" />
+		</antcall>
+
+		<!-- Build Jasper JDT sources bundle -->
+		<antcall target="downloadzip">
+			<param name="sourcefile" value="${jdt-src.loc}"/>
+			<param name="destdir" value="${jasper-jdt-src.home}"/>
+		</antcall>
+		<mkdir dir="${jasper-jdt-src.home}"/>
+		<antcall target="build-jasper-jdt-src">
+			<param name="basedir" value="${jasper-jdt-src.home}" />
+		</antcall>
+
+	</target>
+
+	<target name="build-jasper-jdt">
+		<unjar src="${jdt.jar}" dest="${jasper-jdt.home}" />
+		<jar destfile="${jasper-jdt.jar}" index="true">
+			<fileset dir="${jasper-jdt.home}">
+				<include name="org/eclipse/jdt/core/compiler/**"/>
+				<include name="org/eclipse/jdt/internal/compiler/**"/>
+				<include name="org/eclipse/jdt/internal/core/util/CommentRecorder*"/>
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="build-jasper-jdt-src">
+		<jar destfile="${jasper-jdt-src.jar}" index="true">
+			<fileset dir="${jasper-jdt-src.home}/src/plugins/org.eclipse.jdt.core/model">
+				<include name="org/eclipse/jdt/core/compiler/**"/>
+				<include name="org/eclipse/jdt/internal/compiler/**"/>
+				<include name="org/eclipse/jdt/internal/core/util/CommentRecorder*"/>
+			</fileset>
+		</jar>
+	</target>
+
+    <target name="maven-jdt" description="Upload to Maven repository; if this looks like a hack, it's because it's one">
+
+        <filter token="VERSION" value="${version}"/>
+        <copy todir="${tomcat.jars}" filtering="true">
+            <fileset dir="res">
+                <include name="*-pom.xml"/>
+            </fileset>
+        </copy>
+
+        <!-- Maven repository configuration -->
+        <property name="maven.repository.url" value="https://repository.jboss.org/nexus/service/local/staging/deploy/maven2"/>
+        <property name="maven.repository.id" value="jboss-releases-repository"/>
+
+        <!-- Linux/Unix execs -->
+        <exec dir="." executable="/bin/sh" os="Linux">
+            <arg value="-c" />
+            <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt-src.jar -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id} -DgroupId=org.jboss.web -DartifactId=jasper-jdt -Dversion=${version} -Dclassifier=sources"/>
+        </exec>
+        <exec dir="." executable="/bin/sh" os="Linux">
+            <arg value="-c" />
+            <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
+        </exec>
+
+        <!-- Windows exec -->
+        <exec dir="." executable="cmd" os="Windows NT">
+            <arg value="/c" />
+            <arg value="mvn deploy:deploy-file -Dfile=${tomcat.jars}/jasper-jdt.jar -DpomFile=${tomcat.jars}/jasper-jdt-pom.xml -Durl=${maven.repository.url} -Dpackaging=jar -DrepositoryId=${maven.repository.id}"/>
+        </exec>
+
+    </target>
+
+</project>
