@@ -130,6 +130,12 @@ Closed connection to localhost:9999
       value is <code>128</code> headers.</p>
     </property>
 
+    <property name="org.apache.tomcat.util.net.MAX_THREADS">
+      <p>The maximum number of threads a connector is going to use to
+         process requests. The default value is <code>32 x Runtime.getRuntime().availableProcessors()</code>.
+         (<code>512 x Runtime.getRuntime().availableProcessors()</code> for the JIO connector)</p>
+    </property>
+
     <property name="org.apache.coyote.http11.Http11Protocol.MAX_HEADER_SIZE">
       <p>The maximum size of the HTTP headers, in bytes.
       If exceeded, parsing will fail using an ArrayOutOfBoundsExceptions. The default
