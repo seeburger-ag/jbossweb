@@ -1423,11 +1423,6 @@ public class AprEndpoint {
                     defaultPollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
                 }
             }
-            if ((OS.IS_WIN32 || OS.IS_WIN64) && (defaultPollerSize > 1024)) {
-                // The maximum per poller to get reasonable performance is 1024
-                // Adjust poller size so that it won't reach the limit
-                defaultPollerSize = 1024;
-            }
             actualPollerSize = defaultPollerSize;
 
             timeouts = new SocketTimeouts(defaultPollerSize);
