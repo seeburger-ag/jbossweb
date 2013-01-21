@@ -59,6 +59,14 @@ bin/standalone.sh -server-config clustering-standalone.xml
       <p>This attribute value must be <code>AJP/1.3</code> to use the AJP
       handler.</p>
     </attribute>
+    <attribute name="scheme" required="true">
+      <p>This attribute value is the scheme used by the proxy (httpd/IIS/Iplanet).
+      The usual values are <code>http</code> and <code>https</code>.</p>
+    </attribute>
+    <attribute name="redirect-port" required="false">
+      <p>This attribute value is the ssl port used by the proxy (httpd/IIS/Iplanet).
+      The usual value is 443.</p>
+    </attribute>
 
   </attributes>
 

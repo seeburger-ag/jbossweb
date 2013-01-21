@@ -24,9 +24,11 @@ package org.apache.coyote.ajp;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
+import java.net.Socket;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
@@ -38,16 +40,14 @@ import org.apache.coyote.OutputBuffer;
 import org.apache.coyote.Request;
 import org.apache.coyote.RequestInfo;
 import org.apache.coyote.Response;
-import org.apache.tomcat.jni.Socket;
-import org.apache.tomcat.jni.Status;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.HttpMessages;
 import org.apache.tomcat.util.http.MimeHeaders;
-import org.apache.tomcat.util.net.AprEndpoint;
+import org.apache.tomcat.util.net.JIoEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
-import org.apache.tomcat.util.net.AprEndpoint.Handler.SocketState;
+import org.apache.tomcat.util.net.JIoEndpoint.Handler.SocketState;
 import org.apache.tomcat.util.res.StringManager;
 
 
@@ -62,14 +62,14 @@ import org.apache.tomcat.util.res.StringManager;
  * @author Costin Manolache
  * @author Bill Barker
  */
-public class AjpAprProcessor implements ActionHook {
+public class AjpProcessor implements ActionHook {
 
 
     /**
      * Logger.
      */
     protected static org.jboss.logging.Logger log
-        = org.jboss.logging.Logger.getLogger(AjpAprProcessor.class);
+        = org.jboss.logging.Logger.getLogger(AjpProcessor.class);
 
     /**
      * The string manager for this package.
@@ -81,7 +81,7 @@ public class AjpAprProcessor implements ActionHook {
     // ----------------------------------------------------------- Constructors
 
 
-    public AjpAprProcessor(int packetSize, AprEndpoint endpoint) {
+    public AjpProcessor(int packetSize, JIoEndpoint endpoint) {
 
         this.endpoint = endpoint;
 
@@ -97,21 +97,15 @@ public class AjpAprProcessor implements ActionHook {
         responseHeaderMessage = new AjpMessage(packetSize);
         bodyMessage = new AjpMessage(packetSize);
         
-        // Allocate input and output buffers
-        inputBuffer = ByteBuffer.allocateDirect(packetSize * 2);
-        inputBuffer.limit(0);
-        outputBuffer = ByteBuffer.allocateDirect(packetSize * 2);
-
         // Set the get body message buffer
         AjpMessage getBodyMessage = new AjpMessage(16);
         getBodyMessage.reset();
         getBodyMessage.appendByte(Constants.JK_AJP13_GET_BODY_CHUNK);
         getBodyMessage.appendInt(packetSize - Constants.READ_HEAD_LEN);
         getBodyMessage.end();
-        getBodyMessageBuffer =
-            ByteBuffer.allocateDirect(getBodyMessage.getLen());
-        getBodyMessageBuffer.put(getBodyMessage.getBuffer(), 0,
-                getBodyMessage.getLen());
+        getBodyMessageArray = new byte[getBodyMessage.getLen()];
+        System.arraycopy(getBodyMessage.getBuffer(), 0, getBodyMessageArray, 
+                0, getBodyMessage.getLen());
 
         // Cause loading of HexUtils
         int foo = HexUtils.DEC[0];
@@ -178,8 +172,20 @@ public class AjpAprProcessor implements ActionHook {
     /**
      * Socket associated with the current connection.
      */
-    protected long socket;
+    protected Socket socket;
 
+    
+    /**
+     * Input stream.
+     */
+    protected InputStream input;
+    
+    
+    /**
+     * Output stream.
+     */
+    protected OutputStream output;
+    
 
     /**
      * Host name (used to avoid useless B2C conversion on the host name).
@@ -190,7 +196,14 @@ public class AjpAprProcessor implements ActionHook {
     /**
      * Associated endpoint.
      */
-    protected AprEndpoint endpoint;
+    protected JIoEndpoint endpoint;
+
+
+    /**
+     * The socket timeout used when reading the first block of the request
+     * header.
+     */
+    protected long readTimeout;
 
 
     /**
@@ -236,27 +249,15 @@ public class AjpAprProcessor implements ActionHook {
 
 
     /**
-     * Direct buffer used for output.
-     */
-    protected ByteBuffer outputBuffer = null;
-
-
-    /**
-     * Direct buffer used for input.
-     */
-    protected ByteBuffer inputBuffer = null;
-
-
-    /**
      * Direct buffer used for sending right away a get body message.
      */
-    protected final ByteBuffer getBodyMessageBuffer;
+    protected final byte[] getBodyMessageArray;
 
 
     /**
      * Direct buffer used for sending right away a pong message.
      */
-    protected static final ByteBuffer pongMessageBuffer;
+    protected static final byte[] pongMessageArray;
 
 
     /**
@@ -265,9 +266,9 @@ public class AjpAprProcessor implements ActionHook {
     protected static final byte[] endMessageArray;
 
     /**
-     * Direct buffer used for sending explicit flush message.
+     * Flush message array.
      */
-    protected static final ByteBuffer flushMessageBuffer;
+    protected static final byte[] flushMessageArray;
 
 
     /**
@@ -275,14 +276,14 @@ public class AjpAprProcessor implements ActionHook {
      */
     protected boolean event = false;
     
-    
+
     /**
      * Event processing.
      */
     protected boolean eventProcessing = true;
     public void startProcessing() { eventProcessing = true; }
     public void endProcessing() { eventProcessing = false; }
-
+    
 
     // ----------------------------------------------------- Static Initializer
 
@@ -294,9 +295,9 @@ public class AjpAprProcessor implements ActionHook {
         pongMessage.reset();
         pongMessage.appendByte(Constants.JK_AJP13_CPONG_REPLY);
         pongMessage.end();
-        pongMessageBuffer = ByteBuffer.allocateDirect(pongMessage.getLen());
-        pongMessageBuffer.put(pongMessage.getBuffer(), 0,
-                pongMessage.getLen());
+        pongMessageArray = new byte[pongMessage.getLen()];
+        System.arraycopy(pongMessage.getBuffer(), 0, pongMessageArray, 
+                0, pongMessage.getLen());
 
         // Allocate the end message array
         AjpMessage endMessage = new AjpMessage(16);
@@ -308,16 +309,15 @@ public class AjpAprProcessor implements ActionHook {
         System.arraycopy(endMessage.getBuffer(), 0, endMessageArray, 0,
                 endMessage.getLen());
 
-        // Set the flush message buffer
+        // Allocate the flush message array
         AjpMessage flushMessage = new AjpMessage(16);
         flushMessage.reset();
         flushMessage.appendByte(Constants.JK_AJP13_SEND_BODY_CHUNK);
         flushMessage.appendInt(0);
         flushMessage.appendByte(0);
         flushMessage.end();
-        flushMessageBuffer =
-            ByteBuffer.allocateDirect(flushMessage.getLen());
-        flushMessageBuffer.put(flushMessage.getBuffer(), 0,
+        flushMessageArray = new byte[flushMessage.getLen()];
+        System.arraycopy(flushMessage.getBuffer(), 0, flushMessageArray, 0,
                 flushMessage.getLen());
 
     }
@@ -329,8 +329,7 @@ public class AjpAprProcessor implements ActionHook {
     /**
      * Use Tomcat authentication ?
      */
-    protected boolean tomcatAuthentication = 
-        Boolean.valueOf(System.getProperty("org.apache.coyote.ajp.AprProcessor.TOMCATAUTHENTICATION", "true")).booleanValue();
+    protected boolean tomcatAuthentication = true;
     public boolean getTomcatAuthentication() { return tomcatAuthentication; }
     public void setTomcatAuthentication(boolean tomcatAuthentication) { this.tomcatAuthentication = tomcatAuthentication; }
 
@@ -340,6 +339,16 @@ public class AjpAprProcessor implements ActionHook {
      */
     protected String requiredSecret = null;
     public void setRequiredSecret(String requiredSecret) { this.requiredSecret = requiredSecret; }
+
+
+    /**
+     * The number of milliseconds Tomcat will wait for a subsequent request
+     * before closing the connection. The default is the same as for
+     * Apache HTTP Server (15 000 milliseconds).
+     */
+    protected int keepAliveTimeout = -1;
+    public int getKeepAliveTimeout() { return keepAliveTimeout; }
+    public void setKeepAliveTimeout(int timeout) { keepAliveTimeout = timeout; }
 
 
     /**
@@ -413,42 +422,48 @@ public class AjpAprProcessor implements ActionHook {
      *
      * @throws IOException error during an I/O operation
      */
-    public SocketState process(long socket)
+    public SocketState process(Socket socket)
         throws IOException {
         RequestInfo rp = request.getRequestProcessor();
         rp.setStage(org.apache.coyote.Constants.STAGE_PARSE);
 
         // Setting up the socket
         this.socket = socket;
-        Socket.setrbb(this.socket, inputBuffer);
-        Socket.setsbb(this.socket, outputBuffer);
+        input = socket.getInputStream();
+        output = socket.getOutputStream();
+        int soTimeout = -1;
+        if (keepAliveTimeout > 0) {
+            soTimeout = socket.getSoTimeout();
+        }
 
         // Error flag
         error = false;
-
-        boolean openSocket = false;
-        boolean keptAlive = false;
 
         while (!error && !event) {
 
             // Parsing the request header
             try {
+                // Set keep alive timeout if enabled
+                if (keepAliveTimeout > 0) {
+                    socket.setSoTimeout(keepAliveTimeout);
+                }
                 // Get first message of the request
-                if (!readMessage(requestHeaderMessage, true, keptAlive)) {
-                    // This means that no data is available right now
-                    // (long keepalive), so that the processor should be recycled
-                    // and the method should return true
-                    openSocket = true;
-                    // Add the socket to the poller
-                    endpoint.getPoller().add(socket);
+                if (!readMessage(requestHeaderMessage)) {
+                    // This means a connection timeout
+                    rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
                     break;
+                }
+                // Set back timeout if keep alive timeout is enabled
+                if (keepAliveTimeout > 0) {
+                    socket.setSoTimeout(soTimeout);
                 }
                 // Check message type, process right away and break if
                 // not regular request processing
                 int type = requestHeaderMessage.getByte();
                 if (type == Constants.JK_AJP13_CPING_REQUEST) {
-                    if (Socket.sendb(socket, pongMessageBuffer, 0,
-                            pongMessageBuffer.position()) < 0) {
+                    try {
+                        output.write(pongMessageArray);
+                    } catch (IOException e) {
                         error = true;
                     }
                     continue;
@@ -461,7 +476,6 @@ public class AjpAprProcessor implements ActionHook {
                     break;
                 }
 
-                keptAlive = true;
                 request.setStartTime(System.currentTimeMillis());
             } catch (IOException e) {
                 error = true;
@@ -524,9 +538,11 @@ public class AjpAprProcessor implements ActionHook {
         }
 
         rp.setStage(org.apache.coyote.Constants.STAGE_ENDED);
-
+        
         if (event) {
             if (error) {
+                input = null;
+                output = null;
                 recycle();
                 return SocketState.CLOSED;
             } else {
@@ -534,8 +550,10 @@ public class AjpAprProcessor implements ActionHook {
                 return SocketState.LONG;
             }
         } else {
+            input = null;
+            output = null;
             recycle();
-            return (openSocket) ? SocketState.OPEN : SocketState.CLOSED;
+            return SocketState.CLOSED;
         }
     }
 
@@ -579,11 +597,6 @@ public class AjpAprProcessor implements ActionHook {
 
             try {
                 flush();
-                // Send explicit flush message
-                if (Socket.sendb(socket, flushMessageBuffer, 0,
-                                 flushMessageBuffer.position()) < 0) {
-                    error = true;                    
-                }
             } catch (IOException e) {
                 // Set error flag
                 error = true;
@@ -674,7 +687,7 @@ public class AjpAprProcessor implements ActionHook {
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
             if (!eventProcessing && !resumeNotification) {
-                endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
+                endpoint.getEventPoller().add(socket, timeout, true, true);
             }
             resumeNotification = true;
         } else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
@@ -1064,7 +1077,7 @@ public class AjpAprProcessor implements ActionHook {
 
         // Write to buffer
         responseHeaderMessage.end();
-        outputBuffer.put(responseHeaderMessage.getBuffer(), 0, responseHeaderMessage.getLen());
+        output.write(responseHeaderMessage.getBuffer(), 0, responseHeaderMessage.getLen());
 
     }
 
@@ -1091,11 +1104,8 @@ public class AjpAprProcessor implements ActionHook {
         finished = true;
 
         // Add the end message
-        if (outputBuffer.position() + endMessageArray.length > outputBuffer.capacity()) {
-            flush();
-        }
-        outputBuffer.put(endMessageArray);
-        flush();
+        output.write(endMessageArray);
+
 
         // read remaining data from the special first-body-chunk
         if (first && request.getContentLengthLong() > 0) {
@@ -1104,7 +1114,7 @@ public class AjpAprProcessor implements ActionHook {
             } catch (IOException e) {
             } 
         }
- 
+
     }
 
 
@@ -1112,64 +1122,20 @@ public class AjpAprProcessor implements ActionHook {
      * Read at least the specified amount of bytes, and place them
      * in the input buffer.
      */
-    protected boolean read(int n)
+    protected boolean read(byte[] buf, int pos, int n)
         throws IOException {
 
-        if (inputBuffer.capacity() - inputBuffer.limit() <=
-                n - inputBuffer.remaining()) {
-            inputBuffer.compact();
-            inputBuffer.limit(inputBuffer.position());
-            inputBuffer.position(0);
-        }
-        int nRead;
-        while (inputBuffer.remaining() < n) {
-            nRead = Socket.recvbb
-                (socket, inputBuffer.limit(),
-                        inputBuffer.capacity() - inputBuffer.limit());
-            if (nRead > 0) {
-                inputBuffer.limit(inputBuffer.limit() + nRead);
+        int read = 0;
+        int res = 0;
+        while (read < n) {
+            res = input.read(buf, read + pos, n - read);
+            if (res > 0) {
+                read += res;
             } else {
                 throw new IOException(sm.getString("ajpprotocol.failedread"));
             }
         }
-
-        return true;
-
-    }
-
-
-    /**
-     * Read at least the specified amount of bytes, and place them
-     * in the input buffer.
-     */
-    protected boolean readt(int n, boolean useAvailableData)
-        throws IOException {
-
-        if (useAvailableData && inputBuffer.remaining() == 0) {
-            return false;
-        }
-        if (inputBuffer.capacity() - inputBuffer.limit() <=
-                n - inputBuffer.remaining()) {
-            inputBuffer.compact();
-            inputBuffer.limit(inputBuffer.position());
-            inputBuffer.position(0);
-        }
-        int nRead;
-        while (inputBuffer.remaining() < n) {
-            nRead = Socket.recvbb
-                (socket, inputBuffer.limit(),
-                    inputBuffer.capacity() - inputBuffer.limit());
-            if (nRead > 0) {
-                inputBuffer.limit(inputBuffer.limit() + nRead);
-            } else {
-                if ((-nRead) == Status.ETIMEDOUT || (-nRead) == Status.TIMEUP) {
-                    return false;
-                } else {
-                    throw new IOException(sm.getString("ajpprotocol.failedread"));
-                }
-            }
-        }
-
+        
         return true;
 
     }
@@ -1183,7 +1149,7 @@ public class AjpAprProcessor implements ActionHook {
 
         first = false;
         bodyMessage.reset();
-        readMessage(bodyMessage, false, false);
+        readMessage(bodyMessage);
 
         // No data received.
         if (bodyMessage.getLen() == 0) {
@@ -1222,8 +1188,7 @@ public class AjpAprProcessor implements ActionHook {
         }
 
         // Request more data immediately
-        Socket.sendb(socket, getBodyMessageBuffer, 0,
-                getBodyMessageBuffer.position());
+        output.write(getBodyMessageArray);
 
         boolean moreData = receive();
         if( !moreData ) {
@@ -1236,32 +1201,21 @@ public class AjpAprProcessor implements ActionHook {
     /**
      * Read an AJP message.
      *
-     * @param first is true if the message is the first in the request, which
-     *        will cause a short duration blocking read
      * @return true if the message has been read, false if the short read
      *         didn't return anything
      * @throws IOException any other failure, including incomplete reads
      */
-    protected boolean readMessage(AjpMessage message, boolean first,
-            boolean useAvailableData)
+    protected boolean readMessage(AjpMessage message)
         throws IOException {
 
         byte[] buf = message.getBuffer();
-        int headerLength = message.getHeaderLength();
 
-        if (first) {
-            if (!readt(headerLength, useAvailableData)) {
-                return false;
-            }
-        } else {
-            read(headerLength);
-        }
-        inputBuffer.get(message.getBuffer(), 0, headerLength);
+        read(buf, 0, message.getHeaderLength());
+
         if (message.processHeader() < 0) {
             throw new IOException(sm.getString("ajpprotocol.badmessage"));
         }
-        read(message.getLen());
-        inputBuffer.get(message.getBuffer(), headerLength, message.getLen());
+        read(buf, message.getHeaderLength(), message.getLen());
 
         return true;
 
@@ -1286,10 +1240,6 @@ public class AjpAprProcessor implements ActionHook {
         response.recycle();
         certificates.recycle();
 
-        inputBuffer.clear();
-        inputBuffer.limit(0);
-        outputBuffer.clear();
-
     }
 
 
@@ -1298,12 +1248,8 @@ public class AjpAprProcessor implements ActionHook {
      */
     protected void flush()
         throws IOException {
-        if (outputBuffer.position() > 0) {
-            if (Socket.sendbb(socket, 0, outputBuffer.position()) < 0) {
-                throw new IOException(sm.getString("ajpprocessor.failedsend"));
-            }
-            outputBuffer.clear();
-        }
+        // Send the flush message
+        output.write(flushMessageArray);
     }
 
 
@@ -1384,17 +1330,12 @@ public class AjpAprProcessor implements ActionHook {
                     thisTime = chunkSize;
                 }
                 len -= thisTime;
-                if (outputBuffer.position() + thisTime +
-                    Constants.H_SIZE + 4 > outputBuffer.capacity()) {
-                    flush();
-                }
-                outputBuffer.put((byte) 0x41);
-                outputBuffer.put((byte) 0x42);
-                outputBuffer.putShort((short) (thisTime + 4));
-                outputBuffer.put(Constants.JK_AJP13_SEND_BODY_CHUNK);
-                outputBuffer.putShort((short) thisTime);
-                outputBuffer.put(chunk.getBytes(), chunk.getOffset() + off, thisTime);
-                outputBuffer.put((byte) 0x00);
+                responseHeaderMessage.reset();
+                responseHeaderMessage.appendByte(Constants.JK_AJP13_SEND_BODY_CHUNK);
+                responseHeaderMessage.appendBytes(chunk.getBytes(), chunk.getOffset() + off, thisTime);
+                responseHeaderMessage.end();
+                output.write(responseHeaderMessage.getBuffer(), 0, responseHeaderMessage.getLen());
+
                 off += thisTime;
             }
 
