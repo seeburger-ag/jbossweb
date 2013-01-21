@@ -1,4 +1,5 @@
 # junit stuff
+base.path=/home/aaron/Desktop/code/deps/JBossWeb7.0
 junit.version=4.10
 junit.jar.loc=http://kent.dl.sourceforge.net/sourceforge/junit/junit-${junit.version}.jar
 junit.jar=${base.path}/junit-${junit.version}/junit-${junit.version}.jar
