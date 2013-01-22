@@ -17,6 +17,16 @@
 <body>
 
 <section name="JBoss Web 7.2.0.Beta2 (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         <jira>260</jira>: Async dispatching after executing a runnable should be possible. (remm)
+      </fix>
+      <fix>
+         <jboss-jira>AS7-5802</jboss-jira>: Fix problem with duplicated filter instantiation when using a filter registration. (remm)
+      </fix>
+    </changelog>
+  </subsection>
   <subsection name="Jasper">
     <changelog>
       <fix>

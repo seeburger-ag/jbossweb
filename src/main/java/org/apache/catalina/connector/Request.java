@@ -3436,6 +3436,12 @@ public class Request
             return runnable;
         }
         
+        public Runnable runRunnable() {
+            Runnable result = runnable;
+            runnable = null;
+            return result;
+        }
+        
         public void reset() {
             servletContext = null;
             path = null;

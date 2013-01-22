@@ -544,7 +544,7 @@ final class StandardWrapperValve
             } else if (asyncContext.getRunnable() != null) {
                 // Execute the runnable
                 try {
-                    asyncContext.getRunnable().run();
+                    asyncContext.runRunnable().run();
                 } catch (Throwable e) {
                     container.getLogger().error(MESSAGES.asyncRunnableError(getContainer().getName()), e);
                     asyncContext.setError(e);
