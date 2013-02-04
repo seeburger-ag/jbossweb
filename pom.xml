@@ -45,7 +45,7 @@
         <version.org.jboss.spec.javax.el>1.0.1.Final</version.org.jboss.spec.javax.el>
         <version.org.jboss.spec.javax.servlet>1.0.1.Final</version.org.jboss.spec.javax.servlet>
         <version.org.jboss.spec.javax.servlet.jsp>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp>
-        <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
+        <version.org.eclipse.jdt.core.compiler.ecj>3.7.2</version.org.eclipse.jdt.core.compiler.ecj>
         <version.org.jboss.xnio>3.0.4.GA</version.org.jboss.xnio>
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
@@ -156,9 +156,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.web</groupId>
-            <artifactId>jasper-jdt</artifactId>
-            <version>${version.org.jboss.web.jasper-jdt}</version>
+            <groupId>org.eclipse.jdt.core.compiler</groupId>
+            <artifactId>ecj</artifactId>
+            <version>${version.org.eclipse.jdt.core.compiler.ecj}</version>
             <scope>provided</scope>
         </dependency>
 
