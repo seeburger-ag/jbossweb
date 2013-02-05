@@ -585,7 +585,7 @@ public class Connector
             }
         } else {
             if ("HTTP/1.1".equals(protocol) || "http".equals(protocol)) {
-                try {
+                /*try {
                     Class.forName("java.nio.channels.CompletionHandler");
                     setProtocolHandlerClassName
                         ("org.apache.coyote.http11.Http11NioProtocol");
@@ -594,7 +594,9 @@ public class Connector
                     setProtocolHandlerClassName
                         ("org.apache.coyote.http11.Http11Protocol");
                     CatalinaLogger.CONNECTOR_LOGGER.usingJavaIoConnector();
-                }
+                }*/
+                setProtocolHandlerClassName
+                    ("org.apache.coyote.http11.Http11Protocol");
             } else if ("AJP/1.3".equals(protocol) || "ajp".equals(protocol)) {
                 setProtocolHandlerClassName
                     ("org.apache.coyote.ajp.AjpProtocol");

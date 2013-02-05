@@ -16,6 +16,23 @@
 
 <body>
 
+<section name="JBoss Web 7.2.0.Final (remm)">
+  <subsection name="General">
+    <changelog>
+      <fix>
+         Switch to Eclipse JDT packaging for building. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         Remove connector selection logic based on the JDK version. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.2.0.Beta2 (remm)">
   <subsection name="Catalina">
     <changelog>
