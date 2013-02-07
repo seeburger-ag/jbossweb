@@ -17,8 +17,11 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.PrintWriter;
+
 /**
  * Implements the Server-side #include command
  * 
@@ -51,13 +54,11 @@ public final class SSIInclude implements SSICommand {
                             virtual);
                     writer.write(text);
                 } else {
-                    ssiMediator.log("#include--Invalid attribute: "
-                            + paramName);
+                    ssiMediator.log(MESSAGES.ssiInvalidAttribute("include", paramName));
                     writer.write(configErrMsg);
                 }
             } catch (IOException e) {
-                ssiMediator.log("#include--Couldn't include file: "
-                        + substitutedValue, e);
+                ssiMediator.log(MESSAGES.ssiIncludeFailed(substitutedValue), e);
                 writer.write(configErrMsg);
             }
         }

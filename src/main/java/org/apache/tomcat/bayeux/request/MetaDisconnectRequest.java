@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.bayeux.request;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -66,7 +68,7 @@ public class MetaDisconnectRequest extends RequestBase implements BayeuxRequest 
      */
     public HttpError validate() {
         if(clientId==null|| (!this.getTomcatBayeux().hasClient(clientId)))
-            return new HttpError(400,"Client Id not valid.", null);
+            return new HttpError(400, MESSAGES.invalidBayeuxClientId(), null);
 //        if (! (Bayeux.TRANSPORT_LONG_POLL.equals(conType) || Bayeux.TRANSPORT_CALLBACK_POLL.equals(conType)))
 //            return new HttpError(400,"Unsupported connection type.",null);
         return null;//no error
