@@ -426,6 +426,7 @@ public class RewriteValve extends ValveBase
                     urlString = urlString.substring(0, queryIndex);
                 }
                 // Set the new URL
+                request.getCoyoteRequest().requestURI().setString(null);
                 CharChunk chunk = request.getCoyoteRequest().requestURI().getCharChunk();
                 chunk.recycle();
                 if (context) {
@@ -435,6 +436,7 @@ public class RewriteValve extends ValveBase
                 request.getCoyoteRequest().requestURI().toChars();
                 // Set the new Query if there is one
                 if (queryString != null) {
+                    request.getCoyoteRequest().queryString().setString(null);
                     chunk = request.getCoyoteRequest().queryString().getCharChunk();
                     chunk.recycle();
                     chunk.append(queryString);
@@ -442,6 +444,7 @@ public class RewriteValve extends ValveBase
                 }
                 // Set the new host if it changed
                 if (!host.equals(request.getServerName())) {
+                    request.getCoyoteRequest().serverName().setString(null);
                     chunk = request.getCoyoteRequest().serverName().getCharChunk();
                     chunk.recycle();
                     chunk.append(host.toString());
