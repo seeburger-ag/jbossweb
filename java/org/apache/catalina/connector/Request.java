@@ -2543,8 +2543,7 @@ public class Request
                 if (context.getLogger().isDebugEnabled()) {
                     context.getLogger().debug("Post too large");
                 }
-                throw new IllegalArgumentException("MERDE");
-                // return;
+                return;
             }
             byte[] formData = null;
             if (len < CACHED_POST_LEN) {
