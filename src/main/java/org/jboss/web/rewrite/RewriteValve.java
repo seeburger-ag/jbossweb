@@ -429,6 +429,7 @@ public class RewriteValve extends ValveBase
                     urlString = urlString.substring(0, queryIndex);
                 }
                 // Set the new URL
+                request.getCoyoteRequest().requestURI().setString(null);
                 CharChunk chunk = request.getCoyoteRequest().requestURI().getCharChunk();
                 chunk.recycle();
                 if (context) {
