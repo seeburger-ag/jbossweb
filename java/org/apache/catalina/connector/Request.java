@@ -165,6 +165,10 @@ public class Request
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SEED_WITH_NEXT_BYTES", "true")).booleanValue();
 
 
+    protected static final boolean THROW_POST_TOO_LARGE = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.THROW_POST_TOO_LARGE", "false")).booleanValue();
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -2849,7 +2853,10 @@ public class Request
                     context.getLogger().debug(
                             sm.getString("coyoteRequest.postTooLarge"));
                 }
-                return;
+                if (THROW_POST_TOO_LARGE)
+                    throw new IllegalStateException("Post too large");
+                else
+                    return;
             }
             byte[] formData = null;
             if (len < CACHED_POST_LEN) {
