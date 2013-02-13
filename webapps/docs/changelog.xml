@@ -16,6 +16,16 @@
 
 <body>
 
+<section name="JBoss Web 7.2.1.Final (remm)">
+  <subsection name="Catalina">
+    <changelog>
+      <fix>
+         <jboss-jira>JBPAPP-9398</jboss-jira>: Allow to thrown an exception when a POST is too large. (jfclere).
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+
 <section name="JBoss Web 7.2.0.Final (remm)">
   <subsection name="General">
     <changelog>
