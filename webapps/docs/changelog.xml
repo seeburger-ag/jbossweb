@@ -15,14 +15,39 @@
   </properties>
 
 <body>
-<section name="JBoss Web 7.0.16.Final (remm)">
+<section name="JBoss Web 7.0.17.Final (remm)">
   <subsection name="Catalina">
     <changelog>
       <fix>
+         Change session id (if configured) before forwarding to login page. (kkolinko)
+      </fix>
+      <fix>
          <jboss-jira>AS7-5802</jboss-jira>: Fix problem with duplicated filter instantiation when using a filter registration. (remm)
+      </fix>
+      <fix>
+         <bug>52954</bug>: And various improvements to the DIGEST authenticator. (markt)
+      </fix>
+      <fix>
+         <bug>52776</bug>: Implement support for a default error page. (markt)
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         Fix java.io handshake with Java 7. (markt)
+      </fix>
+         Tweak unlock accept with a timeout. (remm)
+      <fix>
+         Add system property to configure timeouts. (remm)
+      </fix>
+      <fix>
+         Add system property to configuration AJP authentication. (remm)
+      </fix>
+    </changelog>
+  </subsection>
+</section>
+<section name="JBoss Web 7.0.16.Final (remm)">
   <subsection name="Coyote">
     <changelog>
       <fix>
