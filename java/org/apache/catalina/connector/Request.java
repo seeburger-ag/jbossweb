@@ -85,6 +85,8 @@ public class Request
 
     protected static final boolean SESSION_ID_CHECK = 
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.SESSION_ID_CHECK", "false")).booleanValue();
+    protected static final boolean THROW_POST_TOO_LARGE = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.connector.Request.THROW_POST_TOO_LARGE", "false")).booleanValue();
 
 
     // ----------------------------------------------------------- Constructors
@@ -2543,7 +2545,10 @@ public class Request
                 if (context.getLogger().isDebugEnabled()) {
                     context.getLogger().debug("Post too large");
                 }
-                return;
+                if (THROW_POST_TOO_LARGE)
+                    throw new IllegalStateException("Post too large");
+                else
+                    return;
             }
             byte[] formData = null;
             if (len < CACHED_POST_LEN) {
