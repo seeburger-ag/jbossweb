@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -568,10 +569,10 @@ class TagFileProcessor {
 
         URL tagFileJarUrl = null;
         if (tagFilePath.startsWith("/META-INF/")) {
-            try {
-                String[] location = compiler.getCompilationContext().getTldLocation(tagInfo.getTagLibrary().getURI());
-                URL jarUrl = compiler.getCompilationContext().getServletContext().getResource(location[0]);
-                tagFileJarUrl = new URL("jar:" + jarUrl + "!/");
+            try { 
+                tagFileJarUrl = new URL("jar:" +
+                        compiler.getCompilationContext().getTldLocation(
+                        tagInfo.getTagLibrary().getURI())[0] + "!/");
             } catch (MalformedURLException e) {
                 // Ignore ...
             }
@@ -595,7 +596,8 @@ class TagFileProcessor {
                 rctxt.addWrapper(tagFileJarPath + tagFilePath, wrapper);
 
                 // Use same classloader and classpath for compiling tag files
-                wrapper.getJspEngineContext().setClassLoader(ctxt.getClassLoader());
+                wrapper.getJspEngineContext().setClassLoader(
+                        (URLClassLoader) ctxt.getClassLoader());
                 wrapper.getJspEngineContext().setClassPath(ctxt.getClassPath());
             } else {
                 // Make sure that JspCompilationContext gets the latest TagInfo
@@ -618,9 +620,6 @@ class TagFileProcessor {
                             .getServletContext(), ctxt.getOptions(),
                             tagFilePath, tagInfo, ctxt.getRuntimeContext(),
                             ctxt.getTagFileJarUrl(tagFilePath));
-                    // Use same classloader and classpath for compiling tag files
-                    tempWrapper.getJspEngineContext().setClassLoader(ctxt.getClassLoader());
-                    tempWrapper.getJspEngineContext().setClassPath(ctxt.getClassPath());
                     tagClazz = tempWrapper.loadTagFilePrototype();
                     tempVector.add(tempWrapper.getJspEngineContext()
                             .getCompiler());
