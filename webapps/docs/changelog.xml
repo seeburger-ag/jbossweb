@@ -24,6 +24,13 @@
       </fix>
     </changelog>
   </subsection>
+  <subsection name="Coyote">
+    <changelog>
+      <fix>
+         <jira>266</jira>: Add an option to preserve the cookie header during processing. (remm)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 7.2.0.Final (remm)">
