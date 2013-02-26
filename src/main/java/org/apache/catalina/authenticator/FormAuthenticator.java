@@ -33,6 +33,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.Manager;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
@@ -42,7 +43,7 @@ import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.http.MimeHeaders;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -57,8 +58,6 @@ import org.jboss.logging.Logger;
 public class FormAuthenticator
     extends AuthenticatorBase {
     
-    private static Logger log = Logger.getLogger(FormAuthenticator.class);
-
     // ----------------------------------------------------- Instance Variables
 
 
@@ -156,8 +155,8 @@ public class FormAuthenticator
         Principal principal = request.getUserPrincipal();
         String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
         if (principal != null) {
-            if (log.isDebugEnabled())
-                log.debug("Already authenticated '" +
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug("Already authenticated '" +
                     principal.getName() + "'");
             // Associate the session with any existing SSO session
             if (ssoId != null)
@@ -167,8 +166,8 @@ public class FormAuthenticator
 
         // Is there an SSO session against which we can try to reauthenticate?
         if (ssoId != null) {
-            if (log.isDebugEnabled())
-                log.debug("SSO Id " + ssoId + " set; attempting " +
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug("SSO Id " + ssoId + " set; attempting " +
                           "reauthentication");
             // Try to reauthenticate using data cached by SSO.  If this fails,
             // either the original SSO logon was of DIGEST or SSL (which
@@ -183,15 +182,15 @@ public class FormAuthenticator
         // Have we authenticated this user before but have caching disabled?
         if (!cache) {
             session = request.getSessionInternal(true);
-            if (log.isDebugEnabled())
-                log.debug("Checking for reauthenticate in session " + session);
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug("Checking for reauthenticate in session " + session);
             String username =
                 (String) session.getNote(Constants.SESS_USERNAME_NOTE);
             String password =
                 (String) session.getNote(Constants.SESS_PASSWORD_NOTE);
             if ((username != null) && (password != null)) {
-                if (log.isDebugEnabled())
-                    log.debug("Reauthenticating username '" + username + "'");
+                if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                    CatalinaLogger.AUTH_LOGGER.debug("Reauthenticating username '" + username + "'");
                 principal =
                     context.getRealm().authenticate(username, password);
                 if (principal != null) {
@@ -203,8 +202,8 @@ public class FormAuthenticator
                         return (true);
                     }
                 }
-                if (log.isDebugEnabled())
-                    log.debug("Reauthentication failed, proceed normally");
+                if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                    CatalinaLogger.AUTH_LOGGER.debug("Reauthentication failed, proceed normally");
             }
         }
 
@@ -212,8 +211,8 @@ public class FormAuthenticator
         // authentication?  If so, forward the *original* request instead.
         if (matchRequest(request)) {
             session = request.getSessionInternal(true);
-            if (log.isDebugEnabled())
-                log.debug("Restore request from session '"
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug("Restore request from session '"
                           + session.getIdInternal() 
                           + "'");
             principal = (Principal)
@@ -228,12 +227,12 @@ public class FormAuthenticator
                 session.removeNote(Constants.SESS_PASSWORD_NOTE);
             }
             if (restoreRequest(request, session)) {
-                if (log.isDebugEnabled())
-                    log.debug("Proceed to restored request");
+                if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                    CatalinaLogger.AUTH_LOGGER.debug("Proceed to restored request");
                 return (true);
             } else {
-                if (log.isDebugEnabled())
-                    log.debug("Restore of original request failed");
+                if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                    CatalinaLogger.AUTH_LOGGER.debug("Restore of original request failed");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return (false);
             }
@@ -254,12 +253,12 @@ public class FormAuthenticator
         // No -- Save this request and redirect to the form login page
         if (!loginAction) {
             session = request.getSessionInternal(true);
-            if (log.isDebugEnabled())
-                log.debug("Save request in session '" + session.getIdInternal() + "'");
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug("Save request in session '" + session.getIdInternal() + "'");
             try {
                 saveRequest(request, session);
             } catch (IOException ioe) {
-                log.debug("Request body too big to save during authentication");
+                CatalinaLogger.AUTH_LOGGER.debug("Request body too big to save during authentication");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, MESSAGES.requestBodyTooLarge());
                 return (false);
             }
@@ -276,16 +275,16 @@ public class FormAuthenticator
         }
         String username = request.getParameter(Constants.FORM_USERNAME);
         String password = request.getParameter(Constants.FORM_PASSWORD);
-        if (log.isDebugEnabled())
-            log.debug("Authenticating username '" + username + "'");
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+            CatalinaLogger.AUTH_LOGGER.debug("Authenticating username '" + username + "'");
         principal = realm.authenticate(username, password);
         if (principal == null) {
             forwardToErrorPage(request, response, config);
             return (false);
         }
 
-        if (log.isDebugEnabled())
-            log.debug("Authentication of '" + username + "' was successful");
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+            CatalinaLogger.AUTH_LOGGER.debug("Authentication of '" + username + "' was successful");
 
         if (session == null)
             session = request.getSessionInternal(false);
@@ -320,8 +319,8 @@ public class FormAuthenticator
         // Redirect the user to the original request URI (which will cause
         // the original request to be restored)
         requestURI = savedRequestURL(session);
-        if (log.isDebugEnabled())
-            log.debug("Redirecting to original '" + requestURI + "'");
+        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+            CatalinaLogger.AUTH_LOGGER.debug("Redirecting to original '" + requestURI + "'");
         if (requestURI == null)
             if (landingPage == null) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,
@@ -359,13 +358,21 @@ public class FormAuthenticator
      */
     protected void forwardToLoginPage(Request request, HttpServletResponse response, LoginConfig config)
         throws IOException {
+        if (changeSessionIdOnAuthentication) {
+            Session session = request.getSessionInternal(false);
+            if (session != null) {
+                Manager manager = request.getContext().getManager();
+                manager.changeSessionId(session, request.getRandom());
+                request.changeSessionId(session.getId());
+            }
+        }
         RequestDispatcher disp =
             context.getServletContext().getRequestDispatcher(config.getLoginPage());
         try {
             disp.forward(request.getRequest(), response);
         } catch (Throwable t) {
             String msg = MESSAGES.errorForwardingToFormLogin();
-            log.warn(msg, t);
+            CatalinaLogger.AUTH_LOGGER.warn(msg, t);
             request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     msg);
@@ -392,7 +399,7 @@ public class FormAuthenticator
             disp.forward(request.getRequest(), response);
         } catch (Throwable t) {
             String msg = MESSAGES.errorForwardingToFormError();
-            log.warn(msg, t);
+            CatalinaLogger.AUTH_LOGGER.warn(msg, t);
             request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     msg);

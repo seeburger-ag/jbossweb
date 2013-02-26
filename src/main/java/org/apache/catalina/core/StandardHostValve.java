@@ -370,8 +370,10 @@ final class StandardHostValve
             if (custom(request, response, errorPage)) {
                 try {
                     response.flushBuffer();
+                } catch (ClientAbortException e) {
+                    // Ignore
                 } catch (IOException e) {
-                    container.getLogger().warn("Exception Processing " + errorPage, e);
+                    container.getLogger().warn(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), e);
                 }
             }
         } else {
@@ -417,6 +419,10 @@ final class StandardHostValve
             return;
 
         ErrorPage errorPage = context.findErrorPage(statusCode);
+        if (errorPage == null) {
+            // Look for a default error page
+            errorPage = context.findErrorPage(0);
+        }
         if (errorPage != null) {
             response.setAppCommitted(false);
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
@@ -445,7 +451,7 @@ final class StandardHostValve
                 } catch (ClientAbortException e) {
                     // Ignore
                 } catch (IOException e) {
-                    container.getLogger().warn("Exception Processing " + errorPage, e);
+                    container.getLogger().warn(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), e);
                 }
             }
         }
@@ -507,6 +513,7 @@ final class StandardHostValve
 
             // Reset the response (keeping the real error code and message)
             response.resetBuffer(true);
+            response.setContentLength(-1);
 
             // Forward control to the specified location
             ServletContext servletContext =
@@ -524,7 +531,7 @@ final class StandardHostValve
         } catch (Throwable t) {
 
             // Report our failure to process this custom page
-            container.getLogger().error("Exception Processing " + errorPage, t);
+            container.getLogger().error(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), t);
             return (false);
 
         }
