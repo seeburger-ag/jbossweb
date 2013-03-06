@@ -33,23 +33,22 @@
 
     <groupId>org.jboss.web</groupId>
     <artifactId>jbossweb</artifactId>
-    <version>7.2.0.Final</version>
+    <version>8.0.0.Final</version>
 
     <name>JBoss Web</name>
-    <description>Servlet 3.0 container</description>
+    <description>Servlet 3.1 container</description>
 
     <properties>
         <version.org.jboss.logging.jboss-logging>3.1.1.GA</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-processor>1.0.3.Final</version.org.jboss.logging.jboss-logging-processor>
         <version.org.jboss.logmanager>1.3.1.Final</version.org.jboss.logmanager>
         <version.org.jboss.spec.javax.el>1.0.1.Final</version.org.jboss.spec.javax.el>
-        <version.org.jboss.spec.javax.servlet>1.0.1.Final</version.org.jboss.spec.javax.servlet>
+        <version.org.jboss.spec.javax.servlet>1.0.0.Alpha1</version.org.jboss.spec.javax.servlet>
         <version.org.jboss.spec.javax.servlet.jsp>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp>
-        <version.org.eclipse.jdt.core.compiler.ecj>3.7.2</version.org.eclipse.jdt.core.compiler.ecj>
-        <version.org.jboss.xnio>3.0.4.GA</version.org.jboss.xnio>
+        <version.org.eclipse.jdt.core.compiler.ecj>4.2.1</version.org.eclipse.jdt.core.compiler.ecj>
         <!-- Build configuration -->
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
 
     <build>
@@ -102,19 +101,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-api</artifactId>
-            <version>${version.org.jboss.xnio}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-nio</artifactId>
-            <version>${version.org.jboss.xnio}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
             <version>${version.org.jboss.logging.jboss-logging}</version>
@@ -136,7 +122,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
-            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+            <artifactId>jboss-servlet-api_3.1_spec</artifactId>
             <version>${version.org.jboss.spec.javax.servlet}</version>
             <scope>provided</scope>
         </dependency>

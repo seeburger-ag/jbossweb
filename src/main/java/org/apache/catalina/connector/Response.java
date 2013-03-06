@@ -1781,5 +1781,21 @@ public class Response
 
     }
 
+    @Override
+    public void setContentLengthLong(long length) {
+        if (isCommitted())
+            return;
+
+        // Ignore any call from an included servlet
+        if (included)
+            return;
+        
+        if (usingWriter)
+            return;
+        
+        coyoteResponse.setContentLength(length);
+
+    }
+
 }
 

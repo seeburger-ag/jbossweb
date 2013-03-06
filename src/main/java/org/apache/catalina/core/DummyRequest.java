@@ -45,6 +45,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
 import org.apache.catalina.Context;
@@ -293,6 +294,10 @@ public class DummyRequest
     public long getAsyncTimeout() { return 0; }
     public Part getPart(String name) throws IllegalArgumentException { return null; }
     public Collection<Part> getParts() { return null; }
+
+    public long getContentLengthLong() { return -1; }
+    public String changeSessionId() { return null; }
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> upgradeHandler) throws IOException { return null; }
     
 }
 

@@ -19,6 +19,7 @@ package org.apache.catalina.ssi;
 
 import java.io.ByteArrayOutputStream;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 
 
 /**
@@ -59,5 +60,14 @@ public class ByteArrayServletOutputStream extends ServletOutputStream {
      */
     public void write(int b) {
         buf.write(b);
+    }
+
+
+    public boolean isReady() {
+        return true;
+    }
+
+
+    public void setWriteListener(WriteListener listener) {
     }
 }

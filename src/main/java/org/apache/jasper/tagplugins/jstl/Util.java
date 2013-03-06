@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -260,6 +261,11 @@ public class Util {
             public void write(int b) throws IOException {
                 bos.write(b);
             }
+            public boolean isReady() {
+                return true;
+            }
+            public void setWriteListener(WriteListener listener) {
+            }
         };
         private boolean isWriterUsed;
         private boolean isStreamUsed;
@@ -268,7 +274,6 @@ public class Util {
         
         public ImportResponseWrapper(HttpServletResponse arg0) {
             super(arg0);
-            // TODO Auto-generated constructor stub
         }
         
         public PrintWriter getWriter() {

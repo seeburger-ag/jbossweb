@@ -62,6 +62,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
 import org.apache.catalina.Container;
@@ -3292,6 +3293,30 @@ public class Request
 
     public boolean hasSendfile() {
         return coyoteRequest.hasSendfile();
+    }
+
+
+    public long getContentLengthLong() {
+        return (coyoteRequest.getContentLengthLong());
+    }
+
+    public String changeSessionId() {
+        Session session = getSessionInternal(false);
+        if (session == null) {
+            throw MESSAGES.nullSession();
+        }
+        Manager manager = context.getManager();
+        manager.changeSessionId(session, getRandom());
+        String sessionId = session.getId();
+        changeSessionId(sessionId);
+        return sessionId;
+    }
+
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> arg0)
+            throws IOException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 

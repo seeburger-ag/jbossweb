@@ -972,4 +972,7 @@ public interface CatalinaMessages {
     @Message(id = 359, value = "Exception releasing filter %s")
     String errorStoppingFilter(String filterName);
 
+    @Message(id = 360, value = "No session")
+    IllegalStateException nullSession();
+
 }
