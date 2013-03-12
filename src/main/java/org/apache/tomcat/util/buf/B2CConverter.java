@@ -52,7 +52,7 @@ public class B2CConverter {
         } catch (UnsupportedCharsetException e) {
             throw new UnsupportedEncodingException(charset);
         }
-        byte[] left = new byte[4];
+        byte[] left = new byte[9];
         leftovers = ByteBuffer.wrap(left);
     }
 
