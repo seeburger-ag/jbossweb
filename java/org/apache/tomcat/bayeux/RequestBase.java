@@ -29,6 +29,7 @@ import java.util.TimeZone;
 
 import javax.servlet.ServletException;
 
+import org.apache.catalina.util.RequestUtil;
 import org.apache.cometd.bayeux.Bayeux;
 import org.apache.cometd.bayeux.Message;
 import org.apache.tomcat.util.json.JSONArray;
@@ -179,7 +180,7 @@ public abstract class RequestBase implements BayeuxRequest {
             String jsonp = event.getHttpServletRequest().getParameter(Bayeux.JSONP_PARAMETER);
             if (jsonp == null)
                 jsonp = Bayeux.JSONP_DEFAULT_NAME;
-            out.print(jsonp);
+            out.print(RequestUtil.filter(jsonp));
             out.print('(');
         } else {
             throw new BayeuxException("Client doesn't support any appropriate connection type.");
