@@ -20,12 +20,15 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.WebConnection;
 
 import org.jboss.servlet.http.HttpEvent;
 
-public class HttpEventImpl implements HttpEvent {
+public class HttpEventImpl implements HttpEvent, WebConnection {
 
     public HttpEventImpl(Request request, Response response) {
         this.request = request;
@@ -83,6 +86,14 @@ public class HttpEventImpl implements HttpEvent {
 
     public HttpServletResponse getHttpServletResponse() {
         return response.getResponse();
+    }
+
+    public ServletInputStream getInputStream() throws IOException {
+        return request.getInputStream();
+    }
+
+    public ServletOutputStream getOutputStream() throws IOException {
+        return response.getOutputStream();
     }
 
     public void setTimeout(int timeout) {

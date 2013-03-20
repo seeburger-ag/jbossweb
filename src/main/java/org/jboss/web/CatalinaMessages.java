@@ -141,9 +141,6 @@ public interface CatalinaMessages {
     @Message(id = 34, value = "Cannot upgrade from HTTP/1.1 without IO events")
     IllegalStateException cannotUpgradeWithoutEvents();
 
-    @Message(id = 35, value = "Cannot upgrade from HTTP/1.1 is not using an HttpEventServlet")
-    IllegalStateException cannotUpgradeWithoutEventServlet();
-
     @Message(id = 36, value = "Cannot call sendFile() after the response has been committed")
     IllegalStateException cannotSendFile();
 
@@ -974,5 +971,20 @@ public interface CatalinaMessages {
 
     @Message(id = 360, value = "No session")
     IllegalStateException nullSession();
+
+    @Message(id = 361, value = "Read listener already set")
+    IllegalStateException readListenerAlreadySet();
+
+    @Message(id = 362, value = "Write listener already set")
+    IllegalStateException writeListenerAlreadySet();
+
+    @Message(id = 363, value = "Upgrade error")
+    String upgradeError();
+
+    @Message(id = 364, value = "Upgrade destroy processing for servlet %s threw exception")
+    String upgradeHandlerDestroyError(String servletName);
+
+    @Message(id = 365, value = "IO listener processing for servlet %s threw exception")
+    String ioListenerError(String servletName);
 
 }

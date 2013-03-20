@@ -49,6 +49,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.DispatcherType;
+import javax.servlet.ReadListener;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -94,9 +95,9 @@ import org.apache.tomcat.util.http.FastHttpDateFormat;
 import org.apache.tomcat.util.http.Parameters;
 import org.apache.tomcat.util.http.ServerCookie;
 import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.apache.tomcat.util.http.fileupload.FileUploadBase.FileSizeLimitExceededException;
 import org.apache.tomcat.util.http.fileupload.FileUploadBase.SizeLimitExceededException;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.apache.tomcat.util.http.mapper.MappingData;
@@ -488,6 +489,12 @@ public class Request
     protected LinkedList<AsyncListener> asyncListenerInstances = new LinkedList<AsyncListener>();
     
 
+    /**
+     * Upgrade handler.
+     */
+    protected HttpUpgradeHandler upgradeHandler = null;
+
+    
     // --------------------------------------------------------- Public Methods
 
 
@@ -519,6 +526,7 @@ public class Request
             event.clear();
             event = null;
         }
+        upgradeHandler = null;
         
         sslAttributes = false;
         asyncContext = null;
@@ -3312,13 +3320,33 @@ public class Request
         return sessionId;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <T extends HttpUpgradeHandler> T upgrade(Class<T> arg0)
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> upgradeHandlerClass)
             throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+        T ugradeHandler = null;
+        Throwable upgradeError = null;
+        try {
+            ugradeHandler = (T) context.getInstanceManager().newInstance(upgradeHandlerClass);
+        } catch (Throwable t) {
+            upgradeError = t;
+        }
+        if (ugradeHandler == null) {
+            throw new IOException(MESSAGES.upgradeError(), upgradeError);
+        }
+        response.sendUpgrade();
+        ugradeHandler.init(getEvent());
+        this.upgradeHandler = ugradeHandler;
+        return ugradeHandler;
     }
 
+    public HttpUpgradeHandler getUpgradeHandler() {
+        return upgradeHandler;
+    }
+
+    public ReadListener getReadListener() {
+        return inputBuffer.getReadListener();
+    }
 
     public String toString() {
         StringBuilder buf = new StringBuilder();

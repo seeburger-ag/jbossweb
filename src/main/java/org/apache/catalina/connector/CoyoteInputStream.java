@@ -243,8 +243,8 @@ public class CoyoteInputStream
 
 
     @Override
-    public void setReadListener(ReadListener arg0) {
-        // TODO Auto-generated method stub
+    public void setReadListener(ReadListener readListener) {
+        ib.setReadListener(readListener);
     }
 
 }

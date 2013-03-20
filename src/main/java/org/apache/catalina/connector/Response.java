@@ -40,6 +40,7 @@ import java.util.Vector;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.SessionTrackingMode;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
@@ -1339,9 +1340,6 @@ public class Response
         if (!connector.hasIoEvents())
             throw MESSAGES.cannotUpgradeWithoutEvents();
 
-        if (!request.isEventMode() || request.getAsyncContext() != null)
-            throw MESSAGES.cannotUpgradeWithoutEventServlet();
-
         // Ignore any call from an included servlet
         if (included)
             return; 
@@ -1359,9 +1357,6 @@ public class Response
 
         if (!connector.hasIoEvents())
             throw MESSAGES.cannotUpgradeWithoutEvents();
-
-        if (!request.isEventMode() || request.getAsyncContext() != null)
-            throw MESSAGES.cannotUpgradeWithoutEventServlet();
 
         // Ignore any call from an included servlet
         if (included)
@@ -1797,5 +1792,8 @@ public class Response
 
     }
 
-}
+    public WriteListener getWriteListener() {
+        return outputBuffer.getWriteListener();
+    }
 
+}

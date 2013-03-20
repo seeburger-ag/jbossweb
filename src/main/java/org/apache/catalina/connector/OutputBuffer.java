@@ -18,6 +18,8 @@
 package org.apache.catalina.connector;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.security.AccessController;
@@ -25,6 +27,8 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Locale;
+
+import javax.servlet.WriteListener;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Response;
@@ -148,6 +152,12 @@ public class OutputBuffer extends Writer
     private boolean suspended = false;
 
 
+    /**
+     * Write listener.
+     */
+    private WriteListener writeListener = null;
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -257,6 +267,7 @@ public class OutputBuffer extends Writer
         
         gotEnc = false;
         enc = null;
+        writeListener = null;
         
     }
 
@@ -662,5 +673,16 @@ public class OutputBuffer extends Writer
         return bb.getLimit();
     }
 
+    public WriteListener getWriteListener() {
+        return writeListener;
+    }
+
+    public void setWriteListener(WriteListener writeListener) {
+        if (this.writeListener != null) {
+            throw MESSAGES.writeListenerAlreadySet();
+        }
+        this.writeListener = writeListener;
+        coyoteResponse.action(ActionCode.ACTION_EVENT_WRITE_BEGIN, null);
+    }
 
 }

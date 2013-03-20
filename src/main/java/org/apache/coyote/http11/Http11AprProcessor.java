@@ -1288,6 +1288,17 @@ public class Http11AprProcessor implements ActionHook {
             writeNotification = true;
         } else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
             timeout = ((Integer) param).intValue();
+        } else if (actionCode == ActionCode.ACTION_EVENT_READ_BEGIN) {
+            Socket.timeoutSet(socket, 0);
+            inputBuffer.setNonBlocking(true);
+            readNotifications = true;
+        } else if (actionCode == ActionCode.ACTION_EVENT_WRITE_BEGIN) {
+            Socket.timeoutSet(socket, 0);
+            outputBuffer.setNonBlocking(true);
+            if (!eventProcessing && !writeNotification) {
+                endpoint.getEventPoller().add(socket, timeout, false, true, false, true);
+            }
+            writeNotification = true;
         } else if (actionCode == ActionCode.UPGRADE) {
             // Switch to raw bytes mode
             inputBuffer.removeActiveFilters();

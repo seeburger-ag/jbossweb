@@ -112,9 +112,8 @@ public class CoyoteOutputStream
 
 
     @Override
-    public void setWriteListener(WriteListener arg0) {
-        // TODO Auto-generated method stub
-        
+    public void setWriteListener(WriteListener writeListener) {
+        ob.setWriteListener(writeListener);
     }
 
 
