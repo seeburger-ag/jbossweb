@@ -1230,7 +1230,11 @@ public class ApplicationContext
             context.addSecurityRole(role);
         }
     }
-    
+
+    public String getVirtualServerName() {
+        return ((Host) context.getParent()).getName();
+    }
+
     // -------------------------------------------------------- Package Methods
     
     protected void checkListenerType(EventListener listener) {
