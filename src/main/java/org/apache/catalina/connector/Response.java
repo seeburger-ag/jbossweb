@@ -126,9 +126,9 @@ public class Response
         this.connector = connector;
         if("AJP/1.3".equals(connector.getProtocol())) {
             // default size to size of one ajp-packet
-            outputBuffer = new OutputBuffer(8184);
+            outputBuffer = new OutputBuffer(this, 8184);
         } else {
-            outputBuffer = new OutputBuffer();
+            outputBuffer = new OutputBuffer(this);
         }
         outputStream = new CoyoteOutputStream(outputBuffer);
         writer = new CoyoteWriter(outputBuffer);

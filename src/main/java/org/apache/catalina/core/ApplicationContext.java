@@ -1232,6 +1232,9 @@ public class ApplicationContext
     }
 
     public String getVirtualServerName() {
+        if (restricted) {
+            throw MESSAGES.restrictedListenerCannotCallMethod();
+        }
         return ((Host) context.getParent()).getName();
     }
 

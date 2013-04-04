@@ -3343,6 +3343,7 @@ public class Request
             throw new IOException(MESSAGES.upgradeError(), upgradeError);
         }
         response.sendUpgrade();
+        eventMode = true;
         ugradeHandler.init(getEvent());
         this.upgradeHandler = ugradeHandler;
         return ugradeHandler;

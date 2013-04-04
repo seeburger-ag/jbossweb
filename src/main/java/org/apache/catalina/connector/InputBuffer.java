@@ -592,6 +592,12 @@ public class InputBuffer extends Reader
         if (this.readListener != null) {
             throw MESSAGES.readListenerAlreadySet();
         }
+        if (readListener == null) {
+            throw MESSAGES.nullListener();
+        }
+        if (!request.isEventMode()) {
+            throw MESSAGES.cannotSetListenerWithoutUpgradeOrAsync();
+        }
         this.readListener = readListener;
         coyoteRequest.action(ActionCode.ACTION_EVENT_READ_BEGIN, null);
     }
