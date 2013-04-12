@@ -22,14 +22,13 @@ package org.apache.catalina.core;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
@@ -42,7 +41,6 @@ import org.apache.catalina.Cluster;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
-import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
@@ -58,6 +56,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -122,22 +121,10 @@ import org.jboss.logging.Logger;
  */
 
 public abstract class ContainerBase
-    implements Container, Lifecycle, Pipeline, MBeanRegistration {
+    implements Container, Lifecycle, Pipeline, MBeanRegistration, Serializable {
 
     private static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger( ContainerBase.class );
-
-    /**
-     * Container array type.
-     */
-    protected static final Container[] CONTAINER_ARRAY = new Container[0];
-    
-
-    /**
-     * Listener array type.
-     */
-    protected static final ContainerListener[] LISTENER_ARRAY = new ContainerListener[0];
-    
 
     /**
      * Perform addChild with the permissions of this class.
@@ -168,9 +155,9 @@ public abstract class ContainerBase
     /**
      * The child Containers belonging to this Container, keyed by name.
      */
-    protected Map<String, Container> children = new ConcurrentHashMap<String, Container>();
+    protected HashMap children = new HashMap();
 
-    
+
     /**
      * The processor delay for this component.
      */
@@ -186,7 +173,7 @@ public abstract class ContainerBase
     /**
      * The container event listeners for this Container.
      */
-    protected List<ContainerListener> listeners = new CopyOnWriteArrayList<ContainerListener>();
+    protected ArrayList listeners = new ArrayList();
 
 
     /**
@@ -794,35 +781,37 @@ public abstract class ContainerBase
         }
     }
 
-    private synchronized void addChildInternal(Container child) {
+    private void addChildInternal(Container child) {
 
         if( log.isDebugEnabled() )
             log.debug("Add child " + child + " " + this);
+        synchronized(children) {
+            if (children.get(child.getName()) != null)
+                throw new IllegalArgumentException("addChild:  Child name '" +
+                                                   child.getName() +
+                                                   "' is not unique");
+            child.setParent(this);  // May throw IAE
+            children.put(child.getName(), child);
 
-        if (child.getName() == null)
-            throw new IllegalArgumentException(sm.getString("containerBase.addChild.nullName"));
-        if (children.get(child.getName()) != null)
-            throw new IllegalArgumentException(sm.getString("containerBase.addChild.notUnique", child.getName()));
-
-        child.setParent(this);  // May throw IAE
-        children.put(child.getName(), child);
-
-        // Start child
-        if (started && startChildren && (child instanceof Lifecycle)) {
-            boolean success = false;
-            try {
-                ((Lifecycle) child).start();
-                success = true;
-            } catch (LifecycleException e) {
-                throw new IllegalStateException(sm.getString("containerBase.addChild.start", child.getName()), e);
-            } finally {
-                if (!success) {
-                    children.remove(child.getName());
+            // Start child
+            if (started && startChildren && (child instanceof Lifecycle)) {
+                boolean success = false;
+                try {
+                    ((Lifecycle) child).start();
+                    success = true;
+                } catch (LifecycleException e) {
+                    log.error("ContainerBase.addChild: start: ", e);
+                    throw new IllegalStateException
+                        ("ContainerBase.addChild: start: " + e);
+                } finally {
+                    if (!success) {
+                        children.remove(child.getName());
+                    }
                 }
             }
-        }
 
-        fireContainerEvent(ADD_CHILD_EVENT, child);
+            fireContainerEvent(ADD_CHILD_EVENT, child);
+        }
 
     }
 
@@ -834,7 +823,9 @@ public abstract class ContainerBase
      */
     public void addContainerListener(ContainerListener listener) {
 
-        listeners.add(listener);
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
 
     }
 
@@ -858,9 +849,13 @@ public abstract class ContainerBase
      * @param name Name of the child Container to be retrieved
      */
     public Container findChild(String name) {
+
         if (name == null)
             return (null);
-        return children.get(name);
+        synchronized (children) {       // Required by post-start changes
+            return ((Container) children.get(name));
+        }
+
     }
 
 
@@ -869,7 +864,12 @@ public abstract class ContainerBase
      * If this Container has no children, a zero-length array is returned.
      */
     public Container[] findChildren() {
-        return children.values().toArray(CONTAINER_ARRAY);
+
+        synchronized (children) {
+            Container results[] = new Container[children.size()];
+            return ((Container[]) children.values().toArray(results));
+        }
+
     }
 
 
@@ -879,7 +879,13 @@ public abstract class ContainerBase
      * array is returned.
      */
     public ContainerListener[] findContainerListeners() {
-        return listeners.toArray(LISTENER_ARRAY);
+
+        synchronized (listeners) {
+            ContainerListener[] results = 
+                new ContainerListener[listeners.size()];
+            return ((ContainerListener[]) listeners.toArray(results));
+        }
+
     }
 
 
@@ -912,13 +918,15 @@ public abstract class ContainerBase
      *
      * @param child Existing child Container to be removed
      */
-    public synchronized void removeChild(Container child) {
+    public void removeChild(Container child) {
 
-        if (children.get(child.getName()) == null)
-            return;
-        if (children.get(child.getName()) != child)
-            return;
-        children.remove(child.getName());
+        synchronized(children) {
+            if (children.get(child.getName()) == null)
+                return;
+            if (children.get(child.getName()) != child)
+                return;
+            children.remove(child.getName());
+        }
         
         if (started && (child instanceof Lifecycle)) {
             try {
@@ -947,7 +955,11 @@ public abstract class ContainerBase
      * @param listener The listener to remove
      */
     public void removeContainerListener(ContainerListener listener) {
-        listeners.remove(listener);
+
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+
     }
 
 
@@ -1165,18 +1177,16 @@ public abstract class ContainerBase
         initialized=false;
 
         // unregister this component
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if ( oname != null ) {
-                try {
-                    if( controller == oname ) {
-                        Registry.getRegistry(null, null)
+        if ( oname != null ) {
+            try {
+                if( controller == oname ) {
+                    Registry.getRegistry(null, null)
                         .unregisterComponent(oname);
-                        if(log.isDebugEnabled())
-                            log.debug("unregistering " + oname);
-                    }
-                } catch( Throwable t ) {
-                    log.error("Error unregistering ", t );
+                    if(log.isDebugEnabled())
+                        log.debug("unregistering " + oname);
                 }
+            } catch( Throwable t ) {
+                log.error("Error unregistering ", t );
             }
         }
 
@@ -1339,6 +1349,9 @@ public abstract class ContainerBase
     }
 
 
+    // ------------------------------------------------------ Protected Methods
+
+
     /**
      * Notify all container event listeners that a particular event has
      * occurred for this Container.  The default implementation performs
@@ -1360,9 +1373,6 @@ public abstract class ContainerBase
             ((ContainerListener) list[i]).containerEvent(event);
 
     }
-
-
-    // ------------------------------------------------------ Protected Methods
 
 
     /**
@@ -1396,7 +1406,7 @@ public abstract class ContainerBase
     protected String suffix;
     protected ObjectName oname;
     protected ObjectName controller;
-    protected MBeanServer mserver;
+    protected transient MBeanServer mserver;
 
     public ObjectName getJmxName() {
         return oname;
@@ -1497,7 +1507,7 @@ public abstract class ContainerBase
         Container host=null;
         Container servlet=null;
         
-        StringBuilder suffix=new StringBuilder();
+        StringBuffer suffix=new StringBuffer();
         
         if( container instanceof StandardHost ) {
             host=container;
@@ -1599,16 +1609,10 @@ public abstract class ContainerBase
                     Thread.currentThread().setContextClassLoader
                         (container.getLoader().getClassLoader());
                 }
-                if (container instanceof Context) {
-                    ((Context) container).getThreadBindingListener().bind();
-                }
                 container.backgroundProcess();
             } catch (Throwable t) {
                 log.error("Exception invoking periodic operation: ", t);
             } finally {
-                if (container instanceof Context) {
-                    ((Context) container).getThreadBindingListener().unbind();
-                }
                 Thread.currentThread().setContextClassLoader(cl);
             }
             Container[] children = container.findChildren();
