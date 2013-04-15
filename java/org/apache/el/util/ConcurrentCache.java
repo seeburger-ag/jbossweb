@@ -22,7 +22,7 @@ public final class ConcurrentCache<K,V> {
 		V v = this.eden.get(k);
 		if (v == null) {
 			synchronized (longterm) {
-				value = this.longterm.get(key);
+				v = this.longterm.get(k);
 			}
 			if (v != null) {
 				this.eden.put(k, v);
