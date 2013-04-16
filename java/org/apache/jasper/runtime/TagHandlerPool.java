@@ -148,13 +148,6 @@ public class TagHandlerPool {
         }
         // There is no need for other threads to wait for us to release
         handler.release();
-        if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-            try {
-                instanceManager.destroyInstance(handler);
-            } catch (Exception e) {
-                // Ignore
-            }
-        }
     }
 
     /**
