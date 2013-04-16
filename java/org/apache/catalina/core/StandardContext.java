@@ -3341,6 +3341,8 @@ public class StandardContext
             try {
                 results[i] = (EventListener) instanceManager.newInstance(listeners[i]);
             } catch (Throwable t) {
+								System.err.println("[org.apache.catalina.core.StandardContext] contextListenerStart exception:");
+								t.printStackTrace();
                 getLogger().error
                     (sm.getString("standardContext.applicationListener",
                                   listeners[i]), t);
@@ -3392,6 +3394,9 @@ public class StandardContext
                 listener.contextInitialized(event);
                 fireContainerEvent("afterContextInitialized", listener);
             } catch (Throwable t) {
+								System.err.println("[org.apache.catalina.core.StandardContext] contextListenerStart exception:");
+                t.printStackTrace();
+
                 fireContainerEvent("afterContextInitialized", listener);
                 getLogger().error
                     (sm.getString("standardContext.listenerStart",
@@ -3425,6 +3430,9 @@ public class StandardContext
             try {
                 results[i] = (EventListener) listeners[i];
             } catch (Throwable t) {
+								System.err.println("[org.apache.catalina.core.StandardContext] listenerStart exception:");
+                t.printStackTrace();
+
                 getLogger().error
                     (sm.getString("standardContext.applicationListener",
                                   listeners[i]), t);
