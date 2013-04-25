@@ -543,11 +543,15 @@ final class StandardWrapperValve
                 try {
                     // Call error notifications for IO listeners
                     if (error) {
+                        Throwable throwable = asyncContext.getError();
+                        if (throwable == null) {
+                            throwable = new Exception();
+                        }
                         if (request.getReadListener() != null) { 
-                            request.getReadListener().onError(asyncContext.getError());
+                            request.getReadListener().onError(throwable);
                         }
                         if (response.getWriteListener() != null) {
-                            response.getWriteListener().onError(asyncContext.getError());
+                            response.getWriteListener().onError(throwable);
                         }
                     }
                 } catch (Throwable e) {
