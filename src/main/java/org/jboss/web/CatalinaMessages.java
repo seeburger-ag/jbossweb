@@ -990,7 +990,7 @@ public interface CatalinaMessages {
     @Message(id = 366, value = "Null read or write listener")
     NullPointerException nullListener();
 
-    @Message(id = 366, value = "Cannot use a read or write listener without upgrading or starting async")
+    @Message(id = 367, value = "Cannot use a read or write listener without upgrading or starting async")
     IllegalStateException cannotSetListenerWithoutUpgradeOrAsync();
 
 }
