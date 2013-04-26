@@ -109,11 +109,35 @@ public class ContextConfig
 
 
     /**
+     * The string resources for this package.
+     */
+    protected static final StringManager sm =
+        StringManager.getManager(Constants.Package);
+
+
+    /**
      * The set of Authenticators that we know how to configure.  The key is
      * the name of the implemented authentication method, and the value is
      * the fully qualified Java class name of the corresponding Valve.
      */
     protected static Properties authenticators = null;
+
+    static {
+        // Load our mapping properties
+        authenticators = new Properties();
+        try {
+            InputStream is = ContextConfig.class.getClassLoader().getResourceAsStream("org/apache/catalina/startup/Authenticators.properties");
+            if (is != null) {
+                authenticators.load(is);
+            } else {
+                log.error(sm.getString(
+                        "contextConfig.authenticatorResources"));
+            }
+        } catch (IOException e) {
+            log.error(sm.getString(
+                    "contextConfig.authenticatorResources"), e);
+        }
+    }
 
 
     /**
@@ -126,13 +150,6 @@ public class ContextConfig
      * Track any fatal errors during startup configuration processing.
      */
     protected boolean ok = false;
-
-
-    /**
-     * The string resources for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -276,26 +293,6 @@ public class ContextConfig
                 customAuthenticators.get(loginConfig.getAuthMethod());
         }
         if (authenticator == null) {
-            // Load our mapping properties if necessary
-            if (authenticators == null) {
-                try {
-                    InputStream is=this.getClass().getClassLoader().getResourceAsStream("org/apache/catalina/startup/Authenticators.properties");
-                    if( is!=null ) {
-                        authenticators = new Properties();
-                        authenticators.load(is);
-                    } else {
-                        log.error(sm.getString(
-                                "contextConfig.authenticatorResources"));
-                        ok=false;
-                        return;
-                    }
-                } catch (IOException e) {
-                    log.error(sm.getString(
-                                "contextConfig.authenticatorResources"), e);
-                    ok = false;
-                    return;
-                }
-            }
 
             // Identify the class name of the Valve we should configure
             String authenticatorName = null;
