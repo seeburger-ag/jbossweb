@@ -19,6 +19,8 @@
 package org.apache.catalina.connector;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.management.MBeanRegistration;
@@ -268,7 +270,7 @@ public class Connector
       * Allowed virtual hosts.
       */
      protected Set<String> allowedHosts = null;
-     
+     protected Set<String> allowedHostsIgnoreCase = null;
 
      protected static HashMap<String, String> replacements = new HashMap<String, String>();
      static {
@@ -391,7 +393,23 @@ public class Connector
     public void setAllowedHosts(Set<String> allowedHosts) {
 
         this.allowedHosts = allowedHosts;
-
+        if (allowedHosts != null) {
+            this.allowedHostsIgnoreCase = new HashSet();
+            addAllowedHostsToLowerCaseSet();
+        } else
+        this.allowedHostsIgnoreCase = null;
+    }
+    
+    private void addAllowedHostsToLowerCaseSet() {
+       Iterator<String> it = allowedHosts.iterator();
+       while (it.hasNext()) {
+           String allowedHost = it.next();
+           allowedHostsIgnoreCase.add(allowedHost.toLowerCase());
+       }
+    }
+    
+    public Set<String> getAllowedHostsIgnoreCase() {
+       return allowedHostsIgnoreCase;
     }
 
    /**
@@ -594,7 +612,10 @@ public class Connector
         } else {
             if ("HTTP/1.1".equals(protocol) || "http".equals(protocol)) {
                 setProtocolHandlerClassName
-                    ("org.apache.coyote.http11.Http11NioProtocol");
+                    ("org.apache.coyote.http11.Http11Protocol");
+            } else if ("AJP/1.3".equals(protocol) || "ajp".equals(protocol)) {
+                setProtocolHandlerClassName
+                    ("org.apache.coyote.ajp.AjpProtocol");
             } else if (protocol != null) {
                 setProtocolHandlerClassName(protocol);
             }

@@ -404,7 +404,8 @@ public final class Parameters {
                     Integer.valueOf(decodeFailCount)));
         }
         if (parseFailed) {
-            throw new IllegalStateException(sm.getString("parameters.failed"));
+            //no need to throw an exception, let's just log a warning as previously done
+            log.warn(sm.getString("parameters.failed"));
         }
     }
 

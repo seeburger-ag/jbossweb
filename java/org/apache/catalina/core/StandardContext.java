@@ -3375,7 +3375,7 @@ public class StandardContext
             getLogger().debug("Sending application start events");
 
         Object instances[] = getApplicationLifecycleListeners();
-        if (instances == null || instances.length == 0)
+        if (instances == null)
             return (ok);
         ServletContextEvent event =
           new ServletContextEvent(getServletContext());
