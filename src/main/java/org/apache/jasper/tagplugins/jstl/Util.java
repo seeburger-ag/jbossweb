@@ -18,6 +18,8 @@
 
 package org.apache.jasper.tagplugins.jstl;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -234,8 +237,7 @@ public class Util {
                 return url;
         } else {
             if (!context.startsWith("/") || !url.startsWith("/")) {
-                throw new JspTagException(
-                "In URL tags, when the \"context\" attribute is specified, values of both \"context\" and \"url\" must start with \"/\".");
+                throw new JspTagException(MESSAGES.invalidContextAndUrlValues());
             }
             if (context.equals("/")) {
                 // Don't produce string starting with '//', many
@@ -259,6 +261,11 @@ public class Util {
             public void write(int b) throws IOException {
                 bos.write(b);
             }
+            public boolean isReady() {
+                return true;
+            }
+            public void setWriteListener(WriteListener listener) {
+            }
         };
         private boolean isWriterUsed;
         private boolean isStreamUsed;
@@ -267,21 +274,18 @@ public class Util {
         
         public ImportResponseWrapper(HttpServletResponse arg0) {
             super(arg0);
-            // TODO Auto-generated constructor stub
         }
         
         public PrintWriter getWriter() {
             if (isStreamUsed)
-                throw new IllegalStateException("Unexpected internal error during &lt;import&gt: " +
-                "Target servlet called getWriter(), then getOutputStream()");
+                throw MESSAGES.usedOutputStreamAfterWriter();
             isWriterUsed = true;
             return new PrintWriter(sw);
         }
         
         public ServletOutputStream getOutputStream() {
             if (isWriterUsed)
-                throw new IllegalStateException("Unexpected internal error during &lt;import&gt: " +
-                "Target servlet called getOutputStream(), then getWriter()");
+                throw MESSAGES.usedWriterAfterOutputStream();
             isStreamUsed = true;
             return sos;
         }

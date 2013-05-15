@@ -125,6 +125,6 @@ public class DummyResponse
     public void enable() {}
     public boolean isDisabled() { return false; }
     public Collection<String> getHeaders(String name) { return null; }
-
+    public void setContentLengthLong(long contentLength) {}
 
 }

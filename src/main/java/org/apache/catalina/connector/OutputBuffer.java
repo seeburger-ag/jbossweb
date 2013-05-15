@@ -18,6 +18,8 @@
 package org.apache.catalina.connector;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.security.AccessController;
@@ -25,6 +27,8 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Locale;
+
+import javax.servlet.WriteListener;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Response;
@@ -143,9 +147,21 @@ public class OutputBuffer extends Writer
 
 
     /**
+     * Associated request.
+     */
+    private org.apache.catalina.connector.Response response;
+
+
+    /**
      * Suspended flag. All output bytes will be swallowed if this is true.
      */
     private boolean suspended = false;
+
+
+    /**
+     * Write listener.
+     */
+    private WriteListener writeListener = null;
 
 
     // ----------------------------------------------------------- Constructors
@@ -154,9 +170,9 @@ public class OutputBuffer extends Writer
     /**
      * Default constructor. Allocate the buffer with the default buffer size.
      */
-    public OutputBuffer() {
+    public OutputBuffer(org.apache.catalina.connector.Response response) {
 
-        this(DEFAULT_BUFFER_SIZE);
+        this(response, DEFAULT_BUFFER_SIZE);
 
     }
 
@@ -166,8 +182,9 @@ public class OutputBuffer extends Writer
      * 
      * @param size Buffer size to use
      */
-    public OutputBuffer(int size) {
+    public OutputBuffer(org.apache.catalina.connector.Response response, int size) {
 
+        this.response = response;
         bb = new ByteChunk(size);
         bb.setLimit(size);
         bb.setByteOutputChannel(this);
@@ -257,6 +274,7 @@ public class OutputBuffer extends Writer
         
         gotEnc = false;
         enc = null;
+        writeListener = null;
         
     }
 
@@ -662,5 +680,22 @@ public class OutputBuffer extends Writer
         return bb.getLimit();
     }
 
+    public WriteListener getWriteListener() {
+        return writeListener;
+    }
+
+    public void setWriteListener(WriteListener writeListener) {
+        if (this.writeListener != null) {
+            throw MESSAGES.writeListenerAlreadySet();
+        }
+        if (writeListener == null) {
+            throw MESSAGES.nullListener();
+        }
+        if (!response.getRequest().isEventMode()) {
+            throw MESSAGES.cannotSetListenerWithoutUpgradeOrAsync();
+        }
+        this.writeListener = writeListener;
+        coyoteResponse.action(ActionCode.ACTION_EVENT_WRITE_BEGIN, null);
+    }
 
 }

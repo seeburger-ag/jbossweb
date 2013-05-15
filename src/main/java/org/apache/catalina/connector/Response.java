@@ -39,6 +39,8 @@ import java.util.TimeZone;
 import java.util.Vector;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
@@ -124,9 +126,9 @@ public class Response
         this.connector = connector;
         if("AJP/1.3".equals(connector.getProtocol())) {
             // default size to size of one ajp-packet
-            outputBuffer = new OutputBuffer(8184);
+            outputBuffer = new OutputBuffer(this, 8184);
         } else {
-            outputBuffer = new OutputBuffer();
+            outputBuffer = new OutputBuffer(this);
         }
         outputStream = new CoyoteOutputStream(outputBuffer);
         writer = new CoyoteWriter(outputBuffer);
@@ -1338,9 +1340,6 @@ public class Response
         if (!connector.hasIoEvents())
             throw MESSAGES.cannotUpgradeWithoutEvents();
 
-        if (!request.isEventMode() || request.getAsyncContext() != null)
-            throw MESSAGES.cannotUpgradeWithoutEventServlet();
-
         // Ignore any call from an included servlet
         if (included)
             return; 
@@ -1358,9 +1357,6 @@ public class Response
 
         if (!connector.hasIoEvents())
             throw MESSAGES.cannotUpgradeWithoutEvents();
-
-        if (!request.isEventMode() || request.getAsyncContext() != null)
-            throw MESSAGES.cannotUpgradeWithoutEventServlet();
 
         // Ignore any call from an included servlet
         if (included)
@@ -1576,6 +1572,12 @@ public class Response
 
         // Are we in a valid session that is not using cookies?
         final Request hreq = request;
+
+        // Is URL encoding permitted
+        if (!hreq.getServletContext().getEffectiveSessionTrackingModes().contains(SessionTrackingMode.URL)) {
+            return false;
+        }
+
         final Session session = hreq.getSessionInternal(false);
         if (session == null)
             return (false);
@@ -1774,5 +1776,24 @@ public class Response
 
     }
 
-}
+    @Override
+    public void setContentLengthLong(long length) {
+        if (isCommitted())
+            return;
 
+        // Ignore any call from an included servlet
+        if (included)
+            return;
+        
+        if (usingWriter)
+            return;
+        
+        coyoteResponse.setContentLength(length);
+
+    }
+
+    public WriteListener getWriteListener() {
+        return outputBuffer.getWriteListener();
+    }
+
+}

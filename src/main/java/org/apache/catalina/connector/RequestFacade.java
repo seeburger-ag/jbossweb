@@ -41,6 +41,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
 import org.apache.catalina.Globals;
@@ -1042,6 +1043,34 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return request.hasSendfile();
+    }
+
+
+    public long getContentLengthLong() {
+        if (request == null) {
+            throw MESSAGES.nullRequestFacade();
+        }
+
+        return request.getContentLengthLong();
+    }
+
+
+    public String changeSessionId() {
+        if (request == null) {
+            throw MESSAGES.nullRequestFacade();
+        }
+ 
+        return request.changeSessionId();
+    }
+
+
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> upgradeHandler)
+            throws IOException {
+        if (request == null) {
+            throw MESSAGES.nullRequestFacade();
+        }
+
+        return request.upgrade(upgradeHandler);
     }
 
 }

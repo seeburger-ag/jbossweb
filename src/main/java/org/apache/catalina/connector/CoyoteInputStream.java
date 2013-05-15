@@ -23,6 +23,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
+import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 
 import org.apache.catalina.security.SecurityUtil;
@@ -107,7 +108,6 @@ public class CoyoteInputStream
     }
 
     public int available() throws IOException {
-        
         if (SecurityUtil.isPackageProtectionEnabled()){
             try{
                 Integer result = 
@@ -229,6 +229,22 @@ public class CoyoteInputStream
         } else {
              ib.close();
         }
+    }
+
+
+    public boolean isFinished() {
+        return ib.isEof();
+    }
+
+
+    public boolean isReady() {
+        return (ib.available() > 0);
+    }
+
+
+    @Override
+    public void setReadListener(ReadListener readListener) {
+        ib.setReadListener(readListener);
     }
 
 }

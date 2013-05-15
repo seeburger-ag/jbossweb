@@ -209,11 +209,11 @@ public abstract class StoreBase
                 }
                 remove(keys[i]);
             } catch (Exception e) {
-                manager.getContainer().getLogger().error("Session: "+keys[i]+"; ", e);
+                manager.getContainer().getLogger().error(MESSAGES.errorProcessingSessionExpires(keys[i]), e);
                 try {
                     remove(keys[i]);
                 } catch (IOException e2) {
-                    manager.getContainer().getLogger().error("Error removing key", e2);
+                    manager.getContainer().getLogger().error(MESSAGES.errorRemovingKey(keys[i]), e2);
                 }
             }
         }

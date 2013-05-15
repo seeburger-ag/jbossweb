@@ -27,6 +27,8 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Locale;
 
+import javax.servlet.ReadListener;
+
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Request;
@@ -143,6 +145,12 @@ public class InputBuffer extends Reader
     private int size = -1;
 
 
+    /**
+     * Read listener.
+     */
+    private ReadListener readListener = null;
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -229,6 +237,7 @@ public class InputBuffer extends Reader
         
         gotEnc = false;
         enc = null;
+        readListener = null;
         
     }
 
@@ -573,6 +582,24 @@ public class InputBuffer extends Reader
             encoders.put(enc, conv);
         }
 
+    }
+
+    public ReadListener getReadListener() {
+        return readListener;
+    }
+
+    public void setReadListener(ReadListener readListener) {
+        if (this.readListener != null) {
+            throw MESSAGES.readListenerAlreadySet();
+        }
+        if (readListener == null) {
+            throw MESSAGES.nullListener();
+        }
+        if (!request.isEventMode()) {
+            throw MESSAGES.cannotSetListenerWithoutUpgradeOrAsync();
+        }
+        this.readListener = readListener;
+        coyoteRequest.action(ActionCode.ACTION_EVENT_READ_BEGIN, null);
     }
 
 }

@@ -1,23 +1,19 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.web;
@@ -33,7 +29,7 @@ import org.jboss.logging.Messages;
 
 /**
  * Logging IDs 1-1000
- * @author remm
+ * @author Remy Maucherat
  */
 @MessageBundle(projectCode = "JBWEB")
 public interface CatalinaMessages {
@@ -144,9 +140,6 @@ public interface CatalinaMessages {
 
     @Message(id = 34, value = "Cannot upgrade from HTTP/1.1 without IO events")
     IllegalStateException cannotUpgradeWithoutEvents();
-
-    @Message(id = 35, value = "Cannot upgrade from HTTP/1.1 is not using an HttpEventServlet")
-    IllegalStateException cannotUpgradeWithoutEventServlet();
 
     @Message(id = 36, value = "Cannot call sendFile() after the response has been committed")
     IllegalStateException cannotSendFile();
@@ -631,8 +624,8 @@ public interface CatalinaMessages {
     @Message(id = 244, value = "Illegal null or empty argument specified")
     IllegalArgumentException invalidServletRegistrationArguments();
 
-    @Message(id = 245, value = "Priveleged action exception")
-    String doAsPrivilegeException();
+    @Message(id = 245, value = "Error destroying filter %s")
+    String errorDestroyingFilter(String filterName);
 
     @Message(id = 246, value = "Exception processing component pre destroy")
     String preDestroyException();
@@ -825,5 +818,179 @@ public interface CatalinaMessages {
 
     @Message(id = 309, value = "type")
     String statusType();
+
+    @Message(id = 310, value = "Null attribute name")
+    IllegalArgumentException invalidNullAttributeName();
+
+    @Message(id = 311, value = "Null attribute")
+    IllegalArgumentException invalidNullAttribute();
+
+    @Message(id = 312, value = "Invalid negative read ahead %s specified")
+    IllegalArgumentException invalidReadAhead(int readAhead);
+
+    @Message(id = 313, value = "Exception processing error page %s")
+    String errorProcessingErrorPage(String location);
+
+    @Message(id = 314, value = "Exception parsing number %s (zero based) of comma delimited list %s")
+    IllegalArgumentException invalidNumberInList(int number, String list);
+
+    @Message(id = 315, value = "Invalid HTTP port number specified %s")
+    IllegalArgumentException invalidHttpPortNumber(String port);
+
+    @Message(id = 316, value = "Invalid HTTPS port number specified %s")
+    IllegalArgumentException invalidHttpsPortNumber(String port);
+
+    @Message(id = 317, value = "WebDAV client problem: XP-x64-SP2 clients only work with the root context")
+    String webDavClientProblemXpRootOnly();
+
+    @Message(id = 318, value = "WebDAV client problem: XP-x64-SP2 is known not to work with WebDAV Servlet")
+    String webDavClientProblemXp();
+
+    @Message(id = 319, value = "Unknown mode %s, must be one of: strict, authOnly, strictAuthOnly")
+    IllegalArgumentException unknownAuthMode(String authMode);
+
+    @Message(id = 320, value = "Running CGI: bad header line: %s")
+    String cgiInvalidHeader(String header);
+
+    @Message(id = 321, value = "Error running CGI: %s")
+    String cgiException(String errorMessage);
+
+    @Message(id = 322, value = "Error closing header reader: %s")
+    String cgiExceptionClosingHeaderReader(String errorMessage);
+
+    @Message(id = 323, value = "Error closing output stream: %s")
+    String cgiExceptionClosingOutputStream(String errorMessage);
+
+    @Message(id = 324, value = "Interrupted waiting for stderr reader thread")
+    String cgiInterrupted();
+
+    @Message(id = 325, value = "Invalid HTTP status line: %s")
+    String cgiInvalidStatusLine(String line);
+
+    @Message(id = 326, value = "Invalid status code: %s")
+    String cgiInvalidStatusCode(String code);
+
+    @Message(id = 327, value = "Invalid status value: %s")
+    String cgiInvalidStatusValue(String value);
+
+    @Message(id = 328, value = "CGI stderr: %s")
+    String cgiErrorLogPrefix(String line);
+
+    @Message(id = 329, value = "Error reading error reader")
+    String cgiStderrErrror();
+
+    @Message(id = 330, value = "XSL transformer error")
+    String xslTransformerError();
+
+    @Message(id = 331, value = "Session %s expires processing failed")
+    String errorProcessingSessionExpires(String sessionId);
+
+    @Message(id = 332, value = "Error removing key %s")
+    String errorRemovingKey(String sessionId);
+
+    @Message(id = 333, value = "No nodes created")
+    String ssiParseNoNodes();
+
+    @Message(id = 334, value = "Extra nodes created")
+    String ssiParseExtraNodes();
+
+    @Message(id = 335, value = "Unused opp nodes exist")
+    String ssiParseUnusedNodes();
+
+    @Message(id = 336, value = "Couldn't exec file: %s")
+    String ssiExecFailed(String file);
+
+    @Message(id = 337, value = "#%s--Invalid attribute: %s")
+    String ssiInvalidAttribute(String directive, String attribute);
+
+    @Message(id = 338, value = "#flastmod--Couldn't get last modified for file: %s")
+    String ssiFlastmodFailed(String file);
+
+    @Message(id = 339, value = "#fsize--Couldn't get size for file: %s")
+    String ssiFsizeFailed(String file);
+
+    @Message(id = 340, value = "Num chars can't be negative")
+    IllegalArgumentException invalidNumChars();
+
+    @Message(id = 341, value = "#include--Couldn't include file: %s")
+    String ssiIncludeFailed(String file);
+
+    @Message(id = 342, value = "#echo--Invalid encoding: %s")
+    String ssiEchoInvlidEncoding(String encoding);
+
+    @Message(id = 343, value = "[an error occurred while processing this directive]")
+    String ssiDirectiveError();
+
+    @Message(id = 344, value = "Unknown encoding: %s")
+    String ssiUnknownEncoding(String encoding);
+
+    @Message(id = 345, value = "Unknown command: %s")
+    String ssiUnknownCommand(String command);
+
+    @Message(id = 346, value = "Error parsing command %s parameters")
+    String ssiParsingErrorNoParameters(String directive);
+
+    @Message(id = 347, value = "Parameter names count does not match parameter values count on command %s")
+    String ssiParsingErrorBadParameterCount(String directive);
+
+    @Message(id = 348, value = "#set--no variable specified")
+    String ssiSetFailed();
+
+    @Message(id = 349, value = "Couldn't remove filename from path: %s")
+    String ssiFailedRemovingFilename(String path);
+
+    @Message(id = 350, value = "Normalization yielded null on path: %s")
+    String ssiFailedNormalization(String path);
+
+    @Message(id = 351, value = "A non-virtual path can't be absolute: %s")
+    String ssiInvalidNonVirtualPath(String path);
+
+    @Message(id = 352, value = "A non-virtual path can't contain '../': %s")
+    String ssiInvalidNonVirtualPathWithTraversal(String path);
+
+    @Message(id = 353, value = "Couldn't get context for path: %s")
+    String ssiCannotGetContext(String path);
+
+    @Message(id = 354, value = "Couldn't remove context from path: %s")
+    String ssiCannotRemoveContext(String path);
+
+    @Message(id = 355, value = "Couldn't get request dispatcher for path: %s")
+    String ssiCannotGetRequestDispatcher(String path);
+
+    @Message(id = 356, value = "Couldn't find file: %s")
+    String ssiCannotFindFile(String path);
+
+    @Message(id = 357, value = "Couldn't include file: %s")
+    String ssiServletIncludeFailed(String path);
+
+    @Message(id = 358, value = "Message digest non initialized")
+    IllegalStateException uninitializedMessageDigest();
+
+    @Message(id = 359, value = "Exception releasing filter %s")
+    String errorStoppingFilter(String filterName);
+
+    @Message(id = 360, value = "No session")
+    IllegalStateException nullSession();
+
+    @Message(id = 361, value = "Read listener already set")
+    IllegalStateException readListenerAlreadySet();
+
+    @Message(id = 362, value = "Write listener already set")
+    IllegalStateException writeListenerAlreadySet();
+
+    @Message(id = 363, value = "Upgrade error")
+    String upgradeError();
+
+    @Message(id = 364, value = "Upgrade destroy processing for servlet %s threw exception")
+    String upgradeHandlerDestroyError(String servletName);
+
+    @Message(id = 365, value = "IO listener processing for servlet %s threw exception")
+    String ioListenerError(String servletName);
+
+    @Message(id = 366, value = "Null read or write listener")
+    NullPointerException nullListener();
+
+    @Message(id = 367, value = "Cannot use a read or write listener without upgrading or starting async")
+    IllegalStateException cannotSetListenerWithoutUpgradeOrAsync();
 
 }
