@@ -103,6 +103,12 @@ Closed connection to localhost:9999
       in embedded mode.</p>
     </property>
 
+    <property name="org.apache.catalina.authenticator.AuthenticatorBase.UNREGISTER_SSO_ON_LOGOUT">
+      <p>If <code>true</code>, the SSO will not be unregistred, and all associated sessions
+      expired when logout is called (expiration remains a separate operation, like for non SSO).
+      If not specified the default value of <code>true</code> will be used.</p>
+    </property>
+
     <property name="org.apache.catalina.connector.Request.SESSION_ID_CHECK">
       <p>If <code>true</code>, the Servet container will verify that a session
       exists in a context with the specified session id before creating a session
@@ -298,6 +304,11 @@ Closed connection to localhost:9999
 <section name="Security">
 
   <properties>
+
+    <property name="org.apache.catalina.connector.Connector.ALLOW_TRACE">
+      <p>If this is <code>true</code> the TRACE HTTP method will be allowed.
+      If not specified, the default value of <code>false</code> will be used.</p>
+    </property>
 
     <property name="org.apache.catalina.connector.RECYCLE_FACADES">
       <p>If this is <code>true</code> or if a security manager is in use a new

@@ -115,6 +115,14 @@ public abstract class AuthenticatorBase
 
 
     /**
+     * Should the session ID, if any, be changed upon a successful
+     * authentication to prevent a session fixation attack?
+     */
+    protected boolean unregisterSsoOnLogout = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.authenticator.AuthenticatorBase.UNREGISTER_SSO_ON_LOGOUT", "true")).booleanValue();
+
+
+    /**
      * The Context to which this Valve is attached.
      */
     protected Context context = null;
@@ -198,6 +206,16 @@ public abstract class AuthenticatorBase
     public void setChangeSessionIdOnAuthentication(
             boolean changeSessionIdOnAuthentication) {
         this.changeSessionIdOnAuthentication = changeSessionIdOnAuthentication;
+    }
+
+
+    public boolean isUnregisterSsoOnLogout() {
+        return unregisterSsoOnLogout;
+    }
+
+
+    public void setUnregisterSsoOnLogout(boolean unregisterSsoOnLogout) {
+        this.unregisterSsoOnLogout = unregisterSsoOnLogout;
     }
 
 
@@ -709,8 +727,14 @@ public abstract class AuthenticatorBase
         String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
         if (ssoId != null) {
             // Update the SSO session with the latest authentication data
-            request.removeNote(Constants.REQ_SSOID_NOTE);
-            sso.deregister(ssoId);
+            if (unregisterSsoOnLogout) {
+                request.removeNote(Constants.REQ_SSOID_NOTE);
+                sso.deregister(ssoId);
+            } else {
+                if (cache && session != null) {
+                    sso.logout(ssoId);
+                }
+            }
         }
 
     }
