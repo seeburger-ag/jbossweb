@@ -66,6 +66,8 @@ public class Connector
     protected static final boolean X_POWERED_BY = 
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.X_POWERED_BY", "false")).booleanValue();
     
+    protected static final boolean ALLOW_TRACE = 
+            Boolean.valueOf(System.getProperty("org.apache.catalina.connector.ALLOW_TRACE", "false")).booleanValue();
 
     protected static final String URI_ENCODING = 
         System.getProperty("org.apache.catalina.connector.URI_ENCODING");
@@ -102,7 +104,7 @@ public class Connector
     /**
      * Do we allow TRACE ?
      */
-    protected boolean allowTrace = false;
+    protected boolean allowTrace = ALLOW_TRACE;
 
 
     /**
