@@ -59,7 +59,7 @@ public class InternalAprOutputBuffer
         headers = response.getMimeHeaders();
 
         buf = new byte[headerBufferSize];
-        if (headerBufferSize < (8 * 1024)) {
+        if (headerBufferSize < Constants.DEFAULT_HTTP_HEADER_BUFFER_SIZE) {
             bbuf = ByteBuffer.allocateDirect(6 * 1500);
         } else {
             bbuf = ByteBuffer.allocateDirect((headerBufferSize / 1500 + 1) * 1500);

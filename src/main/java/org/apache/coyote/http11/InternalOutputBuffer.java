@@ -77,6 +77,9 @@ public class InternalOutputBuffer
         committed = false;
         finished = false;
 
+        // Cause loading of Constants
+        int foo = Constants.HTTP_11_BYTES[0];
+
     }
 
 
