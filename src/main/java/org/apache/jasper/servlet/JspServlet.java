@@ -190,9 +190,7 @@ public class JspServlet extends HttpServlet implements PeriodicEventListener {
 	    // precompilation request can be ignored.
             return (true);             // ?jsp_precompile=false
         } else {
-            throw new ServletException("Cannot have request parameter " +
-                                       Constants.PRECOMPILE + " set to " +
-                                       value);
+            throw new ServletException(MESSAGES.invalidRequestParameterValue(Constants.PRECOMPILE, value));
         }
 
     }

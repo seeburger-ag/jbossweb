@@ -3215,17 +3215,19 @@ public class StandardContext
         Iterator<String> names = filterDefs.keySet().iterator();
         while (names.hasNext()) {
             String name = names.next();
-            CatalinaLogger.CORE_LOGGER.startingFilter(name);
-            if (getLogger().isDebugEnabled())
-                getLogger().debug(" Starting filter '" + name + "'");
-            ApplicationFilterConfig filterConfig = null;
-            try {
-                filterConfig = new ApplicationFilterConfig(this, (FilterDef) filterDefs.get(name));
-                filterConfig.getFilter();
-                filterConfigs.put(name, filterConfig);
-            } catch (Throwable t) {
-                getLogger().error(MESSAGES.errorStartingFilter(name), t);
-                ok = false;
+            ApplicationFilterConfig filterConfig = filterConfigs.get(name);
+            if (filterConfig == null) {
+                CatalinaLogger.CORE_LOGGER.startingFilter(name);
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug(" Starting filter '" + name + "'");
+                try {
+                    filterConfig = new ApplicationFilterConfig(this, (FilterDef) filterDefs.get(name));
+                    filterConfig.getFilter();
+                    filterConfigs.put(name, filterConfig);
+                } catch (Throwable t) {
+                    getLogger().error(MESSAGES.errorStartingFilter(name), t);
+                    ok = false;
+                }
             }
         }
 
@@ -3242,16 +3244,22 @@ public class StandardContext
     protected boolean filterStop() {
 
         // Release all Filter and FilterConfig instances
+        boolean ok = true;
         Iterator<String> names = filterConfigs.keySet().iterator();
         while (names.hasNext()) {
             String name = names.next();
             CatalinaLogger.CORE_LOGGER.stoppingFilter(name);
             ApplicationFilterConfig filterConfig =
                 (ApplicationFilterConfig) filterConfigs.get(name);
-            filterConfig.release();
+            try {
+                filterConfig.release();
+            } catch (Throwable t) {
+                getLogger().error(MESSAGES.errorStoppingFilter(name), t);
+                ok = false;
+            }
         }
         filterConfigs.clear();
-        return (true);
+        return (ok);
 
     }
 
