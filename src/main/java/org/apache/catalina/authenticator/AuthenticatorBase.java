@@ -732,7 +732,7 @@ public abstract class AuthenticatorBase
                 sso.deregister(ssoId);
             } else {
                 if (cache && session != null) {
-                    sso.logout(ssoId);
+                    sso.removeLogin(ssoId);
                 }
             }
         }

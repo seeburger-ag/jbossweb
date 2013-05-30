@@ -520,7 +520,7 @@ public class SingleSignOn
      *
      * @param ssoId Single sign on identifier to logout
      */
-    public void logout(String ssoId) {
+    public void removeLogin(String ssoId) {
 
         // Look up and remove the corresponding SingleSignOnEntry
         SingleSignOnEntry sso = null;
