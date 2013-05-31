@@ -84,6 +84,20 @@ public class ContextConfig
      */
     protected static Properties authenticators = null;
 
+    static {
+        // Load our mapping properties
+        authenticators = new Properties();
+        try {
+            InputStream is = ContextConfig.class.getClassLoader().getResourceAsStream("org/apache/catalina/startup/Authenticators.properties");
+            if (is != null) {
+                authenticators.load(is);
+            } else {
+                CatalinaLogger.STARTUP_LOGGER.cannotFindAuthenticatoMappings();
+            }
+        } catch (IOException e) {
+            CatalinaLogger.STARTUP_LOGGER.failedLoadingAuthenticatoMappings(e);
+        }
+    }
 
     /**
      * The Context we are associated with.
@@ -233,25 +247,6 @@ public class ContextConfig
                 customAuthenticators.get(loginConfig.getAuthMethod());
         }
         if (authenticator == null) {
-            // Load our mapping properties if necessary
-            if (authenticators == null) {
-                try {
-                    InputStream is=this.getClass().getClassLoader().getResourceAsStream("org/apache/catalina/startup/Authenticators.properties");
-                    if( is!=null ) {
-                        authenticators = new Properties();
-                        authenticators.load(is);
-                    } else {
-                        CatalinaLogger.STARTUP_LOGGER.cannotFindAuthenticatoMappings();
-                        ok=false;
-                        return;
-                    }
-                } catch (IOException e) {
-                    CatalinaLogger.STARTUP_LOGGER.failedLoadingAuthenticatoMappings(e);
-                    ok = false;
-                    return;
-                }
-            }
-
             // Identify the class name of the Valve we should configure
             String authenticatorName = null;
             authenticatorName =
