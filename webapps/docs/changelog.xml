@@ -15,6 +15,9 @@
   </properties>
 
 <body>
+<section name="JBoss Web 2.1.14.GA (jfclere)">
+</section>
+
 <section name="JBoss Web 2.1.13.GA (jfclere)">
   <subsection name="Coyote">
    <changelog>
