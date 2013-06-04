@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BeanELResolver extends ELResolver {
@@ -57,8 +56,8 @@ public class BeanELResolver extends ELResolver {
 
     private final boolean readOnly;
 
-    private final ConcurrentCache<String, BeanProperties> cache =
-        new ConcurrentCache<String, BeanProperties>(CACHE_SIZE);
+    private final static ConcurrentHashMap<Class<?>, BeanProperties> cache =
+        new ConcurrentHashMap<Class<?>, BeanProperties>(CACHE_SIZE);
 
     public BeanELResolver() {
         this.readOnly = false;
@@ -291,10 +290,10 @@ public class BeanELResolver extends ELResolver {
         Class<?> type = base.getClass();
         String prop = property.toString();
 
-        BeanProperties props = this.cache.get(type.getName());
+        BeanProperties props = this.cache.get(type);
         if (props == null || type != props.getType()) {
             props = new BeanProperties(type);
-            this.cache.put(type.getName(), props);
+            this.cache.put(type, props);
         }
 
         return props.get(ctx, prop);
@@ -330,39 +329,24 @@ public class BeanELResolver extends ELResolver {
         return null;
     }
     
-    private final static class ConcurrentCache<K,V> {
-
-        private final int size;
-        private final Map<K,V> eden;
-        private final Map<K,V> longterm;
-        
-        public ConcurrentCache(int size) {
-            this.size = size;
-            this.eden = new ConcurrentHashMap<K,V>(size);
-            this.longterm = new WeakHashMap<K,V>(size);
-        }
-        
-        public V get(K key) {
-            V value = this.eden.get(key);
-            if (value == null) {
-                synchronized (longterm) {
-                    value = this.longterm.get(key);
-                }
-                if (value != null) {
-                    this.eden.put(key, value);
-                }
+    /*
+     * This method is not part of the API, though it can be used (reflectively) by clients of this class to remove entries from
+     * the cache when the beans are being unloaded.
+     * 
+     * A note about why WeakHashMap is not used. Measurements has shown that ConcurrentHashMap is much more scalable than
+     * synchronized WeakHashMap. A manual purge seems to be a good compromise.
+     * 
+     * @param classloader The classLoader used to load the beans.
+     */
+    private static void purge(final ClassLoader classloader) {
+        //NOTE: concurrent hash map wont throw concurrent mod
+        Iterator<Class<?>> iter = cache.keySet().iterator();
+        while (iter.hasNext()) {
+            Class<?> key = iter.next();
+            BeanProperties bp = cache.get(key);
+            if(bp.getType().getClassLoader().equals(classloader)){
+                iter.remove();
             }
-            return value;
-        }
-        
-        public void put(K key, V value) {
-            if (this.eden.size() >= this.size) {
-                synchronized (longterm) {
-                    this.longterm.putAll(this.eden);
-                }
-                this.eden.clear();
-            }
-            this.eden.put(key, value);
         }
     }
 }
