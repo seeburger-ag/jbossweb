@@ -55,6 +55,10 @@
       <p>Name of the connector</p>
     </attribute>
 
+    <attribute name="socket-binding" required="true">
+      <p>Name of the <code>socket-binding</code> to use for the connector</p>
+    </attribute>
+
     <attribute name="enable-lookups" required="false">
       <p>Set to <code>true</code> if you want calls to
       <code>request.getRemoteHost()</code> to perform DNS lookups in
@@ -145,11 +149,11 @@
       </p>
     </attribute>
 
-    <attribute name="scheme" required="false">
+    <attribute name="scheme" required="true">
       <p>Set this attribute to the name of the protocol you wish to have
       returned by calls to <code>request.getScheme()</code>.  For
       example, you would set this attribute to "<code>https</code>"
-      for an SSL Connector.  The default value is "<code>http</code>".
+      for an SSL Connector.  There are only 2 possible value "<code>http</code>" and "<code>https</code>".
       </p>
     </attribute>
 
