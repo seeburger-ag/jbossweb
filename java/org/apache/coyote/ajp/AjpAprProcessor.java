@@ -329,7 +329,8 @@ public class AjpAprProcessor implements ActionHook {
     /**
      * Use Tomcat authentication ?
      */
-    protected boolean tomcatAuthentication = true;
+    protected boolean tomcatAuthentication = 
+        Boolean.valueOf(System.getProperty("org.apache.coyote.ajp.AprProcessor.TOMCATAUTHENTICATION", "true")).booleanValue();
     public boolean getTomcatAuthentication() { return tomcatAuthentication; }
     public void setTomcatAuthentication(boolean tomcatAuthentication) { this.tomcatAuthentication = tomcatAuthentication; }
 
