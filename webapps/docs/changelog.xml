@@ -16,6 +16,15 @@
 
 <body>
 <section name="JBoss Web 2.1.14.GA (jfclere)">
+  <subsection name="Jasper">
+    <changelog>
+      <fix>
+        <jira>JBWEB-263</jira> 
+        Remove WeakHash map from BeanELResolver
+        and depend on proper callback to remove bean properties escaping fixes. (baranowb)
+      </fix>
+    </changelog>
+  </subsection>
 </section>
 
 <section name="JBoss Web 2.1.13.GA (jfclere)">
