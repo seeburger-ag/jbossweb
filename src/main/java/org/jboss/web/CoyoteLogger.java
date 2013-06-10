@@ -495,4 +495,8 @@ public interface CoyoteLogger extends BasicLogger {
     @Message(id = 3104, value = "Error registering MBean %s")
     void errorRegisteringMbean(Object objectName, @Cause Throwable t);
 
+    @LogMessage(level = WARN)
+    @Message(id = 3105, value = "Socket accept failed")
+    void warnAcceptingSocket(@Cause Throwable exception);
+
 }

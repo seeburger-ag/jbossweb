@@ -1142,7 +1142,21 @@ public class AprEndpoint {
                             Socket.destroy(socket);
                         }
                     } catch (Throwable t) {
-                        CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                        if (running) {
+                            if (t instanceof Error) {
+                                Error e = (Error) t;
+                                if (e.getError() == 233) {
+                                    // Not an error on HP-UX so log as a warning
+                                    // so it can be filtered out on that platform
+                                    // See bug 50273
+                                    CoyoteLogger.UTIL_LOGGER.warnAcceptingSocket(t);
+                                } else {
+                                    CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                                }
+                            } else {
+                                CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                            }
+                        }
                     }
 
                 }
