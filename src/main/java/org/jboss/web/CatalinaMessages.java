@@ -993,4 +993,34 @@ public interface CatalinaMessages {
     @Message(id = 367, value = "Cannot use a read or write listener without upgrading or starting async")
     IllegalStateException cannotSetListenerWithoutUpgradeOrAsync();
 
+    @Message(id = 368, value = "Unable to cast to the internal request class in order to complete HTTP upgrade")
+    String errorUpgrading();
+
+    @Message(id = 369, value = "The buffer is not big enough to contain the message currently being processed")
+    String bufferTooSmall();
+
+    @Message(id = 370, value = "The client frame was not masked but all client frames must be masked")
+    String frameNotMasked();
+
+    @Message(id = 371, value = "A sequence of bytes was received that did not represent valid UTF-8")
+    String frameInvalidUtf8();
+
+    @Message(id = 372, value = "The end of the stream was reached when trying to read the first byte of a new WebSocket frame")
+    String frameEos();
+
+    @Message(id = 373, value = "Failed to read the first byte of the next WebSocket frame. The return value from the read was [%s]")
+    String frameFailedRead(int value);
+
+    @Message(id = 374, value = "An attempt was made to access the request object passed to WebSocketServlet.createWebSocketInbound() outside of that method")
+    IllegalStateException invalidWrapper();
+
+    @Message(id = 375, value = "A frame with the unrecognized OpCode [%s] was received")
+    String frameUnknownOpcode(byte opcode);
+
+    @Message(id = 376, value = "A frame with the OpCode [%s] was received when a continuation frame was expected")
+    String frameNotContinuation(byte opcode);
+
+    @Message(id = 377, value = "The WebSocket connection has been closed")
+    String outboundClosed();
+
 }
