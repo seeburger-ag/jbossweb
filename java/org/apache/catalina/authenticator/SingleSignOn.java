@@ -547,6 +547,8 @@ public class SingleSignOn
             session.removeNote(Constants.SESS_USERNAME_NOTE);
             session.removeNote(Constants.SESS_PASSWORD_NOTE);
         }
+        // Reset SSO authentication
+        sso.updateCredentials(null, null, null, null);
 
     }
 
