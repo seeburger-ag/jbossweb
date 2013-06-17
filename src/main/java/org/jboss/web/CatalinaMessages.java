@@ -972,4 +972,34 @@ public interface CatalinaMessages {
     @Message(id = 359, value = "Exception releasing filter %s")
     String errorStoppingFilter(String filterName);
 
+    @Message(id = 360, value = "Unable to cast to the internal request class in order to complete HTTP upgrade")
+    String errorUpgrading();
+
+    @Message(id = 361, value = "The buffer is not big enough to contain the message currently being processed")
+    String bufferTooSmall();
+
+    @Message(id = 362, value = "The client frame was not masked but all client frames must be masked")
+    String frameNotMasked();
+
+    @Message(id = 363, value = "A sequence of bytes was received that did not represent valid UTF-8")
+    String frameInvalidUtf8();
+
+    @Message(id = 364, value = "The end of the stream was reached when trying to read the first byte of a new WebSocket frame")
+    String frameEos();
+
+    @Message(id = 365, value = "Failed to read the first byte of the next WebSocket frame. The return value from the read was [%s]")
+    String frameFailedRead(int value);
+
+    @Message(id = 366, value = "An attempt was made to access the request object passed to WebSocketServlet.createWebSocketInbound() outside of that method")
+    IllegalStateException invalidWrapper();
+
+    @Message(id = 367, value = "A frame with the unrecognized OpCode [%s] was received")
+    String frameUnknownOpcode(byte opcode);
+
+    @Message(id = 368, value = "A frame with the OpCode [%s] was received when a continuation frame was expected")
+    String frameNotContinuation(byte opcode);
+
+    @Message(id = 369, value = "The WebSocket connection has been closed")
+    String outboundClosed();
+
 }
