@@ -751,7 +751,13 @@ public abstract class RealmBase
             if (CatalinaLogger.REALM_LOGGER.isDebugEnabled())
                 CatalinaLogger.REALM_LOGGER.debug("  Checking roles " + principal);
 
-            if (roles.length == 0 && !constraint.getAllRoles()) {
+            if (constraint.getAuthenticatedUsers() && principal != null) {
+                if (CatalinaLogger.REALM_LOGGER.isDebugEnabled()) {
+                    CatalinaLogger.REALM_LOGGER.debug("Passing all authenticated users");
+                }
+                status = true;
+            } else if (roles.length == 0 && !constraint.getAllRoles() &&
+                    !constraint.getAuthenticatedUsers()) {
                 if(constraint.getAuthConstraint()) {
                     if( CatalinaLogger.REALM_LOGGER.isDebugEnabled() )
                         CatalinaLogger.REALM_LOGGER.debug("No roles ");

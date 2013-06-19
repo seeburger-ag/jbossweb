@@ -665,13 +665,22 @@ public class ContextConfig
      */
     protected void validateSecurityRoles() {
 
+        // Check if ** role was defined by the application itself
+        if (context.findSecurityRole(SecurityConstraint.ROLE_ALL_AUTHENTICATED_USERS)) {
+            SecurityConstraint constraints[] = context.findConstraints();
+            for (SecurityConstraint constraint : constraints) {
+                constraint.treatAllAuthenticatedUsersAsApplicationRole();
+            }
+        }
+
         // Check role names used in <security-constraint> elements
         SecurityConstraint constraints[] = context.findConstraints();
         for (int i = 0; i < constraints.length; i++) {
             String roles[] = constraints[i].findAuthRoles();
             for (int j = 0; j < roles.length; j++) {
-                if (!"*".equals(roles[j]) &&
-                    !context.findSecurityRole(roles[j])) {
+                if (!SecurityConstraint.ROLE_ALL_ROLES.equals(roles[j])
+                        && !SecurityConstraint.ROLE_ALL_AUTHENTICATED_USERS.equals(roles[j])
+                        && !context.findSecurityRole(roles[j])) {
                     CatalinaLogger.STARTUP_LOGGER.roleValidationAuth(roles[j]);
                     context.addSecurityRole(roles[j]);
                 }

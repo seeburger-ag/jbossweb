@@ -395,6 +395,36 @@ public abstract class AuthenticatorBase
             }
         }
 
+        // Special handling for form-based logins to deal with the case where
+        // a resource is protected for some HTTP methods but not protected for
+        // GET which is used after authentication when redirecting to the
+        // protected resource.
+        // TODO: This is similar to the FormAuthenticator.matchRequest() logic
+        //       Is there a way to remove the duplication?
+        Session session = request.getSessionInternal(false);
+        if (session != null) {
+            SavedRequest savedRequest =
+                    (SavedRequest) session.getNote(Constants.FORM_REQUEST_NOTE);
+            if (savedRequest != null) {
+                String decodedRequestURI = request.getDecodedRequestURI();
+                if (decodedRequestURI != null &&
+                        decodedRequestURI.equals(
+                                savedRequest.getDecodedRequestURI())) {
+                    if (!authenticate(request, response)) {
+                        if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled()) {
+                            CatalinaLogger.AUTH_LOGGER.debug(" Failed authenticate() test");
+                        }
+                        /*
+                         * ASSERT: Authenticator already set the appropriate
+                         * HTTP status code, so we do not have to do anything
+                         * special
+                         */
+                        return;
+                    }
+                }
+            }
+        }
+
         Realm realm = this.context.getRealm();
         // Is this request URI subject to a security constraint?
         SecurityConstraint [] constraints
@@ -450,10 +480,13 @@ public abstract class AuthenticatorBase
         for(i=0; i < constraints.length && authRequired; i++) {
             if(!constraints[i].getAuthConstraint()) {
                 authRequired = false;
-            } else if(!constraints[i].getAllRoles()) {
+                break;
+            } else if(!constraints[i].getAllRoles() &&
+                    !constraints[i].getAuthenticatedUsers()) {
                 String [] roles = constraints[i].findAuthRoles();
                 if(roles == null || roles.length == 0) {
                     authRequired = false;
+                    break;
                 }
             }
         }

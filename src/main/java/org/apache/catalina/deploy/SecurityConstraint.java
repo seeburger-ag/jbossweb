@@ -39,6 +39,9 @@ import java.io.Serializable;
 public class SecurityConstraint implements Serializable {
 
 
+    public static final String ROLE_ALL_ROLES = "*";
+    public static final String ROLE_ALL_AUTHENTICATED_USERS = "**";
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -56,10 +59,18 @@ public class SecurityConstraint implements Serializable {
 
 
     /**
-     * Was the "all roles" wildcard included in the authorization constraints
-     * for this security constraint?
+     * Was the "all roles" wildcard - {@link #ROLE_ALL_ROLES} - included in the
+     * authorization constraints for this security constraint?
      */
     private boolean allRoles = false;
+
+
+    /**
+     * Was the "all authenticated users" wildcard -
+     * {@link #ROLE_ALL_AUTHENTICATED_USERS} - included in the authorization
+     * constraints for this security constraint?
+     */
+    private boolean authenticatedUsers = false;
 
 
     /**
@@ -109,6 +120,15 @@ public class SecurityConstraint implements Serializable {
 
         return (this.allRoles);
 
+    }
+
+
+    /**
+     * Was the "all authenticated users" wildcard included in this
+     * authentication constraint?
+     */
+    public boolean getAuthenticatedUsers() {
+        return this.authenticatedUsers;
     }
 
 
@@ -177,6 +197,24 @@ public class SecurityConstraint implements Serializable {
     }
 
 
+    /**
+     * Called in the unlikely event that an application defines a role named
+     * "**".
+     */
+    public void treatAllAuthenticatedUsersAsApplicationRole() {
+        if (authenticatedUsers) {
+            authenticatedUsers = false;
+
+            String results[] = new String[authRoles.length + 1];
+            for (int i = 0; i < authRoles.length; i++)
+                results[i] = authRoles[i];
+            results[authRoles.length] = ROLE_ALL_AUTHENTICATED_USERS;
+            authRoles = results;
+            authConstraint = true;
+        }
+    }
+
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -191,8 +229,12 @@ public class SecurityConstraint implements Serializable {
         if (authRole == null)
             return;
         authConstraint = true;
-        if ("*".equals(authRole)) {
+        if (ROLE_ALL_ROLES.equals(authRole)) {
             allRoles = true;
+            return;
+        }
+        if (ROLE_ALL_AUTHENTICATED_USERS.equals(authRole)) {
+            authenticatedUsers = true;
             return;
         }
         String results[] = new String[authRoles.length + 1];
@@ -329,6 +371,14 @@ public class SecurityConstraint implements Serializable {
 
         if (authRole == null)
             return;
+        if (ROLE_ALL_ROLES.equals(authRole)) {
+            allRoles = false;
+            return;
+        }
+        if (ROLE_ALL_AUTHENTICATED_USERS.equals(authRole)) {
+            authenticatedUsers = false;
+            return;
+        }
         int n = -1;
         for (int i = 0; i < authRoles.length; i++) {
             if (authRoles[i].equals(authRole)) {
