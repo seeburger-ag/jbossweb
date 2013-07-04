@@ -319,6 +319,9 @@ public class StandardContext
     protected String encodedPath = null;
     
 
+    private boolean denyUncoveredHttpMethods;
+
+
     /**
      * The display name of this web application.
      */
@@ -1062,6 +1065,16 @@ public class StandardContext
 
     public void setTldScanTime(long tldScanTime) {
         this.tldScanTime = tldScanTime;
+    }
+
+    @Override
+    public boolean getDenyUncoveredHttpMethods() {
+        return denyUncoveredHttpMethods;
+    }
+
+    @Override
+    public void setDenyUncoveredHttpMethods(boolean denyUncoveredHttpMethods) {
+        this.denyUncoveredHttpMethods = denyUncoveredHttpMethods;
     }
 
     /**

@@ -689,4 +689,20 @@ public interface CatalinaLogger extends BasicLogger {
     @Message(id = 1150, value = "X param in wrong format. Needs to be 'x-#(...)'")
     void extendedAccessLogBadXParam();
 
+    @LogMessage(level = INFO)
+    @Message(id = 1151, value = "Adding security constraints with URL pattern [%s] to deny access with the uncovered HTTP methods that are not one of the following [%s]")
+    void addingUncoveredMethodConstraint(String urlPattern, String method);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1152, value = "For security constraints with URL pattern [%s] only the HTTP methods [%s] are covered. All other methods are uncovered.")
+    void uncoveredMethodWarning(String urlPattern, String method);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1153, value = "Adding security constraints with URL pattern [%s] to deny access with the uncovered HTTP methods [%s]")
+    void addingUncoveredOmittedMethodConstraint(String urlPattern, String method);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1154, value = "For security constraints with URL pattern [%s] the HTTP methods [%s] are uncovered.")
+    void uncoveredOmittedMethodWarning(String urlPattern, String method);
+
 }

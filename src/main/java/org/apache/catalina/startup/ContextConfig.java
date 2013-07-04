@@ -639,6 +639,13 @@ public class ContextConfig
                 
             }
         }
+        // Add constraints for uncovered methods, if needed
+        SecurityConstraint[] newConstraints =
+                SecurityConstraint.findUncoveredHttpMethods(context.findConstraints(),
+                        context.getDenyUncoveredHttpMethods());
+        for (SecurityConstraint constraint : newConstraints) {
+            context.addConstraint(constraint);
+        }
     }
     
     
