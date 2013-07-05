@@ -51,6 +51,12 @@ Closed connection to localhost:9999
     }
 }
 </source>
+Or edit the standalone.xml and add afiter the <code>extensions</code>:
+<source>
+   &lt;system-properties&gt;
+       &lt;property name="org.apache.catalina.JSESSIONID" value="MYID"/&gt;
+    &lt;/system-properties&gt;
+</source>
   </p>
 </section>
 
@@ -158,6 +164,10 @@ Closed connection to localhost:9999
       <code>2048</code> bytes.</p>
     </property>
 
+    <property name="org.apache.coyote.http11.Http11Protocol.SERVER">
+      <p>Server Identity stringr: the <code>Server:</code> header. The default value is 
+      <code>Apache-Coyote/1.1</code>.</p>
+    </property>
   </properties>
 
 </section>
@@ -350,6 +360,19 @@ Closed connection to localhost:9999
       session. When determining if a session is valid, any session with at least
       one active request will always be considered valid. If not specified, the
       default value of <code>false</code> will be used.</p>
+    </property>
+
+  </properties>
+
+</section>
+
+<section name="Others">
+
+  <properties>
+
+    <property name="org.apache.catalina.session.StandardManager.MAX_ACTIVE_SESSIONS">
+      <p>Control the max number of active sessions in the web sub system.
+      If not specified, the default value of <code>1024</code> (Openshift) and <code>-1</code> (otherwise) will be used.</p>
     </property>
 
   </properties>

@@ -583,8 +583,9 @@ final class StandardWrapperValve
                                     asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse());
                             asyncListener.onTimeout(asyncEvent);
                         } else if (error) {
+                            Throwable t = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
                             AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
-                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse(), asyncContext.getError());
+                                    asyncListenerRegistration.getRequest(), asyncListenerRegistration.getResponse(), t);
                             asyncListener.onError(asyncEvent);
                         } else {
                             AsyncEvent asyncEvent = new AsyncEvent(asyncContext, 
@@ -600,9 +601,6 @@ final class StandardWrapperValve
                 if (timeout && request.isEventMode() && asyncContext.getPath() == null) {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
-                if (error && request.isEventMode() && asyncContext.getPath() == null) {
-                    exception(request, response, asyncContext.getError());
-                }
             } else if (asyncContext.getRunnable() != null) {
                 // Execute the runnable
                 try {
@@ -610,7 +608,7 @@ final class StandardWrapperValve
                 } catch (Throwable e) {
                     container.getLogger().error(sm.getString("standardWrapper.async.runnableError",
                             getContainer().getName()), e);
-                    asyncContext.setError(e);
+                    exception(request, response, e);
                 }
             } else if (asyncContext.getPath() != null) {
                 // We executed the dispatch
@@ -633,7 +631,7 @@ final class StandardWrapperValve
                 } catch (Throwable e) {
                     container.getLogger().error(sm.getString("standardWrapper.async.dispatchError",
                             getContainer().getName()), e);
-                    asyncContext.setError(e);
+                    exception(request, response, e);
                 }
                 request.setCanStartAsync(false);
                 // If there is no new startAsync, then close the response
