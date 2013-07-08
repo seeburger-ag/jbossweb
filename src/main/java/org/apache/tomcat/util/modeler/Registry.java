@@ -40,8 +40,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.apache.tomcat.util.modeler.modules.ModelerSource;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.CoyoteLogger;
 
 /*
    Issues:
@@ -72,10 +71,6 @@ import org.jboss.logging.Logger;
  * @author Costin Manolache
  */
 public class Registry implements RegistryMBean, MBeanRegistration  {
-    /**
-     * The Log instance to which we will write our log messages.
-     */
-    private static Logger log = Logger.getLogger(Registry.class);
 
     // Support for the factory methods
     
@@ -288,7 +283,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         try {
             unregisterComponent(new ObjectName(oname));
         } catch (MalformedObjectNameException e) {
-            log.info("Error creating object name " + e );
+            CoyoteLogger.MODELER_LOGGER.errorCreatingObjectName(e);
         }
     }    
     
@@ -330,7 +325,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
 
             } catch( Exception t ) {
                 if( failFirst ) throw t;
-                log.info("Error initializing " + current + " " + t.toString());
+                CoyoteLogger.MODELER_LOGGER.errorInvokingOperation(operation, current);
             }
         }
     }
@@ -524,7 +519,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         try {
             info=server.getMBeanInfo(oname);
         } catch (Exception e) {
-            log.info( "Can't find metadata for object" + oname );
+            CoyoteLogger.MODELER_LOGGER.noMetadata(oname);
             return null;
         }
 
@@ -551,7 +546,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         try {
             info=server.getMBeanInfo(oname);
         } catch (Exception e) {
-            log.info( "Can't find metadata " + oname );
+            CoyoteLogger.MODELER_LOGGER.noMetadata(oname);
             return null;
         }
         MBeanOperationInfo attInfo[]=info.getOperations();
@@ -574,7 +569,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
                 getMBeanServer().unregisterMBean(oname);
             }
         } catch( Throwable t ) {
-            log.error( "Error unregistering mbean ", t);
+            CoyoteLogger.MODELER_LOGGER.errorUnregisteringMbean(oname, t);
         }
     }
 
@@ -589,13 +584,13 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         if (server == null) {
             if( MBeanServerFactory.findMBeanServer(null).size() > 0 ) {
                 server=(MBeanServer)MBeanServerFactory.findMBeanServer(null).get(0);
-                if( log.isDebugEnabled() ) {
-                    log.debug("Using existing MBeanServer " + (System.currentTimeMillis() - t1 ));
+                if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() ) {
+                    CoyoteLogger.MODELER_LOGGER.debug("Using existing MBeanServer " + (System.currentTimeMillis() - t1 ));
                 }
             } else {
                 server=MBeanServerFactory.createMBeanServer();
-                if( log.isDebugEnabled() ) {
-                    log.debug("Creating MBeanServer"+ (System.currentTimeMillis() - t1 ));
+                if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() ) {
+                    CoyoteLogger.MODELER_LOGGER.debug("Creating MBeanServer"+ (System.currentTimeMillis() - t1 ));
                 }
             }
         }
@@ -621,8 +616,8 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         // Search for a descriptor in the same package
         if( managed==null ) {
             // check package and parent packages
-            if( log.isDebugEnabled() ) {
-                log.debug( "Looking for descriptor ");
+            if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() ) {
+                CoyoteLogger.MODELER_LOGGER.debug( "Looking for descriptor ");
             }
             findDescriptor( beanClass, type );
 
@@ -630,8 +625,8 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         }
         
         if( bean instanceof DynamicMBean ) {
-            if( log.isDebugEnabled() ) {
-                log.debug( "Dynamic mbean support ");
+            if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() ) {
+                CoyoteLogger.MODELER_LOGGER.debug( "Dynamic mbean support ");
             }
             // Dynamic mbean
             loadDescriptors("MbeansDescriptorsDynamicMBeanSource",
@@ -642,8 +637,8 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
 
         // Still not found - use introspection
         if( managed==null ) {
-            if( log.isDebugEnabled() ) {
-                log.debug( "Introspecting ");
+            if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() ) {
+                CoyoteLogger.MODELER_LOGGER.debug( "Introspecting ");
             }
 
             // introspection
@@ -652,7 +647,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
 
             managed=findManagedBean(type);
             if( managed==null ) {
-                log.warn( "No metadata found for " + type );
+                CoyoteLogger.MODELER_LOGGER.noMetadata(type);
                 return null;
             }
             managed.setName( type );
@@ -709,8 +704,8 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
     public List load( String sourceType, Object source, String param)
         throws Exception
     {
-        if( log.isTraceEnabled()) {
-            log.trace("load " + source );
+        if( CoyoteLogger.MODELER_LOGGER.isTraceEnabled()) {
+            CoyoteLogger.MODELER_LOGGER.trace("load " + source );
         }
         String location=null;
         String type=null;
@@ -776,12 +771,12 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
     public void registerComponent(Object bean, ObjectName oname, String type)
            throws Exception
     {
-        if( log.isDebugEnabled() ) {
-            log.debug( "Managed= "+ oname);
+        if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() ) {
+            CoyoteLogger.MODELER_LOGGER.debug( "Managed= "+ oname);
         }
 
         if( bean ==null ) {
-            log.error("Null component " + oname );
+            CoyoteLogger.MODELER_LOGGER.nullComponent(oname);
             return;
         }
 
@@ -796,15 +791,15 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
             DynamicMBean mbean = managed.createMBean(bean);
 
             if(  getMBeanServer().isRegistered( oname )) {
-                if( log.isDebugEnabled()) {
-                    log.debug("Unregistering existing component " + oname );
+                if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled()) {
+                    CoyoteLogger.MODELER_LOGGER.debug("Unregistering existing component " + oname );
                 }
                 getMBeanServer().unregisterMBean( oname );
             }
 
             getMBeanServer().registerMBean( mbean, oname);
         } catch( Exception ex) {
-            log.error("Error registering " + oname, ex );
+            CoyoteLogger.MODELER_LOGGER.errorRegisteringMbean(oname, ex);
             throw ex;
         }
     }
@@ -817,8 +812,8 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
     public void loadDescriptors( String packageName, ClassLoader classLoader  ) {
         String res=packageName.replace( '.', '/');
 
-        if( log.isTraceEnabled() ) {
-            log.trace("Finding descriptor " + res );
+        if( CoyoteLogger.MODELER_LOGGER.isTraceEnabled() ) {
+            CoyoteLogger.MODELER_LOGGER.trace("Finding descriptor " + res );
         }
 
         if( searchedPaths.get( packageName ) != null ) {
@@ -836,8 +831,8 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
             return;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug( "Found " + dURL);
+        if (CoyoteLogger.MODELER_LOGGER.isDebugEnabled()) {
+            CoyoteLogger.MODELER_LOGGER.debug( "Found " + dURL);
         }
         searchedPaths.put( packageName,  dURL );
         try {
@@ -847,7 +842,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
                 loadDescriptors("MbeansDescriptorsSerSource", dURL, null);
             return;
         } catch(Exception ex ) {
-            log.error("Error loading " + dURL);
+            CoyoteLogger.MODELER_LOGGER.errorLoading(dURL);
         }
 
         return;
@@ -1009,13 +1004,14 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
 
     // should be removed
     public void unregisterComponent( String domain, String name ) {
+        ObjectName oname= null;
         try {
-            ObjectName oname=new ObjectName( domain + ":" + name );
+            oname=new ObjectName( domain + ":" + name );
 
             // XXX remove from our tables.
             getMBeanServer().unregisterMBean( oname );
         } catch( Throwable t ) {
-            log.error( "Error unregistering mbean ", t );
+            CoyoteLogger.MODELER_LOGGER.errorUnregisteringMbean(oname, t);
         }
     }
     

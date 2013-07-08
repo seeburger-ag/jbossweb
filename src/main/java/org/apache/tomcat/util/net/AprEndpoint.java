@@ -1,23 +1,19 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.tomcat.util.net;
@@ -25,6 +21,7 @@ package org.apache.tomcat.util.net;
 import static org.jboss.web.CoyoteMessages.MESSAGES;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Executor;
@@ -234,6 +231,22 @@ public class AprEndpoint {
     protected boolean deferAccept = true;
     public void setDeferAccept(boolean deferAccept) { this.deferAccept = deferAccept; }
     public boolean getDeferAccept() { return deferAccept; }
+
+
+    /**
+     * Receive buffer.
+     */
+    protected int soReceiveBuffer = Constants.SO_RCV_BUFFER;
+    public int getSoReceiveBuffer() { return soReceiveBuffer; }
+    public void setSoReceiveBuffer(int soReceiveBuffer) { this.soReceiveBuffer = soReceiveBuffer; }
+
+
+    /**
+     * Send buffer.
+     */
+    protected int soSendBuffer = Constants.SO_SND_BUFFER;
+    public int getSoSendBuffer() { return soSendBuffer; }
+    public void setSoSendBuffer(int soSendBuffer) { this.soSendBuffer = soSendBuffer; }
 
 
     /**
@@ -786,24 +799,23 @@ public class AprEndpoint {
     }
 
 
-    /**
-     * Unlock the server socket accept using a bogus connection.
-     */
     protected void unlockAccept() {
         java.net.Socket s = null;
+        InetSocketAddress saddr = null;
         try {
             // Need to create a connection to unlock the accept();
             if (address == null) {
-                s = new java.net.Socket("localhost", port);
+                saddr = new InetSocketAddress("localhost", port);
             } else {
-                s = new java.net.Socket(address, port);
-                // setting soLinger to a small value will help shutdown the
-                // connection quicker
-                s.setSoLinger(true, 0);
+                saddr = new InetSocketAddress(address, port);
             }
+            s = new java.net.Socket();
+            s.setSoLinger(true, 0);
+            s.connect(saddr, 2000);
             // If deferAccept is enabled, send at least one byte
             if (deferAccept) {
                 s.getOutputStream().write(" ".getBytes());
+                s.getOutputStream().flush();
             }
         } catch (Exception e) {
             // Ignore
@@ -834,6 +846,10 @@ public class AprEndpoint {
                 Socket.optSet(socket, Socket.APR_TCP_NODELAY, (tcpNoDelay ? 1 : 0));
             if (soTimeout > 0)
                 Socket.timeoutSet(socket, soTimeout * 1000);
+            if (soReceiveBuffer > 0)
+                Socket.optSet(socket, Socket.APR_SO_RCVBUF, soReceiveBuffer);
+            if (soSendBuffer > 0)
+                Socket.optSet(socket, Socket.APR_SO_SNDBUF, soSendBuffer);
 
             // 2: SSL handshake
             step = 2;
@@ -1126,7 +1142,21 @@ public class AprEndpoint {
                             Socket.destroy(socket);
                         }
                     } catch (Throwable t) {
-                        CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                        if (running) {
+                            if (t instanceof Error) {
+                                Error e = (Error) t;
+                                if (e.getError() == 233) {
+                                    // Not an error on HP-UX so log as a warning
+                                    // so it can be filtered out on that platform
+                                    // See bug 50273
+                                    CoyoteLogger.UTIL_LOGGER.warnAcceptingSocket(t);
+                                } else {
+                                    CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                                }
+                            } else {
+                                CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                            }
+                        }
                     }
 
                 }
@@ -1406,11 +1436,6 @@ public class AprEndpoint {
                 } else {
                     defaultPollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
                 }
-            }
-            if ((OS.IS_WIN32 || OS.IS_WIN64) && (defaultPollerSize > 1024)) {
-                // The maximum per poller to get reasonable performance is 1024
-                // Adjust poller size so that it won't reach the limit
-                defaultPollerSize = 1024;
             }
             actualPollerSize = defaultPollerSize;
 
