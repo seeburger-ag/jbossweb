@@ -26,8 +26,6 @@ import java.io.IOException;
 
 /**
  * Upgradable HTTP Servlet response.
- * 
- * @author remm
  */
 public interface UpgradableHttpServletResponse {
 
