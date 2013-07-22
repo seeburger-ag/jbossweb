@@ -53,6 +53,11 @@ public interface CoyoteLogger extends BasicLogger {
     /**
      * A logger with the category of the package name.
      */
+    CoyoteLogger NET_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.tomcat.util.net");
+
+    /**
+     * A logger with the category of the package name.
+     */
     CoyoteLogger HTTP_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11");
 
     /**

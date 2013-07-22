@@ -1220,7 +1220,7 @@ public class JIoEndpoint {
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that
             // the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
             return false;
         }
         return true;
@@ -1245,7 +1245,7 @@ public class JIoEndpoint {
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that
             // the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
             return false;
         }
         return true;
