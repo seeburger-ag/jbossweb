@@ -119,7 +119,7 @@ public abstract class AuthenticatorBase
      * authentication to prevent a session fixation attack?
      */
     protected boolean unregisterSsoOnLogout = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.authenticator.AuthenticatorBase.UNREGISTER_SSO_ON_LOGOUT", "true")).booleanValue();
+        Boolean.valueOf(System.getProperty("org.apache.catalina.authenticator.AuthenticatorBase.UNREGISTER_SSO_ON_LOGOUT", "false")).booleanValue();
 
 
     /**
