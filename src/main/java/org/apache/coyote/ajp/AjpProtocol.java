@@ -299,7 +299,7 @@ public class AjpProtocol
     /**
      * Required secret.
      */
-    protected String requiredSecret = null;
+    protected String requiredSecret = Constants.DEFAULT_REQUIRED_SECRET;
     public void setRequiredSecret(String requiredSecret) { this.requiredSecret = requiredSecret; }
     
     /**
