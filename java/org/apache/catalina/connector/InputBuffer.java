@@ -240,7 +240,7 @@ public class InputBuffer extends Reader
 
 
     /**
-     * Clear cached encoders (to save memory for event requests).
+     * Clear cached encoders (to save memory for Comet requests).
      */
     public void clearEncoders() {
         encoders.clear();
@@ -281,7 +281,7 @@ public class InputBuffer extends Reader
         int available = 0;
         if (state != CHAR_STATE) {
             available = bb.getLength();
-            if (request.isEventMode() && available == 0) {
+            if (request.isComet() && available == 0) {
                 try {
                     coyoteRequest.action(ActionCode.ACTION_AVAILABLE, null);
                     available = realReadBytes(null, 0, 0);
@@ -292,7 +292,7 @@ public class InputBuffer extends Reader
             }
         } else {
             available = cb.getLength();
-            if (request.isEventMode() && available == 0) {
+            if (request.isComet() && available == 0) {
                 try {
                     coyoteRequest.action(ActionCode.ACTION_AVAILABLE, null);
                     available = realReadChars(null, 0, cb.getBuffer().length);
@@ -301,20 +301,6 @@ public class InputBuffer extends Reader
                     // will occur elsewhere
                 }
             }
-        }
-        return available;
-    }
-
-
-    public int getAvailable() {
-        if (eof || closed) {
-            return -1;
-        }
-        int available = 0;
-        if (state != CHAR_STATE) {
-            available = bb.getLength();
-        } else {
-            available = cb.getLength();
         }
         return available;
     }
@@ -560,18 +546,21 @@ public class InputBuffer extends Reader
         enc = (enc == null) ? DEFAULT_ENCODING : enc.toUpperCase(Locale.US);
         conv = encoders.get(enc);
         if (conv == null) {
-            if (SecurityUtil.isPackageProtectionEnabled()) {
-                try {
-                    conv = (B2CConverter) AccessController
-                            .doPrivileged(new PrivilegedExceptionAction<B2CConverter>() {
-                                public B2CConverter run() throws IOException {
+            if (SecurityUtil.isPackageProtectionEnabled()){
+                try{
+                    conv = (B2CConverter)AccessController.doPrivileged(
+                            new PrivilegedExceptionAction(){
+
+                                public Object run() throws IOException{
                                     return new B2CConverter(enc);
                                 }
-                            });
-                } catch (PrivilegedActionException ex) {
+
+                            }
+                    );              
+                }catch(PrivilegedActionException ex){
                     Exception e = ex.getException();
                     if (e instanceof IOException)
-                        throw (IOException) e;
+                        throw (IOException)e; 
                 }
             } else {
                 conv = new B2CConverter(enc);

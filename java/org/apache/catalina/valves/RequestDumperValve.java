@@ -161,7 +161,7 @@ public class RequestDumperValve
                 rcookies[i].getValue() + "; domain=" +
                 rcookies[i].getDomain() + "; path=" + rcookies[i].getPath());
         }
-        String rhnames[] = response.getHeaderNamesArray();
+        String rhnames[] = response.getHeaderNames();
         for (int i = 0; i < rhnames.length; i++) {
             String rhvalues[] = response.getHeaderValues(rhnames[i]);
             for (int j = 0; j < rhvalues.length; j++)

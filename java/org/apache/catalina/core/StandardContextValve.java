@@ -21,7 +21,6 @@ package org.apache.catalina.core;
 
 import java.io.IOException;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestEvent;
@@ -29,6 +28,7 @@ import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Container;
+import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
@@ -158,8 +158,59 @@ final class StandardContextValve
             }
         }
 
+        // Normal request processing
+        Object instances[] = context.getApplicationEventListeners();
+
+        ServletRequestEvent event = null;
+
+        if ((instances != null) 
+                && (instances.length > 0)) {
+            event = new ServletRequestEvent
+                (((StandardContext) container).getServletContext(), 
+                 request.getRequest());
+            // create pre-service event
+            for (int i = 0; i < instances.length; i++) {
+                if (instances[i] == null)
+                    continue;
+                if (!(instances[i] instanceof ServletRequestListener))
+                    continue;
+                ServletRequestListener listener =
+                    (ServletRequestListener) instances[i];
+                try {
+                    listener.requestInitialized(event);
+                } catch (Throwable t) {
+                    container.getLogger().error(sm.getString("standardContext.requestListener.requestInit",
+                                     instances[i].getClass().getName()), t);
+                    ServletRequest sreq = request.getRequest();
+                    sreq.setAttribute(Globals.EXCEPTION_ATTR,t);
+                    return;
+                }
+            }
+        }
+
         wrapper.getPipeline().getFirst().invoke(request, response);
 
+        if ((instances !=null ) &&
+                (instances.length > 0)) {
+            // create post-service event
+            for (int i = 0; i < instances.length; i++) {
+                if (instances[i] == null)
+                    continue;
+                if (!(instances[i] instanceof ServletRequestListener))
+                    continue;
+                ServletRequestListener listener =
+                    (ServletRequestListener) instances[i];
+                try {
+                    listener.requestDestroyed(event);
+                } catch (Throwable t) {
+                    container.getLogger().error(sm.getString("standardContext.requestListener.requestDestroy",
+                                     instances[i].getClass().getName()), t);
+                    ServletRequest sreq = request.getRequest();
+                    sreq.setAttribute(Globals.EXCEPTION_ATTR,t);
+                }
+            }
+        }
+                
     }
 
 
@@ -175,13 +226,70 @@ final class StandardContextValve
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
      */
-    public final void event(Request request, Response response, HttpEvent httpEvent)
+    public final void event(Request request, Response response, HttpEvent event)
         throws IOException, ServletException {
 
         // Select the Wrapper to be used for this Request
         Wrapper wrapper = request.getWrapper();
-        wrapper.getPipeline().getFirst().event(request, response, httpEvent);
 
+        // Normal request processing
+        // FIXME: This could be an addition to the core API too
+        /*
+        Object instances[] = context.getApplicationEventListeners();
+
+        ServletRequestEvent event = null;
+
+        if ((instances != null) 
+                && (instances.length > 0)) {
+            event = new ServletRequestEvent
+                (((StandardContext) container).getServletContext(), 
+                 request.getRequest());
+            // create pre-service event
+            for (int i = 0; i < instances.length; i++) {
+                if (instances[i] == null)
+                    continue;
+                if (!(instances[i] instanceof ServletRequestListener))
+                    continue;
+                ServletRequestListener listener =
+                    (ServletRequestListener) instances[i];
+                try {
+                    listener.requestInitialized(event);
+                } catch (Throwable t) {
+                    container.getLogger().error(sm.getString("requestListenerValve.requestInit",
+                                     instances[i].getClass().getName()), t);
+                    ServletRequest sreq = request.getRequest();
+                    sreq.setAttribute(Globals.EXCEPTION_ATTR,t);
+                    return;
+                }
+            }
+        }
+        */
+
+        wrapper.getPipeline().getFirst().event(request, response, event);
+
+        /*
+        if ((instances !=null ) &&
+                (instances.length > 0)) {
+            // create post-service event
+            for (int i = 0; i < instances.length; i++) {
+                if (instances[i] == null)
+                    continue;
+                if (!(instances[i] instanceof ServletRequestListener))
+                    continue;
+                ServletRequestListener listener =
+                    (ServletRequestListener) instances[i];
+                try {
+                    listener.requestDestroyed(event);
+                } catch (Throwable t) {
+                    container.getLogger().error(sm.getString("requestListenerValve.requestDestroy",
+                                     instances[i].getClass().getName()), t);
+                    ServletRequest sreq = request.getRequest();
+                    sreq.setAttribute(Globals.EXCEPTION_ATTR,t);
+                }
+            }
+        }
+        */
+      
     }
 
 

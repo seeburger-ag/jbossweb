@@ -137,7 +137,6 @@ public class PersistentValve
                             manager.add(session);
                             // ((StandardSession)session).activate();
                             session.access();
-                            session.endAccess();
                         }
                     }
                 }

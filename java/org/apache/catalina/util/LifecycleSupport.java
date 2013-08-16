@@ -76,14 +76,16 @@ public final class LifecycleSupport {
      *
      * @param listener The listener to add
      */
-    public synchronized void addLifecycleListener(LifecycleListener listener) {
+    public void addLifecycleListener(LifecycleListener listener) {
 
-        LifecycleListener results[] =
+      synchronized (listeners) {
+          LifecycleListener results[] =
             new LifecycleListener[listeners.length + 1];
-        for (int i = 0; i < listeners.length; i++)
-            results[i] = listeners[i];
-        results[listeners.length] = listener;
-        listeners = results;
+          for (int i = 0; i < listeners.length; i++)
+              results[i] = listeners[i];
+          results[listeners.length] = listener;
+          listeners = results;
+      }
 
     }
 
@@ -122,25 +124,27 @@ public final class LifecycleSupport {
      *
      * @param listener The listener to remove
      */
-    public synchronized void removeLifecycleListener(LifecycleListener listener) {
+    public void removeLifecycleListener(LifecycleListener listener) {
 
-        int n = -1;
-        for (int i = 0; i < listeners.length; i++) {
-            if (listeners[i] == listener) {
-                n = i;
-                break;
+        synchronized (listeners) {
+            int n = -1;
+            for (int i = 0; i < listeners.length; i++) {
+                if (listeners[i] == listener) {
+                    n = i;
+                    break;
+                }
             }
+            if (n < 0)
+                return;
+            LifecycleListener results[] =
+              new LifecycleListener[listeners.length - 1];
+            int j = 0;
+            for (int i = 0; i < listeners.length; i++) {
+                if (i != n)
+                    results[j++] = listeners[i];
+            }
+            listeners = results;
         }
-        if (n < 0)
-            return;
-        LifecycleListener results[] =
-            new LifecycleListener[listeners.length - 1];
-        int j = 0;
-        for (int i = 0; i < listeners.length; i++) {
-            if (i != n)
-                results[j++] = listeners[i];
-        }
-        listeners = results;
 
     }
 
