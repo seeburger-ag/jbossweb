@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload;
 
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -122,7 +124,7 @@ public class DeferredFileOutputStream
     {
         this(threshold, (File)null);
         if (prefix == null) {
-            throw new IllegalArgumentException("Temporary file prefix is missing");
+            throw MESSAGES.missingTemporaryFilePrefix();
         }
         this.prefix = prefix;
         this.suffix = suffix;
@@ -250,7 +252,7 @@ public class DeferredFileOutputStream
         // a file or memory.
         if (!closed)
         {
-            throw new IOException("Stream not closed");
+            throw new IOException(MESSAGES.streamNotClosed());
         }
         
         if(isInMemory())
