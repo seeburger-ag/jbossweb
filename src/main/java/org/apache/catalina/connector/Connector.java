@@ -216,7 +216,8 @@ public class Connector
     /**
      * Flag to use IP-based virtual hosting.
      */
-    protected boolean useIPVHosts = false;
+    protected boolean useIPVHosts = 
+            Boolean.valueOf(System.getProperty("org.apache.catalina.connector.USE_IP_PORT_FOR_ALIAS", "false")).booleanValue();
 
     /**
      * The background thread.

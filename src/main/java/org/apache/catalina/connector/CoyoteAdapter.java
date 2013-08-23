@@ -492,6 +492,10 @@ public class CoyoteAdapter
                 // well, they did ask for it
                 res.action(ActionCode.ACTION_REQ_LOCAL_NAME_ATTRIBUTE, null);
             }
+            if (connector.getAllowedHosts() != null && connector.getAllowedHosts().size() == 1) {
+               serverName = serverName.newInstance();
+               serverName.setString(req.localName() + ":" + req.getServerPort());
+            }
         } else {
             serverName = req.serverName();
         }
