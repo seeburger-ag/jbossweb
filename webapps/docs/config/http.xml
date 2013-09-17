@@ -104,7 +104,8 @@
         settings for HTTPS than the default Java connector.<br/>
         Other values for this attribute are, but not limited to:<br/>
         <code>org.apache.coyote.http11.Http11Protocol</code> - same as HTTP/1.1<br/>
-        <code>org.apache.coyote.http11.Http11NioProtocol</code> - non blocking Java connector, not supported in JBossWeb<br/>
+        <code>org.apache.coyote.http11.Http11NioProtocol</code> - non blocking Java connector,  note that it require java7 and that is not based
+        on the NIO1 connector of the ASF Tomcat but uses NIO2<br/>
         <code>org.apache.coyote.http11.Http11AprProtocol</code> - the APR connector.<br/>
         The configuration for both Java connectors are identical, both for http and https. <br/>
         For more information on the APR connector and APR specific SSL settings please 

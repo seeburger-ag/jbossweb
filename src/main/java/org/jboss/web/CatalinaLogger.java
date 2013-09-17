@@ -1,23 +1,19 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.web;
@@ -39,7 +35,7 @@ import org.jboss.logging.MessageLogger;
 
 /**
  * Logging IDs 1000-2000
- * @author remm
+ * @author Remy Maucherat
  */
 @MessageLogger(projectCode = "JBWEB")
 public interface CatalinaLogger extends BasicLogger {
@@ -102,19 +98,19 @@ public interface CatalinaLogger extends BasicLogger {
     void missingSecurityProvider(String provider, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1003, value = "Error digesting user credentials.")
+    @Message(id = 1003, value = "Error digesting user credentials")
     void errorDigestingCredentials(@Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1004, value = "Failed realm [%s] JMX registration.")
+    @Message(id = 1004, value = "Failed realm [%s] JMX registration")
     void failedRealmJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1005, value = "Failed realm [%s] JMX unregistration.")
+    @Message(id = 1005, value = "Failed realm [%s] JMX unregistration")
     void failedRealmJmxUnregistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1006, value = "Missing parent [%s].")
+    @Message(id = 1006, value = "Missing parent [%s]")
     void missingParentJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = INFO)
@@ -122,11 +118,11 @@ public interface CatalinaLogger extends BasicLogger {
     void connectorAlreadyInitialized();
 
     @LogMessage(level = ERROR)
-    @Message(id = 1008, value = "Failed connector [%s] JMX registration.")
+    @Message(id = 1008, value = "Failed connector [%s] JMX registration")
     void failedConnectorJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1009, value = "Failed connector [%s] JMX unregistration.")
+    @Message(id = 1009, value = "Failed connector [%s] JMX unregistration")
     void failedConnectorJmxUnregistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
@@ -142,7 +138,7 @@ public interface CatalinaLogger extends BasicLogger {
     void connectorAlreadyStarted();
 
     @LogMessage(level = INFO)
-    @Message(id = 1013, value = "Cannot proceed with protocol handler JMX registration.")
+    @Message(id = 1013, value = "Cannot proceed with protocol handler JMX registration")
     void failedProtocolJmxRegistration();
 
     @LogMessage(level = INFO)
@@ -190,11 +186,11 @@ public interface CatalinaLogger extends BasicLogger {
     void exceptionProcessingParameters(@Cause Throwable t);
 
     @LogMessage(level = DEBUG)
-    @Message(id = 1025, value = "Request [%s], can not apply ExpiresFilter on already committed response.")
+    @Message(id = 1025, value = "Request [%s], can not apply ExpiresFilter on already committed response")
     void expiresResponseAlreadyCommitted(String uri);
 
     @LogMessage(level = WARN)
-    @Message(id = 1026, value = "Unknown parameter %s with value %s is ignored.")
+    @Message(id = 1026, value = "Unknown parameter %s with value %s is ignored")
     void expiresUnknownParameter(String name, String value);
 
     @LogMessage(level = DEBUG)
@@ -578,11 +574,11 @@ public interface CatalinaLogger extends BasicLogger {
     void pipelineNotStarted();
 
     @LogMessage(level = ERROR)
-    @Message(id = 1122, value = "Failed valve [%s] JMX registration.")
+    @Message(id = 1122, value = "Failed valve [%s] JMX registration")
     void failedValveJmxRegistration(Object valve, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1123, value = "Failed valve [%s] JMX unregistration.")
+    @Message(id = 1123, value = "Failed valve [%s] JMX unregistration")
     void failedValveJmxUnregistration(Object valve, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
@@ -602,7 +598,7 @@ public interface CatalinaLogger extends BasicLogger {
     void errorInitializingService(@Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1128, value = "Failed service [%s] JMX registration.")
+    @Message(id = 1128, value = "Failed service [%s] JMX registration")
     void failedServiceJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
@@ -642,7 +638,7 @@ public interface CatalinaLogger extends BasicLogger {
     void stoppingService(String serviceName);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1138, value = "Failed server [%s] JMX registration.")
+    @Message(id = 1138, value = "Failed server [%s] JMX registration")
     void failedServerJmxRegistration(Object objectName, @Cause Throwable t);
 
     @LogMessage(level = INFO)
@@ -650,7 +646,47 @@ public interface CatalinaLogger extends BasicLogger {
     void contextJmxRegistrationFailed(String contextName, @Cause Throwable t);
 
     @LogMessage(level = ERROR)
-    @Message(id = 1140, value = "Failed protocol handler [%s] JMX registration.")
+    @Message(id = 1140, value = "Failed protocol handler [%s] JMX registration")
     void failedProtocolJmxRegistration(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1141, value = "NIO 2 is not available, the java.io connector will be used instead")
+    void usingJavaIoConnector();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1142, value = "Access log rotation failed")
+    void errorRotatingAccessLog(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1143, value = "Error closing old log file")
+    void errorClosingOldAccessLog(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 1144, value = "Pattern was just empty or whitespace")
+    void extendedAccessLogEmptyPattern();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1145, value = "Pattern parse error")
+    void extendedAccessLogPatternParseError(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1146, value = "Unable to decode with rest of chars starting: %s")
+    void extendedAccessLogUnknownToken(String token);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1147, value = "No closing ) found for in decode")
+    void extendedAccessLogMissingClosing();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1148, value = "The next characters couldn't be decoded: %s")
+    void extendedAccessLogCannotDecode(String chars);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1149, value = "X param for servlet request, couldn't decode value: %s")
+    void extendedAccessLogCannotDecodeXParamValue(String value);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 1150, value = "X param in wrong format. Needs to be 'x-#(...)'")
+    void extendedAccessLogBadXParam();
 
 }

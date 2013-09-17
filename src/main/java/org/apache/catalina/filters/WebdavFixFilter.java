@@ -17,6 +17,8 @@
 
 package org.apache.catalina.filters;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 
 import javax.servlet.Filter;
@@ -59,9 +61,6 @@ import javax.servlet.http.HttpServletResponse;
  */
 
 public class WebdavFixFilter implements Filter {
-
-    private static final String LOG_MESSAGE_PREAMBLE =
-        "WebdavFixFilter: Detected client problem: ";
 
     /* Start string for all versions */
     private static final String UA_MINIDIR_START =
@@ -106,12 +105,11 @@ public class WebdavFixFilter implements Filter {
 		} else if (ua.startsWith(UA_MINIDIR_5_2_3790)) {
 		    // XP 64-bit SP2
 		    if (!"".equals(httpRequest.getContextPath())) {
-		        log(request,
-		                "XP-x64-SP2 clients only work with the root context");
+		        request.getServletContext().log(MESSAGES.webDavClientProblemXpRootOnly());
 		    }
 		    // Namespace issue maybe
 		    // see http://greenbytes.de/tech/webdav/webdav-redirector-list.html
-		    log(request, "XP-x64-SP2 is known not to work with WebDAV Servlet");
+		    request.getServletContext().log(MESSAGES.webDavClientProblemXp());
 		    
 		    chain.doFilter(request, response);
 		} else {
@@ -137,9 +135,4 @@ public class WebdavFixFilter implements Filter {
         return location.toString();
     }
 
-    private void log(ServletRequest request, String msg) {
-        StringBuilder builder = new StringBuilder(LOG_MESSAGE_PREAMBLE);
-        builder.append(msg);
-        request.getServletContext().log(builder.toString());
-    }
 }
