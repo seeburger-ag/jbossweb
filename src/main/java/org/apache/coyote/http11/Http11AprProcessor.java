@@ -314,7 +314,7 @@ public class Http11AprProcessor implements ActionHook {
     protected String server = null;
 
     
-    protected boolean readNotifications = true;
+    protected boolean readNotifications = false;
     protected boolean writeNotification = false;
     protected boolean resumeNotification = false;
     protected boolean eventProcessing = true;
@@ -988,7 +988,7 @@ public class Http11AprProcessor implements ActionHook {
         outputBuffer.recycle();
         this.socket = 0;
         timeout = -1;
-        readNotifications = true;
+        readNotifications = false;
         writeNotification = false;
         resumeNotification = false;
         eventProcessing = true;
@@ -1250,6 +1250,7 @@ public class Http11AprProcessor implements ActionHook {
                 Socket.timeoutSet(socket, 0);
                 outputBuffer.setNonBlocking(true);
                 inputBuffer.setNonBlocking(true);
+                readNotifications = true;
             }
         } else if (actionCode == ActionCode.ACTION_EVENT_END) {
             event = false;
@@ -1265,6 +1266,13 @@ public class Http11AprProcessor implements ActionHook {
             readNotifications = false;
         } else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
             readNotifications = true;
+            // An event is being processed already: adding for resume will be done
+            // when the socket gets back to the poller
+            if (!eventProcessing && !resumeNotification) {
+                endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
+            }
+            resumeNotification = true;
+        } else if (actionCode == ActionCode.ACTION_EVENT_WAKEUP) {
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
             if (!eventProcessing && !resumeNotification) {

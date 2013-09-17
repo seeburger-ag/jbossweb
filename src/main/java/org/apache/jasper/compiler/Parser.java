@@ -254,7 +254,7 @@ class Parser implements TagConstants {
                     quote, isElIgnored,
                     pageInfo.isDeferredSyntaxAllowedAsLiteral());
         } catch (IllegalArgumentException iae) {
-            err.jspError(start, iae.getMessage());
+            err.jspError(start, MESSAGES.errorUnquotingAttributeValue(), iae);
         }
         if (watch.length() == 1) // quote
             return ret;
