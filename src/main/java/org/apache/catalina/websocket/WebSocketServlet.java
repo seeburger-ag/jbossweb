@@ -45,8 +45,10 @@ import org.jboss.servlet.http.UpgradableHttpServletResponse;
  * Provides the base implementation of a Servlet for processing WebSocket
  * connections as per RFC6455. It is expected that applications will extend this
  * implementation and provide application specific functionality.
+ * 
+ * Note: In this branch, the API is disabled.
  */
-public abstract class WebSocketServlet extends HttpServlet implements HttpEventServlet  {
+public final class WebSocketServlet extends HttpServlet implements HttpEventServlet  {
 
     private static final long serialVersionUID = 1L;
     private static final byte[] WS_ACCEPT =
@@ -276,6 +278,8 @@ public abstract class WebSocketServlet extends HttpServlet implements HttpEventS
      *                      method. If Tomcat detects such access, it will throw
      *                      an IllegalStateException
      */
-    protected abstract StreamInbound createWebSocketInbound(String subProtocol,
-            HttpServletRequest request);
+    protected /*abstract*/ StreamInbound createWebSocketInbound(String subProtocol,
+            HttpServletRequest request) {
+        return null;
+    }
 }
