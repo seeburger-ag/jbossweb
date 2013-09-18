@@ -45,6 +45,7 @@
         <version.org.jboss.spec.javax.el>1.0.1.Final</version.org.jboss.spec.javax.el>
         <version.org.jboss.spec.javax.servlet>1.0.1.Final</version.org.jboss.spec.javax.servlet>
         <version.org.jboss.spec.javax.servlet.jsp>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp>
+        <version.org.jboss.spec.javax.websocket>1.0.0.Beta1</version.org.jboss.spec.javax.websocket>
         <version.org.eclipse.jdt.core.compiler.ecj>3.7.2</version.org.eclipse.jdt.core.compiler.ecj>
         <version.org.jboss.xnio>3.0.4.GA</version.org.jboss.xnio>
         <!-- Build configuration -->
@@ -152,6 +153,13 @@
             <groupId>org.jboss.spec.javax.el</groupId>
             <artifactId>jboss-el-api_2.2_spec</artifactId>
             <version>${version.org.jboss.spec.javax.el}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.websocket</groupId>
+            <artifactId>jboss-websocket-api_1.0_spec</artifactId>
+            <version>${version.org.jboss.spec.javax.websocket}</version>
             <scope>provided</scope>
         </dependency>
 
