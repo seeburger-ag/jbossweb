@@ -20,7 +20,8 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 
-import javax.servlet.ServletOutputStream;
+import org.apache.coyote.http11.upgrade.AbstractServletOutputStream;
+import org.apache.coyote.http11.upgrade.servlet31.WriteListener;
 
 /**
  * Coyote implementation of the servlet output stream.
@@ -29,7 +30,7 @@ import javax.servlet.ServletOutputStream;
  * @author Remy Maucherat
  */
 public class CoyoteOutputStream 
-    extends ServletOutputStream {
+    extends AbstractServletOutputStream {
 
 
     // ----------------------------------------------------- Instance Variables
@@ -105,5 +106,14 @@ public class CoyoteOutputStream
     }
 
 
-}
+    public boolean isReady() {
+        return (ob.lastWrite() > 0);
+    }
 
+
+    @Override
+    public void setWriteListener(WriteListener writeListener) {
+        ob.setWriteListener(writeListener);
+    }
+
+}

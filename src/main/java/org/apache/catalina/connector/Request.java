@@ -83,6 +83,8 @@ import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.ParameterMap;
 import org.apache.catalina.util.StringParser;
 import org.apache.coyote.ActionCode;
+import org.apache.coyote.http11.upgrade.servlet31.HttpUpgradeHandler;
+import org.apache.coyote.http11.upgrade.servlet31.ReadListener;
 import org.apache.tomcat.util.buf.B2CConverter;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.EncodingToCharset;
@@ -487,6 +489,12 @@ public class Request
     protected LinkedList<AsyncListener> asyncListenerInstances = new LinkedList<AsyncListener>();
     
 
+    /**
+     * Upgrade handler.
+     */
+    protected HttpUpgradeHandler upgradeHandler = null;
+
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -518,7 +526,8 @@ public class Request
             event.clear();
             event = null;
         }
-        
+        upgradeHandler = null;
+
         sslAttributes = false;
         asyncContext = null;
         asyncTimeout = -1;
@@ -3294,6 +3303,38 @@ public class Request
         return coyoteRequest.hasSendfile();
     }
 
+
+    public long getContentLengthLong() {
+        return (coyoteRequest.getContentLengthLong());
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> upgradeHandlerClass)
+            throws IOException {
+        T ugradeHandler = null;
+        Throwable upgradeError = null;
+        try {
+            ugradeHandler = (T) context.getInstanceManager().newInstance(upgradeHandlerClass);
+        } catch (Throwable t) {
+            upgradeError = t;
+        }
+        if (ugradeHandler == null) {
+            throw new IOException(MESSAGES.upgradeError(), upgradeError);
+        }
+        response.sendUpgrade();
+        eventMode = true;
+        ugradeHandler.init(getEvent());
+        this.upgradeHandler = ugradeHandler;
+        return ugradeHandler;
+    }
+
+    public HttpUpgradeHandler getUpgradeHandler() {
+        return upgradeHandler;
+    }
+
+    public ReadListener getReadListener() {
+        return inputBuffer.getReadListener();
+    }
 
     public String toString() {
         StringBuilder buf = new StringBuilder();

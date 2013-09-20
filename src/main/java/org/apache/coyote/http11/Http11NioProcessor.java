@@ -855,6 +855,12 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		} else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
 			// Timeout event
 			timeoutEvent(param);
+		} else if (actionCode == ActionCode.ACTION_EVENT_READ_BEGIN) {
+		    inputBuffer.setNonBlocking(true);
+		    readNotifications = true;
+		} else if (actionCode == ActionCode.ACTION_EVENT_WRITE_BEGIN) {
+		    outputBuffer.setNonBlocking(true);
+		    writeEvent(param);
 		} else if (actionCode == ActionCode.UPGRADE) {
             // Switch to raw bytes mode
             inputBuffer.removeActiveFilters();

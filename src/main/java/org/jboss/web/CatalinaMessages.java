@@ -141,9 +141,6 @@ public interface CatalinaMessages {
     @Message(id = 34, value = "Cannot upgrade from HTTP/1.1 without IO events")
     IllegalStateException cannotUpgradeWithoutEvents();
 
-    @Message(id = 35, value = "Cannot upgrade from HTTP/1.1 is not using an HttpEventServlet")
-    IllegalStateException cannotUpgradeWithoutEventServlet();
-
     @Message(id = 36, value = "Cannot call sendFile() after the response has been committed")
     IllegalStateException cannotSendFile();
 
@@ -1001,5 +998,26 @@ public interface CatalinaMessages {
 
     @Message(id = 369, value = "The WebSocket connection has been closed")
     String outboundClosed();
+
+    @Message(id = 370, value = "Read listener already set")
+    IllegalStateException readListenerAlreadySet();
+
+    @Message(id = 371, value = "Write listener already set")
+    IllegalStateException writeListenerAlreadySet();
+
+    @Message(id = 372, value = "Upgrade error")
+    String upgradeError();
+
+    @Message(id = 373, value = "Upgrade destroy processing for servlet %s threw exception")
+    String upgradeHandlerDestroyError(String servletName);
+
+    @Message(id = 374, value = "IO listener processing for servlet %s threw exception")
+    String ioListenerError(String servletName);
+
+    @Message(id = 375, value = "Null read or write listener")
+    NullPointerException nullListener();
+
+    @Message(id = 376, value = "Cannot use a read or write listener without upgrading or starting async")
+    IllegalStateException cannotSetListenerWithoutUpgradeOrAsync();
 
 }

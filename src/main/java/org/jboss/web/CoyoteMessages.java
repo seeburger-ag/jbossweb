@@ -277,4 +277,7 @@ public interface CoyoteMessages {
     @Message(id = 2079, value = "Unexpected data read during handshake")
     String sslHandshakeData();
 
+    @Message(id = 2080, value = "Thread [%s] stoppe to avoid potential leak")
+    String threadStopped(String threadName);
+
 }

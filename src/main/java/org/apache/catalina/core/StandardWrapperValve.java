@@ -509,8 +509,8 @@ final class StandardWrapperValve
             if (event.getType() == EventType.END || event.getType() == EventType.ERROR
                     || event.getType() == EventType.TIMEOUT) {
                 // Invoke the listeners with onComplete or onTimeout
-                boolean timeout = (event.getType() == EventType.TIMEOUT) ? true : false;
-                boolean error = (event.getType() == EventType.ERROR) ? true : false;
+                boolean timeout = (event.getType() == EventType.TIMEOUT);
+                boolean error = (event.getType() == EventType.ERROR);
                 Iterator<AsyncListenerRegistration> asyncListenerRegistrations = 
                     asyncContext.getAsyncListeners().values().iterator();
                 while (asyncListenerRegistrations.hasNext()) {
@@ -535,11 +535,70 @@ final class StandardWrapperValve
                         exception(request, response, e);
                     }
                 }
+                boolean end = (event.getType() == EventType.END) || error;
                 if (timeout && request.isEventMode() && asyncContext.getPath() == null) {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    end = true;
+                }
+                try {
+                    // Call error notifications for IO listeners
+                    if (error) {
+                        Throwable throwable = asyncContext.getError();
+                        if (throwable == null) {
+                            throwable = new Exception();
+                        }
+                        if (request.getReadListener() != null) { 
+                            request.getReadListener().onError(throwable);
+                        }
+                        if (response.getWriteListener() != null) {
+                            response.getWriteListener().onError(throwable);
+                        }
+                    }
+                } catch (Throwable e) {
+                    container.getLogger().error(MESSAGES.ioListenerError(getContainer().getName()), e);
+                    exception(request, response, e);
+                }
+                if (end && (request.getUpgradeHandler() != null)) {
+                    try {
+                        // FIXME: Examine if need to call elsewhere
+                        request.getUpgradeHandler().destroy();
+                    } catch (Throwable e) {
+                        container.getLogger().error(MESSAGES.upgradeHandlerDestroyError(getContainer().getName()), e);
+                        exception(request, response, e);
+                    }
                 }
                 if (error && request.isEventMode() && asyncContext.getPath() == null) {
                     exception(request, response, asyncContext.getError());
+                }
+            } else if (event.getType() == EventType.READ) {
+                // Read notification
+                if (request.getReadListener() != null) {
+                    try {
+                        request.getReadListener().onDataAvailable();
+                    } catch (Throwable e) {
+                        container.getLogger().error(MESSAGES.ioListenerError(getContainer().getName()), e);
+                        exception(request, response, e);
+                    }
+                }
+            } else if (event.getType() == EventType.EOF) {
+                // End of stream notification
+                if (request.getReadListener() != null) {
+                    try {
+                        request.getReadListener().onAllDataRead();
+                    } catch (Throwable e) {
+                        container.getLogger().error(MESSAGES.ioListenerError(getContainer().getName()), e);
+                        exception(request, response, e);
+                    }
+                }
+            } else if (event.getType() == EventType.WRITE) {
+                // Write notification
+                if (response.getWriteListener() != null) {
+                    try {
+                        response.getWriteListener().onWritePossible();
+                    } catch (Throwable e) {
+                        container.getLogger().error(MESSAGES.ioListenerError(getContainer().getName()), e);
+                        exception(request, response, e);
+                    }
                 }
             } else if (asyncContext.getRunnable() != null) {
                 // Execute the runnable
