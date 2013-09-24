@@ -341,6 +341,10 @@ public class CoyoteAdapter
                                 (request.getAsyncContext() == null) ? Boolean.TRUE : Boolean.FALSE);
                         event = true;
                     }
+                    if (request.getUpgradeHandler() != null) {
+                        // Call to signal that the upgrade is now done
+                        request.getUpgradeHandler().init(request.getEvent());
+                    }
                 } else if (request.getAsyncContext() != null) {
                     // The AC was closed right away, so call onComplete as no event callback
                     // will occur in that case
