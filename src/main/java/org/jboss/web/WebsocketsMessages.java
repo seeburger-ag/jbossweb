@@ -293,4 +293,7 @@ public interface WebsocketsMessages {
     @Message(id = 8585, value = "Failed to create configurator of type [%s] for POJO of type [%s]")
     String configuratorFailed(String configurator, String className);
 
+    @Message(id = 8586, value = "Upgrade failed")
+    String upgradeFailed();
+
 }
