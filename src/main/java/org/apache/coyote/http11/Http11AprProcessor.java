@@ -96,6 +96,8 @@ public class Http11AprProcessor implements ActionHook {
 
         initializeFilters();
 
+        Http11AbstractProcessor.containerThread.set(Boolean.FALSE);
+
         // Cause loading of HexUtils
         int foo = HexUtils.DEC[0];
 
@@ -108,12 +110,6 @@ public class Http11AprProcessor implements ActionHook {
     // ----------------------------------------------------- Instance Variables
 
     
-    /**
-     * Thread local marker.
-     */
-    public static ThreadLocal<Boolean> containerThread = new ThreadLocal<Boolean>();
-    
-
     /**
      * Associated adapter.
      */
@@ -762,7 +758,7 @@ public class Http11AprProcessor implements ActionHook {
                 // Set error flag right away
                 error = true;
             }
-            containerThread.set(Boolean.TRUE);
+            Http11AbstractProcessor.containerThread.set(Boolean.TRUE);
             rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
             error = !adapter.event(request, response, status);
         } catch (InterruptedIOException e) {

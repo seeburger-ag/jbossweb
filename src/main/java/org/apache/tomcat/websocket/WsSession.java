@@ -436,6 +436,12 @@ public class WsSession implements Session {
         }
     }
 
+    /**
+     * Force an autoblocking flush.
+     */
+    public void forceFlush() throws IOException {
+        wsRemoteEndpoint.flushBatch();
+    }
 
     private void fireEndpointOnClose(CloseReason closeReason) {
 

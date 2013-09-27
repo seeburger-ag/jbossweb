@@ -82,9 +82,8 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
                 }
                 if (complete) {
                     wsWriteTimeout.unregister(this);
-                    // ADD: Explicit flush
+                    // Explicit flush for compatibility with buffered streams
                     sos.flush();
-                    // END ADD
                     if (close) {
                         close();
                     }

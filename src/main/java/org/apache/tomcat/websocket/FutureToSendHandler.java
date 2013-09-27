@@ -16,6 +16,7 @@
  */
 package org.apache.tomcat.websocket;
 
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -24,6 +25,8 @@ import java.util.concurrent.TimeoutException;
 
 import javax.websocket.SendHandler;
 import javax.websocket.SendResult;
+
+import org.apache.coyote.http11.Http11AbstractProcessor;
 
 /**
  * Converts a Future to a SendHandler.
@@ -71,14 +74,25 @@ class FutureToSendHandler implements Future<Void>, SendHandler {
     @Override
     public Void get() throws InterruptedException,
             ExecutionException {
-        try {
-            wsSession.registerFuture(this);
-            latch.await();
-        } finally {
-            wsSession.unregisterFuture(this);
-        }
-        if (result.getException() != null) {
-            throw new ExecutionException(result.getException());
+        // If inside a container thread, must use an autoblocking flush as the write
+        // event will never come to the Servlet layer until the container thread returns
+        if (Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
+            // FIXME: this uses the IO timeout rather than no timeout as per the API contract
+            try {
+                wsSession.forceFlush();
+            } catch (IOException e) {
+                throw new ExecutionException(e);
+            }
+        } else {
+            try {
+                wsSession.registerFuture(this);
+                latch.await();
+            } finally {
+                wsSession.unregisterFuture(this);
+            }
+            if (result.getException() != null) {
+                throw new ExecutionException(result.getException());
+            }
         }
         return null;
     }
@@ -87,19 +101,30 @@ class FutureToSendHandler implements Future<Void>, SendHandler {
     public Void get(long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException,
             TimeoutException {
-        boolean retval = false;
-        try {
-            wsSession.registerFuture(this);
-            retval = latch.await(timeout, unit);
-        } finally {
-            wsSession.unregisterFuture(this);
+        // If inside a container thread, must use an autoblocking flush as the write
+        // event will never come to the Servlet layer until the container thread returns
+        if (Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
+            // FIXME: this uses the IO timeout rather than the timeout specified by the user
+            try {
+                wsSession.forceFlush();
+            } catch (IOException e) {
+                throw new ExecutionException(e);
+            }
+        } else {
+            boolean retval = false;
+            try {
+                wsSession.registerFuture(this);
+                retval = latch.await(timeout, unit);
+            } finally {
+                wsSession.unregisterFuture(this);
 
-        }
-        if (retval == false) {
-            throw new TimeoutException();
-        }
-        if (result.getException() != null) {
-            throw new ExecutionException(result.getException());
+            }
+            if (retval == false) {
+                throw new TimeoutException();
+            }
+            if (result.getException() != null) {
+                throw new ExecutionException(result.getException());
+            }
         }
         return null;
     }
