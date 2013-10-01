@@ -3344,8 +3344,8 @@ public class Request
         }
         response.sendUpgrade();
         eventMode = true;
-        ugradeHandler.init(getEvent());
         this.upgradeHandler = ugradeHandler;
+        asyncContext = new AsyncContextImpl();
         return ugradeHandler;
     }
 
