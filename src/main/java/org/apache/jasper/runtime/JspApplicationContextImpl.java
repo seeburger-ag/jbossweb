@@ -16,30 +16,25 @@
  */
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import javax.el.ArrayELResolver;
-import javax.el.BeanELResolver;
 import javax.el.CompositeELResolver;
 import javax.el.ELContextEvent;
 import javax.el.ELContextListener;
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
-import javax.el.ListELResolver;
-import javax.el.MapELResolver;
-import javax.el.ResourceBundleELResolver;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.JspApplicationContext;
 import javax.servlet.jsp.JspContext;
-import javax.servlet.jsp.el.ImplicitObjectELResolver;
-import javax.servlet.jsp.el.ScopedAttributeELResolver;
 
 import org.apache.jasper.Constants;
 import org.apache.jasper.el.ELContextImpl;
+import org.apache.jasper.el.JasperELResolver;
 
 /**
  * Implementation of JspApplicationContext
@@ -67,14 +62,14 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 
 	public void addELContextListener(ELContextListener listener) {
 		if (listener == null) {
-			throw new IllegalArgumentException("ELConextListener was null");
+			throw MESSAGES.nullElContextListener();
 		}
 		this.contextListeners.add(listener);
 	}
 
 	public static JspApplicationContextImpl getInstance(ServletContext context) {
 		if (context == null) {
-			throw new IllegalArgumentException("ServletContext was null");
+			throw MESSAGES.nullServletContext();
 		}
 		JspApplicationContextImpl impl = (JspApplicationContextImpl) context
 				.getAttribute(KEY);
@@ -87,7 +82,7 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 
 	public ELContextImpl createELContext(JspContext context) {
 		if (context == null) {
-			throw new IllegalArgumentException("JspContext was null");
+			throw MESSAGES.nullJspContext();
 		}
 
 		// create ELContext for JspContext
@@ -117,17 +112,7 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 	private ELResolver createELResolver() {
 		this.instantiated = true;
 		if (this.resolver == null) {
-			CompositeELResolver r = new CompositeELResolver();
-			r.add(new ImplicitObjectELResolver());
-			for (Iterator itr = this.resolvers.iterator(); itr.hasNext();) {
-				r.add((ELResolver) itr.next());
-			}
-			r.add(new MapELResolver());
-			r.add(new ResourceBundleELResolver());
-			r.add(new ListELResolver());
-			r.add(new ArrayELResolver());	
-			r.add(new BeanELResolver());
-			r.add(new ScopedAttributeELResolver());
+            CompositeELResolver r = new JasperELResolver(this.resolvers);
 			this.resolver = r;
 		}
 		return this.resolver;
@@ -135,11 +120,10 @@ public class JspApplicationContextImpl implements JspApplicationContext {
 
 	public void addELResolver(ELResolver resolver) throws IllegalStateException {
 		if (resolver == null) {
-			throw new IllegalArgumentException("ELResolver was null");
+			throw MESSAGES.nullElResolver();
 		}
 		if (this.instantiated) {
-			throw new IllegalStateException(
-					"cannot call addELResolver after the first request has been made");
+			throw MESSAGES.cannotAddElResolver();
 		}
 		this.resolvers.add(resolver);
 	}
