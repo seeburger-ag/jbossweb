@@ -82,25 +82,18 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
                 }
                 if (complete) {
                     wsWriteTimeout.unregister(this);
-                    // Explicit flush for compatibility with buffered streams
-                    sos.flush();
+                    clearHandler(null);
                     if (close) {
                         close();
                     }
-                    // Setting the result marks this (partial) message as
-                    // complete which means the next one may be sent which
-                    // could update the value of the handler. Therefore, keep a
-                    // local copy before signalling the end of the (partial)
-                    // message.
-                    clearHandler(null);
                     break;
                 }
             }
 
         } catch (IOException ioe) {
             wsWriteTimeout.unregister(this);
-            close();
             clearHandler(ioe);
+            close();
         }
         if (!complete) {
             // Async write is in progress
@@ -143,6 +136,11 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
 
 
     private void clearHandler(Throwable t) {
+        // Setting the result marks this (partial) message as
+        // complete which means the next one may be sent which
+        // could update the value of the handler. Therefore, keep a
+        // local copy before signalling the end of the (partial)
+        // message.
         SendHandler sh = handler;
         handler = null;
         if (sh != null) {

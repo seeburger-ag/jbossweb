@@ -261,14 +261,16 @@ public abstract class WsFrameBase {
 
 
     private boolean processData() throws IOException {
-        checkRoomPayload();
+        boolean result;
         if (Util.isControl(opCode)) {
-            return processDataControl();
+            result = processDataControl();
         } else if (textMessage) {
-            return processDataText();
+            result = processDataText();
         } else {
-            return processDataBinary();
+            result = processDataBinary();
         }
+        checkRoomPayload();
+        return result;
     }
 
 
