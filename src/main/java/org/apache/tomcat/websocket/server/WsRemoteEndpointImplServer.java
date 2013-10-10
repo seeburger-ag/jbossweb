@@ -65,6 +65,14 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
     }
 
 
+    @Override
+    protected void doFlush() throws IOException {
+        if (timeoutExpiry != -1) {
+            sos.flush();
+        }
+    }
+
+
     public void onWritePossible() {
         boolean complete = true;
         try {
@@ -81,8 +89,11 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
                     }
                 }
                 if (complete) {
+                    timeoutExpiry = -1;
                     wsWriteTimeout.unregister(this);
                     clearHandler(null);
+                    // Explicit flush for compatibility with buffered streams
+                    sos.flush();
                     if (close) {
                         close();
                     }

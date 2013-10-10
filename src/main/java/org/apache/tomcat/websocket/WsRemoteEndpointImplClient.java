@@ -16,6 +16,7 @@
  */
 package org.apache.tomcat.websocket;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +34,11 @@ public class WsRemoteEndpointImplClient extends WsRemoteEndpointImplBase {
     @Override
     protected boolean isMasked() {
         return true;
+    }
+
+
+    @Override
+    protected void doFlush() throws IOException {
     }
 
 
