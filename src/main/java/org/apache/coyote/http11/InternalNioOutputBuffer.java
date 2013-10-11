@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.WritePendingException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.coyote.ActionCode;
@@ -31,6 +32,7 @@ import org.apache.coyote.Response;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
+import org.apache.tomcat.util.net.SocketStatus;
 import org.jboss.web.CoyoteLogger;
 
 /**
@@ -52,10 +54,20 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 	 */
 	protected NioEndpoint endpoint;
 
+    /**
+     * NIO processor.
+     */
+    protected Http11NioProcessor processor;
+
 	/**
 	 * The completion handler used for asynchronous write operations
 	 */
 	private CompletionHandler<Integer, NioChannel> completionHandler;
+
+    /**
+     * Latch to wait for non blocking operations to run the completion handler.
+     */
+    private CountDownLatch latch = null;
 
 	/**
 	 * Create a new instance of {@code InternalNioOutputBuffer}
@@ -64,9 +76,10 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 	 * @param headerBufferSize
 	 * @param endpoint
 	 */
-	public InternalNioOutputBuffer(Response response, int headerBufferSize, NioEndpoint endpoint) {
+	public InternalNioOutputBuffer(Http11NioProcessor processor, Response response, int headerBufferSize, NioEndpoint endpoint) {
 		super(response, headerBufferSize);
 		this.endpoint = endpoint;
+		this.processor = processor;
 		// Initialize the input buffer
 		this.init();
 	}
@@ -85,29 +98,37 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 
 			@Override
 			public void completed(Integer nBytes, NioChannel attachment) {
-				if (nBytes < 0) {
-					failed(new ClosedChannelException(), attachment);
-					return;
-				} else {
-                    response.setLastWrite(nBytes);
-				}
+                try {
+                    if (nBytes < 0) {
+                        failed(new ClosedChannelException(), attachment);
+                        return;
+                    }
 
-				if (bbuf.hasRemaining()) {
-				    try {
-				        attachment.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, attachment, this);
-				    } catch (WritePendingException e) {
-				        response.setLastWrite(0);
-				    }
-				} else {
-					// Clear the buffer when all bytes are written
-					clearBuffer();
-				}
+                    if (bbuf.hasRemaining()) {
+                        try {
+                            attachment.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, attachment, this);
+                        } catch (WritePendingException e) {
+                            response.setLastWrite(0);
+                        }
+                    } else {
+                        // Clear the buffer when all bytes are written
+                        clearBuffer();
+                        response.setLastWrite(nBytes);
+                        if (!processor.isProcessing() && processor.getWriteNotification()) {
+                            endpoint.processChannel(attachment, SocketStatus.OPEN_WRITE);
+                        }
+                    }
+                } finally {
+                    latch.countDown();
+                }
 			}
 
 			@Override
 			public void failed(Throwable exc, NioChannel attachment) {
 				endpoint.removeEventChannel(attachment);
-				// endpoint.processChannel(attachment, SocketStatus.ERROR);
+                if (!processor.isProcessing()) {
+                    endpoint.processChannel(attachment, SocketStatus.ERROR);
+                }
 			}
 		};
 	}
@@ -188,8 +209,10 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 	 */
 	private void nonBlockingWrite(final long timeout, final TimeUnit unit) {
 		try {
+		    latch = new CountDownLatch(1);
 			// Perform the write operation
 			this.channel.write(this.bbuf, timeout, unit, this.channel, this.completionHandler);
+			latch.await();
 		} catch (Throwable t) {
 			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
 			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(t);
@@ -334,6 +357,9 @@ public class InternalNioOutputBuffer extends AbstractInternalOutputBuffer {
 	 */
 	@Override
 	public boolean flushLeftover() throws IOException {
+	    if (leftover.getLength() == 0) {
+	        return true;
+	    }
 		// Calculate the number of bytes that fit in the buffer
 		int n = Math.min(leftover.getLength(), bbuf.capacity() - bbuf.position());
 		// put bytes in the buffer

@@ -26,6 +26,7 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.coyote.InputBuffer;
@@ -69,21 +70,32 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 */
 	protected NioEndpoint endpoint = null;
 
+    /**
+     * NIO processor.
+     */
+    protected Http11NioProcessor processor;
+
 	/**
 	 * The completion handler used for asynchronous read operations
 	 */
 	private CompletionHandler<Integer, NioChannel> completionHandler;
 
 	/**
+	 * Latch to wait for non blocking operations to run the completion handler.
+	 */
+    private CountDownLatch latch = null;
+
+    /**
 	 * Create a new instance of {@code InternalNioInputBuffer}
 	 * 
 	 * @param request
 	 * @param headerBufferSize
 	 * @param endpoint
 	 */
-	public InternalNioInputBuffer(Request request, int headerBufferSize, NioEndpoint endpoint) {
+	public InternalNioInputBuffer(Http11NioProcessor processor, Request request, int headerBufferSize, NioEndpoint endpoint) {
 		super(request, headerBufferSize);
 		this.endpoint = endpoint;
+        this.processor = processor;
 		this.init();
 	}
 
@@ -100,23 +112,35 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 
 			@Override
 			public void completed(Integer nBytes, NioChannel attachment) {
-				if (nBytes < 0) {
-					failed(new ClosedChannelException(), attachment);
-					return;
-				}
+			    if (nBytes < 0) {
+			        failed(new ClosedChannelException(), attachment);
+			        return;
+			    }
 
-				if (nBytes > 0) {
-					bbuf.flip();
-					bbuf.get(buf, pos, nBytes);
-					lastValid = pos + nBytes;
-					endpoint.processChannel(attachment, SocketStatus.OPEN_READ);
-				}
+			    try {
+			        if (nBytes > 0) {
+			            bbuf.flip();
+			            bbuf.get(buf, pos, nBytes);
+			            lastValid = pos + nBytes;
+			            if (!processor.isProcessing() && processor.getReadNotifications()) {
+			                endpoint.processChannel(attachment, SocketStatus.OPEN_READ);
+			            }
+			        }
+			    } finally {
+			        latch.countDown();
+			    }
 			}
 
 			@Override
 			public void failed(Throwable exc, NioChannel attachment) {
-				endpoint.removeEventChannel(attachment);
-				endpoint.processChannel(attachment, SocketStatus.ERROR);
+                try {
+                    endpoint.removeEventChannel(attachment);
+                    if (!processor.isProcessing()) {
+                        endpoint.processChannel(attachment, SocketStatus.ERROR);
+                    }
+                } finally {
+                    latch.countDown();
+                }
 			}
 		};
 	}
@@ -391,37 +415,42 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 * @see org.apache.coyote.http11.AbstractInternalInputBuffer#fill()
 	 */
 	protected boolean fill() throws IOException {
-		int nRead = 0;
-		// Prepare the internal input buffer for reading
-		this.prepare();
-		// Reading from client
-		if (nonBlocking) {
-			nonBlockingRead(bbuf, readTimeout, unit);
-		} else {
-			nRead = blockingRead(bbuf, readTimeout, unit);
-			if (nRead > 0) {
-				bbuf.flip();
-				if (nRead > (buf.length - end)) {
-				    // An alternative is to bbuf.setLimit(buf.length - end) before the read,
-				    // which may be less efficient
-	                buf = new byte[buf.length];
-	                end = 0;
-	                pos = end;
-	                lastValid = pos;
-				}
-				bbuf.get(buf, pos, nRead);
-				lastValid = pos + nRead;
-			} else if (nRead == NioChannel.OP_STATUS_CLOSED) {
-				throw new IOException(MESSAGES.failedRead());
-			} else if (nRead == NioChannel.OP_STATUS_READ_TIMEOUT) {
-				throw new SocketTimeoutException(MESSAGES.failedRead());
-			}
-		}
-
-		return (nRead >= 0);
+		return (fill0() >= 0);
 	}
 
-	/**
+    private int fill0() throws IOException {
+        int nRead = 0;
+        // Prepare the internal input buffer for reading
+        this.prepare();
+        // Reading from client
+        if (nonBlocking) {
+            nonBlockingRead(bbuf, readTimeout, unit);
+            nRead = lastValid - pos;
+        } else {
+            nRead = blockingRead(bbuf, readTimeout, unit);
+            if (nRead > 0) {
+                bbuf.flip();
+                if (nRead > (buf.length - end)) {
+                    // An alternative is to bbuf.setLimit(buf.length - end) before the read,
+                    // which may be less efficient
+                    buf = new byte[buf.length];
+                    end = 0;
+                    pos = end;
+                    lastValid = pos;
+                }
+                bbuf.get(buf, pos, nRead);
+                lastValid = pos + nRead;
+            } else if (nRead == NioChannel.OP_STATUS_CLOSED) {
+                throw new EOFException(MESSAGES.failedRead());
+            } else if (nRead == NioChannel.OP_STATUS_READ_TIMEOUT) {
+                throw new SocketTimeoutException(MESSAGES.failedRead());
+            }
+        }
+
+        return nRead;
+    }
+
+    /**
 	 * Prepare the input buffer for reading
 	 */
 	private void prepare() {
@@ -454,20 +483,14 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	private void nonBlockingRead(final ByteBuffer bb, long timeout, TimeUnit unit) {
 		final NioChannel ch = this.channel;
 		try {
+		    latch = new CountDownLatch(1);
 			ch.read(bb, ch, this.completionHandler);
+			latch.await();
 		} catch (Throwable t) {
 			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
 			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(t);
 			}
 		}
-	}
-
-	/**
-	 * 
-	 */
-	protected void readAsync() throws IOException {
-		this.prepare();
-		this.nonBlockingRead(bbuf, readTimeout, unit);
 	}
 
 	/**
@@ -505,8 +528,11 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		public int doRead(ByteChunk chunk, Request req) throws IOException {
 
 			if (pos >= lastValid) {
-				if (!fill()) {
+			    int nRead = fill0();
+				if (nRead < 0) {
 					return -1;
+				} else if (nRead == 0) {
+				    return 0;
 				}
 			}
 

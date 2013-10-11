@@ -96,7 +96,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 
 		this.endpoint = endpoint;
 		request = new Request();
-		inputBuffer = new InternalNioInputBuffer(request, headerBufferSize, endpoint);
+		inputBuffer = new InternalNioInputBuffer(this, request, headerBufferSize, endpoint);
 		request.setInputBuffer(inputBuffer);
 		if (endpoint.getUseSendfile()) {
 			request.setSendfile(true);
@@ -104,7 +104,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 
 		response = new Response();
 		response.setHook(this);
-		outputBuffer = new InternalNioOutputBuffer(response, headerBufferSize, endpoint);
+		outputBuffer = new InternalNioOutputBuffer(this, response, headerBufferSize, endpoint);
 		response.setOutputBuffer(outputBuffer);
 		request.setResponse(response);
 		sslEnabled = endpoint.getSSLEnabled();
@@ -137,6 +137,13 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	public boolean isAvailable() {
 		return inputBuffer.available();
 	}
+
+    /**
+     * @return true if the processor is not doing anything
+     */
+    public boolean isProcessing() {
+        return processing;
+    }
 
 	/**
 	 * Add input or output filter.

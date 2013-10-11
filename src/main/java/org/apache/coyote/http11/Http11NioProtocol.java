@@ -863,12 +863,15 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 							}
 						}
 					} else {
-						if (proto.endpoint.isRunning()) {
-							proto.endpoint.addEventChannel(channel, processor.getTimeout(),
-									processor.getReadNotifications(),
-									processor.getWriteNotification(),
-									processor.getResumeNotification(), false);
-						}
+					    if (processor.isAvailable() && processor.getReadNotifications()) {
+					        // Call a read event right away
+					        state = event(channel, SocketStatus.OPEN_READ);
+					    } else if (proto.endpoint.isRunning()) {
+					        proto.endpoint.addEventChannel(channel, processor.getTimeout(),
+					                processor.getReadNotifications(),
+					                processor.getWriteNotification(),
+					                processor.getResumeNotification(), false);
+					    }
 					}
 					processor.endProcessing();
 				}
