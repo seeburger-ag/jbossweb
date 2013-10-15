@@ -806,11 +806,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		 * .AsynchronousSocketChannel, org.apache.tomcat.util.net.ChannelStatus)
 		 */
 		@Override
-		public SocketState event(NioChannel channel, SocketStatus status) {
+		public synchronized SocketState event(NioChannel channel, SocketStatus status) {
 
 			Http11NioProcessor processor = connections.get(channel.getId());
 			SocketState state = SocketState.CLOSED;
-
 			if (processor != null) {
 				processor.startProcessing();
 				// Call the appropriate event
@@ -868,7 +867,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					        state = event(channel, SocketStatus.OPEN_READ);
 					    } else if (proto.endpoint.isRunning()) {
 					        proto.endpoint.addEventChannel(channel, processor.getTimeout(),
-					                processor.getReadNotifications(),
+					                false,
 					                processor.getWriteNotification(),
 					                processor.getResumeNotification(), false);
 					    }

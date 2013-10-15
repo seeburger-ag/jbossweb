@@ -214,12 +214,6 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		try {
 			// If processing a write event, must flush any leftover bytes first
 			if (status == SocketStatus.OPEN_WRITE) {
-				// If the flush does not manage to flush all leftover bytes, the
-				// socket should
-				// go back to the poller.
-				if (!outputBuffer.flushLeftover()) {
-					return SocketState.LONG;
-				}
 				// The write notification is now done
 				writeNotification = false;
 				// Allow convenient synchronous blocking writes

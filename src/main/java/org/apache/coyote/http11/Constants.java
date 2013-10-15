@@ -132,6 +132,13 @@ public final class Constants {
             Integer.valueOf(System.getProperty("org.apache.coyote.http11.DEFAULT_HTTP_HEADER_BUFFER_SIZE", "8192")).intValue();
 
 
+    /**
+     * Async buffer size.
+     */
+    public static final int ASYNC_BUFFER_SIZE = 
+            Integer.valueOf(System.getProperty("org.apache.coyote.http11.ASYNC_BUFFER_SIZE", "32768")).intValue();
+
+
     /* Various constant "strings" */
     public static final byte[] CRLF_BYTES = ByteChunk.convertToBytes(CRLF);
     public static final byte[] COLON_BYTES = ByteChunk.convertToBytes(": ");

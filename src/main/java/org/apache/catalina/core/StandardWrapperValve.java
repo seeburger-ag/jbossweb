@@ -21,6 +21,7 @@ package org.apache.catalina.core;
 
 import static org.jboss.web.CatalinaMessages.MESSAGES;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -545,7 +546,7 @@ final class StandardWrapperValve
                     if (error) {
                         Throwable throwable = asyncContext.getError();
                         if (throwable == null) {
-                            throwable = new Exception();
+                            throwable = new EOFException();
                         }
                         if (request.getReadListener() != null) { 
                             request.getReadListener().onError(throwable);
