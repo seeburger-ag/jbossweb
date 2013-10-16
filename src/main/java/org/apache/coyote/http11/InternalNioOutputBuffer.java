@@ -300,6 +300,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 	 */
 	private void nonBlockingWrite(final long timeout, final TimeUnit unit) {
 		try {
+            latch = new CountDownLatch(1);
 		    // Calculate the number of bytes that fit in the buffer
 		    int n = Math.min(leftover.getLength(), bbuf.capacity() - bbuf.position());
 		    // put bytes in the buffer
@@ -307,7 +308,6 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 		    // Update the offset
 		    leftover.setOffset(leftover.getOffset() + n);
 		    // Perform the write operation
-		    latch = new CountDownLatch(1);
 		    this.channel.write(this.bbuf, timeout, unit, this.channel, this.completionHandler);
 		} catch (Throwable t) {
             processor.getResponse().setErrorException(t);
@@ -835,7 +835,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
          */
         public int doWrite(ByteChunk chunk, Response res) throws IOException {
             if (nonBlocking) {
-                // Autoblocking if the buffer is already full
+                // If the buffer is growing and flow control is not used, autoblock if in a container thread 
                 if (leftover.getLength() > Constants.ASYNC_BUFFER_SIZE && response.getFlushLeftovers()
                         && Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
                     try {

@@ -81,9 +81,9 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	private CompletionHandler<Integer, NioChannel> completionHandler;
 
     /**
-     * Latch used for auto blocking.
+     * Lock used for auto blocking.
      */
-    private CountDownLatch latch = null;
+    private CountDownLatch latch = new CountDownLatch(0);
     
     /**
 	 * Create a new instance of {@code InternalNioInputBuffer}
@@ -419,11 +419,14 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
         // Reading from client
         if (nonBlocking) {
             synchronized (completionHandler) {
-                // Prepare the internal input buffer for reading
-                this.prepare();
-                nonBlockingRead(bbuf, readTimeout, unit);
-                nRead = lastValid - pos;
+                if (latch.getCount() == 0) {
+                    // Prepare the internal input buffer for reading
+                    this.prepare();
+                    nonBlockingRead(readTimeout, unit);
+                    nRead = lastValid - pos;
+                }
             }
+            // If there's nothing and flow control is not used, autoblock 
             if (nRead == 0 && !available) {
                 try {
                     latch.await(readTimeout, unit);
@@ -435,7 +438,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
         } else {
             // Prepare the internal input buffer for reading
             this.prepare();
-            nRead = blockingRead(bbuf, readTimeout, unit);
+            nRead = blockingRead(readTimeout, unit);
             if (nRead > 0) {
                 bbuf.flip();
                 if (nRead > (buf.length - end)) {
@@ -487,11 +490,10 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 *            the byte buffer which will contain the bytes read from the
 	 *            current channel
 	 */
-	private void nonBlockingRead(final ByteBuffer bb, long timeout, TimeUnit unit) {
-		final NioChannel ch = this.channel;
+	private void nonBlockingRead(long timeout, TimeUnit unit) {
 		try {
 		    latch = new CountDownLatch(1);
-			ch.read(bb, ch, this.completionHandler);
+		    channel.read(bbuf, channel, this.completionHandler);
 		} catch (Exception e) {
 		    processor.getResponse().setErrorException(e);
 			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
@@ -507,11 +509,11 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 * @return the number of bytes read or -1 if the end of the stream was
 	 *         reached
 	 */
-	private int blockingRead(ByteBuffer bb, long timeout, TimeUnit unit) {
+	private int blockingRead(long timeout, TimeUnit unit) {
 		int nr = 0;
 		try {
 			long readTimeout = timeout > 0 ? timeout : Integer.MAX_VALUE;
-			nr = this.channel.readBytes(bb, readTimeout, unit);
+			nr = this.channel.readBytes(bbuf, readTimeout, unit);
 			if (nr < 0) {
 				close(channel);
 			}
