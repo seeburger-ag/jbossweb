@@ -290,6 +290,17 @@ public class Response
     }
     
 
+    /**
+     * Clear output stream.
+     */
+    public void clearOutputStream() {
+        if (outputStream != null) {
+            outputStream.clear();
+            outputStream = null;
+        }
+    }
+    
+
     // ------------------------------------------------------- Response Methods
 
 

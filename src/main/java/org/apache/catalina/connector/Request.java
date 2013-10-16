@@ -597,6 +597,17 @@ public class Request
 
 
     /**
+     * Clear output stream.
+     */
+    public void clearInputStream() {
+        if (inputStream != null) {
+            inputStream.clear();
+            inputStream = null;
+        }
+    }
+    
+
+    /**
      * Clear cached encoders (to save memory for event or async requests).
      */
     public void clearEncoders() {

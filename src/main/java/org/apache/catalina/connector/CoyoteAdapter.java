@@ -267,6 +267,10 @@ public class CoyoteAdapter
                 req.getRequestProcessor().setWorkerThreadName(null);
                 // Recycle the wrapper request and response
                 if (error || close || response.isClosed()) {
+                    if (request.getUpgradeHandler() != null) {
+                        request.clearInputStream();
+                        response.clearOutputStream();
+                    }
                     request.recycle();
                     response.recycle();
                     res.action(ActionCode.ACTION_EVENT_END, null);
