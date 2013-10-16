@@ -1271,7 +1271,9 @@ public class NioEndpoint extends AbstractEndpoint {
 					@Override
 					public void failed(Throwable exc, NioChannel attach) {
 						remove(attach);
-						processChannel(attach, SocketStatus.ERROR);
+						if (!processChannel(attach, SocketStatus.ERROR)) {
+						    closeChannel(attach);
+						}
 						// Recycle the completion handler
 						recycleHanlder(this);
 					}
@@ -1315,29 +1317,28 @@ public class NioEndpoint extends AbstractEndpoint {
 			} else {
 				info.flags = ChannelInfo.merge(info.flags, flag);
 			}
+
 			// Setting the channel timeout
 			info.timeout = date;
-
 			final NioChannel ch = channel;
-
 			if (info.resume()) {
 				remove(info);
 				if (!processChannel(ch, SocketStatus.OPEN_CALLBACK)) {
 					closeChannel(ch);
-				}
-			} else if (info.read()) {
-				try {
-					// Trying awaiting for read event
-					ch.awaitRead(ch, getCompletionHandler());
-				} catch (Exception e) {
-					// Ignore
-	                CoyoteLogger.UTIL_LOGGER.errorAwaitingRead(e);
 				}
 			} else if (info.write()) {
 				remove(info);
 				if (!processChannel(ch, SocketStatus.OPEN_WRITE)) {
 					closeChannel(ch);
 				}
+            } else if (info.read()) {
+                try {
+                    // Trying awaiting for read event
+                    ch.awaitRead(ch, getCompletionHandler());
+                } catch (Exception e) {
+                    // Ignore
+                    CoyoteLogger.UTIL_LOGGER.errorAwaitingRead(e);
+                }
 			} else if (info.wakeup()) {
 				remove(info);
 				// TODO

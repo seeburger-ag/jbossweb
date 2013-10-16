@@ -123,17 +123,19 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			        lastValid = pos + nBytes;
 			        latch.countDown();
 			        if (!processor.isProcessing() && processor.getReadNotifications()) {
-			            endpoint.processChannel(attachment, SocketStatus.OPEN_READ);
+			            if (!endpoint.processChannel(attachment, SocketStatus.OPEN_READ)) {
+			                endpoint.closeChannel(attachment);
+			            }
 			        }
 			    }
 			}
 
 			@Override
 			public void failed(Throwable exc, NioChannel attachment) {
-			    exc.printStackTrace();
+			    processor.getResponse().setErrorException(exc);
 			    endpoint.removeEventChannel(attachment);
-			    if (!processor.isProcessing()) {
-			        endpoint.processChannel(attachment, SocketStatus.ERROR);
+			    if (!endpoint.processChannel(attachment, SocketStatus.ERROR)) {
+			        endpoint.closeChannel(attachment);
 			    }
 			}
 		};
@@ -490,9 +492,10 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		try {
 		    latch = new CountDownLatch(1);
 			ch.read(bb, ch, this.completionHandler);
-		} catch (Throwable t) {
+		} catch (Exception e) {
+		    processor.getResponse().setErrorException(e);
 			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(t);
+			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(e);
 			}
 		}
 	}

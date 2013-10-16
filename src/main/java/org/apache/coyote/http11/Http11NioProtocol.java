@@ -806,6 +806,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		 * .AsynchronousSocketChannel, org.apache.tomcat.util.net.ChannelStatus)
 		 */
 		@Override
+		// FIXME: probably needs sync due to concurrent read/write possibilities
 		public synchronized SocketState event(NioChannel channel, SocketStatus status) {
 
 			Http11NioProcessor processor = connections.get(channel.getId());
@@ -848,7 +849,9 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 												if (nBytes < 0) {
 													failed(new ClosedChannelException(), endpoint);
 												} else {
-													endpoint.processChannel(ch, null);
+													if (!endpoint.processChannel(ch, null)) {
+													    endpoint.closeChannel(ch);
+													}
 												}
 											}
 
@@ -895,7 +898,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				}
                 processor.startProcessing();
 
-				if (proto.secure && (proto.sslImplementation != null)) {
+                if (proto.secure && (proto.sslImplementation != null)) {
 					processor.setSSLSupport(((NioJSSEImplementation) proto.sslImplementation).getSSLSupport(channel));
 				} else {
 					processor.setSSLSupport(null);
@@ -913,9 +916,9 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 						// Call a read event right away
 					    state = event(channel, SocketStatus.OPEN_READ);
 					} else {
-						proto.endpoint.addEventChannel(channel, processor.getTimeout(),
+	                    proto.endpoint.addEventChannel(channel, processor.getTimeout(),
 								processor.getReadNotifications(), false,
-								processor.getResumeNotification(), false);
+	                            processor.getResumeNotification(), false);
 					}
 				} else {
 					recycledProcessors.offer(processor);

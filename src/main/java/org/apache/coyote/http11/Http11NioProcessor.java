@@ -301,7 +301,9 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 										// Reach the end of the stream
 										failed(null, attachment);
 									} else {
-										endpoint.processChannel(ch, null);
+										if (!endpoint.processChannel(attachment, null)) {
+										    closeChannel(attachment);
+										}
 									}
 								}
 

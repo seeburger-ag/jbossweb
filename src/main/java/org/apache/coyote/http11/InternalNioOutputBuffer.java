@@ -211,7 +211,9 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                         leftover.recycle();
                         latch.countDown();
                         if (!processor.isProcessing() && processor.getWriteNotification()) {
-                            endpoint.processChannel(attachment, SocketStatus.OPEN_WRITE);
+                            if (!endpoint.processChannel(attachment, SocketStatus.OPEN_WRITE)) {
+                                endpoint.closeChannel(attachment);
+                            }
                         }
                         return;
                     }
@@ -222,11 +224,11 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 
 			@Override
 			public void failed(Throwable exc, NioChannel attachment) {
-			    exc.printStackTrace();
+                processor.getResponse().setErrorException(exc);
 				endpoint.removeEventChannel(attachment);
-                if (!processor.isProcessing()) {
-                    endpoint.processChannel(attachment, SocketStatus.ERROR);
-                }
+				if (!endpoint.processChannel(attachment, SocketStatus.ERROR)) {
+				    endpoint.closeChannel(attachment);
+				}
 			}
 		};
 	}
@@ -308,6 +310,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 		    latch = new CountDownLatch(1);
 		    this.channel.write(this.bbuf, timeout, unit, this.channel, this.completionHandler);
 		} catch (Throwable t) {
+            processor.getResponse().setErrorException(t);
 			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
 			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(t);
 			}
@@ -529,7 +532,12 @@ public class InternalNioOutputBuffer implements OutputBuffer {
         }
 
         // Reset pointers
-        leftover.recycle();
+        byte[] leftoverBuf = leftover.getBuffer();
+        if (leftoverBuf != null && leftoverBuf.length > Constants.ASYNC_BUFFER_SIZE) {
+            leftover = new ByteChunk();
+        } else {
+            leftover.recycle();
+        }
         pos = 0;
         lastActiveFilter = -1;
         committed = false;
@@ -835,7 +843,6 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                     } catch (InterruptedException e) {
                         // Ignore
                     }
-                    // FIXME? throw new IOException(MESSAGES.invalidBacklog());
                 }
                 synchronized (completionHandler) {
                     leftover.append(chunk);
