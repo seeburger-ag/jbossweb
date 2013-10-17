@@ -23,7 +23,7 @@ import static org.jboss.web.CoyoteMessages.MESSAGES;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.coyote.ActionCode;
@@ -138,10 +138,10 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 	 */
 	private CompletionHandler<Integer, NioChannel> completionHandler;
 
-	/**
-	 * Latch used for auto blocking.
-	 */
-	private CountDownLatch latch = new CountDownLatch(0);
+    /**
+     * Semaphore used for waiting for completion handler.
+     */
+    private Semaphore semaphore = new Semaphore(1);
 	
 	/**
 	 * Create a new instance of {@code InternalNioOutputBuffer}
@@ -209,7 +209,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                     } else {
                         response.setLastWrite(nBytes);
                         leftover.recycle();
-                        latch.countDown();
+                        semaphore.release();
                         if (!processor.isProcessing() && processor.getWriteNotification()) {
                             if (!endpoint.processChannel(attachment, SocketStatus.OPEN_WRITE)) {
                                 endpoint.closeChannel(attachment);
@@ -226,6 +226,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 			public void failed(Throwable exc, NioChannel attachment) {
                 processor.getResponse().setErrorException(exc);
 				endpoint.removeEventChannel(attachment);
+                semaphore.release();
 				if (!endpoint.processChannel(attachment, SocketStatus.ERROR)) {
 				    endpoint.closeChannel(attachment);
 				}
@@ -286,35 +287,6 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 		}
 
 		return nw;
-	}
-
-	/**
-	 * Perform a non-blocking write operation
-	 * 
-	 * @param buffer
-	 *            the buffer containing the data to write
-	 * @param timeout
-	 *            a timeout for the operation
-	 * @param unit
-	 *            The time unit
-	 */
-	private void nonBlockingWrite(final long timeout, final TimeUnit unit) {
-		try {
-            latch = new CountDownLatch(1);
-		    // Calculate the number of bytes that fit in the buffer
-		    int n = Math.min(leftover.getLength(), bbuf.capacity() - bbuf.position());
-		    // put bytes in the buffer
-		    bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
-		    // Update the offset
-		    leftover.setOffset(leftover.getOffset() + n);
-		    // Perform the write operation
-		    this.channel.write(this.bbuf, timeout, unit, this.channel, this.completionHandler);
-		} catch (Throwable t) {
-            processor.getResponse().setErrorException(t);
-			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(t);
-			}
-		}
 	}
 
     /**
@@ -542,6 +514,9 @@ public class InternalNioOutputBuffer implements OutputBuffer {
         lastActiveFilter = -1;
         committed = false;
         finished = false;
+        if (nonBlocking) {
+            semaphore.release();
+        }
         nonBlocking = false;
     }
 
@@ -839,7 +814,8 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                 if (leftover.getLength() > Constants.ASYNC_BUFFER_SIZE && response.getFlushLeftovers()
                         && Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
                     try {
-                        latch.await(writeTimeout, TimeUnit.MILLISECONDS);
+                        if (semaphore.tryAcquire(writeTimeout, TimeUnit.MILLISECONDS))
+                            semaphore.release();
                     } catch (InterruptedException e) {
                         // Ignore
                     }
@@ -849,8 +825,19 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                     if (leftover.getLength() > Constants.ASYNC_BUFFER_SIZE) {
                         response.setLastWrite(0);
                     }
-                    if (latch.getCount() == 0) {
-                        nonBlockingWrite(writeTimeout, TimeUnit.MILLISECONDS);
+                    if (semaphore.tryAcquire()) {
+                        // Calculate the number of bytes that fit in the buffer
+                        int n = Math.min(leftover.getLength(), bbuf.capacity() - bbuf.position());
+                        bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
+                        leftover.setOffset(leftover.getOffset() + n);
+                        try {
+                            channel.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, channel, completionHandler);
+                        } catch (Exception e) {
+                            processor.getResponse().setErrorException(e);
+                            if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                                CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(e);
+                            }
+                        }
                     }
                 }
             } else {

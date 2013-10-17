@@ -23,10 +23,9 @@ import static org.jboss.web.CoyoteMessages.MESSAGES;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.coyote.InputBuffer;
@@ -81,9 +80,9 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	private CompletionHandler<Integer, NioChannel> completionHandler;
 
     /**
-     * Lock used for auto blocking.
+     * Semaphore used for waiting for completion handler.
      */
-    private CountDownLatch latch = new CountDownLatch(0);
+    private Semaphore semaphore = new Semaphore(1);
     
     /**
 	 * Create a new instance of {@code InternalNioInputBuffer}
@@ -121,7 +120,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			        bbuf.flip();
 			        bbuf.get(buf, pos, nBytes);
 			        lastValid = pos + nBytes;
-			        latch.countDown();
+			        semaphore.release();
 			        if (!processor.isProcessing() && processor.getReadNotifications()) {
 			            if (!endpoint.processChannel(attachment, SocketStatus.OPEN_READ)) {
 			                endpoint.closeChannel(attachment);
@@ -134,6 +133,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			public void failed(Throwable exc, NioChannel attachment) {
 			    processor.getResponse().setErrorException(exc);
 			    endpoint.removeEventChannel(attachment);
+                semaphore.release();
 			    if (!endpoint.processChannel(attachment, SocketStatus.ERROR)) {
 			        endpoint.closeChannel(attachment);
 			    }
@@ -196,8 +196,11 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 */
 	public boolean nextRequest() {
 		boolean result = super.nextRequest();
-		nonBlocking = false;
 		available = false;
+        if (nonBlocking) {
+            semaphore.release();
+        }
+        nonBlocking = false;
 
 		return result;
 	}
@@ -418,18 +421,23 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
         int nRead = 0;
         // Reading from client
         if (nonBlocking) {
-            synchronized (completionHandler) {
-                if (latch.getCount() == 0) {
-                    // Prepare the internal input buffer for reading
-                    this.prepare();
-                    nonBlockingRead(readTimeout, unit);
-                    nRead = lastValid - pos;
-                }
-            }
-            // If there's nothing and flow control is not used, autoblock 
-            if (nRead == 0 && !available) {
+            if (semaphore.tryAcquire()) {
+                // Prepare the internal input buffer for reading
+                prepare();
                 try {
-                    latch.await(readTimeout, unit);
+                    channel.read(bbuf, readTimeout, TimeUnit.MILLISECONDS, channel, this.completionHandler);
+                } catch (Exception e) {
+                    processor.getResponse().setErrorException(e);
+                    if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                        CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(e);
+                    }
+                }
+                nRead = lastValid - pos;
+            } else if (nRead == 0 && !available) {
+                // If there's nothing and flow control is not used, autoblock 
+                try {
+                    if (semaphore.tryAcquire(readTimeout, unit))
+                        semaphore.release();
                 } catch (InterruptedException e) {
                     // Ignore
                 }
@@ -437,7 +445,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
             }
         } else {
             // Prepare the internal input buffer for reading
-            this.prepare();
+            prepare();
             nRead = blockingRead(readTimeout, unit);
             if (nRead > 0) {
                 bbuf.flip();
@@ -465,7 +473,6 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 */
 	private void prepare() {
 		bbuf.clear();
-
 		if (parsingHeader) {
 			if (lastValid == buf.length) {
 				throw MESSAGES.requestHeaderTooLarge();
@@ -481,25 +488,6 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 */
 	private void close(NioChannel channel) {
 		endpoint.closeChannel(channel);
-	}
-
-	/**
-	 * Read a sequence of bytes in non-blocking mode from he current channel
-	 * 
-	 * @param bb
-	 *            the byte buffer which will contain the bytes read from the
-	 *            current channel
-	 */
-	private void nonBlockingRead(long timeout, TimeUnit unit) {
-		try {
-		    latch = new CountDownLatch(1);
-		    channel.read(bbuf, channel, this.completionHandler);
-		} catch (Exception e) {
-		    processor.getResponse().setErrorException(e);
-			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(e);
-			}
-		}
 	}
 
 	/**
