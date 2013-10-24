@@ -23,7 +23,8 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.security.auth.Subject;
 import javax.servlet.Filter;
@@ -66,8 +67,8 @@ public final class SecurityUtil{
     /**
      * Cache every object for which we are creating method on it.
      */
-    private static HashMap<Object,Method[]> objectCache =
-        new HashMap<Object,Method[]>();
+    private static Map<Object,Method[]> objectCache =
+        new ConcurrentHashMap<Object,Method[]>();
         
     private static org.jboss.logging.Logger log=
         org.jboss.logging.Logger.getLogger( SecurityUtil.class );
