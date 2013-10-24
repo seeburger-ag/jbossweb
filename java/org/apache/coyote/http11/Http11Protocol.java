@@ -23,6 +23,7 @@
 package org.apache.coyote.http11;
 
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,15 +36,18 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.net.ssl.SSLContext;
 
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
 import org.apache.coyote.RequestInfo;
 import org.apache.tomcat.util.modeler.Registry;
-import org.apache.tomcat.util.net.AprEndpoint;
+import org.apache.tomcat.util.net.JIoEndpoint;
+import org.apache.tomcat.util.net.SSLImplementation;
+import org.apache.tomcat.util.net.ServerSocketFactory;
 import org.apache.tomcat.util.net.SocketStatus;
-import org.apache.tomcat.util.net.AprEndpoint.Handler;
+import org.apache.tomcat.util.net.JIoEndpoint.Handler;
 import org.apache.tomcat.util.res.StringManager;
 
 
@@ -55,10 +59,12 @@ import org.apache.tomcat.util.res.StringManager;
  * @author Remy Maucherat
  * @author Costin Manolache
  */
-public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
+public class Http11Protocol 
+    implements ProtocolHandler, MBeanRegistration {
 
-    protected static org.jboss.logging.Logger log = 
-        org.jboss.logging.Logger.getLogger(Http11AprProtocol.class);
+
+    protected static org.jboss.logging.Logger log
+        = org.jboss.logging.Logger.getLogger(Http11Protocol.class);
 
     /**
      * The string manager for this package.
@@ -66,30 +72,75 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     protected static StringManager sm =
         StringManager.getManager(Constants.Package);
 
-    public Http11AprProtocol() {
+    private static final Object syncInitLock = new Object();
+    private boolean SYNC_INIT = Boolean.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.SYNC_INIT")).booleanValue();
+
+
+    // ------------------------------------------------------------ Constructor
+
+
+    public Http11Protocol() {
         setSoLinger(Constants.DEFAULT_CONNECTION_LINGER);
         setSoTimeout(Constants.DEFAULT_CONNECTION_TIMEOUT);
         //setServerSoTimeout(Constants.DEFAULT_SERVER_SOCKET_TIMEOUT);
         setTcpNoDelay(Constants.DEFAULT_TCP_NO_DELAY);
     }
 
-    /** Pass config info
-     */
-    public void setAttribute( String name, Object value ) {
-        if( log.isTraceEnabled())
-            log.trace(sm.getString("http11protocol.setattribute", name, value));
+    
+    // ----------------------------------------------------------------- Fields
 
+
+    protected Http11ConnectionHandler cHandler = new Http11ConnectionHandler(this);
+    protected JIoEndpoint endpoint = new JIoEndpoint();
+
+
+    // *
+    protected ObjectName tpOname = null;
+    // *
+    protected ObjectName rgOname = null;
+
+
+    protected ServerSocketFactory socketFactory = null;
+    protected SSLImplementation sslImplementation = null;
+
+
+    // ----------------------------------------- ProtocolHandler Implementation
+    // *
+
+
+    protected HashMap<String, Object> attributes = new HashMap<String, Object>();
+
+    
+    /**
+     * Pass config info
+     */
+    public void setAttribute(String name, Object value) {
+        if (log.isTraceEnabled()) {
+            log.trace(sm.getString("http11protocol.setattribute", name, value));
+        }
         attributes.put(name, value);
     }
 
-    public Object getAttribute( String key ) {
-        if( log.isTraceEnabled())
-            log.trace(sm.getString("http11protocol.getattribute", key));
+    public Object getAttribute(String key) {
         return attributes.get(key);
     }
 
     public Iterator getAttributeNames() {
         return attributes.keySet().iterator();
+    }
+
+    /**
+     * Set a property.
+     */
+    public void setProperty(String name, String value) {
+        setAttribute(name, value);
+    }
+
+    /**
+     * Get a property
+     */
+    public String getProperty(String name) {
+        return (String)getAttribute(name);
     }
 
     /**
@@ -99,48 +150,111 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public void setAdapter(Adapter adapter) { this.adapter = adapter; }
     public Adapter getAdapter() { return adapter; }
 
-    private boolean canDestroy = false;
-
 
     public boolean hasIoEvents() {
-        return true;
+        return false;
     }
 
     public RequestGroupInfo getRequestGroupInfo() {
         return cHandler.global;
     }
 
-
-    /** Start the protocol
-     */
     public void init() throws Exception {
-        endpoint.setName(getName());
-        endpoint.setHandler(cHandler);
+        if(!SYNC_INIT) {
+            endpoint.setName(getName());
+            endpoint.setHandler(cHandler);
 
-        try {
-            endpoint.init();
-        } catch (Exception ex) {
-            log.error(sm.getString("http11protocol.endpoint.initerror"), ex);
-            throw ex;
+            // Verify the validity of the configured socket factory
+            try {
+                if (isSSLEnabled()) {
+                    sslImplementation =
+                        SSLImplementation.getInstance(sslImplementationName);
+                    socketFactory = sslImplementation.getServerSocketFactory();
+                    endpoint.setServerSocketFactory(socketFactory);
+                } else if (socketFactoryName != null) {
+                    socketFactory = (ServerSocketFactory) Class.forName(socketFactoryName).newInstance();
+                    endpoint.setServerSocketFactory(socketFactory);
+                }
+            } catch (Exception ex) {
+                log.error(sm.getString("http11protocol.socketfactory.initerror"),
+                          ex);
+                throw ex;
+            }
+
+            if (socketFactory!=null) {
+                Iterator<String> attE = attributes.keySet().iterator();
+                while( attE.hasNext() ) {
+                    String key = attE.next();
+                    Object v=attributes.get(key);
+                    socketFactory.setAttribute(key, v);
+                }
+            }
+        
+            try {
+                endpoint.init();
+            } catch (Exception ex) {
+                log.error(sm.getString("http11protocol.endpoint.initerror"), ex);
+                throw ex;
+            }
+            if (log.isDebugEnabled())
+                log.debug(sm.getString("http11protocol.init", getName()));
+        } else {
+            synchronized ( syncInitLock ){
+                if (log.isTraceEnabled())
+                    log.trace("Doing sync http init");
+
+                endpoint.setName(getName());
+                endpoint.setHandler(cHandler);
+
+                // Verify the validity of the configured socket factory
+                try {
+                    if (isSSLEnabled()) {
+                        sslImplementation =
+                            SSLImplementation.getInstance(sslImplementationName);
+                        socketFactory = sslImplementation.getServerSocketFactory();
+                        endpoint.setServerSocketFactory(socketFactory);
+                    } else if (socketFactoryName != null) {
+                        socketFactory = (ServerSocketFactory) Class.forName(socketFactoryName).newInstance();
+                        endpoint.setServerSocketFactory(socketFactory);
+                    }
+                } catch (Exception ex) {
+                    log.error(sm.getString("http11protocol.socketfactory.initerror"),
+                              ex);
+                    throw ex;
+                }
+
+                if (socketFactory!=null) {
+                    Iterator<String> attE = attributes.keySet().iterator();
+                    while( attE.hasNext() ) {
+                        String key = attE.next();
+                        Object v=attributes.get(key);
+                        socketFactory.setAttribute(key, v);
+                    }
+                }
+        
+                try {
+                    endpoint.init();
+                } catch (Exception ex) {
+                    log.error(sm.getString("http11protocol.endpoint.initerror"), ex);
+                    throw ex;
+                }
+                if (log.isDebugEnabled())
+                    log.debug(sm.getString("http11protocol.init", getName()));
+            }
         }
-        if(log.isDebugEnabled())
-            log.debug(sm.getString("http11protocol.init", getName()));
 
     }
 
-    ObjectName tpOname;
-    ObjectName rgOname;
-
     public void start() throws Exception {
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( this.domain != null ) {
+            if (this.domain != null) {
                 try {
-                    tpOname=new ObjectName
+                    tpOname = new ObjectName
                     (domain + ":" + "type=ThreadPool,name=" + getJmxName());
                     Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
                 } catch (Exception e) {
-                    log.error("Can't register threadpool" );
+                    log.error("Can't register endpoint");
                 }
                 rgOname=new ObjectName
                 (domain + ":type=GlobalRequestProcessor,name=" + getJmxName());
@@ -154,7 +268,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             log.error(sm.getString("http11protocol.endpoint.starterror"), ex);
             throw ex;
         }
-        if(log.isInfoEnabled())
+        if (log.isInfoEnabled())
             log.info(sm.getString("http11protocol.start", getName()));
     }
 
@@ -165,8 +279,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             log.error(sm.getString("http11protocol.endpoint.pauseerror"), ex);
             throw ex;
         }
-        canDestroy = false;
-        // Wait for a while until all the processors are idle
+        // Wait for a while until all the processors are no longer processing requests
         RequestInfo[] states = cHandler.global.getRequestProcessors();
         int retry = 0;
         boolean done = false;
@@ -184,11 +297,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     break;
                 }
             }
-            if (done) {
-                canDestroy = true;
-            }
         }
-        if(log.isInfoEnabled())
+        if (log.isInfoEnabled())
             log.info(sm.getString("http11protocol.pause", getName()));
     }
 
@@ -199,33 +309,18 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             log.error(sm.getString("http11protocol.endpoint.resumeerror"), ex);
             throw ex;
         }
-        if(log.isInfoEnabled())
+        if (log.isInfoEnabled())
             log.info(sm.getString("http11protocol.resume", getName()));
     }
 
     public void destroy() throws Exception {
-        if(log.isInfoEnabled())
+        if (log.isInfoEnabled())
             log.info(sm.getString("http11protocol.stop", getName()));
-        if (canDestroy) {
-            endpoint.destroy();
-        } else {
-            log.warn(sm.getString("http11protocol.cannotDestroy", getName()));
-            try {
-                RequestInfo[] states = cHandler.global.getRequestProcessors();
-                for (int i = 0; i < states.length; i++) {
-                    if (states[i].getStage() == org.apache.coyote.Constants.STAGE_SERVICE) {
-                        // FIXME: Log RequestInfo content
-                    }
-                }
-            } catch (Exception ex) {
-                log.error(sm.getString("http11protocol.cannotDestroy", getName()), ex);
-                throw ex;
-            }
-        }
+        endpoint.destroy();
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( tpOname!=null )
+            if (tpOname!=null)
                 Registry.getRegistry(null, null).unregisterComponent(tpOname);
-            if( rgOname != null )
+            if (rgOname != null)
                 Registry.getRegistry(null, null).unregisterComponent(rgOname);
         }
     }
@@ -247,12 +342,9 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         return ("http-" + encodedAddr + endpoint.getPort());
     }
 
-    protected AprEndpoint endpoint=new AprEndpoint();
+    // ------------------------------------------------------------- Properties
 
-    protected HashMap<String, Object> attributes = new HashMap<String, Object>();
-
-    private Http11ConnectionHandler cHandler = new Http11ConnectionHandler(this);
-
+    
     /**
      * Processor cache.
      */
@@ -260,62 +352,73 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public int getProcessorCache() { return this.processorCache; }
     public void setProcessorCache(int processorCache) { this.processorCache = processorCache; }
 
-    public Executor getExecutor() { return endpoint.getExecutor(); }
-    public void setExecutor(Executor executor) { endpoint.setExecutor(executor); }
-    
-    public int getMaxThreads() { return endpoint.getMaxThreads(); }
-    public void setMaxThreads(int maxThreads) { endpoint.setMaxThreads(maxThreads); }
-
-    public int getThreadPriority() { return endpoint.getThreadPriority(); }
-    public void setThreadPriority(int threadPriority) { endpoint.setThreadPriority(threadPriority); }
-
-    public int getBacklog() { return endpoint.getBacklog(); }
-    public void setBacklog(int backlog) { endpoint.setBacklog(backlog); }
-
-    public int getPort() { return endpoint.getPort(); }
-    public void setPort(int port) { endpoint.setPort(port); }
-
-    public InetAddress getAddress() { return endpoint.getAddress(); }
-    public void setAddress(InetAddress ia) { endpoint.setAddress(ia); }
-
-    public boolean getTcpNoDelay() { return endpoint.getTcpNoDelay(); }
-    public void setTcpNoDelay(boolean tcpNoDelay) { endpoint.setTcpNoDelay(tcpNoDelay); }
-
-    public int getSoLinger() { return endpoint.getSoLinger(); }
-    public void setSoLinger(int soLinger) { endpoint.setSoLinger(soLinger); }
-
-    public int getSoTimeout() { return endpoint.getSoTimeout(); }
-    public void setSoTimeout(int soTimeout) { endpoint.setSoTimeout(soTimeout); }
-
-    public boolean getReverseConnection() { return endpoint.isReverseConnection(); }
-    public void setReverseConnection(boolean reverseConnection) { endpoint.setReverseConnection(reverseConnection); }
-
-    public boolean getDeferAccept() { return endpoint.getDeferAccept(); }
-    public void setDeferAccept(boolean deferAccept) { endpoint.setDeferAccept(deferAccept); }
-
-    /**
-     * The number of seconds Tomcat will wait for a subsequent request
-     * before closing the connection.
-     */
-    public int getKeepAliveTimeout() { return endpoint.getKeepAliveTimeout(); }
-    public void setKeepAliveTimeout(int timeout) { endpoint.setKeepAliveTimeout(timeout); }
-
-    public boolean getUseSendfile() { return endpoint.getUseSendfile(); }
-    public void setUseSendfile(boolean useSendfile) { endpoint.setUseSendfile(useSendfile); }
-
-    public int getPollTime() { return endpoint.getPollTime(); }
-    public void setPollTime(int pollTime) { endpoint.setPollTime(pollTime); }
-
-    public void setPollerSize(int pollerSize) { endpoint.setPollerSize(pollerSize); }
-    public int getPollerSize() { return endpoint.getPollerSize(); }
-
-    public int getSendfileSize() { return endpoint.getSendfileSize(); }
-    public void setSendfileSize(int sendfileSize) { endpoint.setSendfileSize(sendfileSize); }
-    
     protected int socketBuffer = 9000;
     public int getSocketBuffer() { return socketBuffer; }
     public void setSocketBuffer(int socketBuffer) { this.socketBuffer = socketBuffer; }
 
+    /**
+     * This field indicates if the protocol is secure from the perspective of
+     * the client (= https is used).
+     */
+    protected boolean secure;
+    public boolean getSecure() { return secure; }
+    public void setSecure(boolean b) { secure = b; }
+
+    protected boolean SSLEnabled = false;
+    public boolean isSSLEnabled() { return SSLEnabled;}
+    public void setSSLEnabled(boolean SSLEnabled) {this.SSLEnabled = SSLEnabled;}    
+    
+    /**
+     * Name of the socket factory.
+     */
+    protected String socketFactoryName = null;
+    public String getSocketFactory() { return socketFactoryName; }
+    public void setSocketFactory(String valueS) { socketFactoryName = valueS; }
+    
+    /**
+     * Name of the SSL implementation.
+     */
+    protected String sslImplementationName=null;
+    public String getSSLImplementation() { return sslImplementationName; }
+    public void setSSLImplementation( String valueS) {
+        sslImplementationName = valueS;
+        setSecure(true);
+    }
+    
+    
+    // HTTP
+    /**
+     * Maximum number of requests which can be performed over a keepalive 
+     * connection. The default is the same as for Apache HTTP Server.
+     */
+    protected int maxKeepAliveRequests = (org.apache.tomcat.util.Constants.LOW_MEMORY) ? 1 : 
+        Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS", "-1")).intValue();
+    public int getMaxKeepAliveRequests() { return maxKeepAliveRequests; }
+    public void setMaxKeepAliveRequests(int mkar) { maxKeepAliveRequests = mkar; }
+
+    // HTTP
+    /**
+     * The number of seconds Tomcat will wait for a subsequent request
+     * before closing the connection. The default is the same as for
+     * Apache HTTP Server (15 000 milliseconds).
+     */
+    protected int keepAliveTimeout = -1;
+    public int getKeepAliveTimeout() { return keepAliveTimeout; }
+    public void setKeepAliveTimeout(int timeout) { keepAliveTimeout = timeout; }
+
+    // HTTP
+    /**
+     * This timeout represents the socket timeout which will be used while
+     * the adapter execution is in progress, unless disableUploadTimeout
+     * is set to true. The default is the same as for Apache HTTP Server
+     * (300 000 milliseconds).
+     */
+    protected int timeout = 300000;
+    public int getTimeout() { return timeout; }
+    public void setTimeout(int timeout) { this.timeout = timeout; }
+
+
+    // *
     /**
      * Maximum size of the post which will be saved when processing certain
      * requests, such as a POST.
@@ -323,6 +426,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     protected int maxSavePostSize = 4 * 1024;
     public int getMaxSavePostSize() { return maxSavePostSize; }
     public void setMaxSavePostSize(int valueI) { maxSavePostSize = valueI; }
+
 
     // HTTP
     /**
@@ -341,6 +445,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     protected boolean disableUploadTimeout = true;
     public boolean getDisableUploadTimeout() { return disableUploadTimeout; }
     public void setDisableUploadTimeout(boolean isDisabled) { disableUploadTimeout = isDisabled; }
+
 
     // HTTP
     /**
@@ -377,20 +482,45 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public String getRestrictedUserAgents() { return restrictedUserAgents; }
     public void setRestrictedUserAgents(String valueS) { restrictedUserAgents = valueS; }
     
-    
     // HTTP
-    protected String protocol = null;
-    public String getProtocol() { return protocol; }
-    public void setProtocol(String protocol) { setSecure(true); this.protocol = protocol; }
-
     /**
-     * Maximum number of requests which can be performed over a keepalive 
-     * connection. The default is the same as for Apache HTTP Server.
+     * Server header.
      */
-    protected int maxKeepAliveRequests = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS", "-1")).intValue();
-    public int getMaxKeepAliveRequests() { return maxKeepAliveRequests; }
-    public void setMaxKeepAliveRequests(int mkar) { maxKeepAliveRequests = mkar; }
+    protected String server = System.getProperty("org.apache.coyote.http11.Http11Protocol.SERVER");
+    public void setServer( String server ) { this.server = server; }
+    public String getServer() { return server; }
 
+    public Executor getExecutor() { return endpoint.getExecutor(); }
+    public void setExecutor(Executor executor) { endpoint.setExecutor(executor); }
+    
+    public int getMaxThreads() { return endpoint.getMaxThreads(); }
+    public void setMaxThreads(int maxThreads) { endpoint.setMaxThreads(maxThreads); }
+
+    public int getThreadPriority() { return endpoint.getThreadPriority(); }
+    public void setThreadPriority(int threadPriority) { endpoint.setThreadPriority(threadPriority); }
+
+    public int getBacklog() { return endpoint.getBacklog(); }
+    public void setBacklog(int backlog) { endpoint.setBacklog(backlog); }
+
+    public int getPort() { return endpoint.getPort(); }
+    public void setPort(int port) { endpoint.setPort(port); }
+
+    public InetAddress getAddress() { return endpoint.getAddress(); }
+    public void setAddress(InetAddress ia) { endpoint.setAddress(ia); }
+
+    public boolean getTcpNoDelay() { return endpoint.getTcpNoDelay(); }
+    public void setTcpNoDelay(boolean tcpNoDelay) { endpoint.setTcpNoDelay(tcpNoDelay); }
+
+    public int getSoLinger() { return endpoint.getSoLinger(); }
+    public void setSoLinger(int soLinger) { endpoint.setSoLinger(soLinger); }
+
+    public int getSoTimeout() { return endpoint.getSoTimeout(); }
+    public void setSoTimeout(int soTimeout) { endpoint.setSoTimeout(soTimeout); }
+
+    public void setPollerSize(int pollerSize) { endpoint.setPollerSize(pollerSize); }
+    public int getPollerSize() { return endpoint.getPollerSize(); }
+
+    // HTTP
     /**
      * Return the Keep-Alive policy for the connection.
      */
@@ -398,6 +528,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         return ((maxKeepAliveRequests != 0) && (maxKeepAliveRequests != 1));
     }
 
+    // HTTP
     /**
      * Set the keep-alive policy for this connection.
      */
@@ -407,138 +538,97 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         }
     }
 
-    /**
-     * Server header.
+    /*
+     * Note: All the following are JSSE/java.io specific attributes.
      */
-    protected String server = System.getProperty("org.apache.coyote.http11.Http11Protocol.SERVER");
-    public void setServer( String server ) { this.server = server; }
-    public String getServer() { return server; }
-
-    /**
-     * This timeout represents the socket timeout which will be used while
-     * the adapter execution is in progress, unless disableUploadTimeout
-     * is set to true. The default is the same as for Apache HTTP Server
-     * (300 000 milliseconds).
-     */
-    protected int timeout = 300000;
-    public int getTimeout() { return timeout; }
-    public void setTimeout(int timeout) { this.timeout = timeout; }
-
-    /**
-     * This field indicates if the protocol is secure from the perspective of
-     * the client (= https is used).
-     */
-    protected boolean secure;
-    public boolean getSecure() { return secure; }
-    public void setSecure(boolean b) { secure = b; }
-
-    // --------------------  SSL related properties --------------------
-
-    /**
-     * SSL engine.
-     */
-    public boolean isSSLEnabled() { return endpoint.isSSLEnabled(); }
-    public void setSSLEnabled(boolean SSLEnabled) { endpoint.setSSLEnabled(SSLEnabled); }
-
-
-    /**
-     * SSL protocol.
-     */
-    public String getSSLProtocol() { return endpoint.getSSLProtocol(); }
-    public void setSSLProtocol(String SSLProtocol) { endpoint.setSSLProtocol(SSLProtocol); }
-
-
-    /**
-     * SSL password (if a cert is encrypted, and no password has been provided, a callback
-     * will ask for a password).
-     */
-    public String getSSLPassword() { return endpoint.getSSLPassword(); }
-    public void setSSLPassword(String SSLPassword) { endpoint.setSSLPassword(SSLPassword); }
-
-
-    /**
-     * SSL cipher suite.
-     */
-    public String getSSLCipherSuite() { return endpoint.getSSLCipherSuite(); }
-    public void setSSLCipherSuite(String SSLCipherSuite) { endpoint.setSSLCipherSuite(SSLCipherSuite); }
-
-
-    /**
-     * SSL certificate file.
-     */
-    public String getSSLCertificateFile() { return endpoint.getSSLCertificateFile(); }
-    public void setSSLCertificateFile(String SSLCertificateFile) { endpoint.setSSLCertificateFile(SSLCertificateFile); }
-
-
-    /**
-     * SSL certificate key file.
-     */
-    public String getSSLCertificateKeyFile() { return endpoint.getSSLCertificateKeyFile(); }
-    public void setSSLCertificateKeyFile(String SSLCertificateKeyFile) { endpoint.setSSLCertificateKeyFile(SSLCertificateKeyFile); }
-
-
-    /**
-     * SSL certificate chain file.
-     */
-    public String getSSLCertificateChainFile() { return endpoint.getSSLCertificateChainFile(); }
-    public void setSSLCertificateChainFile(String SSLCertificateChainFile) { endpoint.setSSLCertificateChainFile(SSLCertificateChainFile); }
-
-
-    /**
-     * SSL CA certificate path.
-     */
-    public String getSSLCACertificatePath() { return endpoint.getSSLCACertificatePath(); }
-    public void setSSLCACertificatePath(String SSLCACertificatePath) { endpoint.setSSLCACertificatePath(SSLCACertificatePath); }
-
-
-    /**
-     * SSL CA certificate file.
-     */
-    public String getSSLCACertificateFile() { return endpoint.getSSLCACertificateFile(); }
-    public void setSSLCACertificateFile(String SSLCACertificateFile) { endpoint.setSSLCACertificateFile(SSLCACertificateFile); }
-
-
-    /**
-     * SSL CA revocation path.
-     */
-    public String getSSLCARevocationPath() { return endpoint.getSSLCARevocationPath(); }
-    public void setSSLCARevocationPath(String SSLCARevocationPath) { endpoint.setSSLCARevocationPath(SSLCARevocationPath); }
-
-
-    /**
-     * SSL CA revocation file.
-     */
-    public String getSSLCARevocationFile() { return endpoint.getSSLCARevocationFile(); }
-    public void setSSLCARevocationFile(String SSLCARevocationFile) { endpoint.setSSLCARevocationFile(SSLCARevocationFile); }
-
-
-    /**
-     * SSL verify client.
-     */
-    public String getSSLVerifyClient() { return endpoint.getSSLVerifyClient(); }
-    public void setSSLVerifyClient(String SSLVerifyClient) { endpoint.setSSLVerifyClient(SSLVerifyClient); }
-
-
-    /**
-     * SSL verify depth.
-     */
-    public int getSSLVerifyDepth() { return endpoint.getSSLVerifyDepth(); }
-    public void setSSLVerifyDepth(int SSLVerifyDepth) { endpoint.setSSLVerifyDepth(SSLVerifyDepth); }
     
-    // --------------------  Connection handler --------------------
+    public String getKeystore() {
+        return (String) getAttribute("keystore");
+    }
 
-    static class Http11ConnectionHandler implements Handler {
-        
-        protected Http11AprProtocol proto;
+    public void setKeystore( String k ) {
+        setAttribute("keystore", k);
+    }
+
+    public String getKeypass() {
+        return (String) getAttribute("keypass");
+    }
+
+    public void setKeypass( String k ) {
+        attributes.put("keypass", k);
+        //setAttribute("keypass", k);
+    }
+
+    public String getKeytype() {
+        return (String) getAttribute("keystoreType");
+    }
+
+    public void setKeytype( String k ) {
+        setAttribute("keystoreType", k);
+    }
+
+    public String getClientauth() {
+        return (String) getAttribute("clientauth");
+    }
+
+    public void setClientauth( String k ) {
+        setAttribute("clientauth", k);
+    }
+
+    public String getProtocols() {
+        return (String) getAttribute("protocols");
+    }
+
+    public void setProtocols(String k) {
+        setAttribute("protocols", k);
+    }
+
+    public String getAlgorithm() {
+        return (String) getAttribute("algorithm");
+    }
+
+    public void setAlgorithm( String k ) {
+        setAttribute("algorithm", k);
+    }
+
+    public String getCiphers() {
+        return (String) getAttribute("ciphers");
+    }
+
+    public void setCiphers(String ciphers) {
+        setAttribute("ciphers", ciphers);
+    }
+
+    public String getKeyAlias() {
+        return (String) getAttribute("keyAlias");
+    }
+
+    public void setKeyAlias(String keyAlias) {
+        setAttribute("keyAlias", keyAlias);
+    }
+
+    public SSLContext getSSLContext() {
+        return (SSLContext) getAttribute("SSLContext");
+    }
+
+    public void setSSLContext(SSLContext sslContext) {
+        setAttribute("SSLContext", sslContext);
+    }
+
+    // -----------------------------------  Http11ConnectionHandler Inner Class
+
+    protected static class Http11ConnectionHandler implements Handler {
+
+        protected Http11Protocol proto;
         protected AtomicLong registerCount = new AtomicLong(0);
         protected RequestGroupInfo global = new RequestGroupInfo();
-        
-        protected ConcurrentHashMap<Long, Http11AprProcessor> connections =
-            new ConcurrentHashMap<Long, Http11AprProcessor>();
-        protected ConcurrentLinkedQueue<Http11AprProcessor> recycledProcessors = 
-            new ConcurrentLinkedQueue<Http11AprProcessor>() {
+
+        protected ConcurrentHashMap<Socket, Http11Processor> connections =
+            new ConcurrentHashMap<Socket, Http11Processor>();
+        protected ConcurrentLinkedQueue<Http11Processor> recycledProcessors = 
+            new ConcurrentLinkedQueue<Http11Processor>() {
             protected AtomicInteger size = new AtomicInteger(0);
-            public boolean offer(Http11AprProcessor processor) {
+            public boolean offer(Http11Processor processor) {
                 boolean offer = (proto.processorCache == -1) ? true : (size.get() < proto.processorCache);
                 //avoid over growing our cache or add after we have stopped
                 boolean result = false;
@@ -552,8 +642,8 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                 return result;
             }
             
-            public Http11AprProcessor poll() {
-                Http11AprProcessor result = super.poll();
+            public Http11Processor poll() {
+                Http11Processor result = super.poll();
                 if ( result != null ) {
                     size.decrementAndGet();
                 }
@@ -561,7 +651,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             }
             
             public void clear() {
-                Http11AprProcessor next = poll();
+                Http11Processor next = poll();
                 while ( next != null ) {
                     unregister(next);
                     next = poll();
@@ -571,14 +661,12 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             }
         };
 
-
-        Http11ConnectionHandler(Http11AprProtocol proto) {
+        Http11ConnectionHandler(Http11Protocol proto) {
             this.proto = proto;
         }
 
-        public SocketState event(long socket, SocketStatus status) {
-            Http11AprProcessor result = connections.get(socket);
-            
+        public SocketState event(Socket socket, SocketStatus status) {
+            Http11Processor result = connections.get(socket);
             SocketState state = SocketState.CLOSED; 
             if (result != null) {
                 result.startProcessing();
@@ -587,12 +675,12 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     state = result.event(status);
                 } catch (java.net.SocketException e) {
                     // SocketExceptions are normal
-                    Http11AprProtocol.log.debug
+                    Http11Protocol.log.debug
                         (sm.getString
                             ("http11protocol.proto.socketexception.debug"), e);
                 } catch (java.io.IOException e) {
                     // IOExceptions are normal
-                    Http11AprProtocol.log.debug
+                    Http11Protocol.log.debug
                         (sm.getString
                             ("http11protocol.proto.ioexception.debug"), e);
                 }
@@ -603,19 +691,16 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     // any other exception or error is odd. Here we log it
                     // with "ERROR" level, so it will show up even on
                     // less-than-verbose logs.
-                    Http11AprProtocol.log.error
+                    Http11Protocol.log.error
                         (sm.getString("http11protocol.proto.error"), e);
                 } finally {
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
                         recycledProcessors.offer(result);
-                        if (proto.endpoint.isRunning() && state == SocketState.OPEN) {
-                            proto.endpoint.getPoller().add(socket);
-                        }
                     } else {
                         if (proto.endpoint.isRunning()) {
                             proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
-                                    result.getReadNotifications(), result.getWriteNotification(), result.getResumeNotification(), false);
+                                    result.getResumeNotification(), false);
                         }
                     }
                     result.endProcessing();
@@ -624,39 +709,42 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             return state;
         }
         
-        public SocketState process(long socket) {
-            Http11AprProcessor processor = recycledProcessors.poll();
+        public SocketState process(Socket socket) {
+            Http11Processor processor = recycledProcessors.poll();
             try {
+
                 if (processor == null) {
                     processor = createProcessor();
                 }
 
+                if (proto.secure && (proto.sslImplementation != null)) {
+                    processor.setSSLSupport
+                        (proto.sslImplementation.getSSLSupport(socket));
+                } else {
+                    processor.setSSLSupport(null);
+                }
+                
                 SocketState state = processor.process(socket);
                 if (state == SocketState.LONG) {
                     // Associate the connection with the processor. The next request 
                     // processed by this thread will use either a new or a recycled
                     // processor.
                     connections.put(socket, processor);
-                    if (processor.getAvailable() && processor.getReadNotifications()) {
-                        // Call a read event right away
-                        state = event(socket, SocketStatus.OPEN_READ);
-                    } else {
-                        proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), 
-                                processor.getReadNotifications(), false, processor.getResumeNotification(), false);
-                    }
+                    proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), 
+                            processor.getResumeNotification(), false);
                 } else {
                     recycledProcessors.offer(processor);
                 }
                 return state;
 
-            } catch (java.net.SocketException e) {
+            } catch(java.net.SocketException e) {
                 // SocketExceptions are normal
-                Http11AprProtocol.log.debug
+                Http11Protocol.log.debug
                     (sm.getString
                      ("http11protocol.proto.socketexception.debug"), e);
             } catch (java.io.IOException e) {
                 // IOExceptions are normal
-                Http11AprProtocol.log.debug
+                Http11Protocol.log.debug
                     (sm.getString
                      ("http11protocol.proto.ioexception.debug"), e);
             }
@@ -667,18 +755,19 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                 // any other exception or error is odd. Here we log it
                 // with "ERROR" level, so it will show up even on
                 // less-than-verbose logs.
-                Http11AprProtocol.log.error
+                Http11Protocol.log.error
                     (sm.getString("http11protocol.proto.error"), e);
             }
             recycledProcessors.offer(processor);
             return SocketState.CLOSED;
         }
-
-        protected Http11AprProcessor createProcessor() {
-            Http11AprProcessor processor =
-                new Http11AprProcessor(proto.maxHttpHeaderSize, proto.endpoint);
+        
+        protected Http11Processor createProcessor() {
+            Http11Processor processor =
+                new Http11Processor(proto.maxHttpHeaderSize, proto.endpoint);
             processor.setAdapter(proto.adapter);
             processor.setMaxKeepAliveRequests(proto.maxKeepAliveRequests);
+            processor.setKeepAliveTimeout(proto.keepAliveTimeout);
             processor.setTimeout(proto.timeout);
             processor.setDisableUploadTimeout(proto.disableUploadTimeout);
             processor.setCompressionMinSize(proto.compressionMinSize);
@@ -693,7 +782,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             return processor;
         }
         
-        protected void register(Http11AprProcessor processor) {
+        protected void register(Http11Processor processor) {
             RequestInfo rp = processor.getRequest().getRequestProcessor();
             rp.setGlobalProcessor(global);
             if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
@@ -715,7 +804,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             }
         }
 
-        protected void unregister(Http11AprProcessor processor) {
+        protected void unregister(Http11Processor processor) {
             RequestInfo rp = processor.getRequest().getRequestProcessor();
             rp.setGlobalProcessor(null);
             if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
@@ -736,8 +825,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
 
     }
 
-    // -------------------- Various implementation classes --------------------
 
+    // -------------------- JMX related methods --------------------
+
+    // *
     protected String domain;
     protected ObjectName oname;
     protected MBeanServer mserver;

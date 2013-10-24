@@ -55,6 +55,7 @@ import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.Host;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
@@ -264,9 +265,7 @@ public class CoyoteAdapter
                 // Calling the container
                 connector.getContainer().getPipeline().getFirst().event(request, response, request.getEvent());
 
-                Request.AsyncContextImpl asyncContext = (Request.AsyncContextImpl) request.getAsyncContext();
-                if (!error && ((request.getAttribute(RequestDispatcher.ERROR_EXCEPTION) != null)
-                        || (asyncContext != null && asyncContext.getError() != null))) {
+                if (!error && (request.getAttribute(RequestDispatcher.ERROR_EXCEPTION) != null)) {
                     // An unexpected exception occurred while processing the event, so
                     // error should be called
                     request.getEvent().setType(HttpEvent.EventType.ERROR);
@@ -547,11 +546,13 @@ public class CoyoteAdapter
             res.setMessage("Context not mapped");
             return false;
         }
-        if (connector.getAllowedHosts() != null 
-                && !connector.getAllowedHosts().contains(request.getMappingData().host)) {
-            res.setStatus(403);
-            res.setMessage("Host access is forbidden through this connector");
-            return false;
+        if (connector.getAllowedHosts() != null) {
+            Host host = (Host) request.getMappingData().host;
+            if (!connector.getAllowedHostsIgnoreCase().contains(host.getName())) {
+                res.setStatus(403);
+                res.setMessage("Host access is forbidden through this connector");
+                return false;
+            }
         }
 
         // Filter trace method

@@ -51,5 +51,4 @@ public final class Constants {
      */
     public static final String SESSION_ID_KEY = "javax.servlet.request.ssl_session_id";
 
-
 }
