@@ -843,7 +843,7 @@
 
   <target name="build-jasper-jdt-src">
   	<jar destfile="${jasper-jdt-src.jar}" index="true">
-  		<fileset dir="${jasper-jdt-src.home}/src/plugins/org.eclipse.jdt.core/model">
+<fileset dir="${jasper-jdt-src.home}/plugins/org.eclipse.jdt.core/model">
   			<include name="org/eclipse/jdt/core/compiler/**"/>
   			<include name="org/eclipse/jdt/internal/compiler/**"/>
   			<include name="org/eclipse/jdt/internal/core/util/CommentRecorder*"/>
