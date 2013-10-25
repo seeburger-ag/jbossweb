@@ -37,9 +37,9 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
     private int maxSize;
 
     // For cleanup
-    private Vector<PerThreadData> perThreadDataVector;
+    private Vector perThreadDataVector;
 
-    private ThreadLocal<PerThreadData> perThread;
+    private ThreadLocal perThread;
 
     private static class PerThreadData {
         Tag handlers[];
@@ -51,11 +51,10 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
      */
     public PerThreadTagHandlerPool() {
         super();
-        perThreadDataVector = new Vector<PerThreadData>();
+        perThreadDataVector = new Vector();
     }
 
     protected void init(ServletConfig config) {
-        instanceManager = InstanceManagerFactory.getInstanceManager(config);
         maxSize = Constants.MAX_POOL_SIZE;
         String maxSizeS = getOption(config, OPTION_MAXSIZE, null);
         if (maxSizeS != null) {
@@ -65,8 +64,8 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
             }
         }
 
-        perThread = new ThreadLocal<PerThreadData>() {
-            protected PerThreadData initialValue() {
+        perThread = new ThreadLocal() {
+            protected Object initialValue() {
                 PerThreadData ptd = new PerThreadData();
                 ptd.handlers = new Tag[maxSize];
                 ptd.current = -1;
@@ -91,20 +90,12 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
         if(ptd.current >=0 ) {
             return ptd.handlers[ptd.current--];
         } else {
-            try {
-                if (Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-                    return (Tag) instanceManager.newInstance(handlerClass);
-                } else {
-                    Tag instance = (Tag) handlerClass.newInstance();
-                    if (Constants.INJECT_TAGS) {
-                        instanceManager.newInstance(instance);
-                    }
-                    return instance;
-                }
-            } catch (Exception e) {
-                throw new JspException(e.getMessage(), e);
-            }
-        }
+	    try {
+		return (Tag) handlerClass.newInstance();
+	    } catch (Exception e) {
+		throw new JspException(e.getMessage(), e);
+	    }
+	}
     }
 
     /**
@@ -116,20 +107,10 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
      */
     public void reuse(Tag handler) {
         PerThreadData ptd=(PerThreadData)perThread.get();
-        if (ptd.current < (ptd.handlers.length - 1)) {
-            ptd.handlers[++ptd.current] = handler;
+	if (ptd.current < (ptd.handlers.length - 1)) {
+	    ptd.handlers[++ptd.current] = handler;
         } else {
-            try {
-                handler.release();
-            } finally {
-                if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-                    try {
-                        instanceManager.destroyInstance(handler);
-                    } catch (Exception e) {
-                        // Ignore
-                    }
-                }
-            }
+            handler.release();
         }
     }
 
@@ -137,31 +118,17 @@ public class PerThreadTagHandlerPool extends TagHandlerPool {
      * Calls the release() method of all tag handlers in this tag handler pool.
      */
     public void release() {        
-        Enumeration<PerThreadData> enumeration = perThreadDataVector.elements();
+        Enumeration enumeration = perThreadDataVector.elements();
         while (enumeration.hasMoreElements()) {
-            PerThreadData ptd = enumeration.nextElement();
+	    PerThreadData ptd = (PerThreadData)enumeration.nextElement();
             if (ptd.handlers != null) {
                 for (int i=ptd.current; i>=0; i--) {
                     if (ptd.handlers[i] != null) {
-                        try {
-                            ptd.handlers[i].release();
-                        } catch (Exception e) {
-                            // Ignore
-                        }
-                        if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-                            try {
-                                instanceManager.destroyInstance(ptd.handlers[i]);
-                            } catch (Exception e) {
-                                // Ignore
-                            }
-                        }
-                    }
+                        ptd.handlers[i].release();
+		    }
                 }
             }
-            ptd.handlers = null;
-            ptd.current = -1;
         }
-        perThreadDataVector.clear();
     }
 }
 

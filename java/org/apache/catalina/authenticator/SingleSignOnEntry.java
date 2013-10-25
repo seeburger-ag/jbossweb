@@ -18,9 +18,8 @@ package org.apache.catalina.authenticator;
 
 import java.security.Principal;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.catalina.Session;
+import org.apache.catalina.authenticator.Constants;
 
 /**
  * A class that represents entries in the cache of authenticated users.
@@ -184,9 +183,9 @@ public class SingleSignOnEntry
         this.username = username;
         this.password = password;
         this.canReauthenticate =
-            (HttpServletRequest.BASIC_AUTH.equals(authType)
-                || HttpServletRequest.FORM_AUTH.equals(authType)
-                || Constants.LOGIN_METHOD.equals(authType));
+            (Constants.BASIC_METHOD.equals(authType)
+                || Constants.FORM_METHOD.equals(authType)
+                || (username != null && password != null));
     }
 
 }
