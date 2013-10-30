@@ -296,4 +296,7 @@ public interface WebsocketsMessages {
     @Message(id = 8586, value = "Upgrade failed")
     String upgradeFailed();
 
+    @Message(id = 8587, value = "This connection was established under an authenticated HTTP session that has ended")
+    String expiredHttpSession();
+
 }
