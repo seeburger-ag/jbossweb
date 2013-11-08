@@ -17,103 +17,105 @@ public interface ELParserConstants {
   /** RegularExpression Id. */
   int START_DEFERRED_EXPRESSION = 3;
   /** RegularExpression Id. */
-  int INTEGER_LITERAL = 8;
+  int INTEGER_LITERAL = 9;
   /** RegularExpression Id. */
-  int FLOATING_POINT_LITERAL = 9;
+  int FLOATING_POINT_LITERAL = 10;
   /** RegularExpression Id. */
-  int EXPONENT = 10;
+  int EXPONENT = 11;
   /** RegularExpression Id. */
-  int STRING_LITERAL = 11;
+  int STRING_LITERAL = 12;
   /** RegularExpression Id. */
-  int TRUE = 12;
+  int BADLY_ESCAPED_STRING_LITERAL = 13;
   /** RegularExpression Id. */
-  int FALSE = 13;
+  int TRUE = 14;
   /** RegularExpression Id. */
-  int NULL = 14;
+  int FALSE = 15;
   /** RegularExpression Id. */
-  int END_EXPRESSION = 15;
+  int NULL = 16;
   /** RegularExpression Id. */
-  int DOT = 16;
+  int END_EXPRESSION = 17;
   /** RegularExpression Id. */
-  int LPAREN = 17;
+  int DOT = 18;
   /** RegularExpression Id. */
-  int RPAREN = 18;
+  int LPAREN = 19;
   /** RegularExpression Id. */
-  int LBRACK = 19;
+  int RPAREN = 20;
   /** RegularExpression Id. */
-  int RBRACK = 20;
+  int LBRACK = 21;
   /** RegularExpression Id. */
-  int COLON = 21;
+  int RBRACK = 22;
   /** RegularExpression Id. */
-  int COMMA = 22;
+  int COLON = 23;
   /** RegularExpression Id. */
-  int GT0 = 23;
+  int COMMA = 24;
   /** RegularExpression Id. */
-  int GT1 = 24;
+  int GT0 = 25;
   /** RegularExpression Id. */
-  int LT0 = 25;
+  int GT1 = 26;
   /** RegularExpression Id. */
-  int LT1 = 26;
+  int LT0 = 27;
   /** RegularExpression Id. */
-  int GE0 = 27;
+  int LT1 = 28;
   /** RegularExpression Id. */
-  int GE1 = 28;
+  int GE0 = 29;
   /** RegularExpression Id. */
-  int LE0 = 29;
+  int GE1 = 30;
   /** RegularExpression Id. */
-  int LE1 = 30;
+  int LE0 = 31;
   /** RegularExpression Id. */
-  int EQ0 = 31;
+  int LE1 = 32;
   /** RegularExpression Id. */
-  int EQ1 = 32;
+  int EQ0 = 33;
   /** RegularExpression Id. */
-  int NE0 = 33;
+  int EQ1 = 34;
   /** RegularExpression Id. */
-  int NE1 = 34;
+  int NE0 = 35;
   /** RegularExpression Id. */
-  int NOT0 = 35;
+  int NE1 = 36;
   /** RegularExpression Id. */
-  int NOT1 = 36;
+  int NOT0 = 37;
   /** RegularExpression Id. */
-  int AND0 = 37;
+  int NOT1 = 38;
   /** RegularExpression Id. */
-  int AND1 = 38;
+  int AND0 = 39;
   /** RegularExpression Id. */
-  int OR0 = 39;
+  int AND1 = 40;
   /** RegularExpression Id. */
-  int OR1 = 40;
+  int OR0 = 41;
   /** RegularExpression Id. */
-  int EMPTY = 41;
+  int OR1 = 42;
   /** RegularExpression Id. */
-  int INSTANCEOF = 42;
+  int EMPTY = 43;
   /** RegularExpression Id. */
-  int MULT = 43;
+  int INSTANCEOF = 44;
   /** RegularExpression Id. */
-  int PLUS = 44;
+  int MULT = 45;
   /** RegularExpression Id. */
-  int MINUS = 45;
+  int PLUS = 46;
   /** RegularExpression Id. */
-  int QUESTIONMARK = 46;
+  int MINUS = 47;
   /** RegularExpression Id. */
-  int DIV0 = 47;
+  int QUESTIONMARK = 48;
   /** RegularExpression Id. */
-  int DIV1 = 48;
+  int DIV0 = 49;
   /** RegularExpression Id. */
-  int MOD0 = 49;
+  int DIV1 = 50;
   /** RegularExpression Id. */
-  int MOD1 = 50;
+  int MOD0 = 51;
   /** RegularExpression Id. */
-  int IDENTIFIER = 51;
+  int MOD1 = 52;
   /** RegularExpression Id. */
-  int FUNCTIONSUFFIX = 52;
+  int IDENTIFIER = 53;
   /** RegularExpression Id. */
-  int IMPL_OBJ_START = 53;
+  int FUNCTIONSUFFIX = 54;
   /** RegularExpression Id. */
-  int LETTER = 54;
+  int IMPL_OBJ_START = 55;
   /** RegularExpression Id. */
-  int DIGIT = 55;
+  int LETTER = 56;
   /** RegularExpression Id. */
-  int ILLEGAL_CHARACTER = 56;
+  int DIGIT = 57;
+  /** RegularExpression Id. */
+  int ILLEGAL_CHARACTER = 58;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -126,6 +128,7 @@ public interface ELParserConstants {
     "<LITERAL_EXPRESSION>",
     "\"${\"",
     "\"#{\"",
+    "\"\\\\\"",
     "\" \"",
     "\"\\t\"",
     "\"\\n\"",
@@ -134,6 +137,7 @@ public interface ELParserConstants {
     "<FLOATING_POINT_LITERAL>",
     "<EXPONENT>",
     "<STRING_LITERAL>",
+    "<BADLY_ESCAPED_STRING_LITERAL>",
     "\"true\"",
     "\"false\"",
     "\"null\"",

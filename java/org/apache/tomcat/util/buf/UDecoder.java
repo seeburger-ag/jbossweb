@@ -204,7 +204,7 @@ public final class UDecoder {
 	if( (!query || str.indexOf( '+' ) < 0) && str.indexOf( '%' ) < 0 )
 	    return str;
 	
-        StringBuilder dec = new StringBuilder();    // decoded string output
+        StringBuffer dec = new StringBuffer();    // decoded string output
         int strPos = 0;
         int strLen = str.length();
 

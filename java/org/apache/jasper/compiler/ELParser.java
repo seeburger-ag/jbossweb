@@ -31,7 +31,6 @@ package org.apache.jasper.compiler;
 public class ELParser {
 
     private Token curToken; // current token
-    private Token prevToken; // previous token
 
     private ELNode.Nodes expr;
 
@@ -45,16 +44,13 @@ public class ELParser {
 
     private boolean escapeBS; // is '\' an escape char in text outside EL?
 
-    private final boolean isDeferredSyntaxAllowedAsLiteral;
-
     private static final String reservedWords[] = { "and", "div", "empty",
             "eq", "false", "ge", "gt", "instanceof", "le", "lt", "mod", "ne",
             "not", "null", "or", "true" };
 
-    public ELParser(String expression, boolean isDeferredSyntaxAllowedAsLiteral) {
+    public ELParser(String expression) {
         index = 0;
         this.expression = expression;
-        this.isDeferredSyntaxAllowedAsLiteral = isDeferredSyntaxAllowedAsLiteral;
         expr = new ELNode.Nodes();
     }
 
@@ -64,13 +60,10 @@ public class ELParser {
      * @param expression
      *            The input expression string of the form Char* ('${' Char*
      *            '}')* Char*
-     * @param isDeferredSyntaxAllowedAsLiteral
-     *                      Are deferred expressions treated as literals?
      * @return Parsed EL expression in ELNode.Nodes
      */
-    public static ELNode.Nodes parse(String expression,
-            boolean isDeferredSyntaxAllowedAsLiteral) {
-        ELParser parser = new ELParser(expression, isDeferredSyntaxAllowedAsLiteral);
+    public static ELNode.Nodes parse(String expression) {
+        ELParser parser = new ELParser(expression);
         while (parser.hasNextChar()) {
             String text = parser.skipUntilEL();
             if (text.length() > 0) {
@@ -93,7 +86,7 @@ public class ELParser {
      */
     private ELNode.Nodes parseEL() {
 
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         ELexpr = new ELNode.Nodes();
         while (hasNext()) {
             curToken = nextToken();
@@ -125,28 +118,27 @@ public class ELParser {
      * arguments
      */
     private boolean parseFunction() {
-        if (!(curToken instanceof Id) || isELReserved(curToken.toString()) ||
-                prevToken instanceof Char && prevToken.toChar() == '.') {
+        if (!(curToken instanceof Id) || isELReserved(curToken.toString())) {
             return false;
         }
         String s1 = null; // Function prefix
         String s2 = curToken.toString(); // Function name
         int mark = getIndex();
         if (hasNext()) {
-            curToken = nextToken();
-            if (curToken.toChar() == ':') {
+            Token t = nextToken();
+            if (t.toChar() == ':') {
                 if (hasNext()) {
                     Token t2 = nextToken();
                     if (t2 instanceof Id) {
                         s1 = s2;
                         s2 = t2.toString();
                         if (hasNext()) {
-                            curToken = nextToken();
+                            t = nextToken();
                         }
                     }
                 }
             }
-            if (curToken.toChar() == '(') {
+            if (t.toChar() == '(') {
                 ELexpr.add(new ELNode.Function(s1, s2));
                 return true;
             }
@@ -184,7 +176,7 @@ public class ELParser {
      */
     private String skipUntilEL() {
         char prev = 0;
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         while (hasNextChar()) {
             char ch = nextChar();
             if (prev == '\\') {
@@ -193,11 +185,11 @@ public class ELParser {
                     buf.append('\\');
                     if (!escapeBS)
                         prev = '\\';
-                } else if (ch == '$' || (!isDeferredSyntaxAllowedAsLiteral && ch == '#')) {
+                } else if (ch == '$' || ch == '#') {
                     buf.append(ch);
                 }
                 // else error!
-            } else if (prev == '$' || (!isDeferredSyntaxAllowedAsLiteral && prev == '#')) {
+            } else if (prev == '$' || prev == '#') {
                 if (ch == '{') {
                     this.type = prev;
                     prev = 0;
@@ -206,8 +198,7 @@ public class ELParser {
                 buf.append(prev);
                 prev = 0;
             }
-            if (ch == '\\' || ch == '$'
-                || (!isDeferredSyntaxAllowedAsLiteral && ch == '#')) {
+            if (ch == '\\' || ch == '$' || ch == '#') {
                 prev = ch;
             } else {
                 buf.append(ch);
@@ -232,12 +223,11 @@ public class ELParser {
      * @return The next token in the EL expression buffer.
      */
     private Token nextToken() {
-        prevToken = curToken;
         skipSpaces();
         if (hasNextChar()) {
             char ch = nextChar();
             if (Character.isJavaIdentifierStart(ch)) {
-                StringBuilder buf = new StringBuilder();
+                StringBuffer buf = new StringBuffer();
                 buf.append(ch);
                 while ((ch = peekChar()) != -1
                         && Character.isJavaIdentifierPart(ch)) {
@@ -262,7 +252,7 @@ public class ELParser {
      * '\\', and ('\"', or "\'")
      */
     private Token parseQuotedChars(char quote) {
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         buf.append(quote);
         while (hasNextChar()) {
             char ch = nextChar();
