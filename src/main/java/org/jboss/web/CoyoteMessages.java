@@ -1,23 +1,19 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.web;
@@ -31,7 +27,7 @@ import org.jboss.logging.Messages;
 
 /**
  * Logging IDs 2000-3000
- * @author remm
+ * @author Remy Maucherat
  */
 @MessageBundle(projectCode = "JBWEB")
 public interface CoyoteMessages {
@@ -103,5 +99,185 @@ public interface CoyoteMessages {
 
     @Message(id = 2020, value = "Invalid chunk header")
     IOException invalidChunkHeader();
+
+    @Message(id = 2021, value = "Channel pattern must not be null")
+    NullPointerException invalidNullChannelPattern();
+
+    @Message(id = 2022, value = "Invalid message class, you can only publish messages created through the Bayeux.newMessage() method")
+    IllegalArgumentException invalidMessagePublish();
+
+    @Message(id = 2023, value = "Misconfigured server, must be configured to support Comet operations")
+    String invalidBayeuxConfiguration();
+
+    @Message(id = 2024, value = "No Bayeux message to send")
+    String noBayeuxMessage();
+
+    @Message(id = 2025, value = "Client doesn't support any appropriate connection type")
+    String noBayeuxConnectionType();
+
+    @Message(id = 2026, value = "Unable to fit %s bytes into the array. length:%s required length: %s")
+    ArrayIndexOutOfBoundsException errorGeneratingUuid(int uuidLength, int destLength, int reqLength);
+
+    @Message(id = 2027, value = "Invalid client id")
+    String invalidBayeuxClientId();
+
+    @Message(id = 2028, value = "Invalid handshake")
+    String invalidBayeuxHandshake();
+
+    @Message(id = 2029, value = "No Bayeux subscription")
+    String noBayeuxSubscription();
+
+    @Message(id = 2030, value = "Message data missing")
+    String noBayeuxMessageData();
+
+    @Message(id = 2031, value = "Invalid JSON object in data attribute")
+    String invalidBayeuxMessageData();
+
+    @Message(id = 2032, value = "Unsupported APR Version %s")
+    UnsatisfiedLinkError unsupportedAprVersion(String version);
+
+    @Message(id = 2033, value = "Missing APR threads support")
+    UnsatisfiedLinkError missingAprThreadsSupport();
+
+    @Message(id = 2034, value = "(Error on: ")
+    String aprError();
+
+    @Message(id = 2035, value = "Buffer length %s overflow with limit %s and no sink")
+    String bufferOverflow(int length, int limit);
+
+    @Message(id = 2036, value = "Unexpected EOF")
+    String unexpectedEof();
+
+    @Message(id = 2037, value = "Invalid HEX")
+    String invalidHex();
+
+    @Message(id = 2038, value = "Invalid slash")
+    String invalidSlash();
+
+    @Message(id = 2039, value = "Control character in cookie value or attribute")
+    IllegalArgumentException invalidControlCharacter();
+
+    @Message(id = 2040, value = "Invalid escape character in cookie value")
+    IllegalArgumentException invalidEscapeCharacter();
+
+    @Message(id = 2041, value = "SSL handshake error")
+    String sslHandshakeError();
+
+    @Message(id = 2042, value = "SSL handshake failed, cipher suite in SSL Session is SSL_NULL_WITH_NULL_NULL")
+    String invalidSslCipherSuite();
+
+    @Message(id = 2043, value = "Certificate revocation list is not supported for algorithm %s")
+    String unsupportedCrl(String algorithm);
+
+    @Message(id = 2044, value = "SSL handshake timeout")
+    String sslHandshakeTimeout();
+
+    @Message(id = 2045, value = "Null SSL engine")
+    IllegalArgumentException nullSslEngine();
+
+    @Message(id = 2046, value = "Operation not supported")
+    RuntimeException operationNotSupported();
+
+    @Message(id = 2047, value = "Null handler")
+    IllegalArgumentException nullHandler();
+
+    @Message(id = 2048, value = "Unable to unwrap data, invalid status %s")
+    String errorUnwrappingData(String status);
+
+    @Message(id = 2049, value = "Handshake incomplete, you must complete handshake before read/write data")
+    IllegalStateException incompleteHandshake();
+
+    @Message(id = 2050, value = "Error encountered during handshake unwrap")
+    String errorUnwrappingHandshake();
+
+    @Message(id = 2051, value = "Error encountered during handshake wrap")
+    String errorWrappingHandshake();
+
+    @Message(id = 2052, value = "Unexpected status %s during handshake wrap")
+    String errorWrappingHandshakeStatus(String status);
+
+    @Message(id = 2053, value = "NOT_HANDSHAKING during handshake")
+    String notHandshaking();
+
+    @Message(id = 2054, value = "Error loading SSL implementation %s")
+    String errorLoadingSslImplementation(String className);
+
+    @Message(id = 2055, value = "No SSL implementation")
+    String noSslImplementation();
+
+    @Message(id = 2056, value = "URL with no protocol: %s")
+    String urlWithNoProtocol(String url);
+
+    @Message(id = 2057, value = "Error processing URL: %s")
+    String errorProcessingUrl(String cause);
+
+    @Message(id = 2058, value = "Invalid relative URL reference")
+    String invalidRelativeUrlReference();
+
+    @Message(id = 2059, value = "Closing ']' not found in IPV6 address %s")
+    String invalidIp6Address(String authority);
+
+    @Message(id = 2060, value = "Invalid IP address %s: %s")
+    String invalidIpAddress(String authority, String cause);
+
+    @Message(id = 2061, value = "Base path does not start with '/'")
+    String invalidBasePath();
+
+    @Message(id = 2062, value = "Cannot process source: %s")
+    IllegalStateException invalidSource(Object source);
+
+    @Message(id = 2063, value = "Attribute name is null")
+    String nullAttributeName();
+
+    @Message(id = 2064, value = "Error getting attribute %s")
+    String errorGettingAttribute(String name);
+
+    @Message(id = 2065, value = "Attribute name list is null")
+    String nullAttributeNameList();
+
+    @Message(id = 2066, value = "Method name is null")
+    String nullMethodName();
+
+    @Message(id = 2067, value = "Error invoking method %s")
+    String errorInvokingMethod(String name);
+
+    @Message(id = 2068, value = "Attribute is null")
+    String nullAttribute();
+
+    @Message(id = 2069, value = "Error setting attribute %s")
+    String errorSettingAttribute(String name);
+
+    @Message(id = 2070, value = "Null managed resource")
+    String nullManagedResource();
+
+    @Message(id = 2071, value = "Null listener")
+    String nullListener();
+
+    @Message(id = 2072, value = "Null notification")
+    String nullNotification();
+
+    @Message(id = 2073, value = "Null message")
+    String nullMessage();
+
+    @Message(id = 2074, value = "Too many hooks registered %s")
+    IllegalStateException tooManyHooks(int count);
+
+    @Message(id = 2075, value = "Cannot load model MBean %s")
+    String errorLoadingModelMbean(String className);
+
+    @Message(id = 2076, value = "Cannot instantiate model MBean %s")
+    String errorInstantiatingModelMbean(String className);
+
+    @Message(id = 2077, value = "No host found: %s")
+    IllegalStateException mapperHostNotFound(String hostName);
+
+    @Message(id = 2078, value = "No context found: %s")
+    IllegalStateException mapperContextNotFound(String contextPath);
+
+    @Message(id = 2079, value = "Unexpected data read during handshake")
+    String sslHandshakeData();
+
+    @Message(id = 2080, value = "Thread [%s] stoppe to avoid potential leak")
+    String threadStopped(String threadName);
 
 }

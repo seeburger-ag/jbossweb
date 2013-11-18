@@ -146,8 +146,7 @@ public class PageContextImpl extends PageContext {
 		if (request instanceof HttpServletRequest && needsSession)
 			this.session = ((HttpServletRequest) request).getSession();
 		if (needsSession && session == null)
-			throw new IllegalStateException(
-					"Page needs a session and none is available");
+			throw MESSAGES.pageNeedsSession();
 
 		// initialize the initial out ...
 		depth = -1;
@@ -753,7 +752,7 @@ public class PageContextImpl extends PageContext {
 	public void handlePageException(final Throwable t) throws IOException,
 			ServletException {
 		if (t == null)
-			throw new NullPointerException("null Throwable");
+			throw MESSAGES.nullThrowable();
 
 		if (SecurityUtil.isPackageProtectionEnabled()) {
 			try {
@@ -847,30 +846,7 @@ public class PageContextImpl extends PageContext {
 		}
 	}
 
-	private static String XmlEscape(String s) {
-		if (s == null)
-			return null;
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
-			if (c == '<') {
-				sb.append("&lt;");
-			} else if (c == '>') {
-				sb.append("&gt;");
-			} else if (c == '\'') {
-				sb.append("&#039;"); // &apos;
-			} else if (c == '&') {
-				sb.append("&amp;");
-			} else if (c == '"') {
-				sb.append("&#034;"); // &quot;
-			} else {
-				sb.append(c);
-			}
-		}
-		return sb.toString();
-	}
-
-	/**
+    /**
 	 * Proprietary method to evaluate EL expressions. XXX - This method should
 	 * go away once the EL interpreter moves out of JSTL and into its own
 	 * project. For now, this is necessary because the standard machinery is too
@@ -918,10 +894,6 @@ public class PageContextImpl extends PageContext {
             ValueExpression ve = exprFactory.createValueExpression(ctx, expression, expectedType);
             retValue = ve.getValue(ctx);
 		}
-		if (escape && retValue != null) {
-			retValue = XmlEscape(retValue.toString());
-		}
-
 		return retValue;
 	}
 
