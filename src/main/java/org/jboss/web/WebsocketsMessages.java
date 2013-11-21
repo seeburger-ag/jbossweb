@@ -122,8 +122,8 @@ public interface WebsocketsMessages {
     @Message(id = 8528, value = "Too many bytes ([%s]) were provided to be converted into a long")
     String invalidLong(long length);
 
-    @Message(id = 8529, value = "Message will not be sent because the WebSocket session is currently sending another message")
-    IllegalStateException messageInProgress();
+    @Message(id = 8529, value = "The remote endpoint was in state [%s] which is an invalid state for called method")
+    IllegalStateException wrongState(String state);
 
     @Message(id = 8530, value = "Message will not be sent because the WebSocket session has been closed")
     IllegalStateException messageSessionClosed();
@@ -298,5 +298,8 @@ public interface WebsocketsMessages {
 
     @Message(id = 8587, value = "This connection was established under an authenticated HTTP session that has ended")
     String expiredHttpSession();
+
+    @Message(id = 8588, value = "The remainder of the message will not be sent because the WebSocket session has been closed")
+    String messageRemainderSessionClosed();
 
 }
