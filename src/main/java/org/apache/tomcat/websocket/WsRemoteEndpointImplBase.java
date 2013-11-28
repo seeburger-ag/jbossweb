@@ -782,7 +782,7 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
         }
     }
 
-    private static class WsOutputStream extends OutputStream {
+    private class WsOutputStream extends OutputStream {
 
         private final WsRemoteEndpointImplBase endpoint;
         private final ByteBuffer buffer = ByteBuffer.allocate(8192);
@@ -857,6 +857,7 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
         private void doWrite(boolean last) throws IOException {
             buffer.flip();
             endpoint.startMessageBlock(Constants.OPCODE_BINARY, buffer, last);
+            stateMachine.complete(last);
             buffer.clear();
         }
     }
