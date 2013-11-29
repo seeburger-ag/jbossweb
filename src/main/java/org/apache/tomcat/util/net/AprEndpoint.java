@@ -1068,12 +1068,15 @@ public class AprEndpoint {
             while (running) {
 
                 // Loop if endpoint is paused
-                while (paused) {
+                while (running && paused) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         // Ignore
                     }
+                }
+                if (!running) {
+                    break;
                 }
 
                 if (reverseConnection) {
@@ -1677,7 +1680,7 @@ public class AprEndpoint {
             while (running) {
 
                 // Loop if endpoint is paused
-                while (paused) {
+                while (running && paused) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -1685,7 +1688,7 @@ public class AprEndpoint {
                     }
                 }
                 // Check timeouts for suspended connections if the poller is empty
-                while (connectionCount < 1 && addList.size() < 1) {
+                while (running && connectionCount < 1 && addList.size() < 1) {
                     // Reset maintain time.
                     try {
                         if (soTimeout > 0 && running) {
@@ -1699,6 +1702,9 @@ public class AprEndpoint {
                     } catch (Throwable t) {
                         CoyoteLogger.UTIL_LOGGER.errorProcessingSocketTimeout(t);
                     }
+                }
+                if (!running) {
+                    break;
                 }
 
                 try {
@@ -2259,7 +2265,7 @@ public class AprEndpoint {
             while (running) {
 
                 // Loop if endpoint is paused
-                while (paused) {
+                while (running && paused) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -2267,7 +2273,7 @@ public class AprEndpoint {
                     }
                 }
                 // Loop if poller is empty
-                while (sendfileCount < 1 && addS.size() < 1) {
+                while (running && sendfileCount < 1 && addS.size() < 1) {
                     // Reset maintain time.
                     maintainTime = 0;
                     try {
@@ -2277,6 +2283,9 @@ public class AprEndpoint {
                     } catch (InterruptedException e) {
                         // Ignore
                     }
+                }
+                if (!running) {
+                    break;
                 }
 
                 try {

@@ -627,13 +627,16 @@ public class NioEndpoint extends AbstractEndpoint {
 			// Loop until we receive a shutdown command
 			while (running) {
 				// Loop if end point is paused
-				while (paused) {
+				while (running && paused) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						// Ignore
 					}
 				}
+                if (!running) {
+                    break;
+                }
 
 				try {
 					// Accept the next incoming connection from the server
@@ -1115,7 +1118,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		public void run() {
 			while (running) {
 				// Loop if endpoint is paused
-				while (paused) {
+				while (running && paused) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -1604,7 +1607,7 @@ public class NioEndpoint extends AbstractEndpoint {
 
 			while (running) {
 				// Loop if endpoint is paused
-				while (paused) {
+				while (running && paused) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
