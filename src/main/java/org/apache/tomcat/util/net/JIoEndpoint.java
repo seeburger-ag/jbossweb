@@ -296,12 +296,15 @@ public class JIoEndpoint {
             while (running) {
 
                 // Loop if endpoint is paused
-                while (paused) {
+                while (running && paused) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         // Ignore
                     }
+                }
+                if (!running) {
+                    break;
                 }
 
                 // Accept the next incoming connection from the server socket
@@ -714,7 +717,7 @@ public class JIoEndpoint {
             while (running) {
 
                 // Loop if endpoint is paused
-                while (paused) {
+                while (running && paused) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -722,7 +725,7 @@ public class JIoEndpoint {
                     }
                 }
                 // Check timeouts for suspended connections if the poller is empty
-                while (connectionCount < 1 && addList.size() < 1) {
+                while (running && connectionCount < 1 && addList.size() < 1) {
                     // Reset maintain time.
                     try {
                         if (soTimeout > 0 && running) {
@@ -736,6 +739,9 @@ public class JIoEndpoint {
                     } catch (Throwable t) {
                         CoyoteLogger.UTIL_LOGGER.errorProcessingSocketTimeout(t);
                     }
+                }
+                if (!running) {
+                    break;
                 }
 
                 try {
