@@ -974,7 +974,7 @@ public class NioEndpoint extends AbstractEndpoint {
 					}
 				}
 
-				while (running && this.channelList.size() < 1 && running) {
+				while (this.channelList.size() < 1 && running) {
 					synchronized (this.mutex) {
 						try {
 							this.mutex.wait(10000);
@@ -984,7 +984,7 @@ public class NioEndpoint extends AbstractEndpoint {
 					}
 				}
 
-				while (running && this.channelList.size() > 0 && running) {
+				while (this.channelList.size() > 0 && running) {
 					maintain();
 					try {
 						Thread.sleep(5000);
