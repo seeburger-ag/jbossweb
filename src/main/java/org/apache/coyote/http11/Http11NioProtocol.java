@@ -129,12 +129,12 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
 			if (this.domain != null) {
 				try {
-					tpOname = new ObjectName(domain + ":" + "type=ThreadPool,name=" + getName());
+					tpOname = new ObjectName(domain + ":" + "type=ThreadPool,name=" + getJmxName());
 					Registry.getRegistry(null, null).registerComponent(endpoint, tpOname, null);
 				} catch (Exception e) {
 				    CoyoteLogger.HTTP_LOGGER.errorRegisteringPool(e);
 				}
-				rgOname = new ObjectName(domain + ":type=GlobalRequestProcessor,name=" + getName());
+				rgOname = new ObjectName(domain + ":type=GlobalRequestProcessor,name=" + getJmxName());
 				Registry.getRegistry(null, null).registerComponent(cHandler.global, rgOname, null);
 			}
 		}
