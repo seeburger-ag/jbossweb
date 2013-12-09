@@ -1013,12 +1013,22 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			}
 		}
 
-		// Parse content-length header
-		long contentLength = request.getContentLengthLong();
-		if (contentLength >= 0 && !contentDelimitation) {
-			inputBuffer.addActiveFilter(inputFilters[Constants.IDENTITY_FILTER]);
-			contentDelimitation = true;
-		}
+        // Parse content-length header
+        long contentLength = request.getContentLengthLong();
+        if (contentLength >= 0) {
+            if (contentDelimitation) {
+                // contentDelimitation being true at this point indicates that
+                // chunked encoding is being used but chunked encoding should
+                // not be used with a content length. RFC 2616, section 4.4,
+                // bullet 3 states Content-Length must be ignored in this case -
+                // so remove it.
+                headers.removeHeader("content-length");
+                request.setContentLength(-1);
+            } else {
+                inputBuffer.addActiveFilter(inputFilters[Constants.IDENTITY_FILTER]);
+                contentDelimitation = true;
+            }
+        }
 
 		MessageBytes valueMB = headers.getValue("host");
 
