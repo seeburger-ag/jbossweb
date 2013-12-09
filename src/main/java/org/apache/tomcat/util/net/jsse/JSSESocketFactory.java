@@ -200,7 +200,7 @@ public class JSSESocketFactory
      * requested ciphers are supported
      */
     protected String[] getEnabledCiphers(String requestedCiphers,
-                                         String[] supportedCiphers) {
+                                         String[] supportedCiphers) throws IOException {
 
         String[] enabledCiphers = null;
 
@@ -257,6 +257,8 @@ public class JSSESocketFactory
             if (vec != null) {
                 enabledCiphers = new String[vec.size()];
                 vec.copyInto(enabledCiphers);
+            } else {
+                throw new IOException("no cipher match"); // Like openssl.
             }
         } else {
             enabledCiphers = sslProxy.getDefaultCipherSuites();

@@ -340,7 +340,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 	 * @return Array of SSL cipher suites to be enabled, or null if none of the
 	 *         requested ciphers are supported
 	 */
-	protected String[] getEnabledCiphers(String requestedCiphers, String[] supportedCiphers) {
+	protected String[] getEnabledCiphers(String requestedCiphers, String[] supportedCiphers) throws IOException {
 
 		String[] enabledCiphers = null;
 		SSLServerSocketFactory sslProxy = sslContext.getServerSocketFactory();
@@ -395,7 +395,9 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 			if (vec != null) {
 				enabledCiphers = new String[vec.size()];
 				vec.copyInto(enabledCiphers);
-			}
+			} else {
+                                throw new IOException("no cipher match"); // Like openssl.
+                        }
 		} else {
 			enabledCiphers = sslProxy.getDefaultCipherSuites();
 		}
