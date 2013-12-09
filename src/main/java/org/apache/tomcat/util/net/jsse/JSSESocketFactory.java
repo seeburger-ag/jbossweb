@@ -258,7 +258,7 @@ public class JSSESocketFactory
                 enabledCiphers = new String[vec.size()];
                 vec.copyInto(enabledCiphers);
             } else {
-                throw new IOException("no cipher match"); // Like openssl.
+                throw new IOException(MESSAGES.noCipherMatch()); // Like openssl.
             }
         } else {
             enabledCiphers = sslProxy.getDefaultCipherSuites();

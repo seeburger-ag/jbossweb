@@ -280,4 +280,7 @@ public interface CoyoteMessages {
     @Message(id = 2080, value = "Thread [%s] stoppe to avoid potential leak")
     String threadStopped(String threadName);
 
+    @Message(id = 2081, value = "No cipher match")
+    String noCipherMatch();
+
 }
