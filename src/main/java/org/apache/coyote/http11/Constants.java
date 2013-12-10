@@ -126,13 +126,6 @@ public final class Constants {
 
 
     /**
-     * Default HTTP header buffer size.
-     */
-    public static final int DEFAULT_HTTP_HEADER_BUFFER_SIZE = 
-            Integer.valueOf(System.getProperty("org.apache.coyote.http11.DEFAULT_HTTP_HEADER_BUFFER_SIZE", "8192")).intValue();
-
-
-    /**
      * Async buffer size.
      */
     public static final int ASYNC_BUFFER_SIZE = 

@@ -47,14 +47,6 @@ public class InternalOutputBuffer
 
 
     /**
-     * Default constructor.
-     */
-    public InternalOutputBuffer(Response response) {
-        this(response, Constants.DEFAULT_HTTP_HEADER_BUFFER_SIZE);
-    }
-
-
-    /**
      * Alternate constructor.
      */
     public InternalOutputBuffer(Response response, int headerBufferSize) {

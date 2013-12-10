@@ -119,15 +119,6 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
 	 * Create a new instance of {@code AbstractInternalInputBuffer}
 	 * 
 	 * @param request
-	 */
-	public AbstractInternalInputBuffer(Request request) {
-		this(request, Constants.DEFAULT_HTTP_HEADER_BUFFER_SIZE);
-	}
-
-	/**
-	 * Create a new instance of {@code AbstractInternalInputBuffer}
-	 * 
-	 * @param request
 	 * @param headerBufferSize
 	 */
 	public AbstractInternalInputBuffer(Request request, int headerBufferSize) {

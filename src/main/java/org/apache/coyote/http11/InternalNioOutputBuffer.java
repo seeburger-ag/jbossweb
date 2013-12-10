@@ -155,11 +155,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
         this.response = response;
         this.headers = response.getMimeHeaders();
         buf = new byte[headerBufferSize];
-        if (headerBufferSize < Constants.DEFAULT_HTTP_HEADER_BUFFER_SIZE) {
-            bbuf = ByteBuffer.allocateDirect(6 * 1500);
-        } else {
-            bbuf = ByteBuffer.allocateDirect((headerBufferSize / 1500 + 1) * 1500);
-        }
+        bbuf = ByteBuffer.allocateDirect(headerBufferSize);
 
         outputBuffer = new OutputBufferImpl();
         filterLibrary = new OutputFilter[0];
