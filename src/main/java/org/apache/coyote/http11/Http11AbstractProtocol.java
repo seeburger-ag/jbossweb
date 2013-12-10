@@ -72,7 +72,7 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	/**
 	 * Maximum size of the HTTP message header.
 	 */
-	protected int maxHttpHeaderSize = 8 * 1024;
+	protected int maxHttpHeaderSize = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_HEADER_SIZE", "8192")).intValue();
 	/**
 	 * If true, the regular socket timeout will be used for the full duration of
 	 * the connection.
@@ -81,10 +81,10 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	/**
 	 * Integrated compression support.
 	 */
-	protected String compression = "off";
-	protected String noCompressionUserAgents = null;
-	protected String compressableMimeTypes = "text/html,text/xml,text/plain";
-	protected int compressionMinSize = 2048;
+	protected String compression = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION", "off");
+	protected String noCompressionUserAgents = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_RESTRICTED_UA");
+	protected String compressableMimeTypes = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIME_TYPES", "text/html,text/xml,text/plain");
+	protected int compressionMinSize = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIN_SIZE", "2048")).intValue();
 	protected String protocol = null;
 	/**
 	 * User agents regular expressions which should be restricted to HTTP/1.0
@@ -95,9 +95,7 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	 * Maximum number of requests which can be performed over a keepalive
 	 * connection. The default is the same as for Apache HTTP Server.
 	 */
-	protected int maxKeepAliveRequests = Integer.valueOf(
-			System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS",
-					"100")).intValue();
+	protected int maxKeepAliveRequests = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS", "-1")).intValue();
 
 	protected String domain;
 	protected ObjectName oname;
@@ -106,7 +104,7 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	/**
 	 * Server header.
 	 */
-	protected String server;
+	protected String server = System.getProperty("org.apache.coyote.http11.Http11Protocol.SERVER");
 	/**
 	 * This timeout represents the socket timeout which will be used while the
 	 * adapter execution is in progress, unless disableUploadTimeout is set to
