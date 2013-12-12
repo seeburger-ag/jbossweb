@@ -133,10 +133,12 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
 
     @Override
     public void destroy() {
-        try {
-            connection.close();
-        } catch (Exception e) {
-            WebsocketsLogger.ROOT_LOGGER.destroyFailed(e);
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (Exception e) {
+                WebsocketsLogger.ROOT_LOGGER.destroyFailed(e);
+            }
         }
     }
 
