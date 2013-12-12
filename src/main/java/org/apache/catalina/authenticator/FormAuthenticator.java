@@ -518,22 +518,17 @@ public class FormAuthenticator
         ByteChunk body = saved.getBody();
 
         if (body != null) {
-            request.clearParameters();
-            request.getCoyoteRequest().action
-            (ActionCode.ACTION_REQ_SET_BODY_REPLAY, body);
-
+            request.resetBody();
+            request.getCoyoteRequest().action(ActionCode.ACTION_REQ_SET_BODY_REPLAY, body);
             // Set content type
             MessageBytes contentType = MessageBytes.newInstance();
-
             //If no content type specified, use default for POST
             String savedContentType = saved.getContentType();
             if (savedContentType == null && "POST".equalsIgnoreCase(method)) {
                 savedContentType = "application/x-www-form-urlencoded";
             }
-
             contentType.setString(savedContentType);
             request.getCoyoteRequest().setContentType(contentType);
-
         } else {
             // Restore the parameters.
             Iterator params = saved.getParameterNames();
