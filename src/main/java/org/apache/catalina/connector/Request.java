@@ -607,8 +607,7 @@ public class Request
     /**
      * Return true if the EOF has been reached.
      */
-    public boolean isEof()
-        throws IOException {
+    public boolean isEof() {
         return (inputBuffer.isEof());
     }
     
@@ -1856,8 +1855,9 @@ public class Request
     /**
      * Clear the collection of parameters associated with this Request.
      */
-    public void clearParameters() {
+    public void resetBody() {
         parametersParsed = false;
+        inputBuffer.resetEof();
     }
 
 
