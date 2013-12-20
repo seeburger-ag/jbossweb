@@ -9,7 +9,6 @@
     <properties>
         <author email="ccain@apache.org">Christopher Cain</author>
         <author email="yoavs@apache.org">Yoav Shapira</author>
-        <author email="jfcleres@apache.org">Jean-Frederic Clere</author>
         <title>SSL Configuration HOW-TO</title>
     </properties>
 
@@ -21,6 +20,16 @@
    <p><b>IMPORTANT NOTE: This Howto refers to usage of JSSE, that comes included with
     jdk 1.5 and higher. When using APR, JBoss Web will
     use OpenSSL, which uses a different configuration.</b></p>
+
+    <blockquote><em>
+    <p>The description below uses the variable name $CATALINA_HOME
+    to refer to the directory into which you have installed JBoss Web,
+    and is the base directory against which most relative paths are
+    resolved.  However, if you have configured JBoss Web for multiple
+    instances by setting a CATALINA_BASE directory, you should use
+    $CATALINA_BASE instead of $CATALINA_HOME for each of these
+    references.</p>
+    </em></blockquote>
 
 <p>To install and configure SSL support on JBoss Web, you need to follow
 these simple steps.  For more information, read the rest of this HOW-TO.</p>
@@ -36,21 +45,8 @@ $JAVA_HOME/bin/keytool -genkey -alias tomcat -keyalg RSA
 </source>
 <p></p>
     and specify a password value of "changeit".</li><br/><br/>
-<li>Add a "SSL HTTP/1.1 Connector" entry in
-    <code>standalone/configuration/standalone.xml</code> and tweak if necessary.
-<source>
-        &lt;subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="false" &gt;
-            &lt;connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/&gt;
-            &lt;connector name="https" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true"&gt;
-              &lt;ssl/&gt;
-            &lt;/connector&gt;
-            &lt;virtual-server name="default-host" enable-welcome-root="true"&gt;
-                &lt;alias name="localhost"/&gt;
-                &lt;alias name="example.com"/&gt;
-            &lt;/virtual-server&gt;
-        &lt;/subsystem&gt;
-</source>
-</li>
+<li>Uncomment the "SSL HTTP/1.1 Connector" entry in
+    <code>$CATALINA_HOME/conf/server.xml</code> and tweak as necessary.</li>
     <br/><br/>
 </ol>
 
@@ -269,26 +265,107 @@ which contains further references for this issue.</p>
 
 </subsection>
 
-<subsection name="Configuring the web-subsystem">
-<p>If your platform supports native (could be if you have installed jbossweb-native) it will be used by default.
-   If you don't want that set native to false in the web sub-system:
-</p>
+<subsection name="Edit the JBoss Web Configuration File">
+<p>If you are using APR, you have the option of configuring an alternative engine to openSSL.
 <source>
-        &lt;subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="false" &gt;
+&lt;Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="someengine" SSLRandomSeed="somedevice" /&gt;
+</source>
+The default value is
+<source>
+&lt;Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" SSLRandomSeed="builtin" /&gt;
+</source>
+So to use SSL under APR, make sure the SSLEngine attribute is set to something other than <code>off</code>.
+The default value is <code>on</code> and if you specify another value, it has to be a valid engine name.
+<br/>
+If you haven't compiled in SSL support into your Tomcat Native library, then you can turn this initialization off
+<source>
+&lt;Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="off" /&gt;
+</source>
+SSLRandomSeed allows to specify a source of entropy. Productive system needs a reliable source of entropy
+but entropy may need a lot of time to be collected therefore test systems could use no blocking entropy
+sources like "/dev/urandom" that will allow quicker starts of JBoss Web.
+
+</p>
+
+<p>The final step is to configure your secure socket in the
+<code>$CATALINA_HOME/conf/server.xml</code> file, where
+<code>$CATALINA_HOME</code> represents the directory into which you
+installed JBoss Web.  An example <code>&lt;Connector&gt;</code> element
+for an SSL connector is included in the default <code>server.xml</code>
+file installed with JBoss Web.  It will look something like this:</p>
+<source>
+&lt;-- Define a SSL Coyote HTTP/1.1 Connector on port 8443 --&gt;
+&lt;!--
+&lt;Connector 
+           port="8443" minSpareThreads="5" maxSpareThreads="75"
+           enableLookups="true" disableUploadTimeout="true" 
+           acceptCount="100"  maxThreads="200"
+           scheme="https" secure="true" SSLEnabled="true"
+           keystoreFile="${user.home}/.keystore" keystorePass="changeit"
+           clientAuth="false" sslProtocol="TLS"/&gt;
+--&gt;
 </source>
 <p>
-NOTE that SSL requires a source of entropy. Productive system needs a reliable source of entropy
-but entropy may need a lot of time to be collected.
+  The example above will throw an error if you have the APR and the Tomcat Native libraries in your path,
+  as tomcat will try to autoload the APR connector. The APR connector uses different attributes for 
+  SSL keys and certificates. An example of such configuration would be
+<source>
+&lt;-- Define a SSL Coyote HTTP/1.1 Connector on port 8443 --&gt;
+&lt;!--
+&lt;Connector 
+           port="8443" minSpareThreads="5" maxSpareThreads="75"
+           enableLookups="true" disableUploadTimeout="true" 
+           acceptCount="100"  maxThreads="200"
+           scheme="https" secure="true" SSLEnabled="true"
+           SSLCertificateFile="/usr/local/ssl/server.crt" 
+           SSLCertificateKeyFile="/usr/local/ssl/server.pem"
+           clientAuth="false" sslProtocol="TLS"/&gt;
+--&gt;
+</source>
 </p>
 
-<p>You may use jboss-cli or edit standalone.xml to configure the connector in the web-system</p>
+<p>
+  To avoid auto configuration you can define which connector to use by specifying a classname 
+  in the protocol attribute.<br/>
+  To define a Java connector, regardless if the APR library is loaded or not do:
+<source>
+&lt;-- Define a blocking Java SSL Coyote HTTP/1.1 Connector on port 8443 --&gt;
+&lt;!--
+&lt;Connector protocol="org.apache.coyote.http11.Http11Protocol"
+           port="8443" minSpareThreads="5" maxSpareThreads="75"
+           enableLookups="true" disableUploadTimeout="true" 
+           acceptCount="100"  maxThreads="200"
+           scheme="https" secure="true" SSLEnabled="true"
+           keystoreFile="${user.home}/.keystore" keystorePass="changeit"
+           clientAuth="false" sslProtocol="TLS"/&gt;
+--&gt;
+</source>
+and to specify an APR connector
+<source>
+&lt;-- Define a APR SSL Coyote HTTP/1.1 Connector on port 8443 --&gt;
+&lt;!--
+&lt;Connector protocol="org.apache.coyote.http11.Http11AprProtocol"
+           port="8443" minSpareThreads="5" maxSpareThreads="75"
+           enableLookups="true" disableUploadTimeout="true" 
+           acceptCount="100"  maxThreads="200"
+           scheme="https" secure="true" SSLEnabled="true"
+           SSLCertificateFile="/usr/local/ssl/server.crt" 
+           SSLCertificateKeyFile="/usr/local/ssl/server.pem"
+           clientAuth="false" sslProtocol="TLS"/&gt;
+--&gt;
+</source>
 
-<p>For detailed information about the various options, consult the
-<a href="config/ssl.html">The HTTPS Connector</a>.  The
+</p>
+
+<p>You will note that the Connector element itself is commented out by default,
+so you will need to remove the comment tags around it.  Then, you can
+customize the specified attributes as necessary.  For detailed information
+about the various options, consult the
+<a href="config/index.html">Server Configuration Reference</a>.  The
 following discussion covers only those attributes of most interest when
 setting up SSL communication.</p>
 
-<p>The <code>port</code> of the <code>socket-binding</code>attribute (default value is 8443) is the TCP/IP
+<p>The <code>port</code> attribute (default value is 8443) is the TCP/IP
 port number on which JBoss Web will listen for secure connections.  You can
 change this to any port number you wish (such as to the default port for
 <code>https</code> communications, which is 443).  However, special setup
@@ -297,7 +374,7 @@ numbers lower than 1024 on many operating systems.</p>
 
   <blockquote><em>
   <p>If you change the port number here, you should also change the
-  value specified for the <code>redirect-port</code> attribute on the
+  value specified for the <code>redirectPort</code> attribute on the
   non-SSL connector.  This allows JBoss Web to automatically redirect
   users who attempt to access a page with a security constraint specifying
   that SSL is required, as required by the Servlet 2.4 Specification.</p>
@@ -306,6 +383,76 @@ numbers lower than 1024 on many operating systems.</p>
 <p>There are additional options used to configure the SSL protocol.
   You may need to add or change the following attribute
 values, depending on how you configured your keystore earlier:</p>
+
+  <attributes>
+
+    <attribute name="algorithm" required="false">
+      <p>The certificate encoding algorithm to be used. This defaults to the Sun
+      implementation (<code>SunX509</code>). For IBM JVMs you should use the
+      value <code>IbmX509</code>. For other vendors, consult the JVM
+      documentation for the correct value.</p>
+    </attribute>
+
+    <attribute name="clientAuth" required="false">
+      <p>Set to <code>true</code> if you want the SSL stack to require a
+      valid certificate chain from the client before accepting a connection.
+      Set to <code>want</code> if you want the SSL stack to request a client
+      Certificate, but not fail if one isn't presented. A <code>false</code>
+      value (which is the default) will not require a certificate chain
+      unless the client requests a resource protected by a security
+      constraint that uses <code>CLIENT-CERT</code> authentication.</p>
+    </attribute>
+
+    <attribute name="keystoreFile" required="false">
+      <p>The pathname of the keystore file where you have stored the
+      server certificate to be loaded.  By default, the pathname is
+      the file "<code>.keystore</code>" in the operating system home
+      directory of the user that is running JBoss Web.</p>
+    </attribute>
+
+    <attribute name="keystorePass" required="false">
+      <p>The password used to access the server certificate from the
+      specified keystore file.  The default value is "<code>changeit</code>".
+      </p>
+    </attribute>
+
+    <attribute name="keystoreType" required="false">
+      <p>The type of keystore file to be used for the server certificate.
+      If not specified, the default value is "<code>JKS</code>". 
+      For example the *.p12 files from openssl can be used using 
+      <code>PKCS12</code></p>
+    </attribute>
+
+    <attribute name="sslProtocol" required="false">
+      <p>The version of the SSL protocol to use.  If not specified,
+      the default is "<code>TLS</code>".</p>
+    </attribute>
+
+    <attribute name="ciphers" required="false">
+      <p>A comma seperated list of the encryption ciphers that may be used.
+      If not specified, then any available cipher may be used.</p>
+    </attribute>
+
+    <attribute name="keyAlias" required="false">
+      <p>The alias used to for the server certificate in the keystore. If not
+      specified the first key read in the keystore will be used.</p>
+    </attribute>
+
+    <attribute name="truststoreFile" required="false">
+      <p>The TrustStore file to use to validate client certificates.</p>
+    </attribute>
+
+    <attribute name="truststorePass" required="false">
+      <p>The password to access the TrustStore. This defaults to the value
+      of <code>keystorePass</code>.</p>
+    </attribute>
+
+    <attribute name="truststoreType" required="false">
+      <p>Add this element if your are using a different format for the
+      TrustStore then you are using for the KeyStore.</p>
+     </attribute>
+
+  </attributes>
 
 <p>After completing these configuration changes, you must restart JBoss Web as
 you normally do, and you should be in business.  You should be able to access

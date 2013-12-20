@@ -111,7 +111,7 @@ public class SmapGenerator {
 	// check state and initialize buffer
 	if (outputFileName == null)
 	    throw new IllegalStateException();
-        StringBuilder out = new StringBuilder();
+        StringBuffer out = new StringBuffer();
 
 	// start the SMAP
 	out.append("SMAP\n");

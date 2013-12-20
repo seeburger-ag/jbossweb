@@ -266,6 +266,7 @@ public class ChunkedInputFilter implements InputFilter {
 
         int result = 0;
         boolean eol = false;
+        boolean crfound = false;
         boolean readDigit = false;
         boolean trailer = false;
 
@@ -282,7 +283,10 @@ public class ChunkedInputFilter implements InputFilter {
             }
 
             if (buf[pos] == Constants.CR) {
+                if (crfound) throw new IOException("Invalid CRLF, two CR characters encountered.");
+                crfound = true;
             } else if (buf[pos] == Constants.LF) {
+                if (!crfound) throw new IOException("Invalid CRLF, no CR character encountered.");
                 eol = true;
             } else if (buf[pos] == Constants.SEMI_COLON) {
                 trailer = true;
@@ -290,7 +294,7 @@ public class ChunkedInputFilter implements InputFilter {
                 throw new IOException("Invalid chunk header");
             } else if (!trailer) { 
                 //don't read data after the trailer
-                if (HexUtils.DEC[buf[pos]] != -1) {
+                if (HexUtils.DEC[buf[pos] & 0xff] != -1) {
                     readDigit = true;
                     result *= 16;
                     result += HexUtils.DEC[buf[pos]];

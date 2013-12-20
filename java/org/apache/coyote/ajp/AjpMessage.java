@@ -251,9 +251,7 @@ public class AjpMessage {
             // but is the only consistent approach within the current
             // servlet framework.  It must suffice until servlet output
             // streams properly encode their output.
-            if ((c <= 31) && (c != 9)) {
-                c = ' ';
-            } else if (c == 127) {
+            if (((c <= 31) && (c != 9)) || c == 127 || c > 255) {
                 c = ' ';
             }
             appendByte(c);
@@ -430,7 +428,7 @@ public class AjpMessage {
 
 
     protected static String hexLine(byte buf[], int start, int len) {
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         for (int i = start; i < start + 16 ; i++) {
             if (i < len + 4) {
                 sb.append(hex(buf[i]) + " ");
