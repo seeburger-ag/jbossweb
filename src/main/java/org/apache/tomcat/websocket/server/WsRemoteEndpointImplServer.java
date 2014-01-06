@@ -89,13 +89,15 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
             // If this is false there will be a call back when it is true
             while (sos.isReady()) {
                 complete = true;
-                for (ByteBuffer buffer : buffers) {
-                    if (buffer.hasRemaining()) {
-                        complete = false;
-                        sos.write(buffer.array(), buffer.arrayOffset(),
-                                buffer.limit());
-                        buffer.position(buffer.limit());
-                        break;
+                if (buffers != null) {
+                    for (ByteBuffer buffer : buffers) {
+                        if (buffer.hasRemaining()) {
+                            complete = false;
+                            sos.write(buffer.array(), buffer.arrayOffset(),
+                                    buffer.limit());
+                            buffer.position(buffer.limit());
+                            break;
+                        }
                     }
                 }
                 if (complete) {
