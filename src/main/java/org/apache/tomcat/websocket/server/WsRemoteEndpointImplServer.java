@@ -84,20 +84,23 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
 
 
     public void onWritePossible(boolean useDispatch) {
+        if (buffers == null) {
+            // Servlet 3.1 will call the write listener once even if nothing
+            // was written
+            return;
+        }
         boolean complete = true;
         try {
             // If this is false there will be a call back when it is true
             while (sos.isReady()) {
                 complete = true;
-                if (buffers != null) {
-                    for (ByteBuffer buffer : buffers) {
-                        if (buffer.hasRemaining()) {
-                            complete = false;
-                            sos.write(buffer.array(), buffer.arrayOffset(),
-                                    buffer.limit());
-                            buffer.position(buffer.limit());
-                            break;
-                        }
+                for (ByteBuffer buffer : buffers) {
+                    if (buffer.hasRemaining()) {
+                        complete = false;
+                        sos.write(buffer.array(), buffer.arrayOffset(),
+                                buffer.limit());
+                        buffer.position(buffer.limit());
+                        break;
                     }
                 }
                 if (complete) {
@@ -120,7 +123,6 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
         }
         if (!complete) {
             // Async write is in progress
-
             long timeout = getSendTimeout();
             if (timeout > 0) {
                 // Register with timeout thread
