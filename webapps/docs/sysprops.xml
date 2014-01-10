@@ -65,6 +65,22 @@ Closed connection to localhost:9999
       <p>It supports <code>:reload</code>.</p>
     </property>
 
+    <property name="org.apache.catalina.authenticator.AuthenticatorBase.CHANGE_SESSIONID_ON_AUTH">
+      <p>Should the session ID, if any, be changed upon a successful
+      authentication to prevent a session fixation attack ? If not specified, the default value of
+      <code>false</code> will be used. </p>
+    </property>
+
+    <property name="org.apache.catalina.authenticator.AuthenticatorBase.UNREGISTER_SSO_ON_LOGOUT">
+      <p>Unregister the SSO when logging out. If not specified, the default value of
+      <code>false</code> will be used. </p>
+    </property>
+
+    <property name="org.apache.catalina.authenticator.AuthenticatorBase.ALWAYS_USE_SESSION">
+      <p>Should a session always be used once a user is authenticated ? If not specified, the default value of
+      <code>false</code> will be used. </p>
+    </property>
+
     <property name="org.apache.tomcat.util.buf.StringCache.byte.enabled">
       <p>If <code>true</code>, the String cache is enabled for
       <code>ByteChunk</code>. If not specified, the default value of
