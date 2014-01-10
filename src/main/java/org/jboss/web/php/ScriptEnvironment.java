@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.util.IOTools;
 import org.jboss.logging.Logger;
+import org.jboss.web.WebLogger;
 
 
 /**
@@ -47,8 +48,6 @@ import org.jboss.logging.Logger;
  * @since 1.0
  */
 public class ScriptEnvironment {
-
-    private static Logger log = Logger.getLogger(ScriptEnvironment.class);
 
     /**
      * The Request attribute key for the client certificate chain.
@@ -363,7 +362,7 @@ public class ScriptEnvironment {
             || sScriptName == null
             || sFullName == null
             || sName == null) {
-            log.error("Invalid script names");
+            WebLogger.ROOT_LOGGER.invalidScriptNames();
             return false;
         }
 

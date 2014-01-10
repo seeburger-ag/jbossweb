@@ -178,7 +178,7 @@ public abstract class StoreBase
         try {
             keys = keys();
         } catch (IOException e) {
-            manager.getContainer().getLogger().error("Error getting keys", e);
+            manager.getContainer().getLogger().error(MESSAGES.errorGettingKeys(), e);
             return;
         }
         if (manager.getContainer().getLogger().isDebugEnabled()) {

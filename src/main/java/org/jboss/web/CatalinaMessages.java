@@ -1020,4 +1020,7 @@ public interface CatalinaMessages {
     @Message(id = 376, value = "Cannot use a read or write listener without upgrading or starting async")
     IllegalStateException cannotSetListenerWithoutUpgradeOrAsync();
 
+    @Message(id = 377, value = "Error getting keys")
+    String errorGettingKeys();
+
 }

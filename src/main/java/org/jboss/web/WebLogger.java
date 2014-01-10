@@ -53,4 +53,8 @@ public interface WebLogger extends BasicLogger {
     @Message(id = 7502, value = "Invalid PHP library %s.%s.%s, required version is %s.%s.%s")
     void invalidPhpLibrary(int major, int minor, int patch, int requiredMajor, int requiredMinor, int requiredPatch);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 7503, value = "Invalid null script names")
+    void invalidScriptNames();
+
 }

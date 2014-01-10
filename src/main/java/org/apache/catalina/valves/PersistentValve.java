@@ -33,6 +33,7 @@ import org.apache.catalina.Store;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.session.PersistentManager;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -115,7 +116,7 @@ public class PersistentValve
                     try {
                         session = store.load(sessionId);
                     } catch (Exception e) {
-                        container.getLogger().error("deserializeError");
+                        CatalinaLogger.VALVES_LOGGER.deserializationError(e);
                     }
                     if (session != null) {
                         if (!session.isValid() ||

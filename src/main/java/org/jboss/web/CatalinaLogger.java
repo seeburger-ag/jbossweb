@@ -689,4 +689,8 @@ public interface CatalinaLogger extends BasicLogger {
     @Message(id = 1150, value = "X param in wrong format. Needs to be 'x-#(...)'")
     void extendedAccessLogBadXParam();
 
+    @LogMessage(level = ERROR)
+    @Message(id = 1151, value = "Deserialization error")
+    void deserializationError(@Cause Throwable t);
+
 }
