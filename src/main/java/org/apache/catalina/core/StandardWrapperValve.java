@@ -547,8 +547,10 @@ final class StandardWrapperValve
                         Throwable throwable = asyncContext.getError();
                         if (throwable == null) {
                             throwable = response.getCoyoteResponse().getErrorException();
-                            if (throwable != null && !(throwable instanceof IOException)) {
-                                throwable = new IOException(throwable);
+                            if (throwable != null){
+                                if (!(throwable instanceof IOException)) {
+                                    throwable = new IOException(throwable);
+                                }
                             } else {
                                 throwable = new EOFException();
                             }
