@@ -71,19 +71,17 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
         this.buffers = buffers;
         // This is definitely the same thread that triggered the write so a
         // dispatch will be required.
-        onWritePossible(true);
+        onWritePossible(true, false);
     }
 
 
     @Override
     protected void doFlush() throws IOException {
-        if (timeoutExpiry != -1) {
-            sos.flush();
-        }
+        onWritePossible(false, true);
     }
 
 
-    public void onWritePossible(boolean useDispatch) {
+    public void onWritePossible(boolean useDispatch, boolean block) {
         if (buffers == null) {
             // Servlet 3.1 will call the write listener once even if nothing
             // was written
@@ -92,7 +90,7 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
         boolean complete = true;
         try {
             // If this is false there will be a call back when it is true
-            while (sos.isReady()) {
+            while (block || sos.isReady()) {
                 complete = true;
                 for (ByteBuffer buffer : buffers) {
                     if (buffer.hasRemaining()) {

@@ -74,25 +74,23 @@ class FutureToSendHandler implements Future<Void>, SendHandler {
     @Override
     public Void get() throws InterruptedException,
             ExecutionException {
-        // If inside a container thread, must use an autoblocking flush as the write
-        // event will never come to the Servlet layer until the container thread returns
-        if (Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
-            // FIXME: this uses the IO timeout rather than no timeout as per the API contract
-            try {
-                wsSession.forceFlush();
-            } catch (IOException e) {
-                throw new ExecutionException(e);
+        try {
+            wsSession.registerFuture(this);
+            // If inside a container thread, must use an autoblocking flush as the write
+            // event will never come to the Servlet layer until the container thread returns
+            if (latch.getCount() > 0 && Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
+                try {
+                    wsSession.forceFlush();
+                } catch (IOException e) {
+                    throw new ExecutionException(e);
+                }
             }
-        } else {
-            try {
-                wsSession.registerFuture(this);
-                latch.await();
-            } finally {
-                wsSession.unregisterFuture(this);
-            }
-            if (result.getException() != null) {
-                throw new ExecutionException(result.getException());
-            }
+            latch.await();
+        } finally {
+            wsSession.unregisterFuture(this);
+        }
+        if (result.getException() != null) {
+            throw new ExecutionException(result.getException());
         }
         return null;
     }
@@ -101,30 +99,28 @@ class FutureToSendHandler implements Future<Void>, SendHandler {
     public Void get(long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException,
             TimeoutException {
-        // If inside a container thread, must use an autoblocking flush as the write
-        // event will never come to the Servlet layer until the container thread returns
-        if (Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
-            // FIXME: this uses the IO timeout rather than the timeout specified by the user
-            try {
-                wsSession.forceFlush();
-            } catch (IOException e) {
-                throw new ExecutionException(e);
+        boolean retval = false;
+        try {
+            wsSession.registerFuture(this);
+            // If inside a container thread, must use an autoblocking flush as the write
+            // event will never come to the Servlet layer until the container thread returns
+            if (latch.getCount() > 0 && Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
+                // FIXME: this uses the IO timeout, so it adds to the timeout specified by the user
+                try {
+                    wsSession.forceFlush();
+                } catch (IOException e) {
+                    throw new ExecutionException(e);
+                }
             }
-        } else {
-            boolean retval = false;
-            try {
-                wsSession.registerFuture(this);
-                retval = latch.await(timeout, unit);
-            } finally {
-                wsSession.unregisterFuture(this);
-
-            }
-            if (retval == false) {
-                throw new TimeoutException();
-            }
-            if (result.getException() != null) {
-                throw new ExecutionException(result.getException());
-            }
+            retval = latch.await(timeout, unit);
+        } finally {
+            wsSession.unregisterFuture(this);
+        }
+        if (retval == false) {
+            throw new TimeoutException();
+        }
+        if (result.getException() != null) {
+            throw new ExecutionException(result.getException());
         }
         return null;
     }

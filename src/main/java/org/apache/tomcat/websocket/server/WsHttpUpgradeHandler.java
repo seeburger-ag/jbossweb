@@ -231,7 +231,7 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
         public void onWritePossible() {
             // Triggered by the poller so this isn't the same thread that
             // triggered the write so no need for a dispatch
-            wsRemoteEndpointServer.onWritePossible(false);
+            wsRemoteEndpointServer.onWritePossible(false, false);
         }
 
 
