@@ -573,9 +573,10 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
 
     protected abstract void doWrite(SendHandler handler, ByteBuffer... data);
-    protected abstract void doFlush() throws IOException;
+    protected abstract void writeBlock();
     protected abstract boolean isMasked();
     protected abstract void doClose();
+
 
     private static void writeHeader(ByteBuffer headerBuffer, byte opCode,
             ByteBuffer payload, boolean first, boolean last, boolean masked,

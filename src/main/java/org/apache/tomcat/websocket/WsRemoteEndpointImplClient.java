@@ -16,7 +16,6 @@
  */
 package org.apache.tomcat.websocket;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +37,7 @@ public class WsRemoteEndpointImplClient extends WsRemoteEndpointImplBase {
 
 
     @Override
-    protected void doFlush() throws IOException {
+    protected void writeBlock() {
     }
 
 
@@ -47,7 +46,6 @@ public class WsRemoteEndpointImplClient extends WsRemoteEndpointImplBase {
         long timeout = getSendTimeout();
         if (timeout < 1) {
             timeout = Long.MAX_VALUE;
-
         }
         SendHandlerToCompletionHandler sh2ch =
                 new SendHandlerToCompletionHandler(handler);

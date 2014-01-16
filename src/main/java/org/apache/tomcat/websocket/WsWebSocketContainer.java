@@ -353,7 +353,6 @@ public class WsWebSocketContainer
         WsRemoteEndpointImplClient wsRemoteEndpointClient =
                 new WsRemoteEndpointImplClient(channel);
 
-
         WsSession wsSession = new WsSession(endpoint, wsRemoteEndpointClient,
                 this, null, null, null, null, null, subProtocol,
                 Collections.<String, String> emptyMap(), false,

@@ -76,7 +76,7 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
 
 
     @Override
-    protected void doFlush() throws IOException {
+    protected void writeBlock() {
         onWritePossible(false, true);
     }
 

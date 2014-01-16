@@ -16,7 +16,6 @@
  */
 package org.apache.tomcat.websocket;
 
-import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -79,11 +78,7 @@ class FutureToSendHandler implements Future<Void>, SendHandler {
             // If inside a container thread, must use an autoblocking flush as the write
             // event will never come to the Servlet layer until the container thread returns
             if (latch.getCount() > 0 && Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
-                try {
-                    wsSession.forceFlush();
-                } catch (IOException e) {
-                    throw new ExecutionException(e);
-                }
+                wsSession.writeBlock();
             }
             latch.await();
         } finally {
@@ -105,12 +100,12 @@ class FutureToSendHandler implements Future<Void>, SendHandler {
             // If inside a container thread, must use an autoblocking flush as the write
             // event will never come to the Servlet layer until the container thread returns
             if (latch.getCount() > 0 && Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
-                // FIXME: this uses the IO timeout, so it adds to the timeout specified by the user
-                try {
-                    wsSession.forceFlush();
-                } catch (IOException e) {
-                    throw new ExecutionException(e);
-                }
+                long nanoTime = System.nanoTime();
+                wsSession.writeBlock();
+                // Removing the time spent on IO from the specified timeout
+                // Note: it may wait more than what the user has specified
+                timeout = TimeUnit.NANOSECONDS.convert(timeout, unit) - (System.nanoTime() - nanoTime);
+                unit = TimeUnit.NANOSECONDS;
             }
             retval = latch.await(timeout, unit);
         } finally {
