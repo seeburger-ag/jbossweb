@@ -305,4 +305,7 @@ public interface WebsocketsMessages {
     @Message(id = 8589, value = "The maximum supported message size for this implementation is Integer.MAX_VALUE")
     IllegalArgumentException messageTooLarge();
 
+    @Message(id = 8590, value = "Closing session following IO error")
+    String closeAfterError();
+
 }

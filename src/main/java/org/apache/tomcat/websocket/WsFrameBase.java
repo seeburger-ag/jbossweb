@@ -329,8 +329,7 @@ public abstract class WsFrameBase {
                 try {
                     mhPong.onMessage(new WsPongMessage(controlBufferBinary));
                 } catch (Throwable t) {
-                    ExceptionUtils.handleThrowable(t);
-                    wsSession.getLocal().onError(wsSession, t);
+                    handleThrowableOnSend(t);
                 } finally {
                     controlBufferBinary.clear();
                 }
@@ -371,8 +370,7 @@ public abstract class WsFrameBase {
                         messageBufferText.toString());
             }
         } catch (Throwable t) {
-            ExceptionUtils.handleThrowable(t);
-            wsSession.getLocal().onError(wsSession, t);
+            handleThrowableOnSend(t);
         } finally {
             messageBufferText.clear();
         }
@@ -525,6 +523,15 @@ public abstract class WsFrameBase {
     }
 
 
+    private void handleThrowableOnSend(Throwable t) throws WsIOException {
+        ExceptionUtils.handleThrowable(t);
+        wsSession.getLocal().onError(wsSession, t);
+        CloseReason cr = new CloseReason(CloseCodes.CLOSED_ABNORMALLY,
+                MESSAGES.closeAfterError());
+        throw new WsIOException(cr);
+    }
+
+
     @SuppressWarnings("unchecked")
     private void sendMessageBinary(ByteBuffer msg, boolean last)
             throws WsIOException {
@@ -546,8 +553,7 @@ public abstract class WsFrameBase {
                 ((MessageHandler.Whole<ByteBuffer>) binaryMsgHandler).onMessage(msg);
             }
         } catch(Throwable t) {
-            ExceptionUtils.handleThrowable(t);
-            wsSession.getLocal().onError(wsSession, t);
+            handleThrowableOnSend(t);
         }
     }
 
