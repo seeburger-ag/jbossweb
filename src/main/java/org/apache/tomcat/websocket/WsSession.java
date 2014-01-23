@@ -45,6 +45,7 @@ import javax.websocket.SendResult;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
+import org.apache.tomcat.util.ExceptionUtils;
 import org.jboss.web.WebsocketsLogger;
 
 public class WsSession implements Session {
@@ -452,6 +453,9 @@ public class WsSession implements Session {
         t.setContextClassLoader(applicationClassLoader);
         try {
             localEndpoint.onClose(this, closeReason);
+        } catch (Throwable throwable) {
+            ExceptionUtils.handleThrowable(throwable);
+            localEndpoint.onError(this, throwable);
         } finally {
             t.setContextClassLoader(cl);
         }

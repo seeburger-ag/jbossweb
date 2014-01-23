@@ -96,8 +96,8 @@ public abstract class PojoEndpointBase extends Endpoint {
                 methodMapping.getOnClose().invoke(pojo,
                         methodMapping.getOnCloseArgs(pathParameters, session, closeReason));
             } catch (Throwable t) {
-                ExceptionUtils.handleThrowable(t);
                 WebsocketsLogger.ROOT_LOGGER.onCloseFailed(pojo.getClass().getName(), t);
+                handleOnCloseError(session, t);
             }
         }
 
@@ -110,6 +110,19 @@ public abstract class PojoEndpointBase extends Endpoint {
         }
     }
 
+
+    private void handleOnCloseError(Session session, Throwable t) {
+        // If really fatal - re-throw
+        ExceptionUtils.handleThrowable(t);
+
+        // Trigger the error handler and close the session
+        onError(session, t);
+        try {
+            session.close();
+        } catch (IOException ioe) {
+            WebsocketsLogger.ROOT_LOGGER.closeSessionFailed(ioe);
+        }
+    }
 
     @Override
     public final void onError(Session session, Throwable throwable) {
