@@ -121,12 +121,6 @@ public class PojoMethodMapping {
         if (!Modifier.isPublic(m.getModifiers())) {
             throw new DeploymentException(MESSAGES.methodNotPublic(m.getName()));
         }
-        try {
-            m.setAccessible(true);
-        } catch (Exception e) {
-            // It is better to make sure the method is accessible, but
-            // ignore exceptions and hope for the best
-        }
     }
 
 
