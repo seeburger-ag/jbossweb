@@ -117,18 +117,18 @@ public abstract class StreamInbound {
                 byte opCode = frame.getOpCode();
 
                 if (opCode == Constants.OPCODE_BINARY) {
-                    doOnBinaryData(wsIs);
+                    onBinaryData(wsIs);
                 } else if (opCode == Constants.OPCODE_TEXT) {
                     InputStreamReader r =
                             new InputStreamReader(wsIs, new Utf8Decoder());
-                    doOnTextData(r);
+                    onTextData(r);
                 } else if (opCode == Constants.OPCODE_CLOSE){
                     closeOutboundConnection(frame);
                     event.close();
                 } else if (opCode == Constants.OPCODE_PING) {
                     getWsOutbound().pong(frame.getPayLoad());
                 } else if (opCode == Constants.OPCODE_PONG) {
-                    doOnPong(frame.getPayLoad());
+                    onPong(frame.getPayLoad());
                 } else {
                     // Unknown OpCode
                     closeOutboundConnection(
@@ -153,37 +153,11 @@ public abstract class StreamInbound {
         }
     }
 
-    private void doOnBinaryData(InputStream is) throws IOException {
-        // Need to call onBinaryData using the web application's class loader
-        Thread t = Thread.currentThread();
-        ClassLoader cl = t.getContextClassLoader();
-        t.setContextClassLoader(applicationClassLoader);
-        try {
-            onBinaryData(is);
-        } finally {
-            t.setContextClassLoader(cl);
-        }
-    }
-
-
-    private void doOnTextData(Reader r) throws IOException {
-        // Need to call onTextData using the web application's class loader
-        Thread t = Thread.currentThread();
-        ClassLoader cl = t.getContextClassLoader();
-        t.setContextClassLoader(applicationClassLoader);
-        try {
-            onTextData(r);
-        } finally {
-            t.setContextClassLoader(cl);
-        }
-    }
-
-
     private void closeOutboundConnection(int status, ByteBuffer data) throws IOException {
         try {
             getWsOutbound().close(status, data);
         } finally {
-            doOnClose(status);
+            onClose(status);
         }
     }
 
@@ -191,7 +165,7 @@ public abstract class StreamInbound {
         try {
             getWsOutbound().close(frame);
         } finally {
-            doOnClose(Constants.STATUS_CLOSE_NORMAL);
+            onClose(Constants.STATUS_CLOSE_NORMAL);
         }
     }
 
@@ -213,30 +187,10 @@ public abstract class StreamInbound {
         }
     }
 
-    private void doOnPong(ByteBuffer payload) {
-        // Need to call onPong using the web application's class loader
-        Thread t = Thread.currentThread();
-        ClassLoader cl = t.getContextClassLoader();
-        t.setContextClassLoader(applicationClassLoader);
-        try {
-            onPong(payload);
-        } finally {
-            t.setContextClassLoader(cl);
-        }
-    }
-    
     public final void onUpgradeComplete() {
         outbound = new WsOutbound(event, this, outboundByteBufferSize,
                 outboundCharBufferSize);
-        // Need to call onOpen using the web application's class loader
-        Thread t = Thread.currentThread();
-        ClassLoader cl = t.getContextClassLoader();
-        t.setContextClassLoader(applicationClassLoader);
-        try {
-            onOpen(outbound);
-        } finally {
-            t.setContextClassLoader(cl);
-        }
+        onOpen(outbound);
     }
 
     /**

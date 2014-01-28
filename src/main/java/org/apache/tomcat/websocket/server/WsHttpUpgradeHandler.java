@@ -44,8 +44,6 @@ import org.jboss.web.WebsocketsLogger;
  */
 public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
 
-    private final ClassLoader applicationClassLoader;
-
     private Endpoint ep;
     private EndpointConfig endpointConfig;
     private WsServerContainer webSocketContainer;
@@ -59,7 +57,6 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
 
 
     public WsHttpUpgradeHandler() {
-        applicationClassLoader = Thread.currentThread().getContextClassLoader();
     }
 
 
@@ -100,12 +97,6 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
             httpSessionId = ((HttpSession) session).getId();
         }
 
-        // Need to call onOpen using the web application's class loader
-        // Create the frame using the application's class loader so it can pick
-        // up application specific config from the ServerContainerImpl
-        Thread t = Thread.currentThread();
-        ClassLoader cl = t.getContextClassLoader();
-        t.setContextClassLoader(applicationClassLoader);
         try {
             WsRemoteEndpointImplServer wsRemoteEndpointServer =
                     new WsRemoteEndpointImplServer(sos, webSocketContainer);
@@ -125,8 +116,6 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
             sis.setReadListener(new WsReadListener(this, wsFrame));
         } catch (DeploymentException e) {
             throw new IllegalArgumentException(e);
-        } finally {
-            t.setContextClassLoader(cl);
         }
     }
 
@@ -144,15 +133,7 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
 
 
     private void onError(Throwable throwable) {
-        // Need to call onError using the web application's class loader
-        Thread t = Thread.currentThread();
-        ClassLoader cl = t.getContextClassLoader();
-        t.setContextClassLoader(applicationClassLoader);
-        try {
-            ep.onError(wsSession, throwable);
-        } finally {
-            t.setContextClassLoader(cl);
-        }
+        ep.onError(wsSession, throwable);
     }
 
 
