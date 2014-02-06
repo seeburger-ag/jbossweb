@@ -795,7 +795,11 @@ public abstract class FileUploadBase {
 
             notifier = new MultipartStream.ProgressNotifier(listener,
                     ctx.getContentLength());
-            multi = new MultipartStream(input, boundary, notifier);
+            try {
+                multi = new MultipartStream(input, boundary, notifier);
+            } catch (IllegalArgumentException iae) {
+                throw new InvalidContentTypeException(MESSAGES.invalidBoundary(CONTENT_TYPE), iae);
+            }
             multi.setHeaderEncoding(charEncoding);
 
             skipPreamble = true;
@@ -969,7 +973,7 @@ public abstract class FileUploadBase {
          * detail message.
          */
         public InvalidContentTypeException() {
-            // Nothing to do.
+            super();
         }
 
         /**
@@ -980,6 +984,10 @@ public abstract class FileUploadBase {
          */
         public InvalidContentTypeException(String message) {
             super(message);
+        }
+
+        public InvalidContentTypeException(String message, Exception cause) {
+            super(message, cause);
         }
     }
 
