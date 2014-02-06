@@ -605,4 +605,12 @@ public class ResponseFacade
         return response.getStatus();
     }
 
+    public void setContentLengthLong(long contentLength) {
+        if (response == null) {
+            throw MESSAGES.nullResponseFacade();
+        }
+
+        response.setContentLengthLong(contentLength);
+    }
+
 }

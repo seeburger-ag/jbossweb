@@ -241,8 +241,7 @@ public final class ExpressionBuilder implements NodeVisitor {
             return new MethodExpressionLiteral(expression, expectedReturnType,
                     expectedParamTypes);
         } else {
-            throw new ELException("Not a Valid Method Expression: "
-                    + expression);
+            throw new ELException(MESSAGES.invalidMethodExpression(expression));
         }
     }
 }

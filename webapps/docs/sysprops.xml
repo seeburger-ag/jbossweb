@@ -65,6 +65,22 @@ Closed connection to localhost:9999
       <p>It supports <code>:reload</code>.</p>
     </property>
 
+    <property name="org.apache.catalina.authenticator.AuthenticatorBase.CHANGE_SESSIONID_ON_AUTH">
+      <p>Should the session ID, if any, be changed upon a successful
+      authentication to prevent a session fixation attack ? If not specified, the default value of
+      <code>false</code> will be used. </p>
+    </property>
+
+    <property name="org.apache.catalina.authenticator.AuthenticatorBase.UNREGISTER_SSO_ON_LOGOUT">
+      <p>Unregister the SSO when logging out. If not specified, the default value of
+      <code>false</code> will be used. </p>
+    </property>
+
+    <property name="org.apache.catalina.authenticator.AuthenticatorBase.ALWAYS_USE_SESSION">
+      <p>Should a session always be used once a user is authenticated ? If not specified, the default value of
+      <code>false</code> will be used. </p>
+    </property>
+
     <property name="org.apache.tomcat.util.buf.StringCache.byte.enabled">
       <p>If <code>true</code>, the String cache is enabled for
       <code>ByteChunk</code>. If not specified, the default value of
@@ -130,6 +146,12 @@ Closed connection to localhost:9999
       value is <code>128</code> headers.</p>
     </property>
 
+    <property name="org.apache.tomcat.util.net.MAX_THREADS">
+      <p>The maximum number of threads a connector is going to use to
+         process requests. The default value is <code>32 x Runtime.getRuntime().availableProcessors()</code>.
+         (<code>512 x Runtime.getRuntime().availableProcessors()</code> for the JIO connector)</p>
+    </property>
+
     <property name="org.apache.coyote.http11.Http11Protocol.MAX_HEADER_SIZE">
       <p>The maximum size of the HTTP headers, in bytes.
       If exceeded, parsing will fail using an ArrayOutOfBoundsExceptions. The default
@@ -156,6 +178,15 @@ Closed connection to localhost:9999
     <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIN_SIZE">
       <p>Minimum size of content that will be compressed. The default value is 
       <code>2048</code> bytes.</p>
+    </property>
+
+    <property name="org.apache.coyote.http11.DEFAULT_CONNECTION_TIMEOUT">
+      <p>Default socket timeout. The default value is <code>60000</code> ms.</p>
+    </property>
+
+    <property name="org.apache.coyote.http11.DEFAULT_KEEP_ALIVE_TIMEOUT">
+      <p>Default socket timeout for keep alive. The default value is <code>-1</code> ms,
+      which means it will use the default socket timeout.</p>
     </property>
 
   </properties>

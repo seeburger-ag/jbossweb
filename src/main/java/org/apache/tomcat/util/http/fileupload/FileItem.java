@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -50,7 +49,7 @@ import java.io.UnsupportedEncodingException;
  *
  * @version $Id: FileItem.java 1533 2010-08-18 10:01:08Z remy.maucherat@jboss.com $
  */
-public interface FileItem extends Serializable {
+public interface FileItem {
 
 
     // ------------------------------- Methods from javax.activation.DataSource
