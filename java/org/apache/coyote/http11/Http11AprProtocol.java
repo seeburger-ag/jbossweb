@@ -31,6 +31,7 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.catalina.Globals;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
@@ -278,7 +279,12 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public void setKeepAliveTimeout(int timeout) { endpoint.setKeepAliveTimeout(timeout); }
 
     public boolean getUseSendfile() { return endpoint.getUseSendfile(); }
-    public void setUseSendfile(boolean useSendfile) { endpoint.setUseSendfile(useSendfile); }
+    public void setUseSendfile(boolean useSendfile) {
+        if (Globals.IS_SECURITY_ENABLED)
+            endpoint.setUseSendfile(useSendfile);
+        else
+            log.warn(sm.getString("http11protocol.sendfiledisabled"));
+    }
 
     public int getPollTime() { return endpoint.getPollTime(); }
     public void setPollTime(int pollTime) { endpoint.setPollTime(pollTime); }
