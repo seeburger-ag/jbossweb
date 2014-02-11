@@ -283,15 +283,6 @@ public class InternalAprOutputBuffer
     }
 
 
-    public void removeActiveFilters() {
-        // Recycle filters
-        for (int i = 0; i <= lastActiveFilter; i++) {
-            activeFilters[i].recycle();
-        }
-        lastActiveFilter = -1;
-    }
-
-
     // --------------------------------------------------------- Public Methods
 
 
@@ -464,14 +455,12 @@ public class InternalAprOutputBuffer
      */
     public void sendHeader(MessageBytes name, MessageBytes value) {
 
-        if (name.getLength() > 0 && !value.isNull()) {
-            write(name);
-            buf[pos++] = Constants.COLON;
-            buf[pos++] = Constants.SP;
-            write(value);
-            buf[pos++] = Constants.CR;
-            buf[pos++] = Constants.LF;
-        }
+        write(name);
+        buf[pos++] = Constants.COLON;
+        buf[pos++] = Constants.SP;
+        write(value);
+        buf[pos++] = Constants.CR;
+        buf[pos++] = Constants.LF;
 
     }
 
@@ -545,7 +534,7 @@ public class InternalAprOutputBuffer
 
         }
 
-        // If non blocking (event) and there are leftover bytes, 
+        // If non blocking (comet) and there are leftover bytes, 
         // and lastWrite was 0 -> error
         if (leftover.getLength() > 0 && !(Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
             throw new IOException(sm.getString("oob.backlog"));
@@ -684,9 +673,7 @@ public class InternalAprOutputBuffer
             // but is the only consistent approach within the current
             // servlet framework.  It must suffice until servlet output
             // streams properly encode their output.
-            if ((c <= 31) && (c != 9)) {
-                c = ' ';
-            } else if (c == 127) {
+            if (((c <= 31) && (c != 9)) || c == 127 || c > 255) {
                 c = ' ';
             }
             buf[pos++] = (byte) c;
@@ -757,21 +744,19 @@ public class InternalAprOutputBuffer
         
         int pos = 0;
         int end = bbuf.position();
-        if (pos < end) {
-            int res = 0;
-            while (pos < end) {
-                res = Socket.sendibb(socket, pos, end - pos);
-                if (res > 0) {
-                    pos += res;
-                } else {
-                    break;
-                }
+        int res = 0;
+        while (pos < end) {
+            res = Socket.sendibb(socket, pos, end - pos);
+            if (res > 0) {
+                pos += res;
+            } else {
+                break;
             }
-            if (res < 0) {
-                throw new IOException(sm.getString("oob.failedwrite"));
-            }
-            response.setLastWrite(res);
         }
+        if (res < 0) {
+            throw new IOException(sm.getString("oob.failedwrite"));
+        }
+        response.setLastWrite(res);
         if (pos < end) {
             leftover.allocate(end - pos, -1);
             bbuf.position(pos);
@@ -846,7 +831,7 @@ public class InternalAprOutputBuffer
                         // Call for a write event because it is possible that no further write
                         // operations are made
                         if (!response.getFlushLeftovers()) {
-                            response.action(ActionCode.ACTION_EVENT_WRITE, null);
+                            response.action(ActionCode.ACTION_COMET_WRITE, null);
                         }
                     }
                 }
@@ -880,7 +865,7 @@ public class InternalAprOutputBuffer
         public int doWrite(ByteChunk chunk, Response res) 
             throws IOException {
 
-            // If non blocking (event) and there are leftover bytes, 
+            // If non blocking (comet) and there are leftover bytes, 
             // put all remaining bytes in the leftover buffer (they are
             // part of the same write operation)
             if (leftover.getLength() > 0) {
@@ -896,7 +881,7 @@ public class InternalAprOutputBuffer
                 if (bbuf.position() == bbuf.capacity()) {
                     flushBuffer();
                     if (leftover.getLength() > 0) {
-                        // If non blocking (event) and there are leftover bytes, 
+                        // If non blocking (comet) and there are leftover bytes, 
                         // put all remaining bytes in the leftover buffer (they are
                         // part of the same write operation)
                         int oldStart = chunk.getOffset();

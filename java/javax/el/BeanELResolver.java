@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,6 @@ import java.beans.FeatureDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -32,7 +31,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BeanELResolver extends ELResolver {
@@ -48,8 +46,6 @@ public class BeanELResolver extends ELResolver {
         } else {
             CACHE_SIZE = AccessController.doPrivileged(
                     new PrivilegedAction<Integer>() {
-
-                    @Override
                     public Integer run() {
                         return Integer.valueOf(
                                 System.getProperty(CACHE_SIZE_PROP, "1000"));
@@ -60,8 +56,8 @@ public class BeanELResolver extends ELResolver {
 
     private final boolean readOnly;
 
-    private final ConcurrentCache<String, BeanProperties> cache =
-        new ConcurrentCache<String, BeanProperties>(CACHE_SIZE);
+    private final static ConcurrentHashMap<Class<?>, BeanProperties> cache =
+        new ConcurrentHashMap<Class<?>, BeanProperties>(CACHE_SIZE);
 
     public BeanELResolver() {
         this.readOnly = false;
@@ -71,7 +67,6 @@ public class BeanELResolver extends ELResolver {
         this.readOnly = readOnly;
     }
 
-    @Override
     public Object getValue(ELContext context, Object base, Object property)
             throws NullPointerException, PropertyNotFoundException, ELException {
         if (context == null) {
@@ -88,20 +83,14 @@ public class BeanELResolver extends ELResolver {
         } catch (IllegalAccessException e) {
             throw new ELException(e);
         } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof ThreadDeath) {
-                throw (ThreadDeath) cause;
-            }
-            if (cause instanceof VirtualMachineError) {
-                throw (VirtualMachineError) cause;
-            }
-            throw new ELException("Property read error", cause);
+            throw new ELException(message(context, "propertyReadError",
+                    new Object[] { base.getClass().getName(),
+                            property.toString() }), e.getCause());
         } catch (Exception e) {
             throw new ELException(e);
         }
     }
 
-    @Override
     public Class<?> getType(ELContext context, Object base, Object property)
             throws NullPointerException, PropertyNotFoundException, ELException {
         if (context == null) {
@@ -115,7 +104,6 @@ public class BeanELResolver extends ELResolver {
         return this.property(context, base, property).getPropertyType();
     }
 
-    @Override
     public void setValue(ELContext context, Object base, Object property,
             Object value) throws NullPointerException,
             PropertyNotFoundException, PropertyNotWritableException,
@@ -130,8 +118,9 @@ public class BeanELResolver extends ELResolver {
         context.setPropertyResolved(true);
 
         if (this.readOnly) {
-            throw new PropertyNotWritableException("Resolver not writable" + base.getClass()
-                            .getName());
+            throw new PropertyNotWritableException(message(context,
+                    "resolverNotWriteable", new Object[] { base.getClass()
+                            .getName() }));
         }
 
         Method m = this.property(context, base, property).write(context);
@@ -140,20 +129,14 @@ public class BeanELResolver extends ELResolver {
         } catch (IllegalAccessException e) {
             throw new ELException(e);
         } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof ThreadDeath) {
-                throw (ThreadDeath) cause;
-            }
-            if (cause instanceof VirtualMachineError) {
-                throw (VirtualMachineError) cause;
-            }
-            throw new ELException("Property write error", cause);
+            throw new ELException(message(context, "propertyWriteError",
+                    new Object[] { base.getClass().getName(),
+                            property.toString() }), e.getCause());
         } catch (Exception e) {
             throw new ELException(e);
         }
     }
 
-    @Override
     public boolean isReadOnly(ELContext context, Object base, Object property)
             throws NullPointerException, PropertyNotFoundException, ELException {
         if (context == null) {
@@ -168,7 +151,6 @@ public class BeanELResolver extends ELResolver {
                 || this.property(context, base, property).isReadOnly();
     }
 
-    @Override
     public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
         if (context == null) {
             throw new NullPointerException();
@@ -193,7 +175,6 @@ public class BeanELResolver extends ELResolver {
         return null;
     }
 
-    @Override
     public Class<?> getCommonPropertyType(ELContext context, Object base) {
         if (context == null) {
             throw new NullPointerException();
@@ -206,7 +187,7 @@ public class BeanELResolver extends ELResolver {
         return null;
     }
 
-    protected static final class BeanProperties {
+    protected final static class BeanProperties {
         private final Map<String, BeanProperty> properties;
 
         private final Class<?> type;
@@ -229,7 +210,9 @@ public class BeanELResolver extends ELResolver {
         private BeanProperty get(ELContext ctx, String name) {
             BeanProperty property = this.properties.get(name);
             if (property == null) {
-                throw new PropertyNotFoundException("Property not found: " + name );
+                throw new PropertyNotFoundException(message(ctx,
+                        "propertyNotFound",
+                        new Object[] { type.getName(), name }));
             }
             return property;
         }
@@ -237,16 +220,16 @@ public class BeanELResolver extends ELResolver {
         public BeanProperty getBeanProperty(String name) {
             return get(null, name);
         }
-
+        
         private Class<?> getType() {
             return type;
         }
     }
 
-    protected static final class BeanProperty {
-        private final Class<?> type;
+    protected final static class BeanProperty {
+        private final Class type;
 
-        private final Class<?> owner;
+        private final Class owner;
 
         private final PropertyDescriptor descriptor;
 
@@ -260,8 +243,6 @@ public class BeanELResolver extends ELResolver {
             this.type = descriptor.getPropertyType();
         }
 
-        // Can't use Class<?> because API needs to match specification
-        @SuppressWarnings("rawtypes")
         public Class getPropertyType() {
             return this.type;
         }
@@ -283,7 +264,9 @@ public class BeanELResolver extends ELResolver {
             if (this.write == null) {
                 this.write = getMethod(this.owner, descriptor.getWriteMethod());
                 if (this.write == null) {
-                    throw new PropertyNotFoundException("Property not writable: " + descriptor.getName());
+                    throw new PropertyNotFoundException(message(ctx,
+                            "propertyNotWritable", new Object[] {
+                                    type.getName(), descriptor.getName() }));
                 }
             }
             return this.write;
@@ -293,7 +276,9 @@ public class BeanELResolver extends ELResolver {
             if (this.read == null) {
                 this.read = getMethod(this.owner, descriptor.getReadMethod());
                 if (this.read == null) {
-                    throw new PropertyNotFoundException("Property not readable: " + descriptor.getName());
+                    throw new PropertyNotFoundException(message(ctx,
+                            "propertyNotReadable", new Object[] {
+                                    type.getName(), descriptor.getName() }));
                 }
             }
             return this.read;
@@ -305,189 +290,63 @@ public class BeanELResolver extends ELResolver {
         Class<?> type = base.getClass();
         String prop = property.toString();
 
-        BeanProperties props = this.cache.get(type.getName());
+        BeanProperties props = this.cache.get(type);
         if (props == null || type != props.getType()) {
             props = new BeanProperties(type);
-            this.cache.put(type.getName(), props);
+            this.cache.put(type, props);
         }
 
         return props.get(ctx, prop);
     }
 
-    private static final Method getMethod(Class<?> type, Method m) {
+    private final static Method getMethod(Class type, Method m) {
         if (m == null || Modifier.isPublic(type.getModifiers())) {
             return m;
         }
-        Class<?>[] inf = type.getInterfaces();
+        Class[] inf = type.getInterfaces();
         Method mp = null;
         for (int i = 0; i < inf.length; i++) {
             try {
-                mp = inf[i].getMethod(m.getName(), m.getParameterTypes());
+                mp = inf[i].getMethod(m.getName(), (Class[]) m.getParameterTypes());
                 mp = getMethod(mp.getDeclaringClass(), mp);
                 if (mp != null) {
                     return mp;
                 }
             } catch (NoSuchMethodException e) {
-                // Ignore
             }
         }
-        Class<?> sup = type.getSuperclass();
+        Class sup = type.getSuperclass();
         if (sup != null) {
             try {
-                mp = sup.getMethod(m.getName(), m.getParameterTypes());
+                mp = sup.getMethod(m.getName(), (Class[]) m.getParameterTypes());
                 mp = getMethod(mp.getDeclaringClass(), mp);
                 if (mp != null) {
                     return mp;
                 }
             } catch (NoSuchMethodException e) {
-                // Ignore
             }
         }
         return null;
     }
-
-    private static final class ConcurrentCache<K,V> {
-
-        private final int size;
-        private final Map<K,V> eden;
-        private final Map<K,V> longterm;
-
-        public ConcurrentCache(int size) {
-            this.size = size;
-            this.eden = new ConcurrentHashMap<K,V>(size);
-            this.longterm = new WeakHashMap<K,V>(size);
-        }
-
-        public V get(K key) {
-            V value = this.eden.get(key);
-            if (value == null) {
-                synchronized (longterm) {
-                    value = this.longterm.get(key);
-                }
-                if (value != null) {
-                    this.eden.put(key, value);
-                }
-            }
-            return value;
-        }
-
-        public void put(K key, V value) {
-            if (this.eden.size() >= this.size) {
-                synchronized (longterm) {
-                    this.longterm.putAll(this.eden);
-                }
-                this.eden.clear();
-            }
-            this.eden.put(key, value);
-        }
-
-    }
-
-    /**
-     * @since EL 2.2
+    
+    /*
+     * This method is not part of the API, though it can be used (reflectively) by clients of this class to remove entries from
+     * the cache when the beans are being unloaded.
+     * 
+     * A note about why WeakHashMap is not used. Measurements has shown that ConcurrentHashMap is much more scalable than
+     * synchronized WeakHashMap. A manual purge seems to be a good compromise.
+     * 
+     * @param classloader The classLoader used to load the beans.
      */
-    @Override
-    public Object invoke(ELContext context, Object base, Object method,
-            Class<?>[] paramTypes, Object[] params) {
-        if (context == null) {
-            throw new NullPointerException();
-        }
-        if (base == null || method == null) {
-            return null;
-        }
-
-        ExpressionFactory factory = ExpressionFactory.newInstance();
-
-        String methodName = (String) factory.coerceToType(method, String.class);
-
-        // Find the matching method
-        Method matchingMethod = null;
-        Class<?> clazz = base.getClass();
-        if (paramTypes != null) {
-            try {
-                matchingMethod =
-                    getMethod(clazz, clazz.getMethod(methodName, paramTypes));
-            } catch (NoSuchMethodException e) {
-                throw new MethodNotFoundException(e);
-            }
-        } else {
-            int paramCount = 0;
-            if (params != null) {
-                paramCount = params.length;
-            }
-            Method[] methods = clazz.getMethods();
-            for (Method m : methods) {
-                if (methodName.equals(m.getName())) {
-                    if (m.getParameterTypes().length == paramCount) {
-                        // Same number of parameters - use the first match
-                        matchingMethod = getMethod(clazz, m);
-                        break;
-                    }
-                    if (m.isVarArgs()
-                            && paramCount > m.getParameterTypes().length - 2) {
-                        matchingMethod = getMethod(clazz, m);
-                    }
-                }
-            }
-            if (matchingMethod == null) {
-                throw new MethodNotFoundException(
-                        "Unable to find method [" + methodName + "] with ["
-                        + paramCount + "] parameters");
+    private static void purge(final ClassLoader classloader) {
+        //NOTE: concurrent hash map wont throw concurrent mod
+        Iterator<Class<?>> iter = cache.keySet().iterator();
+        while (iter.hasNext()) {
+            Class<?> key = iter.next();
+            BeanProperties bp = cache.get(key);
+            if(bp.getType().getClassLoader().equals(classloader)){
+                iter.remove();
             }
         }
-
-        Class<?>[] parameterTypes = matchingMethod.getParameterTypes();
-        Object[] parameters = null;
-        if (parameterTypes.length > 0) {
-            parameters = new Object[parameterTypes.length];
-            @SuppressWarnings("null")  // params.length >= parameterTypes.length
-            int paramCount = params.length;
-            if (matchingMethod.isVarArgs()) {
-                int varArgIndex = parameterTypes.length - 1;
-                // First argCount-1 parameters are standard
-                for (int i = 0; (i < varArgIndex); i++) {
-                    parameters[i] = factory.coerceToType(params[i],
-                            parameterTypes[i]);
-                }
-                // Last parameter is the varargs
-                Class<?> varArgClass =
-                    parameterTypes[varArgIndex].getComponentType();
-                final Object varargs = Array.newInstance(
-                    varArgClass,
-                    (paramCount - varArgIndex));
-                for (int i = (varArgIndex); i < paramCount; i++) {
-                    Array.set(varargs, i - varArgIndex,
-                            factory.coerceToType(params[i], varArgClass));
-                }
-                parameters[varArgIndex] = varargs;
-            } else {
-                parameters = new Object[parameterTypes.length];
-                for (int i = 0; i < parameterTypes.length; i++) {
-                    parameters[i] = factory.coerceToType(params[i],
-                            parameterTypes[i]);
-                }
-            }
-        }
-        Object result = null;
-        try {
-            result = matchingMethod.invoke(base, parameters);
-        } catch (IllegalArgumentException e) {
-            throw new ELException(e);
-        } catch (IllegalAccessException e) {
-            throw new ELException(e);
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof ThreadDeath) {
-                throw (ThreadDeath) cause;
-            }
-            if (cause instanceof VirtualMachineError) {
-                throw (VirtualMachineError) cause;
-            }
-            throw new ELException(cause);
-        }
-
-        context.setPropertyResolved(true);
-        return result;
     }
-
 }

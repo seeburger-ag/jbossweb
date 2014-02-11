@@ -53,6 +53,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
+import org.apache.tomcat.util.http.TomcatCookie;
 import org.apache.tomcat.util.net.URL;
 
 public class RewriteValve extends ValveBase
@@ -111,21 +112,16 @@ public class RewriteValve extends ValveBase
     public void start() throws LifecycleException {
 
         InputStream is = null;
-
+        
         // Process configuration file for this valve
         if (getContainer() instanceof Context) {
             context = true;
             is = ((Context) getContainer()).getServletContext()
                 .getResourceAsStream("/WEB-INF/" + resourcePath);
-            if (container.getLogger().isDebugEnabled()) {
-                if (is == null) {
-                    container.getLogger().debug("No configuration resource found: /WEB-INF/" + resourcePath);
-                } else {
-                    container.getLogger().debug("Read configuration from: /WEB-INF/" + resourcePath);
-                }
+            if ((is == null) && (container.getLogger().isInfoEnabled())) {
+                container.getLogger().info("No configuration resource found: /WEB-INF/" + resourcePath);
             }
-        }
-        if (is == null) {
+        } else {
             String resourceName = getHostConfigPath(resourcePath);
             File file = new File(getConfigBase(), resourceName);
             try {
@@ -144,9 +140,9 @@ public class RewriteValve extends ValveBase
                     }
                     is = new FileInputStream(file);
                 }
-                if ((is == null) && (container.getLogger().isDebugEnabled())) {
-                    container.getLogger().debug("No configuration resource found: " + resourceName + 
-                            " in " + getConfigBase() + " or in the classloader");
+                if ((is == null) && (container.getLogger().isInfoEnabled())) {
+                    container.getLogger().info("No configuration resource found: " + resourceName + 
+                            " in " + getConfigBase().getAbsolutePath() + " or in the classloader");
                 }
             } catch (Exception e) {
                 container.getLogger().error("Error opening configuration", e);
@@ -362,7 +358,7 @@ public class RewriteValve extends ValveBase
 
             // - cookie
             if (rules[i].isCookie() && newtest != null) {
-                Cookie cookie = new Cookie(rules[i].getCookieName(), 
+                TomcatCookie cookie = new TomcatCookie(rules[i].getCookieName(), 
                         rules[i].getCookieResult());
                 cookie.setDomain(rules[i].getCookieDomain());
                 cookie.setMaxAge(rules[i].getCookieLifetime());
@@ -430,6 +426,7 @@ public class RewriteValve extends ValveBase
                     urlString = urlString.substring(0, queryIndex);
                 }
                 // Set the new URL
+                request.getCoyoteRequest().requestURI().setString(null);
                 CharChunk chunk = request.getCoyoteRequest().requestURI().getCharChunk();
                 chunk.recycle();
                 if (context) {
@@ -681,9 +678,9 @@ public class RewriteValve extends ValveBase
             rule.setNocase(true);
         } else if (flag.startsWith("noescape") || flag.startsWith("NE")) {
             rule.setNoescape(true);
-        /* Proxy not supported, would require strong proxy capabilities
         } else if (flag.startsWith("proxy") || flag.startsWith("P")) {
-            rule.setProxy(true);*/
+            // FIXME: Proxy not supported at the moment, would require proxy capabilities
+            //rule.setProxy(true);
         } else if (flag.startsWith("qsappend") || flag.startsWith("QSA")) {
             rule.setQsappend(true);
         } else if (flag.startsWith("redirect") || flag.startsWith("R")) {

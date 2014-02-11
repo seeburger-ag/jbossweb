@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>jboss.web</groupId>
+  <artifactId>jsp-api</artifactId>
+  <version>@VERSION@</version>
+  <description>JSP package</description>
+  <name>jsp-api</name>
+  <url>http://jboss.org/jbossweb</url>
+  <scm>
+     <url>http://fisheye.jboss.org/browse/jbossweb/branches/2.1.x</url>
+  </scm>
+  <developers>
+    <developer>
+      <id>JBossWeb developers</id>
+  </developer>
+    <developer>
+      <id>ASF Tomcat developers</id>
+  </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>GNU GPL Version 3</name>
+    </license>
+  </licenses>
+</project>

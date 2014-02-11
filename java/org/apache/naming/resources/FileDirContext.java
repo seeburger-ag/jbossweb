@@ -581,10 +581,8 @@ public class FileDirContext extends BaseDirContext {
                 is.close();
             }
         } catch (IOException e) {
-            NamingException ne = new NamingException
+            throw new NamingException
                 (sm.getString("resources.bindFailed", e));
-            ne.initCause(e);
-            throw ne;
         }
 
     }
@@ -880,7 +878,7 @@ public class FileDirContext extends BaseDirContext {
 
 
     /**
-     * This specialized resource implementation avoids opening the IputStream
+     * This specialized resource implementation avoids opening the InputStream
      * to the file right away (which would put a lock on the file).
      */
     protected class FileResource extends Resource {

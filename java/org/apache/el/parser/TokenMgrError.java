@@ -3,7 +3,6 @@
 package org.apache.el.parser;
 
 /** Token Manager Error. */
-@SuppressWarnings("all") // Ignore warnings in generated code
 public class TokenMgrError extends Error
 {
 

@@ -30,7 +30,7 @@ public class UUIDGenerator {
     public static final int BITS_PER_BYTE = 8;
     
     protected static SecureRandom secrand = null;
-    protected static Random rand = new Random();
+    protected static Random rand = new Random(System.currentTimeMillis());
     static {
         secrand = new SecureRandom();
         secrand.setSeed(rand.nextLong());

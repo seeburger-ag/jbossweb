@@ -21,8 +21,9 @@ import javax.servlet.ServletConfig;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.Tag;
 
+import org.apache.InstanceManager;
 import org.apache.jasper.Constants;
-import org.apache.tomcat.InstanceManager;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 /**
@@ -34,9 +35,11 @@ public class TagHandlerPool {
 
     private Tag[] handlers;
 
-    public static final String OPTION_TAGPOOL="tagpoolClassName";
-    public static final String OPTION_MAXSIZE="tagpoolMaxSize";
+    public static String OPTION_TAGPOOL="tagpoolClassName";
+    public static String OPTION_MAXSIZE="tagpoolMaxSize";
 
+    private Logger log = Logger.getLogger(TagHandlerPool.class);
+    
     // index of next available tag handler
     private int current;
     protected InstanceManager instanceManager = null;
@@ -50,10 +53,11 @@ public class TagHandlerPool {
                 Class c=Class.forName( tpClassName );
                 result=(TagHandlerPool)c.newInstance();
             } catch (Exception e) {
-                result = null;
+                e.printStackTrace();
+                result=null;
             }
         }
-        if( result==null ) result=new PerThreadTagHandlerPool();
+        if( result==null ) result=new TagHandlerPool();
         result.init(config);
 
         return result;
@@ -119,7 +123,7 @@ public class TagHandlerPool {
         // wait for us to construct a tag for this thread.
         try {
         	if (Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
-        		return (Tag) instanceManager.newInstance(handlerClass);
+        		return (Tag) instanceManager.newInstance(handlerClass.getName(), handlerClass.getClassLoader());
         	} else {
                 Tag instance = (Tag) handlerClass.newInstance();
                 if (Constants.INJECT_TAGS) {
@@ -148,11 +152,12 @@ public class TagHandlerPool {
         }
         // There is no need for other threads to wait for us to release
         handler.release();
-        if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
+        if (Constants.INJECT_TAGS) {
             try {
                 instanceManager.destroyInstance(handler);
             } catch (Exception e) {
-                // Ignore
+                log.warn("Error processing preDestroy on tag instance of "
+                        + handler.getClass().getName(), e);
             }
         }
     }
@@ -164,11 +169,12 @@ public class TagHandlerPool {
     public synchronized void release() {
         for (int i = current; i >= 0; i--) {
             handlers[i].release();
-            if (Constants.INJECT_TAGS || Constants.USE_INSTANCE_MANAGER_FOR_TAGS) {
+            if (Constants.INJECT_TAGS) {
                 try {
                     instanceManager.destroyInstance(handlers[i]);
                 } catch (Exception e) {
-                    // Ignore
+                    log.warn("Error processing preDestroy on tag instance of "
+                            + handlers[i].getClass().getName(), e);
                 }
             }
         }

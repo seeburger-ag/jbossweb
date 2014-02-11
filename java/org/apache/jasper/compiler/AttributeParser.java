@@ -24,7 +24,7 @@ package org.apache.jasper.compiler;
  * "\${1+1}". After unquoting, both appear as "${1+1}" but the first should
  * evaluate to "2" and the second to "${1+1}". Literal \, $ and # need special
  * treatment to ensure there is no ambiguity. The JSP attribute unquoting
- * covers \\, \", \', \$, \#, %\&gt;, &lt;\%, &amp;apos; and &amp;quot;
+ * covers \\, \", \', \$, \#, %\>, <\%, &apos; and &quot;
  */
 public class AttributeParser {
 
@@ -122,7 +122,9 @@ public class AttributeParser {
             boolean strict) {
         this.input = input;
         this.quote = quote;
-        this.isELIgnored = isELIgnored;
+        // If quote is null this is a scriptign expressions and any EL syntax
+        // should be ignored
+        this.isELIgnored = isELIgnored || (quote == 0);
         this.isDeferredSyntaxAllowedAsLiteral =
             isDeferredSyntaxAllowedAsLiteral;
         this.strict = strict;
@@ -212,8 +214,8 @@ public class AttributeParser {
     private void parseEL() {
         boolean endEL = false;
         boolean insideLiteral = false;
-        char literalQuote = 0;
         while (i < size && !endEL) {
+            char literalQuote = '\'';
             char ch = nextChar();
             if (ch == '\'' || ch == '\"') {
                 if (insideLiteral) {
@@ -243,7 +245,7 @@ public class AttributeParser {
     }
 
     /*
-     * Returns the next unquoted character and sets the lastChEscaped flag to
+     * Returns the nest unquoted character and sets the lastChEscaped flag to
      * indicate if it was quoted/escaped or not.
      * &apos; is always unquoted to '
      * &quot; is always unquoted to "

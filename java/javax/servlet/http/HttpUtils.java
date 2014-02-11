@@ -1,56 +1,19 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License. You can obtain
- * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
- * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
- *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
- * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
- * accompanied this code.  If applicable, add the following below the License
- * Header, with the fields enclosed by brackets [] replaced by your own
- * identifying information: "Portions Copyrighted [year]
- * [name of copyright owner]"
- *
- * Contributor(s):
- *
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
- *
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 2004 The Apache Software Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package javax.servlet.http;
 
@@ -66,7 +29,9 @@ import java.io.IOException;
  *			with the default encoding and have been moved
  *			to the request interfaces.
  *
- */
+*/
+
+
 public class HttpUtils {
 
     private static final String LSTRING_FILE =
@@ -75,13 +40,20 @@ public class HttpUtils {
 	ResourceBundle.getBundle(LSTRING_FILE);
         
     
+    
     /**
      * Constructs an empty <code>HttpUtils</code> object.
+     *
      */
+
     public HttpUtils() {}
+    
+    
+    
     
 
     /**
+     *
      * Parses a query string passed from the client to the
      * server and builds a <code>HashTable</code> object
      * with key-value pairs. 
@@ -107,21 +79,23 @@ public class HttpUtils {
      * @return		a <code>HashTable</code> object built
      * 			from the parsed key-value pairs
      *
-     * @exception IllegalArgumentException if the query string is invalid
+     * @exception IllegalArgumentException	if the query string 
+     *						is invalid
+     *
      */
-    public static Hashtable<String, String[]> parseQueryString(String s) {
+
+    static public Hashtable parseQueryString(String s) {
 
 	String valArray[] = null;
 	
 	if (s == null) {
 	    throw new IllegalArgumentException();
 	}
-
-	Hashtable<String, String[]> ht = new Hashtable<String, String[]>();
+	Hashtable ht = new Hashtable();
 	StringBuffer sb = new StringBuffer();
 	StringTokenizer st = new StringTokenizer(s, "&");
 	while (st.hasMoreTokens()) {
-	    String pair = st.nextToken();
+	    String pair = (String)st.nextToken();
 	    int pos = pair.indexOf('=');
 	    if (pos == -1) {
 		// XXX
@@ -131,7 +105,7 @@ public class HttpUtils {
 	    String key = parseName(pair.substring(0, pos), sb);
 	    String val = parseName(pair.substring(pos+1, pair.length()), sb);
 	    if (ht.containsKey(key)) {
-		String oldVals[] = ht.get(key);
+		String oldVals[] = (String []) ht.get(key);
 		valArray = new String[oldVals.length + 1];
 		for (int i = 0; i < oldVals.length; i++) 
 		    valArray[i] = oldVals[i];
@@ -142,9 +116,10 @@ public class HttpUtils {
 	    }
 	    ht.put(key, valArray);
 	}
-
 	return ht;
     }
+
+
 
 
     /**
@@ -166,6 +141,8 @@ public class HttpUtils {
      * sent in hexadecimal notation (like <i>%xx</i>) are
      * converted to ASCII characters.
      *
+     *
+     *
      * @param len	an integer specifying the length,
      *			in characters, of the 
      *			<code>ServletInputStream</code>
@@ -179,18 +156,21 @@ public class HttpUtils {
      * @return		a <code>HashTable</code> object built
      *			from the parsed key-value pairs
      *
-     * @exception IllegalArgumentException if the data
-     * sent by the POST method is invalid
+     *
+     * @exception IllegalArgumentException	if the data
+     *			sent by the POST method is invalid
+     *
      */
-    public static Hashtable<String, String[]> parsePostData(int len, 
-                ServletInputStream in) {
+     
+
+    static public Hashtable parsePostData(int len, 
+					  ServletInputStream in)
+    {
 	// XXX
 	// should a length of 0 be an IllegalArgumentException
 	
-	if (len <=0) {
-            // cheap hack to return an empty hash
-	    return new Hashtable<String, String[]>(); 
-        }
+	if (len <=0)
+	    return new Hashtable(); // cheap hack to return an empty hash
 
 	if (in == null) {
 	    throw new IllegalArgumentException();
@@ -232,10 +212,13 @@ public class HttpUtils {
     }
 
 
+
+
     /*
      * Parse a name in the query string.
      */
-    private static String parseName(String s, StringBuffer sb) {
+
+    static private String parseName(String s, StringBuffer sb) {
 	sb.setLength(0);
 	for (int i = 0; i < s.length(); i++) {
 	    char c = s.charAt(i); 
@@ -265,9 +248,10 @@ public class HttpUtils {
 		break;
 	    }
 	}
-
 	return sb.toString();
     }
+
+
 
 
     /**
@@ -290,7 +274,9 @@ public class HttpUtils {
      * 
      * @return		a <code>StringBuffer</code> object containing
      *			the reconstructed URL
+     *
      */
+
     public static StringBuffer getRequestURL (HttpServletRequest req) {
 	StringBuffer url = new StringBuffer ();
 	String scheme = req.getScheme ();
@@ -313,7 +299,6 @@ public class HttpUtils {
 	//if (pathInfo != null)
 	//    url.append (pathInfo);
 	url.append(urlPath);
-
 	return url;
     }
 }
