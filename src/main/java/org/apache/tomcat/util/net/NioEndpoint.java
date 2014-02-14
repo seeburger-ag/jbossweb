@@ -1108,6 +1108,9 @@ public class NioEndpoint extends AbstractEndpoint {
 			if (this.channelList.size() > this.size) {
 				return false;
 			}
+			if (channel == null) {
+			    return false;
+			}
 
 			long date = timeout + System.currentTimeMillis();
 			ChannelInfo info = this.channelList.get(channel.getId());
