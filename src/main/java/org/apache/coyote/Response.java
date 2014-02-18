@@ -110,7 +110,7 @@ public final class Response {
     /**
      * Holds request error exception.
      */
-    protected Exception errorException = null;
+    protected Throwable errorException = null;
 
     /**
      * Has the charset been explicitly set.
@@ -262,8 +262,8 @@ public final class Response {
      * Set the error Exception that occurred during
      * request processing.
      */
-    public void setErrorException(Exception ex) {
-    errorException = ex;
+    public void setErrorException(Throwable t) {
+        errorException = t;
     }
 
 
@@ -271,7 +271,7 @@ public final class Response {
      * Get the Exception that occurred during request
      * processing.
      */
-    public Exception getErrorException() {
+    public Throwable getErrorException() {
         return errorException;
     }
 

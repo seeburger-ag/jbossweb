@@ -30,6 +30,7 @@ import javax.servlet.jsp.PageContext;
 
 import org.apache.jasper.Constants;
 import org.jboss.logging.Logger;
+import org.jboss.web.JasperLogger;
 
 /**
  * Implementation of JspFactory.
@@ -37,9 +38,6 @@ import org.jboss.logging.Logger;
  * @author Anil K. Vijendran
  */
 public class JspFactoryImpl extends JspFactory {
-
-    // Logger
-    private Logger log = Logger.getLogger(JspFactoryImpl.class);
 
     private static final String SPEC_VERSION = "2.2";
     private static final boolean USE_POOL = 
@@ -108,7 +106,7 @@ public class JspFactoryImpl extends JspFactory {
             return pc;
         } catch (Throwable ex) {
             /* FIXME: need to do something reasonable here!! */
-            log.fatal("Exception initializing page context", ex);
+            JasperLogger.ROOT_LOGGER.errorInitializingPageContext(ex);
             return null;
         }
     }

@@ -1,24 +1,21 @@
-/**
- * JBoss, Home of Professional Open Source. Copyright 2011, Red Hat, Inc., and
- * individual contributors as indicated by the @author tags. See the
- * copyright.txt file in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.coyote.http11;
 
 import java.io.IOException;
@@ -41,7 +38,6 @@ import org.apache.coyote.RequestInfo;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
-import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.jsse.NioJSSEImplementation;
 import org.apache.tomcat.util.net.jsse.NioJSSESocketChannelFactory;
@@ -67,6 +63,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		setSoLinger(Constants.DEFAULT_CONNECTION_LINGER);
 		setSoTimeout(Constants.DEFAULT_CONNECTION_TIMEOUT);
 		setTcpNoDelay(Constants.DEFAULT_TCP_NO_DELAY);
+        setKeepAliveTimeout(Constants.DEFAULT_KEEP_ALIVE_TIMEOUT);
 	}
 
 	/*
@@ -92,9 +89,9 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		// Verify the validity of the configured socket factory
 		try {
 			if (isSSLEnabled()) {
-				sslImplementation = SSLImplementation.getInstance(NioJSSEImplementation.class
-						.getName());
-				socketFactory = sslImplementation.getServerSocketChannelFactory();
+				sslImplementation = new NioJSSEImplementation();
+				//Possible pluggability ? SSLImplementation.getInstance(NioJSSEImplementation.class.getName());
+				socketFactory = ((NioJSSEImplementation) sslImplementation).getServerSocketChannelFactory();
 				endpoint.setServerSocketChannelFactory(socketFactory);
 			}
 		} catch (Exception ex) {
@@ -132,12 +129,12 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
 			if (this.domain != null) {
 				try {
-					tpOname = new ObjectName(domain + ":" + "type=ThreadPool,name=" + getName());
+					tpOname = new ObjectName(domain + ":" + "type=ThreadPool,name=" + getJmxName());
 					Registry.getRegistry(null, null).registerComponent(endpoint, tpOname, null);
 				} catch (Exception e) {
 				    CoyoteLogger.HTTP_LOGGER.errorRegisteringPool(e);
 				}
-				rgOname = new ObjectName(domain + ":type=GlobalRequestProcessor,name=" + getName());
+				rgOname = new ObjectName(domain + ":type=GlobalRequestProcessor,name=" + getJmxName());
 				Registry.getRegistry(null, null).registerComponent(cHandler.global, rgOname, null);
 			}
 		}
@@ -809,11 +806,11 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		 * .AsynchronousSocketChannel, org.apache.tomcat.util.net.ChannelStatus)
 		 */
 		@Override
-		public SocketState event(NioChannel channel, SocketStatus status) {
+		// FIXME: probably needs sync due to concurrent read/write possibilities
+		public synchronized SocketState event(NioChannel channel, SocketStatus status) {
 
 			Http11NioProcessor processor = connections.get(channel.getId());
 			SocketState state = SocketState.CLOSED;
-
 			if (processor != null) {
 				processor.startProcessing();
 				// Call the appropriate event
@@ -852,7 +849,9 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 												if (nBytes < 0) {
 													failed(new ClosedChannelException(), endpoint);
 												} else {
-													endpoint.processChannel(ch, null);
+													if (!endpoint.processChannel(ch, null)) {
+													    endpoint.closeChannel(ch);
+													}
 												}
 											}
 
@@ -866,12 +865,15 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 							}
 						}
 					} else {
-						if (proto.endpoint.isRunning()) {
-							proto.endpoint.addEventChannel(channel, processor.getTimeout(),
-									processor.getReadNotifications(),
-									processor.getWriteNotification(),
-									processor.getResumeNotification(), false);
-						}
+					    if (processor.isAvailable() && processor.getReadNotifications()) {
+					        // Call a read event right away
+					        state = event(channel, SocketStatus.OPEN_READ);
+					    } else if (proto.endpoint.isRunning()) {
+					        proto.endpoint.addEventChannel(channel, processor.getTimeout(),
+					                false,
+					                processor.getWriteNotification(),
+					                processor.getResumeNotification(), false);
+					    }
 					}
 					processor.endProcessing();
 				}
@@ -894,9 +896,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				if (processor == null) {
 					processor = createProcessor();
 				}
+                processor.startProcessing();
 
-				if (proto.secure && (proto.sslImplementation != null)) {
-					processor.setSSLSupport(proto.sslImplementation.getSSLSupport(channel));
+                if (proto.secure && (proto.sslImplementation != null)) {
+					processor.setSSLSupport(((NioJSSEImplementation) proto.sslImplementation).getSSLSupport(channel));
 				} else {
 					processor.setSSLSupport(null);
 				}
@@ -909,17 +912,18 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					// a recycled processor.
 					connections.put(channel.getId(), processor);
 
-					if ( /* processor.isAvailable() && */processor.getReadNotifications()) {
+					if (processor.isAvailable() && processor.getReadNotifications()) {
 						// Call a read event right away
-						processor.inputBuffer.readAsync();
+					    state = event(channel, SocketStatus.OPEN_READ);
 					} else {
-						proto.endpoint.addEventChannel(channel, processor.getTimeout(),
+	                    proto.endpoint.addEventChannel(channel, processor.getTimeout(),
 								processor.getReadNotifications(), false,
-								processor.getResumeNotification(), false);
+	                            processor.getResumeNotification(), false);
 					}
 				} else {
 					recycledProcessors.offer(processor);
 				}
+	            processor.endProcessing();
 				return state;
 
 			} catch (IOException e) {
@@ -940,6 +944,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				// less-than-verbose logs.
                 CoyoteLogger.HTTP_LOGGER.socketError(e);
 			}
+            processor.endProcessing();
 			recycledProcessors.offer(processor);
 			return SocketState.CLOSED;
 		}

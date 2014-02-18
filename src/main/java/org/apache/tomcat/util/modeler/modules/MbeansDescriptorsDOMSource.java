@@ -29,15 +29,13 @@ import org.apache.tomcat.util.modeler.NotificationInfo;
 import org.apache.tomcat.util.modeler.OperationInfo;
 import org.apache.tomcat.util.modeler.ParameterInfo;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.CoyoteLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 
 public class MbeansDescriptorsDOMSource extends ModelerSource
 {
-    private static Logger log = Logger.getLogger(MbeansDescriptorsDOMSource.class);
 
     Registry registry;
     String location;
@@ -88,7 +86,7 @@ public class MbeansDescriptorsDOMSource extends ModelerSource
             Node descriptorsN=doc.getDocumentElement();
             //Node descriptorsN=DomUtil.getChild(doc, "mbeans-descriptors");
             if( descriptorsN == null ) {
-                log.error("No descriptors found");
+                CoyoteLogger.MODELER_LOGGER.noDescriptorsFound();
                 return;
             }
 
@@ -100,7 +98,7 @@ public class MbeansDescriptorsDOMSource extends ModelerSource
             }
 
             if( firstMbeanN==null ) {
-                log.error(" No mbean tags ");
+                CoyoteLogger.MODELER_LOGGER.noMbeansFound();
                 return;
             }
 
@@ -155,8 +153,8 @@ public class MbeansDescriptorsDOMSource extends ModelerSource
 
                     // Add this info to our managed bean info
                     managed.addAttribute( ai );
-                    if (log.isTraceEnabled()) {
-                        log.trace("Create attribute " + ai);
+                    if (CoyoteLogger.MODELER_LOGGER.isTraceEnabled()) {
+                        CoyoteLogger.MODELER_LOGGER.trace("Create attribute " + ai);
                     }
 
                 }
@@ -237,8 +235,8 @@ public class MbeansDescriptorsDOMSource extends ModelerSource
 
                     // Add this info to our managed bean info
                     managed.addNotification( ni );
-                    if (log.isTraceEnabled()) {
-                        log.trace("Created notification " + ni);
+                    if (CoyoteLogger.MODELER_LOGGER.isTraceEnabled()) {
+                        CoyoteLogger.MODELER_LOGGER.trace("Created notification " + ni);
                     }
 
                 }
@@ -275,15 +273,15 @@ public class MbeansDescriptorsDOMSource extends ModelerSource
                     {
                         ParameterInfo pi=new ParameterInfo();
                         DomUtil.setAttributes(pi, paramN);
-                        if( log.isTraceEnabled())
-                            log.trace("Add param " + pi.getName());
+                        if( CoyoteLogger.MODELER_LOGGER.isTraceEnabled())
+                            CoyoteLogger.MODELER_LOGGER.trace("Add param " + pi.getName());
                         oi.addParameter( pi );
                     }
 
                     // Add this info to our managed bean info
                     managed.addOperation( oi );
-                    if( log.isTraceEnabled()) {
-                        log.trace("Create operation " + oi);
+                    if( CoyoteLogger.MODELER_LOGGER.isTraceEnabled()) {
+                        CoyoteLogger.MODELER_LOGGER.trace("Create operation " + oi);
                     }
 
                 }
@@ -295,9 +293,9 @@ public class MbeansDescriptorsDOMSource extends ModelerSource
             }
 
             long t2=System.currentTimeMillis();
-            log.debug( "Reading descriptors ( dom ) " + (t2-t1));
+            CoyoteLogger.MODELER_LOGGER.debug( "Reading descriptors ( dom ) " + (t2-t1));
         } catch( Exception ex ) {
-            log.error( "Error reading descriptors ", ex);
+            CoyoteLogger.MODELER_LOGGER.errorReadingDescriptors(ex);
         }
     }
 }
