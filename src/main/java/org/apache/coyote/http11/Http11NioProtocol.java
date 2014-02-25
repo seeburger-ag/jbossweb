@@ -807,7 +807,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		 */
 		@Override
 		// FIXME: probably needs sync due to concurrent read/write possibilities
-		public synchronized SocketState event(NioChannel channel, SocketStatus status) {
+		public SocketState event(NioChannel channel, SocketStatus status) {
 
 			Http11NioProcessor processor = connections.get(channel.getId());
 			SocketState state = SocketState.CLOSED;
@@ -864,18 +864,22 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 								// NOPE
 							}
 						}
+	                    processor.endProcessing();
 					} else {
 					    if (processor.isAvailable() && processor.getReadNotifications()) {
 					        // Call a read event right away
 					        state = event(channel, SocketStatus.OPEN_READ);
+		                    processor.endProcessing();
 					    } else if (proto.endpoint.isRunning()) {
-					        proto.endpoint.addEventChannel(channel, processor.getTimeout(),
-					                false,
-					                processor.getWriteNotification(),
-					                processor.getResumeNotification(), false);
+					        synchronized (processor) {
+					            proto.endpoint.addEventChannel(channel, processor.getTimeout(),
+					                    false,
+					                    processor.getWriteNotification(),
+					                    processor.getResumeNotification(), false);
+					            processor.endProcessing();
+					        }
 					    }
 					}
-					processor.endProcessing();
 				}
 			}
 
@@ -915,15 +919,19 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					if (processor.isAvailable() && processor.getReadNotifications()) {
 						// Call a read event right away
 					    state = event(channel, SocketStatus.OPEN_READ);
+		                processor.endProcessing();
 					} else {
-	                    proto.endpoint.addEventChannel(channel, processor.getTimeout(),
-								processor.getReadNotifications(), false,
-	                            processor.getResumeNotification(), false);
+					    synchronized (processor) {
+					        proto.endpoint.addEventChannel(channel, processor.getTimeout(),
+					                processor.getReadNotifications(), false,
+					                processor.getResumeNotification(), false);
+					        processor.endProcessing();
+					    }
 					}
 				} else {
 					recycledProcessors.offer(processor);
+	                processor.endProcessing();
 				}
-	            processor.endProcessing();
 				return state;
 
 			} catch (IOException e) {

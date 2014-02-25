@@ -733,7 +733,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	 * @param param
 	 *            the vent parameter
 	 */
-	private void resumeEvent(Object param, boolean read) {
+	private synchronized void resumeEvent(Object param, boolean read) {
 	    if (read) {
 	        readNotifications = true;
 	    }
@@ -751,7 +751,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	 * 
 	 * @param param
 	 */
-	private void writeEvent(Object param) {
+	private synchronized void writeEvent(Object param) {
 		// An event is being processed already: adding for write will be
 		// done
 		// when the channel gets back to the poller
