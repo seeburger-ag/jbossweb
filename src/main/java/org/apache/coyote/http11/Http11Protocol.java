@@ -157,7 +157,7 @@ public class Http11Protocol
                 endpoint.setServerSocketFactory(socketFactory);
             }
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorInitializingSocketFactory(ex);
+            CoyoteLogger.HTTP_BIO_LOGGER.errorInitializingSocketFactory(ex);
             throw ex;
         }
 
@@ -173,10 +173,10 @@ public class Http11Protocol
         try {
             endpoint.init();
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorInitializingEndpoint(ex);
+            CoyoteLogger.HTTP_BIO_LOGGER.errorInitializingEndpoint(ex);
             throw ex;
         }
-        CoyoteLogger.HTTP_LOGGER.initHttpConnector(getName());
+        CoyoteLogger.HTTP_BIO_LOGGER.initHttpConnector(getName());
 
     }
 
@@ -189,7 +189,7 @@ public class Http11Protocol
                     Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
                 } catch (Exception e) {
-                    CoyoteLogger.HTTP_LOGGER.errorRegisteringPool(e);
+                    CoyoteLogger.HTTP_BIO_LOGGER.errorRegisteringPool(e);
                 }
                 rgOname=new ObjectName
                 (domain + ":type=GlobalRequestProcessor,name=" + getJmxName());
@@ -200,17 +200,17 @@ public class Http11Protocol
         try {
             endpoint.start();
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorStartingEndpoint(ex);
+            CoyoteLogger.HTTP_BIO_LOGGER.errorStartingEndpoint(ex);
             throw ex;
         }
-        CoyoteLogger.HTTP_LOGGER.startHttpConnector(getName());
+        CoyoteLogger.HTTP_BIO_LOGGER.startHttpConnector(getName());
     }
 
     public void pause() throws Exception {
         try {
             endpoint.pause();
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorPausingEndpoint(ex);
+            CoyoteLogger.HTTP_BIO_LOGGER.errorPausingEndpoint(ex);
             throw ex;
         }
         // Wait for a while until all the processors are no longer processing requests
@@ -232,21 +232,21 @@ public class Http11Protocol
                 }
             }
         }
-        CoyoteLogger.HTTP_LOGGER.pauseHttpConnector(getName());
+        CoyoteLogger.HTTP_BIO_LOGGER.pauseHttpConnector(getName());
     }
 
     public void resume() throws Exception {
         try {
             endpoint.resume();
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorResumingEndpoint(ex);
+            CoyoteLogger.HTTP_BIO_LOGGER.errorResumingEndpoint(ex);
             throw ex;
         }
-        CoyoteLogger.HTTP_LOGGER.resumeHttpConnector(getName());
+        CoyoteLogger.HTTP_BIO_LOGGER.resumeHttpConnector(getName());
     }
 
     public void destroy() throws Exception {
-        CoyoteLogger.HTTP_LOGGER.stopHttpConnector(getName());
+        CoyoteLogger.HTTP_BIO_LOGGER.stopHttpConnector(getName());
         endpoint.destroy();
         if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
             if (tpOname!=null)
@@ -606,10 +606,10 @@ public class Http11Protocol
                     state = result.event(status);
                 } catch (java.net.SocketException e) {
                     // SocketExceptions are normal
-                    CoyoteLogger.HTTP_LOGGER.socketException(e);
+                    CoyoteLogger.HTTP_BIO_LOGGER.socketException(e);
                 } catch (java.io.IOException e) {
                     // IOExceptions are normal
-                    CoyoteLogger.HTTP_LOGGER.socketException(e);
+                    CoyoteLogger.HTTP_BIO_LOGGER.socketException(e);
                 }
                 // Future developers: if you discover any other
                 // rare-but-nonfatal exceptions, catch them here, and log as
@@ -618,7 +618,7 @@ public class Http11Protocol
                     // any other exception or error is odd. Here we log it
                     // with "ERROR" level, so it will show up even on
                     // less-than-verbose logs.
-                    CoyoteLogger.HTTP_LOGGER.socketError(e);
+                    CoyoteLogger.HTTP_BIO_LOGGER.socketError(e);
                 } finally {
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
@@ -665,10 +665,10 @@ public class Http11Protocol
 
             } catch(java.net.SocketException e) {
                 // SocketExceptions are normal
-                CoyoteLogger.HTTP_LOGGER.socketException(e);
+                CoyoteLogger.HTTP_BIO_LOGGER.socketException(e);
             } catch (java.io.IOException e) {
                 // IOExceptions are normal
-                CoyoteLogger.HTTP_LOGGER.socketException(e);
+                CoyoteLogger.HTTP_BIO_LOGGER.socketException(e);
             }
             // Future developers: if you discover any other
             // rare-but-nonfatal exceptions, catch them here, and log as
@@ -677,7 +677,7 @@ public class Http11Protocol
                 // any other exception or error is odd. Here we log it
                 // with "ERROR" level, so it will show up even on
                 // less-than-verbose logs.
-                CoyoteLogger.HTTP_LOGGER.socketError(e);
+                CoyoteLogger.HTTP_BIO_LOGGER.socketError(e);
             }
             recycledProcessors.offer(processor);
             return SocketState.CLOSED;
@@ -716,7 +716,7 @@ public class Http11Protocol
                         Registry.getRegistry(null, null).registerComponent(rp, rpName, null);
                         rp.setRpName(rpName);
                     } catch (Exception e) {
-                        CoyoteLogger.HTTP_LOGGER.errorRegisteringRequest(e);
+                        CoyoteLogger.HTTP_BIO_LOGGER.errorRegisteringRequest(e);
                     }
                 }
             }
@@ -732,7 +732,7 @@ public class Http11Protocol
                         Registry.getRegistry(null, null).unregisterComponent(rpName);
                         rp.setRpName(null);
                     } catch (Exception e) {
-                        CoyoteLogger.HTTP_LOGGER.errorUnregisteringRequest(e);
+                        CoyoteLogger.HTTP_BIO_LOGGER.errorUnregisteringRequest(e);
                     }
                 }
             }

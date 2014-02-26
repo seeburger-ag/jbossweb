@@ -61,10 +61,24 @@ public interface CoyoteLogger extends BasicLogger {
     CoyoteLogger HTTP_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11");
 
     /**
+     * A logger with the category of the class name.
+     */
+    CoyoteLogger HTTP_BIO_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11.Http11Protocol");
+
+    /**
+     * A logger with the category of the class name.
+     */
+    CoyoteLogger HTTP_APR_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11.Http11AprProtocol");
+
+    /**
+     * A logger with the category of the class name.
+     */
+    CoyoteLogger HTTP_NIO_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11.Http11NioProtocol");
+
+    /**
      * A logger with the category of the package name.
      */
     CoyoteLogger AJP_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.ajp");
-
     /**
      * A logger with the category of the package name.
      */
