@@ -1,24 +1,21 @@
-/**
- * JBoss, Home of Professional Open Source. Copyright 2012, Red Hat, Inc., and
- * individual contributors as indicated by the @author tags. See the
- * copyright.txt file in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.tomcat.util.net.jsse;
 
 import static org.jboss.web.CoyoteMessages.MESSAGES;
@@ -112,7 +109,9 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 					break;
 				}
 			}
-		} catch (NoSuchAlgorithmException | KeyManagementException e) {
+		} catch (NoSuchAlgorithmException e) {
+            // Assume no RFC 5746 support
+		} catch (KeyManagementException e) {
 			// Assume no RFC 5746 support
 		}
 		RFC_5746_SUPPORTED = result;
@@ -166,7 +165,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 			NioChannel channel = new SecureNioChannel(asyncChannel, engine);
 			return channel;
 		} catch (Exception e) {
-			throw new IOException(e);
+			throw new IOException(MESSAGES.sslHandshakeError(), e);
 		}
 	}
 
@@ -209,8 +208,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		sslChannel.handshake();
 
 		if (sslChannel.getSSLSession().getCipherSuite().equals("SSL_NULL_WITH_NULL_NULL")) {
-			throw new IOException(
-					"SSL handshake failed. Ciper suite in SSL Session is SSL_NULL_WITH_NULL_NULL");
+			throw new IOException(MESSAGES.invalidSslCipherSuite());
 		}
 	}
 
@@ -342,7 +340,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 	 * @return Array of SSL cipher suites to be enabled, or null if none of the
 	 *         requested ciphers are supported
 	 */
-	protected String[] getEnabledCiphers(String requestedCiphers, String[] supportedCiphers) {
+	protected String[] getEnabledCiphers(String requestedCiphers, String[] supportedCiphers) throws IOException {
 
 		String[] enabledCiphers = null;
 		SSLServerSocketFactory sslProxy = sslContext.getServerSocketFactory();
@@ -362,7 +360,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 						for (int i = 0; supportedCiphers != null && i < supportedCiphers.length; i++) {
 							if (supportedCiphers[i].equals(cipher)) {
 								if (vec == null) {
-									vec = new Vector<>();
+									vec = new Vector<Object>();
 								}
 								vec.addElement(cipher);
 								break;
@@ -385,7 +383,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 					for (int i = 0; supportedCiphers != null && i < supportedCiphers.length; i++) {
 						if (supportedCiphers[i].equals(cipher)) {
 							if (vec == null) {
-								vec = new Vector<>();
+								vec = new Vector<Object>();
 							}
 							vec.addElement(cipher);
 							break;
@@ -397,6 +395,8 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 			if (vec != null) {
 				enabledCiphers = new String[vec.size()];
 				vec.copyInto(enabledCiphers);
+			} else {
+			    throw new IOException(MESSAGES.noCipherMatch()); // Like openssl.
 			}
 		} else {
 			enabledCiphers = sslProxy.getDefaultCipherSuites();
@@ -586,15 +586,15 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		if (truststoreFile == null) {
 			truststoreFile = System.getProperty("javax.net.ssl.trustStore");
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Truststore = " + truststoreFile);
+		if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+		    CoyoteLogger.UTIL_LOGGER.debug("Truststore = " + truststoreFile);
 		}
 		String truststorePassword = (String) attributes.get("truststorePass");
 		if (truststorePassword == null) {
 			truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("TrustPass = " + truststorePassword);
+		if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+		    CoyoteLogger.UTIL_LOGGER.debug("TrustPass = " + truststorePassword);
 		}
 		String truststoreType = (String) attributes.get("truststoreType");
 		if (truststoreType == null) {
@@ -603,8 +603,8 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		if (truststoreType == null) {
 			truststoreType = keystoreType;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("trustType = " + truststoreType);
+		if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+		    CoyoteLogger.UTIL_LOGGER.debug("trustType = " + truststoreType);
 		}
 		String truststoreProvider = (String) attributes.get("truststoreProvider");
 		if (truststoreProvider == null) {
@@ -613,8 +613,8 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		if (truststoreProvider == null) {
 			truststoreProvider = keystoreProvider;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("trustProvider = " + truststoreProvider);
+		if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+		    CoyoteLogger.UTIL_LOGGER.debug("trustProvider = " + truststoreProvider);
 		}
 
 		if (truststoreFile != null) {
@@ -653,13 +653,13 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 				try {
 					xparams.setMaxPathLength(Integer.parseInt(trustLength));
 				} catch (Exception ex) {
-					log.warn("Bad maxCertLength: " + trustLength);
+				    CoyoteLogger.UTIL_LOGGER.invalidMaxCertLength(trustLength);
 				}
 			}
 
 			params = xparams;
 		} else {
-			throw new CRLException("CRLs not supported for type: " + algorithm);
+			throw new CRLException(MESSAGES.unsupportedCrl(algorithm));
 		}
 		return params;
 	}

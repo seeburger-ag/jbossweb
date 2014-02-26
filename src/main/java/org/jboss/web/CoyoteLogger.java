@@ -1,23 +1,19 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.web;
@@ -28,6 +24,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.Logger.Level.DEBUG;
 
 import java.net.InetAddress;
+import java.security.cert.Certificate;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -38,7 +35,7 @@ import org.jboss.logging.MessageLogger;
 
 /**
  * Logging IDs 3000-4000
- * @author remm
+ * @author Remy Maucherat
  */
 @MessageLogger(projectCode = "JBWEB")
 public interface CoyoteLogger extends BasicLogger {
@@ -56,12 +53,46 @@ public interface CoyoteLogger extends BasicLogger {
     /**
      * A logger with the category of the package name.
      */
+    CoyoteLogger NET_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.tomcat.util.net");
+
+    /**
+     * A logger with the category of the package name.
+     */
     CoyoteLogger HTTP_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11");
+
+    /**
+     * A logger with the category of the class name.
+     */
+    CoyoteLogger HTTP_BIO_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11.Http11Protocol");
+
+    /**
+     * A logger with the category of the class name.
+     */
+    CoyoteLogger HTTP_APR_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11.Http11AprProtocol");
+
+    /**
+     * A logger with the category of the class name.
+     */
+    CoyoteLogger HTTP_NIO_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.http11.Http11NioProtocol");
 
     /**
      * A logger with the category of the package name.
      */
     CoyoteLogger AJP_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.coyote.ajp");
+    /**
+     * A logger with the category of the package name.
+     */
+    CoyoteLogger BAYEUX_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.tomcat.bayeux");
+
+    /**
+     * A logger with the category of the package name.
+     */
+    CoyoteLogger MODELER_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.tomcat.util.modeler");
+
+    /**
+     * A logger with the category of the package name.
+     */
+    CoyoteLogger FILEUPLOAD_LOGGER = Logger.getMessageLogger(CoyoteLogger.class, "org.apache.tomcat.util.http.fileupload");
 
     @LogMessage(level = INFO)
     @Message(id = 3000, value = "Coyote HTTP/1.1 starting on: %s")
@@ -167,9 +198,9 @@ public interface CoyoteLogger extends BasicLogger {
     @Message(id = 3025, value = "Error awaiting read")
     void errorAwaitingRead(@Cause Throwable exception);
 
-    @LogMessage(level = DEBUG)
-    @Message(id = 3026, value = "Unknown event")
-    void unknownEvent();
+    @LogMessage(level = ERROR)
+    @Message(id = 3026, value = "Error loading %s")
+    void errorLoading(Object source);
 
     @LogMessage(level = WARN)
     @Message(id = 3027, value = "Failed loading HTTP messages strings")
@@ -386,5 +417,105 @@ public interface CoyoteLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 3080, value = "Error initializing socket factory")
     void errorInitializingSocketFactory(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3081, value = "Check Bayeux exception")
+    void errorInCheckBayeux(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3082, value = "Error processing Bayeux")
+    void errorProcessingBayeux(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3083, value = "Message delivery error")
+    void errorDeliveringBayeux(@Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3084, value = "Failed setting property %s on object %s to %s")
+    void errorSettingProperty(String propertyName, Object object, String propertyValue, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3085, value = "Failed getting property %s on object %s")
+    void errorGettingProperty(String propertyName, Object object, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3086, value = "Bad maximum certificate length %s")
+    void invalidMaxCertLength(String length);
+
+    @LogMessage(level = INFO)
+    @Message(id = 3087, value = "Error translating certificate %s")
+    void errorTranslatingCertificate(Certificate certificate, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3088, value = "SSL server initiated renegotiation is disabled, closing connection")
+    void disabledSslRenegociation();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3089, value = "No descriptors found")
+    void noDescriptorsFound();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3090, value = "No Mbeans found")
+    void noMbeansFound();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3091, value = "Error reading descriptors")
+    void errorReadingDescriptors(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3092, value = "Error creating MBean %s")
+    void errorCreatingMbean(String objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3093, value = "Error invoking %s on %s")
+    void errorInvoking(String operation, String name);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3094, value = "Node not found %s")
+    void nodeNotFound(Object name);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3095, value = "Error writing MBeans")
+    void errorWritingMbeans(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 3096, value = "Can't find attribute %s on %s")
+    void attributeNotFound(String attributeName, String objectName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3097, value = "Error processing attribute %s value %s on %s")
+    void errorProcessingAttribute(String attributeName, String attributeValue, String objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3098, value = "Error sending notification")
+    void errorSendingNotification(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3099, value = "Error creating object name")
+    void errorCreatingObjectName(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3100, value = "Error invoking operation %s on %s")
+    void errorInvokingOperation(String operation, Object objectName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 3101, value = "No metadata for %s")
+    void noMetadata(Object objectName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3102, value = "Error unregistering MBean %s")
+    void errorUnregisteringMbean(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3103, value = "Null %s component")
+    void nullComponent(Object objectName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 3104, value = "Error registering MBean %s")
+    void errorRegisteringMbean(Object objectName, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3105, value = "Socket accept failed")
+    void warnAcceptingSocket(@Cause Throwable exception);
 
 }

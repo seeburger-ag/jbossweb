@@ -19,6 +19,8 @@
 package org.apache.tomcat.util.modeler;
 
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -228,7 +230,7 @@ public class BaseNotificationBroadcaster implements NotificationBroadcaster {
             int code=reg.getId(null, names[i]);
             if( hooks.length < code ) {
                 // XXX reallocate
-                throw new RuntimeException( "Too many hooks " + code );
+                throw MESSAGES.tooManyHooks(code);
             }
             NotificationListener listeners[]=hooks[code];
             if( listeners== null ) {

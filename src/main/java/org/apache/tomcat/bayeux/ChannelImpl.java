@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.bayeux;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -79,7 +81,7 @@ public class ChannelImpl implements Channel {
      */
     public boolean matches(String pattern) {
         if (pattern == null)
-            throw new NullPointerException("Channel pattern must not be null.");
+            throw MESSAGES.invalidNullChannelPattern();
         if (getId().equals(pattern))
             return true;
         int wildcardPos = pattern.indexOf("/*");
@@ -125,8 +127,7 @@ public class ChannelImpl implements Channel {
             Message data = msgs[i];
 
             if (!(data instanceof MessageImpl)) 
-                throw new IllegalArgumentException("Invalid message class, you can only publish messages "+
-                                                   "created through the Bayeux.newMessage() method");
+                throw MESSAGES.invalidMessagePublish();
             /*if (log.isDebugEnabled()) {
                 log.debug("Publishing message:"+data+" to channel:"+this);
             }*/
