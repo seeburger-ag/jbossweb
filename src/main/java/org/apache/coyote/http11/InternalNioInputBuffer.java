@@ -446,7 +446,13 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
         } else {
             // Prepare the internal input buffer for reading
             prepare();
-            nRead = blockingRead(readTimeout, unit);
+            try {
+                nRead = channel.readBytes(bbuf, readTimeout, unit);
+            } catch (Exception e) {
+                if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                    CoyoteLogger.HTTP_LOGGER.errorWithBlockingRead(e);
+                }
+            }
             if (nRead > 0) {
                 bbuf.flip();
                 if (nRead > (buf.length - end)) {
@@ -463,6 +469,8 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
                 throw new EOFException(MESSAGES.failedRead());
             } else if (nRead == NioChannel.OP_STATUS_READ_TIMEOUT) {
                 throw new SocketTimeoutException(MESSAGES.failedRead());
+            } else if (nRead == 0) {
+                throw new EOFException(MESSAGES.failedRead());
             }
         }
         return nRead;
@@ -481,36 +489,6 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			pos = end;
 			lastValid = pos;
 		}
-	}
-
-	/**
-	 * Close the channel
-	 */
-	private void close(NioChannel channel) {
-		endpoint.closeChannel(channel);
-	}
-
-	/**
-	 * Read a sequence of bytes in blocking mode from he current channel
-	 * 
-	 * @param bb
-	 * @return the number of bytes read or -1 if the end of the stream was
-	 *         reached
-	 */
-	private int blockingRead(long timeout, TimeUnit unit) {
-		int nr = 0;
-		try {
-			long readTimeout = timeout > 0 ? timeout : Integer.MAX_VALUE;
-			nr = this.channel.readBytes(bbuf, readTimeout, unit);
-			if (nr < 0) {
-				close(channel);
-			}
-		} catch (Exception e) {
-			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-                CoyoteLogger.HTTP_LOGGER.errorWithBlockingRead(e);
-			}
-		}
-		return nr;
 	}
 
 	/**
