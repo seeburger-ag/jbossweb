@@ -232,7 +232,9 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
             } else {
                 f2sh.get(timeout, TimeUnit.MILLISECONDS);
             }
-            payload.clear();
+            if (payload != null) {
+                payload.clear();
+            }
         } catch (InterruptedException e) {
             throw new IOException(e);
         } catch (ExecutionException e) {
