@@ -77,6 +77,9 @@ public class InternalOutputBuffer
         committed = false;
         finished = false;
 
+        // Cause loading of constants
+        boolean res = org.apache.coyote.Constants.USE_CUSTOM_STATUS_MSG_IN_HEADER;
+
     }
 
 

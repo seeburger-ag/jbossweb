@@ -80,6 +80,9 @@ public class InternalAprOutputBuffer
         // Cause loading of HttpMessages
         HttpMessages.getMessage(200);
 
+        // Cause loading of constants
+        boolean res = org.apache.coyote.Constants.USE_CUSTOM_STATUS_MSG_IN_HEADER;
+
     }
 
 
