@@ -781,8 +781,11 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 
 		// we don't know if client authentication is needed -
 		// after parsing the request we may re-handshake
-		engine.setNeedClientAuth(requireClientAuth);
-		engine.setWantClientAuth(wantClientAuth);
+		if (wantClientAuth) {
+		        engine.setWantClientAuth(wantClientAuth);
+                } else {
+		        engine.setNeedClientAuth(requireClientAuth);
+                }
 	}
 
 	/**
