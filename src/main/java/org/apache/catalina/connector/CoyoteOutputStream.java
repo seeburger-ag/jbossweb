@@ -107,7 +107,7 @@ public class CoyoteOutputStream
 
 
     public boolean isReady() {
-        return (ob.lastWrite() > 0);
+        return (ob != null && ob.lastWrite() > 0);
     }
 
 
