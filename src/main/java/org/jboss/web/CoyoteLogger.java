@@ -138,7 +138,7 @@ public interface CoyoteLogger extends BasicLogger {
     @Message(id = 3010, value = "Poller creation failed")
     void errorCreatingPoller(@Cause Throwable exception);
 
-    @LogMessage(level = ERROR)
+    @LogMessage(level = DEBUG)
     @Message(id = 3011, value = "Error allocating socket processor")
     void errorProcessingSocket(@Cause Throwable exception);
 
