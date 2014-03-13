@@ -84,6 +84,11 @@ public class NioEndpoint extends AbstractEndpoint {
 	protected Sendfile sendfile;
 
 	/**
+	 * Using an internal executor.
+	 */
+    protected boolean internalExecutor = false;
+
+	/**
 	 * Create a new instance of {@code NioEndpoint}
 	 */
 	public NioEndpoint() {
@@ -181,6 +186,7 @@ public class NioEndpoint extends AbstractEndpoint {
 
 		// If the executor is not set, create it with a fixed thread pool
 		if (this.executor == null) {
+		    internalExecutor = true;
 			this.executor = Executors.newFixedThreadPool(this.maxThreads, this.threadFactory);
 		}
 
@@ -297,7 +303,11 @@ public class NioEndpoint extends AbstractEndpoint {
 		this.serverSocketChannelFactory = null;
 
 		// Shut down the executor
-		((ExecutorService) this.executor).shutdown();
+		if (internalExecutor) {
+		    ((ExecutorService) this.executor).shutdown();
+		    executor = null;
+		    internalExecutor = false;
+		}
 
 		initialized = false;
 	}
