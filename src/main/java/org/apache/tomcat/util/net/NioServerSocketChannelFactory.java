@@ -117,7 +117,10 @@ public abstract class NioServerSocketChannelFactory implements Cloneable {
 			//
 
 			theFactory = new DefaultNioServerSocketChannelFactory(threadGroup);
-		}
+		} else {
+                        if (theFactory.threadGroup != threadGroup)
+                                theFactory = new DefaultNioServerSocketChannelFactory(threadGroup);
+                }
 
 		try {
 			return (NioServerSocketChannelFactory) theFactory.clone();
