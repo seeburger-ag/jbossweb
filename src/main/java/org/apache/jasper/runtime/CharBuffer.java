@@ -17,6 +17,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
@@ -111,13 +113,13 @@ public class CharBuffer {
             return;
         }
         if (text == null) {
-            throw new IllegalArgumentException("text: may not be null.");
+            throw MESSAGES.nullCharBufferTextArgument();
         }
         if (start > text.length()) {
-            throw new IllegalArgumentException("start: points beyond end of text.");
+            throw MESSAGES.invalidCharBufferStartPosition();
         }
         if ((start + length) > text.length()) {
-            throw new IllegalArgumentException("length: specifies length in excess of text length.");
+            throw MESSAGES.invalidCharBufferLength();
         }
 
         //If length of string to add is greater than will fit in current char array then add what will fit
@@ -161,13 +163,13 @@ public class CharBuffer {
             return;
         }
         if (characters == null) {
-            throw new IllegalArgumentException("characters: may not be null.");
+            throw MESSAGES.nullCharBufferCharactersArgument();
         }
         if (start > characters.length) {
-            throw new IllegalArgumentException("start: points beyond end of array.");
+            throw MESSAGES.invalidCharBufferStartPosition();
         }
         if ((start + length) > characters.length) {
-            throw new IllegalArgumentException("length: specifies length in excess of array length.");
+            throw MESSAGES.invalidCharBufferLength();
         }
 
         //If length of string to add is greater than will fit in current char array then add what will fit
@@ -263,7 +265,7 @@ public class CharBuffer {
      */
     public void writeOut(Writer writer) throws IOException, IllegalArgumentException {
         if (writer == null) {
-            throw new IllegalArgumentException("writer: may not be null.");
+            throw MESSAGES.nullCharBufferWriterArgument();
         }
         for (Iterator iter = this.bufList.iterator(); iter.hasNext();) {
             char[] curBuf = (char[]) iter.next();

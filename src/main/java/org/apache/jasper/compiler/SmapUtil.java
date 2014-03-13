@@ -44,9 +44,6 @@ import org.apache.jasper.JspCompilationContext;
  */
 public class SmapUtil {
 
-    private org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( SmapUtil.class );
-
     //*********************************************************************
     // Constants
 

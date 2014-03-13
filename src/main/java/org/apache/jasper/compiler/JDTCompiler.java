@@ -49,6 +49,7 @@ import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
+import org.jboss.web.JasperLogger;
 
 /**
  * JDT class compiler. This compiler will load source dependencies from the
@@ -68,7 +69,7 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
         throws FileNotFoundException, JasperException, Exception {
 
         long t1 = 0;
-        if (log.isDebugEnabled()) {
+        if (JasperLogger.COMPILER_LOGGER.isDebugEnabled()) {
             t1 = System.currentTimeMillis();
         }
         
@@ -116,7 +117,7 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                         buf.getChars(0, result.length, result, 0);
                     }
                 } catch (IOException e) {
-                    log.error("Compilation error", e);
+                    JasperLogger.COMPILER_LOGGER.errorReadingSourceFile(sourceFile, e);
                 } finally {
                     if (reader != null) {
                         try {
@@ -153,6 +154,10 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                     result[i] = tok.toCharArray();
                 }
                 return result;
+            }
+
+            public boolean ignoreOptionalProblems() {
+                return false;
             }
         }
 
@@ -217,9 +222,9 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                                 new NameEnvironmentAnswer(classFileReader, null);
                         }
                     } catch (IOException exc) {
-                        log.error("Compilation error", exc);
+                        JasperLogger.COMPILER_LOGGER.errorReadingClassFile(className, exc);
                     } catch (org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException exc) {
-                        log.error("Compilation error", exc);
+                        JasperLogger.COMPILER_LOGGER.errorReadingClassFile(className, exc);
                     } finally {
                         if (is != null) {
                             try {
@@ -314,7 +319,7 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                 settings.put(CompilerOptions.OPTION_Source,
                              CompilerOptions.VERSION_1_7);
             } else {
-                log.warn("Unknown source VM " + opt + " ignored.");
+                JasperLogger.COMPILER_LOGGER.unknownSourceJvm(opt);
                 settings.put(CompilerOptions.OPTION_Source,
                         CompilerOptions.VERSION_1_5);
             }
@@ -355,7 +360,7 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                 settings.put(CompilerOptions.OPTION_Compliance,
                         CompilerOptions.VERSION_1_7);
             } else {
-                log.warn("Unknown target VM " + opt + " ignored.");
+                JasperLogger.COMPILER_LOGGER.unknownTargetJvm(opt);
                 settings.put(CompilerOptions.OPTION_TargetPlatform,
                         CompilerOptions.VERSION_1_5);
             }
@@ -385,7 +390,7 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                                                 (name, pageNodes, new StringBuilder(problem.getMessage()), 
                                                         problem.getSourceLineNumber(), ctxt));
                                     } catch (JasperException e) {
-                                        log.error("Error visiting node", e);
+                                        JasperLogger.COMPILER_LOGGER.errorCreatingCompilerReport(e);
                                     }
                                 }
                             }
@@ -416,7 +421,7 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                             }
                         }
                     } catch (IOException exc) {
-                        log.error("Compilation error", exc);
+                        JasperLogger.COMPILER_LOGGER.errorCompiling(exc);
                     }
                 }
             };
@@ -446,9 +451,9 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
             errDispatcher.javacError(jeds);
         }
         
-        if( log.isDebugEnabled() ) {
+        if( JasperLogger.COMPILER_LOGGER.isDebugEnabled() ) {
             long t2=System.currentTimeMillis();
-            log.debug("Compiled " + ctxt.getServletJavaFileName() + " "
+            JasperLogger.COMPILER_LOGGER.debug("Compiled " + ctxt.getServletJavaFileName() + " "
                       + (t2-t1) + "ms");
         }
 

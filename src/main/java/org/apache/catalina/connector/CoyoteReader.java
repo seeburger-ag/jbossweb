@@ -18,6 +18,8 @@
 
 package org.apache.catalina.connector;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
@@ -127,7 +129,7 @@ public class CoyoteReader
         throws IOException {
         // See BufferedReader#mark(int) JavaDoc
         if (readAheadLimit < 0) {
-            throw new IllegalArgumentException("readAheadLimit value is negative");
+            throw MESSAGES.invalidReadAhead(readAheadLimit);
         }
         ib.mark(readAheadLimit);
     }
