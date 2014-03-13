@@ -18,7 +18,6 @@
 
 package org.jboss.web;
 
-import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
@@ -121,5 +120,11 @@ public interface FileUploadMessages {
 
     @Message(id = 8228, value = "Invalid file name: %s")
     String invalidFileName(String fileName);
+
+    @Message(id = 8229, value = "The boundary specified in the %s header is too long")
+    String invalidBoundary(String header);
+
+    @Message(id = 8230, value = "The buffer size specified for the MultipartStream is too small")
+    IllegalArgumentException multipartStreamBufferSizeTooSmall();
 
 }
