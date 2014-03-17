@@ -405,8 +405,8 @@ public class WsSession implements Session {
 
             state = State.CLOSING;
 
-            sendCloseMessage(closeReasonMessage);
             fireEndpointOnClose(closeReasonLocal);
+            sendCloseMessage(closeReasonMessage);
 
             state = State.CLOSED;
         }
@@ -428,8 +428,8 @@ public class WsSession implements Session {
 
         synchronized (stateLock) {
             if (state == State.OPEN) {
-                sendCloseMessage(closeReason);
                 fireEndpointOnClose(closeReason);
+                sendCloseMessage(closeReason);
                 state = State.CLOSED;
             }
 
