@@ -33,7 +33,7 @@
 
     <groupId>org.jboss.web</groupId>
     <artifactId>jbossweb</artifactId>
-    <version>7.4.0.Beta4</version>
+    <version>7.4.0.Final</version>
 
     <name>JBoss Web</name>
     <description>Servlet 3.0 container</description>
