@@ -19,6 +19,8 @@
 package org.apache.tomcat.util.http;
 
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 /**
  * Static constants for this package.
  */
@@ -60,6 +62,12 @@ public final class CookieSupport {
     public static final boolean FWD_SLASH_IS_SEPARATOR;
 
     /**
+     * If set to true, the cookie header will be preserved. In most cases 
+     * except debugging, this is not useful.
+     */
+    public static final boolean PRESERVE_COOKIE_HEADER;
+
+    /**
      * The list of separators that apply to version 0 cookies. To quote the
      * spec, these are comma, semi-colon and white-space. The HTTP spec
      * definition of linear white space is [CRLF] 1*( SP | HT )
@@ -90,6 +98,10 @@ public final class CookieSupport {
         
         FWD_SLASH_IS_SEPARATOR = Boolean.valueOf(System.getProperty(
                 "org.apache.tomcat.util.http.ServerCookie.FWD_SLASH_IS_SEPARATOR",
+                "false")).booleanValue();
+        
+        PRESERVE_COOKIE_HEADER = Boolean.valueOf(System.getProperty(
+                "org.apache.tomcat.util.http.ServerCookie.PRESERVE_COOKIE_HEADER",
                 "false")).booleanValue();
         
         String alwaysAddExpires = System.getProperty(
@@ -137,8 +149,7 @@ public final class CookieSupport {
     public static final boolean isV0Separator(final char c) {
         if (c < 0x20 || c >= 0x7f) {
             if (c != 0x09) {
-                throw new IllegalArgumentException(
-                        "Control character in cookie value or attribute.");
+                throw MESSAGES.invalidControlCharacter();
             }
         }
 
@@ -174,8 +185,7 @@ public final class CookieSupport {
     public static final boolean isHttpSeparator(final char c) {
         if (c < 0x20 || c >= 0x7f) {
             if (c != 0x09) {
-                throw new IllegalArgumentException(
-                        "Control character in cookie value or attribute.");
+                throw MESSAGES.invalidControlCharacter();
             }
         }
 

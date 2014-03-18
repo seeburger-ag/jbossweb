@@ -80,6 +80,9 @@ public class InternalAprOutputBuffer
         // Cause loading of HttpMessages
         HttpMessages.getMessage(200);
 
+        // Cause loading of constants
+        boolean res = org.apache.coyote.Constants.USE_CUSTOM_STATUS_MSG_IN_HEADER;
+
     }
 
 
@@ -538,7 +541,7 @@ public class InternalAprOutputBuffer
 
         // If non blocking (event) and there are leftover bytes, 
         // and lastWrite was 0 -> error
-        if (leftover.getLength() > 0 && !(Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
+        if (leftover.getLength() > 0 && !(Http11AbstractProcessor.containerThread.get() == Boolean.TRUE)) {
             throw new IOException(MESSAGES.invalidBacklog());
         }
 
@@ -789,7 +792,7 @@ public class InternalAprOutputBuffer
         // - If the call is asynchronous, throw an exception
         // - If the call is synchronous, make regular blocking writes to flush the data
         if (leftover.getLength() > 0) {
-            if (Http11AprProcessor.containerThread.get() == Boolean.TRUE) {
+            if (Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
                 Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
                 // Send leftover bytes
                 res = Socket.send(socket, leftover.getBuffer(), leftover.getOffset(), leftover.getEnd());
@@ -820,7 +823,7 @@ public class InternalAprOutputBuffer
                     }
                 }
                 if (pos < end) {
-                    if (response.getFlushLeftovers() && (Http11AprProcessor.containerThread.get() == Boolean.TRUE)) {
+                    if (response.getFlushLeftovers() && (Http11AbstractProcessor.containerThread.get() == Boolean.TRUE)) {
                         // Switch to blocking mode and write the data
                         Socket.timeoutSet(socket, endpoint.getSoTimeout() * 1000);
                         res = Socket.sendbb(socket, 0, end);

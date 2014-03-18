@@ -17,6 +17,8 @@
 
 package org.apache.jasper.el;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.util.Iterator;
 
 import javax.el.ArrayELResolver;
@@ -59,7 +61,7 @@ public final class ELResolverImpl extends ELResolver {
     public Object getValue(ELContext context, Object base, Object property)
             throws NullPointerException, PropertyNotFoundException, ELException {
         if (context == null) {
-            throw new NullPointerException();
+            throw MESSAGES.elResolverNullContext();
         }
 
         if (base == null) {
@@ -69,7 +71,8 @@ public final class ELResolverImpl extends ELResolver {
                     return this.variableResolver.resolveVariable(property
                             .toString());
                 } catch (javax.servlet.jsp.el.ELException e) {
-                    throw new ELException(e.getMessage(), e.getCause());
+                    throw new ELException(MESSAGES.errorResolvingVariable
+                            (property.toString(), e.getMessage()), e.getCause());
                 }
             }
         }
@@ -83,7 +86,7 @@ public final class ELResolverImpl extends ELResolver {
     public Class<?> getType(ELContext context, Object base, Object property)
             throws NullPointerException, PropertyNotFoundException, ELException {
         if (context == null) {
-            throw new NullPointerException();
+            throw MESSAGES.elResolverNullContext();
         }
 
         if (base == null) {
@@ -94,7 +97,8 @@ public final class ELResolverImpl extends ELResolver {
                             .toString());
                     return (obj != null) ? obj.getClass() : null;
                 } catch (javax.servlet.jsp.el.ELException e) {
-                    throw new ELException(e.getMessage(), e.getCause());
+                    throw new ELException(MESSAGES.errorResolvingVariable
+                            (property.toString(), e.getMessage()), e.getCause());
                 }
             }
         }
@@ -110,13 +114,12 @@ public final class ELResolverImpl extends ELResolver {
             PropertyNotFoundException, PropertyNotWritableException,
             ELException {
         if (context == null) {
-            throw new NullPointerException();
+            throw MESSAGES.elResolverNullContext();
         }
 
         if (base == null) {
             context.setPropertyResolved(true);
-            throw new PropertyNotWritableException(
-                    "Legacy VariableResolver wrapped, not writable");
+            throw new PropertyNotWritableException(MESSAGES.legacyVariableResolver());
         }
 
         if (!context.isPropertyResolved()) {
@@ -127,7 +130,7 @@ public final class ELResolverImpl extends ELResolver {
     public boolean isReadOnly(ELContext context, Object base, Object property)
             throws NullPointerException, PropertyNotFoundException, ELException {
         if (context == null) {
-            throw new NullPointerException();
+            throw MESSAGES.elResolverNullContext();
         }
 
         if (base == null) {
