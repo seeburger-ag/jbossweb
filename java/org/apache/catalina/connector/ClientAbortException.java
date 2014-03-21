@@ -127,7 +127,7 @@ public final class ClientAbortException extends IOException {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("ClientAbortException:  ");
+        StringBuffer sb = new StringBuffer("ClientAbortException:  ");
         if (message != null) {
             sb.append(message);
             if (throwable != null) {

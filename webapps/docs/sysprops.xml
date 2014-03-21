@@ -30,132 +30,93 @@
 
 <section name="Introduction">
   <p>The follow sections list the system properties that may be set to modify
-  the default JBossWeb behaviour.</p>
-  <p>The <code>system-properties</code>can be set in the AS7 configuration (you need to
-   restart it to get them applied to the web sub system, for example:
-<source>
-standalone@localhost:9999 /] ./system-property=org.apache.catalina.JSESSIONID:add(value="MYID")
-{"outcome" => "success"}
-standalone@localhost:9999 /] :shutdown
-Communication error: Channel closed
-Closed connection to localhost:9999
-</source>
-   then restart it for some properties a reload command is enough:
-<source>
-[standalone@localhost:9999 /] :reload
-{
-    "outcome" => "success",
-    "response-headers" => {
-        "operation-requires-reload" => true,
-        "process-state" => "reload-required"
-    }
-}
-</source>
-  </p>
+  the default Tomcat behaviour.</p>
 </section>
 
 
 <section name="Servlet container and connectors">
   <properties>
 
-    <property name="jvmRoute">
-      <p>Provides a default value for the <code>jvmRoute</code> attribute.
-      It does not override the automaticaly
-      generated value used when using ha read with using configuration like <code>standalone-ha.xml</code></p>
-      <p>It supports <code>:reload</code>.</p>
+    <property name="catalina.useNaming">
+      <p>If this is <code>false</code> it will override the
+      <code>useNaming</code> attribute for all <a href="context.html">
+      Context</a> elements.</p>
     </property>
 
-    <property name="org.apache.tomcat.util.buf.StringCache.byte.enabled">
+    <property name="jvmRoute">
+      <p>Provides a default value for the <code>jvmRoute</code> attribute of the
+      <a href="engine.html">Engine</a> element. It does not override the a value
+      configured on the <a href="engine.html">Engine</a> element.</p>
+    </property>
+
+    <property
+    name="org.apache.catalina.loader. WebappClassLoader.ENABLE_CLEAR_REFERENCES">
+      <p>If <code>true</code>, Tomcat attempts to null out any static or final
+      fields from loaded classes when a web application is stopped as a work
+      around for apparent garbage collection bugs and application coding errors.
+      </p>
+      <p>There have been some issues reported with log4j when this option is
+      <code>true</code>.</p>
+      <p>Applications without memory leaks using recent JVMs should operate
+      correctly with this option set to <code>false</code>.</p>
+      <p>If not specified, the default value of <code>true</code> will be used.
+      </p>
+    </property>
+
+    <property name="catalina.config">
+      <p>The URL for the catalina.properties configuration file.</p>
+    </property>
+
+    <property name="tomcat.util.buf.StringCache.byte.enabled">
       <p>If <code>true</code>, the String cache is enabled for
       <code>ByteChunk</code>. If not specified, the default value of
       <code>false</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.util.buf.StringCache.char.enabled">
+    <property name="tomcat.util.buf.StringCache.char.enabled">
       <p>If <code>true</code>, the String cache is enabled for
       <code>CharChunk</code>. If not specified, the default value of
       <code>false</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.util.buf.StringCache.trainThreshold">
+    <property name="tomcat.util.buf.StringCache.trainThreshold">
       <p>The number of times <code>toString()</code> must be called before the
       cache is activated. If not specified, the default value of
       <code>20000</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.util.buf.StringCache.cacheSize">
+    <property name="tomcat.util.buf.StringCache.cacheSize">
       <p>The size of the String cache. If not specified, the default value of
       <code>200</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.util.buf.StringCache.maxStringSize">
+    <property name="tomcat.util.buf.StringCache.maxStringSize">
       <p>The maximum length of String that will be cached. If not specified, the
       default value of <code>128</code> will be used.</p>
     </property>
 
-    <property name="org.apache.tomcat.util.http.FastHttpDateFormat.CACHE_SIZE">
+    <property name="org.apache.tomcat.util. http.FastHttpDateFormat.CACHE_SIZE">
       <p>The size of the cache to use parsed and formatted date value. If not
       specified, the default value of <code>1000</code> will be used.</p>
     </property>
-
-    <property name="org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP">
+    <property name="org.apache.catalina.core. StandardService.DELAY_CONNECTOR_STARTUP">
       <p>If <code>true</code>, the connector startup will not be done automatically. Useful
       in embedded mode.</p>
     </property>
 
-    <property name="org.apache.catalina.connector.Request.SESSION_ID_CHECK">
+    <property name="org.apache.catalina.connector. Request.SESSION_ID_CHECK">
       <p>If <code>true</code>, the Servet container will verify that a session
       exists in a context with the specified session id before creating a session
       with that id.</p>
     </property>
 
     <property
-    name="org.apache.coyote.Constants.USE_CUSTOM_STATUS_MSG_IN_HEADER">
+    name="org.apache.coyote. USE_CUSTOM_STATUS_MSG_IN_HEADER">
       <p>If this is <code>true</code> custom HTTP status messages will be used
       within HTTP headers. Users must ensure that any such message is
       ISO-8859-1 encoded, particularly if user provided input is included in
       the message, to prevent a possible XSS vulnerability. If not specified
       the default value of <code>false</code> will be used.</p>
-    </property>
-
-    <property name="org.apache.tomcat.util.http.Parameters.MAX_COUNT">
-      <p>The maximum amount of parameters that can be parsed in a post body.
-      If exceeded, parsing will fail using an IllegalStateException. The default
-      value is <code>512</code> parameters.</p>
-    </property>
-
-    <property name="org.apache.tomcat.util.http.MimeHeaders.MAX_COUNT">
-      <p>The maximum amount of headers that can be sent in the HTTP request.
-      If exceeded, parsing will fail using an IllegalStateException. The default
-      value is <code>128</code> headers.</p>
-    </property>
-
-    <property name="org.apache.coyote.http11.Http11Protocol.MAX_HEADER_SIZE">
-      <p>The maximum size of the HTTP headers, in bytes.
-      If exceeded, parsing will fail using an ArrayOutOfBoundsExceptions. The default
-      value is <code>8192</code> bytes.</p>
-    </property>
-
-    <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION">
-      <p>Allows using simple compression with the HTTP connector. The default
-      value is <code>off</code>, and compression can be enabled using the value 
-      <code>on</code> to enable it conditionally, or <code>force</code> to always
-      enable it.</p>
-    </property>
-
-    <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION_RESTRICTED_UA">
-      <p>User agents regexps that will not receive compressed content. The default
-      value is empty.</p>
-    </property>
-
-    <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIME_TYPES">
-      <p>Content type prefixes of compressible content. The default value is 
-      <code>text/html,text/xml,text/plain</code>.</p>
-    </property>
-
-    <property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIN_SIZE">
-      <p>Minimum size of content that will be compressed. The default value is 
-      <code>2048</code> bytes.</p>
     </property>
 
   </properties>
@@ -180,61 +141,63 @@ Closed connection to localhost:9999
 <section name="JSP">
   <properties>
 
-    <property name="org.apache.jasper.compiler.Generator.VAR_EXPRESSIONFACTORY">
+    <property name="org.apache.jasper.compiler. Generator.VAR_EXPRESSIONFACTORY">
       <p>The name of the variable to use for the expression language expression
       factory. If not specified, the default value of
       <code>_el_expressionfactory</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.compiler.Generator.VAR_INSTANCEMANAGER">
+    <property name="org.apache.jasper.compiler. Generator.VAR_INSTANCEMANAGER">
       <p>The name of the variable to use for the instance manager factory. If
       not specified, the default value of <code>_jsp_instancemanager</code> will
       be used.</p>
     </property>
 
-    <property name="org.apache.jasper.compiler.Parser.STRICT_QUOTE_ESCAPING">
+    <property name="org.apache.jasper.compiler. Parser.STRICT_QUOTE_ESCAPING">
       <p>If <code>false</code> the requirements for escpaing quotes in JSP
       attributes will be relaxed so that a missing required quote will not
       cause an error. If not specified, the specification compliant default of
       <code>true</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.DEFAULT_TAG_BUFFER_SIZE">
-      <p>Any tag buffer that expands beyond
+<!--
+    <property name="org.apache.jasper.runtime. BodyContentImpl.LIMIT_BUFFER">
+      <p>If <code>true</code>, any tag buffer that expands beyond
       <code>org.apache.jasper.Constants.DEFAULT_TAG_BUFFER_SIZE</code> will be
       destroyed and a new buffer created of the default size. If not specified,
-      the default value of <code>512</code> will be used.</p>
+      the default value of <code>false</code> will be used.</p>
     </property>
+    -->
 
-    <property name="org.apache.jasper.runtime.JspFactoryImpl.USE_POOL">
+    <property name="org.apache.jasper.runtime. JspFactoryImpl.USE_POOL">
       <p>If <code>true</code>, a ThreadLocal <code>PageContext</code> pool will
       be used. If not specified, the default value of <code>true</code> will be
       used.</p>
     </property>
 
-    <property name="org.apache.jasper.runtime.JspFactoryImpl.POOL_SIZE">
+    <property name="org.apache.jasper.runtime. JspFactoryImpl.POOL_SIZE">
       <p>The size of the ThreadLocal <code>PageContext</code>. If not specified,
       the default value of <code>8</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.JSP_SERVLET_BASE">
+    <property name="org.apache.jasper.Constants. JSP_SERVLET_BASE">
       <p>The base class of the Servlets generated from the JSPs. If not
       specified, the default value of
       <code>org.apache.jasper.runtime.HttpJspBase</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.SERVICE_METHOD_NAME">
+    <property name="org.apache.jasper.Constants. SERVICE_METHOD_NAME">
       <p>The name of the service method called by the base class. If not
       specified, the default value of <code>_jspService</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.SERVLET_CLASSPATH">
+    <property name="org.apache.jasper.Constants. SERVLET_CLASSPATH">
       <p>The name of the ServletContext attribute that provides the classpath
       for the JSP. If not specified, the default value of
       <code>org.apache.catalina.jsp_classpath</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.JSP_FILE">
+    <property name="org.apache.jasper.Constants. JSP_FILE">
       <p>The name of the request attribute for <code>&lt;jsp-file&gt;</code>
       element of a servlet definition. If present on a request, this overrides
       the value returned by <code>request.getServletPath()</code> to select the
@@ -242,34 +205,41 @@ Closed connection to localhost:9999
       <code>org.apache.catalina.jsp_file</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.PRECOMPILE">
+    <property name="org.apache.jasper.Constants. PRECOMPILE">
       <p>The name of the query parameter that causes the JSP engine to just
       pregenerate the servlet but not invoke it. If not specified, the default
       value of <code>org.apache.catalina.jsp_precompile</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.JSP_PACKAGE_NAME">
+    <property name="org.apache.jasper.Constants. JSP_PACKAGE_NAME">
       <p>The default package name for compiled jsp pages. If not specified, the
       default value of <code>org.apache.jsp</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.TAG_FILE_PACKAGE_NAME">
+    <property name="org.apache.jasper.Constants. TAG_FILE_PACKAGE_NAME">
       <p>The default package name for tag handlers generated from tag files. If
       not specified, the default value of <code>org.apache.jsp.tag</code> will
       be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.TEMP_VARIABLE_NAME_PREFIX">
+    <property name="org.apache.jasper.Constants. ALT_DD_ATTR">
+      <p>The servlet context attribute under which the alternate deployment
+      descriptor for this web application is stored. If not specified, the
+      default value of <code>org.apache.catalina.deploy.alt_dd</code> will
+      be used.</p>
+    </property>
+
+    <property name="org.apache.jasper.Constants. TEMP_VARIABLE_NAME_PREFIX">
       <p>Prefix to use for generated temporary variable names. If not specified,
       the default value of <code>_jspx_temp</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.USE_INSTANCE_MANAGER_FOR_TAGS">
+    <property name="org.apache.jasper.Constants. USE_INSTANCE_MANAGER_FOR_TAGS">
       <p>If <code>true</code>, the instance manager is used to obtain tag
       handler instances. If not specified, <code>false</code> will be used.</p>
     </property>
 
-    <property name="org.apache.jasper.Constants.INJECT_TAGS">
+    <property name="org.apache.jasper.Constants. USE_INSTANCE_MANAGER_FOR_TAGS">
       <p>If <code>true</code>, annotations specified in tags will be processed and
       injected. This can have a performance impact when using simple tags, or if tag 
       pooling is disabled. If not specified, <code>true</code> will be used.</p>
@@ -284,21 +254,21 @@ Closed connection to localhost:9999
 
   <properties>
 
-    <property name="org.apache.catalina.connector.RECYCLE_FACADES">
+    <property name="org.apache.catalina.connector. RECYCLE_FACADES">
       <p>If this is <code>true</code> or if a security manager is in use a new
       facade object will be created for each request. If not specified, the
       default value of <code>false</code> will be used.</p>
     </property>
 
     <property
-    name="org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH">
+    name="org.apache.catalina.connector. CoyoteAdapter.ALLOW_BACKSLASH">
       <p>If this is <code>true</code> the '\' character will be permitted as a
       path delimiter. If not specified, the default value of <code>false</code>
       will be used.</p>
     </property>
 
     <property
-    name="org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH">
+    name="org.apache.tomcat.util.buf. UDecoder.ALLOW_ENCODED_SLASH">
       <p>If this is <code>true</code> '%2F' and '%5C' will be permitted as path
       delimiters. If not specified, the default value of <code>false</code> will
       be used.</p>
@@ -313,7 +283,7 @@ Closed connection to localhost:9999
 
   <properties>
 
-    <property name="org.apache.catalina.STRICT_SERVLET_COMPLIANCE">
+    <property name="org.apache.catalina. STRICT_SERVLET_COMPLIANCE">
       <p>If this is <code>true</code> the following actions will occur:
       <ul>
       <li>any wrapped request or response object passed to an application
@@ -334,16 +304,8 @@ Closed connection to localhost:9999
       </p>
     </property>
 
-    <property name="org.apache.catalina.core.StandardWrapperValve.SERVLET_STATS">
-      <p>If <code>true</code> or if
-      <code>org.apache.catalina.STRICT_SERVLET_COMPLIANCE</code> is
-      <code>true</code>, the wrapper will collect the JSR-77 statistics for
-      individual servlets. If not specified, the
-      default value of <code>false</code> will be used.</p>
-    </property>
-
     <property
-    name="org.apache.catalina.session.StandardSession.ACTIVITY_CHECK">
+    name="org.apache.catalina.session. StandardSession.ACTIVITY_CHECK">
       <p>If this is <code>true</code> or if
       <code>org.apache.catalina.STRICT_SERVLET_COMPLIANCE</code> is
       <code>true</code> Tomcat will track the number of active requests for each

@@ -37,26 +37,23 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
-import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Realm;
-import org.apache.catalina.Server;
-import org.apache.catalina.Service;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.util.HexUtils;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.MD5Encoder;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.modeler.Registry;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 /**
@@ -161,8 +158,7 @@ public abstract class RealmBase
     /**
      * The all role mode.
      */
-    protected AllRolesMode allRolesMode = AllRolesMode.toMode(System.getProperty("org.apache.catalina.realm.RealmBase.ALL_ROLES_MODE", 
-            AllRolesMode.STRICT_MODE.name));
+    protected AllRolesMode allRolesMode = AllRolesMode.STRICT_MODE;
     
 
     // ------------------------------------------------------------- Properties
@@ -499,9 +495,6 @@ public abstract class RealmBase
 	    }
 
             for(int j=0; j < collection.length; j++){
-                if(collection[j].findMethodOmission(method)) {
-                    continue;
-                }
                 String [] patterns = collection[j].findPatterns();
  
                 // If patterns is null, continue to avoid an NPE
@@ -546,9 +539,6 @@ public abstract class RealmBase
 	    }
 
             for(int j=0; j < collection.length; j++){
-                if(collection[j].findMethodOmission(method)) {
-                    continue;
-                }
                 String [] patterns = collection[j].findPatterns();
 
                 // If patterns is null, continue to avoid an NPE
@@ -618,9 +608,6 @@ public abstract class RealmBase
             int pos = -1;
             for(int j=0; j < collection.length; j++){
                 String [] patterns = collection[j].findPatterns();
-                if(collection[j].findMethodOmission(method)) {
-                    continue;
-                }
 
                 // If patterns is null, continue to avoid an NPE
                 // See Bugzilla 30624
@@ -740,31 +727,6 @@ public abstract class RealmBase
 
         if (constraints == null || constraints.length == 0)
             return (true);
-
-        // Specifically allow access to the form login and form error pages
-        // and the "j_security_check" action
-        LoginConfig config = context.getLoginConfig();
-        if ((config != null) &&
-            (Constants.FORM_METHOD.equals(config.getAuthMethod()))) {
-            String requestURI = request.getRequestPathMB().toString();
-            String loginPage = config.getLoginPage();
-            if (loginPage.equals(requestURI)) {
-                if (log.isDebugEnabled())
-                    log.debug(" Allow access to login page " + loginPage);
-                return (true);
-            }
-            String errorPage = config.getErrorPage();
-            if (errorPage.equals(requestURI)) {
-                if (log.isDebugEnabled())
-                    log.debug(" Allow access to error page " + errorPage);
-                return (true);
-            }
-            if (requestURI.endsWith(Constants.FORM_ACTION)) {
-                if (log.isDebugEnabled())
-                    log.debug(" Allow access to username/password submission");
-                return (true);
-            }
-        }
 
         // Which user principal have we already authenticated?
         Principal principal = request.getPrincipal();
@@ -952,7 +914,7 @@ public abstract class RealmBase
         }
 
         // Redirect to the corresponding SSL port
-        StringBuilder file = new StringBuilder();
+        StringBuffer file = new StringBuffer();
         String protocol = "https";
         String host = request.getServerName();
         // Protocol
@@ -966,7 +928,9 @@ public abstract class RealmBase
         String requestedSessionId = request.getRequestedSessionId();
         if ((requestedSessionId != null) &&
             request.isRequestedSessionIdFromURL()) {
-            file.append(request.getContext().getSessionCookie().getPathParameterName());
+            file.append(";");
+            file.append(Globals.SESSION_PARAMETER_NAME);
+            file.append("=");
             file.append(requestedSessionId);
         }
         String queryString = request.getQueryString();
@@ -1097,17 +1061,15 @@ public abstract class RealmBase
     
     public void destroy() {
     
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            // unregister this realm
-            if ( oname!=null ) {   
-                try {   
-                    Registry.getRegistry(null, null).unregisterComponent(oname); 
-                    if(log.isDebugEnabled())
-                        log.debug( "unregistering realm " + oname );   
-                } catch( Exception ex ) {   
-                    log.error( "Can't unregister realm " + oname, ex);   
-                }      
-            }
+        // unregister this realm
+        if ( oname!=null ) {   
+            try {   
+                Registry.getRegistry(null, null).unregisterComponent(oname); 
+                if(log.isDebugEnabled())
+                    log.debug( "unregistering realm " + oname );   
+            } catch( Exception ex ) {   
+                log.error( "Can't unregister realm " + oname, ex);   
+            }      
         }
           
     }
@@ -1228,30 +1190,6 @@ public abstract class RealmBase
      * Return the Principal associated with the given user name.
      */
     protected abstract Principal getPrincipal(String username);
-
-
-    /**
-     * Return the Server object that is the ultimate parent for the container
-     * with which this Realm is associated. If the server cannot be found (eg
-     * because the container hierarchy is not complete), <code>null</code> is
-     * returned.
-     */
-    protected Server getServer() {
-        Container c = container;
-        if (c instanceof Context) {
-            c = c.getParent();
-        }
-        if (c instanceof Host) {
-            c = c.getParent();
-        }
-        if (c instanceof Engine) {
-            Service s = ((Engine)c).getService();
-            if (s != null) {
-                return s.getServer();
-            }
-        }
-        return null;
-    }
 
 
     // --------------------------------------------------------- Static Methods
@@ -1388,46 +1326,44 @@ public abstract class RealmBase
         if( initialized && container != null ) return;
         
         initialized=true;
-
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if( container== null ) {
-                ObjectName parent=null;
-                // Register with the parent
-                try {
-                    if( host == null ) {
-                        // global
-                        parent=new ObjectName(domain +":type=Engine");
-                    } else if( path==null ) {
-                        parent=new ObjectName(domain +
-                                ":type=Host,host=" + host);
-                    } else {
-                        parent=new ObjectName(domain +":j2eeType=WebModule,name=//" +
-                                host + path);
-                    }
-                    if( mserver.isRegistered(parent ))  {
-                        if(log.isDebugEnabled())
-                            log.debug("Register with " + parent);
-                        mserver.setAttribute(parent, new Attribute("realm", this));
-                    }
-                } catch (Exception e) {
-                    log.error("Parent not available yet: " + parent);  
+        if( container== null ) {
+            ObjectName parent=null;
+            // Register with the parent
+            try {
+                if( host == null ) {
+                    // global
+                    parent=new ObjectName(domain +":type=Engine");
+                } else if( path==null ) {
+                    parent=new ObjectName(domain +
+                            ":type=Host,host=" + host);
+                } else {
+                    parent=new ObjectName(domain +":j2eeType=WebModule,name=//" +
+                            host + path);
                 }
-            }
-
-            if( oname==null ) {
-                // register
-                try {
-                    ContainerBase cb=(ContainerBase)container;
-                    oname=new ObjectName(cb.getDomain()+":type=Realm" +
-                            getRealmSuffix() + cb.getContainerSuffix());
-                    Registry.getRegistry(null, null).registerComponent(this, oname, null );
+                if( mserver.isRegistered(parent ))  {
                     if(log.isDebugEnabled())
-                        log.debug("Register Realm "+oname);
-                } catch (Throwable e) {
-                    log.error( "Can't register " + oname, e);
+                        log.debug("Register with " + parent);
+                    mserver.setAttribute(parent, new Attribute("realm", this));
                 }
+            } catch (Exception e) {
+                log.error("Parent not available yet: " + parent);  
             }
         }
+        
+        if( oname==null ) {
+            // register
+            try {
+                ContainerBase cb=(ContainerBase)container;
+                oname=new ObjectName(cb.getDomain()+":type=Realm" +
+                        getRealmSuffix() + cb.getContainerSuffix());
+                Registry.getRegistry(null, null).registerComponent(this, oname, null );
+                if(log.isDebugEnabled())
+                    log.debug("Register Realm "+oname);
+            } catch (Throwable e) {
+                log.error( "Can't register " + oname, e);
+            }
+        }
+
     }
 
     protected String getRealmSuffix() {

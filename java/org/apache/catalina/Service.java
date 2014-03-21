@@ -18,10 +18,7 @@
 
 package org.apache.catalina;
 
-import java.security.SecureRandom;
-
 import org.apache.catalina.connector.Connector;
-import org.apache.tomcat.util.http.mapper.Mapper;
 
 /**
  * A <strong>Service</strong> is a group of one or more
@@ -64,12 +61,6 @@ public interface Service {
     public String getInfo();
 
     /**
-     * Return the <code>Mapper</code> that handles mapping for all
-     * <code>Connectors</code> associated with this Service.
-     */
-    public Mapper getMapper();
-
-    /**
      * Return the name of this Service.
      */
     public String getName();
@@ -81,19 +72,6 @@ public interface Service {
      */
     public void setName(String name);
 
-    /**
-     * Return the entropy increaser value, or compute a semi-useful value
-     * if this String has not yet been set.
-     */
-    public String getEntropy();
-    
-    /**
-     * Set the entropy increaser value.
-     *
-     * @param entropy The new entropy increaser value
-     */
-    public void setEntropy(String entropy);
-    
     /**
      * Return the <code>Server</code> with which we are associated (if any).
      */
@@ -164,9 +142,4 @@ public interface Service {
      */
     public void removeExecutor(Executor ex);
 
-    /**
-     * Get the global secure random that will be used for this service.
-     */
-    public SecureRandom getRandom();
-    
 }
