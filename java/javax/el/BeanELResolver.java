@@ -344,7 +344,8 @@ public class BeanELResolver extends ELResolver {
         while (iter.hasNext()) {
             Class<?> key = iter.next();
             BeanProperties bp = cache.get(key);
-            if(bp.getType().getClassLoader().equals(classloader)){
+            if (bp.getType().getClassLoader() != null && bp.getType().getClassLoader().equals(classloader)){
+                // JBWEB-293, avoid NPE if key's name is like java.lang.Class, getClassLoader() returns null to represent the bootstrap class loader
                 iter.remove();
             }
         }
