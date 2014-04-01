@@ -320,7 +320,6 @@ public class InternalAprOutputBuffer
 
         // Recycle Request object
         response.recycle();
-        bbuf.clear();
 
         socket = 0;
         pos = 0;
@@ -570,6 +569,7 @@ public class InternalAprOutputBuffer
 
         if (pos > 0) {
             // Sending the response header buffer
+            bbuf.clear();
             bbuf.put(buf, 0, pos);
         }
 

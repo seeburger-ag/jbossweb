@@ -359,8 +359,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 			    }
 			}
 			response.setLastWrite(res);
-			// bbuf.clear();
-			clearBuffer();
+			bbuf.clear();
 
 			if (res < 0) {
 				throw new IOException(MESSAGES.failedWrite());
@@ -467,12 +466,6 @@ public class InternalNioOutputBuffer implements OutputBuffer {
         flushBuffer();
     }
 
-    /**
-     * 
-     */
-    protected void clearBuffer() {
-        this.bbuf.clear();
-    }
 
     /**
      * Recycle this object
@@ -481,7 +474,6 @@ public class InternalNioOutputBuffer implements OutputBuffer {
         channel = null;
         // Recycle Request object
         response.recycle();
-        this.clearBuffer();
         pos = 0;
         lastActiveFilter = -1;
         committed = false;
@@ -666,6 +658,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 
         if (pos > 0) {
             // Sending the response header buffer
+            bbuf.clear();
             bbuf.put(buf, 0, pos);
         }
     }
