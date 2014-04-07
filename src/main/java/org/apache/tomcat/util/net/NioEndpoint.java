@@ -212,7 +212,7 @@ public class NioEndpoint extends AbstractEndpoint {
 
 		if (listener == null) {
 		    listener = this.serverSocketChannelFactory.createServerChannel(port, backlog,
-		            address, reuseAddress);
+		            address, reuseAddress, internalExecutor);
 		}
 
 		initialized = true;

@@ -39,6 +39,7 @@ public abstract class NioServerSocketChannelFactory implements Cloneable {
 	protected Hashtable<String, Object> attributes = new Hashtable<String, Object>();
 
 	protected AsynchronousChannelGroup threadGroup;
+	protected boolean internalExecutor = true;
 
 	/**
 	 * Create a new instance of {@code NioServerSocketChannelFactory}
@@ -188,7 +189,7 @@ public abstract class NioServerSocketChannelFactory implements Cloneable {
 	 */
 	public AsynchronousServerSocketChannel createServerChannel(int port, int backlog)
 			throws IOException {
-		return createServerChannel(port, backlog, null, false);
+		return createServerChannel(port, backlog, null, false, true);
 	}
 
 	/**
@@ -210,7 +211,7 @@ public abstract class NioServerSocketChannelFactory implements Cloneable {
 	 *                for networking errors
 	 */
 	public abstract AsynchronousServerSocketChannel createServerChannel(int port, int backlog,
-			InetAddress ifAddress, boolean reuseAddress) throws IOException;
+			InetAddress ifAddress, boolean reuseAddress, boolean internalExecutor) throws IOException;
 
 	/**
 	 * Initialize the specified {@code NioChannel}

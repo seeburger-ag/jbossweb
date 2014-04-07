@@ -24,6 +24,7 @@ import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
+import java.util.concurrent.TimeUnit;
 
 /**
  * {@code DefaultNioServerSocketChannelFactory}
@@ -66,9 +67,23 @@ public class DefaultNioServerSocketChannelFactory extends NioServerSocketChannel
 	 * @see org.apache.tomcat.util.net.NioServerSocketChannelFactory#destroy()
 	 */
 	public void destroy() throws IOException {
-		this.threadGroup = null;
-		this.attributes.clear();
-		this.attributes = null;
+	    try {
+	        if (threadGroup != null && internalExecutor) {
+	            threadGroup.shutdownNow();
+	            long timeout = Constants.SHUTDOWN_TIMEOUT;
+	            if (timeout > 0) {
+	                try {
+	                    threadGroup.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+	                } catch (InterruptedException e) {
+	                    // Ignore
+	                }
+	            }
+	        }
+	    } finally {
+	        this.threadGroup = null;
+	        this.attributes.clear();
+	        this.attributes = null;
+	    }
 	}
 
 	/*
@@ -103,7 +118,8 @@ public class DefaultNioServerSocketChannelFactory extends NioServerSocketChannel
 	 */
 	@Override
 	public AsynchronousServerSocketChannel createServerChannel(int port, int backlog,
-			InetAddress ifAddress, boolean reuseAddress) throws IOException {
+			InetAddress ifAddress, boolean reuseAddress, boolean internalExecutor) throws IOException {
+	    this.internalExecutor = internalExecutor;
 		return open().setOption(StandardSocketOptions.SO_REUSEADDR, reuseAddress).bind(
 				new InetSocketAddress(ifAddress, port), backlog);
 	}
