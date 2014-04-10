@@ -30,6 +30,7 @@ import java.util.Locale;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Request;
+import org.apache.coyote.http11.upgrade.servlet31.ReadListener;
 import org.apache.tomcat.util.buf.B2CConverter;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
@@ -143,6 +144,12 @@ public class InputBuffer extends Reader
     private int size = -1;
 
 
+    /**
+     * Read listener.
+     */
+    private ReadListener readListener = null;
+
+
     // ----------------------------------------------------------- Constructors
 
 
@@ -229,7 +236,8 @@ public class InputBuffer extends Reader
         
         gotEnc = false;
         enc = null;
-        
+        readListener = null;
+
     }
 
 
@@ -265,6 +273,14 @@ public class InputBuffer extends Reader
      */
     public boolean isEof() {
         return eof;
+    }
+
+
+    /**
+     * Reset the eof state.
+     */
+    public void resetEof() {
+        eof = false;
     }
 
 
@@ -573,6 +589,24 @@ public class InputBuffer extends Reader
             encoders.put(enc, conv);
         }
 
+    }
+
+    public ReadListener getReadListener() {
+        return readListener;
+    }
+
+    public void setReadListener(ReadListener readListener) {
+        if (this.readListener != null) {
+            throw MESSAGES.readListenerAlreadySet();
+        }
+        if (readListener == null) {
+            throw MESSAGES.nullListener();
+        }
+        if (!request.isEventMode()) {
+            throw MESSAGES.cannotSetListenerWithoutUpgradeOrAsync();
+        }
+        this.readListener = readListener;
+        coyoteRequest.action(ActionCode.ACTION_EVENT_READ_BEGIN, null);
     }
 
 }

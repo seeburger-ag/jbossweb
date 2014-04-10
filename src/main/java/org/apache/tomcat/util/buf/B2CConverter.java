@@ -33,9 +33,6 @@ import java.nio.charset.UnsupportedCharsetException;
  */
 public class B2CConverter {
 
-    protected static org.jboss.logging.Logger log =
-        org.jboss.logging.Logger.getLogger(B2CConverter.class);
-
     protected CharsetDecoder decoder = null;
     protected ByteBuffer bb = null;
     protected CharBuffer cb = null;
