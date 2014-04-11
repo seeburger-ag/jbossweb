@@ -17,6 +17,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -310,7 +312,7 @@ public class BodyContentImpl extends BodyContent {
 
     private void ensureOpen() throws IOException {
         if (closed) {
-            throw new IOException("Stream closed");
+            throw new IOException(MESSAGES.streamClosed());
         }
         else {
             return;
