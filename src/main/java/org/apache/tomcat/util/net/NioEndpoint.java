@@ -1,23 +1,19 @@
-/**
- * JBoss, Home of Professional Open Source. Copyright 2011, Red Hat, Inc., and
- * individual contributors as indicated by the @author tags. See the
- * copyright.txt file in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.tomcat.util.net;
@@ -61,9 +57,6 @@ import org.jboss.web.CoyoteLogger;
 public class NioEndpoint extends AbstractEndpoint {
 
 	private AsynchronousServerSocketChannel listener;
-	private ConcurrentHashMap<Long, NioChannel> connections;
-	private ConcurrentLinkedQueue<ChannelProcessor> recycledChannelProcessors;
-	private ConcurrentLinkedQueue<HandshakeHandler> recycledHandshakeProcessors;
 
 	/**
 	 * Handling of accepted sockets.
@@ -89,6 +82,11 @@ public class NioEndpoint extends AbstractEndpoint {
 	 * The static file sender.
 	 */
 	protected Sendfile sendfile;
+
+	/**
+	 * Using an internal executor.
+	 */
+    protected boolean internalExecutor = false;
 
 	/**
 	 * Create a new instance of {@code NioEndpoint}
@@ -186,20 +184,9 @@ public class NioEndpoint extends AbstractEndpoint {
 			this.threadFactory = new DefaultThreadFactory(getName() + "-", threadPriority);
 		}
 
-		if (this.connections == null) {
-			this.connections = new ConcurrentHashMap<>();
-		}
-
-		if (this.recycledChannelProcessors == null) {
-			this.recycledChannelProcessors = new ConcurrentLinkedQueue<>();
-		}
-
-		if (this.recycledHandshakeProcessors == null) {
-			this.recycledHandshakeProcessors = new ConcurrentLinkedQueue<>();
-		}
-
 		// If the executor is not set, create it with a fixed thread pool
 		if (this.executor == null) {
+		    internalExecutor = true;
 			this.executor = Executors.newFixedThreadPool(this.maxThreads, this.threadFactory);
 		}
 
@@ -225,7 +212,7 @@ public class NioEndpoint extends AbstractEndpoint {
 
 		if (listener == null) {
 		    listener = this.serverSocketChannelFactory.createServerChannel(port, backlog,
-		            address, reuseAddress);
+		            address, reuseAddress, internalExecutor);
 		}
 
 		initialized = true;
@@ -246,7 +233,7 @@ public class NioEndpoint extends AbstractEndpoint {
 			running = true;
 			paused = false;
 
-			// Start acceptor threads
+            // Start acceptor threads
 			for (int i = 0; i < acceptorThreadCount; i++) {
 				Thread acceptorThread = newThread(new Acceptor(), "Acceptor", daemon);
 				acceptorThread.start();
@@ -261,7 +248,7 @@ public class NioEndpoint extends AbstractEndpoint {
 			}
 
 			// Starting the event poller
-			this.eventPoller = new EventPoller(this.maxThreads);
+			this.eventPoller = new EventPoller(this.maxConnections);
 			this.eventPoller.init();
 			Thread eventPollerThread = newThread(this.eventPoller, "EventPoller", true);
 			eventPollerThread.start();
@@ -311,28 +298,16 @@ public class NioEndpoint extends AbstractEndpoint {
 			this.eventPoller.destroy();
 		}
 
-		// Closing all alive connections
-		for (NioChannel ch : this.connections.values()) {
-			try {
-				ch.close();
-			} catch (Throwable t) {
-				// Nothing to do
-			}
-		}
-		// Remove all connections
-		this.connections.clear();
 		// Destroy the server socket channel factory
 		this.serverSocketChannelFactory.destroy();
 		this.serverSocketChannelFactory = null;
-		// Destroy all recycled channel processors
-		this.recycledChannelProcessors.clear();
-		this.recycledChannelProcessors = null;
-		// Destroy all recycled handshake processors
-		this.recycledHandshakeProcessors.clear();
-		this.recycledHandshakeProcessors = null;
 
 		// Shut down the executor
-		((ExecutorService) this.executor).shutdown();
+		if (internalExecutor) {
+		    ((ExecutorService) this.executor).shutdown();
+		    executor = null;
+		    internalExecutor = false;
+		}
 
 		initialized = false;
 	}
@@ -353,6 +328,12 @@ public class NioEndpoint extends AbstractEndpoint {
 			if (tcpNoDelay) {
 				channel.setOption(StandardSocketOptions.TCP_NODELAY, tcpNoDelay);
 			}
+            if (soReceiveBuffer > 0) {
+                channel.setOption(StandardSocketOptions.SO_RCVBUF, soReceiveBuffer);
+            }
+            if (soSendBuffer > 0) {
+                channel.setOption(StandardSocketOptions.SO_SNDBUF, soSendBuffer);
+            }
 
 			// Initialize the channel
 			serverSocketChannelFactory.initChannel(channel);
@@ -460,7 +441,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
 		return true;
@@ -475,17 +456,16 @@ public class NioEndpoint extends AbstractEndpoint {
 	 *         successfully else <tt>false</tt>
 	 */
 	public boolean processChannel(NioChannel channel, SocketStatus status) {
-		if (channel.isClosed()) {
+		if (channel == null || channel.isClosed()) {
 			return false;
 		}
 		try {
-			ChannelProcessor processor = getChannelProcessor(channel, status);
-			this.executor.execute(processor);
+			this.executor.execute(new ChannelProcessor(channel, status));
 			return true;
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
 	}
@@ -496,63 +476,14 @@ public class NioEndpoint extends AbstractEndpoint {
 	 */
 	private boolean handshake(NioChannel channel) {
 		try {
-			HandshakeHandler processor = getHandshakeProcessor(channel);
-			this.executor.execute(processor);
+			this.executor.execute(new HandshakeHandler(channel));
 			return true;
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
-	}
-
-	/**
-	 * @return peek a processor from the recycled processors list
-	 */
-	private ChannelProcessor getChannelProcessor(NioChannel channel, SocketStatus status) {
-		ChannelProcessor processor = this.recycledChannelProcessors.poll();
-		if (processor == null) {
-			processor = new ChannelProcessor(channel, status);
-		} else {
-			processor.setChannel(channel);
-			processor.setStatus(status);
-		}
-		return processor;
-	}
-
-	/**
-	 * @return peek a handshake processor from the recycled processors list
-	 */
-	private HandshakeHandler getHandshakeProcessor(NioChannel channel) {
-		HandshakeHandler processor = this.recycledHandshakeProcessors.poll();
-		if (processor == null) {
-			processor = new HandshakeHandler(channel);
-		} else {
-			processor.setChannel(channel);
-		}
-		return processor;
-	}
-
-	/**
-	 * Try to add the specified channel to the list of connections.
-	 * 
-	 * @param channel
-	 *            the channel to be added
-	 * @return <tt>true</tt> if the channel is added successfully, else
-	 *         <tt>false</tt>
-	 */
-	private boolean addChannel(NioChannel channel) {
-		if (this.counter.get() < this.maxConnections && channel.isOpen()) {
-			if (this.connections.get(channel.getId()) == null
-					|| this.connections.get(channel.getId()).isClosed()) {
-				this.connections.put(channel.getId(), channel);
-				this.counter.incrementAndGet();
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
@@ -588,10 +519,6 @@ public class NioEndpoint extends AbstractEndpoint {
 				channel.close();
 			} catch (IOException e) {
 	            CoyoteLogger.UTIL_LOGGER.errorClosingSocket(e);
-			} finally {
-				if (this.connections.remove(channel.getId()) != null) {
-					this.counter.decrementAndGet();
-				}
 			}
 		}
 	}
@@ -601,7 +528,7 @@ public class NioEndpoint extends AbstractEndpoint {
 	 *         from the pool, else <tt>null</tt>
 	 */
 	public SendfileData getSendfileData() {
-		return this.sendfile != null ? this.sendfile.getSendfileData() : new SendfileData();
+		return new SendfileData();
 	}
 
 	/**
@@ -625,20 +552,23 @@ public class NioEndpoint extends AbstractEndpoint {
 			// Loop until we receive a shutdown command
 			while (running) {
 				// Loop if end point is paused
-				while (paused) {
+				while (running && paused) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						// Ignore
 					}
 				}
+                if (!running) {
+                    break;
+                }
 
 				try {
 					// Accept the next incoming connection from the server
 					// channel
 					final NioChannel channel = serverSocketChannelFactory.acceptChannel(listener);
 					boolean ok = false;
-					if (addChannel(channel) && setChannelOptions(channel) && channel.isOpen()) {
+					if (setChannelOptions(channel) && channel.isOpen()) {
 						if (channel.isSecure()) {
 							handshake(channel);
 							ok = true;
@@ -707,29 +637,9 @@ public class NioEndpoint extends AbstractEndpoint {
 			} catch (Exception exp) {
                 CoyoteLogger.UTIL_LOGGER.errorProcessingChannelDebug(exp);
 				closeChannel(channel);
-			} finally {
-				this.recycle();
 			}
 		}
 
-		/**
-		 * Recycle the handshake processor
-		 */
-		private void recycle() {
-			this.channel = null;
-			if (recycledHandshakeProcessors != null) {
-				recycledHandshakeProcessors.offer(this);
-			}
-		}
-
-		/**
-		 * Setter for the channel
-		 * 
-		 * @param channel
-		 */
-		public void setChannel(NioChannel channel) {
-			this.channel = channel;
-		}
 	}
 
 	/**
@@ -797,15 +707,6 @@ public class NioEndpoint extends AbstractEndpoint {
 		 */
 		public ChannelInfo(NioChannel channel, long timeout, TimeUnit unit, int flags) {
 			this(channel, TimeUnit.MILLISECONDS.convert(timeout, unit), flags);
-		}
-
-		/**
-		 * Recycle this channel info for next use
-		 */
-		public void recycle() {
-			this.channel = null;
-			this.timeout = 0;
-			this.flags = 0;
 		}
 
 		/**
@@ -1026,53 +927,23 @@ public class NioEndpoint extends AbstractEndpoint {
 		@Override
 		public void run() {
 			try {
-				Handler.SocketState state = ((status == null) ? handler.process(channel) : handler
-						.event(channel, status));
+                Handler.SocketState state = null;
+                if (status == null) {
+                    state = handler.process(channel);
+                } else {
+                    synchronized (channel) {
+                        state = handler.event(channel, status);
+                    }
+                }
 
 				if (state == SocketState.CLOSED) {
 					closeChannel(channel);
 				}
 			} catch (Throwable th) {
                 CoyoteLogger.UTIL_LOGGER.errorProcessingChannelWithException(th);
-			} finally {
-				this.recycle();
 			}
 		}
 
-		/**
-		 * Reset this channel processor
-		 */
-		protected void recycle() {
-			this.channel = null;
-			this.status = null;
-			if (recycledChannelProcessors != null) {
-				recycledChannelProcessors.offer(this);
-			}
-		}
-
-		/**
-		 * 
-		 * @param channel
-		 * @param status
-		 */
-		protected void setup(NioChannel channel, SocketStatus status) {
-			this.channel = channel;
-			this.status = status;
-		}
-
-		/**
-		 * @param status
-		 */
-		public void setStatus(SocketStatus status) {
-			this.status = status;
-		}
-
-		/**
-		 * @param channel
-		 */
-		public void setChannel(NioChannel channel) {
-			this.channel = channel;
-		}
 	}
 
 	/**
@@ -1090,8 +961,6 @@ public class NioEndpoint extends AbstractEndpoint {
 		protected long lastMaintain = System.currentTimeMillis();
 
 		protected ConcurrentHashMap<Long, ChannelInfo> channelList;
-		protected ConcurrentLinkedQueue<ChannelInfo> recycledChannelList;
-		private ConcurrentLinkedQueue<CompletionHandler<Integer, NioChannel>> recycledCompletionHandlers;
 		private Object mutex;
 		private int size;
 
@@ -1113,7 +982,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		public void run() {
 			while (running) {
 				// Loop if endpoint is paused
-				while (paused) {
+				while (running && paused) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -1174,8 +1043,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		 * @param id
 		 */
 		protected boolean remove(long id) {
-			ChannelInfo info = this.channelList.remove(id);
-			return offer(info);
+			return this.channelList.remove(id) != null;
 		}
 
 		/**
@@ -1199,9 +1067,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		 */
 		public void init() {
 			this.mutex = new Object();
-			this.channelList = new ConcurrentHashMap<>(this.size);
-			this.recycledChannelList = new ConcurrentLinkedQueue<>();
-			this.recycledCompletionHandlers = new ConcurrentLinkedQueue<>();
+			this.channelList = new ConcurrentHashMap<Long, ChannelInfo>(this.size);
 		}
 
 		/**
@@ -1210,82 +1076,39 @@ public class NioEndpoint extends AbstractEndpoint {
 		public void destroy() {
 			synchronized (this.mutex) {
 				this.channelList.clear();
-				this.recycledChannelList.clear();
-				this.recycledCompletionHandlers.clear();
 				this.mutex.notifyAll();
 			}
 		}
 
 		/**
-		 * 
-		 * @return
-		 */
-		protected ChannelInfo poll() {
-			ChannelInfo info = this.recycledChannelList.poll();
-			if (info == null) {
-				info = new ChannelInfo();
-			}
-			return info;
-		}
-
-		/**
-		 * Recycle the the {@link ChannelInfo}
-		 * 
-		 * @param info
-		 */
-		protected boolean offer(ChannelInfo info) {
-			if (info != null) {
-				info.recycle();
-				return this.recycledChannelList.offer(info);
-			}
-			return false;
-		}
-
-		/**
-		 * Peek a {@link java.nio.CompletionHandler} from the list of recycled
-		 * handlers. If the list is empty, create a new one and return it.
+		 * Create a completion handler for read.
 		 * 
 		 * @return a reference of {@link java.nio.CompletionHandler}
 		 */
 		private CompletionHandler<Integer, NioChannel> getCompletionHandler() {
-			CompletionHandler<Integer, NioChannel> handler = this.recycledCompletionHandlers.poll();
-			if (handler == null) {
-				handler = new CompletionHandler<Integer, NioChannel>() {
+		    CompletionHandler<Integer, NioChannel> handler = new CompletionHandler<Integer, NioChannel>() {
+		        @Override
+		        public void completed(Integer nBytes, NioChannel attach) {
+		            if (nBytes < 0) {
+		                failed(new ClosedChannelException(), attach);
+		            } else {
+		                remove(attach);
+		                if (!processChannel(attach, SocketStatus.OPEN_READ)) {
+		                    closeChannel(attach);
+		                }
+		            }
+		        }
 
-					@Override
-					public void completed(Integer nBytes, NioChannel attach) {
-						if (nBytes < 0) {
-							failed(new ClosedChannelException(), attach);
-						} else {
-							remove(attach);
-							if (!processChannel(attach, SocketStatus.OPEN_READ)) {
-								closeChannel(attach);
-							}
-							// Recycle the completion handler
-							recycleHanlder(this);
-						}
-					}
-
-					@Override
-					public void failed(Throwable exc, NioChannel attach) {
-						remove(attach);
-						processChannel(attach, SocketStatus.ERROR);
-						// Recycle the completion handler
-						recycleHanlder(this);
-					}
-				};
-			}
+		        @Override
+		        public void failed(Throwable exc, NioChannel attach) {
+		            remove(attach);
+		            if (!processChannel(attach, SocketStatus.ERROR)) {
+		                closeChannel(attach);
+		            }
+		        }
+		    };
 
 			return handler;
-		}
-
-		/**
-		 * Recycle the {@link java.nio.CompletionHandler}
-		 * 
-		 * @param handler
-		 */
-		private void recycleHanlder(CompletionHandler<Integer, NioChannel> handler) {
-			this.recycledCompletionHandlers.offer(handler);
 		}
 
 		/**
@@ -1301,50 +1124,46 @@ public class NioEndpoint extends AbstractEndpoint {
 			if (this.channelList.size() > this.size) {
 				return false;
 			}
+			if (channel == null) {
+			    return false;
+			}
 
 			long date = timeout + System.currentTimeMillis();
 			ChannelInfo info = this.channelList.get(channel.getId());
 
 			if (info == null) {
-				info = poll();
+				info = new ChannelInfo();
 				info.channel = channel;
 				info.flags = flag;
 				this.channelList.put(channel.getId(), info);
 			} else {
 				info.flags = ChannelInfo.merge(info.flags, flag);
 			}
+
 			// Setting the channel timeout
 			info.timeout = date;
-
 			final NioChannel ch = channel;
-
 			if (info.resume()) {
 				remove(info);
 				if (!processChannel(ch, SocketStatus.OPEN_CALLBACK)) {
 					closeChannel(ch);
-				}
-			} else if (info.read()) {
-				try {
-					// Trying awaiting for read event
-					ch.awaitRead(ch, getCompletionHandler());
-				} catch (Exception e) {
-					// Ignore
-	                CoyoteLogger.UTIL_LOGGER.errorAwaitingRead(e);
 				}
 			} else if (info.write()) {
 				remove(info);
 				if (!processChannel(ch, SocketStatus.OPEN_WRITE)) {
 					closeChannel(ch);
 				}
+            } else if (info.read()) {
+                try {
+                    // Trying awaiting for read event
+                    ch.awaitRead(ch, getCompletionHandler());
+                } catch (Exception e) {
+                    // Ignore
+                    CoyoteLogger.UTIL_LOGGER.errorAwaitingRead(e);
+                }
 			} else if (info.wakeup()) {
 				remove(info);
 				// TODO
-			} else {
-                CoyoteLogger.UTIL_LOGGER.unknownEvent();
-				remove(info);
-				if (!processChannel(ch, SocketStatus.ERROR)) {
-					closeChannel(ch);
-				}
 			}
 
 			// Wake up all waiting threads
@@ -1440,25 +1259,6 @@ public class NioEndpoint extends AbstractEndpoint {
 				this.fileChannel = java.nio.channels.FileChannel
 						.open(path, StandardOpenOption.READ).position(this.pos);
 			}
-		}
-
-		/**
-		 * Recycle this {@code SendfileData}
-		 */
-		protected void recycle() {
-			this.start = 0;
-			this.end = 0;
-			this.pos = 0;
-			this.channel = null;
-			this.keepAlive = false;
-			if (this.fileChannel != null && this.fileChannel.isOpen()) {
-				try {
-					this.fileChannel.close();
-				} catch (IOException e) {
-					// Ignore
-				}
-			}
-			this.fileChannel = null;
 		}
 
 		/**
@@ -1587,7 +1387,6 @@ public class NioEndpoint extends AbstractEndpoint {
 
 		protected int size;
 		protected ConcurrentLinkedQueue<SendfileData> fileDatas;
-		protected ConcurrentLinkedQueue<SendfileData> recycledFileDatas;
 		protected AtomicInteger counter;
 		private Object mutex;
 
@@ -1608,7 +1407,7 @@ public class NioEndpoint extends AbstractEndpoint {
 
 			while (running) {
 				// Loop if endpoint is paused
-				while (paused) {
+				while (running && paused) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -1643,11 +1442,10 @@ public class NioEndpoint extends AbstractEndpoint {
 		 * Initialize the {@code Sendfile}
 		 */
 		protected void init() {
-			this.size = maxThreads;
+		    this.size = sendfileSize;
 			this.mutex = new Object();
 			this.counter = new AtomicInteger(0);
-			this.fileDatas = new ConcurrentLinkedQueue<>();
-			this.recycledFileDatas = new ConcurrentLinkedQueue<>();
+			this.fileDatas = new ConcurrentLinkedQueue<SendfileData>();
 		}
 
 		/**
@@ -1658,29 +1456,9 @@ public class NioEndpoint extends AbstractEndpoint {
 				// To unlock the
 				this.counter.incrementAndGet();
 				this.fileDatas.clear();
-				this.recycledFileDatas.clear();
 				// Unlock threads waiting for this monitor
 				this.mutex.notifyAll();
 			}
-		}
-
-		/**
-		 * @param data
-		 */
-		public void recycleSendfileData(SendfileData data) {
-			data.recycle();
-			this.recycledFileDatas.offer(data);
-		}
-
-		/**
-		 * Poll the head of the recycled object list if it is not empty, else
-		 * create a new one.
-		 * 
-		 * @return a {@code SendfileData}
-		 */
-		public SendfileData getSendfileData() {
-			SendfileData data = this.recycledFileDatas.poll();
-			return data == null ? new SendfileData() : data;
 		}
 
 		/**
@@ -1714,8 +1492,6 @@ public class NioEndpoint extends AbstractEndpoint {
 							attachment.pos += nw;
 
 							if (attachment.pos >= attachment.end) {
-								// All requested bytes were sent, recycle it
-								recycleSendfileData(attachment);
 								return;
 							}
 
@@ -1768,8 +1544,6 @@ public class NioEndpoint extends AbstractEndpoint {
 					data.fileChannel.close();
 					add(data);
 				}
-			} else {
-				recycleSendfileData(data);
 			}
 		}
 

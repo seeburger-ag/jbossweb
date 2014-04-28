@@ -1549,7 +1549,7 @@ public class XMLEncodingDetector {
             char c1 = Character.toLowerCase(target.charAt(1));
             char c2 = Character.toLowerCase(target.charAt(2));
             if (c0 == 'x' && c1 == 'm' && c2 == 'l') {
-                err.jspError("jsp.error.xml.reservedPITarget");
+                err.jspError(MESSAGES.reservedPiTarget());
             }
         }
 
@@ -1562,7 +1562,7 @@ public class XMLEncodingDetector {
             }
             else {
                 // if there is data there should be some space
-                err.jspError("jsp.error.xml.spaceRequiredInPI");
+                err.jspError(MESSAGES.requiredWhiteSpaceAfterPiTarget());
             }
         }
 
