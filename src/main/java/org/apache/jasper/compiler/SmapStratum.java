@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -47,14 +49,14 @@ public class SmapStratum {
         /** Sets InputStartLine. */
         public void setInputStartLine(int inputStartLine) {
             if (inputStartLine < 0)
-                throw new IllegalArgumentException("" + inputStartLine);
+                throw MESSAGES.invalidNegativeSmapPosition(inputStartLine);
             this.inputStartLine = inputStartLine;
         }
 
         /** Sets OutputStartLine. */
         public void setOutputStartLine(int outputStartLine) {
             if (outputStartLine < 0)
-                throw new IllegalArgumentException("" + outputStartLine);
+                throw MESSAGES.invalidNegativeSmapPosition(outputStartLine);
             this.outputStartLine = outputStartLine;
         }
 
@@ -66,7 +68,7 @@ public class SmapStratum {
              */
         public void setLineFileID(int lineFileID) {
             if (lineFileID < 0)
-                throw new IllegalArgumentException("" + lineFileID);
+                throw MESSAGES.invalidNegativeSmapPosition(lineFileID);
             this.lineFileID = lineFileID;
             this.lineFileIDSet = true;
         }
@@ -74,14 +76,14 @@ public class SmapStratum {
         /** Sets InputLineCount. */
         public void setInputLineCount(int inputLineCount) {
             if (inputLineCount < 0)
-                throw new IllegalArgumentException("" + inputLineCount);
+                throw MESSAGES.invalidNegativeSmapPosition(inputLineCount);
             this.inputLineCount = inputLineCount;
         }
 
         /** Sets OutputLineIncrement. */
         public void setOutputLineIncrement(int outputLineIncrement) {
             if (outputLineIncrement < 0)
-                throw new IllegalArgumentException("" + outputLineIncrement);
+                throw MESSAGES.invalidNegativeSmapPosition(outputLineIncrement);
             this.outputLineIncrement = outputLineIncrement;
         }
 
@@ -92,7 +94,7 @@ public class SmapStratum {
          */
         public String getString() {
             if (inputStartLine == -1 || outputStartLine == -1)
-                throw new IllegalStateException();
+                throw MESSAGES.undefinedPosition();
             StringBuilder out = new StringBuilder();
             out.append(inputStartLine);
             if (lineFileIDSet)
@@ -251,8 +253,7 @@ public class SmapStratum {
         // check the input - what are you doing here??
         int fileIndex = filePathList.indexOf(inputFileName);
         if (fileIndex == -1) // still
-            throw new IllegalArgumentException(
-                "inputFileName: " + inputFileName);
+            throw MESSAGES.unknownFileName(inputFileName);
 
         //Jasper incorrectly SMAPs certain Nodes, giving them an 
         //outputStartLine of 0.  This can cause a fatal error in
