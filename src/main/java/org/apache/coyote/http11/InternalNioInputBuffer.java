@@ -118,6 +118,14 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 
 			    if (nBytes > 0) {
 			        bbuf.flip();
+	                if (nBytes > (buf.length - end)) {
+	                    // An alternative is to bbuf.limit(buf.length - end) before the read,
+	                    // which may be less efficient
+	                    buf = new byte[buf.length];
+	                    end = 0;
+	                    pos = end;
+	                    lastValid = pos;
+	                }
 			        bbuf.get(buf, pos, nBytes);
 			        lastValid = pos + nBytes;
 			        semaphore.release();
@@ -456,7 +464,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
             if (nRead > 0) {
                 bbuf.flip();
                 if (nRead > (buf.length - end)) {
-                    // An alternative is to bbuf.setLimit(buf.length - end) before the read,
+                    // An alternative is to bbuf.limit(buf.length - end) before the read,
                     // which may be less efficient
                     buf = new byte[buf.length];
                     end = 0;
@@ -486,6 +494,8 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 				throw MESSAGES.requestHeaderTooLarge();
 			}
 		} else {
+		    // Alternative to buffer reallocation
+		    // bbuf.limit(buf.length - end);
 			pos = end;
 			lastValid = pos;
 		}
