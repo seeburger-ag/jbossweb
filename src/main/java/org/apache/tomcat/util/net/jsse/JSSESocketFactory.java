@@ -205,59 +205,9 @@ public class JSSESocketFactory
         String[] enabledCiphers = null;
 
         if (requestedCiphers != null) {
-            Vector vec = null;
-            String cipher = requestedCiphers;
-            int index = requestedCiphers.indexOf(',');
-            if (index != -1) {
-                int fromIndex = 0;
-                while (index != -1) {
-                    cipher = requestedCiphers.substring(fromIndex, index).trim();
-                    if (cipher.length() > 0) {
-                        /*
-                         * Check to see if the requested cipher is among the
-                         * supported ciphers, i.e., may be enabled
-                         */
-                        for (int i=0; supportedCiphers != null
-                                     && i<supportedCiphers.length; i++) {
-                            if (supportedCiphers[i].equals(cipher)) {
-                                if (vec == null) {
-                                    vec = new Vector();
-                                }
-                                vec.addElement(cipher);
-                                break;
-                            }
-                        }
-                    }
-                    fromIndex = index+1;
-                    index = requestedCiphers.indexOf(',', fromIndex);
-                } // while
-                cipher = requestedCiphers.substring(fromIndex);
-            }
-
-            if (cipher != null) {
-                cipher = cipher.trim();
-                if (cipher.length() > 0) {
-                    /*
-                     * Check to see if the requested cipher is among the
-                     * supported ciphers, i.e., may be enabled
-                     */
-                    for (int i=0; supportedCiphers != null
-                                 && i<supportedCiphers.length; i++) {
-                        if (supportedCiphers[i].equals(cipher)) {
-                            if (vec == null) {
-                                vec = new Vector();
-                            }
-                            vec.addElement(cipher);
-                            break;
-                        }
-                    }
-                }
-            }           
-
-            if (vec != null) {
-                enabledCiphers = new String[vec.size()];
-                vec.copyInto(enabledCiphers);
-            } else {
+            String[] ciphers = requestedCiphers.split(",");
+	    enabledCiphers = JSSEUtils.getEnabledCiphers(ciphers, supportedCiphers);
+	    if(enabledCiphers == null || enabledCiphers.length == 0) {
                 throw new IOException(MESSAGES.noCipherMatch()); // Like openssl.
             }
         } else {
