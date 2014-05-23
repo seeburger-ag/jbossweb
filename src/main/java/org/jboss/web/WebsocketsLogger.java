@@ -98,4 +98,8 @@ public interface WebsocketsLogger extends BasicLogger {
     @Message(id = 8813, value = "WebSocket support is not available when running on Java 6")
     void noWebsocketsSupport();
 
+    @LogMessage(level = WARN)
+    @Message(id = 8814, value = "Thread group %s not destroyed")
+    void threadGroupNotDestryed(String name);
+
 }

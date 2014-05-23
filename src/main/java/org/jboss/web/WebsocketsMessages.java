@@ -170,7 +170,7 @@ public interface WebsocketsMessages {
     @Message(id = 8544, value = "The WebSocket session has been closed and no method (apart from close()) may be called on a closed session")
     IllegalStateException sessionAlreadyClosed();
 
-    @Message(id = 8545, value = "Unable to create dedicated AsynchronousChannelGroup for WebSocket clients which is required to prevent memory leaks in complex class loader environments like J2EE containers")
+    @Message(id = 8545, value = "Unable to create dedicated AsynchronousChannelGroup for WebSocket clients which is required to prevent memory leaks in complex class loader environments like JEE containers")
     IllegalStateException asyncGroupFail();
 
     @Message(id = 8546, value = "Cannot use POJO class [%s] as it is not annotated with @ClientEndpoint")

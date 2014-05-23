@@ -55,6 +55,7 @@ import org.apache.tomcat.websocket.WsSession;
 import org.apache.tomcat.websocket.WsWebSocketContainer;
 import org.apache.tomcat.websocket.pojo.PojoEndpointServer;
 import org.apache.tomcat.websocket.pojo.PojoMethodMapping;
+import org.jboss.web.WebsocketsLogger;
 
 /**
  * Provides a per class loader (i.e. per web application) instance of a
@@ -85,6 +86,7 @@ public class WsServerContainer extends WsWebSocketContainer
     private final ConcurrentHashMap<String,Set<WsSession>> authenticatedSessions =
             new ConcurrentHashMap<String, Set<WsSession>>();
     private final ExecutorService executorService;
+    private final ThreadGroup threadGroup;
     private volatile boolean endpointsRegistered = false;
 
     WsServerContainer(ServletContext servletContext) {
@@ -110,7 +112,7 @@ public class WsServerContainer extends WsWebSocketContainer
         }
         // Executor config
         int executorCoreSize = 0;
-        int executorMaxSize = 10;
+        int executorMaxSize = 200;
         long executorKeepAliveTimeSeconds = 60;
         value = servletContext.getInitParameter(
                 Constants.EXECUTOR_CORE_SIZE_INIT_PARAM);
@@ -146,7 +148,7 @@ public class WsServerContainer extends WsWebSocketContainer
         } else {
             threadGroupName.append(servletContext.getContextPath());
         }
-        ThreadGroup threadGroup = new ThreadGroup(threadGroupName.toString());
+        threadGroup = new ThreadGroup(threadGroupName.toString());
         WsThreadFactory wsThreadFactory = new WsThreadFactory(threadGroup);
 
         executorService = new ThreadPoolExecutor(executorCoreSize,
@@ -256,6 +258,20 @@ public class WsServerContainer extends WsWebSocketContainer
                 methodMapping);
 
         addEndpoint(sec);
+    }
+
+
+    @Override
+    public void destroy() {
+        shutdownExecutor();
+        super.destroy();
+        try {
+            threadGroup.destroy();
+        } catch (IllegalThreadStateException itse) {
+            // If the executor hasn't fully shutdown it won't be possible to
+            // destroy this thread group as there will still be threads running
+            WebsocketsLogger.ROOT_LOGGER.threadGroupNotDestryed(threadGroup.getName());
+        }
     }
 
 
@@ -428,7 +444,7 @@ public class WsServerContainer extends WsWebSocketContainer
     }
 
 
-    void shutdownExecutor() {
+    private void shutdownExecutor() {
         if (executorService == null) {
             return;
         }
