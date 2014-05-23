@@ -255,6 +255,10 @@ public class CoyoteAdapter
                 }
                 if (error || close) {
                     response.finishResponse();
+                    if (request.getUpgradeHandler() != null) {
+                        // Ensure no keepalive after upgrade, even if it is not an error obviously
+                        error = true;
+                    }
                 }
                 return (!error);
             } catch (Throwable t) {

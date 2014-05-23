@@ -256,10 +256,10 @@ public class InputBuffer extends Reader
      */
     public void close()
         throws IOException {
-        closed = true;
-
-        if (request.getUpgradeHandler() != null) {
+        if (request.getUpgradeHandler() != null && request.isEventMode()) {
             request.getEvent().close();
+        } else {
+            closed = true;
         }
     }
 
