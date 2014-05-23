@@ -51,6 +51,10 @@ import javax.websocket.server.ServerEndpoint;
 import javax.websocket.server.ServerEndpointConfig;
 import javax.websocket.server.ServerEndpointConfig.Configurator;
 
+import org.apache.catalina.ThreadBindingListener;
+import org.apache.catalina.core.ApplicationContext;
+import org.apache.tomcat.websocket.ClassIntrospecter;
+import org.apache.tomcat.websocket.InstanceFactory;
 import org.apache.tomcat.websocket.WsSession;
 import org.apache.tomcat.websocket.WsWebSocketContainer;
 import org.apache.tomcat.websocket.pojo.PojoEndpointServer;
@@ -88,9 +92,28 @@ public class WsServerContainer extends WsWebSocketContainer
     private final ExecutorService executorService;
     private final ThreadGroup threadGroup;
     private volatile boolean endpointsRegistered = false;
+    private final ClassIntrospecter classIntrospecter;
+
+    private final ThreadBindingListener threadBindingListener;
 
     WsServerContainer(ServletContext servletContext) {
+
         this.servletContext = servletContext;
+        ClassIntrospecter classIntrospecter = (ClassIntrospecter) servletContext.getAttribute(ClassIntrospecter.class.getName());
+        servletContext.removeAttribute(ClassIntrospecter.class.getName()); //remove the attribute as it is only needed for bootstrap
+        if(classIntrospecter == null) {
+            classIntrospecter = null;
+        }
+        this.classIntrospecter = classIntrospecter;
+
+        //this is a horrible horrible hack.
+        ThreadBindingListener threadBindingListener = (ThreadBindingListener)servletContext.getAttribute(ThreadBindingListener.class.getName());
+        servletContext.removeAttribute(ThreadBindingListener.class.getName());
+        if(threadBindingListener != null) {
+            this.threadBindingListener = threadBindingListener;
+        } else {
+            this.threadBindingListener = DEFAULT_THREAD_BINDING_LISTENER;
+        }
 
         // Configure servlet context wide defaults
         String value = servletContext.getInitParameter(
@@ -244,6 +267,13 @@ public class WsServerContainer extends WsWebSocketContainer
                         pojo.getClass().getName()), e);
             } catch (IllegalAccessException e) {
                 throw new DeploymentException(MESSAGES.configuratorFailed(annotation.configurator().getName(),
+                        pojo.getClass().getName()), e);
+            }
+        } else if(classIntrospecter != null) {
+            try {
+                configurator = new ServerInstanceFactoryConfigurator(classIntrospecter.createInstanceFactory(pojo));
+            } catch (NoSuchMethodException e) {
+                throw new DeploymentException(MESSAGES.configuratorFailed(ServerInstanceFactoryConfigurator.class.getName(),
                         pojo.getClass().getName()), e);
             }
         }
@@ -443,6 +473,14 @@ public class WsServerContainer extends WsWebSocketContainer
         return executorService;
     }
 
+    @Override
+    public ThreadBindingListener getThreadBindingListener() {
+        return threadBindingListener;
+    }
+
+    public ClassLoader getClassLoader() {
+        return servletContext.getClassLoader();
+    }
 
     private void shutdownExecutor() {
         if (executorService == null) {
@@ -537,4 +575,20 @@ public class WsServerContainer extends WsWebSocketContainer
             return t;
         }
     }
+
+
+    private static final class ServerInstanceFactoryConfigurator extends ServerEndpointConfig.Configurator {
+
+        private final InstanceFactory factory;
+
+        private ServerInstanceFactoryConfigurator(final InstanceFactory factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        public <T> T getEndpointInstance(final Class<T> endpointClass) throws InstantiationException {
+            return (T) factory.createInstance();
+        }
+    }
+
 }

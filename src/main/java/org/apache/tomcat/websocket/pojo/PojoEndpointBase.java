@@ -27,7 +27,10 @@ import javax.websocket.EndpointConfig;
 import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 
+import org.apache.catalina.ThreadBindingListener;
 import org.apache.tomcat.util.ExceptionUtils;
+import org.apache.tomcat.websocket.InstanceHandle;
+import org.apache.tomcat.websocket.WsSession;
 import org.jboss.web.WebsocketsLogger;
 
 /**
@@ -38,6 +41,7 @@ import org.jboss.web.WebsocketsLogger;
 public abstract class PojoEndpointBase extends Endpoint {
 
     private Object pojo;
+    private InstanceHandle instanceHandle;
     private Map<String,String> pathParameters;
     private PojoMethodMapping methodMapping;
 
@@ -56,7 +60,11 @@ public abstract class PojoEndpointBase extends Endpoint {
         }
 
         if (methodMapping.getOnOpen() != null) {
+            ThreadBindingListener tbl = ((WsSession) session).getThreadBindingListener();
+            ClassLoader old = Thread.currentThread().getContextClassLoader();
             try {
+                Thread.currentThread().setContextClassLoader(((WsSession)session).getClassLoader());
+                tbl.bind();
                 methodMapping.getOnOpen().invoke(pojo,
                         methodMapping.getOnOpenArgs(
                                 pathParameters, session, config));
@@ -73,6 +81,12 @@ public abstract class PojoEndpointBase extends Endpoint {
             } catch (Throwable t) {
                 handleOnOpenError(session, t);
                 return;
+            } finally {
+                try {
+                    tbl.unbind();
+                } finally {
+                    Thread.currentThread().setContextClassLoader(old);
+                }
             }
         }
     }
@@ -93,37 +107,60 @@ public abstract class PojoEndpointBase extends Endpoint {
 
     @Override
     public final void onClose(Session session, CloseReason closeReason) {
-
-        if (methodMapping.getOnClose() != null) {
-            try {
-                methodMapping.getOnClose().invoke(pojo,
-                        methodMapping.getOnCloseArgs(pathParameters, session, closeReason));
-            } catch (Throwable t) {
-                WebsocketsLogger.ROOT_LOGGER.onCloseFailed(pojo.getClass().getName(), t);
-                handleOnCloseError(session, t);
+        try {
+            if (methodMapping.getOnClose() != null) {
+                ThreadBindingListener tbl = ((WsSession) session).getThreadBindingListener();
+                ClassLoader old = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(((WsSession)session).getClassLoader());
+                    tbl.bind();
+                    methodMapping.getOnClose().invoke(pojo,
+                            methodMapping.getOnCloseArgs(pathParameters, session, closeReason));
+                } catch (Throwable t) {
+                    WebsocketsLogger.ROOT_LOGGER.onCloseFailed(pojo.getClass().getName(), t);
+                    handleOnCloseError(session, t);
+                } finally {
+                    try {
+                        tbl.unbind();
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(old);
+                    }
+                }
             }
-        }
 
-        // Trigger the destroy method for any associated decoders
-        Set<MessageHandler> messageHandlers = session.getMessageHandlers();
-        for (MessageHandler messageHandler : messageHandlers) {
-            if (messageHandler instanceof PojoMessageHandlerWholeBase<?>) {
-                ((PojoMessageHandlerWholeBase<?>) messageHandler).onClose();
+            // Trigger the destroy method for any associated decoders
+            Set<MessageHandler> messageHandlers = session.getMessageHandlers();
+            for (MessageHandler messageHandler : messageHandlers) {
+                if (messageHandler instanceof PojoMessageHandlerWholeBase<?>) {
+                    ((PojoMessageHandlerWholeBase<?>) messageHandler).onClose();
+                }
+            }
+        } finally {
+            if (instanceHandle != null) {
+                instanceHandle.release();
+                instanceHandle = null;
             }
         }
     }
 
 
     private void handleOnCloseError(Session session, Throwable t) {
-        // If really fatal - re-throw
-        ExceptionUtils.handleThrowable(t);
-
-        // Trigger the error handler and close the session
-        onError(session, t);
         try {
-            session.close();
-        } catch (IOException ioe) {
-            WebsocketsLogger.ROOT_LOGGER.closeSessionFailed(ioe);
+            // If really fatal - re-throw
+            ExceptionUtils.handleThrowable(t);
+
+            // Trigger the error handler and close the session
+            onError(session, t);
+            try {
+                session.close();
+            } catch (IOException ioe) {
+                WebsocketsLogger.ROOT_LOGGER.closeSessionFailed(ioe);
+            }
+        } finally {
+            if(instanceHandle != null) {
+                instanceHandle.release();
+                instanceHandle = null;
+            }
         }
     }
 
@@ -133,7 +170,11 @@ public abstract class PojoEndpointBase extends Endpoint {
         if (methodMapping.getOnError() == null) {
             WebsocketsLogger.ROOT_LOGGER.noOnError(pojo.getClass().getName(), throwable);
         } else {
+            ThreadBindingListener tbl = ((WsSession) session).getThreadBindingListener();
+            ClassLoader old = Thread.currentThread().getContextClassLoader();
             try {
+                Thread.currentThread().setContextClassLoader(((WsSession)session).getClassLoader());
+                tbl.bind();
                 methodMapping.getOnError().invoke(
                         pojo,
                         methodMapping.getOnErrorArgs(pathParameters, session,
@@ -141,6 +182,12 @@ public abstract class PojoEndpointBase extends Endpoint {
             } catch (Throwable t) {
                 ExceptionUtils.handleThrowable(t);
                 WebsocketsLogger.ROOT_LOGGER.onErrorFailed(pojo.getClass().getName(), t);
+            } finally {
+                try {
+                    tbl.unbind();
+                } finally {
+                    Thread.currentThread().setContextClassLoader(old);
+                }
             }
         }
     }
@@ -148,6 +195,9 @@ public abstract class PojoEndpointBase extends Endpoint {
     protected Object getPojo() { return pojo; }
     protected void setPojo(Object pojo) { this.pojo = pojo; }
 
+    public InstanceHandle getInstanceHandle() { return instanceHandle; }
+
+    public void setInstanceHandle(InstanceHandle instanceHandle) { this.instanceHandle = instanceHandle; }
 
     protected Map<String,String> getPathParameters() { return pathParameters; }
     protected void setPathParameters(Map<String,String> pathParameters) {

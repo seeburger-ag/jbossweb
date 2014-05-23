@@ -45,6 +45,7 @@ import javax.websocket.SendResult;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
+import org.apache.catalina.ThreadBindingListener;
 import org.apache.tomcat.util.ExceptionUtils;
 import org.jboss.web.WebsocketsLogger;
 
@@ -646,6 +647,14 @@ public class WsSession implements Session {
         if (state == State.CLOSED) {
             throw MESSAGES.sessionAlreadyClosed();
         }
+    }
+
+    public ThreadBindingListener getThreadBindingListener() {
+        return webSocketContainer.getThreadBindingListener();
+    }
+
+    public ClassLoader getClassLoader() {
+        return webSocketContainer.getClassLoader();
     }
 
     private static enum State {

@@ -24,6 +24,7 @@ import javax.websocket.DecodeException;
 import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 
+import org.apache.catalina.ThreadBindingListener;
 import org.apache.tomcat.websocket.WsSession;
 
 /**
@@ -67,12 +68,22 @@ public abstract class PojoMessageHandlerPartialBase<T>
             parameters[indexPayload] = message;
         }
         Object result;
+        ThreadBindingListener tbl = ((WsSession) session).getThreadBindingListener();
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(((WsSession)session).getClassLoader());
+            tbl.bind();
             result = method.invoke(pojo, parameters);
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException(e);
         } catch (InvocationTargetException e) {
             throw new IllegalArgumentException(e);
+        } finally {
+            try {
+                tbl.unbind();
+            } finally {
+                Thread.currentThread().setContextClassLoader(old);
+            }
         }
         processResult(result);
     }

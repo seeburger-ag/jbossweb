@@ -16,6 +16,9 @@
  */
 package org.apache.tomcat.websocket.pojo;
 
+import org.apache.tomcat.websocket.InstanceHandle;
+import org.apache.tomcat.websocket.WsSession;
+
 import static org.jboss.web.WebsocketsMessages.MESSAGES;
 
 import java.util.Map;
@@ -42,14 +45,24 @@ public class PojoEndpointServer extends PojoEndpointBase {
 
         ServerEndpointConfig sec = (ServerEndpointConfig) endpointConfig;
 
+        InstanceHandle instanceHandle = null;
         Object pojo;
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(((WsSession)session).getClassLoader());
             pojo = sec.getConfigurator().getEndpointInstance(
                     sec.getEndpointClass());
+            if(pojo instanceof InstanceHandle) {
+                instanceHandle = (InstanceHandle) pojo;
+                pojo = instanceHandle.getInstance();
+            }
         } catch (InstantiationException e) {
             throw MESSAGES.pojoInstanceFailed(sec.getEndpointClass().getName(), e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
         }
         setPojo(pojo);
+        setInstanceHandle(instanceHandle);
 
         @SuppressWarnings("unchecked")
         Map<String,String> pathParameters =

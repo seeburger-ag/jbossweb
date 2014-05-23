@@ -63,6 +63,7 @@ import javax.websocket.HandshakeResponse;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
+import org.apache.catalina.ThreadBindingListener;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.tomcat.websocket.pojo.PojoEndpointClient;
 import org.jboss.web.WebsocketsLogger;
@@ -70,6 +71,10 @@ import org.jboss.web.WebsocketsLogger;
 public class WsWebSocketContainer
         implements WebSocketContainer, BackgroundProcess {
 
+    protected static final ThreadBindingListener DEFAULT_THREAD_BINDING_LISTENER = (new ThreadBindingListener() {
+        public void bind() {}
+        public void unbind() {}
+    });
     /**
      * Property name to set to configure the value that is passed to
      * {@link SSLEngine#setEnabledProtocols(String[])}. The value should be a
@@ -827,5 +832,11 @@ public class WsWebSocketContainer
         return processPeriod;
     }
 
+    public ThreadBindingListener getThreadBindingListener() {
+        return DEFAULT_THREAD_BINDING_LISTENER;
+    }
 
+    public ClassLoader getClassLoader() {
+        return WsWebSocketContainer.class.getClassLoader();
+    }
 }
