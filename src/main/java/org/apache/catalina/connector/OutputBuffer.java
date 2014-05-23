@@ -320,6 +320,10 @@ public class OutputBuffer extends Writer
 
         coyoteResponse.finish();
 
+        Request request = response.getRequest();
+        if (request.getUpgradeHandler() != null) {
+            request.getEvent().close();
+        }
     }
 
 
