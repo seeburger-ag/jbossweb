@@ -928,10 +928,10 @@ public class NioEndpoint extends AbstractEndpoint {
 		public void run() {
 			try {
                 Handler.SocketState state = null;
-                if (status == null) {
-                    state = handler.process(channel);
-                } else {
-                    synchronized (channel) {
+                synchronized (channel) {
+                    if (status == null) {
+                        state = handler.process(channel);
+                    } else {
                         state = handler.event(channel, status);
                     }
                 }
