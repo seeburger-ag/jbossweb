@@ -406,7 +406,7 @@ public class WsSession implements Session {
 
             state = State.CLOSING;
 
-            if (Constants.STRICT_SPEC_CLOSE_EVENT) {
+            if (!Constants.RELAXED_CLOSE_EVENT) {
                 sendCloseMessage(closeReasonMessage);
                 fireEndpointOnClose(closeReasonLocal);
             } else {
@@ -434,7 +434,7 @@ public class WsSession implements Session {
 
         synchronized (stateLock) {
             if (state == State.OPEN) {
-                if (Constants.STRICT_SPEC_CLOSE_EVENT) {
+                if (!Constants.RELAXED_CLOSE_EVENT) {
                     sendCloseMessage(closeReason);
                     fireEndpointOnClose(closeReason);
                 } else {

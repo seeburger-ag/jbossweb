@@ -60,9 +60,9 @@ public class Constants {
     public static final boolean STRICT_SPEC_COMPLIANCE =
             Boolean.getBoolean(
                     "org.apache.tomcat.websocket.STRICT_SPEC_COMPLIANCE");
-    public static final boolean STRICT_SPEC_CLOSE_EVENT =
+    public static final boolean RELAXED_CLOSE_EVENT =
             Boolean.getBoolean(
-                    "org.apache.tomcat.websocket.STRICT_SPEC_CLOSE_EVENT");
+                    "org.apache.tomcat.websocket.RELAXED_CLOSE_EVENT");
 
     private Constants() {
         // Hide default constructor
