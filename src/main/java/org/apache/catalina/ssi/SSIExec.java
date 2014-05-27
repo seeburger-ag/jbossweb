@@ -17,11 +17,14 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import org.apache.catalina.util.IOTools;
+
 /**
  * Implements the Server-side #exec command
  * 
@@ -74,7 +77,7 @@ public class SSIExec implements SSICommand {
                     //apache doesn't output an error message if it can't find
                     // a program
                 }
-                ssiMediator.log("Couldn't exec file: " + substitutedValue, e);
+                ssiMediator.log(MESSAGES.ssiExecFailed(substitutedValue), e);
             }
         }
         return lastModified;

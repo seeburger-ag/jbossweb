@@ -20,7 +20,10 @@ package org.apache.catalina.deploy;
 
 
 import org.apache.catalina.util.RequestUtil;
+
 import java.io.Serializable;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -82,7 +85,11 @@ public class LoginConfig implements Serializable {
     }
 
     public void setAuthMethod(String authMethod) {
-        this.authMethod = authMethod;
+        if (authMethod == null) {
+            this.authMethod = HttpServletRequest.BASIC_AUTH;
+        } else {
+            this.authMethod = authMethod;
+        }
     }
 
 

@@ -81,7 +81,7 @@ class DefaultErrorHandler implements ErrorHandler {
                 buf.append(details[i].getErrorMessage());
             }
         }
-        buf.append("\n\nStacktrace:");
+        buf.append("\n\n").append(MESSAGES.stacktrace());
         throw new JasperException(MESSAGES.failedClassCompilation(buf.toString()));
     }
     
