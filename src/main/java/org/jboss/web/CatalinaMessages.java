@@ -1023,4 +1023,10 @@ public interface CatalinaMessages {
     @Message(id = 377, value = "Error getting keys")
     String errorGettingKeys();
 
+    @Message(id = 378, value = "Ignored external entity %s %s %s %s")
+    String ignoredExternalEntity(String name, String publicId, String baseUri, String systemId);
+
+    @Message(id = 379, value = "Ignored external subset %s %s")
+    String ignoredExternalSubset(String publicId, String systemId);
+
 }
