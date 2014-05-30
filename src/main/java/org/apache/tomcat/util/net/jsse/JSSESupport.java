@@ -205,7 +205,12 @@ class JSSESupport implements SSLSupport {
         SSLSupport.CipherData c_aux[]=ciphers;
         if (session == null)
             return null;
-        Integer keySize = (Integer) keySizeCache.get(session);
+
+        Integer keySize = null;
+        synchronized(keySizeCache) {
+            keySize = keySizeCache.get(session);
+        }
+
         if (keySize == null) {
             int size = 0;
             String cipherSuite = session.getCipherSuite();
@@ -216,7 +221,9 @@ class JSSESupport implements SSLSupport {
                 }
             }
             keySize = new Integer(size);
-            keySizeCache.put(session, keySize);
+            synchronized(keySizeCache) {
+                keySizeCache.put(session, keySize);
+            }
         }
         return keySize;
     }
