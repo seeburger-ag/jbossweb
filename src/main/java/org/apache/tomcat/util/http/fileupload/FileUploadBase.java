@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload;
 
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -25,8 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.tomcat.util.http.fileupload.MultipartStream.ItemInputStream;
 import org.apache.tomcat.util.http.fileupload.util.Closeable;
@@ -304,8 +304,7 @@ public abstract class FileUploadBase {
             FileItemIterator iter = getItemIterator(ctx);
             FileItemFactory fac = getFileItemFactory();
             if (fac == null) {
-                throw new NullPointerException(
-                    "No FileItemFactory has been set.");
+                throw MESSAGES.nullFactory();
             }
             while (iter.hasNext()) {
                 final FileItemStream item = iter.next();
@@ -321,9 +320,8 @@ public abstract class FileUploadBase {
                 } catch (FileUploadIOException e) {
                     throw (FileUploadException) e.getCause();
                 } catch (IOException e) {
-                    throw new IOFileUploadException(
-                            "Processing of " + MULTIPART_FORM_DATA
-                            + " request failed. " + e.getMessage(), e);
+                    throw new IOFileUploadException(MESSAGES.multipartProcessingFailed
+                            (MULTIPART_FORM_DATA, e.getMessage()), e);
                 }
                 if (fileItem instanceof FileItemHeadersSupport) {
                     final FileItemHeaders fih = item.getHeaders();
@@ -528,8 +526,7 @@ public abstract class FileUploadBase {
         for (;;) {
             int offset = headerPart.indexOf('\r', index);
             if (offset == -1  ||  offset + 1 >= headerPart.length()) {
-                throw new IllegalStateException(
-                    "Expected headers to be terminated by an empty line.");
+                throw MESSAGES.emptyLineAfterHeaders();
             }
             if (headerPart.charAt(offset + 1) == '\n') {
                 return offset;
@@ -608,12 +605,8 @@ public abstract class FileUploadBase {
                     if (pContentLength != -1
                             &&  pContentLength > fileSizeMax) {
                         FileSizeLimitExceededException e =
-                            new FileSizeLimitExceededException(
-                                "The field " + fieldName
-                                + " exceeds its maximum permitted "
-                                + " size of " + fileSizeMax
-                                + " bytes.",
-                                pContentLength, fileSizeMax);
+                            new FileSizeLimitExceededException(MESSAGES.maxFieldSizeExceeded(fieldName, fileSizeMax),
+                                    pContentLength, fileSizeMax);
                         e.setFileName(pName);
                         e.setFieldName(pFieldName);
                         throw new FileUploadIOException(e);
@@ -624,11 +617,7 @@ public abstract class FileUploadBase {
                                 throws IOException {
                             itemStream.close(true);
                             FileSizeLimitExceededException e =
-                                new FileSizeLimitExceededException(
-                                    "The field " + fieldName
-                                    + " exceeds its maximum permitted "
-                                    + " size of " + pSizeMax
-                                    + " bytes.",
+                                new FileSizeLimitExceededException(MESSAGES.maxFieldSizeExceeded(fieldName, pSizeMax),
                                     pCount, pSizeMax);
                             e.setFieldName(fieldName);
                             e.setFileName(name);
@@ -684,8 +673,7 @@ public abstract class FileUploadBase {
              */
             public InputStream openStream() throws IOException {
                 if (opened) {
-                    throw new IllegalStateException(
-                            "The stream was already opened.");
+                    throw MESSAGES.streamAlreadyOpened();
                 }
                 if (((Closeable) stream).isClosed()) {
                     throw new FileItemStream.ItemSkippedException();
@@ -762,19 +750,14 @@ public abstract class FileUploadBase {
         FileItemIteratorImpl(RequestContext ctx)
                 throws FileUploadException, IOException {
             if (ctx == null) {
-                throw new NullPointerException("ctx parameter");
+                throw MESSAGES.nullContext();
             }
 
             String contentType = ctx.getContentType();
             if ((null == contentType)
                     || (!contentType.toLowerCase(Locale.ENGLISH).startsWith(MULTIPART))) {
-                throw new InvalidContentTypeException(
-                        "the request doesn't contain a "
-                        + MULTIPART_FORM_DATA
-                        + " or "
-                        + MULTIPART_MIXED
-                        + " stream, content type header is "
-                        + contentType);
+                throw new InvalidContentTypeException(MESSAGES.invalidContentType
+                        (MULTIPART_FORM_DATA, MULTIPART_MIXED, contentType));
             }
 
             InputStream input = ctx.getInputStream();
@@ -787,22 +770,14 @@ public abstract class FileUploadBase {
                         protected void raiseError(long pSizeMax, long pCount)
                                 throws IOException {
                             FileUploadException ex =
-                                new SizeLimitExceededException(
-                                    "the request was rejected because"
-                                    + " its size (" + pCount
-                                    + ") exceeds the configured maximum"
-                                    + " (" + pSizeMax + ")",
+                                new SizeLimitExceededException(MESSAGES.maxRequestSizeExceeded(pCount, pSizeMax),
                                     pCount, pSizeMax);
                             throw new FileUploadIOException(ex);
                         }
                     };
                 } else {
                     if (sizeMax >= 0 && requestSize > sizeMax) {
-                        throw new SizeLimitExceededException(
-                                "the request was rejected because its size ("
-                                + requestSize
-                                + ") exceeds the configured maximum ("
-                                + sizeMax + ")",
+                        throw new SizeLimitExceededException(MESSAGES.maxRequestSizeExceeded(requestSize, sizeMax),
                                 requestSize, sizeMax);
                     }
                 }
@@ -815,14 +790,16 @@ public abstract class FileUploadBase {
 
             boundary = getBoundary(contentType);
             if (boundary == null) {
-                throw new FileUploadException(
-                        "the request was rejected because "
-                        + "no multipart boundary was found");
+                throw new FileUploadException(MESSAGES.missingMultipartBoundary());
             }
 
             notifier = new MultipartStream.ProgressNotifier(listener,
                     ctx.getContentLength());
-            multi = new MultipartStream(input, boundary, notifier);
+            try {
+                multi = new MultipartStream(input, boundary, notifier);
+            } catch (IllegalArgumentException iae) {
+                throw new InvalidContentTypeException(MESSAGES.invalidBoundary(CONTENT_TYPE), iae);
+            }
             multi.setHeaderEncoding(charEncoding);
 
             skipPreamble = true;
@@ -996,7 +973,7 @@ public abstract class FileUploadBase {
          * detail message.
          */
         public InvalidContentTypeException() {
-            // Nothing to do.
+            super();
         }
 
         /**
@@ -1008,7 +985,11 @@ public abstract class FileUploadBase {
         public InvalidContentTypeException(String message) {
             super(message);
         }
-    }
+
+        public InvalidContentTypeException(String message, Exception cause) {
+            super(message, cause);
+        }
+   }
 
     /**
      * Thrown to indicate an IOException.

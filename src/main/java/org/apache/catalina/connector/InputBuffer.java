@@ -268,6 +268,14 @@ public class InputBuffer extends Reader
     }
 
 
+    /**
+     * Reset the eof state.
+     */
+    public void resetEof() {
+        eof= false;
+    }
+
+
     public int available() {
         if (eof || closed) {
             return -1;
