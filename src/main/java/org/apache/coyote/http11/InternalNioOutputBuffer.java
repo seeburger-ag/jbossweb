@@ -209,7 +209,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                         response.setLastWrite(nBytes);
                         leftover.recycle();
                         semaphore.release();
-                        if (!processor.isProcessing() && processor.getWriteNotification()) {
+                        if (/*!processor.isProcessing() && */processor.getWriteNotification()) {
                             if (!endpoint.processChannel(attachment, SocketStatus.OPEN_WRITE)) {
                                 endpoint.closeChannel(attachment);
                             }
@@ -822,6 +822,8 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                         int n = Math.min(leftover.getLength(), bbuf.capacity() - bbuf.position());
                         bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
                         leftover.setOffset(leftover.getOffset() + n);
+                        boolean writeNotification = processor.getWriteNotification();
+                        processor.setWriteNotification(false);
                         try {
                             channel.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, channel, completionHandler);
                         } catch (Exception e) {
@@ -829,6 +831,10 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                             if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
                                 CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(e);
                             }
+                        }
+                        if (writeNotification && bbuf.hasRemaining()) {
+                            // Write did not complete inline, possible write notification
+                            processor.setWriteNotification(writeNotification);
                         }
                     }
                 }

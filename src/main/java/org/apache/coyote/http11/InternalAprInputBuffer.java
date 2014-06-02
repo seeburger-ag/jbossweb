@@ -329,7 +329,7 @@ public class InternalAprInputBuffer implements InputBuffer {
         request.recycle();
 
         // Copy leftover bytes to the beginning of the buffer
-        if (lastValid - pos > 0) {
+        if (lastValid - pos > 0 && pos > 0) {
             int npos = 0;
             int opos = pos;
             while (lastValid - opos > opos - npos) {

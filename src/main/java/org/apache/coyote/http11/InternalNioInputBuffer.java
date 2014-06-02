@@ -129,7 +129,9 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			        bbuf.get(buf, pos, nBytes);
 			        lastValid = pos + nBytes;
 			        semaphore.release();
-			        if (!processor.isProcessing() && processor.getReadNotifications()) {
+			        if (/*!processor.isProcessing() && */processor.getReadNotifications()
+			                && available) {
+			            available = false;
 			            if (!endpoint.processChannel(attachment, SocketStatus.OPEN_READ)) {
 			                endpoint.closeChannel(attachment);
 			            }
@@ -430,26 +432,39 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
         // Reading from client
         if (nonBlocking) {
             if (semaphore.tryAcquire()) {
-                // Prepare the internal input buffer for reading
-                prepare();
-                try {
-                    channel.read(bbuf, readTimeout, TimeUnit.MILLISECONDS, channel, this.completionHandler);
-                } catch (Exception e) {
-                    processor.getResponse().setErrorException(e);
-                    if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-                        CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(e);
+                synchronized (completionHandler) {
+                    // Prepare the internal input buffer for reading
+                    prepare();
+                    boolean available0 = available;
+                    available = false;
+                    try {
+                        channel.read(bbuf, readTimeout, TimeUnit.MILLISECONDS, channel, this.completionHandler);
+                    } catch (Exception e) {
+                        processor.getResponse().setErrorException(e);
+                        if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                            CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(e);
+                        }
+                    }
+                    nRead = lastValid - pos;
+                    if (nRead > 0) {
+                        available = false;
+                    } else {
+                        available = available0;
                     }
                 }
-                nRead = lastValid - pos;
-            } else if (nRead == 0 && !available) {
-                // If there's nothing and flow control is not used, autoblock 
-                try {
-                    if (semaphore.tryAcquire(readTimeout, unit))
-                        semaphore.release();
-                } catch (InterruptedException e) {
-                    // Ignore
+            } else {
+                synchronized (completionHandler) {
+                    if (nRead == 0 && !available) {
+                        // If there's nothing and flow control is not used, autoblock 
+                        try {
+                            if (semaphore.tryAcquire(readTimeout, unit))
+                                semaphore.release();
+                        } catch (InterruptedException e) {
+                            // Ignore
+                        }
+                        nRead = lastValid - pos;
+                    }
                 }
-                nRead = lastValid - pos;
             }
         } else {
             // Prepare the internal input buffer for reading
