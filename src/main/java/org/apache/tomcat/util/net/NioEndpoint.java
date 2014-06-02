@@ -1031,8 +1031,14 @@ public class NioEndpoint extends AbstractEndpoint {
 		@Override
 		public void run() {
 			try {
-				Handler.SocketState state = ((status == null) ? handler.process(channel) : handler
-						.event(channel, status));
+                Handler.SocketState state = null;
+                if (status == null) {
+                    state = handler.process(channel);
+                } else {
+                    synchronized (channel) {
+                        state = handler.event(channel, status);
+                    }
+                }
 
 				if (state == SocketState.CLOSED) {
 					closeChannel(channel);
