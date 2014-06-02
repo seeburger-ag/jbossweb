@@ -477,7 +477,7 @@ public class NioEndpoint extends AbstractEndpoint {
 	 *         successfully else <tt>false</tt>
 	 */
 	public boolean processChannel(NioChannel channel, SocketStatus status) {
-		if (channel.isClosed()) {
+		if (channel == null || channel.isClosed()) {
 			return false;
 		}
 		try {
