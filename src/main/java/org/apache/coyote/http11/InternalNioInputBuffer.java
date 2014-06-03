@@ -197,6 +197,8 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		bbuf.clear();
 		channel = null;
 		available = true;
+        readTimeout = (endpoint.getSoTimeout() > 0 ? endpoint.getSoTimeout()
+                : Integer.MAX_VALUE);
 	}
 
 	/*

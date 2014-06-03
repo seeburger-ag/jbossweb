@@ -445,6 +445,7 @@ public class InternalNioOutputBuffer implements OutputBuffer {
             activeFilters[i].recycle();
         }
         lastActiveFilter = -1;
+        writeTimeout = Integer.MAX_VALUE;
     }
 
     /**
@@ -478,6 +479,8 @@ public class InternalNioOutputBuffer implements OutputBuffer {
         lastActiveFilter = -1;
         committed = false;
         finished = false;
+        writeTimeout = (endpoint.getSoTimeout() > 0 ? endpoint.getSoTimeout()
+                : Integer.MAX_VALUE);
     }
 
     /**

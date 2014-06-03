@@ -205,6 +205,7 @@ public abstract class AbstractInternalInputBuffer implements InputBuffer {
             activeFilters[i].recycle();
         }
         lastActiveFilter = -1;
+        readTimeout = Integer.MAX_VALUE;
     }
 
 	/**
