@@ -46,6 +46,7 @@ import javax.servlet.http.Part;
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.ApplicationFilterChain;
 import org.apache.catalina.security.SecurityUtil;
+import org.apache.coyote.http11.upgrade.servlet31.HttpUpgradeHandler;
 
 /**
  * Facade class that wraps a Coyote request object.  
@@ -1042,6 +1043,23 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return request.hasSendfile();
+    }
+
+    public long getContentLengthLong() {
+        if (request == null) {
+            throw MESSAGES.nullRequestFacade();
+        }
+
+        return request.getContentLengthLong();
+    }
+
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> upgradeHandler)
+            throws IOException {
+        if (request == null) {
+            throw MESSAGES.nullRequestFacade();
+        }
+
+        return request.upgrade(upgradeHandler);
     }
 
 }

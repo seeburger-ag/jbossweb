@@ -21,14 +21,11 @@ import static org.jboss.web.JasperMessages.MESSAGES;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import javax.servlet.ServletResponse;
 import javax.servlet.jsp.JspWriter;
 
 import org.apache.jasper.Constants;
-import org.apache.jasper.security.SecurityUtil;
 
 /**
  * Write text to a character-output stream, buffering characters so as
@@ -79,7 +76,7 @@ public class JspWriterImpl extends JspWriter {
             boolean autoFlush) {
         super(sz, autoFlush);
         if (sz < 0)
-            throw new IllegalArgumentException("Buffer size <= 0");
+            throw MESSAGES.invalidNegativeBufferSize();
         this.response = response;
         cb = sz == 0 ? null : new char[sz];
         nextChar = 0;
@@ -187,7 +184,7 @@ public class JspWriterImpl extends JspWriter {
     /** check to make sure that the stream has not been closed */
     private void ensureOpen() throws IOException {
         if (response == null || closed)
-            throw new IOException("Stream closed");
+            throw new IOException(MESSAGES.streamClosed());
     }
     
     
@@ -312,20 +309,6 @@ public class JspWriterImpl extends JspWriter {
                     flushBuffer();
                 else
                     bufferOverflow();
-        }
-    }
-    
-    /**
-     * Write a string.  This method cannot be inherited from the Writer class
-     * because it must suppress I/O exceptions.
-     */
-    public void write(String s) throws IOException {
-        // Simple fix for Bugzilla 35410
-        // Calling the other write function so as to init the buffer anyways
-        if(s == null) {
-            write(s, 0, 0);
-        } else {
-            write(s, 0, s.length());
         }
     }
     

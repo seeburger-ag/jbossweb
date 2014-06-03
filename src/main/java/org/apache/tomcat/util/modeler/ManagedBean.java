@@ -19,6 +19,8 @@
 package org.apache.tomcat.util.modeler;
 
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -366,7 +368,7 @@ public class ManagedBean implements java.io.Serializable
     
             if( clazz==null) { 
                 throw new MBeanException
-                    (ex, "Cannot load ModelMBean class " + getClassName());
+                    (ex, MESSAGES.errorLoadingModelMbean(getClassName()));
             }
             try {
                 // Stupid - this will set the default minfo first....
@@ -375,8 +377,7 @@ public class ManagedBean implements java.io.Serializable
                 throw e;
             } catch (Exception e) {
                 throw new MBeanException
-                    (e, "Cannot instantiate ModelMBean of class " +
-                     getClassName());
+                    (e, MESSAGES.errorInstantiatingModelMbean(getClassName()));
             }
         }
         
@@ -487,11 +488,11 @@ public class ManagedBean implements java.io.Serializable
             AttributeInfo attrInfo = (AttributeInfo)attributes.get(aname);
             // Look up the actual operation to be used
             if (attrInfo == null)
-                throw new AttributeNotFoundException(" Cannot find attribute " + aname + " for " + resource);
+                throw new AttributeNotFoundException(MESSAGES.errorGettingAttribute(aname));
             
             String getMethod = attrInfo.getGetMethod();
             if (getMethod == null)
-                throw new AttributeNotFoundException("Cannot find attribute " + aname + " get method name");
+                throw new AttributeNotFoundException(MESSAGES.errorGettingAttribute(aname));
 
             Object object = null;
             NoSuchMethodException exception = null;
@@ -512,7 +513,7 @@ public class ManagedBean implements java.io.Serializable
             }
             if( exception != null )
                 throw new ReflectionException(exception,
-                                              "Cannot find getter method " + getMethod);
+                        MESSAGES.errorGettingAttribute(aname));
             //getAttMap.put( name, m );
         }
 
@@ -528,12 +529,12 @@ public class ManagedBean implements java.io.Serializable
         if( m==null ) {
             AttributeInfo attrInfo = (AttributeInfo)attributes.get(aname);
             if (attrInfo == null)
-                throw new AttributeNotFoundException(" Cannot find attribute " + aname);
+                throw new AttributeNotFoundException(MESSAGES.errorSettingAttribute(aname));
 
             // Look up the actual operation to be used
             String setMethod = attrInfo.getSetMethod();
             if (setMethod == null)
-                throw new AttributeNotFoundException("Cannot find attribute " + aname + " set method name");
+                throw new AttributeNotFoundException(MESSAGES.errorSettingAttribute(aname));
 
             String argType=attrInfo.getType();
 
@@ -558,8 +559,7 @@ public class ManagedBean implements java.io.Serializable
             }
             if( exception != null )
                 throw new ReflectionException(exception,
-                                              "Cannot find setter method " + setMethod +
-                        " " + resource);
+                        MESSAGES.errorSettingAttribute(aname));
             //setAttMap.put( name, m );
         }
 
@@ -577,16 +577,16 @@ public class ManagedBean implements java.io.Serializable
             if (params.length != signature.length)
                 throw new RuntimeOperationsException(
                         new IllegalArgumentException(
-                                "Inconsistent arguments and signature"),
-                        "Inconsistent arguments and signature");
+                                MESSAGES.errorInvokingMethod(aname)),
+                                MESSAGES.errorInvokingMethod(aname));
 
             // Acquire the ModelMBeanOperationInfo information for
             // the requested operation
             OperationInfo opInfo = (OperationInfo)operations.get(aname);
             if (opInfo == null)
                 throw new MBeanException(new ServiceNotFoundException(
-                        "Cannot find operation " + aname),
-                        "Cannot find operation " + aname);
+                        MESSAGES.errorInvokingMethod(aname)),
+                        MESSAGES.errorInvokingMethod(aname));
 
             // Prepare the signature required by Java reflection APIs
             // FIXME - should we use the signature from opInfo?
@@ -616,8 +616,7 @@ public class ManagedBean implements java.io.Serializable
                 exception = e;
             }
             if (method == null) {
-                throw new ReflectionException(exception, "Cannot find method "
-                        + aname + " with this signature");
+                throw new ReflectionException(exception, MESSAGES.errorInvokingMethod(aname));
             }
             // invokeAttMap.put(mkey, method);
         }
