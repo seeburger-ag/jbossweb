@@ -93,12 +93,16 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
             while (block || sos.isReady()) {
                 complete = true;
                 for (ByteBuffer buffer : buffers) {
-                    if (buffer.hasRemaining()) {
-                        complete = false;
-                        sos.write(buffer.array(), buffer.arrayOffset(),
-                                buffer.limit());
-                        buffer.position(buffer.limit());
-                        break;
+                    // FIXME: this sync should be useless, an unwanted onWritePossible
+                    // seems to be causing this
+                    synchronized (buffer) {
+                        if (buffer.hasRemaining()) {
+                            complete = false;
+                            sos.write(buffer.array(), buffer.arrayOffset(),
+                                    buffer.limit());
+                            buffer.position(buffer.limit());
+                            break;
+                        }
                     }
                 }
                 if (complete) {

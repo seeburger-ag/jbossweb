@@ -671,15 +671,18 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
         }
 
         public void write() {
-            buffer.clear();
-            CoderResult cr = encoder.encode(message, buffer, true);
-            if (cr.isError()) {
-                throw new IllegalArgumentException(cr.toString());
+            // FIXME: this sync should be useless
+            synchronized (buffer) {
+                buffer.clear();
+                CoderResult cr = encoder.encode(message, buffer, true);
+                if (cr.isError()) {
+                    throw new IllegalArgumentException(cr.toString());
+                }
+                isDone = !cr.isOverflow();
+                buffer.flip();
+                endpoint.startMessage(Constants.OPCODE_TEXT, buffer,
+                        isDone && isLast, this);
             }
-            isDone = !cr.isOverflow();
-            buffer.flip();
-            endpoint.startMessage(Constants.OPCODE_TEXT, buffer,
-                    isDone && isLast, this);
         }
 
         @Override
