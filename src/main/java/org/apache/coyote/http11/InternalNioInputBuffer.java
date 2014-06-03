@@ -62,7 +62,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	/**
 	 * Non blocking mode.
 	 */
-	protected boolean available = false;
+	protected boolean available = true;
 
 	/**
 	 * NIO end point.
@@ -196,7 +196,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		super.recycle();
 		bbuf.clear();
 		channel = null;
-		available = false;
+		available = true;
 	}
 
 	/*
@@ -206,7 +206,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 */
 	public boolean nextRequest() {
 		boolean result = super.nextRequest();
-		available = false;
+		available = true;
         if (nonBlocking) {
             semaphore.release();
         }
