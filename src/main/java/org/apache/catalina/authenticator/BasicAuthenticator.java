@@ -31,7 +31,7 @@ import org.apache.catalina.util.Base64;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 
@@ -46,8 +46,6 @@ import org.jboss.logging.Logger;
 
 public class BasicAuthenticator
     extends AuthenticatorBase {
-    private static Logger log = Logger.getLogger(BasicAuthenticator.class);
-
 
 
     /**
@@ -121,8 +119,8 @@ public class BasicAuthenticator
         Principal principal = request.getUserPrincipal();
         String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
         if (principal != null) {
-            if (log.isDebugEnabled())
-                log.debug("Already authenticated '" + principal.getName() + "'");
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug("Already authenticated '" + principal.getName() + "'");
             // Associate the session with any existing SSO session
             if (ssoId != null)
                 associate(ssoId, request.getSessionInternal(true));
@@ -131,8 +129,8 @@ public class BasicAuthenticator
 
         // Is there an SSO session against which we can try to reauthenticate?
         if (ssoId != null) {
-            if (log.isDebugEnabled())
-                log.debug("SSO Id " + ssoId + " set; attempting " +
+            if (CatalinaLogger.AUTH_LOGGER.isDebugEnabled())
+                CatalinaLogger.AUTH_LOGGER.debug("SSO Id " + ssoId + " set; attempting " +
                           "reauthentication");
             /* Try to reauthenticate using data cached by SSO.  If this fails,
                either the original SSO logon was of DIGEST or SSL (which
