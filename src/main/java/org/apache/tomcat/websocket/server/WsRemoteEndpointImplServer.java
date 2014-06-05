@@ -81,7 +81,7 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
     }
 
 
-    public void onWritePossible(boolean useDispatch, boolean block) {
+    public synchronized void onWritePossible(boolean useDispatch, boolean block) {
         if (buffers == null) {
             // Servlet 3.1 will call the write listener once even if nothing
             // was written
@@ -93,16 +93,12 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
             while (block || sos.isReady()) {
                 complete = true;
                 for (ByteBuffer buffer : buffers) {
-                    // FIXME: this sync should be useless, an unwanted onWritePossible
-                    // seems to be causing this
-                    synchronized (buffer) {
-                        if (buffer.hasRemaining()) {
-                            complete = false;
-                            sos.write(buffer.array(), buffer.arrayOffset(),
-                                    buffer.limit());
-                            buffer.position(buffer.limit());
-                            break;
-                        }
+                    if (buffer.hasRemaining()) {
+                        complete = false;
+                        sos.write(buffer.array(), buffer.arrayOffset(),
+                                buffer.limit());
+                        buffer.position(buffer.limit());
+                        break;
                     }
                 }
                 if (complete) {

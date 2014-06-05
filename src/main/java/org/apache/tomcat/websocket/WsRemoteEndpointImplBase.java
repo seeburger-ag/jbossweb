@@ -671,8 +671,7 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
         }
 
         public void write() {
-            // FIXME: this sync should be useless
-            synchronized (buffer) {
+            synchronized (endpoint) {
                 buffer.clear();
                 CoderResult cr = encoder.encode(message, buffer, true);
                 if (cr.isError()) {
