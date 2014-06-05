@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.websocket.server;
 
+import static org.jboss.web.WebsocketsMessages.MESSAGES;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
@@ -54,9 +56,30 @@ public class WsHandshakeRequest implements HandshakeRequest {
         httpSession = request.getSession(false);
 
         // URI
-        StringBuilder sb = new StringBuilder(request.getRequestURI());
+        // Based on request.getRequestURL() implementation
+        StringBuilder sb = new StringBuilder();
+        String scheme = request.getScheme();
+        int port = request.getServerPort();
+        if (port < 0)
+            port = 80; // Work around java.net.URL bug
+
+        if (scheme.equals("http")) {
+            sb.append("ws");
+        } else if (scheme.equals("https")) {
+            sb.append("wss");
+        } else {
+            throw MESSAGES.unknownScheme(scheme);
+        }
+        sb.append("://");
+        sb.append(request.getServerName());
+        if ((scheme.equals("http") && (port != 80))
+            || (scheme.equals("https") && (port != 443))) {
+            sb.append(':');
+            sb.append(port);
+        }
+        sb.append(request.getRequestURI());
         if (queryString != null) {
-            sb.append("?");
+            sb.append('?');
             sb.append(queryString);
         }
         try {
