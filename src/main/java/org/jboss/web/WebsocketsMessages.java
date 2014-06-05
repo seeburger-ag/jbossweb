@@ -308,4 +308,7 @@ public interface WebsocketsMessages {
     @Message(id = 8590, value = "Closing session following IO error")
     String closeAfterError();
 
+    @Message(id = 8591, value = "Unknown scheme %s")
+    IllegalArgumentException unknownScheme(String scheme);
+
 }
