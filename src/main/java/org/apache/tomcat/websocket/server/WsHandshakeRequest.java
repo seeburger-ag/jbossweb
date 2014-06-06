@@ -37,6 +37,7 @@ import javax.websocket.server.HandshakeRequest;
  */
 public class WsHandshakeRequest implements HandshakeRequest {
 
+    private static final Boolean FULL_URL = Boolean.getBoolean("org.apache.tomcat.websocket.server.WsHandshakeRequest.FULL_URL");
     private final URI requestUri;
     private final Map<String,List<String>> parameterMap;
     private final String queryString;
@@ -56,28 +57,33 @@ public class WsHandshakeRequest implements HandshakeRequest {
         httpSession = request.getSession(false);
 
         // URI
-        // Based on request.getRequestURL() implementation
-        StringBuilder sb = new StringBuilder();
-        String scheme = request.getScheme();
-        int port = request.getServerPort();
-        if (port < 0)
-            port = 80; // Work around java.net.URL bug
+        StringBuilder sb = null;
+        if (FULL_URL) {
+            // Based on request.getRequestURL() implementation
+            sb = new StringBuilder();
+            String scheme = request.getScheme();
+            int port = request.getServerPort();
+            if (port < 0)
+                port = 80; // Work around java.net.URL bug
 
-        if (scheme.equals("http")) {
-            sb.append("ws");
-        } else if (scheme.equals("https")) {
-            sb.append("wss");
+            if (scheme.equals("http")) {
+                sb.append("ws");
+            } else if (scheme.equals("https")) {
+                sb.append("wss");
+            } else {
+                throw MESSAGES.unknownScheme(scheme);
+            }
+            sb.append("://");
+            sb.append(request.getServerName());
+            if ((scheme.equals("http") && (port != 80))
+                    || (scheme.equals("https") && (port != 443))) {
+                sb.append(':');
+                sb.append(port);
+            }
+            sb.append(request.getRequestURI());
         } else {
-            throw MESSAGES.unknownScheme(scheme);
+            sb = new StringBuilder(request.getRequestURI());
         }
-        sb.append("://");
-        sb.append(request.getServerName());
-        if ((scheme.equals("http") && (port != 80))
-            || (scheme.equals("https") && (port != 443))) {
-            sb.append(':');
-            sb.append(port);
-        }
-        sb.append(request.getRequestURI());
         if (queryString != null) {
             sb.append('?');
             sb.append(queryString);
