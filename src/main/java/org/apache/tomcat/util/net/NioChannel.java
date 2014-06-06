@@ -189,6 +189,15 @@ public class NioChannel implements AsynchronousByteChannel, NetworkChannel {
 	private long id;
 	private ByteBuffer buffer;
 
+	private Object lock = new Object();
+	public Object getLock() {
+	    return lock;
+	}
+	private Object writeLock = new Object();
+	public Object getWriteLock() {
+        return writeLock;
+    }
+
 	/**
 	 * Create a new instance of {@code NioChannel}
 	 * 

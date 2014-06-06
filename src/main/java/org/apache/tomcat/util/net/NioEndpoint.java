@@ -931,7 +931,7 @@ public class NioEndpoint extends AbstractEndpoint {
                 if (status == null) {
                     state = handler.process(channel);
                 } else {
-                    synchronized (channel) {
+                    synchronized (channel.getLock()) {
                         state = handler.event(channel, status);
                     }
                 }

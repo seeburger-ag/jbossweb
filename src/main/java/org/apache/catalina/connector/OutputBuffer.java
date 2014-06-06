@@ -700,7 +700,8 @@ public class OutputBuffer extends Writer
             throw MESSAGES.cannotSetListenerWithoutUpgradeOrAsync();
         }
         this.writeListener = writeListener;
-        coyoteResponse.action(ActionCode.ACTION_EVENT_WRITE_BEGIN, null);
+        coyoteResponse.action(ActionCode.ACTION_EVENT_WRITE_BEGIN,
+                (response.getRequest().getUpgradeHandler() != null) ? writeListener : null);
     }
 
 }

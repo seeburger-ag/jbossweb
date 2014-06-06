@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.OutputBuffer;
 import org.apache.coyote.Response;
+import org.apache.coyote.http11.upgrade.servlet31.WriteListener;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.MessageBytes;
@@ -143,6 +144,11 @@ public class InternalNioOutputBuffer implements OutputBuffer {
      */
     private Semaphore semaphore = new Semaphore(1);
 	
+    /**
+     * Associated write listener for upgrade mode.
+     */
+    private WriteListener listener = null;
+    
 	/**
 	 * Create a new instance of {@code InternalNioOutputBuffer}
 	 * 
@@ -194,31 +200,60 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 		this.completionHandler = new CompletionHandler<Integer, NioChannel>() {
 
 			@Override
-			public synchronized void completed(Integer nBytes, NioChannel attachment) {
+			public void completed(Integer nBytes, NioChannel attachment) {
                 if (nBytes < 0) {
                     failed(new IOException(MESSAGES.failedWrite()), attachment);
                     return;
                 }
-                if (!bbuf.hasRemaining()) {
-                    bbuf.clear();
-                    if (leftover.getLength() > 0) {
-                        int n = Math.min(leftover.getLength(), bbuf.remaining());
-                        bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
-                        leftover.setOffset(leftover.getOffset() + n);
-                    } else {
-                        response.setLastWrite(nBytes);
-                        leftover.recycle();
-                        semaphore.release();
-                        if (/*!processor.isProcessing() && */processor.getWriteNotification()) {
-                            if (!endpoint.processChannel(attachment, SocketStatus.OPEN_WRITE)) {
-                                endpoint.closeChannel(attachment);
+                boolean notify = false;
+                boolean write = false;
+                synchronized (completionHandler) {
+                    if (!bbuf.hasRemaining()) {
+                        bbuf.clear();
+                        if (leftover.getLength() > 0) {
+                            int n = Math.min(leftover.getLength(), bbuf.remaining());
+                            bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
+                            leftover.setOffset(leftover.getOffset() + n);
+                            write = true;
+                        } else {
+                            response.setLastWrite(nBytes);
+                            leftover.recycle();
+                            semaphore.release();
+                            if (processor.getWriteNotification()) {
+                                notify = true;
                             }
                         }
-                        return;
+                    } else {
+                        write = true;
                     }
                 }
-                // Write the remaining bytes
-                attachment.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, attachment, this);
+                if (write) {
+                    attachment.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, attachment, this);
+                }
+                if (notify) {
+                    if (listener == null) {
+                        if (!endpoint.processChannel(attachment, SocketStatus.OPEN_WRITE)) {
+                            endpoint.closeChannel(attachment);
+                        }
+                    } else {
+                        Thread thread = Thread.currentThread();
+                        ClassLoader originalClassLoader = thread.getContextClassLoader();
+                        try {
+                            thread.setContextClassLoader(listener.getClass().getClassLoader());
+                            synchronized (channel.getWriteLock()) {
+                                listener.onWritePossible();
+                            }
+                        } catch (Exception e) {
+                            processor.getResponse().setErrorException(e);
+                            endpoint.removeEventChannel(attachment);
+                            if (!endpoint.processChannel(attachment, SocketStatus.ERROR)) {
+                                endpoint.closeChannel(attachment);
+                            }
+                        } finally {
+                            thread.setContextClassLoader(originalClassLoader);
+                        }
+                    }
+                }
 			}
 
 			@Override
@@ -386,6 +421,13 @@ public class InternalNioOutputBuffer implements OutputBuffer {
     }
 
     /**
+     * Set the associated write listener for upgrade mode.
+     */
+    public void setWriteListener(WriteListener listener) {
+        this.listener = listener;
+    }
+
+    /**
      * Add an output filter to the filter library.
      * 
      * @param filter
@@ -479,6 +521,11 @@ public class InternalNioOutputBuffer implements OutputBuffer {
         lastActiveFilter = -1;
         committed = false;
         finished = false;
+        listener = null;
+        if (semaphore.availablePermits() != 1) {
+            semaphore.drainPermits();
+            semaphore.release();
+        }
         writeTimeout = (endpoint.getSoTimeout() > 0 ? endpoint.getSoTimeout()
                 : Integer.MAX_VALUE);
     }
@@ -508,9 +555,6 @@ public class InternalNioOutputBuffer implements OutputBuffer {
         lastActiveFilter = -1;
         committed = false;
         finished = false;
-        if (nonBlocking) {
-            semaphore.release();
-        }
         nonBlocking = false;
     }
 
@@ -820,24 +864,26 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                     if (leftover.getLength() > Constants.ASYNC_BUFFER_SIZE) {
                         response.setLastWrite(0);
                     }
-                    if (semaphore.tryAcquire()) {
-                        // Calculate the number of bytes that fit in the buffer
-                        int n = Math.min(leftover.getLength(), bbuf.capacity() - bbuf.position());
-                        bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
-                        leftover.setOffset(leftover.getOffset() + n);
-                        boolean writeNotification = processor.getWriteNotification();
-                        processor.setWriteNotification(false);
-                        try {
-                            channel.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, channel, completionHandler);
-                        } catch (Exception e) {
-                            processor.getResponse().setErrorException(e);
-                            if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-                                CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(e);
-                            }
+                }
+                if (semaphore.tryAcquire()) {
+                    // Calculate the number of bytes that fit in the buffer
+                    int n = Math.min(leftover.getLength(), bbuf.capacity() - bbuf.position());
+                    bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
+                    leftover.setOffset(leftover.getOffset() + n);
+                    boolean writeNotification = processor.getWriteNotification();
+                    processor.setWriteNotification(false);
+                    try {
+                        channel.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, channel, completionHandler);
+                    } catch (Exception e) {
+                        processor.getResponse().setErrorException(e);
+                        if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                            CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(e);
                         }
-                        if (writeNotification && bbuf.hasRemaining()) {
-                            // Write did not complete inline, possible write notification
-                            processor.setWriteNotification(writeNotification);
+                    }
+                    if (semaphore.availablePermits() == 0) {
+                        // Write did not complete inline, possible write notification
+                        if (writeNotification) {
+                            processor.setWriteNotification(true);
                         }
                     }
                 }
