@@ -1,48 +1,20 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- * 
- * 
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 1999-2009 The Apache Software Foundation
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 
 package org.apache.catalina.connector;
 
@@ -65,6 +37,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
@@ -502,6 +475,12 @@ public class Request
      * Random generator.
      */
     protected Random random = null;
+
+    
+    /**
+     * Async listener instances.
+     */
+    protected LinkedList<AsyncListener> asyncListenerInstances = new LinkedList<AsyncListener>();
     
 
     // --------------------------------------------------------- Public Methods
@@ -512,6 +491,17 @@ public class Request
      * preparation for reuse of this object.
      */
     public void recycle() {
+
+        if (asyncContext != null && context != null) {
+            for (AsyncListener listener : asyncListenerInstances) {
+                try {
+                    context.getInstanceManager().destroyInstance(listener);
+                } catch (Throwable t) {
+                    context.getLogger().error(MESSAGES.preDestroyException(), t);
+                }
+            }
+            asyncListenerInstances.clear();
+        }
 
         context = null;
         wrapper = null;
@@ -2581,6 +2571,11 @@ public class Request
     }
     
     
+    public void wakeup() {
+        coyoteRequest.action(ActionCode.ACTION_EVENT_WAKEUP, null);
+    }
+
+
     public void suspend() {
         coyoteRequest.action(ActionCode.ACTION_EVENT_SUSPEND, null);
     }
@@ -3352,7 +3347,7 @@ public class Request
 
         public void complete() {
             setEventMode(false);
-            resume();
+            wakeup();
         }
 
         public void dispatch() {
@@ -3370,21 +3365,21 @@ public class Request
                     throw MESSAGES.cannotFindDispatchContext(requestURI);
                 }
             }
-            resume();
+            wakeup();
         }
 
         public void dispatch(String path) {
             this.servletContext = null;
             this.path = path;
             useAttributes = true;
-            resume();
+            wakeup();
         }
 
         public void dispatch(ServletContext servletContext, String path) {
             this.servletContext = servletContext;
             this.path = path;
             useAttributes = true;
-            resume();
+            wakeup();
         }
 
         public ServletRequest getRequest() {
@@ -3409,7 +3404,7 @@ public class Request
 
         public void start(Runnable runnable) {
             this.runnable = runnable;
-            resume();
+            wakeup();
         }
 
         public boolean isReady() {
@@ -3439,6 +3434,12 @@ public class Request
 
         public Runnable getRunnable() {
             return runnable;
+        }
+        
+        public Runnable runRunnable() {
+            Runnable result = runnable;
+            runnable = null;
+            return result;
         }
         
         public void reset() {
@@ -3485,6 +3486,7 @@ public class Request
             } catch (Exception e) {
                 throw new ServletException(MESSAGES.listenerCreationFailed(clazz.getName()), e);
             }
+            asyncListenerInstances.add(listenerInstance);
             return listenerInstance;
         }
 

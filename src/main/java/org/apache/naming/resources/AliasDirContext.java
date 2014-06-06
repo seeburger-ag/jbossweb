@@ -1,26 +1,24 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.naming.resources;
+
+import static org.jboss.web.NamingMessages.MESSAGES;
 
 import java.io.File;
 import java.util.Hashtable;
@@ -62,8 +60,7 @@ public class AliasDirContext extends BaseDirContext {
      */
     public void addAlias(String path, BaseDirContext dirContext) {
         if (!path.startsWith("/")) {
-            throw new IllegalArgumentException(
-                    sm.getString("resources.invalidAliasPath", path));
+            throw MESSAGES.invalidAliasPath(path);
         }
         aliases.put(path, dirContext);
     }
@@ -74,8 +71,7 @@ public class AliasDirContext extends BaseDirContext {
      */
     public void removeAlias(String path) {
         if (!path.startsWith("/")) {
-            throw new IllegalArgumentException(
-                    sm.getString("resources.invalidAliasPath", path));
+            throw MESSAGES.invalidAliasPath(path);
         }
         aliases.remove(path);
     }
@@ -125,10 +121,10 @@ public class AliasDirContext extends BaseDirContext {
         for (String kvp : kvps) {
             String[] kv = kvp.split("=");
             if (kv.length != 2 || kv[0].length() == 0 || kv[1].length() == 0)
-                throw new IllegalArgumentException(sm.getString("resources.invalidAliasMapping", kvp));
+                throw MESSAGES.invalidAliasMapping(kvp);
             File aliasLoc = new File(kv[1]);
             if (!aliasLoc.exists()) {
-                throw new IllegalArgumentException(sm.getString("resources.invalidAliasNotExist", kv[1]));
+                throw MESSAGES.aliasNotFound(kv[1]);
             }
             BaseDirContext context;
             if (kv[1].endsWith(".war") && !(aliasLoc.isDirectory())) {
@@ -136,7 +132,7 @@ public class AliasDirContext extends BaseDirContext {
             } else if (aliasLoc.isDirectory()) {
                 context = new FileDirContext();
             } else {
-                throw new IllegalArgumentException(sm.getString("resources.invalidAliasFile", kv[1]));
+                throw MESSAGES.aliasNotFolder(kv[1]);
             }
             context.setDocBase(kv[1]);
             addAlias(kv[0], context);
@@ -179,7 +175,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.lookup(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public Object lookup(Name name) throws NamingException {
@@ -199,7 +195,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.list(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public NamingEnumeration list(Name name) throws NamingException {
@@ -211,7 +207,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.listBindings(result.aliasName);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public NamingEnumeration listBindings(Name name) throws NamingException {
@@ -236,7 +232,7 @@ public class AliasDirContext extends BaseDirContext {
         if (result.dirContext != null) {
             return result.dirContext.getAttributes(result.aliasName, attrIds);
         }
-        throw new NameNotFoundException(sm.getString("resources.notFound", name));
+        throw new NameNotFoundException(MESSAGES.resourceNotFound(name));
     }
 
     public Attributes getAttributes(Name name, String[] attrIds) throws NamingException {
