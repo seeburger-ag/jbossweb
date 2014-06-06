@@ -591,10 +591,8 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
 
     protected abstract void doWrite(SendHandler handler, ByteBuffer... data);
-    protected abstract void writeBlock();
     protected abstract boolean isMasked();
     protected abstract void doClose();
-
 
     private static void writeHeader(ByteBuffer headerBuffer, byte opCode,
             ByteBuffer payload, boolean first, boolean last, boolean masked,
@@ -671,7 +669,7 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
         }
 
         public void write() {
-            synchronized (endpoint) {
+            synchronized (buffer) {
                 buffer.clear();
                 CoderResult cr = encoder.encode(message, buffer, true);
                 if (cr.isError()) {

@@ -25,8 +25,6 @@ import java.util.concurrent.TimeoutException;
 import javax.websocket.SendHandler;
 import javax.websocket.SendResult;
 
-import org.apache.coyote.http11.Http11AbstractProcessor;
-
 /**
  * Converts a Future to a SendHandler.
  */
@@ -75,11 +73,6 @@ class FutureToSendHandler implements Future<Void>, SendHandler {
             ExecutionException {
         try {
             wsSession.registerFuture(this);
-            // If inside a container thread, must use an autoblocking flush as the write
-            // event will never come to the Servlet layer until the container thread returns
-            if (latch.getCount() > 0 && Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
-                wsSession.writeBlock();
-            }
             latch.await();
         } finally {
             wsSession.unregisterFuture(this);
@@ -97,19 +90,10 @@ class FutureToSendHandler implements Future<Void>, SendHandler {
         boolean retval = false;
         try {
             wsSession.registerFuture(this);
-            // If inside a container thread, must use an autoblocking flush as the write
-            // event will never come to the Servlet layer until the container thread returns
-            if (latch.getCount() > 0 && Http11AbstractProcessor.containerThread.get() == Boolean.TRUE) {
-                long nanoTime = System.nanoTime();
-                wsSession.writeBlock();
-                // Removing the time spent on IO from the specified timeout
-                // Note: it may wait more than what the user has specified
-                timeout = TimeUnit.NANOSECONDS.convert(timeout, unit) - (System.nanoTime() - nanoTime);
-                unit = TimeUnit.NANOSECONDS;
-            }
             retval = latch.await(timeout, unit);
         } finally {
             wsSession.unregisterFuture(this);
+
         }
         if (retval == false) {
             throw new TimeoutException();

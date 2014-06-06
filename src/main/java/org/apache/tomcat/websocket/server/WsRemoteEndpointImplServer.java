@@ -71,17 +71,11 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
         this.buffers = buffers;
         // This is definitely the same thread that triggered the write so a
         // dispatch will be required.
-        onWritePossible(true, false);
+        onWritePossible(true);
     }
 
 
-    @Override
-    protected void writeBlock() {
-        onWritePossible(false, true);
-    }
-
-
-    public synchronized void onWritePossible(boolean useDispatch, boolean block) {
+    public void onWritePossible(boolean useDispatch) {
         if (buffers == null) {
             // Servlet 3.1 will call the write listener once even if nothing
             // was written
@@ -90,19 +84,20 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
         boolean complete = true;
         try {
             // If this is false there will be a call back when it is true
-            while (block || sos.isReady()) {
+            while (sos.isReady()) {
                 complete = true;
                 for (ByteBuffer buffer : buffers) {
-                    if (buffer.hasRemaining()) {
-                        complete = false;
-                        sos.write(buffer.array(), buffer.arrayOffset(),
-                                buffer.limit());
-                        buffer.position(buffer.limit());
-                        break;
+                    synchronized (buffer) {
+                        if (buffer.hasRemaining()) {
+                            complete = false;
+                            sos.write(buffer.array(), buffer.arrayOffset(),
+                                    buffer.limit());
+                            buffer.position(buffer.limit());
+                            break;
+                        }
                     }
                 }
                 if (complete) {
-                    timeoutExpiry = -1;
                     wsWriteTimeout.unregister(this);
                     clearHandler(null, useDispatch);
                     // Explicit flush for compatibility with buffered streams

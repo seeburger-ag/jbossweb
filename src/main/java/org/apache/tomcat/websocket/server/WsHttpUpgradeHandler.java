@@ -44,6 +44,8 @@ import org.jboss.web.WebsocketsLogger;
  */
 public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
 
+    private final ClassLoader applicationClassLoader;
+
     private Endpoint ep;
     private EndpointConfig endpointConfig;
     private WsServerContainer webSocketContainer;
@@ -57,6 +59,7 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
 
 
     public WsHttpUpgradeHandler() {
+        applicationClassLoader = Thread.currentThread().getContextClassLoader();
     }
 
 
@@ -212,7 +215,7 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
         public void onWritePossible() {
             // Triggered by the poller so this isn't the same thread that
             // triggered the write so no need for a dispatch
-            wsRemoteEndpointServer.onWritePossible(false, false);
+            wsRemoteEndpointServer.onWritePossible(false);
         }
 
 

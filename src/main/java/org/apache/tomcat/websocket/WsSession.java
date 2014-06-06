@@ -449,13 +449,6 @@ public class WsSession implements Session {
         }
     }
 
-    /**
-     * Force an autoblocking flush.
-     */
-    public void writeBlock() {
-        wsRemoteEndpoint.writeBlock();
-    }
-
     private void fireEndpointOnClose(CloseReason closeReason) {
 
         // Fire the onClose event
