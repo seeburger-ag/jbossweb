@@ -1299,6 +1299,7 @@ public class Http11AprProcessor implements ActionHook {
             // Switch to raw bytes mode
             inputBuffer.removeActiveFilters();
             outputBuffer.removeActiveFilters();
+            timeout = Integer.MAX_VALUE;
         }
 
     }
