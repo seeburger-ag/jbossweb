@@ -103,6 +103,11 @@ public class ChunkedInputFilter implements InputFilter {
      */
     protected boolean needCRLFParse = false;
 
+    /**
+     * Flag that indicates if an error has occurred.
+     */
+    private boolean error;
+
     // ------------------------------------------------------------- Properties
 
 
@@ -123,6 +128,8 @@ public class ChunkedInputFilter implements InputFilter {
 
         if (endChunk)
             return -1;
+
+        checkError();
 
         if (needCRLFParse) {
             needCRLFParse = false;
@@ -223,6 +230,7 @@ public class ChunkedInputFilter implements InputFilter {
         lastValid = 0;
         endChunk = false;
         needCRLFParse = false;
+        error = false;
     }
 
 
@@ -278,6 +286,7 @@ public class ChunkedInputFilter implements InputFilter {
                 // In non blocking mode, no new chunk follows, even if data was present
                 int n = readBytes();
                 if (n < 0) {
+                    error = true;
                     throw MESSAGES.invalidChunkHeader();
                 } else if (n == 0) {
                     return false;
@@ -293,6 +302,7 @@ public class ChunkedInputFilter implements InputFilter {
             } else if (buf[pos] == Constants.SEMI_COLON) {
                 trailer = true;
             } else if (buf[pos] < 0) {
+                error = true;
                 throw MESSAGES.invalidChunkHeader();
             } else if (!trailer) { 
                 //don't read data after the trailer
@@ -303,6 +313,7 @@ public class ChunkedInputFilter implements InputFilter {
                 } else {
                     //we shouldn't allow invalid, non hex characters
                     //in the chunked header
+                    error = true;
                     throw MESSAGES.invalidChunkHeader();
                 }
             }
@@ -311,8 +322,10 @@ public class ChunkedInputFilter implements InputFilter {
 
         }
 
-        if (readDigit == 0 || (result < 0))
+        if (readDigit == 0 || (result < 0)) {
+            error = true;
             throw MESSAGES.invalidChunkHeader();
+        }
 
         if (result == 0)
             endChunk = true;
@@ -336,17 +349,26 @@ public class ChunkedInputFilter implements InputFilter {
         while (!eol) {
 
             if (pos >= lastValid) {
-                if (readBytes() <= 0)
+                if (readBytes() <= 0) {
+                    error = true;
                     throw MESSAGES.invalidCrlf();
+                }
             }
 
             if (buf[pos] == Constants.CR) {
-                if (crfound) throw MESSAGES.invalidCrlfTwoCr();
+                if (crfound) {
+                    error = true;
+                    throw MESSAGES.invalidCrlfTwoCr();
+                }
                 crfound = true;
             } else if (buf[pos] == Constants.LF) {
-                if (!crfound) throw MESSAGES.invalidCrlfNoCr();
+                if (!crfound) {
+                    error = true;
+                    throw MESSAGES.invalidCrlfNoCr();
+                }
                 eol = true;
             } else {
+                error = true;
                 throw MESSAGES.invalidCrlf();
             }
 
@@ -370,5 +392,11 @@ public class ChunkedInputFilter implements InputFilter {
 
     }
 
+
+    private void checkError() throws IOException {
+        if (error) {
+            throw new IOException(MESSAGES.chunkedFilterError());
+        }
+    }
 
 }

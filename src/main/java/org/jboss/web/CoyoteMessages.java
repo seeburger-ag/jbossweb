@@ -283,4 +283,7 @@ public interface CoyoteMessages {
     @Message(id = 2081, value = "No cipher match")
     String noCipherMatch();
 
+    @Message(id = 2082, value = "Chunked input filter error")
+    String chunkedFilterError();
+
 }
