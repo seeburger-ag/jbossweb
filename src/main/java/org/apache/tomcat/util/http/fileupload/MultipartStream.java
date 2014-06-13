@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload;
 
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -300,8 +302,11 @@ public class MultipartStream {
 
         // We prepend CR/LF to the boundary to chop trailing CR/LF from
         // body-data tokens.
-        this.boundary = new byte[boundary.length + BOUNDARY_PREFIX.length];
         this.boundaryLength = boundary.length + BOUNDARY_PREFIX.length;
+        if (bufSize < this.boundaryLength + 1) {
+            throw MESSAGES.multipartStreamBufferSizeTooSmall();
+        }
+        this.boundary = new byte[this.boundaryLength];
         this.keepRegion = this.boundary.length;
         System.arraycopy(BOUNDARY_PREFIX, 0, this.boundary, 0,
                 BOUNDARY_PREFIX.length);
@@ -375,7 +380,7 @@ public class MultipartStream {
             tail = input.read(buffer, head, bufSize);
             if (tail == -1) {
                 // No more data available.
-                throw new IOException("No more data is available");
+                throw new IOException(MESSAGES.noDataAvailable());
             }
             if (notifier != null) {
                 notifier.noteBytesRead(tail);
@@ -419,11 +424,10 @@ public class MultipartStream {
             } else if (arrayequals(marker, FIELD_SEPARATOR, 2)) {
                 nextChunk = true;
             } else {
-                throw new MalformedStreamException(
-                "Unexpected characters follow a boundary");
+                throw new MalformedStreamException(MESSAGES.unexpectedCharactersAfterBoundary());
             }
         } catch (IOException e) {
-            throw new MalformedStreamException("Stream ended unexpectedly");
+            throw new MalformedStreamException(MESSAGES.unexpectedEndOfStream());
         }
         return nextChunk;
     }
@@ -451,8 +455,7 @@ public class MultipartStream {
     public void setBoundary(byte[] boundary)
             throws IllegalBoundaryException {
         if (boundary.length != boundaryLength - BOUNDARY_PREFIX.length) {
-            throw new IllegalBoundaryException(
-            "The length of a boundary token can not be changed");
+            throw new IllegalBoundaryException(MESSAGES.invalidBoundaryToken());
         }
         System.arraycopy(boundary, 0, this.boundary, BOUNDARY_PREFIX.length,
                 boundary.length);
@@ -485,12 +488,10 @@ public class MultipartStream {
             try {
                 b = readByte();
             } catch (IOException e) {
-                throw new MalformedStreamException("Stream ended unexpectedly");
+                throw new MalformedStreamException(MESSAGES.unexpectedEndOfStream());
             }
             if (++size > HEADER_PART_SIZE_MAX) {
-                throw new MalformedStreamException(
-                        "Header section has more than " + HEADER_PART_SIZE_MAX
-                        + " bytes (maybe it is not properly terminated)");
+                throw new MalformedStreamException(MESSAGES.invalidHeader(HEADER_PART_SIZE_MAX));
             }
             if (b == HEADER_SEPARATOR[i]) {
                 i++;
@@ -939,8 +940,7 @@ public class MultipartStream {
                     // The last pad amount is left in the buffer.
                     // Boundary can't be in there so signal an error
                     // condition.
-                    final String msg = "Stream ended unexpectedly";
-                    throw new MalformedStreamException(msg);
+                    throw new MalformedStreamException(MESSAGES.unexpectedEndOfStream());
                 }
                 if (notifier != null) {
                     notifier.noteBytesRead(bytesRead);
