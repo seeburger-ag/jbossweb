@@ -35,7 +35,7 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
-import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 /**
  * Web crawlers can trigger the creation of many thousands of sessions as they
@@ -46,8 +46,6 @@ import org.jboss.logging.Logger;
  */
 public class CrawlerSessionManagerValve extends ValveBase
         implements Lifecycle, HttpSessionBindingListener {
-
-    private static Logger log = Logger.getLogger(CrawlerSessionManagerValve.class);
 
     /**
      * The lifecycle event support for this component.
@@ -164,8 +162,8 @@ public class CrawlerSessionManagerValve extends ValveBase
         String sessionId = null;
         String clientIp = null;
 
-        if (log.isDebugEnabled()) {
-            log.debug(request.hashCode() + ": ClientIp=" +
+        if (CatalinaLogger.VALVES_LOGGER.isDebugEnabled()) {
+            CatalinaLogger.VALVES_LOGGER.debug(request.hashCode() + ": ClientIp=" +
                     request.getRemoteAddr() + ", RequestedSessionId=" +
                     request.getRequestedSessionId());
         }
@@ -183,15 +181,15 @@ public class CrawlerSessionManagerValve extends ValveBase
             // If more than one UA header - assume not a bot
             if (uaHeader != null && !uaHeaders.hasMoreElements()) {
 
-                if (log.isDebugEnabled()) {
-                    log.debug(request.hashCode() + ": UserAgent=" + uaHeader);
+                if (CatalinaLogger.VALVES_LOGGER.isDebugEnabled()) {
+                    CatalinaLogger.VALVES_LOGGER.debug(request.hashCode() + ": UserAgent=" + uaHeader);
                 }
 
                 if (uaPattern.matcher(uaHeader).matches()) {
                     isBot = true;
 
-                    if (log.isDebugEnabled()) {
-                        log.debug(request.hashCode() +
+                    if (CatalinaLogger.VALVES_LOGGER.isDebugEnabled()) {
+                        CatalinaLogger.VALVES_LOGGER.debug(request.hashCode() +
                                 ": Bot found. UserAgent=" + uaHeader);
                     }
                 }
@@ -203,8 +201,8 @@ public class CrawlerSessionManagerValve extends ValveBase
                 sessionId = clientIpSessionId.get(clientIp);
                 if (sessionId != null) {
                     request.setRequestedSessionId(sessionId);
-                    if (log.isDebugEnabled()) {
-                        log.debug(request.hashCode() + ": SessionID=" +
+                    if (CatalinaLogger.VALVES_LOGGER.isDebugEnabled()) {
+                        CatalinaLogger.VALVES_LOGGER.debug(request.hashCode() + ": SessionID=" +
                                 sessionId);
                     }
                 }
@@ -224,14 +222,14 @@ public class CrawlerSessionManagerValve extends ValveBase
                     s.setAttribute(this.getClass().getName(), this);
                     s.setMaxInactiveInterval(sessionInactiveInterval);
 
-                    if (log.isDebugEnabled()) {
-                        log.debug(request.hashCode() +
+                    if (CatalinaLogger.VALVES_LOGGER.isDebugEnabled()) {
+                        CatalinaLogger.VALVES_LOGGER.debug(request.hashCode() +
                                 ": New bot session. SessionID=" + s.getId());
                     }
                 }
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug(request.hashCode() +
+                if (CatalinaLogger.VALVES_LOGGER.isDebugEnabled()) {
+                    CatalinaLogger.VALVES_LOGGER.debug(request.hashCode() +
                             ": Bot session accessed. SessionID=" + sessionId);
                 }
             }

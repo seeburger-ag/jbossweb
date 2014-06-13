@@ -30,6 +30,18 @@ public final class Constants {
     public static final boolean WAIT_FOR_THREAD = 
         Boolean.valueOf(System.getProperty("org.apache.tomcat.util.net.WAIT_FOR_THREAD", "false")).booleanValue();
 
+    public static final boolean REUSE_ADDRESS = 
+            Boolean.valueOf(System.getProperty("org.apache.tomcat.util.net.REUSE_ADDRESS", "true")).booleanValue();
+
+    public static final int SO_RCV_BUFFER = 
+            Integer.valueOf(System.getProperty("org.apache.tomcat.util.net.SO_RCV_BUFFER", "-1")).intValue();
+
+    public static final int SO_SND_BUFFER = 
+            Integer.valueOf(System.getProperty("org.apache.tomcat.util.net.SO_SND_BUFFER", "-1")).intValue();
+
+    public static final int SHUTDOWN_TIMEOUT = 
+            Integer.valueOf(System.getProperty("org.apache.tomcat.util.net.SHUTDOWN_TIMEOUT", "5000")).intValue();
+
     /**
      * The Request attribute key for the cipher suite.
      */

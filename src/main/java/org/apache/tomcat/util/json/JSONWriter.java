@@ -1,5 +1,7 @@
 package org.apache.tomcat.util.json;
 
+import static org.jboss.web.JSONMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -109,7 +111,7 @@ public class JSONWriter {
      */
     private JSONWriter append(String s) throws JSONException {
         if (s == null) {
-            throw new JSONException("Null pointer");
+            throw new JSONException(MESSAGES.writerNull());
         }
         if (this.mode == 'o' || this.mode == 'a') {
             try {
@@ -126,7 +128,7 @@ public class JSONWriter {
             this.comma = true;
             return this;
         }
-        throw new JSONException("Value out of sequence.");
+        throw new JSONException(MESSAGES.writerValueOutOfSequence());
     }
 
     /**
@@ -145,7 +147,7 @@ public class JSONWriter {
             this.comma = false;
             return this;
         }
-        throw new JSONException("Misplaced array.");
+        throw new JSONException(MESSAGES.writerMisplacedArray());
     }
 
     /**
@@ -157,8 +159,8 @@ public class JSONWriter {
      */
     private JSONWriter end(char m, char c) throws JSONException {
         if (this.mode != m) {
-            throw new JSONException(m == 'o' ? "Misplaced endObject." :
-                "Misplaced endArray.");
+            throw new JSONException(m == 'o' ? MESSAGES.writerMisplacedObjectEnd() :
+                MESSAGES.writerMisplacedArrayEnd());
         }
         this.pop(m);
         try {
@@ -200,7 +202,7 @@ public class JSONWriter {
      */
     public JSONWriter key(String s) throws JSONException {
         if (s == null) {
-            throw new JSONException("Null key.");
+            throw new JSONException(MESSAGES.writerNullKey());
         }
         if (this.mode == 'k') {
             try {
@@ -217,7 +219,7 @@ public class JSONWriter {
                 throw new JSONException(e);
             }
         }
-        throw new JSONException("Misplaced key.");
+        throw new JSONException(MESSAGES.writerMisplacedKey());
     }
 
 
@@ -240,7 +242,7 @@ public class JSONWriter {
             this.comma = false;
             return this;
         }
-        throw new JSONException("Misplaced object.");
+        throw new JSONException(MESSAGES.writerMisplacedObject());
 
     }
 
@@ -252,11 +254,11 @@ public class JSONWriter {
      */
     private void pop(char c) throws JSONException {
         if (this.top <= 0) {
-            throw new JSONException("Nesting error.");
+            throw new JSONException(MESSAGES.writerNestingError());
         }
         char m = this.stack[this.top - 1] == null ? 'a' : 'k';
         if (m != c) {
-            throw new JSONException("Nesting error.");
+            throw new JSONException(MESSAGES.writerNestingError());
         }
         this.top -= 1;
         this.mode = this.top == 0 ? 'd' : this.stack[this.top - 1] == null ? 'a' : 'k';
@@ -269,7 +271,7 @@ public class JSONWriter {
      */
     private void push(JSONObject jo) throws JSONException {
         if (this.top >= maxdepth) {
-            throw new JSONException("Nesting too deep.");
+            throw new JSONException(MESSAGES.writerNestingTooDeep());
         }
         this.stack[this.top] = jo;
         this.mode = jo == null ? 'a' : 'k';
