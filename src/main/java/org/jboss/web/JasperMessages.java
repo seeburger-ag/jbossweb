@@ -1,23 +1,19 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.web;
@@ -31,7 +27,7 @@ import org.jboss.logging.Messages;
 
 /**
  * Logging IDs 4000-5000
- * @author remm
+ * @author Remy Maucherat
  */
 @MessageBundle(projectCode = "JBWEB")
 public interface JasperMessages {
@@ -670,5 +666,119 @@ public interface JasperMessages {
 
     @Message(id = 4209, value = "An exception occurred processing JSP page %s at line %s")
     String jspException(String jsp, int line);
+
+    @Message(id = 4210, value = "Security exception for class %s")
+    String securityExceptionLoadingClass(String className);
+
+    @Message(id = 4211, value = "Stacktrace:")
+    String stacktrace();
+
+    @Message(id = 4212, value = "Background compilation failed")
+    String backgroundCompilationFailed();
+
+    @Message(id = 4213, value = "Security initialization failed")
+    String errorInitializingSecurity();
+
+    @Message(id = 4214, value = "Error unquoting attribute value")
+    String errorUnquotingAttributeValue();
+
+    @Message(id = 4215, value = "Invalid negative parameter: %s")
+    IllegalArgumentException invalidNegativeSmapPosition(int position);
+
+    @Message(id = 4216, value = "Undefined position")
+    IllegalArgumentException undefinedPosition();
+
+    @Message(id = 4217, value = "Unknown file name: %s")
+    IllegalArgumentException unknownFileName(String fileName);
+
+    @Message(id = 4218, value = "the name attribute of the attribute directive")
+    String tagFileProcessorAttrName();
+
+    @Message(id = 4219, value = "the name-given attribute of the variable directive")
+    String tagFileProcessorVarNameGiven();
+
+    @Message(id = 4220, value = "the name-from-attribute attribute of the variable directive")
+    String tagFileProcessorVarNameFrom();
+
+    @Message(id = 4221, value = "the alias attribute of the variable directive")
+    String tagFileProcessorVarAlias();
+
+    @Message(id = 4222, value = "the dynamic-attributes attribute of the tag directive")
+    String tagFileProcessorTagDynamic();
+
+    @Message(id = 4223, value = "Null context")
+    NullPointerException elResolverNullContext();
+
+    @Message(id = 4224, value = "Error resolving variable %s due to %s")
+    String errorResolvingVariable(String variable, String message);
+
+    @Message(id = 4225, value = "Legacy VariableResolver wrapped, not writable")
+    String legacyVariableResolver();
+
+    @Message(id = 4226, value = "Stream closed")
+    String streamClosed();
+
+    @Message(id = 4227, value = "Null text argument")
+    IllegalArgumentException nullCharBufferTextArgument();
+
+    @Message(id = 4228, value = "Null characters argument")
+    IllegalArgumentException nullCharBufferCharactersArgument();
+
+    @Message(id = 4229, value = "Null writer argument")
+    IllegalArgumentException nullCharBufferWriterArgument();
+
+    @Message(id = 4230, value = "Invalid start position")
+    IllegalArgumentException invalidCharBufferStartPosition();
+
+    @Message(id = 4231, value = "Invalid length")
+    IllegalArgumentException invalidCharBufferLength();
+
+    @Message(id = 4232, value = "No org.apache.tomcat.InstanceManager set in ServletContext")
+    IllegalStateException noInstanceManager();
+
+    @Message(id = 4233, value = "Null ELContextListener")
+    IllegalArgumentException nullElContextListener();
+
+    @Message(id = 4234, value = "Null ServletContext")
+    IllegalArgumentException nullServletContext();
+
+    @Message(id = 4235, value = "Null JspContext")
+    IllegalArgumentException nullJspContext();
+
+    @Message(id = 4236, value = "Null ELResolver")
+    IllegalArgumentException nullElResolver();
+
+    @Message(id = 4237, value = "Cannot add ELResolver after the first request has been made")
+    IllegalStateException cannotAddElResolver();
+
+    @Message(id = 4238, value = "Negative buffer size")
+    IllegalArgumentException invalidNegativeBufferSize();
+
+    @Message(id = 4239, value = "Page needs a session and none is available")
+    IllegalStateException pageNeedsSession();
+
+    @Message(id = 4240, value = "Null throwable")
+    NullPointerException nullThrowable();
+
+    @Message(id = 4241, value = "Invalid function mapping - no such method: %s")
+    RuntimeException invalidFunctionMapping(String message);
+
+    @Message(id = 4242, value = "Invalid request parameter %s value %s")
+    String invalidRequestParameterValue(String name, String value);
+
+    @Message(id = 4243, value = "The processing instruction target matching \"[xX][mM][lL]\" is not allowed.")
+    String reservedPiTarget();
+
+    @Message(id = 4244, value = "White space is required between the processing instruction target and data.")
+    String requiredWhiteSpaceAfterPiTarget();
+
+    @Message(id = 4245, value = "In URL tags, when the \"context\" attribute is specified, values of both \"context\" and \"url\" must start with '/'.")
+    String invalidContextAndUrlValues();
+
+    @Message(id = 4246, value = "Unexpected internal error during &lt;import&gt: Target servlet called getWriter(), then getOutputStream()")
+    IllegalStateException usedOutputStreamAfterWriter();
+
+    @Message(id = 4247, value = "Unexpected internal error during &lt;import&gt: Target servlet called getOutputStream(), then getWriter()")
+    IllegalStateException usedWriterAfterOutputStream();
 
 }

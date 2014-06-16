@@ -17,11 +17,14 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.Strftime;
+
 /**
  * Implements the Server-side #flastmod command
  * 
@@ -54,14 +57,11 @@ public final class SSIFlastmod implements SSICommand {
                     String configTimeFmt = ssiMediator.getConfigTimeFmt();
                     writer.write(formatDate(date, configTimeFmt));
                 } else {
-                    ssiMediator.log("#flastmod--Invalid attribute: "
-                            + paramName);
+                    ssiMediator.log(MESSAGES.ssiInvalidAttribute("flastmod", paramName));
                     writer.write(configErrMsg);
                 }
             } catch (IOException e) {
-                ssiMediator.log(
-                        "#flastmod--Couldn't get last modified for file: "
-                                + substitutedValue, e);
+                ssiMediator.log(MESSAGES.ssiFlastmodFailed(substitutedValue), e);
                 writer.write(configErrMsg);
             }
         }
