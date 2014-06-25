@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.bayeux.request;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -74,7 +76,7 @@ public class MetaHandshakeRequest extends RequestBase implements BayeuxRequest {
     public HttpError validate() {
         boolean error = (version==null || version.length()==0);
         if (!error) error = suppConnTypesFlag==0;
-        if (error) return new HttpError(400,"Invalid handshake request, supportedConnectionType field missing.",null);
+        if (error) return new HttpError(400, MESSAGES.invalidBayeuxHandshake(),null);
         else return null;
     }
 
