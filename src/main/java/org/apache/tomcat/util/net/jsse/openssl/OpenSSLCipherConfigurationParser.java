@@ -30,10 +30,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jboss.web.CoyoteLogger;
+import org.apache.tomcat.util.net.jsse.JSSELogger;
 
 /**
  * Class in charge with parsing openSSL expressions to define a list of ciphers.
+ *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2014 Red Hat, inc.
  */
 public class OpenSSLCipherConfigurationParser {
@@ -120,9 +121,17 @@ public class OpenSSLCipherConfigurationParser {
      */
     private static final String kEDH = "kEDH";
     /**
+     * Cipher suites using ephemeral DH key agreement.
+     */
+    private static final String kDHE = "kDHE";
+    /**
      * Cipher suites using ephemeral DH key agreement. equivalent to kEDH:-ADH
      */
     private static final String EDH = "EDH";
+    /**
+     * Cipher suites using ephemeral DH key agreement. equivalent to kEDH:-ADH
+     */
+    private static final String DHE = "DHE";
     /**
      * Cipher suites using DH key agreement and DH certificates signed by CAs with RSA keys.
      */
@@ -136,6 +145,42 @@ public class OpenSSLCipherConfigurationParser {
      */
     private static final String kDH = "kDH";
     /**
+     * Cipher suites using fixed ECDH key agreement signed by CAs with RSA keys.
+     */
+    private static final String kECDHr = "kECDHr";
+    /**
+     * Cipher suites using fixed ECDH key agreement signed by CAs with ECDSA keys.
+     */
+    private static final String kECDHe = "kECDHe";
+    /**
+     * Cipher suites using fixed ECDH key agreement signed by CAs with RSA and ECDSA keys or either respectively.
+     */
+    private static final String kECDH = "kECDH";
+    /**
+     * Cipher suites using ephemeral ECDH key agreement, including anonymous cipher suites.
+     */
+    private static final String kEECDH = "kEECDH";
+    /**
+     * Cipher suitesusing ECDH key exchange, including anonymous, ephemeral and fixed ECDH.
+     */
+    private static final String ECDH = "ECDH";
+    /**
+     * Cipher suites using ephemeral ECDH key agreement, including anonymous cipher suites.
+     */
+    private static final String kECDHE = "kECDHE";
+    /**
+     * Cipher suites using authenticated ephemeral ECDH key agreement
+     */
+    private static final String ECDHE = "ECDHE";
+    /**
+     * Cipher suites using authenticated ephemeral ECDH key agreement
+     */
+    private static final String EECDHE = "EECDHE";
+    /**
+     * Anonymous Elliptic Curve Diffie Hellman cipher suites.
+     */
+    private static final String AECDH = "AECDH";
+    /**
      * Cipher suites using DSS authentication, i.e. the certificates carry DSS keys.
      */
     private static final String aDSS = "aDSS";
@@ -143,6 +188,18 @@ public class OpenSSLCipherConfigurationParser {
      * Cipher suites effectively using DH authentication, i.e. the certificates carry DH keys.
      */
     private static final String aDH = "aDH";
+    /**
+     * Cipher suites effectively using ECDH authentication, i.e. the certificates carry ECDH keys.
+     */
+    private static final String aECDH = "aECDH";
+    /**
+     * Cipher suites effectively using ECDSA authentication, i.e. the certificates carry ECDSA keys.
+     */
+    private static final String aECDSA = "aECDSA";
+    /**
+     * Cipher suites effectively using ECDSA authentication, i.e. the certificates carry ECDSA keys.
+     */
+    private static final String ECDSA = "ECDSA";
     /**
      * Ciphers suites using FORTEZZA key exchange algorithms.
      */
@@ -327,15 +384,32 @@ public class OpenSSLCipherConfigurationParser {
         addListAlias(aRSA, filterByAuthentication(all, Collections.singleton(Authentication.RSA)));
         addListAlias(RSA, filter(all, null, Collections.singleton(KeyExchange.RSA), Collections.singleton(Authentication.RSA), null, null, null));
         addListAlias(kEDH, filterByKeyExchange(all, Collections.singleton(KeyExchange.EDH)));
+        addListAlias(kDHE, filterByKeyExchange(all, Collections.singleton(KeyExchange.EDH)));
         Set<Ciphers> edh = filterByKeyExchange(all, Collections.singleton(KeyExchange.EDH));
         edh.removeAll(filterByAuthentication(all, Collections.singleton(Authentication.DH)));
         addListAlias(EDH, edh);
+        addListAlias(DHE, edh);
         addListAlias(kDHr, filterByKeyExchange(all, Collections.singleton(KeyExchange.DHr)));
         addListAlias(kDHd, filterByKeyExchange(all, Collections.singleton(KeyExchange.DHd)));
         addListAlias(kDH, filterByKeyExchange(all, new HashSet<KeyExchange>(Arrays.asList(KeyExchange.DHr, KeyExchange.DHd))));
+
+        addListAlias(kECDHr, filterByKeyExchange(all, Collections.singleton(KeyExchange.ECDHr)));
+        addListAlias(kECDHe, filterByKeyExchange(all, Collections.singleton(KeyExchange.ECDHe)));
+        addListAlias(kECDH, filterByKeyExchange(all, new HashSet<KeyExchange>(Arrays.asList(KeyExchange.ECDHe, KeyExchange.ECDHr))));
+        aliases.put(ECDH, aliases.get(kECDH));
+        addListAlias(kECDHE, filterByKeyExchange(all, Collections.singleton(KeyExchange.ECDHe)));
+        aliases.put(ECDHE, aliases.get(kECDHE));
+        addListAlias(kEECDH, filterByKeyExchange(all, Collections.singleton(KeyExchange.EECDH)));
+        aliases.put(EECDHE, aliases.get(kEECDH));
         addListAlias(aDSS, filterByAuthentication(all, Collections.singleton(Authentication.DSS)));
         aliases.put("DSS", aliases.get(aDSS));
         addListAlias(aDH, filterByAuthentication(all, Collections.singleton(Authentication.DH)));
+        Set<Ciphers> aecdh = filterByKeyExchange(all, new HashSet<KeyExchange>(Arrays.asList(KeyExchange.ECDHe, KeyExchange.ECDHr)));
+        aecdh.removeAll(filterByAuthentication(all, Collections.singleton(Authentication.aNULL)));
+        addListAlias(AECDH, aecdh);
+        addListAlias(aECDH, filterByAuthentication(all, Collections.singleton(Authentication.ECDH)));
+        addListAlias(ECDSA, filterByAuthentication(all, Collections.singleton(Authentication.ECDSA)));
+        aliases.put(aECDSA, aliases.get(ECDSA));
         addListAlias(kFZA, filterByKeyExchange(all, Collections.singleton(KeyExchange.FZA)));
         addListAlias(aFZA, filterByAuthentication(all, Collections.singleton(Authentication.FZA)));
         addListAlias(eFZA, filterByEncryption(all, Collections.singleton(Encryption.FZA)));
@@ -533,7 +607,7 @@ public class OpenSSLCipherConfigurationParser {
                 if (aliases.containsKey(alias)) {
                     removedCiphers.addAll(aliases.get(alias));
                 } else {
-                     CoyoteLogger.UTIL_LOGGER.warn("Unknown element " + alias);
+                    JSSELogger.ROOT_LOGGER.warnUnknowElement(alias);
                 }
             } else if (element.startsWith(TO_END)) {
                 String alias = element.substring(1);
@@ -556,11 +630,13 @@ public class OpenSSLCipherConfigurationParser {
         for (Ciphers cipher : ciphers) {
             result.add(cipher.name());
         }
+        JSSELogger.ROOT_LOGGER.logEnabledCiphers(displayResult(ciphers, true, ","));
         return result;
     }
 
     /**
      * Parse the specified expression according to the OpenSSL syntax and returns a list of standard cipher names.
+     *
      * @param expression: the openssl expression to define a list of cipher.
      * @return the corresponding list of ciphers.
      */
@@ -568,13 +644,17 @@ public class OpenSSLCipherConfigurationParser {
         return convertForJSSE(parse(expression));
     }
 
-    static String displayResult(Set<Ciphers> ciphers, String separator) {
+    static String displayResult(Collection<Ciphers> ciphers, boolean useJSSEFormat, String separator) {
         if (ciphers.isEmpty()) {
             return "";
         }
         StringBuilder builder = new StringBuilder(ciphers.size() * 16);
         for (Ciphers cipher : ciphers) {
-            builder.append(cipher.getOpenSSLAlias());
+            if (useJSSEFormat) {
+                builder.append(cipher.name());
+            } else {
+                builder.append(cipher.getOpenSSLAlias());
+            }
             builder.append(separator);
         }
         return builder.toString().substring(0, builder.length() - 1);

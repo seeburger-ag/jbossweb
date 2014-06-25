@@ -52,7 +52,14 @@ public final class JSSEUtils {
                 }
             }
         }
+        if (!result.isEmpty()) {
+            StringBuilder builder = new StringBuilder(result.size() * 16);
+            for (String cipher : result) {
+                builder.append(cipher);
+                builder.append(",");
+            }
+            JSSELogger.ROOT_LOGGER.logUseableCiphers(builder.toString().substring(0, builder.length() - 1));
+        }
         return result.toArray(new String[result.size()]);
     }
-
 }
