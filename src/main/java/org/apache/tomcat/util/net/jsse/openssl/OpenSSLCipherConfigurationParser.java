@@ -62,6 +62,12 @@ public class OpenSSLCipherConfigurationParser {
      * matching existing ones.
      */
     private static final String TO_END = "+";
+     /**
+     * Lists of cipher suites can be combined in a single cipher string using the + character. 
+     * This is used as a logical and operation. 
+     * For example SHA1+DES represents all cipher suites containing the SHA1 and the DES algorithms. 
+     */
+    private static final String AND = "+";
     /**
      * All ciphers by their openssl alias name.
      */
@@ -466,8 +472,10 @@ public class OpenSSLCipherConfigurationParser {
     }
 
     static void moveToEnd(final LinkedHashSet<Ciphers> ciphers, final Collection<Ciphers> toBeMovedCiphers) {
-        ciphers.removeAll(toBeMovedCiphers);
-        ciphers.addAll(toBeMovedCiphers);
+        List<Ciphers> movedCiphers = new ArrayList<Ciphers>(toBeMovedCiphers);
+        movedCiphers.retainAll(ciphers);
+        ciphers.removeAll(movedCiphers);
+        ciphers.addAll(movedCiphers);
     }
 
     static void add(final LinkedHashSet<Ciphers> ciphers, final String alias) {
@@ -619,6 +627,17 @@ public class OpenSSLCipherConfigurationParser {
                 break;
             } else if (aliases.containsKey(element)) {
                 add(ciphers, element);
+            } else if (element.contains(AND)) {
+                String[] intersections = element.split("\\" + AND);
+                if(intersections.length > 0) {
+                    List<Ciphers> result = aliases.get(intersections[0]);
+                    for(int i = 1; i < intersections.length; i++) {
+                        if(aliases.containsKey(intersections[i])) {
+                            result.retainAll(aliases.get(intersections[i]));
+                        }
+                    }
+                     ciphers.addAll(result);
+                }
             }
         }
         ciphers.removeAll(removedCiphers);
