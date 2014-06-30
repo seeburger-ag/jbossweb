@@ -47,7 +47,7 @@ public class OpenSSLCipherConfigurationParser {
 
     private static boolean initialized = false;
 
-    private static final String SEPARATOR = ":";
+    private static final String SEPARATOR = ":|,| ";
     /**
      * If ! is used then the ciphers are permanently deleted from the list. The ciphers deleted can never reappear in the list
      * even if they are explicitly stated.
