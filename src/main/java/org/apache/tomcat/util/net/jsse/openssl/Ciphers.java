@@ -52,7 +52,7 @@ enum Ciphers {
             0,
             0),
     // Cipher 03
-    SL_RSA_EXPORT_WITH_RC4_40_MD5("EXP-RC4-MD5",
+    SSL_RSA_EXPORT_WITH_RC4_40_MD5("EXP-RC4-MD5",
             KeyExchange.RSA,
             Authentication.RSA,
             Encryption.RC4,
