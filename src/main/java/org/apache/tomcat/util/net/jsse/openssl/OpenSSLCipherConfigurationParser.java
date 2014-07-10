@@ -30,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.tomcat.util.net.jsse.JSSELogger;
 
 /**
@@ -598,8 +599,10 @@ public class OpenSSLCipherConfigurationParser {
     }
 
     static LinkedHashSet<Ciphers> parse(String expression) {
-        if (!initialized) {
-            init();
+        synchronized (OpenSSLCipherConfigurationParser.class) {
+            if (!initialized) {
+                init();
+            }
         }
         String[] elements = expression.split(SEPARATOR);
         LinkedHashSet<Ciphers> ciphers = new LinkedHashSet<Ciphers>();
