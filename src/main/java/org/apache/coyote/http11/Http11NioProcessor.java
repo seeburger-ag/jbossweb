@@ -1,18 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.coyote.http11;
@@ -120,14 +121,14 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	 * Mark the start of processing
 	 */
 	public void startProcessing() {
-		eventProcessing = true;
+		processing = true;
 	}
 
 	/**
 	 * Mark the end of processing
 	 */
 	public void endProcessing() {
-		eventProcessing = false;
+		processing = false;
 	}
 
 	/**
@@ -414,7 +415,6 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 				recycle();
 				return SocketState.CLOSED;
 			} else {
-				eventProcessing = false;
 				return SocketState.LONG;
 			}
 		} else {
@@ -546,7 +546,8 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	private void requestHostAddressAttr() {
 		if (remoteAddr == null && (channel != null)) {
 			try {
-				remoteAddr = ((InetSocketAddress) this.channel.getRemoteAddress()).getHostName();
+				remoteAddr = ((InetSocketAddress) this.channel.getRemoteAddress()).getAddress()
+                        .getHostAddress();
 			} catch (Exception e) {
 			    CoyoteLogger.HTTP_LOGGER.errorGettingSocketInformation(e);
 			}
@@ -704,6 +705,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		if (param == Boolean.TRUE) {
 			outputBuffer.setNonBlocking(true);
 			inputBuffer.setNonBlocking(true);
+			readNotifications = true;
 		}
 	}
 
@@ -728,12 +730,14 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 	 * @param param
 	 *            the vent parameter
 	 */
-	private void resumeEvent(Object param) {
-		readNotifications = true;
+	private void resumeEvent(Object param, boolean read) {
+	    if (read) {
+	        readNotifications = true;
+	    }
 		// An event is being processed already: adding for resume will be
 		// done
 		// when the channel gets back to the poller
-		if (!eventProcessing && !resumeNotification) {
+        if (!processing && !resumeNotification) {
 			endpoint.addEventChannel(channel, keepAliveTimeout, false, false, true, true);
 		}
 		resumeNotification = true;
@@ -748,7 +752,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		// An event is being processed already: adding for write will be
 		// done
 		// when the channel gets back to the poller
-		if (!eventProcessing && !writeNotification) {
+		if (!processing && !writeNotification) {
 			endpoint.addEventChannel(channel, timeout, false, true, false, true);
 		}
 		writeNotification = true;
@@ -841,11 +845,14 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			suspendEvent();
 		} else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
 			// Resume event
-			resumeEvent(param);
+			resumeEvent(param, true);
+        } else if (actionCode == ActionCode.ACTION_EVENT_WAKEUP) {
+            // Resume event
+            resumeEvent(param, false);
 		} else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
 			// Write event
 			writeEvent(param);
-		} else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
+		} else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
 			// Timeout event
 			timeoutEvent(param);
 		} else if (actionCode == ActionCode.UPGRADE) {
