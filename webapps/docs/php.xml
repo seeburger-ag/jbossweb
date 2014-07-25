@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<!DOCTYPE document [
+  <!ENTITY project SYSTEM "project.xml">
+]>
+<document url="index.html">
+
+  &project;
+
+  <properties>
+    <author email="mladen.turk@jboss.com">Mladen Turk</author>
+    <author email="jfrederic.clere@jboss.com">Jean-Frederic Clere</author>
+    <title>Overview</title>
+  </properties>
+
+<body>
+
+<section name="Introduction">
+<p>The PHP Module is a servlet that allows to run PHP embedded scripts.
+The servlet calls a native embedded PHP engine with libraries extentions.
+The PHP servlet allows to run most of the existing PHP scripts.
+</p>
+</section>
+
+<section name="Building">
+<p>
+To build simply run buildphp.sh.
+The buildphp.sh will detect you platform, download and build the dynamic libraries the PHP library needs and
+build the PHP servlet itself. Should should get a tarfile that contains the libraries and a war file with the examples.
+</p>
+Already build PHP servlets and libraries are available at:
+<a href="http://labs.jboss.com/jbossweb/downloads/php/">JBossWeb download area</a>
+</section>
+
+<section name="Installing">
+After extracting the tarball corresponding to you platform. (For example in $JBOSS_HOME,
+where JBOSS_HOME should be something like jbossweb-1.0.0.GA).<br/>
+In $CATALINA_BASE (CATALINA_BASE should be
+something like jbossweb-1.0.0.GA/server/default/deploy/jbossweb.sar) do the following:<br/>
+Edit in the &lt;Server/&gt; of <code>$CATALINA_BASE/server.xml</code> and uncomment the following Listener entry:
+<source>
+    &lt;Listener className="org.apache.catalina.servlets.php.LifecycleListener"/&gt;
+</source>
+If you want to enable php in all contexts edit  <code>$CATALINA_BASE/conf/web.xml</code> and uncomment the php servlet
+description and its mapping:
+<source>
+   &lt;servlet&gt;
+        &lt;servlet-name&gt;php&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.apache.catalina.servlets.php.Handler&lt;/servlet-class&gt;
+        &lt;init-param&gt;
+          &lt;param-name&gt;debug&lt;/param-name&gt;
+          &lt;param-value&gt;0&lt;/param-value&gt;
+        &lt;/init-param&gt;
+         &lt;load-on-startup&gt;6&lt;/load-on-startup&gt;
+    &lt;/servlet&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;phps&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.apache.catalina.servlets.php.Highlight&lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+<source>
+</source>
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;php&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;*.php&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;phps&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;*.phps&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+</source>
+Edit the <code>$JBOSS_HOME/bin/run.conf</code> (JBOSS_HOME should be something like jbossweb-1.0.0.GA) add the <code>LD_LIBRARY_PATH</code> variable and modify/add (replace $JBOSS_HOME by its value)
+the java.library.path parameter of the JVM:
+<source>
+LD_LIBRARY_PATH=$JBOSS_HOME/PHP/lib
+export LD_LIBRARY_PATH
+</source>
+Copy the 2 libraries libphp5.so and libphp5servlet.so in $JBOSS_HOME/bin/native, something like:
+<source>
+cp ./PHP/lib/libphp5.so bin/native
+cp ./PHP/lib/libphp5servlet.so bin/native
+</source>
+</section>
+<section name="Using the php demo scripts">
+The <code>php-examples.war</code> warfile of the tarball contains some php demo scripts.
+The warfile should be located in $CATALINA_BASE.
+They are deployed under /php-examples to use them you only need to modify the <code>$JBOSS_HOME/bin/run.conf</code> as described above.<br/>
+You don't have to modify the <code>$CATALINA_BASE/conf/web.xml</code>
+nor the <code>$CATALINA_BASE/server.xml</code> files.
+You have to start and restart the servlet container because of the environment modifications.<br/>
+To use the examples, try <code>http://localhost:8080/php-examples/index.php</code>.
+</section>
+<section name="Additing extension libraries">
+For the moment this feature is only supported on Solaris.
+Edit the <code>php.ini</code> file and add your library extensions as in the following example:
+<source>
+extension_dir=/home/jfclere/SunOS_i386_tools/PHP/lib/php/extensions/no-debug-zts-20050922
+extension=openssl.so
+extension=pdo_pgsql.so
+extension=pgsql.so
+</source>
+</section>
+<section name="Installing on win32 machines">
+Copy the demo webapps/php-examples.war to ./server/default/deploy.<br/>
+Edit server/default/deploy/jbossweb.sar/server.xml as in other OS.<br/>
+Copy the dlls in bin/native
+</section>
+</body>
+</document>
