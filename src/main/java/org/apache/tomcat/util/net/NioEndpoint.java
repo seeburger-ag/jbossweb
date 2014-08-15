@@ -1,23 +1,19 @@
-/**
- * JBoss, Home of Professional Open Source. Copyright 2011, Red Hat, Inc., and
- * individual contributors as indicated by the @author tags. See the
- * copyright.txt file in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.tomcat.util.net;
@@ -187,15 +183,15 @@ public class NioEndpoint extends AbstractEndpoint {
 		}
 
 		if (this.connections == null) {
-			this.connections = new ConcurrentHashMap<>();
+			this.connections = new ConcurrentHashMap<Long, NioChannel>();
 		}
 
 		if (this.recycledChannelProcessors == null) {
-			this.recycledChannelProcessors = new ConcurrentLinkedQueue<>();
+			this.recycledChannelProcessors = new ConcurrentLinkedQueue<ChannelProcessor>();
 		}
 
 		if (this.recycledHandshakeProcessors == null) {
-			this.recycledHandshakeProcessors = new ConcurrentLinkedQueue<>();
+			this.recycledHandshakeProcessors = new ConcurrentLinkedQueue<HandshakeHandler>();
 		}
 
 		// If the executor is not set, create it with a fixed thread pool
@@ -246,7 +242,7 @@ public class NioEndpoint extends AbstractEndpoint {
 			running = true;
 			paused = false;
 
-			// Start acceptor threads
+            // Start acceptor threads
 			for (int i = 0; i < acceptorThreadCount; i++) {
 				Thread acceptorThread = newThread(new Acceptor(), "Acceptor", daemon);
 				acceptorThread.start();
@@ -261,7 +257,7 @@ public class NioEndpoint extends AbstractEndpoint {
 			}
 
 			// Starting the event poller
-			this.eventPoller = new EventPoller(this.maxThreads);
+			this.eventPoller = new EventPoller(this.maxConnections);
 			this.eventPoller.init();
 			Thread eventPollerThread = newThread(this.eventPoller, "EventPoller", true);
 			eventPollerThread.start();
@@ -353,6 +349,12 @@ public class NioEndpoint extends AbstractEndpoint {
 			if (tcpNoDelay) {
 				channel.setOption(StandardSocketOptions.TCP_NODELAY, tcpNoDelay);
 			}
+            if (soReceiveBuffer > 0) {
+                channel.setOption(StandardSocketOptions.SO_RCVBUF, soReceiveBuffer);
+            }
+            if (soSendBuffer > 0) {
+                channel.setOption(StandardSocketOptions.SO_SNDBUF, soSendBuffer);
+            }
 
 			// Initialize the channel
 			serverSocketChannelFactory.initChannel(channel);
@@ -460,7 +462,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
 		return true;
@@ -485,7 +487,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
 	}
@@ -502,7 +504,7 @@ public class NioEndpoint extends AbstractEndpoint {
 		} catch (Throwable t) {
 			// This means we got an OOM or similar creating a thread, or that
 			// the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
 			return false;
 		}
 	}
@@ -1199,9 +1201,9 @@ public class NioEndpoint extends AbstractEndpoint {
 		 */
 		public void init() {
 			this.mutex = new Object();
-			this.channelList = new ConcurrentHashMap<>(this.size);
-			this.recycledChannelList = new ConcurrentLinkedQueue<>();
-			this.recycledCompletionHandlers = new ConcurrentLinkedQueue<>();
+			this.channelList = new ConcurrentHashMap<Long, ChannelInfo>(this.size);
+			this.recycledChannelList = new ConcurrentLinkedQueue<ChannelInfo>();
+			this.recycledCompletionHandlers = new ConcurrentLinkedQueue<CompletionHandler<Integer, NioChannel>>();
 		}
 
 		/**
@@ -1339,12 +1341,6 @@ public class NioEndpoint extends AbstractEndpoint {
 			} else if (info.wakeup()) {
 				remove(info);
 				// TODO
-			} else {
-                CoyoteLogger.UTIL_LOGGER.unknownEvent();
-				remove(info);
-				if (!processChannel(ch, SocketStatus.ERROR)) {
-					closeChannel(ch);
-				}
 			}
 
 			// Wake up all waiting threads
@@ -1643,11 +1639,11 @@ public class NioEndpoint extends AbstractEndpoint {
 		 * Initialize the {@code Sendfile}
 		 */
 		protected void init() {
-			this.size = maxThreads;
+		    this.size = sendfileSize;
 			this.mutex = new Object();
 			this.counter = new AtomicInteger(0);
-			this.fileDatas = new ConcurrentLinkedQueue<>();
-			this.recycledFileDatas = new ConcurrentLinkedQueue<>();
+			this.fileDatas = new ConcurrentLinkedQueue<SendfileData>();
+			this.recycledFileDatas = new ConcurrentLinkedQueue<SendfileData>();
 		}
 
 		/**

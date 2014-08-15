@@ -516,6 +516,36 @@ public class SingleSignOn
 
 
     /**
+     * Logout the specified single sign on identifier from all sessions.
+     *
+     * @param ssoId Single sign on identifier to logout
+     */
+    public void removeLogin(String ssoId) {
+
+        // Look up and remove the corresponding SingleSignOnEntry
+        SingleSignOnEntry sso = null;
+        synchronized (cache) {
+            sso = cache.get(ssoId);
+        }
+
+        if (sso == null)
+            return;
+
+        // Remove all authentication information from all associated sessions
+        Session sessions[] = sso.findSessions();
+        for (Session session : sessions) {
+            session.setAuthType(null);
+            session.setPrincipal(null);
+            session.removeNote(Constants.SESS_USERNAME_NOTE);
+            session.removeNote(Constants.SESS_PASSWORD_NOTE);
+        }
+        // Reset SSO authentication
+        sso.updateCredentials(null, null, null, null);
+
+    }
+
+
+    /**
      * Attempts reauthentication to the given <code>Realm</code> using
      * the credentials associated with the single sign-on session
      * identified by argument <code>ssoId</code>.
