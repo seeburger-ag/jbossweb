@@ -239,7 +239,9 @@ public class JSSESocketFactory
             throws IOException {
 
         String keystoreFile = (String)attributes.get("keystore");
-        if (keystoreFile == null)
+        if ("Windows-MY".equalsIgnoreCase(type))
+            keystoreFile = "";
+        else if (keystoreFile == null)
             keystoreFile = defaultKeystoreFile;
 
         return getStore(type, provider, keystoreFile, pass);
@@ -273,6 +275,9 @@ public class JSSESocketFactory
         if(truststoreType == null) {
             truststoreType = keystoreType;
         }
+        if ("Windows-ROOT".equalsIgnoreCase(truststoreType))
+            truststoreFile = "";
+
         if(CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
             CoyoteLogger.UTIL_LOGGER.debug("trustType = " + truststoreType);
         }
