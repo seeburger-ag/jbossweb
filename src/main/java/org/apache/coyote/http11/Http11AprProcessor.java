@@ -253,7 +253,7 @@ public class Http11AprProcessor implements ActionHook {
     /**
      * Flag to disable setting a different time-out on uploads.
      */
-    protected boolean disableUploadTimeout = false;
+    protected boolean disableUploadTimeout = Constants.DEFAULT_DISABLE_UPLOAD_TIMEOUT;
 
 
     /**

@@ -44,7 +44,10 @@ public final class Constants {
     public static final int DEFAULT_CONNECTION_UPLOAD_TIMEOUT = 300000;
     public static final int DEFAULT_SERVER_SOCKET_TIMEOUT = 0;
     public static final boolean DEFAULT_TCP_NO_DELAY = true;
-    
+    public static final boolean DEFAULT_DISABLE_UPLOAD_TIMEOUT = Boolean.valueOf(
+            System.getProperty("org.apache.coyote.http11.DEFAULT_DISABLE_UPLOAD_TIMEOUT", "false"))
+            .booleanValue();
+
     
     /**
      * CRLF.
