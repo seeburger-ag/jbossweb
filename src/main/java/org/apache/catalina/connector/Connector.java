@@ -982,7 +982,9 @@ public class Connector
                                        System.getProperty("catalina.base"));
 
         try {
-            protocolHandler.init();
+            synchronized (Connector.class) {
+                protocolHandler.init();
+            }
         } catch (Exception e) {
             throw new LifecycleException(MESSAGES.protocolHandlerInitFailed(e));
         }

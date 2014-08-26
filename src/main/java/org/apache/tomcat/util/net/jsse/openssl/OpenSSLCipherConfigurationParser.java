@@ -599,10 +599,8 @@ public class OpenSSLCipherConfigurationParser {
     }
 
     static LinkedHashSet<Ciphers> parse(String expression) {
-        synchronized (OpenSSLCipherConfigurationParser.class) {
-            if (!initialized) {
-                init();
-            }
+        if (!initialized) {
+            init();
         }
         String[] elements = expression.split(SEPARATOR);
         LinkedHashSet<Ciphers> ciphers = new LinkedHashSet<Ciphers>();
