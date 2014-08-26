@@ -124,7 +124,7 @@ public class SingleSignOn
     /**
      * Optional SSO HTTP only.
      */
-    protected boolean cookieHttpOnly = false;
+    protected boolean cookieHttpOnly = true;
 
     // ------------------------------------------------------------- Properties
 
