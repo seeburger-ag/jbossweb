@@ -189,6 +189,11 @@ Closed connection to localhost:9999
       which means it will use the default socket timeout.</p>
     </property>
 
+    <property name="org.apache.coyote.http11.DISABLE_KEEPALIVE_ON_CONCLOSE">
+      <p>If a <code>connection:close header</code> is included in the response by the
+      application, disable keep alive. The default value is <code>false</code>.</p>
+    </property>
+
   </properties>
 
 </section>

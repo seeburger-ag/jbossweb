@@ -47,6 +47,8 @@ public final class Constants {
     public static final boolean DEFAULT_DISABLE_UPLOAD_TIMEOUT = Boolean.valueOf(
             System.getProperty("org.apache.coyote.http11.DEFAULT_DISABLE_UPLOAD_TIMEOUT", "false"))
             .booleanValue();
+    public static final boolean DISABLE_KEEPALIVE_ON_CONCLOSE =
+            Boolean.valueOf(System.getProperty("org.apache.coyote.http11.DISABLE_KEEPALIVE_ON_CONCLOSE", "false")).booleanValue();
 
     
     /**

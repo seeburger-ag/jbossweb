@@ -70,7 +70,6 @@ public class Http11AprProcessor implements ActionHook {
     protected static final boolean CHUNK_ON_CLOSE = 
         Boolean.valueOf(System.getProperty("org.apache.coyote.http11.Http11Processor.CHUNK_ON_CLOSE", "false")).booleanValue();
     
-
     // ----------------------------------------------------------- Constructors
 
 
@@ -1724,6 +1723,12 @@ public class Http11AprProcessor implements ActionHook {
         }
 
         long contentLength = response.getContentLengthLong();
+        boolean connectionClosePresent = false;
+        if (Constants.DISABLE_KEEPALIVE_ON_CONCLOSE) {
+            connectionClosePresent = isConnectionClose(headers);
+            keepAlive = keepAlive && !connectionClosePresent;
+        }
+
         if (contentLength != -1) {
             headers.setValue("Content-Length").setLong(contentLength);
             outputBuffer.addActiveFilter
@@ -1763,7 +1768,9 @@ public class Http11AprProcessor implements ActionHook {
         // Connection: close header.
         keepAlive = keepAlive && !statusDropsConnection(statusCode);
         if (!keepAlive) {
-            headers.addValue(Constants.CONNECTION).setString(Constants.CLOSE);
+            if (!connectionClosePresent) {
+                headers.addValue(Constants.CONNECTION).setString(Constants.CLOSE);
+            }
         } else if (!http11 && !error) {
             headers.addValue(Constants.CONNECTION).setString(Constants.KEEPALIVE);
         }
@@ -1786,6 +1793,13 @@ public class Http11AprProcessor implements ActionHook {
 
     }
 
+    private boolean isConnectionClose(MimeHeaders headers) {
+        MessageBytes connection = headers.getValue(Constants.CONNECTION);
+        if (connection == null) {
+            return false;
+        }
+        return connection.equals(Constants.CLOSE);
+    }
 
     /**
      * Initialize standard input and output filters.

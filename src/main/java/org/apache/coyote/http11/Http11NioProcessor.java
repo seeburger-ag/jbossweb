@@ -1198,6 +1198,12 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		}
 
 		long contentLength = response.getContentLengthLong();
+        boolean connectionClosePresent = false;
+        if (Constants.DISABLE_KEEPALIVE_ON_CONCLOSE) {
+            connectionClosePresent = isConnectionClose(headers);
+            keepAlive = keepAlive && !connectionClosePresent;
+        }
+
 		if (contentLength != -1) {
 			headers.setValue("Content-Length").setLong(contentLength);
 			outputBuffer.addActiveFilter(outputFilters[Constants.IDENTITY_FILTER]);
@@ -1234,7 +1240,9 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		// Connection: close header.
 		keepAlive = keepAlive && !statusDropsConnection(statusCode);
 		if (!keepAlive) {
-			headers.addValue(Constants.CONNECTION).setString(Constants.CLOSE);
+            if (!connectionClosePresent) {
+                headers.addValue(Constants.CONNECTION).setString(Constants.CLOSE);
+            }
 		} else if (!http11 && !error) {
 			headers.addValue(Constants.CONNECTION).setString(Constants.KEEPALIVE);
 		}
@@ -1256,6 +1264,14 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 		outputBuffer.endHeaders();
 
 	}
+
+    private boolean isConnectionClose(MimeHeaders headers) {
+        MessageBytes connection = headers.getValue(Constants.CONNECTION);
+        if (connection == null) {
+            return false;
+        }
+        return connection.equals(Constants.CLOSE);
+    }
 
 	/*
 	 * (non-Javadoc)
