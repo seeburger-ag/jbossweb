@@ -49,6 +49,8 @@ public final class Constants {
             .booleanValue();
     public static final boolean DISABLE_KEEPALIVE_ON_CONCLOSE =
             Boolean.valueOf(System.getProperty("org.apache.coyote.http11.DISABLE_KEEPALIVE_ON_CONCLOSE", "false")).booleanValue();
+    public static final int MAX_CHUNK_EXTENSION_SIZE = 
+            Integer.valueOf(System.getProperty("org.apache.coyote.http11.MAX_CHUNK_EXTENSION_SIZE", "8192")).intValue();
 
     
     /**

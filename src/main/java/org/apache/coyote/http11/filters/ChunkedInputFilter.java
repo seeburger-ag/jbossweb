@@ -108,7 +108,10 @@ public class ChunkedInputFilter implements InputFilter {
      */
     private boolean error;
 
-    // ------------------------------------------------------------- Properties
+    /**
+     * Size of extensions processed for this request.
+     */
+    private long extensionSize;
 
 
     // ---------------------------------------------------- InputBuffer Methods
@@ -231,6 +234,7 @@ public class ChunkedInputFilter implements InputFilter {
         endChunk = false;
         needCRLFParse = false;
         error = false;
+        extensionSize = 0;
     }
 
 
@@ -301,6 +305,7 @@ public class ChunkedInputFilter implements InputFilter {
                 eol = true;
             } else if (buf[pos] == Constants.SEMI_COLON) {
                 trailer = true;
+                extensionSize++;
             } else if (buf[pos] < 0) {
                 error = true;
                 throw MESSAGES.invalidChunkHeader();
@@ -315,6 +320,12 @@ public class ChunkedInputFilter implements InputFilter {
                     //in the chunked header
                     error = true;
                     throw MESSAGES.invalidChunkHeader();
+                }
+            } else {
+                // Skipping the extension
+                extensionSize++;
+                if (Constants.MAX_CHUNK_EXTENSION_SIZE > -1 && extensionSize > Constants.MAX_CHUNK_EXTENSION_SIZE) {
+                    throw MESSAGES.maxExtensionSizeExceeded(Constants.MAX_CHUNK_EXTENSION_SIZE);
                 }
             }
 

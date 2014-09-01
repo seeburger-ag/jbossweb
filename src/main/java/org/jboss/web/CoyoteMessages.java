@@ -277,7 +277,7 @@ public interface CoyoteMessages {
     @Message(id = 2079, value = "Unexpected data read during handshake")
     String sslHandshakeData();
 
-    @Message(id = 2080, value = "Thread [%s] stoppe to avoid potential leak")
+    @Message(id = 2080, value = "Thread [%s] stopped to avoid potential leak")
     String threadStopped(String threadName);
 
     @Message(id = 2081, value = "No cipher match")
@@ -285,5 +285,8 @@ public interface CoyoteMessages {
 
     @Message(id = 2082, value = "Chunked input filter error")
     String chunkedFilterError();
+
+    @Message(id = 2083, value = "Maximum extension size [%s] exceeded for this request")
+    IOException maxExtensionSizeExceeded(int size);
 
 }
