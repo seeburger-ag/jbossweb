@@ -271,6 +271,7 @@ public class WsWebSocketContainer
 
         ByteBuffer response;
         String subProtocol;
+        boolean success = false;
         try {
             fConnect.get(timeout, TimeUnit.MILLISECONDS);
 
@@ -307,6 +308,7 @@ public class WsWebSocketContainer
             } else {
                 throw new DeploymentException(MESSAGES.invalidProtocolHeader());
             }
+            success = true;
         } catch (ExecutionException e) {
             throw new DeploymentException(MESSAGES.httpRequestFailed(), e);
         } catch (InterruptedException e) {
@@ -317,6 +319,10 @@ public class WsWebSocketContainer
             throw new DeploymentException(MESSAGES.httpRequestFailed(), e);
         } catch (TimeoutException e) {
             throw new DeploymentException(MESSAGES.httpRequestFailed(), e);
+        } finally {
+            if (!success) {
+                channel.close();
+            }
         }
 
         // Switch to WebSocket

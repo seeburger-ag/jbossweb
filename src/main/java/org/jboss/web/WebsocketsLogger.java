@@ -99,7 +99,7 @@ public interface WebsocketsLogger extends BasicLogger {
     void noWebsocketsSupport();
 
     @LogMessage(level = WARN)
-    @Message(id = 8814, value = "Thread group %s not destroyed")
-    void threadGroupNotDestryed(String name);
+    @Message(id = 8814, value = "Thread group %s not destroyed, %s threads left")
+    void threadGroupNotDestryed(String name, int threadCount);
 
 }
