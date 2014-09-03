@@ -57,6 +57,10 @@ public class WsSci implements ServletContainerInitializer {
             }
             return;
         }
+        if (ctx.getAttribute(Constants.SERVER_CONTAINER_SERVLET_CONTEXT_ATTRIBUTE) != null) {
+            // Websockets already initialized
+            return;
+        }
 
         WsServerContainer sc = init(ctx, true);
 
