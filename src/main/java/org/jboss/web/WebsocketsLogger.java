@@ -94,7 +94,7 @@ public interface WebsocketsLogger extends BasicLogger {
     @Message(id = 8812, value = "Failed to close the ServletOutputStream connection cleanly")
     void closeFailed(@Cause Throwable t);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = WARN)
     @Message(id = 8813, value = "WebSocket support is not available when running on Java 6")
     void noWebsocketsSupport();
 
