@@ -20,7 +20,7 @@ import java.io.CharArrayWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.security.AccessController;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -31,8 +31,11 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
+import org.apache.tomcat.util.security.PrivilegedGetTccl;
+import org.apache.tomcat.util.security.PrivilegedSetTccl;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -60,11 +63,16 @@ class JspDocumentParser
         "http://xml.org/sax/properties/lexical-handler";
     private static final String JSP_URI = "http://java.sun.com/JSP/Page";
 
+    private static final EnableDTDValidationException ENABLE_DTD_VALIDATION_EXCEPTION =
+        new EnableDTDValidationException(
+            "jsp.error.enable_dtd_validation",
+            null);
+
     private ParserController parserController;
     private JspCompilationContext ctxt;
     private PageInfo pageInfo;
     private String path;
-    private StringBuilder charBuffer;
+    private StringBuffer charBuffer;
 
     // Node representing the XML element currently being parsed
     private Node current;
@@ -451,8 +459,9 @@ class JspDocumentParser
      * @throws SAXException
      */
     public void characters(char[] buf, int offset, int len) {
+
         if (charBuffer == null) {
-            charBuffer = new StringBuilder();
+            charBuffer = new StringBuffer();
         }
         charBuffer.append(buf, offset, len);
     }
@@ -659,23 +668,6 @@ class JspDocumentParser
             scriptlessBodyNode = null;
         }
 
-        if (current instanceof Node.CustomTag) {
-            String bodyType = getBodyType((Node.CustomTag) current);
-            if (TagInfo.BODY_CONTENT_EMPTY.equalsIgnoreCase(bodyType)) {
-                // Children - if any - must be JSP attributes
-                Node.Nodes children = current.getBody();
-                if (children != null && children.size() > 0) {
-                    for (int i = 0; i < children.size(); i++) {
-                        Node child = children.getNode(i);
-                        if (!(child instanceof Node.NamedAttribute)) {
-                            throw new SAXParseException(Localizer.getMessage(
-                                    "jasper.error.emptybodycontent.nonempty",
-                                    current.qName), locator); 
-                        }
-                    }
-                }
-            }
-        }
         if (current.getParent() != null) {
             current = current.getParent();
         }
@@ -746,7 +738,7 @@ class JspDocumentParser
     public void startDTD(String name, String publicId, String systemId)
         throws SAXException {
         if (!isValidating) {
-            fatalError(new EnableDTDValidationException("jsp.error.enable_dtd_validation", null));
+            fatalError(ENABLE_DTD_VALIDATION_EXCEPTION);
         }
 
         inDTD = true;
@@ -788,7 +780,7 @@ class JspDocumentParser
             taglibInfo = getTaglibInfo(prefix, uri);
         } catch (JasperException je) {
             throw new SAXParseException(
-                Localizer.getMessage("jsp.error.could.not.add.taglibraries", je.getMessage()),
+                Localizer.getMessage("jsp.error.could.not.add.taglibraries"),
                 locator,
                 je);
         }
@@ -1262,33 +1254,29 @@ class JspDocumentParser
                 isPlainUri = true;
             }
 
-            if (ctxt.getOptions().isCaching()) {
-                result = (TagLibraryInfo) ctxt.getOptions().getCache().get(uri);
-            }
-            if (result == null) {
-                // Fallback to Jasper's legacy scanning if nothing was provided
-                // by the options' TLD cache
-                String[] location = ctxt.getTldLocation(uri);
-                if (location != null || !isPlainUri) {
-                    if (result == null) {
-                        /*
-                         * If the uri value is a plain uri, a translation error must
-                         * not be generated if the uri is not found in the taglib map.
-                         * Instead, any actions in the namespace defined by the uri
-                         * value must be treated as uninterpreted.
-                         */
-                        result =
-                            new TagLibraryInfoImpl(
-                                    ctxt,
-                                    parserController,
-                                    pageInfo,
-                                    prefix,
-                                    uri,
-                                    location,
-                                    err);
-                        if (ctxt.getOptions().isCaching()) {
-                            ctxt.getOptions().getCache().put(uri, result);
-                        }
+            String[] location = ctxt.getTldLocation(uri);
+            if (location != null || !isPlainUri) {
+                if (ctxt.getOptions().isCaching()) {
+                    result = (TagLibraryInfoImpl) ctxt.getOptions().getCache().get(uri);
+                }
+                if (result == null) {
+                    /*
+                     * If the uri value is a plain uri, a translation error must
+                     * not be generated if the uri is not found in the taglib map.
+                     * Instead, any actions in the namespace defined by the uri
+                     * value must be treated as uninterpreted.
+                     */
+                    result =
+                        new TagLibraryInfoImpl(
+                            ctxt,
+                            parserController,
+                            pageInfo,
+                            prefix,
+                            uri,
+                            location,
+                            err);
+                    if (ctxt.getOptions().isCaching()) {
+                        ctxt.getOptions().getCache().put(uri, result);
                     }
                 }
             }
@@ -1409,30 +1397,59 @@ class JspDocumentParser
      *
      * @return The SAXParser
      */
-    private static SAXParser getSAXParser(
-        boolean validating,
-        JspDocumentParser jspDocParser)
-        throws Exception {
+    private static SAXParser getSAXParser(boolean validating,
+            JspDocumentParser jspDocParser) throws Exception {
 
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
+        ClassLoader original;
+        if (Constants.IS_SECURITY_ENABLED) {
+            PrivilegedGetTccl pa = new PrivilegedGetTccl();
+            original = AccessController.doPrivileged(pa);
+        } else {
+            original = Thread.currentThread().getContextClassLoader();
+        }
+        try {
+            if (Constants.IS_SECURITY_ENABLED) {
+                PrivilegedSetTccl pa = new PrivilegedSetTccl(
+                        JspDocumentParser.class.getClassLoader());
+                AccessController.doPrivileged(pa);
+            } else {
+                Thread.currentThread().setContextClassLoader(
+                        JspDocumentParser.class.getClassLoader());
+            }
 
-        // Preserve xmlns attributes
-        factory.setFeature(
-            "http://xml.org/sax/features/namespace-prefixes",
-            true);
-        factory.setValidating(validating);
-        //factory.setFeature(
-        //    "http://xml.org/sax/features/validation",
-        //    validating);
-        
-        // Configure the parser
-        SAXParser saxParser = factory.newSAXParser();
-        XMLReader xmlReader = saxParser.getXMLReader();
-        xmlReader.setProperty(LEXICAL_HANDLER_PROPERTY, jspDocParser);
-        xmlReader.setErrorHandler(jspDocParser);
+            SAXParserFactory factory = SAXParserFactory.newInstance();
 
-        return saxParser;
+            factory.setNamespaceAware(true);
+            // Preserve xmlns attributes
+            factory.setFeature(
+                    "http://xml.org/sax/features/namespace-prefixes", true);
+
+            factory.setValidating(validating);
+            if (validating) {
+                // Enable DTD validation
+                factory.setFeature("http://xml.org/sax/features/validation",
+                        true);
+                // Enable schema validation
+                factory.setFeature(
+                        "http://apache.org/xml/features/validation/schema",
+                        true);
+            }
+
+            // Configure the parser
+            SAXParser saxParser = factory.newSAXParser();
+            XMLReader xmlReader = saxParser.getXMLReader();
+            xmlReader.setProperty(LEXICAL_HANDLER_PROPERTY, jspDocParser);
+            xmlReader.setErrorHandler(jspDocParser);
+
+            return saxParser;
+        } finally {
+            if (Constants.IS_SECURITY_ENABLED) {
+                PrivilegedSetTccl pa = new PrivilegedSetTccl(original);
+                AccessController.doPrivileged(pa);
+            } else {
+                Thread.currentThread().setContextClassLoader(original);
+            }
+        }
     }
 
     /*
@@ -1444,11 +1461,6 @@ class JspDocumentParser
 
         EnableDTDValidationException(String message, Locator loc) {
             super(message, loc);
-        }
-        
-        public synchronized Throwable fillInStackTrace() {
-            // No stack trace
-            return this;
         }
     }
 

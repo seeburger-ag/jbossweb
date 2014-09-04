@@ -39,6 +39,7 @@ public final class SecurityClassLoad {
         
         loadCorePackage(loader);
         loadLoaderPackage(loader);
+        loadServletsPackage(loader);
         loadSessionPackage(loader);
         loadUtilPackage(loader);
         loadJavaxPackage(loader);
@@ -53,9 +54,6 @@ public final class SecurityClassLoad {
         loader.loadClass
             (basePackage +
              "core.ApplicationContextFacade$1");
-        loader.loadClass
-            (basePackage +
-             "core.ApplicationDispatcher$PrivilegedAsync");
         loader.loadClass
             (basePackage +
              "core.ApplicationDispatcher$PrivilegedForward");
@@ -95,6 +93,18 @@ public final class SecurityClassLoad {
     }
     
     
+    private static final void loadServletsPackage(ClassLoader loader)
+            throws Exception {
+        final String basePackage = "org.apache.catalina.servlets.";
+        // Avoid a possible memory leak in the DefaultServlet when running with
+        // a security manager. The DefaultServlet needs to load an XML parser
+        // when running under a security manager. We want this to be loaded by
+        // the container rather than a web application to prevent a memory leak
+        // via web application class loader.
+        loader.loadClass(basePackage + "DefaultServlet");
+    }
+
+
     private final static void loadSessionPackage(ClassLoader loader)
         throws Exception {
         String basePackage = "org.apache.catalina.";

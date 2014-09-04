@@ -122,7 +122,9 @@ public class AttributeParser {
             boolean strict) {
         this.input = input;
         this.quote = quote;
-        this.isELIgnored = isELIgnored;
+        // If quote is null this is a scriptign expressions and any EL syntax
+        // should be ignored
+        this.isELIgnored = isELIgnored || (quote == 0);
         this.isDeferredSyntaxAllowedAsLiteral =
             isDeferredSyntaxAllowedAsLiteral;
         this.strict = strict;
@@ -243,7 +245,7 @@ public class AttributeParser {
     }
 
     /*
-     * Returns the next unquoted character and sets the lastChEscaped flag to
+     * Returns the nest unquoted character and sets the lastChEscaped flag to
      * indicate if it was quoted/escaped or not.
      * &apos; is always unquoted to '
      * &quot; is always unquoted to "
