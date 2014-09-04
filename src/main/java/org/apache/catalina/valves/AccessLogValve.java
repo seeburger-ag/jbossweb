@@ -949,7 +949,11 @@ public class AccessLogValve
     protected class HostElement implements AccessLogElement {
         public void addElement(StringBuilder buf, Date date, Request request,
                 Response response, long time) {
-            buf.append(request.getRemoteHost());
+            if (resolveHosts) {
+                buf.append(request.getRemoteHost());
+            } else {
+                buf.append(request.getRemoteAddr());
+            }
         }
     }
     
