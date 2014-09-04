@@ -2253,13 +2253,14 @@ public class Request
      * for this Request.
      */
     public String getRemoteUser() {
-
-        if (userPrincipal != null) {
-            return (userPrincipal.getName());
+        Principal principal = doGetUserPrincipal();
+        if (principal instanceof GenericPrincipal) {
+            return ((GenericPrincipal) principal).getUserPrincipal().getName();
+        } else if (principal != null) {
+            return (principal.getName());
         } else {
             return (null);
         }
-
     }
 
 
@@ -2516,8 +2517,9 @@ public class Request
         if (USE_PRINCIPAL_FROM_SESSION && userPrincipal == null) {
             Session session = doGetSession(false);
             Principal principal = session.getPrincipal();
-            if (principal != null)
-            return principal;
+            if (principal != null) {
+                return principal;
+            }
         }
         return userPrincipal;
     }
