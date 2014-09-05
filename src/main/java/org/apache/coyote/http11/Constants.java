@@ -39,10 +39,19 @@ public final class Constants {
     public static final int DEFAULT_CONNECTION_LINGER = -1;
     public static final int DEFAULT_CONNECTION_TIMEOUT = 
             Integer.valueOf(System.getProperty("org.apache.coyote.http11.DEFAULT_CONNECTION_TIMEOUT", "60000")).intValue();
+    public static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 
+            Integer.valueOf(System.getProperty("org.apache.coyote.http11.DEFAULT_KEEP_ALIVE_TIMEOUT", "-1")).intValue();
     public static final int DEFAULT_CONNECTION_UPLOAD_TIMEOUT = 300000;
     public static final int DEFAULT_SERVER_SOCKET_TIMEOUT = 0;
     public static final boolean DEFAULT_TCP_NO_DELAY = true;
-    
+    public static final boolean DEFAULT_DISABLE_UPLOAD_TIMEOUT = Boolean.valueOf(
+            System.getProperty("org.apache.coyote.http11.DEFAULT_DISABLE_UPLOAD_TIMEOUT", "false"))
+            .booleanValue();
+    public static final boolean DISABLE_KEEPALIVE_ON_CONCLOSE =
+            Boolean.valueOf(System.getProperty("org.apache.coyote.http11.DISABLE_KEEPALIVE_ON_CONCLOSE", "false")).booleanValue();
+    public static final int MAX_CHUNK_EXTENSION_SIZE = 
+            Integer.valueOf(System.getProperty("org.apache.coyote.http11.MAX_CHUNK_EXTENSION_SIZE", "8192")).intValue();
+
     
     /**
      * CRLF.
@@ -124,10 +133,10 @@ public final class Constants {
 
 
     /**
-     * Default HTTP header buffer size.
+     * Async buffer size.
      */
-    public static final int DEFAULT_HTTP_HEADER_BUFFER_SIZE = 
-            Integer.valueOf(System.getProperty("org.apache.coyote.http11.DEFAULT_HTTP_HEADER_BUFFER_SIZE", "8192")).intValue();
+    public static final int ASYNC_BUFFER_SIZE = 
+            Integer.valueOf(System.getProperty("org.apache.coyote.http11.ASYNC_BUFFER_SIZE", "32768")).intValue();
 
 
     /* Various constant "strings" */

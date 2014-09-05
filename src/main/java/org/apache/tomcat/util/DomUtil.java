@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.jboss.web.CoyoteLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -45,8 +46,6 @@ import org.xml.sax.SAXException;
  * @author Costin Manolache
  */
 public class DomUtil {
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( DomUtil.class );
 
     // -------------------- DOM utils --------------------
 
@@ -73,7 +72,6 @@ public class DomUtil {
 
         for (Node node = first; node != null;
              node = node.getNextSibling()) {
-            //System.out.println("getNode: " + name + " " + node.getNodeName());
             if( node.getNodeType()!=Node.ELEMENT_NODE)
                 continue;
             if( name != null &&
@@ -207,8 +205,8 @@ public class DomUtil {
                                                    String systemId)
             throws SAXException, IOException
         {
-            if( log.isTraceEnabled())
-                log.trace("ResolveEntity: " + publicId + " " + systemId);
+            if( CoyoteLogger.UTIL_LOGGER.isTraceEnabled())
+                CoyoteLogger.UTIL_LOGGER.trace("ResolveEntity: " + publicId + " " + systemId);
             return new InputSource(new StringReader(""));
         }
     }
@@ -223,8 +221,8 @@ public class DomUtil {
             String name=n.getNodeName();
             String value=n.getNodeValue();
 
-            if( log.isTraceEnabled() )
-                log.trace("Attribute " + parent.getNodeName() + " " +
+            if( CoyoteLogger.UTIL_LOGGER.isTraceEnabled() )
+                CoyoteLogger.UTIL_LOGGER.trace("Attribute " + parent.getNodeName() + " " +
                             name + "=" + value);
             try {
                 IntrospectionUtils.setProperty(o, name, value);
