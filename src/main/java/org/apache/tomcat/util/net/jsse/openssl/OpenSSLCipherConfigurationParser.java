@@ -412,7 +412,7 @@ public class OpenSSLCipherConfigurationParser {
         aliases.put("DSS", aliases.get(aDSS));
         addListAlias(aDH, filterByAuthentication(all, Collections.singleton(Authentication.DH)));
         Set<Ciphers> aecdh = filterByKeyExchange(all, new HashSet<KeyExchange>(Arrays.asList(KeyExchange.ECDHe, KeyExchange.ECDHr)));
-        aecdh.removeAll(filterByAuthentication(all, Collections.singleton(Authentication.aNULL)));
+        aecdh.retainAll(filterByAuthentication(all, Collections.singleton(Authentication.aNULL)));
         addListAlias(AECDH, aecdh);
         addListAlias(aECDH, filterByAuthentication(all, Collections.singleton(Authentication.ECDH)));
         addListAlias(ECDSA, filterByAuthentication(all, Collections.singleton(Authentication.ECDSA)));
