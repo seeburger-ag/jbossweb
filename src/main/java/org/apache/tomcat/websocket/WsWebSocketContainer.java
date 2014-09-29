@@ -326,20 +326,23 @@ public class WsWebSocketContainer
         }
 
         // Switch to WebSocket
-        WsRemoteEndpointImplClient wsRemoteEndpointClient =
-                new WsRemoteEndpointImplClient(channel);
+        WsRemoteEndpointImplClient wsRemoteEndpointClient = new WsRemoteEndpointImplClient(channel);
 
         WsSession wsSession = new WsSession(endpoint, wsRemoteEndpointClient,
-                this, null, null, null, null, null, subProtocol,
-                Collections.<String, String> emptyMap(), secure,
+                this, null, null, null, null, null, Collections.<Extension>emptyList(),
+                subProtocol, Collections.<String,String>emptyMap(), secure,
                 clientEndpointConfiguration);
+
+        WsFrameClient wsFrameClient = new WsFrameClient(response, channel,
+                wsSession);
+        // WsFrame adds the necessary final transformations. Copy the
+        // completed transformation chain to the remote end point.
+        wsRemoteEndpointClient.setTransformation(wsFrameClient.getTransformation());
+
         endpoint.onOpen(wsSession, clientEndpointConfiguration);
         registerSession(endpoint, wsSession);
 
-        // Object creation will trigger input processing
-        @SuppressWarnings("unused")
-        WsFrameClient wsFrameClient = new WsFrameClient(response, channel,
-                wsSession);
+        wsFrameClient.startInputProcessing();
 
         return wsSession;
     }
@@ -533,6 +536,7 @@ public class WsWebSocketContainer
      * @throws DeploymentException
      * @throws TimeoutException
      */
+    @SuppressWarnings("null") // line is not null in line.endsWith() call
     private HandshakeResponse processResponse(ByteBuffer response,
             AsyncChannelWrapper channel, long timeout) throws InterruptedException,
             ExecutionException, DeploymentException, EOFException,
@@ -644,7 +648,7 @@ public class WsWebSocketContainer
                     if (sslTrustStorePwdValue == null) {
                         sslTrustStorePwdValue = SSL_TRUSTSTORE_PWD_DEFAULT;
                     }
-
+                    
                     File keyStoreFile = new File(sslTrustStoreValue);
                     KeyStore ks = KeyStore.getInstance("JKS");
                     InputStream is = null;
@@ -656,7 +660,7 @@ public class WsWebSocketContainer
                             try {
                                 is.close();
                             } catch (IOException ioe) {
-                                // Ignore
+                               // Ignore
                             }
                         }
                     }

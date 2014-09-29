@@ -39,6 +39,8 @@ import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
 import javax.websocket.Extension;
 import javax.websocket.MessageHandler;
+import javax.websocket.MessageHandler.Partial;
+import javax.websocket.MessageHandler.Whole;
 import javax.websocket.PongMessage;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.SendResult;
@@ -72,6 +74,7 @@ public class WsSession implements Session {
     private final Principal userPrincipal;
     private final EndpointConfig endpointConfig;
 
+    private final List<Extension> negotiatedExtensions;
     private final String subProtocol;
     private final Map<String,String> pathParameters;
     private final boolean secure;
@@ -103,6 +106,7 @@ public class WsSession implements Session {
      *
      * @param localEndpoint
      * @param wsRemoteEndpoint
+     * @param negotiatedExtensions
      * @throws DeploymentException
      */
     public WsSession(Endpoint localEndpoint,
@@ -110,9 +114,8 @@ public class WsSession implements Session {
             WsWebSocketContainer wsWebSocketContainer,
             URI requestUri, Map<String,List<String>> requestParameterMap,
             String queryString, Principal userPrincipal, String httpSessionId,
-            String subProtocol, Map<String,String> pathParameters,
-            boolean secure, EndpointConfig endpointConfig)
-                    throws DeploymentException {
+            List<Extension> negotiatedExtensions, String subProtocol, Map<String,String> pathParameters,
+            boolean secure, EndpointConfig endpointConfig) throws DeploymentException {
         this.localEndpoint = localEndpoint;
         this.wsRemoteEndpoint = wsRemoteEndpoint;
         this.wsRemoteEndpoint.setSession(this);
@@ -137,6 +140,7 @@ public class WsSession implements Session {
         this.queryString = queryString;
         this.userPrincipal = userPrincipal;
         this.httpSessionId = httpSessionId;
+        this.negotiatedExtensions = negotiatedExtensions;
         if (subProtocol == null) {
             this.subProtocol = "";
         } else {
@@ -159,10 +163,29 @@ public class WsSession implements Session {
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
     public void addMessageHandler(MessageHandler listener) {
+        Class<?> target = Util.getMessageType(listener);
+        doAddMessageHandler(target, listener);
+    }
 
+
+    @Override
+    public <T> void addMessageHandler(Class<T> clazz, Partial<T> handler)
+            throws IllegalStateException {
+        doAddMessageHandler(clazz, handler);
+    }
+
+
+    @Override
+    public <T> void addMessageHandler(Class<T> clazz, Whole<T> handler)
+            throws IllegalStateException {
+        doAddMessageHandler(clazz, handler);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private void doAddMessageHandler(Class<?> target, MessageHandler listener) {
         checkState();
 
         // Message handlers that require decoders may map to text messages,
@@ -176,7 +199,7 @@ public class WsSession implements Session {
         // just as easily.
 
         Set<MessageHandlerResult> mhResults =
-                Util.getMessageHandlers(listener, endpointConfig, this);
+                Util.getMessageHandlers(target, listener, endpointConfig, this);
 
         for (MessageHandlerResult mhResult : mhResults) {
             switch (mhResult.getType()) {
@@ -295,7 +318,7 @@ public class WsSession implements Session {
     @Override
     public List<Extension> getNegotiatedExtensions() {
         checkState();
-        return Collections.emptyList();
+        return negotiatedExtensions;
     }
 
 
@@ -448,6 +471,7 @@ public class WsSession implements Session {
             wsRemoteEndpoint.close();
         }
     }
+
 
     private void fireEndpointOnClose(CloseReason closeReason) {
 

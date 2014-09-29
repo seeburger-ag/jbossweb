@@ -28,6 +28,7 @@ import javax.websocket.SendHandler;
 import javax.websocket.SendResult;
 
 import org.apache.coyote.http11.upgrade.AbstractServletOutputStream;
+import org.apache.tomcat.websocket.Transformation;
 import org.apache.tomcat.websocket.WsRemoteEndpointImplBase;
 import org.jboss.web.WebsocketsLogger;
 
@@ -87,6 +88,7 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
             while (sos.isReady()) {
                 complete = true;
                 for (ByteBuffer buffer : buffers) {
+                    // FIXME: might not be needed
                     synchronized (buffer) {
                         if (buffer.hasRemaining()) {
                             complete = false;
@@ -116,6 +118,7 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
         }
         if (!complete) {
             // Async write is in progress
+
             long timeout = getSendTimeout();
             if (timeout > 0) {
                 // Register with timeout thread
@@ -130,7 +133,7 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
     protected void doClose() {
         if (handler != null) {
             // close() can be triggered by a wide range of scenarios. It is far
-            // simpler just to always use a dispatch that it is to try and track
+            // simpler just to always use a dispatch than it is to try and track
             // whether or not this method was called by the same thread that
             // triggered the write
             clearHandler(new EOFException(), true);
@@ -164,6 +167,13 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
     }
 
 
+    @Override
+    protected void setTransformation(Transformation transformation) {
+        // Overridden purely so it is visible to other classes in this package
+        super.setTransformation(transformation);
+    }
+
+
     /**
      *
      * @param t             The throwable associated with any error that
@@ -181,6 +191,7 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
         // message.
         SendHandler sh = handler;
         handler = null;
+        buffers = null;
         if (sh != null) {
             if (useDispatch) {
                 OnResultRunnable r = onResultRunnables.poll();

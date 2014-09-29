@@ -41,6 +41,7 @@ public class WsRemoteEndpointImplClient extends WsRemoteEndpointImplBase {
         long timeout = getSendTimeout();
         if (timeout < 1) {
             timeout = Long.MAX_VALUE;
+
         }
         SendHandlerToCompletionHandler sh2ch =
                 new SendHandlerToCompletionHandler(handler);

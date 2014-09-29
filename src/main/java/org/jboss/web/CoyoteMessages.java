@@ -289,4 +289,7 @@ public interface CoyoteMessages {
     @Message(id = 2083, value = "Maximum extension size [%s] exceeded for this request")
     IOException maxExtensionSizeExceeded(int size);
 
+    @Message(id = 2084, value = "Must call init first")
+    IllegalStateException mustInitFirst();
+
 }

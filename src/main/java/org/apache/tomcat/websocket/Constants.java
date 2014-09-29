@@ -16,7 +16,12 @@
  */
 package org.apache.tomcat.websocket;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+
+import javax.websocket.Extension;
 
 /**
  * Internal implementation constants.
@@ -63,6 +68,14 @@ public class Constants {
     public static final boolean RELAXED_CLOSE_EVENT =
             Boolean.getBoolean(
                     "org.apache.tomcat.websocket.RELAXED_CLOSE_EVENT");
+
+    public static final List<Extension> INSTALLED_EXTENSIONS;
+
+    static {
+        List<Extension> installed = new ArrayList<Extension>(1);
+        installed.add(new WsExtension("permessage-deflate"));
+        INSTALLED_EXTENSIONS = Collections.unmodifiableList(installed);
+    }
 
     private Constants() {
         // Hide default constructor

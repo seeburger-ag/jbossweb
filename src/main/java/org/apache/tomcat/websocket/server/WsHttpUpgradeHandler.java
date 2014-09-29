@@ -20,6 +20,7 @@ import static org.jboss.web.WebsocketsMessages.MESSAGES;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
@@ -28,6 +29,7 @@ import javax.websocket.CloseReason.CloseCodes;
 import javax.websocket.DeploymentException;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
+import javax.websocket.Extension;
 
 import org.apache.coyote.http11.upgrade.AbstractServletInputStream;
 import org.apache.coyote.http11.upgrade.AbstractServletOutputStream;
@@ -35,6 +37,7 @@ import org.apache.coyote.http11.upgrade.servlet31.HttpUpgradeHandler;
 import org.apache.coyote.http11.upgrade.servlet31.ReadListener;
 import org.apache.coyote.http11.upgrade.servlet31.WebConnection;
 import org.apache.coyote.http11.upgrade.servlet31.WriteListener;
+import org.apache.tomcat.websocket.Transformation;
 import org.apache.tomcat.websocket.WsIOException;
 import org.apache.tomcat.websocket.WsSession;
 import org.jboss.web.WebsocketsLogger;
@@ -50,7 +53,9 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
     private EndpointConfig endpointConfig;
     private WsServerContainer webSocketContainer;
     private WsHandshakeRequest handshakeRequest;
+    private List<Extension> negotiatedExtensions;
     private String subProtocol;
+    private Transformation transformation;
     private Map<String,String> pathParameters;
     private boolean secure;
     private WebConnection connection;
@@ -65,13 +70,16 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
 
     public void preInit(Endpoint ep, EndpointConfig endpointConfig,
             WsServerContainer wsc, WsHandshakeRequest handshakeRequest,
-            String subProtocol, Map<String,String> pathParameters,
+            List<Extension> negotiatedExtensionsPhase2, String subProtocol,
+            Transformation transformation, Map<String,String> pathParameters,
             boolean secure) {
         this.ep = ep;
         this.endpointConfig = endpointConfig;
         this.webSocketContainer = wsc;
         this.handshakeRequest = handshakeRequest;
+        this.negotiatedExtensions = negotiatedExtensionsPhase2;
         this.subProtocol = subProtocol;
+        this.transformation = transformation;
         this.pathParameters = pathParameters;
         this.secure = secure;
     }
@@ -100,6 +108,12 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
             httpSessionId = ((HttpSession) session).getId();
         }
 
+        // Need to call onOpen using the web application's class loader
+        // Create the frame using the application's class loader so it can pick
+        // up application specific config from the ServerContainerImpl
+        Thread t = Thread.currentThread();
+        ClassLoader cl = t.getContextClassLoader();
+        t.setContextClassLoader(applicationClassLoader);
         try {
             WsRemoteEndpointImplServer wsRemoteEndpointServer =
                     new WsRemoteEndpointImplServer(sos, webSocketContainer);
@@ -108,17 +122,20 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
                     handshakeRequest.getParameterMap(),
                     handshakeRequest.getQueryString(),
                     handshakeRequest.getUserPrincipal(), httpSessionId,
-                    subProtocol, pathParameters, secure, endpointConfig);
-            WsFrameServer wsFrame = new WsFrameServer(
-                    sis,
-                    wsSession);
-            sos.setWriteListener(
-                    new WsWriteListener(this, wsRemoteEndpointServer));
+                    negotiatedExtensions, subProtocol, pathParameters, secure,
+                    endpointConfig);
+            WsFrameServer wsFrame = new WsFrameServer(sis, wsSession, transformation);
+            sos.setWriteListener(new WsWriteListener(this, wsRemoteEndpointServer));
+            // WsFrame adds the necessary final transformations. Copy the
+            // completed transformation chain to the remote end point.
+            wsRemoteEndpointServer.setTransformation(wsFrame.getTransformation());
             ep.onOpen(wsSession, endpointConfig);
             webSocketContainer.registerSession(ep, wsSession);
             sis.setReadListener(new WsReadListener(this, wsFrame));
         } catch (DeploymentException e) {
             throw new IllegalArgumentException(e);
+        } finally {
+            t.setContextClassLoader(cl);
         }
     }
 
@@ -136,7 +153,15 @@ public class WsHttpUpgradeHandler implements HttpUpgradeHandler {
 
 
     private void onError(Throwable throwable) {
-        ep.onError(wsSession, throwable);
+        // Need to call onError using the web application's class loader
+        Thread t = Thread.currentThread();
+        ClassLoader cl = t.getContextClassLoader();
+        t.setContextClassLoader(applicationClassLoader);
+        try {
+            ep.onError(wsSession, throwable);
+        } finally {
+            t.setContextClassLoader(cl);
+        }
     }
 
 

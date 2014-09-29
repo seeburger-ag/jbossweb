@@ -311,4 +311,25 @@ public interface WebsocketsMessages {
     @Message(id = 8591, value = "Unknown scheme %s")
     IllegalArgumentException unknownScheme(String scheme);
 
+    @Message(id = 8592, value = "Duplicate deflate parameter %s")
+    IllegalArgumentException duplicateDeflateParameter(String parameter);
+
+    @Message(id = 8593, value = "Invalid deflate window size %s maximum %s")
+    IllegalArgumentException invalidDeflateWindowSize(String parameter, int maximum);
+
+    @Message(id = 8594, value = "Unknown deflate parameter %s")
+    IllegalArgumentException unkownDeflateParameter(String parameter);
+
+    @Message(id = 8595, value = "Deflate failure")
+    String deflateFailure();
+
+    @Message(id = 8596, value = "Unsupported extension %s")
+    IllegalArgumentException unsupportedExtension(String name);
+
+    @Message(id = 8597, value = "Invalid token %s value %s")
+    IllegalArgumentException invalidToken(String name, String value);
+
+    @Message(id = 8598, value = "Invalid token value %s")
+    IllegalArgumentException invalidTokenValue(String value);
+
 }

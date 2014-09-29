@@ -25,6 +25,7 @@ import javax.websocket.MessageHandler;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 
+import org.apache.tomcat.util.ExceptionUtils;
 import org.apache.tomcat.websocket.WrappedMessageHandler;
 
 /**
@@ -49,6 +50,8 @@ public abstract class PojoMessageHandlerBase<T>
             int indexSession, long maxMessageSize) {
         this.pojo = pojo;
         this.method = method;
+        // TODO: The method should already be accessible here but the following
+        // code seems to be necessary in some as yet not fully understood cases.
         try {
             this.method.setAccessible(true);
         } catch (Exception e) {
@@ -106,5 +109,16 @@ public abstract class PojoMessageHandlerBase<T>
     @Override
     public final long getMaxMessageSize() {
         return maxMessageSize;
+    }
+
+
+    protected final void handlePojoMethodException(Throwable t) {
+        t = ExceptionUtils.unwrapInvocationTargetException(t);
+        ExceptionUtils.handleThrowable(t);
+        if (t instanceof RuntimeException) {
+            throw (RuntimeException) t;
+        } else {
+            throw new RuntimeException(t);
+        }
     }
 }

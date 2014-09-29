@@ -67,7 +67,7 @@ public abstract class PojoMessageHandlerPartialBase<T>
         } else {
             parameters[indexPayload] = message;
         }
-        Object result;
+        Object result = null;
         ThreadBindingListener tbl = ((WsSession) session).getThreadBindingListener();
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
@@ -75,9 +75,9 @@ public abstract class PojoMessageHandlerPartialBase<T>
             tbl.bind();
             result = method.invoke(pojo, parameters);
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(e);
+            handlePojoMethodException(e);
         } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException(e);
+            handlePojoMethodException(e);
         } finally {
             try {
                 tbl.unbind();
