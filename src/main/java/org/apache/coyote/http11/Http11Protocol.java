@@ -373,7 +373,7 @@ public class Http11Protocol
      * If true, the regular socket timeout will be used for the full duration
      * of the connection.
      */
-    protected boolean disableUploadTimeout = true;
+    protected boolean disableUploadTimeout = Constants.DEFAULT_DISABLE_UPLOAD_TIMEOUT;
     public boolean getDisableUploadTimeout() { return disableUploadTimeout; }
     public void setDisableUploadTimeout(boolean isDisabled) { disableUploadTimeout = isDisabled; }
 
