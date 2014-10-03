@@ -87,8 +87,9 @@ public class ContextConfig
     static {
         // Load our mapping properties
         authenticators = new Properties();
+        InputStream is = null;
         try {
-            InputStream is = ContextConfig.class.getClassLoader().getResourceAsStream("org/apache/catalina/startup/Authenticators.properties");
+            is = ContextConfig.class.getClassLoader().getResourceAsStream("org/apache/catalina/startup/Authenticators.properties");
             if (is != null) {
                 authenticators.load(is);
             } else {
@@ -96,6 +97,14 @@ public class ContextConfig
             }
         } catch (IOException e) {
             CatalinaLogger.STARTUP_LOGGER.failedLoadingAuthenticatoMappings(e);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
     }
 

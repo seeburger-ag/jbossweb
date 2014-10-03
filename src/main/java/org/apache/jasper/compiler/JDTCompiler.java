@@ -242,8 +242,18 @@ public class JDTCompiler extends org.apache.jasper.compiler.Compiler {
                         return false;
                     }
                     String resourceName = result.replace('.', '/') + ".class";
-                    InputStream is = 
-                        classLoader.getResourceAsStream(resourceName);
+                    InputStream is = null;
+                    try {
+                        is = classLoader.getResourceAsStream(resourceName);
+                    } finally {
+                        if (is != null) {
+                            try {
+                                is.close();
+                            } catch (IOException e) {
+                                // Ignore
+                            }
+                        }
+                    }
                     return is == null;
                 }
 
