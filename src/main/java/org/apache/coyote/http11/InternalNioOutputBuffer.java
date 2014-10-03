@@ -867,26 +867,26 @@ public class InternalNioOutputBuffer implements OutputBuffer {
                     if (leftover.getLength() > Constants.ASYNC_BUFFER_SIZE) {
                         response.setLastWrite(0);
                     }
-                }
-                if (semaphore.tryAcquire()) {
-                    // Calculate the number of bytes that fit in the buffer
-                    int n = Math.min(leftover.getLength(), bbuf.capacity() - bbuf.position());
-                    bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
-                    leftover.setOffset(leftover.getOffset() + n);
-                    boolean writeNotification = processor.getWriteNotification();
-                    processor.setWriteNotification(false);
-                    try {
-                        channel.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, channel, completionHandler);
-                    } catch (Exception e) {
-                        processor.getResponse().setErrorException(e);
-                        if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-                            CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(e);
+                    if (semaphore.tryAcquire()) {
+                        // Calculate the number of bytes that fit in the buffer
+                        int n = Math.min(leftover.getLength(), bbuf.remaining());
+                        bbuf.put(leftover.getBuffer(), leftover.getOffset(), n).flip();
+                        leftover.setOffset(leftover.getOffset() + n);
+                        boolean writeNotification = processor.getWriteNotification();
+                        processor.setWriteNotification(false);
+                        try {
+                            channel.write(bbuf, writeTimeout, TimeUnit.MILLISECONDS, channel, completionHandler);
+                        } catch (Exception e) {
+                            processor.getResponse().setErrorException(e);
+                            if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                                CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingWrite(e);
+                            }
                         }
-                    }
-                    if (semaphore.availablePermits() == 0) {
-                        // Write did not complete inline, possible write notification
-                        if (writeNotification) {
-                            processor.setWriteNotification(true);
+                        if (semaphore.availablePermits() == 0) {
+                            // Write did not complete inline, possible write notification
+                            if (writeNotification) {
+                                processor.setWriteNotification(true);
+                            }
                         }
                     }
                 }
