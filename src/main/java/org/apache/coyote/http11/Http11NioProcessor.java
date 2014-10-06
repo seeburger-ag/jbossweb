@@ -283,7 +283,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			// Parsing the request header
 			try {
 				if (!disableUploadTimeout && keptAlive && soTimeout > 0) {
-					endpoint.setSoTimeout(soTimeout * 1000);
+					endpoint.setSoTimeout(soTimeout);
 				}
 
 				if (!inputBuffer.parseRequestLine(keptAlive)) {
@@ -319,8 +319,8 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 
 				request.setStartTime(System.currentTimeMillis());
 				keptAlive = true;
-				if (!disableUploadTimeout) {
-					endpoint.setSoTimeout(timeout * 1000);
+				if (!disableUploadTimeout && soTimeout > 0) {
+					endpoint.setSoTimeout(soTimeout);
 				}
 				inputBuffer.parseHeaders();
 			} catch (IOException e) {

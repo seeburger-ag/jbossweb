@@ -840,8 +840,8 @@ public class Http11AprProcessor implements ActionHook {
                 }
                 request.setStartTime(System.currentTimeMillis());
                 keptAlive = true;
-                if (!disableUploadTimeout) {
-                    Socket.timeoutSet(socket, timeout * 1000);
+                if (!disableUploadTimeout && soTimeout > 0) {
+                    Socket.timeoutSet(socket, soTimeout * 1000);
                 }
                 inputBuffer.parseHeaders();
             } catch (IOException e) {

@@ -812,16 +812,15 @@ public class Http11Processor implements ActionHook {
                 if (keptAlive) {
                     if (keepAliveTimeout > 0) {
                         socket.setSoTimeout(keepAliveTimeout);
-                    }
-                    else if (soTimeout > 0) {
+                    } else if (soTimeout > 0) {
                         socket.setSoTimeout(soTimeout);
                     }
                 }
                 inputBuffer.parseRequestLine();
                 request.setStartTime(System.currentTimeMillis());
                 keptAlive = true;
-                if (!disableUploadTimeout) {
-                    socket.setSoTimeout(timeout);
+                if (!disableUploadTimeout && soTimeout > 0) {
+                    socket.setSoTimeout(soTimeout);
                 }
                 inputBuffer.parseHeaders();
             } catch (IOException e) {
