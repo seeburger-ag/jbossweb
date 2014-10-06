@@ -1417,7 +1417,7 @@ public abstract class RealmBase
             else if( name.equalsIgnoreCase(STRICT_AUTH_ONLY_MODE.name) )
                 mode = STRICT_AUTH_ONLY_MODE;
             else
-                throw new IllegalStateException("Unknown mode, must be one of: strict, authOnly, strictAuthOnly");
+                throw MESSAGES.unknownAuthMode(name);
             return mode;
         }
         
