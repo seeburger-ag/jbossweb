@@ -103,7 +103,15 @@ public class ChunkedInputFilter implements InputFilter {
      */
     protected boolean needCRLFParse = false;
 
-    // ------------------------------------------------------------- Properties
+    /**
+     * Flag that indicates if an error has occurred.
+     */
+    private boolean error;
+
+    /**
+     * Size of extensions processed for this request.
+     */
+    private long extensionSize;
 
 
     // ---------------------------------------------------- InputBuffer Methods
@@ -123,6 +131,8 @@ public class ChunkedInputFilter implements InputFilter {
 
         if (endChunk)
             return -1;
+
+        checkError();
 
         if (needCRLFParse) {
             needCRLFParse = false;
@@ -223,6 +233,8 @@ public class ChunkedInputFilter implements InputFilter {
         lastValid = 0;
         endChunk = false;
         needCRLFParse = false;
+        error = false;
+        extensionSize = 0;
     }
 
 
@@ -269,7 +281,7 @@ public class ChunkedInputFilter implements InputFilter {
         int result = 0;
         boolean eol = false;
         boolean crfound = false;
-        boolean readDigit = false;
+        int readDigit = 0;
         boolean trailer = false;
 
         while (!eol) {
@@ -278,6 +290,7 @@ public class ChunkedInputFilter implements InputFilter {
                 // In non blocking mode, no new chunk follows, even if data was present
                 int n = readBytes();
                 if (n < 0) {
+                    error = true;
                     throw MESSAGES.invalidChunkHeader();
                 } else if (n == 0) {
                     return false;
@@ -292,18 +305,27 @@ public class ChunkedInputFilter implements InputFilter {
                 eol = true;
             } else if (buf[pos] == Constants.SEMI_COLON) {
                 trailer = true;
+                extensionSize++;
             } else if (buf[pos] < 0) {
+                error = true;
                 throw MESSAGES.invalidChunkHeader();
             } else if (!trailer) { 
                 //don't read data after the trailer
-                if (HexUtils.DEC[buf[pos] & 0xff] != -1) {
-                    readDigit = true;
-                    result *= 16;
-                    result += HexUtils.DEC[buf[pos]];
+                int charValue = HexUtils.DEC[buf[pos] & 0xff];
+                if (charValue != -1 && readDigit < 8) {
+                    readDigit++;
+                    result = (result << 4) | charValue;
                 } else {
                     //we shouldn't allow invalid, non hex characters
                     //in the chunked header
+                    error = true;
                     throw MESSAGES.invalidChunkHeader();
+                }
+            } else {
+                // Skipping the extension
+                extensionSize++;
+                if (Constants.MAX_CHUNK_EXTENSION_SIZE > -1 && extensionSize > Constants.MAX_CHUNK_EXTENSION_SIZE) {
+                    throw MESSAGES.maxExtensionSizeExceeded(Constants.MAX_CHUNK_EXTENSION_SIZE);
                 }
             }
 
@@ -311,8 +333,10 @@ public class ChunkedInputFilter implements InputFilter {
 
         }
 
-        if (!readDigit || (result < 0))
+        if (readDigit == 0 || (result < 0)) {
+            error = true;
             throw MESSAGES.invalidChunkHeader();
+        }
 
         if (result == 0)
             endChunk = true;
@@ -336,17 +360,26 @@ public class ChunkedInputFilter implements InputFilter {
         while (!eol) {
 
             if (pos >= lastValid) {
-                if (readBytes() <= 0)
+                if (readBytes() <= 0) {
+                    error = true;
                     throw MESSAGES.invalidCrlf();
+                }
             }
 
             if (buf[pos] == Constants.CR) {
-                if (crfound) throw MESSAGES.invalidCrlfTwoCr();
+                if (crfound) {
+                    error = true;
+                    throw MESSAGES.invalidCrlfTwoCr();
+                }
                 crfound = true;
             } else if (buf[pos] == Constants.LF) {
-                if (!crfound) throw MESSAGES.invalidCrlfNoCr();
+                if (!crfound) {
+                    error = true;
+                    throw MESSAGES.invalidCrlfNoCr();
+                }
                 eol = true;
             } else {
+                error = true;
                 throw MESSAGES.invalidCrlf();
             }
 
@@ -370,5 +403,11 @@ public class ChunkedInputFilter implements InputFilter {
 
     }
 
+
+    private void checkError() throws IOException {
+        if (error) {
+            throw new IOException(MESSAGES.chunkedFilterError());
+        }
+    }
 
 }
