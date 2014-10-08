@@ -335,4 +335,7 @@ public interface WebsocketsMessages {
     @Message(id = 8599, value = "Client requested parameters it could not support")
     String unsupportedParameters();
 
+    @Message(id = 8600, value = "Incompatible RSV bit usage")
+    String incompatibleRsvBitUsage();
+
 }

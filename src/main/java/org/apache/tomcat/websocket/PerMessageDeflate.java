@@ -198,8 +198,8 @@ public class PerMessageDeflate implements Transformation {
                     }
                 }
             } else if (written == 0) {
-                if (fin && (isServer && !serverContextTakeover ||
-                        !isServer && !clientContextTakeover)) {
+                if (fin && (isServer && !clientContextTakeover ||
+                        !isServer && !serverContextTakeover)) {
                     inflater.reset();
                 }
                 return TransformationResult.END_OF_FRAME;
@@ -411,7 +411,7 @@ public class PerMessageDeflate implements Transformation {
 
     private void startNewMessage() {
         firstCompressedFrameWritten = false;
-        if (isServer && !clientContextTakeover || !isServer && !serverContextTakeover) {
+        if (isServer && !serverContextTakeover || !isServer && !clientContextTakeover) {
             deflater.reset();
         }
     }
