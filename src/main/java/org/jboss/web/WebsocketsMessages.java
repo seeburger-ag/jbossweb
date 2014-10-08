@@ -332,4 +332,7 @@ public interface WebsocketsMessages {
     @Message(id = 8598, value = "Invalid token value %s")
     IllegalArgumentException invalidTokenValue(String value);
 
+    @Message(id = 8599, value = "Client requested parameters it could not support")
+    String unsupportedParameters();
+
 }
