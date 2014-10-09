@@ -3588,7 +3588,10 @@ public class StandardContext
         for (ArrayList<Wrapper> list : map.values()) {
             for (Wrapper wrapper : list) {
                 try {
+                    String servletClass = wrapper.getServletClass();
+                    lifecycle.fireLifecycleEvent(Lifecycle.BEFORE_LOAD_ON_STARTUP_EVENT, servletClass);
                     wrapper.load();
+                    lifecycle.fireLifecycleEvent(Lifecycle.AFTER_LOAD_ON_STARTUP_EVENT, servletClass);
                 } catch (ServletException e) {
                     getLogger().error(MESSAGES.errorLoadingServlet(wrapper.getName()), StandardWrapper.getRootCause(e));
                     // NOTE: load errors (including a servlet that throws
@@ -3795,6 +3798,7 @@ public class StandardContext
             
             // Load and initialize all "load on startup" servlets
             if (ok) {
+                lifecycle.fireLifecycleEvent(LOAD_ON_STARTUP_EVENT, null);
                 loadOnStartup(findChildren());
             }
             

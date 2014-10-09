@@ -172,6 +172,12 @@ public class ContextConfig
             init();
         } else if (event.getType().equals(Lifecycle.DESTROY_EVENT)) {
             destroy();
+        } else if (event.getType().equals(Lifecycle.LOAD_ON_STARTUP_EVENT)) {
+            loadOnStartup();
+        } else if (event.getType().equals(Lifecycle.BEFORE_LOAD_ON_STARTUP_EVENT)) {
+            beforeLoadOnStartup(event.getData());
+        } else if (event.getType().equals(Lifecycle.AFTER_LOAD_ON_STARTUP_EVENT)) {
+            afterLoadOnStartup(event.getData());
         }
 
     }
@@ -409,6 +415,18 @@ public class ContextConfig
      */
     protected void completeConfig() {
         
+    }
+
+    protected void loadOnStartup() {
+
+    }
+
+    protected void beforeLoadOnStartup(Object data) {
+
+    }
+
+    protected void afterLoadOnStartup(Object data) {
+
     }
 
     /**
