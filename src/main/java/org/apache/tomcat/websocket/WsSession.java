@@ -170,14 +170,12 @@ public class WsSession implements Session {
     }
 
 
-    @Override
     public <T> void addMessageHandler(Class<T> clazz, Partial<T> handler)
             throws IllegalStateException {
         doAddMessageHandler(clazz, handler);
     }
 
 
-    @Override
     public <T> void addMessageHandler(Class<T> clazz, Whole<T> handler)
             throws IllegalStateException {
         doAddMessageHandler(clazz, handler);
