@@ -40,17 +40,17 @@ public final class JSSEUtils {
         Set<String> result = new LinkedHashSet<String>();
         if (cipherSuites.length == 1) {
             List<String> enabledCiphers = OpenSSLCipherConfigurationParser.parseExpression(cipherSuites[0]);
-            for (String enabledCipher : enabledCiphers) {
-                if (supportedCiphers.contains(enabledCipher)) {
-                    result.add(enabledCipher);
+            if (enabledCiphers.isEmpty()) {
+                result.addAll(filter(Arrays.asList(cipherSuites), supportedCiphers));
+            } else {
+                for (String enabledCipher : enabledCiphers) {
+                    if (supportedCiphers.contains(enabledCipher)) {
+                        result.add(enabledCipher);
+                    }
                 }
             }
         } else {
-            for (String enabledCipher : cipherSuites) {
-                if (supportedCiphers.contains(enabledCipher)) {
-                    result.add(enabledCipher);
-                }
-            }
+            result.addAll(filter(Arrays.asList(cipherSuites), supportedCiphers));
         }
         if (!result.isEmpty()) {
             StringBuilder builder = new StringBuilder(result.size() * 16);
@@ -61,5 +61,15 @@ public final class JSSEUtils {
             JSSELogger.ROOT_LOGGER.logUseableCiphers(builder.toString().substring(0, builder.length() - 1));
         }
         return result.toArray(new String[result.size()]);
+    }
+
+    private static Set<String> filter(final List<String> enabledCiphers, final Set<String> supportedCiphers) {
+        Set<String> result = new LinkedHashSet<String>();
+        for (String enabledCipher : enabledCiphers) {
+            if (supportedCiphers.contains(enabledCipher)) {
+                result.add(enabledCipher);
+            }
+        }
+        return result;
     }
 }
