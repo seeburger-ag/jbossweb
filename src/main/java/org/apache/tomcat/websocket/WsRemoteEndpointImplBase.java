@@ -120,6 +120,9 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
 
     public void sendBytes(ByteBuffer data) throws IOException {
+        if (data == null) {
+            throw MESSAGES.invalidNullData();
+        }
         stateMachine.binaryStart();
         startMessageBlock(Constants.OPCODE_BINARY, data, true);
         stateMachine.complete(true);
@@ -134,6 +137,12 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
 
     public void sendBytesByCompletion(ByteBuffer data, SendHandler handler) {
+        if (data == null) {
+            throw MESSAGES.invalidNullData();
+        }
+        if (handler == null) {
+            throw MESSAGES.invalidNullHandler();
+        }
         StateUpdateSendHandler sush = new StateUpdateSendHandler(handler);
         stateMachine.binaryStart();
         startMessage(Constants.OPCODE_BINARY, data, true, sush);
@@ -142,6 +151,9 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
     public void sendPartialBytes(ByteBuffer partialByte, boolean last)
             throws IOException {
+        if (partialByte == null) {
+            throw MESSAGES.invalidNullData();
+        }
         stateMachine.binaryPartialStart();
         startMessageBlock(Constants.OPCODE_BINARY, partialByte, last);
         stateMachine.complete(last);
@@ -163,6 +175,9 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
 
     public void sendString(String text) throws IOException {
+        if (text == null) {
+            throw MESSAGES.invalidNullData();
+        }
         stateMachine.textStart();
         sendPartialString(CharBuffer.wrap(text), true);
     }
@@ -176,6 +191,12 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
 
     public void sendStringByCompletion(String text, SendHandler handler) {
+        if (text == null) {
+            throw MESSAGES.invalidNullData();
+        }
+        if (handler == null) {
+            throw MESSAGES.invalidNullHandler();
+        }
         stateMachine.textStart();
         TextMessageSendHandler tmsh = new TextMessageSendHandler(handler,
                 CharBuffer.wrap(text), true, encoder, encoderBuffer, this);
@@ -186,6 +207,9 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
     public void sendPartialString(String fragment, boolean isLast)
             throws IOException {
+        if (fragment == null) {
+            throw MESSAGES.invalidNullData();
+        }
         stateMachine.textPartialStart();
         sendPartialString(CharBuffer.wrap(fragment), isLast);
     }
@@ -484,14 +508,21 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
     }
 
 
-    public void sendObject(Object obj) throws IOException {
+    public void sendObject(Object obj) throws IOException, EncodeException {
         Future<Void> f = sendObjectByFuture(obj);
         try {
             f.get();
         } catch (InterruptedException e) {
             throw new IOException(e);
         } catch (ExecutionException e) {
-            throw new IOException(e);
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;
+            } else if (cause instanceof EncodeException) {
+                throw (EncodeException) cause;
+            } else {
+                throw new IOException(e);
+            }
         }
     }
 
@@ -504,6 +535,13 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void sendObjectByCompletion(Object obj, SendHandler completion) {
+
+        if (obj == null) {
+            throw MESSAGES.invalidNullData();
+        }
+        if (completion == null) {
+            throw MESSAGES.invalidNullHandler();
+        }
 
         if (Util.isPrimitive(obj.getClass())) {
             String msg = obj.toString();

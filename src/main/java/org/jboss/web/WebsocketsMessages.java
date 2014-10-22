@@ -338,4 +338,10 @@ public interface WebsocketsMessages {
     @Message(id = 8600, value = "Incompatible RSV bit usage")
     String incompatibleRsvBitUsage();
 
+    @Message(id = 8601, value = "Null data")
+    IllegalArgumentException invalidNullData();
+
+    @Message(id = 8602, value = "Null handler")
+    IllegalArgumentException invalidNullHandler();
+
 }
