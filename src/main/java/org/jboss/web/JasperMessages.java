@@ -220,8 +220,8 @@ public interface JasperMessages {
     @Message(id = 4060, value = "An error occurred at line: %s in the jsp file: %s")
     String errorInJspFile(int line, String fileName);
 
-    @Message(id = 4061, value = "An error occurred at line: %s in the generated java file")
-    String errorInJavaFile(int line);
+    @Message(id = 4061, value = "An error occurred at line: %s in the generated java file: %s")
+    String errorInJavaFile(int line, String fileName);
 
     @Message(id = 4062, value = "Unable to compile class for JSP: %s")
     String failedClassCompilation(String errorReport);
