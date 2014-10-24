@@ -255,6 +255,9 @@ public class DigestAuthenticator extends AuthenticatorBase {
         // to be unique).
         String nonce = generateNonce(request);
 
+        // Ensure a session is created to have stickiness through loadbalancers
+        request.getSessionInternal(true);
+
         setAuthenticateHeader(request, response, config, nonce,
                 principal != null && digestInfo.isNonceStale());
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED);

@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.bayeux;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 
 import javax.servlet.ServletContext;
@@ -29,9 +31,9 @@ import org.apache.cometd.bayeux.Bayeux;
 import org.apache.tomcat.util.json.JSONArray;
 import org.apache.tomcat.util.json.JSONException;
 import org.apache.tomcat.util.json.JSONObject;
-import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * 
@@ -42,9 +44,6 @@ import org.jboss.servlet.http.HttpEventServlet;
 public class BayeuxServlet extends HttpServlet implements HttpEventServlet {
 
 
-    private static Logger log = Logger.getLogger(BayeuxServlet.class);
-    
-    
     /**
      * The timeout.
      */
@@ -96,8 +95,8 @@ public class BayeuxServlet extends HttpServlet implements HttpEventServlet {
 
     public void event(HttpEvent cometEvent) throws IOException, ServletException {
         HttpEvent.EventType type = cometEvent.getType();
-        if (log.isTraceEnabled()) {
-            log.trace("["+Thread.currentThread().getName()+"] Received Comet Event type="+type);
+        if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+            CoyoteLogger.BAYEUX_LOGGER.trace("["+Thread.currentThread().getName()+"] Received Comet Event type="+type);
         }
         switch (type) {
         case BEGIN:
@@ -140,14 +139,14 @@ public class BayeuxServlet extends HttpServlet implements HttpEventServlet {
         } else { // GET method or application/x-www-form-urlencoded
             String message = cometEvent.getHttpServletRequest().getParameter(
                     Bayeux.MESSAGE_PARAMETER);
-            if (log.isTraceEnabled()) {
-                log.trace("[" + Thread.currentThread().getName()
+            if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+                CoyoteLogger.BAYEUX_LOGGER.trace("[" + Thread.currentThread().getName()
                         + "] Received JSON message:" + message);
             }
             try {
                 int action = handleBayeux(message, cometEvent);
-                if (log.isTraceEnabled()) {
-                    log.trace("[" + Thread.currentThread().getName()
+                if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+                    CoyoteLogger.BAYEUX_LOGGER.trace("[" + Thread.currentThread().getName()
                             + "] Bayeux handling complete, action result="
                             + action);
                 }
@@ -156,7 +155,7 @@ public class BayeuxServlet extends HttpServlet implements HttpEventServlet {
                 }
             } catch (Exception e) {
                 tb.remove(cometEvent);
-                log.warn("Exception in check", e);
+                CoyoteLogger.BAYEUX_LOGGER.errorInCheckBayeux(e);
                 cometEvent.close();
             }
         }
@@ -172,37 +171,37 @@ public class BayeuxServlet extends HttpServlet implements HttpEventServlet {
             for (int i = 0; i < jsArray.length(); i++) {
                 JSONObject msg = jsArray.getJSONObject(i);
                 
-                if (log.isTraceEnabled()) {
-                    log.trace("["+Thread.currentThread().getName()+"] Processing bayeux message:"+msg);
+                if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+                    CoyoteLogger.BAYEUX_LOGGER.trace("["+Thread.currentThread().getName()+"] Processing bayeux message:"+msg);
                 }
                 request = RequestFactory.getRequest(tb,event,msg);
-                if (log.isTraceEnabled()) {
-                    log.trace("["+Thread.currentThread().getName()+"] Processing bayeux message using request:"+request);
+                if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+                    CoyoteLogger.BAYEUX_LOGGER.trace("["+Thread.currentThread().getName()+"] Processing bayeux message using request:"+request);
                 }
                 result = request.process(result);
-                if (log.isTraceEnabled()) {
-                    log.trace("["+Thread.currentThread().getName()+"] Processing bayeux message result:"+result);
+                if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+                    CoyoteLogger.BAYEUX_LOGGER.trace("["+Thread.currentThread().getName()+"] Processing bayeux message result:"+result);
                 }
             }
             if (result>0 && request!=null) {
                 event.getHttpServletRequest().setAttribute(BayeuxRequest.LAST_REQ_ATTR, request);
                 ClientImpl ci = (ClientImpl)tb.getClient(((RequestBase)request).getClientId());
                 ci.addCometEvent(event);
-                if (log.isTraceEnabled()) {
-                    log.trace("["+Thread.currentThread().getName()+"] Done bayeux message added to request attribute");
+                if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+                    CoyoteLogger.BAYEUX_LOGGER.trace("["+Thread.currentThread().getName()+"] Done bayeux message added to request attribute");
                 }
             } else if (result == 0 && request!=null) {
                 RequestBase.deliver(event,(ClientImpl)tb.getClient(((RequestBase)request).getClientId()));
-                if (log.isTraceEnabled()) {
-                    log.trace("["+Thread.currentThread().getName()+"] Done bayeux message, delivered to client");
+                if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+                    CoyoteLogger.BAYEUX_LOGGER.trace("["+Thread.currentThread().getName()+"] Done bayeux message, delivered to client");
                 }
             }
             
         }catch (JSONException e) {
-            log.warn("Error", e);// FIXME impl error handling
+            CoyoteLogger.BAYEUX_LOGGER.errorProcessingBayeux(e);
             result = -1;
         }catch (BayeuxException e) {
-            log.warn("Error", e); // FIXME impl error handling
+            CoyoteLogger.BAYEUX_LOGGER.errorProcessingBayeux(e);
             result = -1;
         }
         return result;
@@ -231,9 +230,9 @@ public class BayeuxServlet extends HttpServlet implements HttpEventServlet {
 
     public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
         if (servletResponse instanceof HttpServletResponse) {
-            ( (HttpServletResponse) servletResponse).sendError(500, "Misconfigured Tomcat server, must be configured to support Comet operations.");
+            ( (HttpServletResponse) servletResponse).sendError(500, MESSAGES.invalidBayeuxConfiguration());
         } else {
-            throw new ServletException("Misconfigured Tomcat server, must be configured to support Comet operations for the Bayeux protocol.");
+            throw new ServletException(MESSAGES.invalidBayeuxConfiguration());
         }
     }
 }

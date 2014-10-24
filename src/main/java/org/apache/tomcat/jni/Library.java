@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.jni;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 /** Library
  *
  * @author Mladen Turk
@@ -61,7 +63,7 @@ public final class Library {
                     for (int j=0; j<paths.length; j++) {
                         java.io.File fd = new java.io.File(paths[j] + System.getProperty("file.separator") + name);
                         if (fd.exists()) {
-                            err += "(Error on: " + paths[j] + System.getProperty("file.separator") + name +")";
+                            err += MESSAGES.aprError() + paths[j] + System.getProperty("file.separator") + name +")";
                         }
                     }
                     err +=  e.getMessage();
@@ -217,11 +219,10 @@ public final class Library {
             APR_TCP_NODELAY_INHERITED = has(19);
             APR_O_NONBLOCK_INHERITED  = has(20);
             if (APR_MAJOR_VERSION < 1) {
-                throw new UnsatisfiedLinkError("Unsupported APR Version (" +
-                                               aprVersionString() + ")");
+                throw MESSAGES.unsupportedAprVersion(aprVersionString());
             }
             if (!APR_HAS_THREADS) {
-                throw new UnsatisfiedLinkError("Missing APR_HAS_THREADS");
+                throw MESSAGES.missingAprThreadsSupport();
             }
         }
         return initialize();

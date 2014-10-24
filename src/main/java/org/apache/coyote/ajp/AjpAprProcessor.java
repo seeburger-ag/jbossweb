@@ -1,23 +1,19 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.coyote.ajp;
@@ -31,6 +27,8 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.ActionHook;
@@ -656,7 +654,7 @@ public class AjpAprProcessor implements ActionHook {
             event = false;
         } else if (actionCode == ActionCode.ACTION_EVENT_SUSPEND) {
             // No action needed
-        } else if (actionCode == ActionCode.ACTION_EVENT_RESUME) {
+        } else if (actionCode == ActionCode.ACTION_EVENT_WAKEUP) {
             // An event is being processed already: adding for resume will be done
             // when the socket gets back to the poller
             if (!eventProcessing && !resumeNotification) {
@@ -725,6 +723,7 @@ public class AjpAprProcessor implements ActionHook {
         // Decode headers
         MimeHeaders headers = request.getMimeHeaders();
 
+        boolean contentLengthSet = false;
         int hCount = requestHeaderMessage.getInt();
         for(int i = 0 ; i < hCount ; i++) {
             String hName = null;
@@ -759,8 +758,15 @@ public class AjpAprProcessor implements ActionHook {
 
             if (hId == Constants.SC_REQ_CONTENT_LENGTH ||
                     (hId == -1 && tmpMB.equalsIgnoreCase("Content-Length"))) {
-                // just read the content-length header, so set it
-                request.setContentLength( vMB.getInt() );
+                long cl = vMB.getLong();
+                if (contentLengthSet) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    error = true;
+                } else {
+                    contentLengthSet = true;
+                    // Set the content-length header for the request
+                    request.setContentLength(cl);
+                }
             } else if (hId == Constants.SC_REQ_CONTENT_TYPE ||
                     (hId == -1 && tmpMB.equalsIgnoreCase("Content-Type"))) {
                 // just read the content-type header, so set it
