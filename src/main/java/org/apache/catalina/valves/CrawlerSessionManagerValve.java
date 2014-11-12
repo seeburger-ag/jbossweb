@@ -19,6 +19,7 @@ package org.apache.catalina.valves;
 import static org.jboss.web.CatalinaMessages.MESSAGES;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +46,7 @@ import org.jboss.web.CatalinaLogger;
  * requests.
  */
 public class CrawlerSessionManagerValve extends ValveBase
-        implements Lifecycle, HttpSessionBindingListener {
+        implements Lifecycle {
 
     /**
      * The lifecycle event support for this component.
@@ -219,7 +220,7 @@ public class CrawlerSessionManagerValve extends ValveBase
                     clientIpSessionId.put(clientIp, s.getId());
                     sessionIdClientIp.put(s.getId(), clientIp);
                     // #valueUnbound() will be called on session expiration
-                    s.setAttribute(this.getClass().getName(), this);
+                    s.setAttribute(this.getClass().getName(), new CrawlerBindingListener());
                     s.setMaxInactiveInterval(sessionInactiveInterval);
 
                     if (CatalinaLogger.VALVES_LOGGER.isDebugEnabled()) {
@@ -236,18 +237,18 @@ public class CrawlerSessionManagerValve extends ValveBase
         }
     }
 
-
-    @Override
-    public void valueBound(HttpSessionBindingEvent event) {
-        // NOOP
-    }
-
-
-    @Override
-    public void valueUnbound(HttpSessionBindingEvent event) {
-        String clientIp = sessionIdClientIp.remove(event.getSession().getId());
-        if (clientIp != null) {
-            clientIpSessionId.remove(clientIp);
+    protected class CrawlerBindingListener implements HttpSessionBindingListener, Serializable {
+        private static final long serialVersionUID = -3775762684177732270L;
+        @Override
+        public void valueBound(HttpSessionBindingEvent event) {
+            // NOOP
+        }
+        @Override
+        public void valueUnbound(HttpSessionBindingEvent event) {
+            String clientIp = sessionIdClientIp.remove(event.getSession().getId());
+            if (clientIp != null) {
+                clientIpSessionId.remove(clientIp);
+            }
         }
     }
 }
