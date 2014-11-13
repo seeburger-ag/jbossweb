@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.coyote.InputBuffer;
 import org.apache.coyote.Request;
+import org.apache.coyote.http11.upgrade.servlet31.ReadListener;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
@@ -85,6 +86,11 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
     private Semaphore semaphore = new Semaphore(1);
     
     /**
+     * Associated read listener for upgrade mode.
+     */
+    private ReadListener listener = null;
+    
+    /**
 	 * Create a new instance of {@code InternalNioInputBuffer}
 	 * 
 	 * @param request
@@ -110,32 +116,58 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		this.completionHandler = new CompletionHandler<Integer, NioChannel>() {
 
 			@Override
-			public synchronized void completed(Integer nBytes, NioChannel attachment) {
+			public void completed(Integer nBytes, NioChannel attachment) {
 			    if (nBytes < 0) {
 			        failed(new ClosedChannelException(), attachment);
 			        return;
 			    }
+			    boolean notify = false;
 
-			    if (nBytes > 0) {
-			        bbuf.flip();
-	                if (nBytes > (buf.length - end)) {
-	                    // An alternative is to bbuf.limit(buf.length - end) before the read,
-	                    // which may be less efficient
-	                    buf = new byte[buf.length];
-	                    end = 0;
-	                    pos = end;
-	                    lastValid = pos;
-	                }
-			        bbuf.get(buf, pos, nBytes);
-			        lastValid = pos + nBytes;
-			        semaphore.release();
-			        if (/*!processor.isProcessing() && */processor.getReadNotifications()
-			                && available) {
-			            available = false;
-			            if (!endpoint.processChannel(attachment, SocketStatus.OPEN_READ)) {
-			                endpoint.closeChannel(attachment);
+			    synchronized (completionHandler) {
+			        if (nBytes > 0) {
+			            bbuf.flip();
+			            if (nBytes > (buf.length - end)) {
+			                // An alternative is to bbuf.limit(buf.length - end) before the read,
+			                // which may be less efficient
+			                buf = new byte[buf.length];
+			                end = 0;
+			                pos = end;
+			                lastValid = pos;
+			            }
+			            bbuf.get(buf, pos, nBytes);
+			            lastValid = pos + nBytes;
+			            semaphore.release();
+			            if (/*!processor.isProcessing() && */processor.getReadNotifications()
+			                    && available) {
+			                available = false;
+			                notify = true;
 			            }
 			        }
+			    }
+			    
+			    if (notify) {
+                    if (listener == null) {
+                        if (!endpoint.processChannel(attachment, SocketStatus.OPEN_READ)) {
+                            endpoint.closeChannel(attachment);
+                        }
+                    } else {
+                        Thread thread = Thread.currentThread();
+                        ClassLoader originalClassLoader = thread.getContextClassLoader();
+                        try {
+                            thread.setContextClassLoader(listener.getClass().getClassLoader());
+                            synchronized (channel.getLock()) {
+                                listener.onDataAvailable();
+                            }
+                        } catch (Exception e) {
+                            processor.getResponse().setErrorException(e);
+                            endpoint.removeEventChannel(attachment);
+                            if (!endpoint.processChannel(attachment, SocketStatus.ERROR)) {
+                                endpoint.closeChannel(attachment);
+                            }
+                        } finally {
+                            thread.setContextClassLoader(originalClassLoader);
+                        }
+                    }
 			    }
 			}
 
@@ -187,6 +219,13 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		return nonBlocking;
 	}
 
+    /**
+     * Set the associated read listener for upgrade mode.
+     */
+    public void setReadListener(ReadListener listener) {
+        this.listener = listener;
+    }
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -195,6 +234,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	public void recycle() {
 		super.recycle();
 		bbuf.clear();
+		listener = null;
 		channel = null;
 		available = true;
         readTimeout = (endpoint.getSoTimeout() > 0 ? endpoint.getSoTimeout()

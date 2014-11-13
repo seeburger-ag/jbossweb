@@ -610,7 +610,8 @@ public class InputBuffer extends Reader
             throw MESSAGES.cannotSetListenerWithoutUpgradeOrAsync();
         }
         this.readListener = readListener;
-        coyoteRequest.action(ActionCode.ACTION_EVENT_READ_BEGIN, null);
+        coyoteRequest.action(ActionCode.ACTION_EVENT_READ_BEGIN,
+                (request.getUpgradeHandler() != null) ? readListener : null);
     }
 
 }

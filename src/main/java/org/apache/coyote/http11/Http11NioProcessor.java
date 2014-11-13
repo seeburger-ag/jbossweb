@@ -38,6 +38,7 @@ import org.apache.coyote.http11.filters.IdentityOutputFilter;
 import org.apache.coyote.http11.filters.SavedRequestInputFilter;
 import org.apache.coyote.http11.filters.VoidInputFilter;
 import org.apache.coyote.http11.filters.VoidOutputFilter;
+import org.apache.coyote.http11.upgrade.servlet31.ReadListener;
 import org.apache.coyote.http11.upgrade.servlet31.WriteListener;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.HexUtils;
@@ -861,6 +862,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
 			timeoutEvent(param);
 		} else if (actionCode == ActionCode.ACTION_EVENT_READ_BEGIN) {
 		    inputBuffer.setNonBlocking(true);
+		    inputBuffer.setReadListener((ReadListener) param);
 		    readNotifications = true;
 		} else if (actionCode == ActionCode.ACTION_EVENT_WRITE_BEGIN) {
 		    outputBuffer.setNonBlocking(true);
