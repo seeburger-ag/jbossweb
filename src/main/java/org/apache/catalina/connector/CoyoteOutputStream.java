@@ -102,7 +102,9 @@ public class CoyoteOutputStream
 
     public void close()
         throws IOException {
-        ob.close();
+        if (ob != null) {
+            ob.close();
+        }
     }
 
 
