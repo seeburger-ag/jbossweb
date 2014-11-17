@@ -336,6 +336,9 @@ public class OutputBuffer extends Writer
      */
     public void flush()
         throws IOException {
+        if (response.getRequest().getUpgradeHandler() != null) {
+            return;
+        }
         doFlush(true);
     }
 
@@ -446,15 +449,31 @@ public class OutputBuffer extends Writer
         if (closed)
             return;
 
-        bb.append(b, off, len);
-        bytesWritten += len;
+        if (response.getRequest().getUpgradeHandler() != null) {
+            // If we really have something to write
+            if (len > 0) {
+                // real write to the adapter
+                ByteChunk output = new ByteChunk();
+                output.setBytes(b, off, len);
+                try {
+                    coyoteResponse.doWrite(output);
+                } catch (IOException e) {
+                    // An IOException on a write is almost always due to
+                    // the remote client aborting the request.  Wrap this
+                    // so that it can be handled better by the error dispatcher.
+                    throw new ClientAbortException(e);
+                }
+            }
+        } else {
+            bb.append(b, off, len);
+            bytesWritten += len;
 
-        // if called from within flush(), then immediately flush
-        // remaining bytes
-        if (doFlush) {
-            bb.flushBuffer();
+            // if called from within flush(), then immediately flush
+            // remaining bytes
+            if (doFlush) {
+                bb.flushBuffer();
+            }
         }
-
     }
 
 
