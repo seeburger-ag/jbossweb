@@ -1,24 +1,21 @@
-/**
- * JBoss, Home of Professional Open Source. Copyright 2012, Red Hat, Inc., and
- * individual contributors as indicated by the @author tags. See the
- * copyright.txt file in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.coyote.http11;
 
 import static org.jboss.web.CoyoteMessages.MESSAGES;
@@ -26,13 +23,14 @@ import static org.jboss.web.CoyoteMessages.MESSAGES;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.coyote.InputBuffer;
 import org.apache.coyote.Request;
+import org.apache.coyote.http11.upgrade.servlet31.ReadListener;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
@@ -65,28 +63,44 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	/**
 	 * Non blocking mode.
 	 */
-	protected boolean available = false;
+	protected boolean available = true;
 
 	/**
 	 * NIO end point.
 	 */
 	protected NioEndpoint endpoint = null;
 
+    /**
+     * NIO processor.
+     */
+    protected Http11NioProcessor processor;
+
 	/**
 	 * The completion handler used for asynchronous read operations
 	 */
 	private CompletionHandler<Integer, NioChannel> completionHandler;
 
-	/**
+    /**
+     * Semaphore used for waiting for completion handler.
+     */
+    private Semaphore semaphore = new Semaphore(1);
+    
+    /**
+     * Associated read listener for upgrade mode.
+     */
+    private ReadListener listener = null;
+    
+    /**
 	 * Create a new instance of {@code InternalNioInputBuffer}
 	 * 
 	 * @param request
 	 * @param headerBufferSize
 	 * @param endpoint
 	 */
-	public InternalNioInputBuffer(Request request, int headerBufferSize, NioEndpoint endpoint) {
+	public InternalNioInputBuffer(Http11NioProcessor processor, Request request, int headerBufferSize, NioEndpoint endpoint) {
 		super(request, headerBufferSize);
 		this.endpoint = endpoint;
+        this.processor = processor;
 		this.init();
 	}
 
@@ -103,23 +117,68 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 
 			@Override
 			public void completed(Integer nBytes, NioChannel attachment) {
-				if (nBytes < 0) {
-					failed(new ClosedChannelException(), attachment);
-					return;
-				}
+			    if (nBytes < 0) {
+			        failed(new ClosedChannelException(), attachment);
+			        return;
+			    }
+			    boolean notify = false;
 
-				if (nBytes > 0) {
-					bbuf.flip();
-					bbuf.get(buf, pos, nBytes);
-					lastValid = pos + nBytes;
-					endpoint.processChannel(attachment, SocketStatus.OPEN_READ);
-				}
+			    synchronized (completionHandler) {
+			        if (nBytes > 0) {
+			            bbuf.flip();
+			            if (nBytes > (buf.length - end)) {
+			                // An alternative is to bbuf.limit(buf.length - end) before the read,
+			                // which may be less efficient
+			                buf = new byte[buf.length];
+			                end = 0;
+			                pos = end;
+			                lastValid = pos;
+			            }
+			            bbuf.get(buf, pos, nBytes);
+			            lastValid = pos + nBytes;
+			            semaphore.release();
+			            if (/*!processor.isProcessing() && */processor.getReadNotifications()
+			                    && available) {
+			                available = false;
+			                notify = true;
+			            }
+			        }
+			    }
+			    
+			    if (notify) {
+                    if (listener == null) {
+                        if (!endpoint.processChannel(attachment, SocketStatus.OPEN_READ)) {
+                            endpoint.closeChannel(attachment);
+                        }
+                    } else {
+                        Thread thread = Thread.currentThread();
+                        ClassLoader originalClassLoader = thread.getContextClassLoader();
+                        try {
+                            thread.setContextClassLoader(listener.getClass().getClassLoader());
+                            synchronized (channel.getLock()) {
+                                listener.onDataAvailable();
+                            }
+                        } catch (Exception e) {
+                            processor.getResponse().setErrorException(e);
+                            endpoint.removeEventChannel(attachment);
+                            if (!endpoint.processChannel(attachment, SocketStatus.ERROR)) {
+                                endpoint.closeChannel(attachment);
+                            }
+                        } finally {
+                            thread.setContextClassLoader(originalClassLoader);
+                        }
+                    }
+			    }
 			}
 
 			@Override
 			public void failed(Throwable exc, NioChannel attachment) {
-				endpoint.removeEventChannel(attachment);
-				endpoint.processChannel(attachment, SocketStatus.ERROR);
+			    processor.getResponse().setErrorException(exc);
+			    endpoint.removeEventChannel(attachment);
+                semaphore.release();
+			    if (!endpoint.processChannel(attachment, SocketStatus.ERROR)) {
+			        endpoint.closeChannel(attachment);
+			    }
 			}
 		};
 	}
@@ -160,6 +219,13 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		return nonBlocking;
 	}
 
+    /**
+     * Set the associated read listener for upgrade mode.
+     */
+    public void setReadListener(ReadListener listener) {
+        this.listener = listener;
+    }
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -168,8 +234,11 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	public void recycle() {
 		super.recycle();
 		bbuf.clear();
+		listener = null;
 		channel = null;
-		available = false;
+		available = true;
+        readTimeout = (endpoint.getSoTimeout() > 0 ? endpoint.getSoTimeout()
+                : Integer.MAX_VALUE);
 	}
 
 	/*
@@ -179,8 +248,11 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 */
 	public boolean nextRequest() {
 		boolean result = super.nextRequest();
-		nonBlocking = false;
-		available = false;
+		available = true;
+        if (nonBlocking) {
+            semaphore.release();
+        }
+        nonBlocking = false;
 
 		return result;
 	}
@@ -394,107 +466,96 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 * @see org.apache.coyote.http11.AbstractInternalInputBuffer#fill()
 	 */
 	protected boolean fill() throws IOException {
-		int nRead = 0;
-		// Prepare the internal input buffer for reading
-		this.prepare();
-		// Reading from client
-		if (nonBlocking) {
-			nonBlockingRead(bbuf, readTimeout, unit);
-		} else {
-			nRead = blockingRead(bbuf, readTimeout, unit);
-			if (nRead > 0) {
-				bbuf.flip();
-				bbuf.get(buf, pos, nRead);
-				lastValid = pos + nRead;
-			} else if (nRead == NioChannel.OP_STATUS_CLOSED) {
-				throw new IOException(MESSAGES.failedRead());
-			} else if (nRead == NioChannel.OP_STATUS_READ_TIMEOUT) {
-				throw new SocketTimeoutException(MESSAGES.failedRead());
-			}
-		}
-
-		return (nRead >= 0);
+		return (fill0() >= 0);
 	}
 
-	/**
+    private int fill0() throws IOException {
+        int nRead = 0;
+        // Reading from client
+        if (nonBlocking) {
+            if (semaphore.tryAcquire()) {
+                synchronized (completionHandler) {
+                    // Prepare the internal input buffer for reading
+                    prepare();
+                    boolean available0 = available;
+                    available = false;
+                    try {
+                        channel.read(bbuf, readTimeout, TimeUnit.MILLISECONDS, channel, this.completionHandler);
+                    } catch (Exception e) {
+                        processor.getResponse().setErrorException(e);
+                        if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                            CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(e);
+                        }
+                    }
+                    nRead = lastValid - pos;
+                    if (nRead > 0) {
+                        available = false;
+                    } else {
+                        available = available0;
+                    }
+                }
+            } else {
+                synchronized (completionHandler) {
+                    if (nRead == 0 && !available) {
+                        // If there's nothing and flow control is not used, autoblock 
+                        try {
+                            if (semaphore.tryAcquire(readTimeout, unit))
+                                semaphore.release();
+                        } catch (InterruptedException e) {
+                            // Ignore
+                        }
+                        nRead = lastValid - pos;
+                    }
+                }
+            }
+        } else {
+            // Prepare the internal input buffer for reading
+            prepare();
+            try {
+                nRead = channel.readBytes(bbuf, readTimeout, unit);
+            } catch (Exception e) {
+                if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
+                    CoyoteLogger.HTTP_LOGGER.errorWithBlockingRead(e);
+                }
+            }
+            if (nRead > 0) {
+                bbuf.flip();
+                if (nRead > (buf.length - end)) {
+                    // An alternative is to bbuf.limit(buf.length - end) before the read,
+                    // which may be less efficient
+                    buf = new byte[buf.length];
+                    end = 0;
+                    pos = end;
+                    lastValid = pos;
+                }
+                bbuf.get(buf, pos, nRead);
+                lastValid = pos + nRead;
+            } else if (nRead == NioChannel.OP_STATUS_CLOSED) {
+                throw new EOFException(MESSAGES.failedRead());
+            } else if (nRead == NioChannel.OP_STATUS_READ_TIMEOUT) {
+                throw new SocketTimeoutException(MESSAGES.failedRead());
+            } else if (nRead == 0) {
+                throw new EOFException(MESSAGES.failedRead());
+            }
+        }
+        return nRead;
+    }
+
+    /**
 	 * Prepare the input buffer for reading
 	 */
 	private void prepare() {
 		bbuf.clear();
-
 		if (parsingHeader) {
 			if (lastValid == buf.length) {
-				throw new IllegalArgumentException(MESSAGES.requestHeaderTooLarge());
+				throw MESSAGES.requestHeaderTooLarge();
 			}
 		} else {
-			if (buf.length - end < 4500) {
-				// In this case, the request header was really large, so we
-				// allocate a
-				// brand new one; the old one will get GCed when subsequent
-				// requests
-				// clear all references
-				buf = new byte[buf.length];
-				end = 0;
-			}
+		    // Alternative to buffer reallocation
+		    // bbuf.limit(buf.length - end);
 			pos = end;
 			lastValid = pos;
 		}
-	}
-
-	/**
-	 * Close the channel
-	 */
-	private void close(NioChannel channel) {
-		endpoint.closeChannel(channel);
-	}
-
-	/**
-	 * Read a sequence of bytes in non-blocking mode from he current channel
-	 * 
-	 * @param bb
-	 *            the byte buffer which will contain the bytes read from the
-	 *            current channel
-	 */
-	private void nonBlockingRead(final ByteBuffer bb, long timeout, TimeUnit unit) {
-		final NioChannel ch = this.channel;
-		try {
-			ch.read(bb, ch, this.completionHandler);
-		} catch (Throwable t) {
-			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-			    CoyoteLogger.HTTP_LOGGER.errorWithNonBlockingRead(t);
-			}
-		}
-	}
-
-	/**
-	 * 
-	 */
-	protected void readAsync() throws IOException {
-		this.prepare();
-		this.nonBlockingRead(bbuf, readTimeout, unit);
-	}
-
-	/**
-	 * Read a sequence of bytes in blocking mode from he current channel
-	 * 
-	 * @param bb
-	 * @return the number of bytes read or -1 if the end of the stream was
-	 *         reached
-	 */
-	private int blockingRead(ByteBuffer bb, long timeout, TimeUnit unit) {
-		int nr = 0;
-		try {
-			long readTimeout = timeout > 0 ? timeout : Integer.MAX_VALUE;
-			nr = this.channel.readBytes(bb, readTimeout, unit);
-			if (nr < 0) {
-				close(channel);
-			}
-		} catch (Exception e) {
-			if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-                CoyoteLogger.HTTP_LOGGER.errorWithBlockingRead(e);
-			}
-		}
-		return nr;
 	}
 
 	/**
@@ -508,17 +569,28 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 		 */
 		public int doRead(ByteChunk chunk, Request req) throws IOException {
 
-			if (pos >= lastValid) {
-				if (!fill()) {
-					return -1;
-				}
-			}
+            if (pos >= lastValid) {
+                int nRead = fill0();
+                if (nRead < 0) {
+                    return -1;
+                } else if (nRead == 0) {
+                    return 0;
+                }
+            }
 
-			int length = lastValid - pos;
-			chunk.setBytes(buf, pos, length);
-			pos = lastValid;
-
-			return (length);
+            if (nonBlocking) {
+                synchronized (completionHandler) {
+                    int length = lastValid - pos;
+                    chunk.setBytes(buf, pos, length);
+                    pos = lastValid;
+                    return (length);
+                }
+		    } else {
+		        int length = lastValid - pos;
+		        chunk.setBytes(buf, pos, length);
+		        pos = lastValid;
+		        return (length);
+		    }
 		}
 	}
 }

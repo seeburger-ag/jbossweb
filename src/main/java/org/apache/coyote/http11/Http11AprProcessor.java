@@ -70,7 +70,6 @@ public class Http11AprProcessor implements ActionHook {
     protected static final boolean CHUNK_ON_CLOSE = 
         Boolean.valueOf(System.getProperty("org.apache.coyote.http11.Http11Processor.CHUNK_ON_CLOSE", "false")).booleanValue();
     
-
     // ----------------------------------------------------------- Constructors
 
 
@@ -96,6 +95,8 @@ public class Http11AprProcessor implements ActionHook {
 
         initializeFilters();
 
+        Http11AbstractProcessor.containerThread.set(Boolean.FALSE);
+
         // Cause loading of HexUtils
         int foo = HexUtils.DEC[0];
 
@@ -108,12 +109,6 @@ public class Http11AprProcessor implements ActionHook {
     // ----------------------------------------------------- Instance Variables
 
     
-    /**
-     * Thread local marker.
-     */
-    public static ThreadLocal<Boolean> containerThread = new ThreadLocal<Boolean>();
-    
-
     /**
      * Associated adapter.
      */
@@ -257,7 +252,7 @@ public class Http11AprProcessor implements ActionHook {
     /**
      * Flag to disable setting a different time-out on uploads.
      */
-    protected boolean disableUploadTimeout = false;
+    protected boolean disableUploadTimeout = true;
 
 
     /**
@@ -314,7 +309,7 @@ public class Http11AprProcessor implements ActionHook {
     protected String server = null;
 
     
-    protected boolean readNotifications = true;
+    protected boolean readNotifications = false;
     protected boolean writeNotification = false;
     protected boolean resumeNotification = false;
     protected boolean eventProcessing = true;
@@ -762,7 +757,7 @@ public class Http11AprProcessor implements ActionHook {
                 // Set error flag right away
                 error = true;
             }
-            containerThread.set(Boolean.TRUE);
+            Http11AbstractProcessor.containerThread.set(Boolean.TRUE);
             rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
             error = !adapter.event(request, response, status);
         } catch (InterruptedIOException e) {
@@ -845,8 +840,8 @@ public class Http11AprProcessor implements ActionHook {
                 }
                 request.setStartTime(System.currentTimeMillis());
                 keptAlive = true;
-                if (!disableUploadTimeout) {
-                    Socket.timeoutSet(socket, timeout * 1000);
+                if (!disableUploadTimeout && soTimeout > 0) {
+                    Socket.timeoutSet(socket, soTimeout * 1000);
                 }
                 inputBuffer.parseHeaders();
             } catch (IOException e) {
@@ -988,7 +983,7 @@ public class Http11AprProcessor implements ActionHook {
         outputBuffer.recycle();
         this.socket = 0;
         timeout = -1;
-        readNotifications = true;
+        readNotifications = false;
         writeNotification = false;
         resumeNotification = false;
         eventProcessing = true;
@@ -1250,6 +1245,7 @@ public class Http11AprProcessor implements ActionHook {
                 Socket.timeoutSet(socket, 0);
                 outputBuffer.setNonBlocking(true);
                 inputBuffer.setNonBlocking(true);
+                readNotifications = true;
             }
         } else if (actionCode == ActionCode.ACTION_EVENT_END) {
             event = false;
@@ -1271,6 +1267,13 @@ public class Http11AprProcessor implements ActionHook {
                 endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
             }
             resumeNotification = true;
+        } else if (actionCode == ActionCode.ACTION_EVENT_WAKEUP) {
+            // An event is being processed already: adding for resume will be done
+            // when the socket gets back to the poller
+            if (!eventProcessing && !resumeNotification) {
+                endpoint.getEventPoller().add(socket, timeout, false, false, true, true);
+            }
+            resumeNotification = true;
         } else if (actionCode == ActionCode.ACTION_EVENT_WRITE) {
             // An event is being processed already: adding for write will be done
             // when the socket gets back to the poller
@@ -1280,10 +1283,22 @@ public class Http11AprProcessor implements ActionHook {
             writeNotification = true;
         } else if (actionCode == ActionCode.ACTION_EVENT_TIMEOUT) {
             timeout = ((Integer) param).intValue();
+        } else if (actionCode == ActionCode.ACTION_EVENT_READ_BEGIN) {
+            Socket.timeoutSet(socket, 0);
+            inputBuffer.setNonBlocking(true);
+            readNotifications = true;
+        } else if (actionCode == ActionCode.ACTION_EVENT_WRITE_BEGIN) {
+            Socket.timeoutSet(socket, 0);
+            outputBuffer.setNonBlocking(true);
+            if (!eventProcessing && !writeNotification) {
+                endpoint.getEventPoller().add(socket, timeout, false, true, false, true);
+            }
+            writeNotification = true;
         } else if (actionCode == ActionCode.UPGRADE) {
             // Switch to raw bytes mode
             inputBuffer.removeActiveFilters();
             outputBuffer.removeActiveFilters();
+            timeout = Integer.MAX_VALUE;
         }
 
     }
@@ -1460,10 +1475,19 @@ public class Http11AprProcessor implements ActionHook {
 
         // Parse content-length header
         long contentLength = request.getContentLengthLong();
-        if (contentLength >= 0 && !contentDelimitation) {
-            inputBuffer.addActiveFilter
-                (inputFilters[Constants.IDENTITY_FILTER]);
-            contentDelimitation = true;
+        if (contentLength >= 0) {
+            if (contentDelimitation) {
+                // contentDelimitation being true at this point indicates that
+                // chunked encoding is being used but chunked encoding should
+                // not be used with a content length. RFC 2616, section 4.4,
+                // bullet 3 states Content-Length must be ignored in this case -
+                // so remove it.
+                headers.removeHeader("content-length");
+                request.setContentLength(-1);
+            } else {
+                inputBuffer.addActiveFilter(inputFilters[Constants.IDENTITY_FILTER]);
+                contentDelimitation = true;
+            }
         }
 
         MessageBytes valueMB = headers.getValue("host");
@@ -1699,6 +1723,12 @@ public class Http11AprProcessor implements ActionHook {
         }
 
         long contentLength = response.getContentLengthLong();
+        boolean connectionClosePresent = false;
+        if (Constants.DISABLE_KEEPALIVE_ON_CONCLOSE) {
+            connectionClosePresent = isConnectionClose(headers);
+            keepAlive = keepAlive && !connectionClosePresent;
+        }
+
         if (contentLength != -1) {
             headers.setValue("Content-Length").setLong(contentLength);
             outputBuffer.addActiveFilter
@@ -1738,7 +1768,9 @@ public class Http11AprProcessor implements ActionHook {
         // Connection: close header.
         keepAlive = keepAlive && !statusDropsConnection(statusCode);
         if (!keepAlive) {
-            headers.addValue(Constants.CONNECTION).setString(Constants.CLOSE);
+            if (!connectionClosePresent) {
+                headers.addValue(Constants.CONNECTION).setString(Constants.CLOSE);
+            }
         } else if (!http11 && !error) {
             headers.addValue(Constants.CONNECTION).setString(Constants.KEEPALIVE);
         }
@@ -1761,6 +1793,13 @@ public class Http11AprProcessor implements ActionHook {
 
     }
 
+    private boolean isConnectionClose(MimeHeaders headers) {
+        MessageBytes connection = headers.getValue(Constants.CONNECTION);
+        if (connection == null) {
+            return false;
+        }
+        return connection.equals(Constants.CLOSE);
+    }
 
     /**
      * Initialize standard input and output filters.
