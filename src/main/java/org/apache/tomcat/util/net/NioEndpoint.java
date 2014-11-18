@@ -28,6 +28,9 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.WritePendingException;
 import java.nio.file.StandardOpenOption;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -42,6 +45,7 @@ import javax.net.ssl.SSLHandshakeException;
 import org.apache.tomcat.util.net.NioEndpoint.Handler.SocketState;
 import org.apache.tomcat.util.net.jsse.NioJSSESocketChannelFactory;
 import org.jboss.web.CoyoteLogger;
+import sun.security.util.SecurityConstants;
 
 /**
  * {@code NioEndpoint} NIO2 endpoint, providing the following services:
@@ -1190,6 +1194,9 @@ public class NioEndpoint extends AbstractEndpoint {
 		private final String namePrefix;
 		private final int threadPriority;
 
+                private final AccessControlContext acc;
+                private final ClassLoader ccl;
+
 		/**
 		 * Create a new instance of {@code DefaultThreadFactory}
 		 * 
@@ -1201,6 +1208,19 @@ public class NioEndpoint extends AbstractEndpoint {
 			group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
 			this.namePrefix = namePrefix;
 			this.threadPriority = threadPriority;
+
+                    SecurityManager sm = System.getSecurityManager();
+                    if (sm != null) {
+                        // Calls to getContextClassLoader from this class
+                        // never trigger a security check, but we check
+                        // whether our callers have this permission anyways.
+                        sm.checkPermission(SecurityConstants.GET_CLASSLOADER_PERMISSION);
+
+                        // Fail fast
+                        sm.checkPermission(new RuntimePermission("setContextClassLoader"));
+		}
+                    this.acc = AccessController.getContext();
+                    this.ccl = Thread.currentThread().getContextClassLoader();
 		}
 
 		/**
@@ -1216,15 +1236,31 @@ public class NioEndpoint extends AbstractEndpoint {
 		/**
 		 * Create and return a new thread
 		 */
-		public Thread newThread(Runnable r) {
-			Thread thread = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
-			if (thread.isDaemon())
-				thread.setDaemon(false);
+		public Thread newThread(final Runnable r) {
+                        return AccessController.doPrivileged(new PrivilegedAction<Thread>() {
 
-			if (thread.getPriority() != this.threadPriority)
-				thread.setPriority(this.threadPriority);
+                        @Override
+                        public Thread run() {
+                            Thread thread = new Thread(group, new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    Thread.currentThread().setContextClassLoader(ccl);
+                                    r.run();
+                                }
+                            }, namePrefix + threadNumber.getAndIncrement(), 0);
+                            if (thread.isDaemon()) {
+				thread.setDaemon(false);
+                            }
+
+                            if (thread.getPriority() != threadPriority) {
+                                thread.setPriority(threadPriority);
+                            }
 			return thread;
 		}
+                    }, acc);
+
+	}
 	}
 
 	/**
