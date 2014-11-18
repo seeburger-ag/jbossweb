@@ -241,9 +241,9 @@ public class CrawlerSessionManagerValve extends ValveBase
 }
 
 class CrawlerBindingListener implements HttpSessionBindingListener, Serializable {
-    private static final long serialVersionUID = -3775762684177732270L;
-    private final transient Map<String,String> clientIpSessionId;
-    private final transient Map<String,String> sessionIdClientIp;
+    private static final long serialVersionUID = -8841692120840734349L;
+    private transient Map<String,String> clientIpSessionId;
+    private transient Map<String,String> sessionIdClientIp;
 
     CrawlerBindingListener(Map<String,String> clientIpSessionId, Map<String,String> sessionIdClientIp) {
         this.clientIpSessionId = clientIpSessionId;
@@ -257,9 +257,11 @@ class CrawlerBindingListener implements HttpSessionBindingListener, Serializable
 
     @Override
     public void valueUnbound(HttpSessionBindingEvent event) {
-        String clientIp = sessionIdClientIp.remove(event.getSession().getId());
-        if (clientIp != null) {
-            clientIpSessionId.remove(clientIp);
+        if (sessionIdClientIp != null) {
+            String clientIp = sessionIdClientIp.remove(event.getSession().getId());
+            if (clientIp != null) {
+                clientIpSessionId.remove(clientIp);
+            }
         }
     }
 }
