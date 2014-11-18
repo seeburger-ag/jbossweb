@@ -146,11 +146,11 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 			    }
 			    
 			    if (notify) {
-                    if (listener == null) {
+                    //if (listener == null) {
                         if (!endpoint.processChannel(attachment, SocketStatus.OPEN_READ)) {
                             endpoint.closeChannel(attachment);
                         }
-                    } else {
+                    /*} else {
                         Thread thread = Thread.currentThread();
                         ClassLoader originalClassLoader = thread.getContextClassLoader();
                         try {
@@ -167,7 +167,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
                         } finally {
                             thread.setContextClassLoader(originalClassLoader);
                         }
-                    }
+                    }*/
 			    }
 			}
 
