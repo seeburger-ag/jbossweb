@@ -102,4 +102,8 @@ public interface WebsocketsLogger extends BasicLogger {
     @Message(id = 8814, value = "Thread group %s not destroyed, %s threads left")
     void threadGroupNotDestryed(String name, int threadCount);
 
+    @LogMessage(level = WARN)
+    @Message(id = 8815, value = "Cannot flush batched messages after closing the session")
+    void cannotFlushOnClose();
+
 }

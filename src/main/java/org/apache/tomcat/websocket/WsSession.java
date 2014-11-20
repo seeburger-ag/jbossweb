@@ -425,6 +425,13 @@ public class WsSession implements Session {
                 return;
             }
 
+            try {
+                wsRemoteEndpoint.setBatchingAllowed(false);
+            } catch (IOException e) {
+                WebsocketsLogger.ROOT_LOGGER.flushOnCloseFailed(e);
+                fireEndpointOnError(e);
+            }
+
             state = State.CLOSING;
 
             if (!Constants.RELAXED_CLOSE_EVENT) {
@@ -455,6 +462,12 @@ public class WsSession implements Session {
 
         synchronized (stateLock) {
             if (state == State.OPEN) {
+                try {
+                    wsRemoteEndpoint.setBatchingAllowed(false);
+                } catch (IOException e) {
+                    WebsocketsLogger.ROOT_LOGGER.flushOnCloseFailed(e);
+                    fireEndpointOnError(e);
+                }
                 if (!Constants.RELAXED_CLOSE_EVENT) {
                     sendCloseMessage(closeReason);
                     fireEndpointOnClose(closeReason);
@@ -481,6 +494,20 @@ public class WsSession implements Session {
             localEndpoint.onClose(this, closeReason);
         } catch (Throwable throwable) {
             ExceptionUtils.handleThrowable(throwable);
+            localEndpoint.onError(this, throwable);
+        } finally {
+            t.setContextClassLoader(cl);
+        }
+    }
+
+
+    private void fireEndpointOnError(Throwable throwable) {
+
+        // Fire the onError event
+        Thread t = Thread.currentThread();
+        ClassLoader cl = t.getContextClassLoader();
+        t.setContextClassLoader(applicationClassLoader);
+        try {
             localEndpoint.onError(this, throwable);
         } finally {
             t.setContextClassLoader(cl);
