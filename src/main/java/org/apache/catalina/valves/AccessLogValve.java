@@ -45,6 +45,7 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.coyote.RequestInfo;
 import org.jboss.logging.Logger;
+import org.jboss.web.CatalinaLogger;
 
 
 /**
@@ -121,8 +122,6 @@ import org.jboss.logging.Logger;
 public class AccessLogValve
     extends ValveBase
     implements Lifecycle {
-
-    private static Logger log = Logger.getLogger(AccessLogValve.class);
 
     // ----------------------------------------------------- Instance Variables
 
@@ -597,7 +596,7 @@ public class AccessLogValve
             try {
                 holder.renameTo(new File(newFileName));
             } catch (Throwable e) {
-                log.error("rotate failed", e);
+                CatalinaLogger.VALVES_LOGGER.errorRotatingAccessLog(e);
             }
 
             /* Make sure date is correct */
@@ -669,7 +668,7 @@ public class AccessLogValve
                     try {
                         close();
                     } catch (Throwable e) {
-                        log.info("at least this wasn't swallowed", e);
+                        CatalinaLogger.VALVES_LOGGER.errorClosingOldAccessLog(e);
                     }
 
                     /* Make sure date is correct */
@@ -950,7 +949,11 @@ public class AccessLogValve
     protected class HostElement implements AccessLogElement {
         public void addElement(StringBuilder buf, Date date, Request request,
                 Response response, long time) {
-            buf.append(request.getRemoteHost());
+            if (resolveHosts) {
+                buf.append(request.getRemoteHost());
+            } else {
+                buf.append(request.getRemoteAddr());
+            }
         }
     }
     

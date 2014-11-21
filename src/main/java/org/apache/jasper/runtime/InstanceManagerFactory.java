@@ -20,6 +20,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import javax.servlet.ServletConfig;
 
 import org.apache.tomcat.InstanceManager;
@@ -36,7 +38,7 @@ public class InstanceManagerFactory {
         InstanceManager instanceManager = 
         	(InstanceManager) config.getServletContext().getAttribute(InstanceManager.class.getName());
         if (instanceManager == null) {
-            throw new IllegalStateException("No org.apache.tomcat.InstanceManager set in ServletContext");
+            throw MESSAGES.noInstanceManager();
         }
         return instanceManager;
     }
