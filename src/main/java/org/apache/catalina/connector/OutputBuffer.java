@@ -18,6 +18,8 @@
 package org.apache.catalina.connector;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.security.AccessController;
@@ -28,6 +30,7 @@ import java.util.Locale;
 
 import org.apache.coyote.ActionCode;
 import org.apache.coyote.Response;
+import org.apache.coyote.http11.upgrade.servlet31.WriteListener;
 import org.apache.catalina.Globals;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.C2BConverter;
@@ -143,9 +146,21 @@ public class OutputBuffer extends Writer
 
 
     /**
+     * Associated request.
+     */
+    private org.apache.catalina.connector.Response response;
+
+
+    /**
      * Suspended flag. All output bytes will be swallowed if this is true.
      */
     private boolean suspended = false;
+
+
+    /**
+     * Write listener.
+     */
+    private WriteListener writeListener = null;
 
 
     // ----------------------------------------------------------- Constructors
@@ -154,9 +169,9 @@ public class OutputBuffer extends Writer
     /**
      * Default constructor. Allocate the buffer with the default buffer size.
      */
-    public OutputBuffer() {
+    public OutputBuffer(org.apache.catalina.connector.Response response) {
 
-        this(DEFAULT_BUFFER_SIZE);
+        this(response, DEFAULT_BUFFER_SIZE);
 
     }
 
@@ -166,8 +181,9 @@ public class OutputBuffer extends Writer
      * 
      * @param size Buffer size to use
      */
-    public OutputBuffer(int size) {
+    public OutputBuffer(org.apache.catalina.connector.Response response, int size) {
 
+        this.response = response;
         bb = new ByteChunk(size);
         bb.setLimit(size);
         bb.setByteOutputChannel(this);
@@ -257,6 +273,7 @@ public class OutputBuffer extends Writer
         
         gotEnc = false;
         enc = null;
+        writeListener = null;
         
     }
 
@@ -282,6 +299,12 @@ public class OutputBuffer extends Writer
             return;
         if (suspended)
             return;
+
+        Request request = response.getRequest();
+        if (request.getUpgradeHandler() != null && request.isEventMode()) {
+            request.getEvent().close();
+            return;
+        }
 
         // If there are chars, flush all of them to the byte buffer now as bytes are used to
         // calculate the content-length (if everything fits into the byte buffer, of course).
@@ -313,6 +336,9 @@ public class OutputBuffer extends Writer
      */
     public void flush()
         throws IOException {
+        if (response.getRequest().getUpgradeHandler() != null) {
+            return;
+        }
         doFlush(true);
     }
 
@@ -423,15 +449,31 @@ public class OutputBuffer extends Writer
         if (closed)
             return;
 
-        bb.append(b, off, len);
-        bytesWritten += len;
+        if (response.getRequest().getUpgradeHandler() != null) {
+            // If we really have something to write
+            if (len > 0) {
+                // real write to the adapter
+                ByteChunk output = new ByteChunk();
+                output.setBytes(b, off, len);
+                try {
+                    coyoteResponse.doWrite(output);
+                } catch (IOException e) {
+                    // An IOException on a write is almost always due to
+                    // the remote client aborting the request.  Wrap this
+                    // so that it can be handled better by the error dispatcher.
+                    throw new ClientAbortException(e);
+                }
+            }
+        } else {
+            bb.append(b, off, len);
+            bytesWritten += len;
 
-        // if called from within flush(), then immediately flush
-        // remaining bytes
-        if (doFlush) {
-            bb.flushBuffer();
+            // if called from within flush(), then immediately flush
+            // remaining bytes
+            if (doFlush) {
+                bb.flushBuffer();
+            }
         }
-
     }
 
 
@@ -662,5 +704,23 @@ public class OutputBuffer extends Writer
         return bb.getLimit();
     }
 
+    public WriteListener getWriteListener() {
+        return writeListener;
+    }
+
+    public void setWriteListener(WriteListener writeListener) {
+        if (this.writeListener != null) {
+            throw MESSAGES.writeListenerAlreadySet();
+        }
+        if (writeListener == null) {
+            throw MESSAGES.nullListener();
+        }
+        if (!response.getRequest().isEventMode()) {
+            throw MESSAGES.cannotSetListenerWithoutUpgradeOrAsync();
+        }
+        this.writeListener = writeListener;
+        coyoteResponse.action(ActionCode.ACTION_EVENT_WRITE_BEGIN,
+                (response.getRequest().getUpgradeHandler() != null) ? writeListener : null);
+    }
 
 }
