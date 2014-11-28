@@ -68,6 +68,11 @@ final class StandardHostValve
     private static final String info =
         "org.apache.catalina.core.StandardHostValve/1.0";
 
+    /*
+    * Cache classLoader to reduce expensive calls to class.getClassLoader()
+    * */
+    private static final ClassLoader CONTEXT_CLASS_LOADER = StandardHostValve.class.getClassLoader();
+
 
     // ------------------------------------------------------------- Properties
 
@@ -183,7 +188,7 @@ final class StandardHostValve
 
         context.getThreadBindingListener().unbind();
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(CONTEXT_CLASS_LOADER);
 
     }
 
@@ -237,7 +242,7 @@ final class StandardHostValve
                     container.getLogger().error(MESSAGES.requestListenerInitException(instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
                     sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                    Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+                    Thread.currentThread().setContextClassLoader(CONTEXT_CLASS_LOADER);
                     return;
                 }
             }
@@ -300,7 +305,7 @@ final class StandardHostValve
 
         context.getThreadBindingListener().unbind();
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(CONTEXT_CLASS_LOADER);
 
     }
 
