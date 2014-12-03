@@ -622,16 +622,34 @@ public class AprEndpoint {
         if (SSLEnabled) {
 
             // SSL protocol
-            int value = SSL.SSL_PROTOCOL_ALL;
-            if ("SSLv2".equalsIgnoreCase(SSLProtocol)) {
-                value = SSL.SSL_PROTOCOL_SSLV2;
-            } else if ("SSLv3".equalsIgnoreCase(SSLProtocol)) {
-                value = SSL.SSL_PROTOCOL_SSLV3;
-            } else if ("TLSv1".equalsIgnoreCase(SSLProtocol)) {
-                value = SSL.SSL_PROTOCOL_TLSV1;
-            } else if ("SSLv2+SSLv3".equalsIgnoreCase(SSLProtocol)) {
-                value = SSL.SSL_PROTOCOL_SSLV2 | SSL.SSL_PROTOCOL_SSLV3;
+            int value = SSL.SSL_PROTOCOL_NONE;
+            if (SSLProtocol == null || SSLProtocol.length() == 0) {
+               value = SSL.SSL_PROTOCOL_ALL;
+            } else {
+               String protocols = SSLProtocol.replace(',', '+');
+               for (String protocol : protocols.split("\\+")) {
+                   protocol = protocol.trim();
+                   if ("SSLv2".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_SSLV2;
+                   } else if ("SSLv3".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_SSLV3;
+                   } else if ("TLSv1".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_TLSV1;
+                   } else if ("TLSv1.1".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_TLSV1_1;
+                   } else if ("TLSv1.2".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_TLSV1_2;
+                   } else if ("all".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_ALL;
+                   } else {
+                       // Protocol not recognized, fail to start as it is safer than
+                       // continuing with the default which might enable more than the
+                       // is required
+                       CoyoteLogger.UTIL_LOGGER.unsupportedProtocol(protocol);
+                   }
+               }
             }
+
             // Create SSL Context
             sslContext = SSLContext.make(rootPool, value, (reverseConnection) ? SSL.SSL_MODE_CLIENT : SSL.SSL_MODE_SERVER);
             // SSL renegociation
