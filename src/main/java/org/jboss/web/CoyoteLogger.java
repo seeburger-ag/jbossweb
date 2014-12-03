@@ -518,4 +518,8 @@ public interface CoyoteLogger extends BasicLogger {
     @Message(id = 3105, value = "Socket accept failed")
     void warnAcceptingSocket(@Cause Throwable exception);
 
+    @LogMessage(level = WARN)
+    @Message(id = 3106, value = "Unsupported protocol %s")
+    void unsupportedProtocol(String unsupportedProtocol);
+
 }

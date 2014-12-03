@@ -41,9 +41,12 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.PKIXBuilderParameters;
 import java.security.cert.X509CertSelector;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
-import java.util.Vector;
+import java.util.Set;
 
 import javax.net.ssl.CertPathTrustManagerParameters;
 import javax.net.ssl.KeyManager;
@@ -85,6 +88,8 @@ public class JSSESocketFactory
     extends org.apache.tomcat.util.net.ServerSocketFactory {
 
     private static final boolean RFC_5746_SUPPORTED;
+    public static final String[] DEFAULT_SERVER_PROTOCOLS;
+
     // defaults
     static String defaultProtocol = "TLS";
     static boolean defaultClientAuth = false;
@@ -98,6 +103,7 @@ public class JSSESocketFactory
     static {
         boolean result = false;
         SSLContext context;
+        String[] protocols = null;
         try {
             context = SSLContext.getInstance("TLS");
             context.init(null, null, new SecureRandom());
@@ -109,12 +115,24 @@ public class JSSESocketFactory
                     break;
                 }
             }
+            // There is no API to obtain the default server protocols and cipher
+            // suites. Having inspected the OpenJDK code there the same results
+            // can be achieved via the standard API but there is no guarantee
+            // that every JVM implementation determines the defaults the same
+            // way. Therefore the defaults are determined by creating a server
+            // socket and requested the configured values.
+            SSLServerSocket socket = (SSLServerSocket) ssf.createServerSocket();
+            // Filter out all the insecure protocols
+            protocols = filterInsecureProcotols(socket.getEnabledProtocols());
         } catch (NoSuchAlgorithmException e) {
             // Assume no RFC 5746 support
         } catch (KeyManagementException e) {
             // Assume no RFC 5746 support
+        } catch (IOException e) {
+            // Unable to determine default ciphers/protocols so use none
         }
         RFC_5746_SUPPORTED = result;
+        DEFAULT_SERVER_PROTOCOLS = protocols;
     }
 
     protected boolean initialized;
@@ -587,7 +605,9 @@ public class JSSESocketFactory
      * @param protocols the protocols to use.
      */
     protected void setEnabledProtocols(SSLServerSocket socket, String []protocols){
-        if (protocols != null) {
+        if (protocols == null) {
+            socket.setEnabledProtocols(DEFAULT_SERVER_PROTOCOLS);
+        } else {
             socket.setEnabledProtocols(protocols);
         }
     }
@@ -603,68 +623,29 @@ public class JSSESocketFactory
      * the requested protocol variants are supported
      */
     protected String[] getEnabledProtocols(SSLServerSocket socket,
-                                           String requestedProtocols){
-        String[] supportedProtocols = socket.getSupportedProtocols();
+            String requestedProtocols){
+        Set<String> supportedProtocols = new HashSet<String>();
+        for (String supportedProtocol : socket.getSupportedProtocols()) {
+            supportedProtocols.add(supportedProtocol);
+        }
 
-        String[] enabledProtocols = null;
+        if (requestedProtocols == null) {
+            return DEFAULT_SERVER_PROTOCOLS;
+        }
 
-        if (requestedProtocols != null) {
-            Vector vec = null;
-            String protocol = requestedProtocols;
-            int index = requestedProtocols.indexOf(',');
-            if (index != -1) {
-                int fromIndex = 0;
-                while (index != -1) {
-                    protocol = requestedProtocols.substring(fromIndex, index).trim();
-                    if (protocol.length() > 0) {
-                        /*
-                         * Check to see if the requested protocol is among the
-                         * supported protocols, i.e., may be enabled
-                         */
-                        for (int i=0; supportedProtocols != null
-                                     && i<supportedProtocols.length; i++) {
-                            if (supportedProtocols[i].equals(protocol)) {
-                                if (vec == null) {
-                                    vec = new Vector();
-                                }
-                                vec.addElement(protocol);
-                                break;
-                            }
-                        }
-                    }
-                    fromIndex = index+1;
-                    index = requestedProtocols.indexOf(',', fromIndex);
-                } // while
-                protocol = requestedProtocols.substring(fromIndex);
-            }
+        String[] requestedProtocolsArr = requestedProtocols.split(",");
+        List<String> enabledProtocols = new ArrayList<String>(requestedProtocolsArr.length);
 
-            if (protocol != null) {
-                protocol = protocol.trim();
-                if (protocol.length() > 0) {
-                    /*
-                     * Check to see if the requested protocol is among the
-                     * supported protocols, i.e., may be enabled
-                     */
-                    for (int i=0; supportedProtocols != null
-                                 && i<supportedProtocols.length; i++) {
-                        if (supportedProtocols[i].equals(protocol)) {
-                            if (vec == null) {
-                                vec = new Vector();
-                            }
-                            vec.addElement(protocol);
-                            break;
-                        }
-                    }
-                }
-            }           
-
-            if (vec != null) {
-                enabledProtocols = new String[vec.size()];
-                vec.copyInto(enabledProtocols);
+        for (String requestedProtocol : requestedProtocolsArr) {
+            String requestedProtocolTrim = requestedProtocol.trim();
+            if (supportedProtocols.contains(requestedProtocolTrim)) {
+                enabledProtocols.add(requestedProtocolTrim);
+            } else {
+                CoyoteLogger.UTIL_LOGGER.unsupportedProtocol(requestedProtocolTrim);
             }
         }
 
-        return enabledProtocols;
+        return enabledProtocols.toArray(new String[enabledProtocols.size()]);
     }
 
     /**
@@ -705,8 +686,7 @@ public class JSSESocketFactory
         }
 
         String requestedProtocols = (String) attributes.get("protocols");
-        setEnabledProtocols(socket, getEnabledProtocols(socket, 
-                                                         requestedProtocols));
+        socket.setEnabledProtocols(getEnabledProtocols(socket, requestedProtocols));
 
         // we don't know if client auth is needed -
         // after parsing the request we may re-handshake
@@ -755,4 +735,21 @@ public class JSSESocketFactory
         
     }
 
+    public static String[] filterInsecureProcotols(String[] protocols) {
+        if (protocols == null) {
+            return null;
+        }
+
+        List<String> result = new ArrayList<String>(protocols.length);
+        for (String protocol : protocols) {
+            if (protocol == null || protocol.toUpperCase(Locale.ENGLISH).contains("SSL")) {
+                if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+                    CoyoteLogger.UTIL_LOGGER.debug("Exclude protocol: " + protocol);
+                }
+            } else {
+                result.add(protocol);
+            }
+        }
+        return result.toArray(new String[result.size()]);
+    }
 }
