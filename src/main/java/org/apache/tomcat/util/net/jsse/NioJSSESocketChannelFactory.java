@@ -44,9 +44,12 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.PKIXBuilderParameters;
 import java.security.cert.X509CertSelector;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
-import java.util.Vector;
+import java.util.Set;
 
 import javax.net.ssl.CertPathTrustManagerParameters;
 import javax.net.ssl.KeyManager;
@@ -55,6 +58,7 @@ import javax.net.ssl.ManagerFactoryParameters;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSessionContext;
 import javax.net.ssl.TrustManager;
@@ -85,6 +89,8 @@ import org.jboss.web.CoyoteLogger;
 public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFactory {
 
 	private static final boolean RFC_5746_SUPPORTED;
+    public static final String[] DEFAULT_SERVER_PROTOCOLS;
+
 	// defaults
 	private static final String defaultProtocol = "TLS";
 	static boolean defaultClientAuth = false;
@@ -98,6 +104,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 	// private static SSLContext context;
 	static {
 		boolean result = false;
+        String[] protocols = null;
 		try {
 			SSLContext context = SSLContext.getInstance(defaultProtocol);
 			context.init(null, null, new SecureRandom());
@@ -109,12 +116,24 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 					break;
 				}
 			}
+            // There is no API to obtain the default server protocols and cipher
+            // suites. Having inspected the OpenJDK code there the same results
+            // can be achieved via the standard API but there is no guarantee
+            // that every JVM implementation determines the defaults the same
+            // way. Therefore the defaults are determined by creating a server
+            // socket and requested the configured values.
+            SSLServerSocket socket = (SSLServerSocket) ssf.createServerSocket();
+            // Filter out all the insecure protocols
+            protocols = filterInsecureProcotols(socket.getEnabledProtocols());
 		} catch (NoSuchAlgorithmException e) {
             // Assume no RFC 5746 support
 		} catch (KeyManagementException e) {
 			// Assume no RFC 5746 support
+        } catch (IOException e) {
+            // Unable to determine default ciphers/protocols so use none
 		}
 		RFC_5746_SUPPORTED = result;
+        DEFAULT_SERVER_PROTOCOLS = protocols;
 	}
 
 	protected boolean initialized;
@@ -669,9 +688,11 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 	 *            the protocols to use.
 	 */
 	protected void setEnabledProtocols(SSLEngine engine, String[] protocols) {
-		if (protocols != null) {
-			engine.setEnabledProtocols(protocols);
-		}
+        if (protocols == null) {
+            engine.setEnabledProtocols(DEFAULT_SERVER_PROTOCOLS);
+        } else {
+            engine.setEnabledProtocols(protocols);
+        }
 	}
 
 	/**
@@ -685,40 +706,31 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 	 * @return Array of SSL protocol variants to be enabled, or null if none of
 	 *         the requested protocol variants are supported
 	 */
-	protected String[] getEnabledProtocols(SSLEngine engine, String requestedProtocols) {
-		String[] supportedProtocols = engine.getSupportedProtocols();
+    protected String[] getEnabledProtocols(SSLEngine engine,
+            String requestedProtocols){
+        Set<String> supportedProtocols = new HashSet<String>();
+        for (String supportedProtocol : engine.getSupportedProtocols()) {
+            supportedProtocols.add(supportedProtocol);
+        }
 
-		String[] enabledProtocols = null;
+        if (requestedProtocols == null) {
+            return DEFAULT_SERVER_PROTOCOLS;
+        }
 
-		if (requestedProtocols != null) {
-			Vector<Object> vec = null;
-			String tab[] = requestedProtocols.trim().split("\\s*,\\s*");
-			if (tab.length > 0) {
-				vec = new Vector<Object>(tab.length);
-			}
-			for (String s : tab) {
-				if (s.length() > 0) {
-					/*
-					 * Check to see if the requested protocol is among the
-					 * supported protocols, i.e., may be already enabled
-					 */
-					for (int i = 0; supportedProtocols != null && i < supportedProtocols.length; i++) {
-						if (supportedProtocols[i].equals(s)) {
-							vec.addElement(s);
-							break;
-						}
-					}
-				}
-			}
+        String[] requestedProtocolsArr = requestedProtocols.split(",");
+        List<String> enabledProtocols = new ArrayList<String>(requestedProtocolsArr.length);
 
-			if (vec != null && !vec.isEmpty()) {
-				enabledProtocols = new String[vec.size()];
-				vec.copyInto(enabledProtocols);
-			}
-		}
+        for (String requestedProtocol : requestedProtocolsArr) {
+            String requestedProtocolTrim = requestedProtocol.trim();
+            if (supportedProtocols.contains(requestedProtocolTrim)) {
+                enabledProtocols.add(requestedProtocolTrim);
+            } else {
+                CoyoteLogger.UTIL_LOGGER.unsupportedProtocol(requestedProtocolTrim);
+            }
+        }
 
-		return enabledProtocols;
-	}
+        return enabledProtocols.toArray(new String[enabledProtocols.size()]);
+    }
 
 	/**
 	 * Configure the given SSL server socket with the requested cipher suites,
@@ -734,7 +746,7 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		engine.setUseClientMode(false);
 		String requestedProtocols = (String) attributes.get("protocols");
 
-		setEnabledProtocols(engine, getEnabledProtocols(engine, requestedProtocols));
+        engine.setEnabledProtocols(getEnabledProtocols(engine, requestedProtocols));
 
 		// we don't know if client authentication is needed -
 		// after parsing the request we may re-handshake
@@ -785,4 +797,22 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
 		}
 
 	}
+
+    public static String[] filterInsecureProcotols(String[] protocols) {
+        if (protocols == null) {
+            return null;
+        }
+
+        List<String> result = new ArrayList<String>(protocols.length);
+        for (String protocol : protocols) {
+            if (protocol == null || protocol.toUpperCase(Locale.ENGLISH).contains("SSL")) {
+                if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
+                    CoyoteLogger.UTIL_LOGGER.debug("Exclude protocol: " + protocol);
+                }
+            } else {
+                result.add(protocol);
+            }
+        }
+        return result.toArray(new String[result.size()]);
+    }
 }
