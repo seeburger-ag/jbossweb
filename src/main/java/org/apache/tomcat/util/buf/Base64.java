@@ -18,6 +18,8 @@
 
 package org.apache.tomcat.util.buf;
 
+import org.jboss.web.CoyoteLogger;
+
 
 /**
  * This class provides encode/decode for RFC 2045 Base64 as
@@ -33,10 +35,6 @@ package org.apache.tomcat.util.buf;
 
 public final class Base64 {
 
-
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( Base64.class );
-    
     static private final int  BASELENGTH         = 255;
     static private final int  LOOKUPLENGTH       = 63;
     static private final int  TWENTYFOURBITGROUP = 24;
@@ -250,8 +248,8 @@ public final class Base64 {
 	    
 	    if ( v >= 64 ) {
 		if( chars[i] != '=' )
-                    if (log.isDebugEnabled())
-                        log.debug("Wrong char in base64: " + chars[i]);
+		    if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled())
+		        CoyoteLogger.UTIL_LOGGER.debug("Wrong char in base64: " + chars[i]);
 	    } else {
 		acc= ( acc << 6 ) | v;
 		shift += 6;
