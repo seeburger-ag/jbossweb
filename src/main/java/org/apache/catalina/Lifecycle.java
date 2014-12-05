@@ -107,6 +107,18 @@ public interface Lifecycle {
     public static final String LOAD_ON_STARTUP_EVENT = "load_on_startup";
 
 
+    /**
+     * The LifecycleEvent type for the "component before unload" event.
+     */
+    public static final String BEFORE_UNLOAD_EVENT = "before_unload";
+
+
+    /**
+     * The LifecycleEvent type for the "component after unload" event.
+     */
+    public static final String AFTER_UNLOAD_EVENT = "after_unload";
+
+
     // --------------------------------------------------------- Public Methods
 
 

@@ -3906,8 +3906,23 @@ public class StandardContext
             // Stop our child containers, if any
             Container[] children = findChildren();
             for (int i = 0; i < children.length; i++) {
-                if (children[i] instanceof Lifecycle)
+                if (children[i] instanceof Lifecycle){
+                    StandardWrapper standardWrapper = null;
+                    if(children[i] instanceof StandardWrapper){
+                        standardWrapper = (StandardWrapper) children[i];
+                    }
+
+                    // it might be better to use InstanceEvent, but JBossContextConfig implements LifecycleListener
+                    if(standardWrapper != null){
+                        lifecycle.fireLifecycleEvent(Lifecycle.BEFORE_UNLOAD_EVENT, standardWrapper.getServletClass());
+                    }
+
                     ((Lifecycle) children[i]).stop();
+
+                    if(standardWrapper != null){
+                        lifecycle.fireLifecycleEvent(Lifecycle.AFTER_UNLOAD_EVENT, standardWrapper.getServletClass());
+                    }
+                }
             }
 
             // Stop our filters
