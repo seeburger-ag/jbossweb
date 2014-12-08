@@ -736,10 +736,12 @@ public class JSSESocketFactory
     }
 
     public static String[] filterInsecureProcotols(String[] protocols) {
+        // Filtering is disabled for Java 6 compatibility (TLS is nearly unusable with it)
+        return protocols;
+        /*
         if (protocols == null) {
             return null;
         }
-
         List<String> result = new ArrayList<String>(protocols.length);
         for (String protocol : protocols) {
             if (protocol == null || protocol.toUpperCase(Locale.ENGLISH).contains("SSL")) {
@@ -751,5 +753,6 @@ public class JSSESocketFactory
             }
         }
         return result.toArray(new String[result.size()]);
+        */
     }
 }
