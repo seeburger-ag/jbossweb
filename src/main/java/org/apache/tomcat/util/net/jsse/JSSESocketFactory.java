@@ -736,23 +736,24 @@ public class JSSESocketFactory
     }
 
     public static String[] filterInsecureProcotols(String[] protocols) {
-        // Filtering is disabled for Java 6 compatibility (TLS is nearly unusable with it)
-        return protocols;
-        /*
         if (protocols == null) {
             return null;
         }
+        String vmVersion = System.getProperty("java.runtime.version");
+        boolean isJava6JVM = (vmVersion != null) && vmVersion.startsWith("1.6");
         List<String> result = new ArrayList<String>(protocols.length);
         for (String protocol : protocols) {
             if (protocol == null || protocol.toUpperCase(Locale.ENGLISH).contains("SSL")) {
                 if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
                     CoyoteLogger.UTIL_LOGGER.debug("Exclude protocol: " + protocol);
                 }
+                if (protocol != null && isJava6JVM && protocol.equalsIgnoreCase("SSLv2Hello")) {
+                    result.add(protocol);
+                }
             } else {
                 result.add(protocol);
             }
         }
         return result.toArray(new String[result.size()]);
-        */
     }
 }
