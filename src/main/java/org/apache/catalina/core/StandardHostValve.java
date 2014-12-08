@@ -68,6 +68,11 @@ final class StandardHostValve
     private static final String info =
         "org.apache.catalina.core.StandardHostValve/1.0";
 
+    /*
+    * Cache classLoader to reduce expensive calls to class.getClassLoader()
+    * */
+    private static final ClassLoader CONTEXT_CLASS_LOADER = StandardHostValve.class.getClassLoader();
+
 
     // ------------------------------------------------------------- Properties
 
@@ -183,7 +188,7 @@ final class StandardHostValve
 
         context.getThreadBindingListener().unbind();
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(CONTEXT_CLASS_LOADER);
 
     }
 
@@ -237,7 +242,7 @@ final class StandardHostValve
                     container.getLogger().error(MESSAGES.requestListenerInitException(instances[i].getClass().getName()), t);
                     ServletRequest sreq = request.getRequest();
                     sreq.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
-                    Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+                    Thread.currentThread().setContextClassLoader(CONTEXT_CLASS_LOADER);
                     return;
                 }
             }
@@ -300,7 +305,7 @@ final class StandardHostValve
 
         context.getThreadBindingListener().unbind();
         // Restore the context classloader
-        Thread.currentThread().setContextClassLoader(StandardHostValve.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(CONTEXT_CLASS_LOADER);
 
     }
 
@@ -370,8 +375,10 @@ final class StandardHostValve
             if (custom(request, response, errorPage)) {
                 try {
                     response.flushBuffer();
+                } catch (ClientAbortException e) {
+                    // Ignore
                 } catch (IOException e) {
-                    container.getLogger().warn("Exception Processing " + errorPage, e);
+                    container.getLogger().warn(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), e);
                 }
             }
         } else {
@@ -417,6 +424,10 @@ final class StandardHostValve
             return;
 
         ErrorPage errorPage = context.findErrorPage(statusCode);
+        if (errorPage == null) {
+            // Look for a default error page
+            errorPage = context.findErrorPage(0);
+        }
         if (errorPage != null) {
             response.setAppCommitted(false);
             request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
@@ -445,7 +456,7 @@ final class StandardHostValve
                 } catch (ClientAbortException e) {
                     // Ignore
                 } catch (IOException e) {
-                    container.getLogger().warn("Exception Processing " + errorPage, e);
+                    container.getLogger().warn(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), e);
                 }
             }
         }
@@ -507,6 +518,7 @@ final class StandardHostValve
 
             // Reset the response (keeping the real error code and message)
             response.resetBuffer(true);
+            response.setContentLength(-1);
 
             // Forward control to the specified location
             ServletContext servletContext =
@@ -524,7 +536,7 @@ final class StandardHostValve
         } catch (Throwable t) {
 
             // Report our failure to process this custom page
-            container.getLogger().error("Exception Processing " + errorPage, t);
+            container.getLogger().error(MESSAGES.errorProcessingErrorPage(errorPage.getLocation()), t);
             return (false);
 
         }

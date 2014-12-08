@@ -23,9 +23,12 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.coyote.http11.upgrade.AbstractServletInputStream;
+import org.apache.coyote.http11.upgrade.AbstractServletOutputStream;
+import org.apache.coyote.http11.upgrade.servlet31.WebConnection;
 import org.jboss.servlet.http.HttpEvent;
 
-public class HttpEventImpl implements HttpEvent {
+public class HttpEventImpl implements HttpEvent, WebConnection {
 
     public HttpEventImpl(Request request, Response response) {
         this.request = request;
@@ -103,6 +106,14 @@ public class HttpEventImpl implements HttpEvent {
 
     public void suspend() {
         request.suspend();
+    }
+
+    public AbstractServletInputStream getInputStream() throws IOException {
+        return (AbstractServletInputStream) request.getInputStream();
+    }
+
+    public AbstractServletOutputStream getOutputStream() throws IOException {
+        return (AbstractServletOutputStream) response.getOutputStream();
     }
 
     public String toString() {
