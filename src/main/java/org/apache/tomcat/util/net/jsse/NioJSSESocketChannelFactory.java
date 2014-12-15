@@ -809,6 +809,9 @@ public class NioJSSESocketChannelFactory extends DefaultNioServerSocketChannelFa
                 if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
                     CoyoteLogger.UTIL_LOGGER.debug("Exclude protocol: " + protocol);
                 }
+                if (protocol != null && protocol.equalsIgnoreCase("SSLv2Hello")) {
+                    result.add(protocol);
+                }
             } else {
                 result.add(protocol);
             }
