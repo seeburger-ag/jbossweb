@@ -17,6 +17,8 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -25,6 +27,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import org.apache.catalina.util.IOTools;
+
 /**
  * The entry point to SSI processing. This class does the actual parsing,
  * delegating to the SSIMediator, SSICommand, and SSIExternalResolver as
@@ -143,12 +146,11 @@ public class SSIProcessor {
                             commands.get(strCmd.toLowerCase(Locale.ENGLISH));
                         String errorMessage = null;
                         if (ssiCommand == null) {
-                            errorMessage = "Unknown command: " + strCmd;
+                            errorMessage = MESSAGES.ssiUnknownCommand(strCmd);
                         } else if (paramValues == null) {
-                            errorMessage = "Error parsing directive parameters.";
+                            errorMessage = MESSAGES.ssiParsingErrorNoParameters(strCmd);
                         } else if (paramNames.length != paramValues.length) {
-                            errorMessage = "Parameter names count does not match parameter values count on command: "
-                                    + strCmd;
+                            errorMessage = MESSAGES.ssiParsingErrorBadParameterCount(strCmd);
                         } else {
                             // don't process the command if we are processing
                             // conditional

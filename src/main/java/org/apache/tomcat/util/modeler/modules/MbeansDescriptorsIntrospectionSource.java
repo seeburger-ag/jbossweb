@@ -33,12 +33,10 @@ import org.apache.tomcat.util.modeler.ManagedBean;
 import org.apache.tomcat.util.modeler.OperationInfo;
 import org.apache.tomcat.util.modeler.ParameterInfo;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.CoyoteLogger;
 
 public class MbeansDescriptorsIntrospectionSource extends ModelerSource
 {
-    private static Logger log = Logger.getLogger(MbeansDescriptorsIntrospectionSource.class);
 
     Registry registry;
     String location;
@@ -88,7 +86,7 @@ public class MbeansDescriptorsIntrospectionSource extends ModelerSource
             mbeans.add(managed);
 
         } catch( Exception ex ) {
-            log.error( "Error reading descriptors ", ex);
+            CoyoteLogger.MODELER_LOGGER.errorReadingDescriptors(ex);
         }
     }
 
@@ -211,8 +209,8 @@ public class MbeansDescriptorsIntrospectionSource extends ModelerSource
             if( Modifier.isStatic(methods[j].getModifiers()))
                 continue;
             if( ! Modifier.isPublic( methods[j].getModifiers() ) ) {
-                if( log.isDebugEnabled())
-                    log.debug("Not public " + methods[j] );
+                if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled())
+                    CoyoteLogger.MODELER_LOGGER.debug("Not public " + methods[j] );
                 continue;
             }
             if( methods[j].getDeclaringClass() == Object.class )
@@ -222,8 +220,8 @@ public class MbeansDescriptorsIntrospectionSource extends ModelerSource
             if( name.startsWith( "get" ) && params.length==0) {
                 Class ret=methods[j].getReturnType();
                 if( ! supportedType( ret ) ) {
-                    if( log.isDebugEnabled() )
-                        log.debug("Unsupported type " + methods[j]);
+                    if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() )
+                        CoyoteLogger.MODELER_LOGGER.debug("Unsupported type " + methods[j]);
                     continue;
                 }
                 name=unCapitalize( name.substring(3));
@@ -234,8 +232,8 @@ public class MbeansDescriptorsIntrospectionSource extends ModelerSource
             } else if( name.startsWith( "is" ) && params.length==0) {
                 Class ret=methods[j].getReturnType();
                 if( Boolean.TYPE != ret  ) {
-                    if( log.isDebugEnabled() )
-                        log.debug("Unsupported type " + methods[j] + " " + ret );
+                    if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() )
+                        CoyoteLogger.MODELER_LOGGER.debug("Unsupported type " + methods[j] + " " + ret );
                     continue;
                 }
                 name=unCapitalize( name.substring(2));
@@ -246,8 +244,8 @@ public class MbeansDescriptorsIntrospectionSource extends ModelerSource
 
             } else if( name.startsWith( "set" ) && params.length==1) {
                 if( ! supportedType( params[0] ) ) {
-                    if( log.isDebugEnabled() )
-                        log.debug("Unsupported type " + methods[j] + " " + params[0]);
+                    if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() )
+                        CoyoteLogger.MODELER_LOGGER.debug("Unsupported type " + methods[j] + " " + params[0]);
                     continue;
                 }
                 name=unCapitalize( name.substring(3));
@@ -329,7 +327,7 @@ public class MbeansDescriptorsIntrospectionSource extends ModelerSource
                     ai.setSetMethod( sm.getName());
                 }
                 ai.setDescription("Introspected attribute " + name);
-                if( log.isDebugEnabled()) log.debug("Introspected attribute " +
+                if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled()) CoyoteLogger.MODELER_LOGGER.debug("Introspected attribute " +
                         name + " " + gm + " " + sm);
                 if( gm==null )
                     ai.setReadable(false);
@@ -358,7 +356,7 @@ public class MbeansDescriptorsIntrospectionSource extends ModelerSource
                     }
                     mbean.addOperation(op);
                 } else {
-                    log.error("Null arg " + name + " " + m );
+                    CoyoteLogger.MODELER_LOGGER.debug("Null arg " + name + " " + m );
                 }
             }
 
@@ -384,13 +382,13 @@ public class MbeansDescriptorsIntrospectionSource extends ModelerSource
             }
             */
             
-            if( log.isDebugEnabled())
-                log.debug("Setting name: " + type );
+            if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled())
+                CoyoteLogger.MODELER_LOGGER.debug("Setting name: " + type );
             mbean.setName( type );
 
             return mbean;
         } catch( Exception ex ) {
-            ex.printStackTrace();
+            CoyoteLogger.MODELER_LOGGER.errorReadingDescriptors(ex);
             return null;
         }
     }
