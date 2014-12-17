@@ -318,6 +318,11 @@ public class SingleSignOn
                 && (!Session.SESSION_PASSIVATED_EVENT.equals(event.getType())))
             return;
 
+        // We don't care about passivation events caused by replication
+        if (Session.SESSION_PASSIVATED_EVENT.equals(event.getType()) && (event.getData() != null)
+                && event.getData().equals("REPLICATION"))
+            return;
+
         // Look up the single session id associated with this session (if any)
         Session session = event.getSession();
 
