@@ -870,6 +870,7 @@ public class Http11NioProcessor extends Http11AbstractProcessor {
             // Switch to raw bytes mode
             inputBuffer.removeActiveFilters();
             outputBuffer.removeActiveFilters();
+            timeout = Integer.MAX_VALUE;
         }
 	}
 
