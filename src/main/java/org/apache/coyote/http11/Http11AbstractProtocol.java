@@ -1,24 +1,21 @@
-/**
- * JBoss, Home of Professional Open Source. Copyright 2011, Red Hat, Inc., and
- * individual contributors as indicated by the @author tags. See the
- * copyright.txt file in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.coyote.http11;
 
 import java.util.HashMap;
@@ -75,7 +72,7 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	/**
 	 * Maximum size of the HTTP message header.
 	 */
-	protected int maxHttpHeaderSize = 8 * 1024;
+	protected int maxHttpHeaderSize = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_HEADER_SIZE", "8192")).intValue();
 	/**
 	 * If true, the regular socket timeout will be used for the full duration of
 	 * the connection.
@@ -84,10 +81,10 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	/**
 	 * Integrated compression support.
 	 */
-	protected String compression = "off";
-	protected String noCompressionUserAgents = null;
-	protected String compressableMimeTypes = "text/html,text/xml,text/plain";
-	protected int compressionMinSize = 2048;
+	protected String compression = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION", "off");
+	protected String noCompressionUserAgents = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_RESTRICTED_UA");
+	protected String compressableMimeTypes = System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIME_TYPES", "text/html,text/xml,text/plain");
+	protected int compressionMinSize = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIN_SIZE", "2048")).intValue();
 	protected String protocol = null;
 	/**
 	 * User agents regular expressions which should be restricted to HTTP/1.0
@@ -98,9 +95,7 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	 * Maximum number of requests which can be performed over a keepalive
 	 * connection. The default is the same as for Apache HTTP Server.
 	 */
-	protected int maxKeepAliveRequests = Integer.valueOf(
-			System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS",
-					"100")).intValue();
+	protected int maxKeepAliveRequests = Integer.valueOf(System.getProperty("org.apache.coyote.http11.Http11Protocol.MAX_KEEP_ALIVE_REQUESTS", "-1")).intValue();
 
 	protected String domain;
 	protected ObjectName oname;
@@ -109,7 +104,7 @@ public abstract class Http11AbstractProtocol implements ProtocolHandler, MBeanRe
 	/**
 	 * Server header.
 	 */
-	protected String server;
+	protected String server = System.getProperty("org.apache.coyote.http11.Http11Protocol.SERVER");
 	/**
 	 * This timeout represents the socket timeout which will be used while the
 	 * adapter execution is in progress, unless disableUploadTimeout is set to

@@ -17,7 +17,10 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.PrintWriter;
+
 /**
  * Implements the Server-side #exec command
  * 
@@ -45,7 +48,7 @@ public final class SSIConfig implements SSICommand {
             } else if (paramName.equalsIgnoreCase("timefmt")) {
                 ssiMediator.setConfigTimeFmt(substitutedValue);
             } else {
-                ssiMediator.log("#config--Invalid attribute: " + paramName);
+                ssiMediator.log(MESSAGES.ssiInvalidAttribute("config", paramName));
                 //We need to fetch this value each time, since it may change
                 // during the
                 // loop

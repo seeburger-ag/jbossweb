@@ -17,6 +17,8 @@
 
 package org.apache.jasper.servlet;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -118,9 +120,7 @@ public class JasperLoader extends URLClassLoader {
                                 dot));
                     }
                 } catch (SecurityException se) {
-                    String error = "Security Violation, attempt to use "
-                            + "Restricted Class: " + name;
-                    throw new ClassNotFoundException(error, se);
+                    throw new ClassNotFoundException(MESSAGES.securityExceptionLoadingClass(name), se);
                 }
             }
         }

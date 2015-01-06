@@ -17,6 +17,8 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
@@ -29,6 +31,7 @@ import org.apache.catalina.util.DateTool;
 import org.apache.catalina.util.Strftime;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.tomcat.util.http.HttpMessages;
+
 /**
  * Allows the different SSICommand implementations to share data/talk to each
  * other
@@ -41,7 +44,7 @@ import org.apache.tomcat.util.http.HttpMessages;
  * @version $Revision: 1473 $, $Date: 2010-05-17 19:46:58 +0200 (Mon, 17 May 2010) $
  */
 public class SSIMediator {
-    protected final static String DEFAULT_CONFIG_ERR_MSG = "[an error occurred while processing this directive]";
+    protected final static String DEFAULT_CONFIG_ERR_MSG = MESSAGES.ssiDirectiveError();
     protected final static String DEFAULT_CONFIG_TIME_FMT = "%A, %d-%b-%Y %T %Z";
     protected final static String DEFAULT_CONFIG_SIZE_FMT = "abbrev";
     protected static URLEncoder urlEncoder;
@@ -305,7 +308,7 @@ public class SSIMediator {
             retVal = HttpMessages.filter(value);
         } else {
             //This shouldn't be possible
-            throw new IllegalArgumentException("Unknown encoding: " + encoding);
+            throw new IllegalArgumentException(MESSAGES.ssiUnknownEncoding(encoding));
         }
         return retVal;
     }
