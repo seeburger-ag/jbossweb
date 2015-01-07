@@ -567,57 +567,6 @@ public class AprEndpoint {
             }
         }
 
-        // Sendfile usage on systems which don't support it cause major problems
-        if (useSendfile && !Library.APR_HAS_SENDFILE) {
-            useSendfile = false;
-        }
-
-        long inetAddress = Address.info(addressStr, family,
-                port, 0, rootPool);
-        
-        if (!reverseConnection) {
-            // Create the APR server socket
-            serverSock = Socket.create(Address.getInfo(inetAddress).family, Socket.SOCK_STREAM,
-                    Socket.APR_PROTO_TCP, rootPool);
-            if (OS.IS_UNIX) {
-                Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);
-            }
-            // Deal with the firewalls that tend to drop the inactive sockets
-            Socket.optSet(serverSock, Socket.APR_SO_KEEPALIVE, 1);
-            // Bind the server socket
-            int ret = Socket.bind(serverSock, inetAddress);
-            if (ret != 0) {
-                throw MESSAGES.socketBindFailed(ret, Error.strerror(ret));
-            }
-            // Start listening on the server socket
-            ret = Socket.listen(serverSock, backlog);
-            if (ret != 0) {
-                throw MESSAGES.socketListenFailed(ret, Error.strerror(ret));
-            }
-            if (OS.IS_WIN32 || OS.IS_WIN64) {
-                // On Windows set the reuseaddr flag after the bind/listen
-                Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);
-            }
-
-            // Delay accepting of new connections until data is available
-            // Only Linux kernels 2.4 + have that implemented
-            // on other platforms this call is noop and will return APR_ENOTIMPL.
-            if (deferAccept && (Socket.optSet(serverSock, Socket.APR_TCP_DEFER_ACCEPT, 1) == Status.APR_ENOTIMPL)) {
-                deferAccept = false;
-            }
-        } else {
-            /* Initialize the SockList */
-            listsock = new ListSock[10];
-            for (int i=0; i<listsock.length; i++) {
-                listsock[i] = new ListSock();
-                listsock[i].port = port + i;
-                listsock[i].count = 0;
-            }
-            serverAddress = inetAddress;
-            serverAddressFamily = family;
-            deferAccept = false;
-        }
-
         // Initialize SSL if needed
         if (SSLEnabled) {
 
@@ -686,6 +635,57 @@ public class AprEndpoint {
 
         }
         
+        // Sendfile usage on systems which don't support it cause major problems
+        if (useSendfile && !Library.APR_HAS_SENDFILE) {
+            useSendfile = false;
+        }
+
+        long inetAddress = Address.info(addressStr, family,
+                port, 0, rootPool);
+        
+        if (!reverseConnection) {
+            // Create the APR server socket
+            serverSock = Socket.create(Address.getInfo(inetAddress).family, Socket.SOCK_STREAM,
+                    Socket.APR_PROTO_TCP, rootPool);
+            if (OS.IS_UNIX) {
+                Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);
+            }
+            // Deal with the firewalls that tend to drop the inactive sockets
+            Socket.optSet(serverSock, Socket.APR_SO_KEEPALIVE, 1);
+            // Bind the server socket
+            int ret = Socket.bind(serverSock, inetAddress);
+            if (ret != 0) {
+                throw MESSAGES.socketBindFailed(ret, Error.strerror(ret));
+            }
+            // Start listening on the server socket
+            ret = Socket.listen(serverSock, backlog);
+            if (ret != 0) {
+                throw MESSAGES.socketListenFailed(ret, Error.strerror(ret));
+            }
+            if (OS.IS_WIN32 || OS.IS_WIN64) {
+                // On Windows set the reuseaddr flag after the bind/listen
+                Socket.optSet(serverSock, Socket.APR_SO_REUSEADDR, 1);
+            }
+
+            // Delay accepting of new connections until data is available
+            // Only Linux kernels 2.4 + have that implemented
+            // on other platforms this call is noop and will return APR_ENOTIMPL.
+            if (deferAccept && (Socket.optSet(serverSock, Socket.APR_TCP_DEFER_ACCEPT, 1) == Status.APR_ENOTIMPL)) {
+                deferAccept = false;
+            }
+        } else {
+            /* Initialize the SockList */
+            listsock = new ListSock[10];
+            for (int i=0; i<listsock.length; i++) {
+                listsock[i] = new ListSock();
+                listsock[i].port = port + i;
+                listsock[i].count = 0;
+            }
+            serverAddress = inetAddress;
+            serverAddressFamily = family;
+            deferAccept = false;
+        }
+
         initialized = true;
 
     }
@@ -796,7 +796,9 @@ public class AprEndpoint {
         Pool.destroy(serverSockPool);
         serverSockPool = 0;
         // Close server socket
-        Socket.close(serverSock);
+        if (serverSock != 0) {
+            Socket.close(serverSock);
+        }
         serverSock = 0;
         sslContext = 0;
         // Close all APR memory pools and resources
