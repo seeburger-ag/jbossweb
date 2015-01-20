@@ -573,7 +573,10 @@ public class AprEndpoint {
             // SSL protocol
             int value = SSL.SSL_PROTOCOL_NONE;
             if (SSLProtocol == null || SSLProtocol.length() == 0) {
-               value = SSL.SSL_PROTOCOL_ALL;
+               if (SSL.version() < 0x1000100fL)
+                   value |= SSL.SSL_PROTOCOL_TLSV1;
+               else
+                   value |= SSL.SSL_PROTOCOL_ALL;
             } else {
                String protocols = SSLProtocol.replace(',', '+');
                for (String protocol : protocols.split("\\+")) {
@@ -589,7 +592,10 @@ public class AprEndpoint {
                    } else if ("TLSv1.2".equalsIgnoreCase(protocol)) {
                        value |= SSL.SSL_PROTOCOL_TLSV1_2;
                    } else if ("all".equalsIgnoreCase(protocol)) {
-                       value |= SSL.SSL_PROTOCOL_ALL;
+                       if (SSL.version() < 0x1000100fL)
+                           value = SSL.SSL_PROTOCOL_TLSV1;
+                       else
+                           value = SSL.SSL_PROTOCOL_ALL;
                    } else {
                        // Protocol not recognized, fail to start as it is safer than
                        // continuing with the default which might enable more than the
