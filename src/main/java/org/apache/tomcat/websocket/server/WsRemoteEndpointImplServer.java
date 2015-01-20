@@ -101,12 +101,14 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
                         }
                     }
                     if (complete) {
-                        wsWriteTimeout.unregister(this);
-                        clearHandler(null, useDispatch);
-                        // Explicit flush for compatibility with buffered streams
                         sos.flush();
-                        if (close) {
-                            close();
+                        complete = sos.isReady();
+                        if (complete) {
+                            wsWriteTimeout.unregister(this);
+                            clearHandler(null, useDispatch);
+                            if (close) {
+                                close();
+                            }
                         }
                         break;
                     }
