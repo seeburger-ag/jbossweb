@@ -209,6 +209,9 @@ public class WsWebSocketContainer
 
         boolean secure = false;
 
+        // Entropy can cause a delay, so initialize here at least one random
+        Util.generateMask();
+
         String scheme = path.getScheme();
         if (!("ws".equalsIgnoreCase(scheme) ||
                 "wss".equalsIgnoreCase(scheme))) {
