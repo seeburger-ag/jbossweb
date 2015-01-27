@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.bayeux.request;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -72,9 +74,9 @@ public class MetaUnsubscribeRequest extends RequestBase implements BayeuxRequest
      */
     public HttpError validate() {
         if(clientId==null|| (!this.getTomcatBayeux().hasClient(clientId)))
-            return new HttpError(400,"Client Id not valid.", null);
+            return new HttpError(400, MESSAGES.invalidBayeuxClientId(), null);
         if (subscription==null||subscription.length()==0)
-            return new HttpError(400,"Subscription missing.",null);
+            return new HttpError(400, MESSAGES.noBayeuxSubscription(), null);
         return null;//no error
     }
 
