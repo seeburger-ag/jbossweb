@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.util.buf;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -443,8 +445,7 @@ public final class ByteChunk implements Cloneable, Serializable {
     {
 	//assert out!=null
 	if( out==null ) {
-	    throw new IOException( "Buffer overflow, no sink " + limit + " " +
-				   buff.length  );
+	    throw new IOException(MESSAGES.bufferOverflow(buff.length, limit));
 	}
 	out.realWriteBytes( buff, start, end-start );
 	end=start;

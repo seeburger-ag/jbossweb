@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+import org.jboss.web.CoyoteLogger;
+
 /**
  * This class implements a String cache for ByteChunk and CharChunk.
  *
@@ -30,10 +32,6 @@ import java.util.TreeMap;
 public class StringCache {
 
 
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( StringCache.class );
-    
-    
     // ------------------------------------------------------- Static Variables
 
     
@@ -278,9 +276,9 @@ public class StringCache {
                         bcCount = 0;
                         bcStats.clear();
                         bcCache = tempbcCache;
-                        if (log.isDebugEnabled()) {
+                        if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
                             long t2 = System.currentTimeMillis();
-                            log.debug("ByteCache generation time: " + (t2 - t1) + "ms");
+                            CoyoteLogger.UTIL_LOGGER.debug("ByteCache generation time: " + (t2 - t1) + "ms");
                         }
                     } else {
                         bcCount++;
@@ -392,9 +390,9 @@ public class StringCache {
                         ccCount = 0;
                         ccStats.clear();
                         ccCache = tempccCache;
-                        if (log.isDebugEnabled()) {
+                        if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled()) {
                             long t2 = System.currentTimeMillis();
-                            log.debug("CharCache generation time: " + (t2 - t1) + "ms");
+                            CoyoteLogger.UTIL_LOGGER.debug("CharCache generation time: " + (t2 - t1) + "ms");
                         }
                     } else {
                         ccCount++;

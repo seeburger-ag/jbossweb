@@ -1,5 +1,7 @@
 package org.apache.tomcat.util.json;
 
+import static org.jboss.web.JSONMessages.MESSAGES;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -74,7 +76,7 @@ public class JSONTokener {
      */
     public void back() throws JSONException {
         if (useLastChar || index <= 0) {
-            throw new JSONException("Stepping back two steps is not supported");
+            throw new JSONException(MESSAGES.tokenerStepBack());
         }
         index -= 1;
         useLastChar = true;
@@ -157,8 +159,7 @@ public class JSONTokener {
     public char next(char c) throws JSONException {
         char n = next();
         if (n != c) {
-            throw syntaxError("Expected '" + c + "' and instead saw '" +
-                    n + "'");
+            throw syntaxError(MESSAGES.tokenerBadChar(c, n));
         }
         return n;
     }
@@ -198,7 +199,7 @@ public class JSONTokener {
          this.index += pos;
 
          if (pos < n) {
-             throw syntaxError("Substring bounds error");
+             throw syntaxError(MESSAGES.tokenerSubstring());
          }
 
          this.lastChar = buffer[n - 1];
@@ -241,7 +242,7 @@ public class JSONTokener {
             case 0:
             case '\n':
             case '\r':
-                throw syntaxError("Unterminated string");
+                throw syntaxError(MESSAGES.tokenerUnterminatedString());
             case '\\':
                 c = next();
                 switch (c) {
@@ -366,7 +367,7 @@ public class JSONTokener {
 
         s = sb.toString().trim();
         if (s.equals("")) {
-            throw syntaxError("Missing value");
+            throw syntaxError(MESSAGES.tokenerMissingValue());
         }
         return JSONObject.stringToValue(s);
     }
@@ -407,16 +408,7 @@ public class JSONTokener {
      * @return  A JSONException object, suitable for throwing
      */
     public JSONException syntaxError(String message) {
-        return new JSONException(message + toString());
+        return new JSONException(message + index);
     }
 
-
-    /**
-     * Make a printable string of this JSONTokener.
-     *
-     * @return " at character [this.index]"
-     */
-    public String toString() {
-        return " at character " + index;
-    }
 }

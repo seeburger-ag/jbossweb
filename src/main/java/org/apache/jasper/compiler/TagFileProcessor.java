@@ -123,15 +123,15 @@ class TagFileProcessor {
 
         private Vector variableVector;
 
-        private static final String ATTR_NAME = "the name attribute of the attribute directive";
+        private static final String ATTR_NAME = MESSAGES.tagFileProcessorAttrName();
 
-        private static final String VAR_NAME_GIVEN = "the name-given attribute of the variable directive";
+        private static final String VAR_NAME_GIVEN = MESSAGES.tagFileProcessorVarNameGiven();
 
-        private static final String VAR_NAME_FROM = "the name-from-attribute attribute of the variable directive";
+        private static final String VAR_NAME_FROM = MESSAGES.tagFileProcessorVarNameFrom();
 
-        private static final String VAR_ALIAS = "the alias attribute of the variable directive";
+        private static final String VAR_ALIAS = MESSAGES.tagFileProcessorVarAlias();
 
-        private static final String TAG_DYNAMIC = "the dynamic-attributes attribute of the tag directive";
+        private static final String TAG_DYNAMIC = MESSAGES.tagFileProcessorTagDynamic();
 
         private HashMap nameTable = new HashMap();
 

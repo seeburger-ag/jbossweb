@@ -66,6 +66,8 @@ public class Connector
     protected static final boolean X_POWERED_BY = 
         Boolean.valueOf(System.getProperty("org.apache.catalina.connector.X_POWERED_BY", "false")).booleanValue();
     
+    protected static final boolean ALLOW_TRACE = 
+            Boolean.valueOf(System.getProperty("org.apache.catalina.connector.ALLOW_TRACE", "false")).booleanValue();
 
     protected static final String URI_ENCODING = 
         System.getProperty("org.apache.catalina.connector.URI_ENCODING");
@@ -102,7 +104,7 @@ public class Connector
     /**
      * Do we allow TRACE ?
      */
-    protected boolean allowTrace = false;
+    protected boolean allowTrace = ALLOW_TRACE;
 
 
     /**
@@ -214,7 +216,8 @@ public class Connector
     /**
      * Flag to use IP-based virtual hosting.
      */
-    protected boolean useIPVHosts = false;
+    protected boolean useIPVHosts = 
+            Boolean.valueOf(System.getProperty("org.apache.catalina.connector.USE_IP_PORT_FOR_ALIAS", "false")).booleanValue();
 
     /**
      * The background thread.
@@ -549,6 +552,8 @@ public class Connector
         if ("org.apache.coyote.http11.Http11Protocol".equals
             (getProtocolHandlerClassName())
             || "org.apache.coyote.http11.Http11AprProtocol".equals
+            (getProtocolHandlerClassName())
+            || "org.apache.coyote.http11.Http11NioProtocol".equals
             (getProtocolHandlerClassName())) {
             return "HTTP/1.1";
         } else if ("org.apache.coyote.ajp.AjpProtocol".equals
@@ -583,8 +588,21 @@ public class Connector
             }
         } else {
             if ("HTTP/1.1".equals(protocol) || "http".equals(protocol)) {
+                /*try {
+                    Class.forName("java.nio.channels.CompletionHandler");
+                    setProtocolHandlerClassName
+                        ("org.apache.coyote.http11.Http11NioProtocol");
+                } catch (Exception e) {
+                    // NIO 2 is not available
+                    setProtocolHandlerClassName
+                        ("org.apache.coyote.http11.Http11Protocol");
+                    CatalinaLogger.CONNECTOR_LOGGER.usingJavaIoConnector();
+                }*/
                 setProtocolHandlerClassName
-                    ("org.apache.coyote.http11.Http11NioProtocol");
+                    ("org.apache.coyote.http11.Http11Protocol");
+            } else if ("AJP/1.3".equals(protocol) || "ajp".equals(protocol)) {
+                setProtocolHandlerClassName
+                    ("org.apache.coyote.ajp.AjpProtocol");
             } else if (protocol != null) {
                 setProtocolHandlerClassName(protocol);
             }
