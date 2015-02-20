@@ -13,6 +13,8 @@
  */
 package org.apache.catalina.filters;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -613,7 +615,7 @@ public class RemoteIpFilter implements Filter {
             try {
                 patternsList.add(Pattern.compile(pattern));
             } catch (PatternSyntaxException e) {
-                throw new IllegalArgumentException("Illegal pattern syntax '" + pattern + "'", e);
+                throw MESSAGES.remoteIpValvePatternError(pattern, e);
             }
         }
         return patternsList.toArray(new Pattern[0]);
@@ -844,7 +846,7 @@ public class RemoteIpFilter implements Filter {
             try {
                 setHttpServerPort(Integer.parseInt(filterConfig.getInitParameter(HTTP_SERVER_PORT_PARAMETER)));
             } catch (NumberFormatException e) {
-                throw new NumberFormatException("Illegal " + HTTP_SERVER_PORT_PARAMETER + " : " + e.getMessage());
+                throw MESSAGES.invalidHttpPortNumber(filterConfig.getInitParameter(HTTP_SERVER_PORT_PARAMETER));
             }
         }
         
@@ -852,7 +854,7 @@ public class RemoteIpFilter implements Filter {
             try {
                 setHttpsServerPort(Integer.parseInt(filterConfig.getInitParameter(HTTPS_SERVER_PORT_PARAMETER)));
             } catch (NumberFormatException e) {
-                throw new NumberFormatException("Illegal " + HTTPS_SERVER_PORT_PARAMETER + " : " + e.getMessage());
+                throw MESSAGES.invalidHttpsPortNumber(filterConfig.getInitParameter(HTTPS_SERVER_PORT_PARAMETER));
             }
         }
     }

@@ -406,28 +406,48 @@ public class ChatServlet
     asynchronously in the most efficient way. Instead of sending a large response using
     blocking writes, it is possible to write content to a static file, and write it
     using a sendfile code. A caching valve could take advantage of this to cache the
-    response data in a file rather than store it in memory. Sendfile support is
-    available if the request attribute <code>org.apache.tomcat.sendfile.support</code>
-    is set to <code>Boolean.TRUE</code>.
+    response data in a file rather than store it in memory.
   </p>
   
   <p>
     Any servlet can instruct JBoss Web to perform a sendfile call by setting the appropriate
     response attributes. It is also necessary to correctly set the content length
-    for the response. When using sendfile, it is best to ensure that neither the
+    for the response. When using sendfile, it is usually necessary to ensure that neither the
     request or response have been wrapped, since as the response body will be sent later
-    by the connector itself, it cannot be filtered. Other than setting the 3 needed 
-    request attributes, the servlet should not send any response data, but it may use
-    any method which will result in modifying the response header (like setting cookies).
+    by the connector itself, it cannot be filtered. The servlet should not send any response data, 
+    but it may use any method which will result in modifying the response header (like setting cookies).
   </p>
   
-  <ul>
-  <li>org.apache.tomcat.sendfile.filename: Canonical filename of the file which will be sent as
-      a String</li>
-  <li>org.apache.tomcat.sendfile.start: Start offset as a Long</li>
-  <li>org.apache.tomcat.sendfile.end: End offset as a Long</li>
-  </ul>
+  <p>
+    The Servlet should first check if the request object can be cast to the internal 
+    org.apache.catalina.connector.RequestFacade type, then use the hasSendfile() method to
+    determine if the connector used supports sendfile and has it enabled. The file content is then
+    sent using the sendFile(String path, String absolutePath, long start, long end) method on the
+    response, after casting it to the org.apache.catalina.connector.ResponseFacade type.
+    Path is the pathname of the file relative to the webapp root if is located inside it,
+    absolutePath allows sending any other file from the system (path should in this case be set 
+    to null). Start and end specify the start and end offset of the data that should be sent.
+  </p>
 
+  </section>
+
+  <section name="Tomcat Websockets API">
+
+  <p>
+    JBoss Web supports the Apache Tomcat 7 Websockets API which provides a ready to use
+    toolkit for building simple websockets enabled web applications.
+  </p>
+  
+  </section>
+
+  <section name="Websockets 1.0 API">
+
+  <p>
+    JBoss Web supports the Websockets 1.0 API specification included in Java EE 7. To enable it 
+    in your application, add a JAR declaring the org.apache.tomcat.websocket.server.WsSci 
+    Servlet container initializer.
+  </p>
+  
   </section>
 
 </body>

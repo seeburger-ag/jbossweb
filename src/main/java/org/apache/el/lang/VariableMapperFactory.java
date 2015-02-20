@@ -17,6 +17,8 @@
 
 package org.apache.el.lang;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 
@@ -27,7 +29,7 @@ public class VariableMapperFactory extends VariableMapper {
 
     public VariableMapperFactory(VariableMapper target) {
         if (target == null) {
-            throw new NullPointerException("Target VariableMapper cannot be null");
+            throw MESSAGES.invalidNullVariableMapper();
         }
         this.target = target;
     }
@@ -50,6 +52,6 @@ public class VariableMapperFactory extends VariableMapper {
 
     @Override
     public ValueExpression setVariable(String variable, ValueExpression expression) {
-        throw new UnsupportedOperationException("Cannot Set Variables on Factory");
+        throw MESSAGES.cannotSetVariablesOnFactory();
     }
 }
