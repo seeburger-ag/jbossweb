@@ -45,7 +45,7 @@
         <version.org.jboss.spec.javax.el>1.0.1.Final</version.org.jboss.spec.javax.el>
         <version.org.jboss.spec.javax.servlet>1.0.1.Final</version.org.jboss.spec.javax.servlet>
         <version.org.jboss.spec.javax.servlet.jsp>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp>
-        <version.org.eclipse.jdt.core.compiler.ecj>4.3.1</version.org.eclipse.jdt.core.compiler.ecj>
+        <version.org.eclipse.jdt.core.compiler.ecj>4.4.1</version.org.eclipse.jdt.core.compiler.ecj>
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>

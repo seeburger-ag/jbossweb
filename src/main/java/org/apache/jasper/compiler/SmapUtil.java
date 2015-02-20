@@ -439,9 +439,15 @@ public class SmapUtil {
                 switch (tag) {
                     case 7 : // Class
                     case 8 : // String
+                    case 16 : // MethodType
                         if (log.isDebugEnabled())
                             log.debug(i + " copying 2 bytes");
                         copy(2);
+                        break;
+                    case 15 : // MethodHandle
+                        if (log.isDebugEnabled())
+                            log.debug(i + " copying 3 bytes");
+                        copy(3);
                         break;
                     case 9 : // Field
                     case 10 : // Method
@@ -449,6 +455,7 @@ public class SmapUtil {
                     case 3 : // Integer
                     case 4 : // Float
                     case 12 : // NameAndType
+                    case 18 : // InvokeDynamic
                         if (log.isDebugEnabled())
                             log.debug(i + " copying 4 bytes");
                         copy(4);
