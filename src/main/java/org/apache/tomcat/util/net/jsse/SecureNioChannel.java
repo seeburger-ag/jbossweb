@@ -20,6 +20,7 @@ package org.apache.tomcat.util.net.jsse;
 
 import static org.jboss.web.CoyoteMessages.MESSAGES;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -321,7 +322,7 @@ public class SecureNioChannel extends NioChannel {
 	 * java.nio.channels.CompletionHandler)
 	 */
 	@Override
-	public <A> void write(final ByteBuffer src, long timeout, TimeUnit unit, final A attachment,
+	public <A> void write(final ByteBuffer src, final long timeout, final TimeUnit unit, final A attachment,
 			final CompletionHandler<Integer, ? super A> handler) {
 
 		// The handshake is completed
@@ -340,13 +341,18 @@ public class SecureNioChannel extends NioChannel {
 
 						@Override
 						public void completed(Integer nBytes, A attach) {
-							if (nBytes < 0) {
-								handler.failed(new ClosedChannelException(), attach);
-							} else {
-								// Call the handler completed method with the
-								// consumed bytes number
-								handler.completed(written, attach);
-							}
+	                        if (nBytes.intValue() < 0) {
+	                            failed(new EOFException(), attach);
+	                        } else if (netOutBuffer.hasRemaining()) {
+	                            channel.write(netOutBuffer, timeout, unit, attachment, this);
+	                        } else if (written == 0) {
+	                            // Special case, start over to avoid code duplication
+	                            write(src, timeout, unit, attachment, handler);
+	                        } else {
+	                            // Call the handler completed method with the
+	                            // consumed bytes number
+	                            handler.completed(Integer.valueOf(written), attach);
+	                        }
 						}
 
 						@Override
