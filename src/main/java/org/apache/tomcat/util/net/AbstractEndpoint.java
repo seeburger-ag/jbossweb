@@ -179,7 +179,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Use sendfile for sending static files.
 	 */
-	protected boolean useSendfile = true;
+	protected boolean useSendfile = false;
 
 	/**
 	 * Reverse connection. In this proxied mode, the endpoint will not use a
