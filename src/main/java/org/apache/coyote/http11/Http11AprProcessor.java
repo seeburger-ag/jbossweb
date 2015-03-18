@@ -1710,7 +1710,9 @@ public class Http11AprProcessor implements ActionHook {
         MimeHeaders headers = response.getMimeHeaders();
         if (!entityBody) {
             response.setContentLength(-1);
-        } else {
+        }
+        // A SC_NO_CONTENT response may include entity headers
+        if (entityBody || response.getStatus() == 204){
             String contentType = response.getContentType();
             if (contentType != null) {
                 headers.setValue("Content-Type").setString(contentType);
