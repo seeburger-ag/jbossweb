@@ -581,10 +581,8 @@ public class FileDirContext extends BaseDirContext {
                 is.close();
             }
         } catch (IOException e) {
-            NamingException ne = new NamingException
+            throw new NamingException
                 (sm.getString("resources.bindFailed", e));
-            ne.initCause(e);
-            throw ne;
         }
 
     }
@@ -920,9 +918,7 @@ public class FileDirContext extends BaseDirContext {
         public InputStream streamContent()
             throws IOException {
             if (binaryContent == null) {
-                FileInputStream fis = new FileInputStream(file);
-                inputStream = fis;
-                return fis;
+                inputStream = new FileInputStream(file);
             }
             return super.streamContent();
         }

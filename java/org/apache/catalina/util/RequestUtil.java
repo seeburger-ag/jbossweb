@@ -60,7 +60,7 @@ public final class RequestUtil {
 
         char content[] = new char[message.length()];
         message.getChars(0, message.length(), content, 0);
-        StringBuilder result = new StringBuilder(content.length + 50);
+        StringBuffer result = new StringBuffer(content.length + 50);
         for (int i = 0; i < content.length; i++) {
             switch (content[i]) {
             case '<':
@@ -281,7 +281,7 @@ public final class RequestUtil {
      * by a valid 2-digit hexadecimal number
      */
     public static String URLDecode(byte[] bytes, String enc) {
-        return URLDecode(bytes, enc, false);
+        return URLDecode(bytes, null, false);
     }
 
     /**
@@ -306,9 +306,6 @@ public final class RequestUtil {
             if (b == '+' && isQuery) {
                 b = (byte)' ';
             } else if (b == '%') {
-                if (ix + 2 > len) {
-                    throw new IllegalArgumentException("%xx URL decode missing digit");
-                }
                 b = (byte) ((convertHexDigit(bytes[ix++]) << 4)
                             + convertHexDigit(bytes[ix++]));
             }
@@ -317,8 +314,8 @@ public final class RequestUtil {
         if (enc != null) {
             try {
                 return new String(bytes, 0, ox, enc);
-            } catch (UnsupportedEncodingException e) {
-                return null;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return new String(bytes, 0, ox);

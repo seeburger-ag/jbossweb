@@ -27,6 +27,7 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.jni.Library;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 
 
@@ -57,8 +58,8 @@ public class AprLifecycleListener
 
     protected static final int TCN_REQUIRED_MAJOR = 1;
     protected static final int TCN_REQUIRED_MINOR = 1;
-    protected static final int TCN_REQUIRED_PATCH = 8;
-    protected static final int TCN_RECOMMENDED_PV = 21;
+    protected static final int TCN_REQUIRED_PATCH = 17;
+    protected static final int TCN_RECOMMENDED_PV = 17;
 
 
     // ---------------------------------------------- Properties
@@ -89,8 +90,32 @@ public class AprLifecycleListener
                     }
                 }
             }
+        } else if (Lifecycle.AFTER_STOP_EVENT.equals(event.getType())) {
+            if (!aprInitialized) {
+                return;
+            }
+            try {
+                // terminateAPR();
+                log.debug("terminateAPR skipped for JBPAPP-4753");
+            } catch (Throwable t) {
+                if (!log.isDebugEnabled()) {
+                    log.info(sm.getString("aprListener.aprDestroy"));
+                } else {
+                    log.debug(sm.getString("aprListener.aprDestroy"), t);
+                }
+            }
         }
 
+    }
+
+    private static synchronized void terminateAPR()
+        throws ClassNotFoundException, NoSuchMethodException,
+               IllegalAccessException, InvocationTargetException
+    {
+        String methodName = "terminate";
+        Method method = Class.forName("org.apache.tomcat.jni.Library")
+            .getMethod(methodName, (Class [])null);
+        method.invoke(null, (Object []) null);
     }
 
     private boolean init()
@@ -103,11 +128,11 @@ public class AprLifecycleListener
         }
         try {
             String methodName = "initialize";
-            Class<?> paramTypes[] = new Class[1];
+            Class paramTypes[] = new Class[1];
             paramTypes[0] = String.class;
             Object paramValues[] = new Object[1];
             paramValues[0] = null;
-            Class<?> clazz = Class.forName("org.apache.tomcat.jni.Library");
+            Class clazz = Class.forName("org.apache.tomcat.jni.Library");
             Method method = clazz.getMethod(methodName, paramTypes);
             method.invoke(null, paramValues);
             major = clazz.getField("TCN_MAJOR_VERSION").getInt(null);
@@ -131,6 +156,13 @@ public class AprLifecycleListener
                     TCN_REQUIRED_MAJOR + "." +
                     TCN_REQUIRED_MINOR + "." +
                     TCN_REQUIRED_PATCH));
+            try {
+                // Terminate the APR in case the version
+                // is below required.                
+                terminateAPR();
+            } catch (Throwable t) {
+                // Ignore
+            }
             return false;
         }
         if (patch <  TCN_RECOMMENDED_PV) {
@@ -148,13 +180,17 @@ public class AprLifecycleListener
                         TCN_RECOMMENDED_PV));
             }
         }
-        if (log.isDebugEnabled()) {
-            log.debug(sm.getString("aprListener.tcnValid", major + "."
+        if (!log.isDebugEnabled()) {
+           log.info(sm.getString("aprListener.tcnValid", major + "."
                     + minor + "." + patch));
-            // Log APR flags
-            log.debug(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
-                    Library.APR_HAS_RANDOM));
         }
+        else {
+           log.debug(sm.getString("aprListener.tcnValid", major + "."
+                     + minor + "." + patch));
+        }
+        // Log APR flags
+        log.info(sm.getString("aprListener.flags", Library.APR_HAVE_IPV6, Library.APR_HAS_SENDFILE, 
+                Library.APR_HAS_RANDOM));
         return true;
     }
 
@@ -171,11 +207,11 @@ public class AprLifecycleListener
             return;
         }
         String methodName = "randSet";
-        Class<?> paramTypes[] = new Class[1];
+        Class paramTypes[] = new Class[1];
         paramTypes[0] = String.class;
         Object paramValues[] = new Object[1];
         paramValues[0] = SSLRandomSeed;
-        Class<?> clazz = Class.forName("org.apache.tomcat.jni.SSL");
+        Class clazz = Class.forName("org.apache.tomcat.jni.SSL");
         Method method = clazz.getMethod(methodName, paramTypes);
         method.invoke(null, paramValues);
 
@@ -185,10 +221,6 @@ public class AprLifecycleListener
         method.invoke(null, paramValues);
  
         sslInitialized = true;
-    }
-
-    public static boolean isAprInitialized() {
-        return aprInitialized;
     }
 
     public String getSSLEngine() {

@@ -28,20 +28,18 @@ import org.apache.el.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Id$
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
  */
 public final class AstEmpty extends SimpleNode {
     public AstEmpty(int id) {
         super(id);
     }
 
-    @Override
-    public Class<?> getType(EvaluationContext ctx)
+    public Class getType(EvaluationContext ctx)
             throws ELException {
         return Boolean.class;
     }
 
-    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         Object obj = this.children[0].getValue(ctx);
@@ -51,10 +49,10 @@ public final class AstEmpty extends SimpleNode {
             return Boolean.valueOf(((String) obj).length() == 0);
         } else if (obj instanceof Object[]) {
             return Boolean.valueOf(((Object[]) obj).length == 0);
-        } else if (obj instanceof Collection<?>) {
-            return Boolean.valueOf(((Collection<?>) obj).isEmpty());
-        } else if (obj instanceof Map<?,?>) {
-            return Boolean.valueOf(((Map<?,?>) obj).isEmpty());
+        } else if (obj instanceof Collection) {
+            return Boolean.valueOf(((Collection) obj).isEmpty());
+        } else if (obj instanceof Map) {
+            return Boolean.valueOf(((Map) obj).isEmpty());
         }
         return Boolean.FALSE;
     }

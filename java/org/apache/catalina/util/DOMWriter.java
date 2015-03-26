@@ -290,7 +290,7 @@ public class DOMWriter {
 
    /** Normalizes the given string. */
    protected String normalize(String s) {
-      StringBuilder str = new StringBuilder();
+      StringBuffer str = new StringBuffer();
 
       int len = (s != null) ? s.length() : 0;
       for ( int i = 0; i < len; i++ ) {

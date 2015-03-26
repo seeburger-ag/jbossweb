@@ -120,7 +120,7 @@ public class StringManager {
  
             iString = MessageFormat.format(value, nonNullArgs);
 	} catch (IllegalArgumentException iae) {
-	    StringBuilder buf = new StringBuilder();
+	    StringBuffer buf = new StringBuffer();
 	    buf.append(value);
 	    for (int i = 0; i < args.length; i++) {
 		buf.append(" arg[" + i + "]=" + args[i]);

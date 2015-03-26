@@ -64,7 +64,7 @@ class DefaultErrorHandler implements ErrorHandler {
         }
         
         Object[] args = null;
-        StringBuilder buf = new StringBuilder();
+        StringBuffer buf = new StringBuffer();
         
         for (int i=0; i < details.length; i++) {
             if (details[i].getJspBeginLineNumber() >= 0) {
@@ -80,8 +80,7 @@ class DefaultErrorHandler implements ErrorHandler {
                 buf.append(details[i].getJspExtract());
             } else {
                 args = new Object[] {
-                        new Integer(details[i].getJavaLineNumber()),
-                        details[i].getJavaFileName() };
+                        new Integer(details[i].getJavaLineNumber()) };
                 buf.append("\n\n");
                 buf.append(Localizer.getMessage("jsp.error.java.line.number",
                         args));

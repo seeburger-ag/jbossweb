@@ -213,7 +213,7 @@ class Parser implements TagConstants {
     private String parseName() throws JasperException {
         char ch = (char) reader.peekChar();
         if (Character.isLetter(ch) || ch == '_' || ch == ':') {
-            StringBuilder buf = new StringBuilder();
+            StringBuffer buf = new StringBuffer();
             buf.append(ch);
             reader.nextChar();
             ch = (char) reader.peekChar();
@@ -242,16 +242,12 @@ class Parser implements TagConstants {
 
         String ret = null;
         try {
-            char quote = watch.charAt(watch.length() - 1);
-            
-            // If watch is longer than 1 character this is a scripting
-            // expression and EL is always ignored
-            boolean isElIgnored =
-                pageInfo.isELIgnored() || watch.length() > 1;
-            
+            char quote = 0;
+            if (watch.length() == 1) {
+                quote = watch.charAt(0);
+            }
             ret = AttributeParser.getUnquoted(reader.getText(start, stop),
-                    quote, isElIgnored,
-                    pageInfo.isDeferredSyntaxAllowedAsLiteral());
+                    quote, pageInfo.isELIgnored());
         } catch (IllegalArgumentException iae) {
             err.jspError(start, iae.getMessage());
         }
@@ -297,7 +293,7 @@ class Parser implements TagConstants {
         } catch (FileNotFoundException ex) {
             err.jspError(start, "jsp.error.file.not.found", file);
         } catch (Exception ex) {
-            err.jspError(parent, "jsp.error.include.exception", file, ex);
+            err.jspError(start, ex.getMessage());
         }
     }
 
@@ -1172,9 +1168,6 @@ class Parser implements TagConstants {
         // Check if this is a user-defined tag.
         String uri = pageInfo.getURI(prefix);
         if (uri == null) {
-            if (pageInfo.isErrorOnUndeclaredNamespace()) {
-                err.jspError(start, "jsp.error.bad_tag", shortTagName, prefix);
-            }
             reader.reset(start);
             // Remember the prefix for later error checking
             pageInfo.putNonCustomTagPrefix(prefix, reader.mark());
@@ -1412,9 +1405,9 @@ class Parser implements TagConstants {
             parseXMLScriptlet(parent);
         } else if (reader.matches("<jsp:text")) {
             parseXMLTemplateText(parent);
-        } else if (!pageInfo.isELIgnored() && reader.matches("${")) {
+        } else if (reader.matches("${") && !pageInfo.isELIgnored()) {
             parseELExpression(parent, '$');
-        } else if (!pageInfo.isELIgnored() && reader.matches("#{")) {
+        } else if (reader.matches("#{") && !pageInfo.isELIgnored()) {
             parseELExpression(parent, '#');
         } else if (reader.matches("<jsp:")) {
             parseStandardAction(parent);
@@ -1459,11 +1452,9 @@ class Parser implements TagConstants {
             err.jspError(reader.mark(), "jsp.error.no.scriptlets");
         } else if (reader.matches("<jsp:text")) {
             parseXMLTemplateText(parent);
-        } else if (!pageInfo.isELIgnored() && reader.matches("${")) {
+        } else if (reader.matches("${")) {
             parseELExpression(parent, '$');
-        } else if (!pageInfo.isELIgnored()
-                && !pageInfo.isDeferredSyntaxAllowedAsLiteral()
-                && reader.matches("#{")) {
+        } else if (reader.matches("#{")) {
             parseELExpression(parent, '#');
         } else if (reader.matches("<jsp:")) {
             parseStandardAction(parent);
@@ -1512,12 +1503,10 @@ class Parser implements TagConstants {
         } else if (reader.matches("<jsp:text")) {
             err.jspError(reader.mark(), "jsp.error.not.in.template",
                     "&lt;jsp:text");
-        } else if (!pageInfo.isELIgnored() && reader.matches("${")) {
+        } else if (reader.matches("${")) {
             err.jspError(reader.mark(), "jsp.error.not.in.template",
                     "Expression language");
-        } else if (!pageInfo.isELIgnored()
-                && !pageInfo.isDeferredSyntaxAllowedAsLiteral()
-                && reader.matches("#{")) {
+        } else if (reader.matches("#{")) {
             err.jspError(reader.mark(), "jsp.error.not.in.template",
                     "Expression language");
         } else if (reader.matches("<jsp:")) {
@@ -1742,21 +1731,11 @@ class Parser implements TagConstants {
         while (reader.hasMoreInput()) {
             start = reader.mark();
             if (reader.matches("%--")) {
-                // Comment
-                reader.skipUntil("--%>");
+                parseComment(parent);
             } else if (reader.matches("%@")) {
                 parseDirective(parent);
             } else if (reader.matches("jsp:directive.")) {
                 parseXMLDirective(parent);
-            } else if (reader.matches("%!")) {
-                // Declaration
-                reader.skipUntil("%>");
-            } else if (reader.matches("%=")) {
-                // Expression
-                reader.skipUntil("%>");
-            } else if (reader.matches("%")) {
-                // Scriptlet
-                reader.skipUntil("%>");
             }
             reader.skipUntil("<");
         }

@@ -338,35 +338,6 @@ public final class CharChunk implements Cloneable, Serializable, CharSequence {
 	}
     }
 
-    /** Add data to the buffer
-     */
-    public void append(StringBuilder sb) throws IOException {
-        int len = sb.length();
-
-        // will grow, up to limit
-        makeSpace(len);
-
-        // if we don't have limit: makeSpace can grow as it wants
-        if (limit < 0) {
-            // assert: makeSpace made enough space
-            sb.getChars(0, len, buff, end);
-            end += len;
-            return;
-        }
-
-        int off = 0;
-        int sbOff = off;
-        int sbEnd = off + len;
-        while (sbOff < sbEnd) {
-            int d = min(limit - end, sbEnd - sbOff);
-            sb.getChars(sbOff, sbOff + d, buff, end);
-            sbOff += d;
-            end += d;
-            if (end >= limit)
-                flushBuffer();
-        }
-    }
-
     /** Append a string to the buffer
      */
     public void append(String s) throws IOException {

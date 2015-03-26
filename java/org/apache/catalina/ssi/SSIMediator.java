@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 import org.apache.catalina.util.DateTool;
@@ -182,7 +181,7 @@ public class SSIMediator {
 
 
     public String getVariableValue(String variableName, String encoding) {
-        String lowerCaseVariableName = variableName.toLowerCase(Locale.ENGLISH);
+        String lowerCaseVariableName = variableName.toLowerCase();
         String variableValue = null;
         if (!isNameReserved(lowerCaseVariableName)) {
             //Try getting it externally first, if it fails, try getting the
@@ -190,7 +189,7 @@ public class SSIMediator {
             // value
             variableValue = ssiExternalResolver.getVariableValue(variableName);
             if (variableValue == null) {
-                variableName = variableName.toUpperCase(Locale.ENGLISH);
+                variableName = variableName.toUpperCase();
                 variableValue = (String)ssiExternalResolver
                         .getVariableValue(className + "." + variableName);
             }
@@ -217,7 +216,7 @@ public class SSIMediator {
         val = val.replace("&quot;", "\"");
         val = val.replace("&amp;", "&");
 
-        StringBuilder sb = new StringBuilder(val);
+        StringBuffer sb = new StringBuffer(val);
         int charStart = sb.indexOf("&#");
         while (charStart > -1) {
             int charEnd = sb.indexOf(";", charStart);

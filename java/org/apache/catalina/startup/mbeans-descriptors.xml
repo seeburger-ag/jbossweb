@@ -52,6 +52,69 @@
                description="The Java class name of the Context implementation we should use"
                type="java.lang.String"/>
       
+    <operation name="check"
+               description="Check a web application name for updates"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="name"
+                 description="Application name"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="addServiced"
+               description="Add a web application name to the serviced list"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="name"
+                 description="Application name"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="isServiced"
+               description="Add a web application name to the serviced list"
+               impact="ACTION"
+               returnType="boolean">
+      <parameter name="name"
+                 description="Application name"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="isDeployed"
+               description="Was this web application deployed by this component"
+               impact="ACTION"
+               returnType="boolean">
+      <parameter name="name"
+                 description="Application name"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="manageApp"
+               description="Add a web application managed externally"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="context"
+                 description="Context to add"
+                 type="org.apache.catalina.Context" />
+    </operation>
+
+    <operation name="removeServiced"
+               description="Add a web application name to the serviced list"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="name"
+                 description="Application name"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="unmanageApp"
+               description="Remove a web application from checks"
+               impact="ACTION"
+               returnType="void">
+      <parameter name="contextPath"
+                 description="The application path"
+                 type="java.lang.String" />
+    </operation>
+
   </mbean>
 
 </mbeans-descriptors>

@@ -30,7 +30,7 @@ import org.apache.el.util.MessageFactory;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Id$
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
  */
 public final class AstFunction extends SimpleNode {
 
@@ -58,12 +58,11 @@ public final class AstFunction extends SimpleNode {
         return prefix;
     }
 
-    @Override
-    public Class<?> getType(EvaluationContext ctx)
+    public Class getType(EvaluationContext ctx)
             throws ELException {
-
+        
         FunctionMapper fnMapper = ctx.getFunctionMapper();
-
+        
         // quickly validate again for this request
         if (fnMapper == null) {
             throw new ELException(MessageFactory.get("error.fnMapper.null"));
@@ -76,12 +75,11 @@ public final class AstFunction extends SimpleNode {
         return m.getReturnType();
     }
 
-    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
-
+        
         FunctionMapper fnMapper = ctx.getFunctionMapper();
-
+        
         // quickly validate again for this request
         if (fnMapper == null) {
             throw new ELException(MessageFactory.get("error.fnMapper.null"));
@@ -92,7 +90,7 @@ public final class AstFunction extends SimpleNode {
                     this.getOutputName()));
         }
 
-        Class<?>[] paramTypes = m.getParameterTypes();
+        Class[] paramTypes = m.getParameterTypes();
         Object[] params = null;
         Object result = null;
         int numParams = this.jjtGetNumChildren();
@@ -114,15 +112,8 @@ public final class AstFunction extends SimpleNode {
             throw new ELException(MessageFactory.get("error.function", this
                     .getOutputName()), iae);
         } catch (InvocationTargetException ite) {
-            Throwable cause = ite.getCause();
-            if (cause instanceof ThreadDeath) {
-                throw (ThreadDeath) cause;
-            }
-            if (cause instanceof VirtualMachineError) {
-                throw (VirtualMachineError) cause;
-            }
             throw new ELException(MessageFactory.get("error.function", this
-                    .getOutputName()), cause);
+                    .getOutputName()), ite.getCause());
         }
         return result;
     }
@@ -134,9 +125,8 @@ public final class AstFunction extends SimpleNode {
     public void setPrefix(String prefix) {
         this.prefix = prefix;
     }
-
-
-    @Override
+    
+    
     public String toString()
     {
         return ELParserTreeConstants.jjtNodeName[id] + "[" + this.getOutputName() + "]";

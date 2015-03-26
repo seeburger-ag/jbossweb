@@ -19,11 +19,6 @@
     Author:    Jacob Hookom
     Email:    jacob at hookom.net
 */
-/*
-  Building:
-  jjtree ELParser.jjt
-  javacc ELParser.jj
-*/
 
 /* == Option Declaration == */
 options
@@ -232,7 +227,7 @@ void ValuePrefix() : {}
  */
 void ValueSuffix() : {}
 {
-    ( DotSuffix() | BracketSuffix() ) ( MethodParameters())?
+    DotSuffix() | BracketSuffix()
 }
 
 /*
@@ -251,14 +246,6 @@ void DotSuffix() #DotSuffix : { Token t = null; }
 void BracketSuffix() #BracketSuffix : {}
 {
     <LBRACK> Expression() <RBRACK>
-}
-
-/*
- * MethodParameters
- */
-void MethodParameters() #MethodParameters : {}
-{
-    <LPAREN> ( Expression() ( <COMMA> Expression())* )? <RPAREN>
 }
 
 /*

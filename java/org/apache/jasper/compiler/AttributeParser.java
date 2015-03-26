@@ -24,7 +24,7 @@ package org.apache.jasper.compiler;
  * "\${1+1}". After unquoting, both appear as "${1+1}" but the first should
  * evaluate to "2" and the second to "${1+1}". Literal \, $ and # need special
  * treatment to ensure there is no ambiguity. The JSP attribute unquoting
- * covers \\, \", \', \$, \#, %\&gt;, &lt;\%, &amp;apos; and &amp;quot;
+ * covers \\, \", \', \$, \#, %\>, <\%, &apos; and &quot;
  */
 public class AttributeParser {
 
@@ -43,16 +43,13 @@ public class AttributeParser {
      *                      scripting expressions.
      * @param isELIgnored   Is expression language being ignored on the page
      *                      where the JSP attribute is defined.
-     * @param isDeferredSyntaxAllowedAsLiteral
-     *                      Are deferred expressions treated as literals?
      * @return              An unquoted JSP attribute that, if it contains
      *                      expression language can be safely passed to the EL
      *                      processor without fear of ambiguity.
      */
     public static String getUnquoted(String input, char quote,
-            boolean isELIgnored, boolean isDeferredSyntaxAllowedAsLiteral) {
+            boolean isELIgnored) {
         return (new AttributeParser(input, quote, isELIgnored,
-                isDeferredSyntaxAllowedAsLiteral,
                 STRICT_QUOTE_ESCAPING)).getUnquoted();
     }
 
@@ -65,18 +62,15 @@ public class AttributeParser {
      *                      scripting expressions.
      * @param isELIgnored   Is expression language being ignored on the page
      *                      where the JSP attribute is defined.
-     * @param isDeferredSyntaxAllowedAsLiteral
-     *                      Are deferred expressions treated as literals?
      * @param strict        The value to use for STRICT_QUOTE_ESCAPING.
      * @return              An unquoted JSP attribute that, if it contains
      *                      expression language can be safely passed to the EL
      *                      processor without fear of ambiguity.
      */
     protected static String getUnquoted(String input, char quote,
-            boolean isELIgnored, boolean isDeferredSyntaxAllowedAsLiteral,
-            boolean strict) {
+            boolean isELIgnored, boolean strict) {
         return (new AttributeParser(input, quote, isELIgnored,
-                isDeferredSyntaxAllowedAsLiteral, strict)).getUnquoted();
+                strict)).getUnquoted();
     }
 
     /* The quoted input string. */
@@ -88,9 +82,6 @@ public class AttributeParser {
     /* Is expression language being ignored - affects unquoting. \$ and \# are
      * treated as literals rather than quoted values. */
     private final boolean isELIgnored;
-    
-    /* Are deferred expression treated as literals */
-    private final boolean isDeferredSyntaxAllowedAsLiteral;
     
     /* Overrides the STRICT_QUOTE_ESCAPING. Used for Unit tests only. */
     private final boolean strict;
@@ -118,13 +109,12 @@ public class AttributeParser {
      * @param strict
      */
     private AttributeParser(String input, char quote,
-            boolean isELIgnored, boolean isDeferredSyntaxAllowedAsLiteral,
-            boolean strict) {
+            boolean isELIgnored, boolean strict) {
         this.input = input;
         this.quote = quote;
-        this.isELIgnored = isELIgnored;
-        this.isDeferredSyntaxAllowedAsLiteral =
-            isDeferredSyntaxAllowedAsLiteral;
+        // If quote is null this is a scriptign expressions and any EL syntax
+        // should be ignored
+        this.isELIgnored = isELIgnored || (quote == 0);
         this.strict = strict;
         this.type = getType(input);
         this.size = input.length();
@@ -161,27 +151,22 @@ public class AttributeParser {
             char ch = nextChar();
             if (!isELIgnored && ch == '\\') {
                 if (type == 0) {
-                    result.append("\\");
-                } else {
-                    result.append(type);
-                    result.append("{'\\\\'}");
+                    type = '$';
                 }
+                result.append(type);
+                result.append("{'\\\\'}");
             } else if (!isELIgnored && ch == '$' && lastChEscaped){
                 if (type == 0) {
-                    result.append("\\$");
-                } else {
-                    result.append(type);
-                    result.append("{'$'}");
+                    type = '$';
                 }
+                result.append(type);
+                result.append("{'$'}");
             } else if (!isELIgnored && ch == '#' && lastChEscaped){
-                // Note if isDeferredSyntaxAllowedAsLiteral==true, \# will
-                // not be treated as an escape
                 if (type == 0) {
-                    result.append("\\#");
-                } else {
-                    result.append(type);
-                    result.append("{'#'}");
+                    type = '$';
                 }
+                result.append(type);
+                result.append("{'#'}");
             } else if (ch == type){
                 if (i < size) {
                     char next = input.charAt(i);
@@ -212,8 +197,8 @@ public class AttributeParser {
     private void parseEL() {
         boolean endEL = false;
         boolean insideLiteral = false;
-        char literalQuote = 0;
         while (i < size && !endEL) {
+            char literalQuote = '\'';
             char ch = nextChar();
             if (ch == '\'' || ch == '\"') {
                 if (insideLiteral) {
@@ -243,7 +228,7 @@ public class AttributeParser {
     }
 
     /*
-     * Returns the next unquoted character and sets the lastChEscaped flag to
+     * Returns the nest unquoted character and sets the lastChEscaped flag to
      * indicate if it was quoted/escaped or not.
      * &apos; is always unquoted to '
      * &quot; is always unquoted to "
@@ -276,10 +261,7 @@ public class AttributeParser {
         } else if (ch == '\\' && i + 1 < size) {
             ch = input.charAt(i + 1);
             if (ch == '\\' || ch == '\"' || ch == '\'' ||
-                    (!isELIgnored &&
-                            (ch == '$' ||
-                                    (!isDeferredSyntaxAllowedAsLiteral &&
-                                            ch == '#')))) {
+                    (!isELIgnored && (ch == '$' || ch == '#'))) {
                 i += 2;
                 lastChEscaped = true;
             } else {
@@ -329,13 +311,13 @@ public class AttributeParser {
         int j = 0;
         int len = value.length();
         char current;
-
+        
         while (j < len) {
             current = value.charAt(j);
             if (current == '\\') {
                 // Escape character - skip a character
                 j++;
-            } else if (current == '#' && !isDeferredSyntaxAllowedAsLiteral) {
+            } else if (current == '#') {
                 if (j < (len -1) && value.charAt(j + 1) == '{') {
                     return '#';
                 }

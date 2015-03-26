@@ -851,7 +851,7 @@ abstract class Node implements TagConstants {
             String ret = text;
             if (ret == null) {
                 if (body != null) {
-                    StringBuilder buf = new StringBuilder();
+                    StringBuffer buf = new StringBuffer();
                     for (int i = 0; i < body.size(); i++) {
                         buf.append(body.getNode(i).getText());
                     }
@@ -1425,11 +1425,11 @@ abstract class Node implements TagConstants {
 
         private boolean implementsDynamicAttributes;
 
-        private List<Object> atBeginScriptingVars;
+        private Vector atBeginScriptingVars;
 
-        private List<Object> atEndScriptingVars;
+        private Vector atEndScriptingVars;
 
-        private List<Object> nestedScriptingVars;
+        private Vector nestedScriptingVars;
 
         private Node.CustomTag customTagParent;
 
@@ -1661,7 +1661,7 @@ abstract class Node implements TagConstants {
             return this.numCount;
         }
 
-        public void setScriptingVars(List<Object> vec, int scope) {
+        public void setScriptingVars(Vector vec, int scope) {
             switch (scope) {
             case VariableInfo.AT_BEGIN:
                 this.atBeginScriptingVars = vec;
@@ -1679,8 +1679,8 @@ abstract class Node implements TagConstants {
          * Gets the scripting variables for the given scope that need to be
          * declared.
          */
-        public List<Object> getScriptingVars(int scope) {
-            List<Object> vec = null;
+        public Vector getScriptingVars(int scope) {
+            Vector vec = null;
 
             switch (scope) {
             case VariableInfo.AT_BEGIN:
@@ -1869,14 +1869,10 @@ abstract class Node implements TagConstants {
         private ChildInfo childInfo;
 
         private String name;
-        
-        private String omit;
 
         private String localName;
 
         private String prefix;
-
-        private JspAttribute omitAttribute;
 
         public NamedAttribute(Attributes attrs, Mark start, Node parent) {
             this(JSP_ATTRIBUTE_ACTION, attrs, null, null, start, parent);
@@ -1904,8 +1900,6 @@ abstract class Node implements TagConstants {
                     localName = name.substring(index + 1);
                 }
             }
-            if (parent instanceof JspElement)
-                omit = this.getAttributeValue("omit");
         }
 
         public void accept(Visitor v) throws JasperException {
@@ -1930,18 +1924,6 @@ abstract class Node implements TagConstants {
 
         public boolean isTrim() {
             return trim;
-        }
-
-        public String getOmit() {
-            return this.omit;
-        }
-
-        public JspAttribute getOmitAttribute() {
-            return omitAttribute;
-        }
-
-        public void setOmitAttribute(JspAttribute omitAttribute) {
-            this.omitAttribute = omitAttribute;
         }
 
         /**
@@ -2306,7 +2288,7 @@ abstract class Node implements TagConstants {
          *         time.
          */
         public boolean isLiteral() {
-            return !expression && (el == null) && !namedAttribute;
+            return !expression && (el != null) && !namedAttribute;
         }
 
         /**

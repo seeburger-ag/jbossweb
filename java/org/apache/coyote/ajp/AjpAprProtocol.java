@@ -1,23 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.apache.coyote.ajp;
@@ -26,7 +21,6 @@ import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,6 +30,8 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.coyote.ActionCode;
+import org.apache.coyote.ActionHook;
 import org.apache.coyote.Adapter;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
@@ -156,15 +152,6 @@ public class AjpAprProtocol
     }
 
 
-    public boolean hasIoEvents() {
-        return false;
-    }
-
-    public RequestGroupInfo getRequestGroupInfo() {
-        return cHandler.global;
-    }
-
-
     /** Start the protocol
      */
     public void init() throws Exception {
@@ -178,28 +165,26 @@ public class AjpAprProtocol
             log.error(sm.getString("ajpprotocol.endpoint.initerror"), ex);
             throw ex;
         }
-        if (log.isDebugEnabled()) {
-            log.debug(sm.getString("ajpprotocol.init", getName()));
+        if (log.isInfoEnabled()) {
+            log.info(sm.getString("ajpprotocol.init", getName()));
         }
     }
 
 
     public void start() throws Exception {
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (this.domain != null ) {
-                try {
-                    tpOname = new ObjectName
+        if (this.domain != null ) {
+            try {
+                tpOname = new ObjectName
                     (domain + ":" + "type=ThreadPool,name=" + getName());
-                    Registry.getRegistry(null, null)
+                Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
-                } catch (Exception e) {
-                    log.error("Can't register threadpool" );
-                }
-                rgOname = new ObjectName
-                (domain + ":type=GlobalRequestProcessor,name=" + getName());
-                Registry.getRegistry(null, null).registerComponent
-                (cHandler.global, rgOname, null);
+            } catch (Exception e) {
+                log.error("Can't register threadpool" );
             }
+            rgOname = new ObjectName
+                (domain + ":type=GlobalRequestProcessor,name=" + getName());
+            Registry.getRegistry(null, null).registerComponent
+                (cHandler.global, rgOname, null);
         }
 
         try {
@@ -276,27 +261,20 @@ public class AjpAprProtocol
                 throw ex;
             }
         }
-        if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
-            if (tpOname!=null)
-                Registry.getRegistry(null, null).unregisterComponent(tpOname);
-            if (rgOname != null)
-                Registry.getRegistry(null, null).unregisterComponent(rgOname);
-        }
+        if (tpOname!=null)
+            Registry.getRegistry(null, null).unregisterComponent(tpOname);
+        if (rgOname != null)
+            Registry.getRegistry(null, null).unregisterComponent(rgOname);
     }
 
-    public String getJmxName() {
-        String encodedAddr = "";
-        if (getAddress() != null) {
-            encodedAddr = "" + getAddress();
-            encodedAddr = URLEncoder.encode(encodedAddr.replace('/', '-').replace(':', '_').replace('%', '-')) + "-";
-        }
-        return ("ajp-" + encodedAddr + endpoint.getPort());
-    }
-
+    // *
     public String getName() {
         String encodedAddr = "";
         if (getAddress() != null) {
-            encodedAddr = getAddress() + ":";
+            encodedAddr = "" + getAddress();
+            if (encodedAddr.startsWith("/"))
+                encodedAddr = encodedAddr.substring(1);
+            encodedAddr = URLEncoder.encode(encodedAddr) + "-";
         }
         return ("ajp-" + encodedAddr + endpoint.getPort());
     }
@@ -387,8 +365,6 @@ public class AjpAprProtocol
         protected AtomicLong registerCount = new AtomicLong(0);
         protected RequestGroupInfo global = new RequestGroupInfo();
 
-        protected ConcurrentHashMap<Long, AjpAprProcessor> connections =
-            new ConcurrentHashMap<Long, AjpAprProcessor>();
         protected ConcurrentLinkedQueue<AjpAprProcessor> recycledProcessors = 
             new ConcurrentLinkedQueue<AjpAprProcessor>() {
             protected AtomicInteger size = new AtomicInteger(0);
@@ -429,51 +405,9 @@ public class AjpAprProtocol
             this.proto = proto;
         }
 
+        // FIXME: Support for this could be added in AJP as well
         public SocketState event(long socket, SocketStatus status) {
-            AjpAprProcessor result = connections.get(socket);
-            SocketState state = SocketState.CLOSED; 
-            if (result != null) {
-                result.startProcessing();
-                // Call the appropriate event
-                try {
-                    state = result.event(status);
-                } catch (java.net.SocketException e) {
-                    // SocketExceptions are normal
-                    AjpAprProcessor.log.debug
-                        (sm.getString
-                            ("ajpprotocol.proto.socketexception.debug"), e);
-                } catch (java.io.IOException e) {
-                    // IOExceptions are normal
-                    AjpAprProcessor.log.debug
-                        (sm.getString
-                            ("ajpprotocol.proto.ioexception.debug"), e);
-                }
-                // Future developers: if you discover any other
-                // rare-but-nonfatal exceptions, catch them here, and log as
-                // above.
-                catch (Throwable e) {
-                    // any other exception or error is odd. Here we log it
-                    // with "ERROR" level, so it will show up even on
-                    // less-than-verbose logs.
-                    AjpAprProcessor.log.error
-                        (sm.getString("ajpprotocol.proto.error"), e);
-                } finally {
-                    if (state != SocketState.LONG) {
-                        connections.remove(socket);
-                        recycledProcessors.offer(result);
-                        if (proto.endpoint.isRunning() && state == SocketState.OPEN) {
-                            proto.endpoint.getPoller().add(socket);
-                        }
-                    } else {
-                        if (proto.endpoint.isRunning()) {
-                            proto.endpoint.getEventPoller().add(socket, result.getTimeout(), 
-                                    false, false, result.getResumeNotification(), false);
-                        }
-                    }
-                    result.endProcessing();
-                }
-            }
-            return state;
+            return SocketState.CLOSED;
         }
         
         public SocketState process(long socket) {
@@ -484,18 +418,15 @@ public class AjpAprProtocol
                     processor = createProcessor();
                 }
 
-                SocketState state = processor.process(socket);
-                if (state == SocketState.LONG) {
-                    // Associate the connection with the processor. The next request 
-                    // processed by this thread will use either a new or a recycled
-                    // processor.
-                    connections.put(socket, processor);
-                    proto.endpoint.getEventPoller().add(socket, processor.getTimeout(), false, 
-                            false, processor.getResumeNotification(), false);
-                } else {
-                    recycledProcessors.offer(processor);
+                if (processor instanceof ActionHook) {
+                    ((ActionHook) processor).action(ActionCode.ACTION_START, null);
                 }
-                return state;
+
+                if (processor.process(socket)) {
+                    return SocketState.OPEN;
+                } else {
+                    return SocketState.CLOSED;
+                }
 
             } catch(java.net.SocketException e) {
                 // SocketExceptions are normal
@@ -517,8 +448,12 @@ public class AjpAprProtocol
                 // less-than-verbose logs.
                 AjpAprProtocol.log.error
                     (sm.getString("ajpprotocol.proto.error"), e);
+            } finally {
+                if (processor instanceof ActionHook) {
+                    ((ActionHook) processor).action(ActionCode.ACTION_STOP, null);
+                }
+                recycledProcessors.offer(processor);
             }
-            recycledProcessors.offer(processor);
             return SocketState.CLOSED;
         }
 
@@ -532,15 +467,15 @@ public class AjpAprProtocol
         }
         
         protected void register(AjpAprProcessor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(global);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
                         long count = registerCount.incrementAndGet();
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(global);
                         ObjectName rpName = new ObjectName
-                        (proto.getDomain() + ":type=RequestProcessor,worker="
-                                + proto.getJmxName() + ",name=AjpRequest" + count);
+                            (proto.getDomain() + ":type=RequestProcessor,worker="
+                                + proto.getName() + ",name=AjpRequest" + count);
                         if (log.isDebugEnabled()) {
                             log.debug("Register " + rpName);
                         }
@@ -554,11 +489,11 @@ public class AjpAprProtocol
         }
 
         protected void unregister(AjpAprProcessor processor) {
-            RequestInfo rp = processor.getRequest().getRequestProcessor();
-            rp.setGlobalProcessor(null);
-            if (org.apache.tomcat.util.Constants.ENABLE_MODELER && proto.getDomain() != null) {
+            if (proto.getDomain() != null) {
                 synchronized (this) {
                     try {
+                        RequestInfo rp = processor.getRequest().getRequestProcessor();
+                        rp.setGlobalProcessor(null);
                         ObjectName rpName = rp.getRpName();
                         if (log.isDebugEnabled()) {
                             log.debug("Unregister " + rpName);

@@ -55,9 +55,6 @@ public final class SecurityClassLoad {
              "core.ApplicationContextFacade$1");
         loader.loadClass
             (basePackage +
-             "core.ApplicationDispatcher$PrivilegedAsync");
-        loader.loadClass
-            (basePackage +
              "core.ApplicationDispatcher$PrivilegedForward");
         loader.loadClass
             (basePackage +

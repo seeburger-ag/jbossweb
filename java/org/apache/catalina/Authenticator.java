@@ -18,27 +18,19 @@
 
 package org.apache.catalina;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.catalina.connector.Request;
-
 
 /**
  * An <b>Authenticator</b> is a component (usually a Valve or Container) that
- * provides some sort of authentication service.
+ * provides some sort of authentication service.  The interface itself has no
+ * functional significance,  but is used as a tagging mechanism so that other
+ * components can detect the presence (via an "instanceof Authenticator" test)
+ * of an already configured authentication service.
  *
  * @author Craig R. McClanahan
  * @version $Revision$ $Date$
  */
 
 public interface Authenticator {
-    public boolean authenticate(Request request, HttpServletResponse response)
-        throws IOException, ServletException;
-    public void login(Request request, String username, String password)
-        throws ServletException;
-    public void logout(Request request)
-        throws ServletException;
+
+
 }

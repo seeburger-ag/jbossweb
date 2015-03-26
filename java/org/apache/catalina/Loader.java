@@ -88,11 +88,41 @@ public interface Loader {
 
 
     /**
+     * Return the "follow standard delegation model" flag used to configure
+     * our ClassLoader.
+     */
+    public boolean getDelegate();
+
+
+    /**
+     * Set the "follow standard delegation model" flag used to configure
+     * our ClassLoader.
+     *
+     * @param delegate The new flag
+     */
+    public void setDelegate(boolean delegate);
+
+
+    /**
      * Return descriptive information about this Loader implementation and
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
     public String getInfo();
+
+
+    /**
+     * Return the reloadable flag for this Loader.
+     */
+    public boolean getReloadable();
+
+
+    /**
+     * Set the reloadable flag for this Loader.
+     *
+     * @param reloadable The new reloadable flag
+     */
+    public void setReloadable(boolean reloadable);
 
 
     // --------------------------------------------------------- Public Methods
@@ -112,6 +142,20 @@ public interface Loader {
      * @param repository Repository to be added
      */
     public void addRepository(String repository);
+
+
+    /**
+     * Return the set of repositories defined for this class loader.
+     * If none are defined, a zero-length array is returned.
+     */
+    public String[] findRepositories();
+
+
+    /**
+     * Has the internal repository associated with this Loader been modified,
+     * such that the loaded classes should be reloaded?
+     */
+    public boolean modified();
 
 
     /**
