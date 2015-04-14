@@ -288,7 +288,7 @@ public final class Request {
     }
 
 
-    public void setContentLength(int len) {
+    public void setContentLength(long len) {
         this.contentLength = len;
     }
 
@@ -501,6 +501,7 @@ public final class Request {
         headers.recycle();
         serverNameMB.recycle();
         serverPort=-1;
+        localNameMB.recycle();
         localPort = -1;
         remotePort = -1;
         available = 0;

@@ -76,12 +76,12 @@ class DefaultErrorHandler implements ErrorHandler {
                 buf.append(details[i].getJspExtract());
             } else {
                 buf.append("\n\n");
-                buf.append(MESSAGES.errorInJavaFile(details[i].getJavaLineNumber()));
+                buf.append(MESSAGES.errorInJavaFile(details[i].getJavaLineNumber(), details[i].getJavaFileName()));
                 buf.append("\n");
                 buf.append(details[i].getErrorMessage());
             }
         }
-        buf.append("\n\nStacktrace:");
+        buf.append("\n\n").append(MESSAGES.stacktrace());
         throw new JasperException(MESSAGES.failedClassCompilation(buf.toString()));
     }
     

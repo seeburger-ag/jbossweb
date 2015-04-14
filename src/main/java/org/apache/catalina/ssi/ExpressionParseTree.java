@@ -17,9 +17,12 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
+
 /**
  * Represents a parsed expression.
  * 
@@ -187,13 +190,13 @@ public class ExpressionParseTree {
         // Finish off the rest of the opps
         resolveGroup();
         if (nodeStack.size() == 0) {
-            throw new ParseException("No nodes created.", et.getIndex());
+            throw new ParseException(MESSAGES.ssiParseNoNodes(), et.getIndex());
         }
         if (nodeStack.size() > 1) {
-            throw new ParseException("Extra nodes created.", et.getIndex());
+            throw new ParseException(MESSAGES.ssiParseExtraNodes(), et.getIndex());
         }
         if (oppStack.size() != 0) {
-            throw new ParseException("Unused opp nodes exist.", et.getIndex());
+            throw new ParseException(MESSAGES.ssiParseUnusedNodes(), et.getIndex());
         }
         root = (Node)nodeStack.get(0);
     }
