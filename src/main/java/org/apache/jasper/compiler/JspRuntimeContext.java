@@ -17,6 +17,8 @@
 
 package org.apache.jasper.compiler;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilePermission;
@@ -284,8 +286,7 @@ public final class JspRuntimeContext {
                 } catch (FileNotFoundException ex) {
                     ctxt.incrementRemoved();
                 } catch (Throwable t) {
-                    jsw.getServletContext().log("Background compile failed",
-						t);
+                    jsw.getServletContext().log(MESSAGES.backgroundCompilationFailed(), t);
                 }
             }
         }
@@ -422,7 +423,7 @@ public final class JspRuntimeContext {
                                 new FilePermission(jndiUrl,"read") );
                 }
             } catch(Exception e) {
-                context.log("Security Init for context failed",e);
+                context.log(MESSAGES.errorInitializingSecurity(), e);
             }
         }
     }

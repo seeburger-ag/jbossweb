@@ -17,6 +17,8 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -368,14 +370,12 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
         String pathWithoutContext = SSIServletRequestUtil.getRelativePath(req);
         String prefix = getPathWithoutFileName(pathWithoutContext);
         if (prefix == null) {
-            throw new IOException("Couldn't remove filename from path: "
-                    + pathWithoutContext);
+            throw new IOException(MESSAGES.ssiFailedRemovingFilename(pathWithoutContext));
         }
         String fullPath = prefix + path;
         String retVal = SSIServletRequestUtil.normalize(fullPath);
         if (retVal == null) {
-            throw new IOException("Normalization yielded null on path: "
-                    + fullPath);
+            throw new IOException(MESSAGES.ssiFailedNormalization(fullPath));
         }
         return retVal;
     }
@@ -384,12 +384,10 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
     protected ServletContextAndPath getServletContextAndPathFromNonVirtualPath(
             String nonVirtualPath) throws IOException {
         if (nonVirtualPath.startsWith("/") || nonVirtualPath.startsWith("\\")) {
-            throw new IOException("A non-virtual path can't be absolute: "
-                    + nonVirtualPath);
+            throw new IOException(MESSAGES.ssiInvalidNonVirtualPath(nonVirtualPath));
         }
         if (nonVirtualPath.indexOf("../") >= 0) {
-            throw new IOException("A non-virtual path can't contain '../' : "
-                    + nonVirtualPath);
+            throw new IOException(MESSAGES.ssiInvalidNonVirtualPathWithTraversal(nonVirtualPath));
         }
         String path = getAbsolutePath(nonVirtualPath);
         ServletContextAndPath csAndP = new ServletContextAndPath(
@@ -411,8 +409,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             } else {
                 ServletContext normContext = context.getContext(normalized);
                 if (normContext == null) {
-                    throw new IOException("Couldn't get context for path: "
-                            + normalized);
+                    throw new IOException(MESSAGES.ssiCannotGetContext(normalized));
                 }
                 //If it's the root context, then there is no context element
                 // to remove,
@@ -422,9 +419,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
                     String noContext = getPathWithoutContext(
                             normContext.getContextPath(), normalized);
                     if (noContext == null) {
-                        throw new IOException(
-                                "Couldn't remove context from path: "
-                                        + normalized);
+                        throw new IOException(MESSAGES.ssiCannotRemoveContext(normalized));
                     }
                     return new ServletContextAndPath(normContext, noContext);
                 } else {
@@ -516,8 +511,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             String path = csAndP.getPath();
             RequestDispatcher rd = context.getRequestDispatcher(path);
             if (rd == null) {
-                throw new IOException(
-                        "Couldn't get request dispatcher for path: " + path);
+                throw new IOException(MESSAGES.ssiCannotGetRequestDispatcher(path));
             }
             ByteArrayServletOutputStream basos =
                 new ByteArrayServletOutputStream();
@@ -542,12 +536,11 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             //were included, but not sure how else to tell.
             if (retVal.equals("") && !req.getMethod().equalsIgnoreCase(
                     org.apache.coyote.http11.Constants.HEAD)) {
-                throw new IOException("Couldn't find file: " + path);
+                throw new IOException(MESSAGES.ssiCannotFindFile(path));
             }
             return retVal;
         } catch (ServletException e) {
-            throw new IOException("Couldn't include file: " + originalPath
-                    + " because of ServletException: " + e.getMessage());
+            throw new IOException(MESSAGES.ssiServletIncludeFailed(originalPath), e);
         }
     }
 
