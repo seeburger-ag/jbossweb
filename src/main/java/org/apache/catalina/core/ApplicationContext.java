@@ -900,8 +900,13 @@ public class ApplicationContext
         if (!context.isStarting()) {
             throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
-        if (context.findChild(servletName) != null) {
-            return null;
+        Wrapper existingWrapper = (Wrapper)context.findChild(servletName);
+        if (existingWrapper != null) {
+			if (existingWrapper.isOverridable()) {
+				existingWrapper.setOverridable(false);
+			} else {
+				return null;
+			}
         }
         Wrapper wrapper = context.createWrapper();
         wrapper.setDynamic(true);
@@ -926,8 +931,13 @@ public class ApplicationContext
         if (!context.isStarting()) {
             throw MESSAGES.contextAlreadyInitialized(getContextPath());
         }
-        if (context.findChild(servletName) != null) {
-            return null;
+        Wrapper existingWrapper = (Wrapper)context.findChild(servletName);
+        if (existingWrapper != null) {
+			if (existingWrapper.isOverridable()) {
+				existingWrapper.setOverridable(false);
+			} else {
+				return null;
+			}
         }
         // Servlet instance unicity
         for (Container container : context.getParent().findChildren()) {
@@ -969,7 +979,7 @@ public class ApplicationContext
         if (restricted) {
             throw MESSAGES.restrictedListenerCannotCallMethod();
         }
-        Wrapper wrapper = (Wrapper) context.findChild(servletName);
+        Wrapper wrapper = (Wrapper)context.findChild(servletName);
         if (wrapper != null) {
             return wrapper.getFacade();
         } else {

@@ -38,6 +38,7 @@ import javax.servlet.ServletSecurityElement;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.deploy.Multipart;
+import org.apache.catalina.Wrapper;
 
 
 /**
@@ -127,9 +128,18 @@ public class StandardWrapperFacade
             throw MESSAGES.invalidServletRegistrationArguments();
         }
         for (String urlPattern : urlPatterns) {
-            if (((Context) wrapper.getParent()).findServletMapping(urlPattern) != null) {
-                conflicts.add(urlPattern);
-            }
+			Context context = ((Context) wrapper.getParent());
+            String wrapperName = context.findServletMapping(urlPattern);
+            if (wrapperName != null) {
+                Wrapper servletWrapper = (Wrapper) context.findChild(wrapperName);
+                if (servletWrapper.isOverridable()) {
+                    // Some Wrappers (from global and host web.xml) may be
+                    // overridden rather than generating a conflict
+                    context.removeServletMapping(urlPattern);
+                } else {
+                    conflicts.add(urlPattern);
+                }
+			}
         }
         if (conflicts.isEmpty()) {
             for (String urlPattern : urlPatterns) {
