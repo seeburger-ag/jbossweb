@@ -101,11 +101,6 @@ public class ChunkedInputFilter implements InputFilter {
      */
     protected boolean needCRLFParse = false;
 
-    /**
-      * Flag that indicates if an error has occurred.
-      */
-    private boolean error;
-
     // ------------------------------------------------------------- Properties
 
 
@@ -126,8 +121,6 @@ public class ChunkedInputFilter implements InputFilter {
 
         if (endChunk)
             return -1;
-
-        checkError();
 
         if (needCRLFParse) {
             needCRLFParse = false;
@@ -228,7 +221,6 @@ public class ChunkedInputFilter implements InputFilter {
         lastValid = 0;
         endChunk = false;
         needCRLFParse = false;
-        error = false;
     }
 
 
@@ -283,7 +275,6 @@ public class ChunkedInputFilter implements InputFilter {
                 // In non blocking mode, no new chunk follows, even if data was present
                 int n = readBytes();
                 if (n < 0) {
-                    error = true;
                     throw new IOException("Invalid chunk header");
                 } else if (n == 0) {
                     return false;
@@ -295,9 +286,6 @@ public class ChunkedInputFilter implements InputFilter {
                 eol = true;
             } else if (buf[pos] == Constants.SEMI_COLON) {
                 trailer = true;
-            } else if (buf[pos] < 0) {
-                error = true;
-                throw new IOException("Invalid chunk header");
             } else if (!trailer) { 
                 //don't read data after the trailer
                 if (HexUtils.DEC[buf[pos]] != -1) {
@@ -307,7 +295,6 @@ public class ChunkedInputFilter implements InputFilter {
                 } else {
                     //we shouldn't allow invalid, non hex characters
                     //in the chunked header
-                    error = true;
                     throw new IOException("Invalid chunk header");
                 }
             }
@@ -316,10 +303,8 @@ public class ChunkedInputFilter implements InputFilter {
 
         }
 
-        if (readDigit == 0 || (result < 0)) {
-            error = true;
+        if (!readDigit || (result < 0))
             throw new IOException("Invalid chunk header");
-        }
 
         if (result == 0)
             endChunk = true;
@@ -343,26 +328,17 @@ public class ChunkedInputFilter implements InputFilter {
         while (!eol) {
 
             if (pos >= lastValid) {
-                if (readBytes() <= 0) {
-                    error = true;
+                if (readBytes() <= 0)
                     throw new IOException("Invalid CRLF");
-                }
             }
 
             if (buf[pos] == Constants.CR) {
-                if (crfound) {
-                    error = true;
-                    throw new IOException("Invalid CRLF, two CR characters encountered.");
-                }
+                if (crfound) throw new IOException("Invalid CRLF, two CR characters encountered.");
                 crfound = true;
             } else if (buf[pos] == Constants.LF) {
-                if (!crfound) {
-                    error = true;
-                    throw new IOException("Invalid CRLF, no CR character encountered.");
-                }
+                if (!crfound) throw new IOException("Invalid CRLF, no CR character encountered.");
                 eol = true;
             } else {
-                error = true;
                 throw new IOException("Invalid CRLF");
             }
 
@@ -386,11 +362,5 @@ public class ChunkedInputFilter implements InputFilter {
 
     }
 
-    
-    private void checkError() throws IOException {
-        if (error) {
-            throw new IOException("Chunked input filter error");
-        }
-    }
 
 }
