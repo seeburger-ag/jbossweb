@@ -39,6 +39,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.util.StringManager;
+import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
 
@@ -55,7 +56,7 @@ import org.jboss.servlet.http.HttpEvent;
 
 public abstract class ValveBase
     implements Contained, Valve, MBeanRegistration {
-
+    private static Logger log = Logger.getLogger(ValveBase.class);
 
     //------------------------------------------------------ Instance Variables
 
@@ -64,6 +65,12 @@ public abstract class ValveBase
      * The Container whose pipeline this Valve is a component of.
      */
     protected Container container = null;
+
+
+    /**
+     * Container log
+     */
+    protected Logger containerLog = null;
 
 
     /**
@@ -179,8 +186,7 @@ public abstract class ValveBase
      * the thread that is processing the request.
      *
      * @param request The servlet request to be processed
-     * @param response The servlet response to be processed
-     * @param event The event to be processed
+     * @param response The servlet response to be created
      *
      * @exception IOException if an input/output error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet
@@ -198,7 +204,7 @@ public abstract class ValveBase
      * Return a String rendering of this object.
      */
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
+        StringBuffer sb = new StringBuffer(this.getClass().getName());
         sb.append("[");
         if (container != null)
             sb.append(container.getName());
@@ -268,6 +274,7 @@ public abstract class ValveBase
         Container container=this.getContainer();
         if( container == null || ! (container instanceof ContainerBase) )
             return null;
+        this.containerLog = container.getLogger();
         ContainerBase containerBase=(ContainerBase)container;
         Pipeline pipe=containerBase.getPipeline();
         Valve valves[]=pipe.getValves();
@@ -295,6 +302,7 @@ public abstract class ValveBase
             parentName=",servlet=" + container.getName() +
                     ",path=" + path + ",host=" + host.getName();
         }
+        log.debug("valve parent=" + parentName + " " + parent);
 
         String className=this.getClass().getName();
         int period = className.lastIndexOf('.');
@@ -309,6 +317,7 @@ public abstract class ValveBase
             }
             if( valves[i]!=null &&
                     valves[i].getClass() == this.getClass() ) {
+                log.debug("Duplicate " + valves[i] + " " + this + " " + container);
                 seq++;
             }
         }
@@ -317,7 +326,10 @@ public abstract class ValveBase
             ext=",seq=" + seq;
         }
 
-        return new ObjectName( domain + ":type=Valve,name=" + className + ext + parentName);
+        ObjectName objectName = 
+            new ObjectName( domain + ":type=Valve,name=" + className + ext + parentName);
+        log.debug("valve objectname = "+objectName);
+        return objectName;
     }
 
     // -------------------- JMX data  --------------------

@@ -152,7 +152,7 @@ public class ErrorPage implements Serializable {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("ErrorPage[");
+        StringBuffer sb = new StringBuffer("ErrorPage[");
         if (exceptionType == null) {
             sb.append("errorCode=");
             sb.append(errorCode);

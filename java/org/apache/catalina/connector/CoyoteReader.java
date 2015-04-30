@@ -151,7 +151,7 @@ public class CoyoteReader
         int pos = 0;
         int end = -1;
         int skip = -1;
-        StringBuilder aggregator = null;
+        StringBuffer aggregator = null;
         while (end < 0) {
             mark(MAX_LINE_LENGTH);
             while ((pos < MAX_LINE_LENGTH) && (end < 0)) {
@@ -187,7 +187,7 @@ public class CoyoteReader
             }
             if (end < 0) {
                 if (aggregator == null) {
-                    aggregator = new StringBuilder();
+                    aggregator = new StringBuffer();
                 }
                 aggregator.append(lineBuffer);
                 pos = 0;

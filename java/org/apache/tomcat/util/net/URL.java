@@ -20,7 +20,6 @@ package org.apache.tomcat.util.net;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
-import java.util.Locale;
 
 
 /**
@@ -111,7 +110,7 @@ public final class URL implements Serializable {
             for (i = start; !aRef && (i < limit) ; i++) { 
                 c = spec.charAt(i);
                 if (c == ':') {
-                    String s = spec.substring(start, i).toLowerCase(Locale.ENGLISH);
+                    String s = spec.substring(start, i).toLowerCase();
                     // Assume all protocols are valid
                     newProtocol = s;
                     start = i + 1;
@@ -535,7 +534,7 @@ public final class URL implements Serializable {
      */
     public String toExternalForm() {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         if (protocol != null) {
             sb.append(protocol);
             sb.append(":");
@@ -564,7 +563,7 @@ public final class URL implements Serializable {
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("URL[");
+        StringBuffer sb = new StringBuffer("URL[");
         sb.append("authority=");
         sb.append(authority);
         sb.append(", file=");

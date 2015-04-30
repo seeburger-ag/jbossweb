@@ -25,8 +25,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Locale;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -41,7 +39,7 @@ import org.apache.catalina.Globals;
  * @author Amy Roh
  * @author Dan Sandberg
  * @author David Becker
- * @version $Id$
+ * @version $Revision$, $Date$
  */
 public class SSIServlet extends HttpServlet {
     /** Debug level for this servlet. */
@@ -56,8 +54,6 @@ public class SSIServlet extends HttpServlet {
     protected String inputEncoding = null;
     /** Output encoding. If not specified, uses platform default */
     protected String outputEncoding = "UTF-8";
-    /** Allow exec (normally blocked for security) */
-    protected boolean allowExec = false;
 
 
     //----------------- Public methods.
@@ -67,7 +63,6 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
-    @Override
     public void init() throws ServletException {
         
         if (getServletConfig().getInitParameter("debug") != null)
@@ -86,9 +81,6 @@ public class SSIServlet extends HttpServlet {
         if (getServletConfig().getInitParameter("outputEncoding") != null)
             outputEncoding = getServletConfig().getInitParameter("outputEncoding");
         
-        allowExec = Boolean.parseBoolean(
-                getServletConfig().getInitParameter("allowExec"));
-
         if (debug > 0)
             log("SSIServlet.init() SSI invoker started with 'debug'=" + debug);
 
@@ -107,7 +99,6 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
-    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException {
         if (debug > 0) log("SSIServlet.doGet()");
@@ -128,7 +119,6 @@ public class SSIServlet extends HttpServlet {
      * @exception ServletException
      *                if an error occurs
      */
-    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException {
         if (debug > 0) log("SSIServlet.doPost()");
@@ -145,7 +135,7 @@ public class SSIServlet extends HttpServlet {
      *            a value of type 'HttpServletResponse'
      */
     protected void requestHandler(HttpServletRequest req,
-            HttpServletResponse res) throws IOException {
+            HttpServletResponse res) throws IOException, ServletException {
         ServletContext servletContext = getServletContext();
         String path = SSIServletRequestUtil.getRelativePath(req);
         if (debug > 0)
@@ -154,8 +144,8 @@ public class SSIServlet extends HttpServlet {
                     + path + "'");
         // Exclude any resource in the /WEB-INF and /META-INF subdirectories
         // (the "toUpperCase()" avoids problems on Windows systems)
-        if (path == null || path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")
-                || path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF")) {
+        if (path == null || path.toUpperCase().startsWith("/WEB-INF")
+                || path.toUpperCase().startsWith("/META-INF")) {
             res.sendError(HttpServletResponse.SC_NOT_FOUND, path);
             log("Can't serve file: " + path);
             return;
@@ -186,7 +176,7 @@ public class SSIServlet extends HttpServlet {
             new SSIServletExternalResolver(getServletContext(), req, res,
                     isVirtualWebappRelative, debug, inputEncoding);
         SSIProcessor ssiProcessor = new SSIProcessor(ssiExternalResolver,
-                debug, allowExec);
+                debug);
         PrintWriter printWriter = null;
         StringWriter stringWriter = null;
         if (buffered) {
@@ -220,6 +210,5 @@ public class SSIServlet extends HttpServlet {
             String text = stringWriter.toString();
             res.getWriter().write(text);
         }
-        bufferedReader.close();
     }
 }

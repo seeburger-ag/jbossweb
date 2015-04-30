@@ -77,7 +77,7 @@ public class HttpEventImpl implements HttpEvent {
     }
     
     public void close() throws IOException {
-        request.setEventMode(false);
+        request.setComet(false);
         request.resume();
     }
 
@@ -114,7 +114,7 @@ public class HttpEventImpl implements HttpEvent {
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder("HttpEventImpl[");
+        StringBuffer buf = new StringBuffer("CometEventImpl[");
         buf.append(super.toString());
         buf.append("] Event:");
         buf.append(getType());

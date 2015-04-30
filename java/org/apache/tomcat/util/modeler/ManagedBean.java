@@ -460,7 +460,7 @@ public class ManagedBean implements java.io.Serializable
      */
     public String toString() {
 
-        StringBuilder sb = new StringBuilder("ManagedBean[");
+        StringBuffer sb = new StringBuffer("ManagedBean[");
         sb.append("name=");
         sb.append(name);
         sb.append(", className=");

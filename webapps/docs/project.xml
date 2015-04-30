@@ -12,16 +12,26 @@
     <body>
 
     <menu name="User Guide">
-        <item name="Docs Home"           href="index.html"/>
+        <item name="Docs Home"             href="index.html"/>
         <item name="Introduction"        href="introduction.html"/>
+        <item name="Setup"               href="setup.html"/>
         <item name="System Properties"   href="sysprops.html"/>
         <item name="First webapp"        href="appdev/index.html"/>
         <item name="Deployer"            href="deployer-howto.html"/>
+        <item name="Manager"             href="manager-howto.html"/>
+        <item name="Realms and AAA"      href="realm-howto.html"/>
         <item name="Security Manager"    href="security-manager-howto.html"/>
+        <item name="JNDI Resources"      href="jndi-resources-howto.html"/>
+        <item name="JDBC DataSources"    href="jndi-datasource-examples-howto.html"/>
         <item name="Classloading"        href="class-loader-howto.html"/>
+        <item name="JSPs"                href="jasper-howto.html"/>
         <item name="SSL"                 href="ssl-howto.html"/>
-        <item name="URL Rewriting"       href="rewrite.html"/>
-        <item name="Proxy Support"       href="proxy-howto.html"/>
+        <item name="PHP"                 href="php.html"/>
+        <item name="SSI"                 href="ssi-howto.html"/>
+        <item name="CGI"                          href="cgi-howto.html"/>
+        <item name="URL Rewriting"                href="rewrite.html"/>
+        <item name="Proxy Support"                href="proxy-howto.html"/>
+        <item name="MBean Descriptor"             href="mbeans-descriptor-howto.html"/>
         <item name="Default Servlet"              href="default-servlet.html"/>
         <item name="Connectors"                   href="connectors.html"/>
         <item name="Monitoring and Management"    href="monitoring.html"/>
@@ -34,6 +44,7 @@
     <menu name="JBoss Web Development">
         <item name="Building"              href="building.html"/>
         <item name="Changelog"             href="changelog.html"/>
+        <item name="Architecture"          href="architecture/index.html" />
         <item name="Functional Specs."     href="funcspecs/index.html"/>
         <item name="Legal"                 href="legal.html"/>
     </menu>
@@ -42,6 +53,9 @@
         <item name="Release Notes"         href="RELEASE-NOTES.txt"/>
         <item name="Configuration"         href="config/index.html"/>
         <item name="Javadocs"              href="api/index.html"/>
+        <item name="JK 1.2 Documentation"      
+              href="http://tomcat.apache.org/connectors-doc/"/>
+        <item name="Tomcat FAQ"            href="http://tomcat.apache.org/faq" />
     </menu>
 
     </body>

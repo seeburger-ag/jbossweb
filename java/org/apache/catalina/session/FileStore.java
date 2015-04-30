@@ -401,7 +401,7 @@ public final class FileStore
                 ServletContext servletContext =
                     ((Context) container).getServletContext();
                 File work = (File)
-                    servletContext.getAttribute(ServletContext.TEMPDIR);
+                    servletContext.getAttribute(Globals.WORK_DIR_ATTR);
                 file = new File(work, this.directory);
             } else {
                 throw new IllegalArgumentException

@@ -18,6 +18,7 @@
 
 package org.apache.catalina;
 
+import org.apache.catalina.deploy.NamingResources;
 
 /**
  * A <code>Server</code> element represents the entire Catalina
@@ -58,6 +59,63 @@ public interface Server {
     public String getInfo();
 
 
+    /**
+     * Return the global naming resources.
+     */
+    public NamingResources getGlobalNamingResources();
+
+
+    /**
+     * Set the global naming resources.
+     * 
+     * @param globalNamingResources The new global naming resources
+     */
+    public void setGlobalNamingResources
+        (NamingResources globalNamingResources);
+
+
+    /**
+     * Return the port number we listen to for shutdown commands.
+     */
+    public int getPort();
+
+
+    /**
+     * Set the port number we listen to for shutdown commands.
+     *
+     * @param port The new port number
+     */
+    public void setPort(int port);
+
+
+    /**
+     * Return the address on which we listen to for shutdown commands.
+     */
+    public String getAddress();
+
+
+    /**
+     * Set the address on which we listen to for shutdown commands.
+     *
+     * @param address The new address
+     */
+    public void setAddress(String address);
+
+
+    /**
+     * Return the shutdown command string we are waiting for.
+     */
+    public String getShutdown();
+
+
+    /**
+     * Set the shutdown command we are waiting for.
+     *
+     * @param shutdown The new shutdown command
+     */
+    public void setShutdown(String shutdown);
+
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -67,6 +125,12 @@ public interface Server {
      * @param service The Service to be added
      */
     public void addService(Service service);
+
+
+    /**
+     * Wait until a proper shutdown command is received, then return.
+     */
+    public void await();
 
 
     /**

@@ -21,7 +21,6 @@ package org.apache.catalina;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Random;
 
 
 /**
@@ -261,20 +260,25 @@ public interface Manager {
 
 
     /**
-     * Change the session ID of the current session to a new randomly generated
-     * session ID.
-     * 
-     * @param session   The session to change the session ID for
-     */
-    public void changeSessionId(Session session, Random random);
-
-
-    /**
      * Get a session from the recycled ones or create a new empty one.
      * The PersistentManager manager does not need to create session data
      * because it reads it from the Store.
      */                                                                         
     public Session createEmptySession();
+
+
+    /**
+     * Construct and return a new session object, based on the default
+     * settings specified by this Manager's properties.  The session
+     * id will be assigned by this method, and available via the getId()
+     * method of the returned session.  If a new session cannot be created
+     * for any reason, return <code>null</code>.
+     * 
+     * @exception IllegalStateException if a new session cannot be
+     *  instantiated for any reason
+     * @deprecated
+     */
+    public Session createSession();
 
 
     /**
@@ -291,7 +295,7 @@ public interface Manager {
      * @exception IllegalStateException if a new session cannot be
      *  instantiated for any reason
      */
-    public Session createSession(String sessionId, Random random);
+    public Session createSession(String sessionId);
 
 
     /**

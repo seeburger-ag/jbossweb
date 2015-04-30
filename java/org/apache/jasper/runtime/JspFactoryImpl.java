@@ -30,6 +30,7 @@ import javax.servlet.jsp.PageContext;
 
 import org.apache.jasper.Constants;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of JspFactory.
@@ -41,7 +42,7 @@ public class JspFactoryImpl extends JspFactory {
     // Logger
     private Logger log = Logger.getLogger(JspFactoryImpl.class);
 
-    private static final String SPEC_VERSION = "2.2";
+    private static final String SPEC_VERSION = "2.1";
     private static final boolean USE_POOL = 
         Boolean.valueOf(System.getProperty("org.apache.jasper.runtime.JspFactoryImpl.USE_POOL", "true")).booleanValue();
     private static final int POOL_SIZE = 
@@ -167,7 +168,7 @@ public class JspFactoryImpl extends JspFactory {
         }
     }
 
-    protected static final class PageContextPool  {
+    protected final class PageContextPool  {
 
         private PageContext[] pool;
 

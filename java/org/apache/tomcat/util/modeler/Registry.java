@@ -747,7 +747,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
         }
         
         if( sourceType==null ) {
-            sourceType="MbeansDescriptorsDOMSource";
+            sourceType="MbeansDescriptorsDigesterSource";
         }
         ModelerSource ds=getModelerSource(sourceType);
         List mbeans=ds.loadDescriptors(this, location, type, inputsource);
@@ -760,7 +760,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
             return "MbeansDescriptorsSerSource";
         }
         else if( s.endsWith(".xml")) {
-            return "MbeansDescriptorsDOMSource";
+            return "MbeansDescriptorsDigesterSource";
         }
         return null;
     }
@@ -836,13 +836,11 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
             return;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug( "Found " + dURL);
-        }
+        log.debug( "Found " + dURL);
         searchedPaths.put( packageName,  dURL );
         try {
             if( descriptors.endsWith(".xml" ))
-                loadDescriptors("MbeansDescriptorsDOMSource", dURL, null);
+                loadDescriptors("MbeansDescriptorsDigesterSource", dURL, null);
             else
                 loadDescriptors("MbeansDescriptorsSerSource", dURL, null);
             return;
@@ -914,7 +912,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
     private ModelerSource getModelerSource( String type )
             throws Exception
     {
-        if( type==null ) type="MbeansDescriptorsDOMSource";
+        if( type==null ) type="MbeansDescriptorsDigesterSource";
         if( type.indexOf( ".") < 0 ) {
             type="org.apache.tomcat.util.modeler.modules." + type;
         }
@@ -988,7 +986,7 @@ public class Registry implements RegistryMBean, MBeanRegistration  {
     public void loadDescriptors( Object source )
             throws Exception
     {
-        loadDescriptors("MbeansDescriptorsDOMSource", source, null );
+        loadDescriptors("MbeansDescriptorsDigesterSource", source, null );
     }
 
     /** @deprecated - may still be used in code using pre-1.1 builds

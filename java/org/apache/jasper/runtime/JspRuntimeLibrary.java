@@ -989,7 +989,7 @@ public class JspRuntimeLibrary {
 	    enc = "ISO-8859-1";	// The default request encoding 
 	}
 
-	StringBuilder out = new StringBuilder(s.length());
+	StringBuffer out = new StringBuffer(s.length());
 	ByteArrayOutputStream buf = new ByteArrayOutputStream();
 	OutputStreamWriter writer = null;
 	try {

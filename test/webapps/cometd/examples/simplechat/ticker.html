@@ -1,20 +1,4 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<!--
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1" >
@@ -26,6 +10,16 @@
 
 dojo.require("dojox.cometd");
 
+dojo.addOnUnload(function() {
+	  dojox.cometd.init("/cometd/cometd");
+	  dojox.cometd.startBatch();
+	  dojox.cometd.unsubscribe("/stock/GOOG", this,"");
+	  dojox.cometd.unsubscribe("/stock/YHOO", this,"");
+	  dojox.cometd.unsubscribe("/stock/SPRG", this,"");
+	  dojox.cometd.endBatch();
+	});
+
+
 dojo.addOnLoad(function() {
   dojox.cometd.init("/cometd/cometd");
   dojox.cometd.startBatch();
@@ -36,27 +30,16 @@ dojo.addOnLoad(function() {
 });
 
 
-dojo.addOnUnload(function() {
-      dojox.cometd.startBatch();
-      dojox.cometd.unsubscribe("/stock/GOOG", this,"");
-      dojox.cometd.unsubscribe("/stock/YHOO", this,"");
-      dojox.cometd.unsubscribe("/stock/SPRG", this,"");
-      dojox.cometd.endBatch();
-    });
-
-
-
-
 function subscribe(box, symbol) {
-    if (box.checked) {
-        dojox.cometd.subscribe("/stock/"+symbol, onMsgEvent);
-        var rowCurrent = dojo.byId("row."+symbol);
-        rowCurrent.bgColor="white";
-    } else {
-        dojox.cometd.unsubscribe("/stock/"+symbol, onMsgEvent);
-        var rowCurrent = dojo.byId("row."+symbol);
-        rowCurrent.bgColor="gray";
-    }
+	if (box.checked) {
+		dojox.cometd.subscribe("/stock/"+symbol, onMsgEvent);
+		var rowCurrent = dojo.byId("row."+symbol);
+		rowCurrent.bgColor="white";
+	} else {
+		dojox.cometd.unsubscribe("/stock/"+symbol, onMsgEvent);
+		var rowCurrent = dojo.byId("row."+symbol);
+		rowCurrent.bgColor="gray";
+	}
 }
 
 function removeChildrenFromNode(node)
@@ -68,10 +51,10 @@ function removeChildrenFromNode(node)
 
    var len = node.childNodes.length;
 
-    while (node.hasChildNodes())
-    {
-      node.removeChild(node.firstChild);
-    }
+	while (node.hasChildNodes())
+	{
+	  node.removeChild(node.firstChild);
+	}
 }
 
 function onMsgEvent(event) {
@@ -95,16 +78,16 @@ function onMsgEvent(event) {
    var table = dojo.byId("stocktable");  
    var rows = table.getElementsByTagName("tr");  
    for(i = 0; i < rows.length; i++){
-       if (rows[i].bgColor != "gray") {
-           rows[i].bgColor = "white"; 
-       }
+	   if (rows[i].bgColor != "gray") {
+	       rows[i].bgColor = "white"; 
+	   }
    }          
    //manipulate rows 
    var rowCurrent = dojo.byId("row."+symbol);
    if (pricechange<=0) {
        rowCurrent.bgColor = "red";
    } else {
-       rowCurrent.bgColor = "cyan";
+	   rowCurrent.bgColor = "cyan";
    }
 }
 

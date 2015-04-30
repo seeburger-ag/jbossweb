@@ -39,7 +39,7 @@ public class JavacErrorDetail {
     private int javaLineNum;
     private String jspFileName;
     private int jspBeginLineNum;
-    private StringBuilder errMsg;
+    private StringBuffer errMsg;
     private String jspExtract = null;
 
     /**
@@ -52,7 +52,7 @@ public class JavacErrorDetail {
      */
     public JavacErrorDetail(String javaFileName,
                             int javaLineNum,
-                            StringBuilder errMsg) {
+                            StringBuffer errMsg) {
 
         this.javaFileName = javaFileName;
         this.javaLineNum = javaLineNum;
@@ -71,13 +71,22 @@ public class JavacErrorDetail {
      * @param jspBeginLineNum The start line number of the JSP element
      * responsible for the compilation error
      * @param errMsg The compilation error message
-     * @param ctxt The compilation context
      */
+    public JavacErrorDetail(String javaFileName,
+                            int javaLineNum,
+                            String jspFileName,
+                            int jspBeginLineNum,
+                            StringBuffer errMsg) {
+
+        this(javaFileName, javaLineNum, jspFileName, jspBeginLineNum, errMsg,
+                null);
+    }
+
     public JavacErrorDetail(String javaFileName,
             int javaLineNum,
             String jspFileName,
             int jspBeginLineNum,
-            StringBuilder errMsg,
+            StringBuffer errMsg,
             JspCompilationContext ctxt) {
         
         this(javaFileName, javaLineNum, errMsg);
@@ -85,24 +94,14 @@ public class JavacErrorDetail {
         this.jspBeginLineNum = jspBeginLineNum;
         
         if (jspBeginLineNum > 0 && ctxt != null) {
-            InputStream is = null;
-            FileInputStream  fis = null;
-            
             try {
                 // Read both files in, so we can inspect them
-                is = ctxt.getResourceAsStream(jspFileName);
-                String[] jspLines = readFile(is);
+                String[] jspLines = readFile
+                    (ctxt.getResourceAsStream(jspFileName));
     
-                fis = new FileInputStream(ctxt.getServletJavaFileName());
-                String[] javaLines = readFile(fis);
+                String[] javaLines = readFile
+                    (new FileInputStream(ctxt.getServletJavaFileName()));
     
-                if (jspLines.length < jspBeginLineNum) {
-                    // Avoid ArrayIndexOutOfBoundsException
-                    // Probably bug 48494 but could be some other cause
-                    jspExtract = Localizer.getMessage("jsp.error.bug48494");
-                    return;
-                }
-                
                 // If the line contains the opening of a multi-line scriptlet
                 // block, then the JSP line number we got back is probably
                 // faulty.  Scan forward to match the java line...
@@ -120,7 +119,7 @@ public class JavacErrorDetail {
                 }
     
                 // copy out a fragment of JSP to display to the user
-                StringBuilder fragment = new StringBuilder(1024);
+                StringBuffer fragment = new StringBuffer(1024);
                 int startIndex = Math.max(0, this.jspBeginLineNum-1-3);
                 int endIndex = Math.min(
                         jspLines.length-1, this.jspBeginLineNum-1+3);
@@ -135,21 +134,6 @@ public class JavacErrorDetail {
     
             } catch (IOException ioe) {
                 // Can't read files - ignore
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ioe) {
-                        // Ignore
-                    }
-                }
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (IOException ioe) {
-                        // Ignore
-                    }
-                }
             }
         }
     }
@@ -218,13 +202,13 @@ public class JavacErrorDetail {
      */
     private String[] readFile(InputStream s) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(s));
-        List<String> lines = new ArrayList<String>();
+        List lines = new ArrayList();
         String line;
 
         while ( (line = reader.readLine()) != null ) {
             lines.add(line);
         }
 
-        return lines.toArray( new String[lines.size()] );
+        return (String[]) lines.toArray( new String[lines.size()] );
     }
 }

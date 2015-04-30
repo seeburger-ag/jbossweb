@@ -139,29 +139,6 @@ public abstract class Compiler {
             pageInfo.setTrimDirectiveWhitespaces(JspUtil.booleanValue(jspProperty
                     .isTrimDirectiveWhitespaces()));
         }
-        // Default ContentType processing is deferred until after the page has been parsed
-        if (jspProperty.getBuffer() != null && pageInfo.getBufferValue() == null) {
-            pageInfo.setBufferValue(jspProperty.getBuffer(), errDispatcher);
-        }
-        if (jspProperty.isErrorOnUndeclaredNamespace() != null) {
-            pageInfo.setErrorOnUndeclaredNamespace(JspUtil.booleanValue(jspProperty
-                    .isErrorOnUndeclaredNamespace()));
-        }
-        if (ctxt.isTagFile()) {
-            try {
-                double libraryVersion = Double.parseDouble(ctxt.getTagInfo()
-                        .getTagLibrary().getRequiredVersion());
-                if (libraryVersion < 2.0) {
-                    pageInfo.setIsELIgnored("true", null, errDispatcher, true);
-                }
-                if (libraryVersion < 2.1) {
-                    pageInfo.setDeferredSyntaxAllowedAsLiteral("true", null,
-                            errDispatcher, true);
-                }
-            } catch (NumberFormatException ex) {
-                errDispatcher.jspError(ex);
-            }
-        }
 
         ctxt.checkOutputDir();
         String javaFileName = ctxt.getServletJavaFileName();
@@ -192,10 +169,6 @@ public abstract class Compiler {
             
             // Pass 2 - the whole translation unit
             pageNodes = parserCtl.parse(ctxt.getJspFile());
-
-            if (jspProperty.getDefaultContentType() != null && pageInfo.getContentType() == null) {
-                pageInfo.setContentType(jspProperty.getDefaultContentType());
-            }
 
             if (ctxt.isPrototypeMode()) {
                 // generate prototype .java file for the tag file
@@ -237,7 +210,7 @@ public abstract class Compiler {
             TextOptimizer.concatenate(this, pageNodes);
 
             // Generate static function mapper codes.
-            ELFunctionMapper.map(pageNodes);
+            ELFunctionMapper.map(this, pageNodes);
 
             // generate servlet .java file
             writer = setupContextWriter(javaFileName);

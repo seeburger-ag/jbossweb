@@ -41,24 +41,23 @@ public class StringCache {
      * Enabled ?
      */
     protected static boolean byteEnabled = 
-        ("true".equals(System.getProperty("org.apache.tomcat.util.buf.StringCache.byte.enabled", 
-                org.apache.tomcat.util.Constants.LOW_MEMORY ? "false" : "true")));
+        ("true".equals(System.getProperty("tomcat.util.buf.StringCache.byte.enabled", "false")));
 
     
     protected static boolean charEnabled = 
-        ("true".equals(System.getProperty("org.apache.tomcat.util.buf.StringCache.char.enabled", "false")));
+        ("true".equals(System.getProperty("tomcat.util.buf.StringCache.char.enabled", "false")));
 
     
     protected static int trainThreshold = 
-        Integer.parseInt(System.getProperty("org.apache.tomcat.util.buf.StringCache.trainThreshold", "100000"));
+        Integer.parseInt(System.getProperty("tomcat.util.buf.StringCache.trainThreshold", "20000"));
     
 
     protected static int cacheSize = 
-        Integer.parseInt(System.getProperty("org.apache.tomcat.util.buf.StringCache.cacheSize", "5000"));
+        Integer.parseInt(System.getProperty("tomcat.util.buf.StringCache.cacheSize", "200"));
     
 
     protected static int maxStringSize = 
-        Integer.parseInt(System.getProperty("org.apache.tomcat.util.buf.StringCache.maxStringSize", "128"));
+        Integer.parseInt(System.getProperty("tomcat.util.buf.StringCache.maxStringSize", "128"));
     
 
    /**

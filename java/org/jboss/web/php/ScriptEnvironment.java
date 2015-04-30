@@ -30,15 +30,15 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.catalina.Globals;
 import org.apache.catalina.util.IOTools;
+import org.jboss.logging.Logger;
 import org.jboss.logging.Logger;
 
 
@@ -469,7 +469,7 @@ public class ScriptEnvironment {
 
         while (headers.hasMoreElements()) {
             header = null;
-            header = ((String)headers.nextElement()).toUpperCase(Locale.ENGLISH);
+            header = ((String)headers.nextElement()).toUpperCase();
             //REMIND: rewrite multiple headers as if received as single
             //REMIND: change character set
             //REMIND: I forgot what the previous REMIND means
@@ -570,14 +570,14 @@ public class ScriptEnvironment {
         this.scriptPathPrefix = scriptPathPrefix;
         this.context = context;
         this.webAppRootDir = context.getRealPath("/");
-        this.tempDir = (File)context.getAttribute(ServletContext.TEMPDIR);
+        this.tempDir = (File)context.getAttribute(Globals.WORK_DIR_ATTR);
 
 
-        if (req.getAttribute(RequestDispatcher.INCLUDE_CONTEXT_PATH) != null) {
+        if (req.getAttribute(Globals.INCLUDE_CONTEXT_PATH_ATTR) != null) {
            // Include
-           this.contextPath = (String) req.getAttribute(RequestDispatcher.INCLUDE_CONTEXT_PATH);
-           this.servletPath = (String) req.getAttribute(RequestDispatcher.INCLUDE_SERVLET_PATH);
-           this.pathInfo = (String) req.getAttribute(RequestDispatcher.INCLUDE_PATH_INFO);
+           this.contextPath = (String) req.getAttribute(Globals.INCLUDE_CONTEXT_PATH_ATTR);
+           this.servletPath = (String) req.getAttribute(Globals.INCLUDE_SERVLET_PATH_ATTR);
+           this.pathInfo = (String) req.getAttribute(Globals.INCLUDE_PATH_INFO_ATTR);
         }
         else {
            // Direct call

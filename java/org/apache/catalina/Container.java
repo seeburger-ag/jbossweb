@@ -407,17 +407,6 @@ public interface Container {
 
 
     /**
-     * Notify all container event listeners that a particular event has
-     * occurred for this Container.  The default implementation performs
-     * this notification synchronously using the calling thread.
-     *
-     * @param type Event type
-     * @param data Event data
-     */
-    public void fireContainerEvent(String type, Object data);
-
-
-    /**
      * Process the specified Request, and generate the corresponding Response,
      * according to the design of this particular Container.
      *

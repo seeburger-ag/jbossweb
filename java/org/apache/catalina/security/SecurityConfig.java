@@ -17,6 +17,7 @@
 package org.apache.catalina.security;
 
 import java.security.Security;
+import org.apache.catalina.startup.CatalinaProperties;
 
 /**
  * Util class to protect Catalina against package access and insertion.
@@ -58,8 +59,14 @@ public final class SecurityConfig{
      * Create a single instance of this class.
      */
     private SecurityConfig(){  
-        packageDefinition = System.getProperty("package.definition");
-        packageAccess = System.getProperty("package.access");
+        try{
+            packageDefinition = CatalinaProperties.getProperty("package.definition");
+            packageAccess = CatalinaProperties.getProperty("package.access");
+        } catch (java.lang.Exception ex){
+            if (log.isDebugEnabled()){
+                log.debug("Unable to load properties using CatalinaProperties", ex); 
+            }            
+        }
     }
     
     

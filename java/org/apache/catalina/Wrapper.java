@@ -19,16 +19,9 @@
 package org.apache.catalina;
 
 
-import java.util.Set;
-
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletSecurityElement;
 import javax.servlet.UnavailableException;
-
-import org.apache.catalina.deploy.Multipart;
-import org.apache.catalina.util.InstanceSupport;
 
 
 /**
@@ -61,20 +54,6 @@ public interface Wrapper extends Container {
 
 
     /**
-     * Return the async supported value.
-     */
-    public boolean getAsyncSupported();
-
-
-    /**
-     * Set the async supported value.
-     *
-     * @param value New async supported value
-     */
-    public void setAsyncSupported(boolean asyncSupported);
-
-
-    /**
      * Return the available date/time for this servlet, in milliseconds since
      * the epoch.  If this date/time is in the future, any request for this
      * servlet will return an SC_SERVICE_UNAVAILABLE error.  If it is zero,
@@ -95,53 +74,6 @@ public interface Wrapper extends Container {
     public void setAvailable(long available);
 
 
-    /**
-     * Return the Servlet description.
-     */
-    public String getDescription();
-
-
-    /**
-     * Set the description.
-     */
-    public void setDescription(String description);
-
-
-    /**
-     * Get the flag that indicates if the wrapper was added programmatically.
-     * The flag value defaults to false.
-     */
-    public boolean isDynamic();
-
-
-    /**
-     * Set a flag that indicates if the wrapper was added programmatically.
-     *
-     * @param value New async supported value
-     */
-    public void setDynamic(boolean dynamic);
-
-
-    /**
-     * Return the enabled value.
-     */
-    public boolean getEnabled();
-
-
-    /**
-     * Set the enabled value.
-     *
-     * @param value New async supported value
-     */
-    public void setEnabled(boolean enabled);
-
-
-    /**
-     * Return the InstanceSupport object for this Wrapper instance.
-     */
-    public InstanceSupport getInstanceSupport();
-    
-    
     /**
      * Return the context-relative URI of the JSP file for this servlet.
      */
@@ -171,18 +103,6 @@ public interface Wrapper extends Container {
      */
     public void setLoadOnStartup(int value);
 
-    
-    /**
-     * Multipart configuration for this Servlet.
-     */
-    public Multipart getMultipartConfig();
-    
-
-    /**
-     * Set the multipart configuration for this Servlet.
-     */
-    public void setMultipartConfig(Multipart multipartConfig);
-    
 
     /**
      * Return the run-as identity for this servlet.
@@ -298,22 +218,9 @@ public interface Wrapper extends Container {
 
 
     /**
-     * Get the facade ServletRegistration.
-     */
-    public ServletRegistration getFacade();
-    
-    
-    /**
      * Return the associated servlet instance.
      */
     public Servlet getServlet();
-    
-    
-    /**
-     * Set the associated servlet instance. This will only do something
-     * meaningful for non STM servlets.
-     */
-    public void setServlet(Servlet servlet);
     
     
     /**
@@ -426,18 +333,5 @@ public interface Wrapper extends Container {
      */
     public void unload() throws ServletException;
 
-    
-    /**
-     * Set an associated ServletSecurity.
-      * 
-     * @return the set of patterns for which the servlet security will not be defined
-    */
-    public Set<String> setServletSecurity(ServletSecurityElement servletSecurity);
-
-    
-    /**
-     * Get an associated ServletSecurity, if any.
-     */
-    public ServletSecurityElement getServletSecurity();
 
 }

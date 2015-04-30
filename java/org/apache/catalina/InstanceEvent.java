@@ -25,8 +25,6 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.jboss.servlet.http.HttpEvent;
-
 
 /**
  * General event for notifying listeners of significant events related to
@@ -92,8 +90,8 @@ public final class InstanceEvent
 
 
     /**
-     * The event indicating that the <code>doFilter()</code> method of a
-     * filter chain accessed via a request dispatcher is about to be called.
+     * The event indicating that the <code>service()</code> method of a
+     * servlet accessed via a request dispatcher is about to be called.
      * The <code>servlet</code> property contains a reference to the
      * dispatched-to servlet instance, and the <code>request</code> and
      * <code>response</code> properties contain the current request and
@@ -104,8 +102,8 @@ public final class InstanceEvent
 
 
     /**
-     * The event indicating that the <code>doFilter()</code> method of a
-     * filter chain accessed via a request dispatcher has returned.  The
+     * The event indicating that the <code>service()</code> method of a
+     * servlet accessed via a request dispatcher has returned.  The
      * <code>servlet</code> property contains a reference to the
      * dispatched-to servlet instance, and the <code>request</code> and
      * <code>response</code> properties contain the current request and
@@ -113,30 +111,6 @@ public final class InstanceEvent
      * contain a reference to the dispatched-to Wrapper.
      */
     public static final String AFTER_DISPATCH_EVENT = "afterDispatch";
-
-
-    /**
-     * The event indicating that the <code>doFilter()</code> method of a
-     * filter chain is about to be called.
-     * The <code>servlet</code> property contains a reference to the
-     * associated servlet instance, and the <code>request</code> and
-     * <code>response</code> properties contain the current request and
-     * response being processed.  The <code>wrapper</code> property will
-     * contain a reference to the dispatched-to Wrapper.
-     */
-    public static final String BEFORE_REQUEST_EVENT = "beforeRequest";
-
-
-    /**
-     * The event indicating that the <code>doFilter()</code> method of a
-     * filter chain has returned.  The
-     * <code>servlet</code> property contains a reference to the
-     * associated servlet instance, and the <code>request</code> and
-     * <code>response</code> properties contain the current request and
-     * response being processed.  The <code>wrapper</code> property will
-     * contain a reference to the dispatched-to Wrapper.
-     */
-    public static final String AFTER_REQUEST_EVENT = "afterRequest";
 
 
     /**
@@ -346,100 +320,6 @@ public final class InstanceEvent
     }
 
 
-    /**
-     * Construct a new InstanceEvent with the specified parameters.  This
-     * constructor is used for processing servlet processing events.
-     *
-     * @param wrapper Wrapper managing this servlet instance
-     * @param servlet Servlet instance for which this event occurred
-     * @param type Event type (required)
-     * @param event Event we are processing
-     * @param exception Exception that occurred
-     */
-    public InstanceEvent(Wrapper wrapper, Servlet servlet, String type,
-                         HttpEvent event,
-                         Throwable exception) {
-
-      super(wrapper);
-      this.wrapper = wrapper;
-      this.filter = null;
-      this.servlet = servlet;
-      this.type = type;
-      this.event = event;
-      this.exception = exception;
-
-    }
-
-
-    /**
-     * Construct a new InstanceEvent with the specified parameters.  This
-     * constructor is used for processing servlet processing events.
-     *
-     * @param wrapper Wrapper managing this servlet instance
-     * @param servlet Servlet instance for which this event occurred
-     * @param type Event type (required)
-     * @param event Event we are processing
-     * @param exception Exception that occurred
-     */
-    public InstanceEvent(Wrapper wrapper, Servlet servlet, String type,
-                         HttpEvent event) {
-
-      super(wrapper);
-      this.wrapper = wrapper;
-      this.filter = null;
-      this.servlet = servlet;
-      this.type = type;
-      this.event = event;
-
-    }
-
-
-    /**
-     * Construct a new InstanceEvent with the specified parameters.  This
-     * constructor is used for processing servlet processing events.
-     *
-     * @param wrapper Wrapper managing this servlet instance
-     * @param filter Filter instance for which this event occurred
-     * @param type Event type (required)
-     * @param event Event we are processing
-     * @param exception Exception that occurred
-     */
-    public InstanceEvent(Wrapper wrapper, Filter filter, String type,
-                         HttpEvent event,
-                         Throwable exception) {
-
-      super(wrapper);
-      this.wrapper = wrapper;
-      this.filter = filter;
-      this.type = type;
-      this.event = event;
-      this.exception = exception;
-
-    }
-
-
-    /**
-     * Construct a new InstanceEvent with the specified parameters.  This
-     * constructor is used for processing servlet processing events.
-     *
-     * @param wrapper Wrapper managing this servlet instance
-     * @param servlet Servlet instance for which this event occurred
-     * @param type Event type (required)
-     * @param event Event we are processing
-     * @param exception Exception that occurred
-     */
-    public InstanceEvent(Wrapper wrapper, Filter filter, String type,
-                         HttpEvent event) {
-
-      super(wrapper);
-      this.wrapper = wrapper;
-      this.filter = filter;
-      this.type = type;
-      this.event = event;
-
-    }
-
-
     // ----------------------------------------------------- Instance Variables
 
 
@@ -470,13 +350,6 @@ public final class InstanceEvent
      * AFTER_FILTER_EVENT, BEFORE_SERVICE_EVENT, and AFTER_SERVICE_EVENT).
      */
     private ServletResponse response = null;
-
-
-    /**
-     * The event being processed (BEFORE_FILTER_EVENT,
-     * AFTER_FILTER_EVENT, BEFORE_SERVICE_EVENT, and AFTER_SERVICE_EVENT).
-     */
-    private HttpEvent event = null;
 
 
     /**
@@ -527,11 +400,7 @@ public final class InstanceEvent
      */
     public ServletRequest getRequest() {
 
-        if (event != null) {
-            return this.event.getHttpServletRequest();
-        } else {
-            return (this.request);
-        }
+        return (this.request);
 
     }
 
@@ -541,21 +410,7 @@ public final class InstanceEvent
      */
     public ServletResponse getResponse() {
 
-        if (event != null) {
-            return this.event.getHttpServletResponse();
-        } else {
-            return (this.response);
-        }
-
-    }
-
-
-    /**
-     * Return the event for which this event occurred.
-     */
-    public HttpEvent getEvent() {
-
-        return (this.event);
+        return (this.response);
 
     }
 

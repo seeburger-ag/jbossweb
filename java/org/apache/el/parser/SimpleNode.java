@@ -18,12 +18,9 @@
 
 package org.apache.el.parser;
 
-import java.util.Arrays;
-
 import javax.el.ELException;
 import javax.el.MethodInfo;
 import javax.el.PropertyNotWritableException;
-import javax.el.ValueReference;
 
 import org.apache.el.lang.ELSupport;
 import org.apache.el.lang.EvaluationContext;
@@ -32,7 +29,7 @@ import org.apache.el.util.MessageFactory;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
- * @version $Id$
+ * @version $Change: 181177 $$DateTime: 2001/06/26 08:45:09 $$Author$
  */
 public abstract class SimpleNode extends ELSupport implements Node {
     protected Node parent;
@@ -47,27 +44,20 @@ public abstract class SimpleNode extends ELSupport implements Node {
         id = i;
     }
 
-    @Override
     public void jjtOpen() {
-        // NOOP by default
     }
 
-    @Override
     public void jjtClose() {
-        // NOOP by default
     }
 
-    @Override
     public void jjtSetParent(Node n) {
         parent = n;
     }
 
-    @Override
     public Node jjtGetParent() {
         return parent;
     }
 
-    @Override
     public void jjtAddChild(Node n, int i) {
         if (children == null) {
             children = new Node[i + 1];
@@ -79,12 +69,10 @@ public abstract class SimpleNode extends ELSupport implements Node {
         children[i] = n;
     }
 
-    @Override
     public Node jjtGetChild(int i) {
         return children[i];
     }
 
-    @Override
     public int jjtGetNumChildren() {
         return (children == null) ? 0 : children.length;
     }
@@ -96,7 +84,6 @@ public abstract class SimpleNode extends ELSupport implements Node {
      * otherwise overriding toString() is probably all you need to do.
      */
 
-    @Override
     public String toString() {
         if (this.image != null) {
             return ELParserTreeConstants.jjtNodeName[id] + "[" + this.image
@@ -109,7 +96,23 @@ public abstract class SimpleNode extends ELSupport implements Node {
         return prefix + toString();
     }
 
-    @Override
+    /*
+     * Override this method if you want to customize how the node dumps out its
+     * children.
+     */
+
+    public void dump(String prefix) {
+        System.out.println(toString(prefix));
+        if (children != null) {
+            for (int i = 0; i < children.length; ++i) {
+                SimpleNode n = (SimpleNode) children[i];
+                if (n != null) {
+                    n.dump(prefix + " ");
+                }
+            }
+        }
+    }
+
     public String getImage() {
         return image;
     }
@@ -118,31 +121,26 @@ public abstract class SimpleNode extends ELSupport implements Node {
         this.image = image;
     }
 
-    @Override
-    public Class<?> getType(EvaluationContext ctx)
+    public Class getType(EvaluationContext ctx)
             throws ELException {
         throw new UnsupportedOperationException();
     }
 
-    @Override
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         throw new UnsupportedOperationException();
     }
 
-    @Override
     public boolean isReadOnly(EvaluationContext ctx)
             throws ELException {
         return true;
     }
 
-    @Override
     public void setValue(EvaluationContext ctx, Object value)
             throws ELException {
         throw new PropertyNotWritableException(MessageFactory.get("error.syntax.set"));
     }
 
-    @Override
     public void accept(NodeVisitor visitor) throws Exception {
         visitor.visit(this);
         if (this.children != null && this.children.length > 0) {
@@ -152,67 +150,16 @@ public abstract class SimpleNode extends ELSupport implements Node {
         }
     }
 
-    @Override
-    public Object invoke(EvaluationContext ctx, Class<?>[] paramTypes,
-            Object[] paramValues) throws ELException {
+    public Object invoke(EvaluationContext ctx, Class[] paramTypes, Object[] paramValues) throws ELException {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public MethodInfo getMethodInfo(EvaluationContext ctx,
-            Class<?>[] paramTypes) throws ELException {
+    public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes) throws ELException {
         throw new UnsupportedOperationException();
     }
-
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + Arrays.hashCode(children);
-        result = prime * result + id;
-        result = prime * result + ((image == null) ? 0 : image.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof SimpleNode)) {
-            return false;
-        }
-        SimpleNode other = (SimpleNode) obj;
-        if (!Arrays.equals(children, other.children)) {
-            return false;
-        }
-        if (id != other.id) {
-            return false;
-        }
-        if (image == null) {
-            if (other.image != null) {
-                return false;
-            }
-        } else if (!image.equals(other.image)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @since EL 2.2
-     */
-    @Override
-    public ValueReference getValueReference(EvaluationContext ctx) {
-        return null;
-    }
-
-    /**
-     * @since EL 2.2
-     */
-    @Override
+    
     public boolean isParametersProvided() {
         return false;
     }
+
 }
