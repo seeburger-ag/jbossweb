@@ -28,7 +28,6 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.tomcat.util.buf.EncodingToCharset;
-import org.jboss.logging.Logger;
 import org.jboss.web.CatalinaLogger;
 
 /**
@@ -62,6 +61,11 @@ import org.jboss.web.CatalinaLogger;
  */
 public class SSLValve extends ValveBase {
 
+    protected String sslClientCertHeader = "ssl_client_cert";
+    protected String sslCipherHeader = "ssl_cipher";
+    protected String sslSessionIdHeader = "ssl_session_id";
+    protected String sslCipherUserKeySizeHeader = "ssl_cipher_usekeysize";
+
     //------------------------------------------------------ Constructor
     public SSLValve() {
     }
@@ -82,7 +86,7 @@ public class SSLValve extends ValveBase {
     public void invoke(Request request, Response response)
         throws IOException, ServletException {
         /* mod_header converts the '\n' into ' ' so we have to rebuild the client certificate */
-        String strcert0 = mygetHeader(request, "ssl_client_cert");
+        String strcert0 = mygetHeader(request, sslClientCertHeader);
         if (strcert0 != null && strcert0.length()>28) {
             String strcert1 = strcert0.replace(' ', '\n');
             String strcert2 = strcert1.substring(28, strcert1.length()-26);
@@ -110,19 +114,51 @@ public class SSLValve extends ValveBase {
             }
             request.setAttribute(Globals.CERTIFICATES_ATTR, jsseCerts);
         }
-        strcert0 = mygetHeader(request, "ssl_cipher");
+        strcert0 = mygetHeader(request, sslCipherHeader);
         if (strcert0 != null) {
             request.setAttribute(Globals.CIPHER_SUITE_ATTR, strcert0);
         }
-        strcert0 = mygetHeader(request, "ssl_session_id");
+        strcert0 = mygetHeader(request, sslSessionIdHeader);
         if (strcert0 != null) {
             request.setAttribute(Globals.SSL_SESSION_ID_ATTR, strcert0);
         }
-        strcert0 = mygetHeader(request, "ssl_cipher_usekeysize");
+        strcert0 = mygetHeader(request, sslCipherUserKeySizeHeader);
         if (strcert0 != null) {
             request.setAttribute(Globals.KEY_SIZE_ATTR, Integer.valueOf(strcert0));
         }
         getNext().invoke(request, response);
+    }
+
+    public String getSslClientCertHeader() {
+        return sslClientCertHeader;
+    }
+
+    public void setSslClientCertHeader(String sslClientCertHeader) {
+        this.sslClientCertHeader = sslClientCertHeader;
+    }
+
+    public String getSslCipherHeader() {
+        return sslCipherHeader;
+    }
+
+    public void setSslCipherHeader(String sslCipherHeader) {
+        this.sslCipherHeader = sslCipherHeader;
+    }
+
+    public String getSslSessionIdHeader() {
+        return sslSessionIdHeader;
+    }
+
+    public void setSslSessionIdHeader(String sslSessionIdHeader) {
+        this.sslSessionIdHeader = sslSessionIdHeader;
+    }
+
+    public String getSslCipherUserKeySizeHeader() {
+        return sslCipherUserKeySizeHeader;
+    }
+
+    public void setSslCipherUserKeySizeHeader(String sslCipherUserKeySizeHeader) {
+        this.sslCipherUserKeySizeHeader = sslCipherUserKeySizeHeader;
     }
 
 }

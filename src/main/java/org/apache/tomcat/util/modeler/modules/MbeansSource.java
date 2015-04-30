@@ -35,8 +35,7 @@ import org.apache.tomcat.util.modeler.AttributeInfo;
 import org.apache.tomcat.util.modeler.BaseModelMBean;
 import org.apache.tomcat.util.modeler.ManagedBean;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.CoyoteLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -53,7 +52,6 @@ import org.w3c.dom.Node;
  */
 public class MbeansSource extends ModelerSource implements MbeansSourceMBean
 {
-    private static Logger log = Logger.getLogger(MbeansSource.class);
     Registry registry;
     String type;
 
@@ -148,7 +146,7 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
             Node descriptorsN=document.getDocumentElement();
 
             if( descriptorsN == null ) {
-                log.error("No descriptors found");
+                CoyoteLogger.MODELER_LOGGER.noDescriptorsFound();
                 return;
             }
 
@@ -156,8 +154,8 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
 
             if( firstMbeanN==null ) {
                 // maybe we have a single mlet
-                if( log.isDebugEnabled() )
-                    log.debug("No child " + descriptorsN);
+                if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled() )
+                    CoyoteLogger.MODELER_LOGGER.debug("No child " + descriptorsN);
                 firstMbeanN=descriptorsN;
             }
 
@@ -188,8 +186,8 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
                         objectName=DomUtil.getAttribute( mbeanN, "name" );
                     }
                     
-                    if( log.isDebugEnabled())
-                        log.debug( "Processing mbean objectName=" + objectName +
+                    if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled())
+                        CoyoteLogger.MODELER_LOGGER.debug( "Processing mbean objectName=" + objectName +
                                 " code=" + code);
 
                     // args can be grouped in constructor or direct childs
@@ -214,7 +212,7 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
                         object2Node.put( oname, mbeanN );
                         // XXX Arguments, loader !!!
                     } catch( Exception ex ) {
-                        log.error( "Error creating mbean " + objectName, ex);
+                        CoyoteLogger.MODELER_LOGGER.errorCreatingMbean(objectName, ex);
                     }
 
                     Node firstAttN=DomUtil.getChild(mbeanN, "attribute");
@@ -230,8 +228,8 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
 
                     String operation=DomUtil.getAttribute(mbeanN, "operation");
 
-                    if( log.isDebugEnabled())
-                        log.debug( "Processing invoke objectName=" + name +
+                    if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled())
+                        CoyoteLogger.MODELER_LOGGER.debug( "Processing invoke objectName=" + name +
                                 " code=" + operation);
                     try {
                         ObjectName oname=new ObjectName(name);
@@ -239,7 +237,7 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
                         processArg( mbeanN );
                         server.invoke( oname, operation, null, null);
                     } catch (Exception e) {
-                        log.error( "Error in invoke " + name + " " + operation);
+                        CoyoteLogger.MODELER_LOGGER.errorInvoking(operation, name);
                     }
                 }
 
@@ -260,10 +258,10 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
             }
 
             long t2=System.currentTimeMillis();
-            log.info( "Reading mbeans  " + (t2-t1));
+            CoyoteLogger.MODELER_LOGGER.debug( "Reading mbeans  " + (t2-t1));
             loading=false;
         } catch( Exception ex ) {
-            log.error( "Error reading mbeans ", ex);
+            CoyoteLogger.MODELER_LOGGER.errorReadingDescriptors(ex);
         }
     }
     
@@ -275,7 +273,7 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
         //log.info( "XXX UpdateField " + oname + " " + name + " " + value);
         Node n=(Node)object2Node.get( oname );
         if( n == null ) {
-            log.info( "Node not found " + oname );
+            CoyoteLogger.MODELER_LOGGER.nodeNotFound(oname);
             return;
         }
         Node attNode=DomUtil.findChildWithAtt(n, "attribute", "name", name);
@@ -310,9 +308,9 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
                 FileOutputStream fos=new FileOutputStream(location);
                 DomUtil.writeXml(document, fos);
             } catch (TransformerException e) {
-                log.error( "Error writing");
+                CoyoteLogger.MODELER_LOGGER.errorWritingMbeans(e);
             } catch (FileNotFoundException e) {
-                log.error( "Error writing" ,e );
+                CoyoteLogger.MODELER_LOGGER.errorWritingMbeans(e);
             }
         }
     }
@@ -327,8 +325,8 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
             value=DomUtil.getContent(descN);
         }
         try {
-            if( log.isDebugEnabled())
-                log.debug("Set attribute " + objectName + " " + attName +
+            if( CoyoteLogger.MODELER_LOGGER.isDebugEnabled())
+                CoyoteLogger.MODELER_LOGGER.debug("Set attribute " + objectName + " " + attName +
                         " " + value);
             ObjectName oname=new ObjectName(objectName);
             // find the type
@@ -336,15 +334,13 @@ public class MbeansSource extends ModelerSource implements MbeansSourceMBean
                 type=registry.getType(  oname, attName );
 
             if( type==null ) {
-                log.info("Can't find attribute " + objectName + " " + attName );
-
+                CoyoteLogger.MODELER_LOGGER.attributeNotFound(attName, objectName);
             } else {
                 Object valueO=registry.convertValue( type, value);
                 server.setAttribute(oname, new Attribute(attName, valueO));
             }
         } catch( Exception ex) {
-            log.error("Error processing attribute " + objectName + " " +
-                    attName + " " + value, ex);
+            CoyoteLogger.MODELER_LOGGER.errorProcessingAttribute(attName, value, objectName, ex);
         }
 
     }
