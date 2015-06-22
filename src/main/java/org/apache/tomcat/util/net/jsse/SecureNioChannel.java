@@ -214,7 +214,7 @@ public class SecureNioChannel extends NioChannel {
 
 		final ByteBuffer netInBuffers[] = new ByteBuffer[length];
 		for (int i = 0; i < length; i++) {
-			netInBuffers[i] = ByteBuffer.allocateDirect(getSSLSession().getPacketBufferSize());
+			netInBuffers[i] = ByteBuffer.allocate(getSSLSession().getPacketBufferSize());
 		}
 
 		this.reset(netInBuffers[0]);
@@ -393,7 +393,7 @@ public class SecureNioChannel extends NioChannel {
 		for (int i = 0; i < length; i++) {
 			try {
 				// Prepare the output buffer
-				netOutBuffers[i] = ByteBuffer.allocateDirect(size);
+				netOutBuffers[i] = ByteBuffer.allocate(size);
 				// Wrap the source data into the internal buffer
 				written += wrap(srcs[offset + i], netOutBuffers[i]);
 				netOutBuffers[i].flip();
@@ -459,8 +459,8 @@ public class SecureNioChannel extends NioChannel {
 		int packetBufferSize = Math.max(session.getPacketBufferSize(), MIN_BUFFER_SIZE);
 
 		this.netOutBuffer = (this.netOutBuffer == null) ? ByteBuffer
-				.allocateDirect(packetBufferSize) : this.netOutBuffer.compact();
-		this.netInBuffer = (this.netInBuffer == null) ? ByteBuffer.allocateDirect(packetBufferSize)
+				.allocate(packetBufferSize) : this.netOutBuffer.compact();
+		this.netInBuffer = (this.netInBuffer == null) ? ByteBuffer.allocate(packetBufferSize)
 				: this.netInBuffer.compact();
 
 		while (!sslEngine.isOutboundDone()) {
@@ -479,7 +479,7 @@ public class SecureNioChannel extends NioChannel {
 				}
 				break;
 			case BUFFER_OVERFLOW:
-				ByteBuffer tmp = ByteBuffer.allocateDirect(packetBufferSize
+				ByteBuffer tmp = ByteBuffer.allocate(packetBufferSize
 						+ this.netOutBuffer.capacity());
 				this.netOutBuffer.flip();
 				tmp.put(this.netOutBuffer);
@@ -689,8 +689,8 @@ public class SecureNioChannel extends NioChannel {
 		// Create byte buffers to use for holding application data
 		initBuffers(packetBufferSize);
 
-		ByteBuffer clientNetData = ByteBuffer.allocateDirect(packetBufferSize);
-		ByteBuffer clientAppData = ByteBuffer.allocateDirect(packetBufferSize);
+		ByteBuffer clientNetData = ByteBuffer.allocate(packetBufferSize);
+		ByteBuffer clientAppData = ByteBuffer.allocate(packetBufferSize);
 
 		// Begin handshake
 		sslEngine.beginHandshake();
@@ -729,7 +729,7 @@ public class SecureNioChannel extends NioChannel {
 						} else if (res.getStatus() == Status.BUFFER_UNDERFLOW) {
 							read = true;
 						} else if (res.getStatus() == Status.BUFFER_OVERFLOW) {
-							ByteBuffer tmp = ByteBuffer.allocateDirect(packetBufferSize * (++i));
+							ByteBuffer tmp = ByteBuffer.allocate(packetBufferSize * (++i));
 
 							if (clientAppData.position() > 0) {
 								clientAppData.flip();
@@ -814,12 +814,12 @@ public class SecureNioChannel extends NioChannel {
 	 */
 	private void initBuffers(int capacity) {
 		if (this.netInBuffer == null) {
-			this.netInBuffer = ByteBuffer.allocateDirect(capacity);
+			this.netInBuffer = ByteBuffer.allocate(capacity);
 		} else {
 			this.netInBuffer.clear();
 		}
 		if (this.netOutBuffer == null) {
-			this.netOutBuffer = ByteBuffer.allocateDirect(capacity);
+			this.netOutBuffer = ByteBuffer.allocate(capacity);
 		} else {
 			this.netOutBuffer.clear();
 		}
