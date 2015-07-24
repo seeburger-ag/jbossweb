@@ -17,6 +17,8 @@
 
 package org.apache.jasper.runtime;
 
+import static org.jboss.web.JasperMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -105,17 +107,13 @@ public final class ProtectedFunctionMapper extends javax.el.FunctionMapper
                             }
                         });
             } catch (PrivilegedActionException ex) {
-                throw new RuntimeException(
-                        "Invalid function mapping - no such method: "
-                                + ex.getException().getMessage());
+                throw MESSAGES.invalidFunctionMapping(ex.getException().getMessage());
             }
         } else {
             try {
                 method = c.getDeclaredMethod(methodName, args);
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException(
-                        "Invalid function mapping - no such method: "
-                                + e.getMessage());
+                throw MESSAGES.invalidFunctionMapping(e.getMessage());
             }
         }
 
@@ -159,18 +157,14 @@ public final class ProtectedFunctionMapper extends javax.el.FunctionMapper
                             }
                         });
             } catch (PrivilegedActionException ex) {
-                throw new RuntimeException(
-                        "Invalid function mapping - no such method: "
-                                + ex.getException().getMessage());
+                throw MESSAGES.invalidFunctionMapping(ex.getException().getMessage());
             }
         } else {
             funcMapper = new ProtectedFunctionMapper();
             try {
                 method = c.getDeclaredMethod(methodName, args);
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException(
-                        "Invalid function mapping - no such method: "
-                                + e.getMessage());
+                throw MESSAGES.invalidFunctionMapping(e.getMessage());
             }
         }
         funcMapper.theMethod = method;

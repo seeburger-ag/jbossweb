@@ -553,6 +553,11 @@ public final class ApplicationDispatcher
             processRequest(request,response,state);
         }
 
+        // During async, the response will not be closed after a forward
+        if (request.getAsyncContext() != null) {
+            return;
+        }
+
         // This is not a real close in order to support error processing
         if (wrapper.getLogger().isDebugEnabled() )
             wrapper.getLogger().debug(" Disabling the response for futher output");

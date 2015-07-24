@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.bayeux;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -29,6 +31,7 @@ import java.util.TimeZone;
 
 import javax.servlet.ServletException;
 
+import org.apache.catalina.util.RequestUtil;
 import org.apache.cometd.bayeux.Bayeux;
 import org.apache.cometd.bayeux.Message;
 import org.apache.tomcat.util.json.JSONArray;
@@ -36,6 +39,7 @@ import org.apache.tomcat.util.json.JSONException;
 import org.apache.tomcat.util.json.JSONObject;
 import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * Common functionality and member variables for all Bayeux requests.
@@ -47,8 +51,6 @@ import org.jboss.servlet.http.HttpEvent;
  */
 public abstract class RequestBase implements BayeuxRequest {
     
-    private static Logger log = Logger.getLogger(RequestBase.class);
-
     protected static final SimpleDateFormat timestampFmt =
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     static {
@@ -155,10 +157,10 @@ public abstract class RequestBase implements BayeuxRequest {
     
     protected static void deliver(HttpEvent event, ClientImpl to) throws IOException, ServletException, BayeuxException {
         JSONArray jarray = getJSONArray(event,true);
-        if ( jarray == null ) throw new BayeuxException("No message to send!");
+        if ( jarray == null ) throw new BayeuxException(MESSAGES.noBayeuxMessage());
         String jsonstring = jarray.toString();
-        if (log.isTraceEnabled()) {
-            log.trace("["+Thread.currentThread().getName()+"] Delivering message to[" + to + "] message:" + jsonstring);
+        if (CoyoteLogger.BAYEUX_LOGGER.isTraceEnabled()) {
+            CoyoteLogger.BAYEUX_LOGGER.trace("["+Thread.currentThread().getName()+"] Delivering message to[" + to + "] message:" + jsonstring);
         }
 
         if (to!=null) {
@@ -179,10 +181,10 @@ public abstract class RequestBase implements BayeuxRequest {
             String jsonp = event.getHttpServletRequest().getParameter(Bayeux.JSONP_PARAMETER);
             if (jsonp == null)
                 jsonp = Bayeux.JSONP_DEFAULT_NAME;
-            out.print(jsonp);
+            out.print(RequestUtil.filter(jsonp));
             out.print('(');
         } else {
-            throw new BayeuxException("Client doesn't support any appropriate connection type.");
+            throw new BayeuxException(MESSAGES.noBayeuxConnectionType());
         }
         out.print(jsonstring);
         if ( to == null ) {

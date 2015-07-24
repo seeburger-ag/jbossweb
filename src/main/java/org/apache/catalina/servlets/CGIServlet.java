@@ -18,6 +18,8 @@
 
 package org.apache.catalina.servlets;
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -1646,7 +1648,7 @@ public final class CGIServlet extends HttpServlet {
                                     response.addHeader(header , value);
                                 }
                             } else {
-                                log("runCGI: bad header line \"" + line + "\"");
+                                log(MESSAGES.cgiInvalidHeader(line));
                             }
                         }
     
@@ -1690,7 +1692,7 @@ public final class CGIServlet extends HttpServlet {
     
             }
             catch (IOException e){
-                log ("Caught exception " + e);
+                log(MESSAGES.cgiException(e.getMessage()));
                 throw e;
             }
             finally{
@@ -1699,7 +1701,7 @@ public final class CGIServlet extends HttpServlet {
                     try {
                         cgiHeaderReader.close();
                     } catch (IOException ioe) {
-                        log ("Exception closing header reader " + ioe);
+                        log(MESSAGES.cgiExceptionClosingHeaderReader(ioe.getMessage()));
                     }
                 }
                 // Close the output stream if used
@@ -1707,7 +1709,7 @@ public final class CGIServlet extends HttpServlet {
                     try {
                         cgiOutput.close();
                     } catch (IOException ioe) {
-                        log ("Exception closing output stream " + ioe);
+                        log(MESSAGES.cgiExceptionClosingOutputStream(ioe.getMessage()));
                     }
                 }
                 // Make sure the error stream reader has finished
@@ -1715,7 +1717,7 @@ public final class CGIServlet extends HttpServlet {
                     try {
                         errReaderThread.join(stderrTimeout);
                     } catch (InterruptedException e) {
-                        log ("Interupted waiting for stderr reader thread");
+                        log(MESSAGES.cgiInterrupted());
                     }
                 }
                 if (debug > 4) {
@@ -1740,7 +1742,7 @@ public final class CGIServlet extends HttpServlet {
             
             if (statusStart < 1 || line.length() < statusStart + 3) {
                 // Not a valid HTTP Status-Line
-                log ("runCGI: invalid HTTP Status-Line:" + line);
+                log(MESSAGES.cgiInvalidStatusLine(line));
                 return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             }
             
@@ -1751,7 +1753,7 @@ public final class CGIServlet extends HttpServlet {
                 statusCode = Integer.parseInt(status);
             } catch (NumberFormatException nfe) {
                 // Not a valid status code
-                log ("runCGI: invalid status code:" + status);
+                log(MESSAGES.cgiInvalidStatusCode(status));
                 return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             }
             
@@ -1769,7 +1771,7 @@ public final class CGIServlet extends HttpServlet {
         private int getSCFromCGIStatusHeader(String value) {
             if (value.length() < 3) {
                 // Not a valid status value
-                log ("runCGI: invalid status value:" + value);
+                log(MESSAGES.cgiInvalidStatusValue(value));
                 return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             }
             
@@ -1780,7 +1782,7 @@ public final class CGIServlet extends HttpServlet {
                 statusCode = Integer.parseInt(status);
             } catch (NumberFormatException nfe) {
                 // Not a valid status code
-                log ("runCGI: invalid status code:" + status);
+                log(MESSAGES.cgiInvalidStatusCode(status));
                 return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             }
             
@@ -1792,16 +1794,16 @@ public final class CGIServlet extends HttpServlet {
             int lineCount = 0 ;
             try {
                 while ((line = rdr.readLine()) != null) {
-                    log("runCGI (stderr):" +  line) ;
+                    log(MESSAGES.cgiErrorLogPrefix(line)) ;
                     lineCount++ ;
                 }
             } catch (IOException e) {
-                log("sendToLog error", e) ;
+                log(MESSAGES.cgiStderrErrror(), e) ;
             } finally {
                 try {
                     rdr.close() ;
                 } catch (IOException ce) {
-                    log("sendToLog error", ce) ;
+                    log(MESSAGES.cgiStderrErrror(), ce) ;
                 }
             }
             if ( lineCount > 0 && debug > 2) {
