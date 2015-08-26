@@ -380,7 +380,7 @@ public class Request
     /**
      * Parts associated with the request.
      */
-    protected Map<String, Part> parts = null;
+    protected Collection<Part> parts = null;
     
 
     /**
@@ -2936,7 +2936,7 @@ public class Request
     protected void parseMultipart()
         throws IOException, ServletException {
         
-        parts = Collections.emptyMap();
+        parts = Collections.emptyList();
 
         if (context == null)
             return;
@@ -2987,14 +2987,14 @@ public class Request
         upload.setFileSizeMax(config.getMaxFileSize());
         upload.setSizeMax(config.getMaxRequestSize());
 
-        parts = new HashMap<String, Part>();
+        parts = new ArrayList<Part>();
         try {
             for (FileItem fileItem : upload.parseRequest(getRequest())) {
                 if (fileItem.getName() == null) {
                     coyoteRequest.getParameters().addParameterValues
                         (fileItem.getFieldName(), new String[] {fileItem.getString()});
                 }
-                parts.put(fileItem.getFieldName(), new StandardPart(fileItem, config));
+                parts.add(new StandardPart(fileItem, config));
             }
         } catch(FileSizeLimitExceededException e) {
             throw MESSAGES.multipartProcessingFailed(e);
@@ -3300,7 +3300,15 @@ public class Request
         if (parts == null) {
             parseMultipart();
         }
-        return parts.get(name);
+        Collection<Part> c = getParts();
+        Iterator<Part> iterator = c.iterator();
+        while (iterator.hasNext()) {
+            Part part = iterator.next();
+            if (name.equals(part.getName())) {
+                return part;
+            }
+        }
+        return null;
     }
 
 
@@ -3308,7 +3316,7 @@ public class Request
         if (parts == null) {
             parseMultipart();
         }
-        return parts.values();
+        return parts;
     }
 
 
