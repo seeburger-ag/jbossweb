@@ -1412,7 +1412,6 @@ public class DefaultServlet
             sb.append("<HR size=\"1\" noshade=\"noshade\">");
         }
 
-        sb.append("<h3>").append(ServerInfo.getServerInfo()).append("</h3>");
         sb.append("</body>\r\n");
         sb.append("</html>\r\n");
 

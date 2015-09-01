@@ -237,11 +237,11 @@ public interface CatalinaMessages {
     @Message(id = 71, value = "root cause")
     String statusRootCause();
 
-    @Message(id = 72, value = "note")
-    String statusNote();
-
-    @Message(id = 73, value = "The full stack trace of the root cause is available in the %s logs.")
-    String statusRootCauseInLogs(String log);
+//    @Message(id = 72, value = "note")
+//    String statusNote();
+//
+//    @Message(id = 73, value = "The full stack trace of the root cause is available in the %s logs.")
+//    String statusRootCauseInLogs(String log);
 
     @Message(id = 74, value = "Exception processing event.")
     String eventValveExceptionDuringEvent();
