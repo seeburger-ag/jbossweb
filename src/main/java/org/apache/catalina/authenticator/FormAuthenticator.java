@@ -368,9 +368,12 @@ public class FormAuthenticator
                 request.changeSessionId(session.getId());
             }
         }
-        // Always use GET for the login page, regardless of the method used
+        // Always use GET for the login page, regardless of the method used.
+        // In case of HEAD method. the container should not return body
         String oldMethod = request.getMethod();
-        request.getCoyoteRequest().method().setString("GET");
+        if (!"HEAD".equals(oldMethod)) {
+            request.getCoyoteRequest().method().setString("GET");
+        }
 
         RequestDispatcher disp =
             context.getServletContext().getRequestDispatcher(config.getLoginPage());
