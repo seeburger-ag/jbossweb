@@ -206,9 +206,7 @@ public interface CoyoteLogger extends BasicLogger {
     @Message(id = 3027, value = "Failed loading HTTP messages strings")
     void errorLoadingMessages(@Cause Throwable exception);
 
-    @LogMessage(level = DEBUG)
-    @Message(id = 3028, value = "Start processing with input [%s]")
-    void startProcessingParameter(String parameter);
+    // 3028
 
     @LogMessage(level = DEBUG)
     @Message(id = 3029, value = "Parameter starting at position [%s] and ending at position [%s] with a value of [%s] was not followed by an '=' character")
