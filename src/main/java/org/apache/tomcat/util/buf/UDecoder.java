@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.util.buf;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.CharConversionException;
 import java.io.IOException;
 
@@ -29,9 +31,6 @@ import java.io.IOException;
  *  @author Costin Manolache
  */
 public final class UDecoder {
-    
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger(UDecoder.class );
     
     protected static final boolean ALLOW_ENCODED_SLASH = 
         Boolean.valueOf(System.getProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "false")).booleanValue();
@@ -80,17 +79,17 @@ public final class UDecoder {
 	    } else {
 		// read next 2 digits
 		if( j+2 >= end ) {
-		    throw new CharConversionException("EOF");
+		    throw new CharConversionException(MESSAGES.unexpectedEof());
 		}
 		byte b1= buff[j+1];
 		byte b2=buff[j+2];
 		if( !isHexDigit( b1 ) || ! isHexDigit(b2 ))
-		    throw new CharConversionException( "isHexDigit");
+		    throw new CharConversionException(MESSAGES.invalidHex());
 		
 		j+=2;
 		int res=x2c( b1, b2 );
         if (noSlash && (res == '/')) {
-            throw new CharConversionException( "noSlash");
+            throw new CharConversionException(MESSAGES.invalidSlash());
         }
 		buff[idx]=(byte)res;
 	    }
@@ -143,12 +142,12 @@ public final class UDecoder {
 		// read next 2 digits
 		if( j+2 >= cend ) {
 		    // invalid
-		    throw new CharConversionException("EOF");
+		    throw new CharConversionException(MESSAGES.unexpectedEof());
 		}
 		char b1= buff[j+1];
 		char b2=buff[j+2];
 		if( !isHexDigit( b1 ) || ! isHexDigit(b2 ))
-		    throw new CharConversionException("isHexDigit");
+		    throw new CharConversionException(MESSAGES.invalidHex());
 		
 		j+=2;
 		int res=x2c( b1, b2 );
@@ -274,12 +273,6 @@ public final class UDecoder {
 	digit +=(b2>='A') ? ( (b2 & 0xDF)-'A') + 10 :
 	    (b2 -'0');
 	return digit;
-    }
-
-    private final static int debug=0;
-    private static void log( String s ) {
-        if (log.isDebugEnabled())
-            log.debug("URLDecoder: " + s );
     }
 
 }

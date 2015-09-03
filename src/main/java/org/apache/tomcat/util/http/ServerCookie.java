@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.util.http;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.FieldPosition;
@@ -322,7 +324,7 @@ public class ServerCookie implements Serializable {
             if (c == '\\' ) {
                 b.append(c);
                 //ignore the character after an escape, just append it
-                if (++i>=endIndex) throw new IllegalArgumentException("Invalid escape character in cookie value.");
+                if (++i>=endIndex) throw MESSAGES.invalidEscapeCharacter();
                 b.append(s.charAt(i));
             } else if (c == '"')
                 b.append('\\').append('"');

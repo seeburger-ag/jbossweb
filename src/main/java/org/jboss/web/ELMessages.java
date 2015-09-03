@@ -1,23 +1,19 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.web;
@@ -28,8 +24,8 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
- * Logging IDs 6000-6500
- * @author remm
+ * Logging IDs 6000-6300
+ * @author Remy Maucherat
  */
 @MessageBundle(projectCode = "JBWEB")
 public interface ELMessages {
@@ -101,5 +97,29 @@ public interface ELMessages {
 
     @Message(id = 6020, value = "Unable to find unambiguous method: %s.%s(%s)")
     String ambiguousMethod(Object base, Object method, String parameters);
+
+    @Message(id = 6021, value = "Invalid method expression: %s")
+    String invalidMethodExpression(String expression);
+
+    @Message(id = 6022, value = "Function mapper is null")
+    NullPointerException invalidNullFunctionMapper();
+
+    @Message(id = 6023, value = "Local name is null")
+    NullPointerException invalidNullLocalName();
+
+    @Message(id = 6024, value = "Method is null")
+    NullPointerException invalidNullMethod();
+
+    @Message(id = 6025, value = "Variable mapper is null")
+    NullPointerException invalidNullVariableMapper();
+
+    @Message(id = 6026, value = "Cannot set variables on factory")
+    UnsupportedOperationException cannotSetVariablesOnFactory();
+
+    @Message(id = 6027, value = "Identity '%s' was null and was unable to invoke")
+    String invalidNullIdentity(String image);
+
+    @Message(id = 6028, value = "Identity '%s' does not reference a MethodExpression instance, returned type: %s")
+    String invalidIdentityHasWrongType(String image, String returnedType);
 
 }

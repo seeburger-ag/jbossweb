@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import static org.jboss.web.JSONMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -176,13 +178,13 @@ public class JSONObject {
         String key;
 
         if (x.nextClean() != '{') {
-            throw x.syntaxError("A JSONObject text must begin with '{'");
+            throw x.syntaxError(MESSAGES.objectMustStartWithBracket());
         }
         for (;;) {
             c = x.nextClean();
             switch (c) {
             case 0:
-                throw x.syntaxError("A JSONObject text must end with '}'");
+                throw x.syntaxError(MESSAGES.objectMustEndWithBracket());
             case '}':
                 return;
             default:
@@ -200,7 +202,7 @@ public class JSONObject {
                     x.back();
                 }
             } else if (c != ':') {
-                throw x.syntaxError("Expected a ':' after a key");
+                throw x.syntaxError(MESSAGES.objectExpectedKey());
             }
             putOnce(key, x.nextValue());
 
@@ -219,7 +221,7 @@ public class JSONObject {
             case '}':
                 return;
             default:
-                throw x.syntaxError("Expected a ',' or '}'");
+                throw x.syntaxError(MESSAGES.objectExpectedEnd());
             }
         }
     }
@@ -452,8 +454,7 @@ public class JSONObject {
         } else if (o instanceof JSONArray) {
             put(key, ((JSONArray)o).put(value));
         } else {
-            throw new JSONException("JSONObject[" + key +
-                    "] is not a JSONArray.");
+            throw new JSONException(MESSAGES.objectInvalidType(key, "JSONArray"));
         }
         return this;
     }
@@ -495,8 +496,7 @@ public class JSONObject {
     public Object get(String key) throws JSONException {
         Object o = opt(key);
         if (o == null) {
-            throw new JSONException("JSONObject[" + quote(key) +
-                    "] not found.");
+            throw new JSONException(MESSAGES.objectNotFound(quote(key)));
         }
         return o;
     }
@@ -521,8 +521,7 @@ public class JSONObject {
                 ((String)o).equalsIgnoreCase("true"))) {
             return true;
         }
-        throw new JSONException("JSONObject[" + quote(key) +
-                "] is not a Boolean.");
+        throw new JSONException(MESSAGES.objectInvalidType(key, "Boolean"));
     }
 
 
@@ -540,8 +539,7 @@ public class JSONObject {
                 ((Number)o).doubleValue() :
                 Double.valueOf((String)o).doubleValue();
         } catch (Exception e) {
-            throw new JSONException("JSONObject[" + quote(key) +
-                "] is not a number.");
+            throw new JSONException(MESSAGES.objectInvalidType(key, "Double"));
         }
     }
 
@@ -575,8 +573,7 @@ public class JSONObject {
         if (o instanceof JSONArray) {
             return (JSONArray)o;
         }
-        throw new JSONException("JSONObject[" + quote(key) +
-                "] is not a JSONArray.");
+        throw new JSONException(MESSAGES.objectInvalidType(key, "JSONArray"));
     }
 
 
@@ -593,8 +590,7 @@ public class JSONObject {
         if (o instanceof JSONObject) {
             return (JSONObject)o;
         }
-        throw new JSONException("JSONObject[" + quote(key) +
-                "] is not a JSONObject.");
+        throw new JSONException(MESSAGES.objectInvalidType(key, "JSONObject"));
     }
 
 
@@ -1073,7 +1069,7 @@ public class JSONObject {
     public JSONObject putOnce(String key, Object value) throws JSONException {
         if (key != null && value != null) {
         	if (opt(key) != null) {
-                throw new JSONException("Duplicate key \"" + key + "\"");
+                throw new JSONException(MESSAGES.objectDuplicateKey(key));
         	}
             put(key, value);
         }
@@ -1258,13 +1254,11 @@ public class JSONObject {
         if (o != null) {
             if (o instanceof Double) {
                 if (((Double)o).isInfinite() || ((Double)o).isNaN()) {
-                    throw new JSONException(
-                        "JSON does not allow non-finite numbers.");
+                    throw new JSONException(MESSAGES.objectInfiniteNumber());
                 }
             } else if (o instanceof Float) {
                 if (((Float)o).isInfinite() || ((Float)o).isNaN()) {
-                    throw new JSONException(
-                        "JSON does not allow non-finite numbers.");
+                    throw new JSONException(MESSAGES.objectInfiniteNumber());
                 }
             }
         }
@@ -1433,7 +1427,7 @@ public class JSONObject {
             if (o instanceof String) {
                 return (String)o;
             }
-            throw new JSONException("Bad value from toJSONString: " + o);
+            throw new JSONException(MESSAGES.objectBadString(o));
         }
         if (value instanceof Number) {
             return numberToString((Number) value);

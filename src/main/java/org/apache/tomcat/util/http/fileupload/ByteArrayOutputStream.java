@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload;
  
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -81,8 +83,7 @@ public class ByteArrayOutputStream extends OutputStream {
      */
     public ByteArrayOutputStream(int size) {
         if (size < 0) {
-            throw new IllegalArgumentException(
-                "Negative initial size: " + size);
+            throw MESSAGES.negativeBufferSize(size);
         }
         needNewBuffer(size);
     }
