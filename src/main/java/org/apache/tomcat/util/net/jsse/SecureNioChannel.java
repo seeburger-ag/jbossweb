@@ -54,7 +54,8 @@ import org.jboss.web.CoyoteLogger;
  */
 public class SecureNioChannel extends NioChannel {
 
-	private static final int MIN_BUFFER_SIZE = 16 * 1024;
+	public static final int MIN_BUFFER_SIZE = 16921;
+	public static final int MIN_APP_BUFFER_SIZE = 16916;
 
 	protected SSLEngine sslEngine;
 	private ByteBuffer netInBuffer;
@@ -124,15 +125,24 @@ public class SecureNioChannel extends NioChannel {
 		// The handshake is completed
 		checkHandshake();
 
-		if (this.netInBuffer.position() == 0) {
-			this.reset(this.netInBuffer);
-			int x = this.channel.read(this.netInBuffer).get(timeout, unit);
+		if (netInBuffer.position() == 0) {
+			reset(netInBuffer);
+			int x = channel.read(this.netInBuffer).get(timeout, unit);
 			if (x < 0) {
 				throw new ClosedChannelException();
 			}
 		}
 		// Unwrap the data read, and return the number of unwrapped bytes
-		return this.unwrap(this.netInBuffer, dst);
+		int result = unwrap(this.netInBuffer, dst);
+		if (result == 0) {
+		    // Try reading since it means an underflow
+            int x = channel.read(this.netInBuffer).get(timeout, unit);
+            if (x < 0) {
+                throw new ClosedChannelException();
+            }
+            result = unwrap(this.netInBuffer, dst);
+		}
+		return result;
 	}
 
 	/*
@@ -582,7 +592,7 @@ public class SecureNioChannel extends NioChannel {
 				tryTasks();
 				// if we need more network data, then bail out for now.
 				if (result.getStatus() == Status.BUFFER_UNDERFLOW) {
-					break;
+                    break;
 				}
 			} else if (result.getStatus() == Status.BUFFER_OVERFLOW && read > 0) {
 				// buffer overflow can happen, if we have read data, then
@@ -725,18 +735,6 @@ public class SecureNioChannel extends NioChannel {
 						if (res.getStatus() == SSLEngineResult.Status.OK) {
 							// Execute tasks if we need to
 							tryTasks();
-							read = true;
-						} else if (res.getStatus() == Status.BUFFER_UNDERFLOW) {
-							read = true;
-						} else if (res.getStatus() == Status.BUFFER_OVERFLOW) {
-							ByteBuffer tmp = ByteBuffer.allocate(packetBufferSize * (++i));
-
-							if (clientAppData.position() > 0) {
-								clientAppData.flip();
-							}
-							tmp.put(clientAppData);
-							clientAppData = tmp;
-							read = false;
 						}
 						// Perform another unwrap?
 						cont = res.getStatus() == SSLEngineResult.Status.OK
@@ -746,7 +744,6 @@ public class SecureNioChannel extends NioChannel {
 
 				break;
 			case NEED_WRAP:
-				clientNetData.compact();
 				this.netOutBuffer.clear();
 				SSLEngineResult res = sslEngine.wrap(clientNetData, this.netOutBuffer);
 				handshakeStatus = res.getHandshakeStatus();

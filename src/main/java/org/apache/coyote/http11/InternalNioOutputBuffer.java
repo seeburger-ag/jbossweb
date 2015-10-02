@@ -38,6 +38,7 @@ import org.apache.tomcat.util.http.MimeHeaders;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
+import org.apache.tomcat.util.net.jsse.SecureNioChannel;
 import org.jboss.web.CoyoteLogger;
 
 /**
@@ -160,8 +161,8 @@ public class InternalNioOutputBuffer implements OutputBuffer {
 
         this.response = response;
         this.headers = response.getMimeHeaders();
-        buf = new byte[headerBufferSize];
-        bbuf = ByteBuffer.allocateDirect(headerBufferSize);
+        buf = new byte[(endpoint.getSSLEnabled()) ? Math.max(headerBufferSize, SecureNioChannel.MIN_APP_BUFFER_SIZE) : headerBufferSize];
+        bbuf = ByteBuffer.allocateDirect((endpoint.getSSLEnabled()) ? Math.max(headerBufferSize, SecureNioChannel.MIN_APP_BUFFER_SIZE) : headerBufferSize);
 
         outputBuffer = new OutputBufferImpl();
         filterLibrary = new OutputFilter[0];

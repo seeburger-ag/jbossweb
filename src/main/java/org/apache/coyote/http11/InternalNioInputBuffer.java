@@ -35,6 +35,7 @@ import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
+import org.apache.tomcat.util.net.jsse.SecureNioChannel;
 import org.jboss.web.CoyoteLogger;
 
 /**
@@ -98,7 +99,7 @@ public class InternalNioInputBuffer extends AbstractInternalInputBuffer {
 	 * @param endpoint
 	 */
 	public InternalNioInputBuffer(Http11NioProcessor processor, Request request, int headerBufferSize, NioEndpoint endpoint) {
-		super(request, headerBufferSize);
+		super(request, (endpoint.getSSLEnabled()) ? Math.max(headerBufferSize, SecureNioChannel.MIN_APP_BUFFER_SIZE) : headerBufferSize);
 		this.endpoint = endpoint;
         this.processor = processor;
 		this.init();
