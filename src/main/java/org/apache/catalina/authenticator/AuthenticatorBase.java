@@ -115,6 +115,27 @@ public abstract class AuthenticatorBase
 
 
     /**
+     * Should the session ID, if any, be changed upon a successful
+     * authentication to prevent a session fixation attack?
+     */
+    protected boolean unregisterSsoOnLogout = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.authenticator.AuthenticatorBase.UNREGISTER_SSO_ON_LOGOUT", "false")).booleanValue();
+
+    /**
+     * Should a session always be used once a user is authenticated? This may
+     * offer some performance benefits since the session can then be used to
+     * cache the authenticated Principal, hence removing the need to
+     * authenticate the user via the Realm on every request. This may be of help
+     * for combinations such as BASIC authentication used with the JNDIRealm or
+     * DataSourceRealms. However there will also be the performance cost of
+     * creating and GC'ing the session. By default, a session will not be
+     * created. 
+     */
+    protected boolean alwaysUseSession =
+        Boolean.valueOf(System.getProperty("org.apache.catalina.authenticator.AuthenticatorBase.ALWAYS_USE_SESSION", "false")).booleanValue();
+
+
+    /**
      * The Context to which this Valve is attached.
      */
     protected Context context = null;
@@ -198,6 +219,16 @@ public abstract class AuthenticatorBase
     public void setChangeSessionIdOnAuthentication(
             boolean changeSessionIdOnAuthentication) {
         this.changeSessionIdOnAuthentication = changeSessionIdOnAuthentication;
+    }
+
+
+    public boolean isUnregisterSsoOnLogout() {
+        return unregisterSsoOnLogout;
+    }
+
+
+    public void setUnregisterSsoOnLogout(boolean unregisterSsoOnLogout) {
+        this.unregisterSsoOnLogout = unregisterSsoOnLogout;
     }
 
 
@@ -601,11 +632,16 @@ public abstract class AuthenticatorBase
         request.setUserPrincipal(principal);
 
         Session session = request.getSessionInternal(false);
-        if (session != null && changeSessionIdOnAuthentication) {
-            Manager manager = request.getContext().getManager();
-            manager.changeSessionId(session, request.getRandom());
-            request.changeSessionId(session.getId());
+        if (session != null) {
+            if (changeSessionIdOnAuthentication) {
+                Manager manager = request.getContext().getManager();
+                manager.changeSessionId(session, request.getRandom());
+                request.changeSessionId(session.getId());
+            }
+        } else if (alwaysUseSession) {
+            session = request.getSessionInternal(true);
         }
+
         // Cache the authentication information in our session, if any
         if (cache) {
             if (session != null) {
@@ -709,8 +745,14 @@ public abstract class AuthenticatorBase
         String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
         if (ssoId != null) {
             // Update the SSO session with the latest authentication data
-            request.removeNote(Constants.REQ_SSOID_NOTE);
-            sso.deregister(ssoId);
+            if (unregisterSsoOnLogout) {
+                request.removeNote(Constants.REQ_SSOID_NOTE);
+                sso.deregister(ssoId);
+            } else {
+                if (cache && session != null) {
+                    sso.removeLogin(ssoId);
+                }
+            }
         }
 
     }

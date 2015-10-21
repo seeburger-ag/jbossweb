@@ -215,10 +215,6 @@ public final class Parameters {
 
     private void processParameters(byte bytes[], int start, int len, String enc) {
 
-        if (CoyoteLogger.HTTP_LOGGER.isDebugEnabled()) {
-            CoyoteLogger.HTTP_LOGGER.startProcessingParameter(new String(bytes, start, len, DEFAULT_CHARSET));
-        }
-
         int decodeFailCount = 0;
 
         int pos = start;
