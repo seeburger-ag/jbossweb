@@ -292,4 +292,7 @@ public interface CoyoteMessages {
     @Message(id = 2084, value = "Must call init first")
     IllegalStateException mustInitFirst();
 
+    @Message(id = 2085, value = "Maximum swallow size is exceeded")
+    IOException maxSwallowSizeExceeded();
+
 }

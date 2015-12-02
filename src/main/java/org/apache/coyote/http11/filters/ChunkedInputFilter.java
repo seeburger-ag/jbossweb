@@ -198,8 +198,15 @@ public class ChunkedInputFilter implements InputFilter {
     public long end()
         throws IOException {
 
+        int maxSwallowSize = org.apache.coyote.Constants.MAX_SWALLOW_SIZE;
+        long swallowed = 0;
+        int read = 0;
         // Consume extra bytes : parse the stream until the end chunk is found
-        while (doRead(readChunk, null) > 0) {
+        while ((read = doRead(readChunk, null)) >= 0) {
+            swallowed += read;
+            if (maxSwallowSize > -1 && swallowed > maxSwallowSize) {
+                throw MESSAGES.maxSwallowSizeExceeded();
+            }
         }
 
         // Return the number of extra bytes which were consumed
