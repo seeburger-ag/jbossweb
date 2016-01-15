@@ -113,6 +113,8 @@ public class StandardWrapper
      */
     protected boolean dynamic = false;
     
+    private boolean overridable = false;
+    
     
     /**
      * Enabled flag.
@@ -311,6 +313,16 @@ public class StandardWrapper
 
     // ------------------------------------------------------------- Properties
 
+ 
+    @Override
+    public boolean isOverridable() {
+        return overridable;
+    }
+
+    @Override
+    public void setOverridable(boolean overridable) {
+        this.overridable = overridable;
+    }
 
     /**
      * Return the async supported value.

@@ -8,7 +8,8 @@
 
   <properties>
     <author email="mladen.turk@jboss.com">Mladen Turk</author>
-    <title>Overview</title>
+    <author email="jfclere@gmail.com">Jean-Frederic Clere</author>
+    <title>The rewrite Valve</title>
   </properties>
 
 <body>
@@ -22,24 +23,20 @@
 
 <section name="Configuration">
 
-  <p>The rewrite valve is configured as a regular valve, by adding the following
-  to server.xml as child of an Engine or Host element (or inside a context.xml
-  file):</p>
-  
-  <source>&lt;Valve className="org.jboss.web.rewrite.RewriteValve" /&gt;</source>
+  <p>The rewrite valve can be configured as a valve added in a virtual-host.
+     See <a href="config/host.html">virtual-server</a> documentation for 
+     informations how to configure it.
+  </p>
+  <p>It can also be in the jboss-web.xml of a webapp configured as a normal value:
+  </p>
+  <source>
+&lt;valve&gt;
+   &lt;class-name&gt;org.jboss.web.rewrite.RewriteValve"&lt;/class-name&gt;
+&lt;/valve&gt;
+  </source>
 
   <p>The valve will then use a <code>rewrite.properties</code> file containing the
-  rewrite directives, located according to the container it is assocaited to:
-  <ul>
-    <li>If associated with an engine, it should be placed in a folder named
-    [engine_name] placed either in the classloader, or in the conf folder of the current
-    JBoss profile</li>
-    <li>If associated with a host, it should be placed in a folder named
-    [engine_name]/[host_name] placed either in the classloader, or in the conf folder of the current
-    JBoss profile</li>
-    <li>If associated with a context, it should be placed in the WEB-INF folder of the web
-    application</li>
-  </ul>
+  rewrite directives, it must be placed in the WEB-INF folder of the web application
   </p>
 
 </section>
