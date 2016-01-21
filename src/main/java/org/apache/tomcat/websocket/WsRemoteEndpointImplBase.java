@@ -63,6 +63,7 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
     private boolean messagePartInProgress = false;
     private final Queue<MessagePart> messagePartQueue = new ArrayDeque<MessagePart>();
     private final Object messagePartLock = new Object();
+    protected final Object connectionWriteLock = new Object();
 
     // State
     private volatile boolean closed = false;
@@ -730,16 +731,18 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
 
         public void write() {
             // FIXME: maybe not needed
-            synchronized (buffer) {
-                buffer.clear();
-                CoderResult cr = encoder.encode(message, buffer, true);
-                if (cr.isError()) {
-                    throw new IllegalArgumentException(cr.toString());
+            synchronized (connectionWriteLock) {
+                synchronized (buffer) {
+                    buffer.clear();
+                    CoderResult cr = encoder.encode(message, buffer, true);
+                    if (cr.isError()) {
+                        throw new IllegalArgumentException(cr.toString());
+                    }
+                    isDone = !cr.isOverflow();
+                    buffer.flip();
+                    endpoint.startMessage(Constants.OPCODE_TEXT, buffer,
+                            isDone && isLast, this);
                 }
-                isDone = !cr.isOverflow();
-                buffer.flip();
-                endpoint.startMessage(Constants.OPCODE_TEXT, buffer,
-                        isDone && isLast, this);
             }
         }
 

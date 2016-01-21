@@ -47,7 +47,6 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
     private final ExecutorService executorService;
     private volatile SendHandler handler = null;
     private volatile ByteBuffer[] buffers = null;
-    private final Object connectionWriteLock = new Object();
 
     private volatile long timeoutExpiry = -1;
     private volatile boolean close;
