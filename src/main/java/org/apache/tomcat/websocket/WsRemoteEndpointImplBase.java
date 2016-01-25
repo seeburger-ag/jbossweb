@@ -54,6 +54,7 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
     public static final String BLOCKING_SEND_TIMEOUT_PROPERTY =
             "org.apache.tomcat.websocket.BLOCKING_SEND_TIMEOUT";
 
+    protected final Object connectionWriteLock = new Object();
     private final StateMachine stateMachine = new StateMachine();
 
     private final IntermediateMessageHandler intermediateMessageHandler =
@@ -729,8 +730,7 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
         }
 
         public void write() {
-            // FIXME: maybe not needed
-            synchronized (buffer) {
+            synchronized (connectionWriteLock) {
                 buffer.clear();
                 CoderResult cr = encoder.encode(message, buffer, true);
                 if (cr.isError()) {
@@ -764,7 +764,7 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
      * Used to write data to the output buffer, flushing the buffer if it fills
      * up.
      */
-    private static class OutputBufferSendHandler implements SendHandler {
+    private class OutputBufferSendHandler implements SendHandler {
 
         private final SendHandler handler;
         private final ByteBuffer headerBuffer;
@@ -789,60 +789,62 @@ public abstract class WsRemoteEndpointImplBase implements RemoteEndpoint {
         }
 
         public void write() {
-            // Write the header
-            while (headerBuffer.hasRemaining() && outputBuffer.hasRemaining()) {
-                outputBuffer.put(headerBuffer.get());
-            }
-            if (headerBuffer.hasRemaining()) {
-                // Still more headers to write, need to flush
-                outputBuffer.flip();
-                endpoint.doWrite(this, outputBuffer);
-                return;
-            }
+            synchronized (connectionWriteLock) {
+                // Write the header
+                while (headerBuffer.hasRemaining() && outputBuffer.hasRemaining()) {
+                    outputBuffer.put(headerBuffer.get());
+                }
+                if (headerBuffer.hasRemaining()) {
+                    // Still more headers to write, need to flush
+                    outputBuffer.flip();
+                    endpoint.doWrite(this, outputBuffer);
+                    return;
+                }
 
-            // Write the payload
-            int payloadLeft = payload.remaining();
-            int payloadLimit = payload.limit();
-            int outputSpace = outputBuffer.remaining();
-            int toWrite = payloadLeft;
+                // Write the payload
+                int payloadLeft = payload.remaining();
+                int payloadLimit = payload.limit();
+                int outputSpace = outputBuffer.remaining();
+                int toWrite = payloadLeft;
 
-            if (payloadLeft > outputSpace) {
-                toWrite = outputSpace;
-                // Temporarily reduce the limit
-                payload.limit(payload.position() + toWrite);
-            }
+                if (payloadLeft > outputSpace) {
+                    toWrite = outputSpace;
+                    // Temporarily reduce the limit
+                    payload.limit(payload.position() + toWrite);
+                }
 
-            if (mask == null) {
-                // Use a bulk copy
-                outputBuffer.put(payload);
-            } else {
-                for (int i = 0; i < toWrite; i++) {
-                    outputBuffer.put(
-                            (byte) (payload.get() ^ (mask[maskIndex++] & 0xFF)));
-                    if (maskIndex > 3) {
-                        maskIndex = 0;
+                if (mask == null) {
+                    // Use a bulk copy
+                    outputBuffer.put(payload);
+                } else {
+                    for (int i = 0; i < toWrite; i++) {
+                        outputBuffer.put(
+                                (byte) (payload.get() ^ (mask[maskIndex++] & 0xFF)));
+                        if (maskIndex > 3) {
+                            maskIndex = 0;
+                        }
                     }
                 }
-            }
 
-            if (payloadLeft > outputSpace) {
-                // Restore the original limit
-                payload.limit(payloadLimit);
-                // Still more headers to write, need to flush
-                outputBuffer.flip();
-                endpoint.doWrite(this, outputBuffer);
-                return;
-            }
-
-            if (flushRequired) {
-                outputBuffer.flip();
-                if (outputBuffer.remaining() == 0) {
-                    handler.onResult(new SendResult());
-                } else {
+                if (payloadLeft > outputSpace) {
+                    // Restore the original limit
+                    payload.limit(payloadLimit);
+                    // Still more headers to write, need to flush
+                    outputBuffer.flip();
                     endpoint.doWrite(this, outputBuffer);
+                    return;
                 }
-            } else {
-                handler.onResult(new SendResult());
+
+                if (flushRequired) {
+                    outputBuffer.flip();
+                    if (outputBuffer.remaining() == 0) {
+                        handler.onResult(new SendResult());
+                    } else {
+                        endpoint.doWrite(this, outputBuffer);
+                    }
+                } else {
+                    handler.onResult(new SendResult());
+                }
             }
         }
 

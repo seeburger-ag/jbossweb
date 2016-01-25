@@ -47,7 +47,6 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
     private final ExecutorService executorService;
     private volatile SendHandler handler = null;
     private volatile ByteBuffer[] buffers = null;
-    private final Object connectionWriteLock = new Object();
 
     private volatile long timeoutExpiry = -1;
     private volatile boolean close;
@@ -90,14 +89,12 @@ public class WsRemoteEndpointImplServer extends WsRemoteEndpointImplBase {
                 while (sos.isReady()) {
                     complete = true;
                     for (ByteBuffer buffer : buffers) {
-                        synchronized (buffer) {
-                            if (buffer.hasRemaining()) {
-                                complete = false;
-                                sos.write(buffer.array(), buffer.arrayOffset(),
-                                        buffer.limit());
-                                buffer.position(buffer.limit());
-                                break;
-                            }
+                        if (buffer.hasRemaining()) {
+                            complete = false;
+                            sos.write(buffer.array(), buffer.arrayOffset(),
+                                    buffer.limit());
+                            buffer.position(buffer.limit());
+                            break;
                         }
                     }
                     if (complete) {
