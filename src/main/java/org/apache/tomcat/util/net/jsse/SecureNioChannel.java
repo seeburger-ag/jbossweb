@@ -705,7 +705,6 @@ public class SecureNioChannel extends NioChannel {
 		// Begin handshake
 		sslEngine.beginHandshake();
 		handshakeStatus = sslEngine.getHandshakeStatus();
-		int i = 1;
 		boolean read = true;
 		// Process handshaking message
 		while (!handshakeComplete) {
@@ -715,7 +714,7 @@ public class SecureNioChannel extends NioChannel {
 				int nBytes = 0;
 				if (read) {
 					clientAppData.clear();
-					nBytes = this.channel.read(this.netInBuffer).get();
+					nBytes = this.channel.read(this.netInBuffer).get(org.apache.coyote.http11.Constants.DEFAULT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
 				}
 				if (nBytes < 0) {
 					throw new IOException(MESSAGES.errorUnwrappingHandshake());
