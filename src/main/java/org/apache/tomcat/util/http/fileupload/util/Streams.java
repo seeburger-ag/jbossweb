@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload.util;
 
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -191,7 +193,7 @@ public final class Streams {
                 }
             }
             throw new InvalidFileNameException(pFileName,
-                    "Invalid file name: " + sb);
+                    MESSAGES.invalidFileName(sb.toString()));
         }
         return pFileName;
     }

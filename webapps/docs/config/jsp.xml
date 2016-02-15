@@ -35,7 +35,7 @@
     <attributes>
 
       <attribute name="development" required="true">
-        <p>Name of the Virtual Host</p>
+        <p>Enable development mode. (see <code>modification-test-interval</code> too) The default value is <code>false</code>.</p>
       </attribute>
 
       <attribute name="disabled" required="true">
