@@ -18,6 +18,8 @@
 package org.apache.tomcat.util.net;
 
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.Locale;
@@ -150,7 +152,7 @@ public final class URL implements Serializable {
             }
 
             if (protocol == null)
-                throw new MalformedURLException("no protocol: " + original);
+                throw new MalformedURLException(MESSAGES.urlWithNoProtocol(original));
 
             // Parse out any ref portion of the spec
             i = spec.indexOf('#', start);
@@ -168,7 +170,7 @@ public final class URL implements Serializable {
         } catch (MalformedURLException e) {
             throw e;
         } catch (Exception e) {
-            throw new MalformedURLException(e.toString());
+            throw new MalformedURLException(MESSAGES.errorProcessingUrl(e.getMessage()));
         }
 
     }
@@ -477,8 +479,7 @@ public final class URL implements Serializable {
             if (index < 0)
                 break;
             if (index == 0)
-                throw new MalformedURLException
-                    ("Invalid relative URL reference");
+                throw new MalformedURLException(MESSAGES.invalidRelativeUrlReference());
             int index2 = normalized.lastIndexOf('/', index - 1);
             normalized = normalized.substring(0, index2) +
                 normalized.substring(index + 3);
@@ -493,8 +494,7 @@ public final class URL implements Serializable {
             int index = normalized.length() - 3;
             int index2 = normalized.lastIndexOf('/', index - 1);
             if (index2 < 0)
-                throw new MalformedURLException
-                    ("Invalid relative URL reference");
+                throw new MalformedURLException(MESSAGES.invalidRelativeUrlReference());
             normalized = normalized.substring(0, index2 + 1);
         }
 
@@ -666,8 +666,7 @@ public final class URL implements Serializable {
                     hStart = ipv6;
                     ipv6 = authority.indexOf(']', ipv6);
                     if( ipv6 < 0 ) {
-                        throw new MalformedURLException(
-                                                        "Closing ']' not found in IPV6 address: " + authority);
+                        throw new MalformedURLException(MESSAGES.invalidIp6Address(authority));
                     } else {
                         at = ipv6-1;
                     }
@@ -679,7 +678,7 @@ public final class URL implements Serializable {
                         port =
                             Integer.parseInt(authority.substring(colon + 1));
                     } catch (NumberFormatException e) {
-                        throw new MalformedURLException(e.toString());
+                        throw new MalformedURLException(MESSAGES.invalidIpAddress(authority, e.getMessage()));
                     }
                     host = authority.substring(hStart, colon);
                 } else {
@@ -708,8 +707,7 @@ public final class URL implements Serializable {
             return;
         }
         if (!path.startsWith("/"))
-            throw new MalformedURLException
-                ("Base path does not start with '/'");
+            throw new MalformedURLException(MESSAGES.invalidBasePath());
         if (!path.endsWith("/"))
             path += "/../";
         path += spec.substring(start, limit);

@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.util.http.mapper;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -223,7 +225,7 @@ public final class Mapper {
             pos = find(hosts, hostName);
         }
         if (pos < 0) {
-            throw new IllegalStateException("No host found: " + hostName);
+            throw MESSAGES.mapperHostNotFound(hostName);
         }
         Host host = hosts[pos];
         if (host.name.equals(hostName)) {
@@ -267,7 +269,7 @@ public final class Mapper {
             pos = find(hosts, hostName);
         }
         if (pos < 0) {
-            throw new IllegalStateException("No host found: " + hostName);
+            throw MESSAGES.mapperHostNotFound(hostName);
         }
         Host host = hosts[pos];
         if (host.name.equals(hostName)) {
@@ -377,7 +379,7 @@ public final class Mapper {
             Context[] contexts = host.contextList.contexts;
             int pos2 = find(contexts, contextPath);
             if( pos2<0 ) {
-                throw new IllegalStateException("No context found: " + contextPath );
+                throw MESSAGES.mapperContextNotFound(contextPath);
             }
             Context context = contexts[pos2];
             if (context.name.equals(contextPath)) {
@@ -883,6 +885,12 @@ public final class Mapper {
                         internalMapWildcardWrapper
                             (wildcardWrappers, context.nesting, 
                              path, mappingData);
+                    }
+
+                    // Rule 4b1 -- Welcome resources processing for extension match
+                    if (mappingData.wrapper == null) {
+                        internalMapExtensionWrapper(
+                            extensionWrappers, path, mappingData);
                     }
 
                     // Rule 4c -- Welcome resources processing

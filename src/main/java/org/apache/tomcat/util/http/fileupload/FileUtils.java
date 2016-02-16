@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload;
 
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -79,9 +81,7 @@ public class FileUtils {
 
         cleanDirectory(directory);
         if (!directory.delete()) {
-            String message =
-                "Unable to delete directory " + directory + ".";
-            throw new IOException(message);
+            throw new IOException(MESSAGES.failedToDeleteDirectory(directory.getPath()));
         }
     }
 
@@ -95,18 +95,16 @@ public class FileUtils {
      */
     public static void cleanDirectory(File directory) throws IOException {
         if (!directory.exists()) {
-            String message = directory + " does not exist";
-            throw new IllegalArgumentException(message);
+            throw MESSAGES.missingDirectory(directory.getPath());
         }
 
         if (!directory.isDirectory()) {
-            String message = directory + " is not a directory";
-            throw new IllegalArgumentException(message);
+            throw MESSAGES.notDirectory(directory.getPath());
         }
 
         File[] files = directory.listFiles();
         if (files == null) {  // null if security restricted
-            throw new IOException("Failed to list contents of " + directory);
+            throw new IOException(MESSAGES.failedListingDirectory(directory.getPath()));
         }
 
         IOException exception = null;
@@ -148,11 +146,9 @@ public class FileUtils {
             boolean filePresent = file.exists();
             if (!file.delete()) {
                 if (!filePresent){
-                    throw new FileNotFoundException("File does not exist: " + file);
+                    throw new FileNotFoundException(MESSAGES.missingFile(file.getPath()));
                 }
-                String message =
-                    "Unable to delete file: " + file;
-                throw new IOException(message);
+                throw new IOException(MESSAGES.failedToDelete(file.getPath()));
             }
         }
     }
@@ -198,18 +194,16 @@ public class FileUtils {
      */
     private static void cleanDirectoryOnExit(File directory) throws IOException {
         if (!directory.exists()) {
-            String message = directory + " does not exist";
-            throw new IllegalArgumentException(message);
+            throw MESSAGES.missingDirectory(directory.getPath());
         }
 
         if (!directory.isDirectory()) {
-            String message = directory + " is not a directory";
-            throw new IllegalArgumentException(message);
+            throw MESSAGES.notDirectory(directory.getPath());
         }
 
         File[] files = directory.listFiles();
         if (files == null) {  // null if security restricted
-            throw new IOException("Failed to list contents of " + directory);
+            throw new IOException(MESSAGES.failedListingDirectory(directory.getPath()));
         }
 
         IOException exception = null;

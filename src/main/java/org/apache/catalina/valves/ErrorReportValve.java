@@ -214,8 +214,7 @@ public class ErrorReportValve
         StringBuilder sb = new StringBuilder();
 
         sb.append("<html><head><title>");
-        sb.append(ServerInfo.getServerInfo()).append(" - ");
-        sb.append(MESSAGES.errorReport());
+        sb.append(MESSAGES.statusHeader(statusCode, message));
         sb.append("</title>");
         sb.append("<style><!--");
         sb.append(org.apache.catalina.util.TomcatCSS.TOMCAT_CSS);
@@ -266,16 +265,9 @@ public class ErrorReportValve
                 loops++;
             }
 
-            sb.append("<p><b>");
-            sb.append(MESSAGES.statusNote());
-            sb.append("</b> <u>");
-            sb.append(MESSAGES.statusRootCauseInLogs(ServerInfo.getServerInfo()));
-            sb.append("</u></p>");
-
         }
 
         sb.append("<HR size=\"1\" noshade=\"noshade\">");
-        sb.append("<h3>").append(ServerInfo.getServerInfo()).append("</h3>");
         sb.append("</body></html>");
 
         try {

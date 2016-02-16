@@ -17,10 +17,11 @@
 
 package org.apache.tomcat.util.net;
 
-import java.net.Socket;
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import javax.net.ssl.SSLSession;
 
-import org.apache.tomcat.util.net.jsse.NioJSSESocketChannelFactory;
+import org.jboss.web.CoyoteLogger;
 
 /**
  * {@code SSLImplementation}
@@ -34,10 +35,8 @@ import org.apache.tomcat.util.net.jsse.NioJSSESocketChannelFactory;
  * @author EKR & <a href="mailto:nbenothm@redhat.com">Nabil Benothman</a>
  */
 abstract public class SSLImplementation {
-    private static org.jboss.logging.Logger logger = org.jboss.logging.Logger
-            .getLogger(SSLImplementation.class);
 
-    private static final String[] implementations = { "org.apache.tomcat.util.net.jsse.NioJSSEImplementation" };
+    private static final String[] implementations = { "org.apache.tomcat.util.net.jsse.JSSEImplementation" };
 
     /**
      * @return the default implementation of {@code SSLImplementation}
@@ -49,13 +48,13 @@ abstract public class SSLImplementation {
                 SSLImplementation impl = getInstance(implementations[i]);
                 return impl;
             } catch (Exception e) {
-                if (logger.isTraceEnabled())
-                    logger.trace("Error creating " + implementations[i], e);
+                if (CoyoteLogger.UTIL_LOGGER.isTraceEnabled())
+                    CoyoteLogger.UTIL_LOGGER.trace("Error creating " + implementations[i], e);
             }
         }
 
         // If we can't instantiate any of these
-        throw new ClassNotFoundException("Can't find any SSL implementation");
+        throw new ClassNotFoundException(MESSAGES.noSslImplementation());
     }
 
     /**
@@ -73,33 +72,12 @@ abstract public class SSLImplementation {
             Class<?> clazz = Class.forName(className);
             return (SSLImplementation) clazz.newInstance();
         } catch (Exception e) {
-            if (logger.isDebugEnabled())
-                logger.debug("Error loading SSL Implementation " + className, e);
-            throw new ClassNotFoundException("Error loading SSL Implementation " + className + " :"
-                    + e.toString());
+            if (CoyoteLogger.UTIL_LOGGER.isDebugEnabled())
+                CoyoteLogger.UTIL_LOGGER.debug("Error loading SSL Implementation " + className, e);
+            throw new ClassNotFoundException(MESSAGES.errorLoadingSslImplementation(className), e);
         }
     }
 
-    /**
-     * @return the implementation name
-     */
     abstract public String getImplementationName();
-
-    /**
-     * 
-     * @return a new instance of {@link NioJSSESocketChannelFactory}
-     */
-    public abstract NioJSSESocketChannelFactory getServerSocketChannelFactory();
-
-    /**
-     * @param channel
-     * @return the {@link SSLSupport} attached to this channel
-     */
-    public abstract SSLSupport getSSLSupport(NioChannel channel);
-    
-    /**
-     * @param session
-     * @return the {@link SSLSupport} attached to this session
-     */
     abstract public SSLSupport getSSLSupport(SSLSession session);
 }
