@@ -46,6 +46,7 @@ import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.JIoEndpoint.Handler;
 import org.apache.tomcat.util.net.jsse.JSSEImplementation;
 import org.jboss.web.CoyoteLogger;
+import org.jboss.web.NetworkUtils;
 
 
 /**
@@ -268,7 +269,7 @@ public class Http11Protocol
     public String getName() {
         String encodedAddr = "";
         if (getAddress() != null) {
-            encodedAddr = getAddress() + ":";
+            encodedAddr = NetworkUtils.formatIPAddressForURI(getAddress()) + ":";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }

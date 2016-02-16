@@ -41,6 +41,7 @@ import org.apache.tomcat.util.net.AprEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.AprEndpoint.Handler;
 import org.jboss.web.CoyoteLogger;
+import org.jboss.web.NetworkUtils;
 
 
 /**
@@ -220,7 +221,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public String getName() {
         String encodedAddr = "";
         if (getAddress() != null) {
-            encodedAddr = getAddress() + ":";
+            encodedAddr = NetworkUtils.formatIPAddressForURI(getAddress()) + ":";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }

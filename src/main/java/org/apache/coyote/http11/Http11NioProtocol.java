@@ -42,6 +42,7 @@ import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.jsse.NioJSSEImplementation;
 import org.apache.tomcat.util.net.jsse.NioJSSESocketChannelFactory;
 import org.jboss.web.CoyoteLogger;
+import org.jboss.web.NetworkUtils;
 
 /**
  * {@code Http11NioProtocol}
@@ -246,7 +247,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
     public String getName() {
         String encodedAddr = "";
         if (getAddress() != null) {
-            encodedAddr = getAddress() + ":";
+            encodedAddr = NetworkUtils.formatIPAddressForURI(getAddress()) + ":";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }
