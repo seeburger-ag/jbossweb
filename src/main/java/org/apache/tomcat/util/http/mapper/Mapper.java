@@ -887,6 +887,12 @@ public final class Mapper {
                              path, mappingData);
                     }
 
+                    // Rule 4b1 -- Welcome resources processing for extension match
+                    if (mappingData.wrapper == null) {
+                        internalMapExtensionWrapper(
+                            extensionWrappers, path, mappingData);
+                    }
+
                     // Rule 4c -- Welcome resources processing
                     //            for physical folder
                     if (mappingData.wrapper == null
