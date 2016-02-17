@@ -38,6 +38,9 @@ import org.apache.tomcat.util.buf.MessageBytes;
 public final class Mapper {
 
 
+    protected static final boolean STRICT_WELCOME_FILES = 
+            Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.mapper.STRICT_WELCOME_FILES", "false")).booleanValue();
+
     // ----------------------------------------------------- Instance Variables
 
 
@@ -888,7 +891,7 @@ public final class Mapper {
                     }
 
                     // Rule 4b1 -- Welcome resources processing for extension match
-                    if (mappingData.wrapper == null) {
+                    if (STRICT_WELCOME_FILES && mappingData.wrapper == null) {
                         internalMapExtensionWrapper(
                             extensionWrappers, path, mappingData);
                     }
