@@ -17,6 +17,8 @@
 
 package org.apache.tomcat.util.http.mapper;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +37,9 @@ import org.apache.tomcat.util.buf.MessageBytes;
  */
 public final class Mapper {
 
+
+    protected static final boolean STRICT_WELCOME_FILES = 
+            Boolean.valueOf(System.getProperty("org.apache.tomcat.util.http.mapper.STRICT_WELCOME_FILES", "false")).booleanValue();
 
     // ----------------------------------------------------- Instance Variables
 
@@ -223,7 +228,7 @@ public final class Mapper {
             pos = find(hosts, hostName);
         }
         if (pos < 0) {
-            throw new IllegalStateException("No host found: " + hostName);
+            throw MESSAGES.mapperHostNotFound(hostName);
         }
         Host host = hosts[pos];
         if (host.name.equals(hostName)) {
@@ -267,7 +272,7 @@ public final class Mapper {
             pos = find(hosts, hostName);
         }
         if (pos < 0) {
-            throw new IllegalStateException("No host found: " + hostName);
+            throw MESSAGES.mapperHostNotFound(hostName);
         }
         Host host = hosts[pos];
         if (host.name.equals(hostName)) {
@@ -377,7 +382,7 @@ public final class Mapper {
             Context[] contexts = host.contextList.contexts;
             int pos2 = find(contexts, contextPath);
             if( pos2<0 ) {
-                throw new IllegalStateException("No context found: " + contextPath );
+                throw MESSAGES.mapperContextNotFound(contextPath);
             }
             Context context = contexts[pos2];
             if (context.name.equals(contextPath)) {
@@ -883,6 +888,12 @@ public final class Mapper {
                         internalMapWildcardWrapper
                             (wildcardWrappers, context.nesting, 
                              path, mappingData);
+                    }
+
+                    // Rule 4b1 -- Welcome resources processing for extension match
+                    if (STRICT_WELCOME_FILES && mappingData.wrapper == null) {
+                        internalMapExtensionWrapper(
+                            extensionWrappers, path, mappingData);
                     }
 
                     // Rule 4c -- Welcome resources processing

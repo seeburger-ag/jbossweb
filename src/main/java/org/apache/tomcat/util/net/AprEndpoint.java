@@ -1,23 +1,19 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.tomcat.util.net;
@@ -25,6 +21,7 @@ package org.apache.tomcat.util.net;
 import static org.jboss.web.CoyoteMessages.MESSAGES;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Executor;
@@ -234,6 +231,22 @@ public class AprEndpoint {
     protected boolean deferAccept = true;
     public void setDeferAccept(boolean deferAccept) { this.deferAccept = deferAccept; }
     public boolean getDeferAccept() { return deferAccept; }
+
+
+    /**
+     * Receive buffer.
+     */
+    protected int soReceiveBuffer = Constants.SO_RCV_BUFFER;
+    public int getSoReceiveBuffer() { return soReceiveBuffer; }
+    public void setSoReceiveBuffer(int soReceiveBuffer) { this.soReceiveBuffer = soReceiveBuffer; }
+
+
+    /**
+     * Send buffer.
+     */
+    protected int soSendBuffer = Constants.SO_SND_BUFFER;
+    public int getSoSendBuffer() { return soSendBuffer; }
+    public void setSoSendBuffer(int soSendBuffer) { this.soSendBuffer = soSendBuffer; }
 
 
     /**
@@ -554,6 +567,80 @@ public class AprEndpoint {
             }
         }
 
+        // Initialize SSL if needed
+        if (SSLEnabled) {
+
+            // SSL protocol
+            int value = SSL.SSL_PROTOCOL_NONE;
+            if (SSLProtocol == null || SSLProtocol.length() == 0) {
+               if (SSL.version() < 0x1000100fL)
+                   value |= SSL.SSL_PROTOCOL_TLSV1;
+               else
+                   value |= SSL.SSL_PROTOCOL_ALL;
+            } else {
+               String protocols = SSLProtocol.replace(',', '+');
+               for (String protocol : protocols.split("\\+")) {
+                   protocol = protocol.trim();
+                   if ("SSLv2".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_SSLV2;
+                   } else if ("SSLv3".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_SSLV3;
+                   } else if ("TLSv1".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_TLSV1;
+                   } else if ("TLSv1.1".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_TLSV1_1;
+                   } else if ("TLSv1.2".equalsIgnoreCase(protocol)) {
+                       value |= SSL.SSL_PROTOCOL_TLSV1_2;
+                   } else if ("all".equalsIgnoreCase(protocol)) {
+                       if (SSL.version() < 0x1000100fL)
+                           value = SSL.SSL_PROTOCOL_TLSV1;
+                       else
+                           value = SSL.SSL_PROTOCOL_ALL;
+                   } else {
+                       // Protocol not recognized, fail to start as it is safer than
+                       // continuing with the default which might enable more than the
+                       // is required
+                       CoyoteLogger.UTIL_LOGGER.unsupportedProtocol(protocol);
+                   }
+               }
+            }
+
+            // Create SSL Context
+            sslContext = SSLContext.make(rootPool, value, (reverseConnection) ? SSL.SSL_MODE_CLIENT : SSL.SSL_MODE_SERVER);
+            // SSL renegociation
+            if (SSLInsecureRenegotiation) {
+                if (SSL.hasOp(SSL.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION))
+                    SSLContext.setOptions(sslContext, SSL.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+                else {
+                    // OpenSSL does not support unsafe legacy renegotiation.
+                    CoyoteLogger.UTIL_LOGGER.noInsecureRengotiation(SSL.versionString());
+                }
+            }
+            // List the ciphers that the client is permitted to negotiate
+            SSLContext.setCipherSuite(sslContext, SSLCipherSuite);
+            // Load Server key and certificate
+            SSLContext.setCertificate(sslContext, SSLCertificateFile, SSLCertificateKeyFile, SSLPassword, SSL.SSL_AIDX_RSA);
+            // Set certificate chain file
+            SSLContext.setCertificateChainFile(sslContext, SSLCertificateChainFile, false);
+            // Support Client Certificates
+            SSLContext.setCACertificate(sslContext, SSLCACertificateFile, SSLCACertificatePath);
+            // Set revocation
+            SSLContext.setCARevocation(sslContext, SSLCARevocationFile, SSLCARevocationPath);
+            // Client certificate verification
+            value = SSL.SSL_CVERIFY_NONE;
+            if ("optional".equalsIgnoreCase(SSLVerifyClient)) {
+                value = SSL.SSL_CVERIFY_OPTIONAL;
+            } else if ("require".equalsIgnoreCase(SSLVerifyClient)) {
+                value = SSL.SSL_CVERIFY_REQUIRE;
+            } else if ("optionalNoCA".equalsIgnoreCase(SSLVerifyClient)) {
+                value = SSL.SSL_CVERIFY_OPTIONAL_NO_CA;
+            }
+            SSLContext.setVerify(sslContext, value, SSLVerifyDepth);
+            // For now, sendfile is not supported with SSL
+            useSendfile = false;
+
+        }
+        
         // Sendfile usage on systems which don't support it cause major problems
         if (useSendfile && !Library.APR_HAS_SENDFILE) {
             useSendfile = false;
@@ -605,56 +692,6 @@ public class AprEndpoint {
             deferAccept = false;
         }
 
-        // Initialize SSL if needed
-        if (SSLEnabled) {
-
-            // SSL protocol
-            int value = SSL.SSL_PROTOCOL_ALL;
-            if ("SSLv2".equalsIgnoreCase(SSLProtocol)) {
-                value = SSL.SSL_PROTOCOL_SSLV2;
-            } else if ("SSLv3".equalsIgnoreCase(SSLProtocol)) {
-                value = SSL.SSL_PROTOCOL_SSLV3;
-            } else if ("TLSv1".equalsIgnoreCase(SSLProtocol)) {
-                value = SSL.SSL_PROTOCOL_TLSV1;
-            } else if ("SSLv2+SSLv3".equalsIgnoreCase(SSLProtocol)) {
-                value = SSL.SSL_PROTOCOL_SSLV2 | SSL.SSL_PROTOCOL_SSLV3;
-            }
-            // Create SSL Context
-            sslContext = SSLContext.make(rootPool, value, (reverseConnection) ? SSL.SSL_MODE_CLIENT : SSL.SSL_MODE_SERVER);
-            // SSL renegociation
-            if (SSLInsecureRenegotiation) {
-                if (SSL.hasOp(SSL.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION))
-                    SSLContext.setOptions(sslContext, SSL.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
-                else {
-                    // OpenSSL does not support unsafe legacy renegotiation.
-                    CoyoteLogger.UTIL_LOGGER.noInsecureRengotiation(SSL.versionString());
-                }
-            }
-            // List the ciphers that the client is permitted to negotiate
-            SSLContext.setCipherSuite(sslContext, SSLCipherSuite);
-            // Load Server key and certificate
-            SSLContext.setCertificate(sslContext, SSLCertificateFile, SSLCertificateKeyFile, SSLPassword, SSL.SSL_AIDX_RSA);
-            // Set certificate chain file
-            SSLContext.setCertificateChainFile(sslContext, SSLCertificateChainFile, false);
-            // Support Client Certificates
-            SSLContext.setCACertificate(sslContext, SSLCACertificateFile, SSLCACertificatePath);
-            // Set revocation
-            SSLContext.setCARevocation(sslContext, SSLCARevocationFile, SSLCARevocationPath);
-            // Client certificate verification
-            value = SSL.SSL_CVERIFY_NONE;
-            if ("optional".equalsIgnoreCase(SSLVerifyClient)) {
-                value = SSL.SSL_CVERIFY_OPTIONAL;
-            } else if ("require".equalsIgnoreCase(SSLVerifyClient)) {
-                value = SSL.SSL_CVERIFY_REQUIRE;
-            } else if ("optionalNoCA".equalsIgnoreCase(SSLVerifyClient)) {
-                value = SSL.SSL_CVERIFY_OPTIONAL_NO_CA;
-            }
-            SSLContext.setVerify(sslContext, value, SSLVerifyDepth);
-            // For now, sendfile is not supported with SSL
-            useSendfile = false;
-
-        }
-        
         initialized = true;
 
     }
@@ -765,7 +802,9 @@ public class AprEndpoint {
         Pool.destroy(serverSockPool);
         serverSockPool = 0;
         // Close server socket
-        Socket.close(serverSock);
+        if (serverSock != 0) {
+            Socket.close(serverSock);
+        }
         serverSock = 0;
         sslContext = 0;
         // Close all APR memory pools and resources
@@ -786,24 +825,23 @@ public class AprEndpoint {
     }
 
 
-    /**
-     * Unlock the server socket accept using a bogus connection.
-     */
     protected void unlockAccept() {
         java.net.Socket s = null;
+        InetSocketAddress saddr = null;
         try {
             // Need to create a connection to unlock the accept();
             if (address == null) {
-                s = new java.net.Socket("localhost", port);
+                saddr = new InetSocketAddress("localhost", port);
             } else {
-                s = new java.net.Socket(address, port);
-                // setting soLinger to a small value will help shutdown the
-                // connection quicker
-                s.setSoLinger(true, 0);
+                saddr = new InetSocketAddress(address, port);
             }
+            s = new java.net.Socket();
+            s.setSoLinger(true, 0);
+            s.connect(saddr, 2000);
             // If deferAccept is enabled, send at least one byte
             if (deferAccept) {
                 s.getOutputStream().write(" ".getBytes());
+                s.getOutputStream().flush();
             }
         } catch (Exception e) {
             // Ignore
@@ -834,6 +872,10 @@ public class AprEndpoint {
                 Socket.optSet(socket, Socket.APR_TCP_NODELAY, (tcpNoDelay ? 1 : 0));
             if (soTimeout > 0)
                 Socket.timeoutSet(socket, soTimeout * 1000);
+            if (soReceiveBuffer > 0)
+                Socket.optSet(socket, Socket.APR_SO_RCVBUF, soReceiveBuffer);
+            if (soSendBuffer > 0)
+                Socket.optSet(socket, Socket.APR_SO_SNDBUF, soSendBuffer);
 
             // 2: SSL handshake
             step = 2;
@@ -976,7 +1018,7 @@ public class AprEndpoint {
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that
             // the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
             return false;
         }
         return true;
@@ -1001,7 +1043,7 @@ public class AprEndpoint {
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that
             // the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
             return false;
         }
         return true;
@@ -1026,7 +1068,7 @@ public class AprEndpoint {
         } catch (Throwable t) {
             // This means we got an OOM or similar creating a thread, or that
             // the pool and its queue are full
-            CoyoteLogger.UTIL_LOGGER.errorProcessingSocket(t);
+            CoyoteLogger.NET_LOGGER.errorProcessingSocket(t);
             return false;
         }
         return true;
@@ -1052,12 +1094,15 @@ public class AprEndpoint {
             while (running) {
 
                 // Loop if endpoint is paused
-                while (paused) {
+                while (running && paused) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         // Ignore
                     }
+                }
+                if (!running) {
+                    break;
                 }
 
                 if (reverseConnection) {
@@ -1126,7 +1171,21 @@ public class AprEndpoint {
                             Socket.destroy(socket);
                         }
                     } catch (Throwable t) {
-                        CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                        if (running) {
+                            if (t instanceof Error) {
+                                Error e = (Error) t;
+                                if (e.getError() == 233) {
+                                    // Not an error on HP-UX so log as a warning
+                                    // so it can be filtered out on that platform
+                                    // See bug 50273
+                                    CoyoteLogger.UTIL_LOGGER.warnAcceptingSocket(t);
+                                } else {
+                                    CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                                }
+                            } else {
+                                CoyoteLogger.UTIL_LOGGER.errorAcceptingSocket(t);
+                            }
+                        }
                     }
 
                 }
@@ -1407,11 +1466,6 @@ public class AprEndpoint {
                     defaultPollerSize = (OS.IS_WIN32 || OS.IS_WIN64) ? (8 * 1024) : (32 * 1024);
                 }
             }
-            if ((OS.IS_WIN32 || OS.IS_WIN64) && (defaultPollerSize > 1024)) {
-                // The maximum per poller to get reasonable performance is 1024
-                // Adjust poller size so that it won't reach the limit
-                defaultPollerSize = 1024;
-            }
             actualPollerSize = defaultPollerSize;
 
             timeouts = new SocketTimeouts(defaultPollerSize);
@@ -1652,7 +1706,7 @@ public class AprEndpoint {
             while (running) {
 
                 // Loop if endpoint is paused
-                while (paused) {
+                while (running && paused) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -1660,7 +1714,7 @@ public class AprEndpoint {
                     }
                 }
                 // Check timeouts for suspended connections if the poller is empty
-                while (connectionCount < 1 && addList.size() < 1) {
+                while (running && connectionCount < 1 && addList.size() < 1) {
                     // Reset maintain time.
                     try {
                         if (soTimeout > 0 && running) {
@@ -1674,6 +1728,9 @@ public class AprEndpoint {
                     } catch (Throwable t) {
                         CoyoteLogger.UTIL_LOGGER.errorProcessingSocketTimeout(t);
                     }
+                }
+                if (!running) {
+                    break;
                 }
 
                 try {
@@ -2234,7 +2291,7 @@ public class AprEndpoint {
             while (running) {
 
                 // Loop if endpoint is paused
-                while (paused) {
+                while (running && paused) {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -2242,7 +2299,7 @@ public class AprEndpoint {
                     }
                 }
                 // Loop if poller is empty
-                while (sendfileCount < 1 && addS.size() < 1) {
+                while (running && sendfileCount < 1 && addS.size() < 1) {
                     // Reset maintain time.
                     maintainTime = 0;
                     try {
@@ -2252,6 +2309,9 @@ public class AprEndpoint {
                     } catch (InterruptedException e) {
                         // Ignore
                     }
+                }
+                if (!running) {
+                    break;
                 }
 
                 try {

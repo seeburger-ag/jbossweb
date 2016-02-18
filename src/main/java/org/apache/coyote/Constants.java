@@ -71,4 +71,13 @@ public final class Constants {
     public static final int MAX_PAUSE_WAIT =
         Integer.valueOf(System.getProperty("org.apache.coyote.MAX_PAUSE_WAIT", "300")).intValue();
 
+    /**
+     * Limit on the length of request body Tomcat will swallow if it is not
+     * read during normal request processing. Defaults to 2MB.
+     */
+    public static final int MAX_SWALLOW_SIZE =
+        Integer.parseInt(System.getProperty(
+                "org.apache.coyote.MAX_SWALLOW_SIZE",
+                "2097152"));
+
 }

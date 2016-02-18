@@ -1,23 +1,19 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.coyote.http11;
@@ -45,6 +41,7 @@ import org.apache.tomcat.util.net.AprEndpoint;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.AprEndpoint.Handler;
 import org.jboss.web.CoyoteLogger;
+import org.jboss.web.NetworkUtils;
 
 
 /**
@@ -62,6 +59,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         setSoTimeout(Constants.DEFAULT_CONNECTION_TIMEOUT);
         //setServerSoTimeout(Constants.DEFAULT_SERVER_SOCKET_TIMEOUT);
         setTcpNoDelay(Constants.DEFAULT_TCP_NO_DELAY);
+        setKeepAliveTimeout(Constants.DEFAULT_KEEP_ALIVE_TIMEOUT);
     }
 
     /** Pass config info
@@ -106,10 +104,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         try {
             endpoint.init();
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorInitializingEndpoint(ex);
+            CoyoteLogger.HTTP_APR_LOGGER.errorInitializingEndpoint(ex);
             throw ex;
         }
-        CoyoteLogger.HTTP_LOGGER.initHttpConnector(getName());
+        CoyoteLogger.HTTP_APR_LOGGER.initHttpConnector(getName());
 
     }
 
@@ -121,14 +119,14 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
             if( this.domain != null ) {
                 try {
                     tpOname=new ObjectName
-                            (domain + ":" + "type=ThreadPool,name=" + getName());
+                            (domain + ":" + "type=ThreadPool,name=" + getJmxName());
                     Registry.getRegistry(null, null)
                     .registerComponent(endpoint, tpOname, null );
                 } catch (Exception e) {
-                    CoyoteLogger.HTTP_LOGGER.errorRegisteringPool(e);
+                    CoyoteLogger.HTTP_APR_LOGGER.errorRegisteringPool(e);
                 }
                 rgOname=new ObjectName
-                        (domain + ":type=GlobalRequestProcessor,name=" + getName());
+                        (domain + ":type=GlobalRequestProcessor,name=" + getJmxName());
                 Registry.getRegistry(null, null).registerComponent
                 ( cHandler.global, rgOname, null );
             }
@@ -136,17 +134,17 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
         try {
             endpoint.start();
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorStartingEndpoint(ex);
+            CoyoteLogger.HTTP_APR_LOGGER.errorStartingEndpoint(ex);
             throw ex;
         }
-        CoyoteLogger.HTTP_LOGGER.startHttpConnector(getName());
+        CoyoteLogger.HTTP_APR_LOGGER.startHttpConnector(getName());
     }
 
     public void pause() throws Exception {
         try {
             endpoint.pause();
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorPausingEndpoint(ex);
+            CoyoteLogger.HTTP_APR_LOGGER.errorPausingEndpoint(ex);
             throw ex;
         }
         canDestroy = false;
@@ -172,25 +170,25 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                 canDestroy = true;
             }
         }
-        CoyoteLogger.HTTP_LOGGER.pauseHttpConnector(getName());
+        CoyoteLogger.HTTP_APR_LOGGER.pauseHttpConnector(getName());
     }
 
     public void resume() throws Exception {
         try {
             endpoint.resume();
         } catch (Exception ex) {
-            CoyoteLogger.HTTP_LOGGER.errorResumingEndpoint(ex);
+            CoyoteLogger.HTTP_APR_LOGGER.errorResumingEndpoint(ex);
             throw ex;
         }
-        CoyoteLogger.HTTP_LOGGER.resumeHttpConnector(getName());
+        CoyoteLogger.HTTP_APR_LOGGER.resumeHttpConnector(getName());
     }
 
     public void destroy() throws Exception {
-        CoyoteLogger.HTTP_LOGGER.stopHttpConnector(getName());
+        CoyoteLogger.HTTP_APR_LOGGER.stopHttpConnector(getName());
         if (canDestroy) {
             endpoint.destroy();
         } else {
-            CoyoteLogger.HTTP_LOGGER.cannotDestroyHttpProtocol(getName());
+            CoyoteLogger.HTTP_APR_LOGGER.cannotDestroyHttpProtocol(getName());
             try {
                 RequestInfo[] states = cHandler.global.getRequestProcessors();
                 for (int i = 0; i < states.length; i++) {
@@ -199,7 +197,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     }
                 }
             } catch (Exception ex) {
-                CoyoteLogger.HTTP_LOGGER.cannotDestroyHttpProtocolWithException(getName(), ex);
+                CoyoteLogger.HTTP_APR_LOGGER.cannotDestroyHttpProtocolWithException(getName(), ex);
                 throw ex;
             }
         }
@@ -223,7 +221,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
     public String getName() {
         String encodedAddr = "";
         if (getAddress() != null) {
-            encodedAddr = getAddress() + ":";
+            encodedAddr = NetworkUtils.formatIPAddressForURI(getAddress()) + ":";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }
@@ -319,7 +317,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
      * If true, the regular socket timeout will be used for the full duration
      * of the connection.
      */
-    protected boolean disableUploadTimeout = true;
+    protected boolean disableUploadTimeout = Constants.DEFAULT_DISABLE_UPLOAD_TIMEOUT;
     public boolean getDisableUploadTimeout() { return disableUploadTimeout; }
     public void setDisableUploadTimeout(boolean isDisabled) { disableUploadTimeout = isDisabled; }
 
@@ -568,10 +566,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     state = result.event(status);
                 } catch (java.net.SocketException e) {
                     // SocketExceptions are normal
-                    CoyoteLogger.HTTP_LOGGER.socketException(e);
+                    CoyoteLogger.HTTP_APR_LOGGER.socketException(e);
                 } catch (java.io.IOException e) {
                     // IOExceptions are normal
-                    CoyoteLogger.HTTP_LOGGER.socketException(e);
+                    CoyoteLogger.HTTP_APR_LOGGER.socketException(e);
                 }
                 // Future developers: if you discover any other
                 // rare-but-nonfatal exceptions, catch them here, and log as
@@ -580,7 +578,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                     // any other exception or error is odd. Here we log it
                     // with "ERROR" level, so it will show up even on
                     // less-than-verbose logs.
-                    CoyoteLogger.HTTP_LOGGER.socketError(e);
+                    CoyoteLogger.HTTP_APR_LOGGER.socketError(e);
                 } finally {
                     if (state != SocketState.LONG) {
                         connections.remove(socket);
@@ -627,10 +625,10 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
 
             } catch (java.net.SocketException e) {
                 // SocketExceptions are normal
-                CoyoteLogger.HTTP_LOGGER.socketException(e);
+                CoyoteLogger.HTTP_APR_LOGGER.socketException(e);
             } catch (java.io.IOException e) {
                 // IOExceptions are normal
-                CoyoteLogger.HTTP_LOGGER.socketException(e);
+                CoyoteLogger.HTTP_APR_LOGGER.socketException(e);
             }
             // Future developers: if you discover any other
             // rare-but-nonfatal exceptions, catch them here, and log as
@@ -639,7 +637,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                 // any other exception or error is odd. Here we log it
                 // with "ERROR" level, so it will show up even on
                 // less-than-verbose logs.
-                CoyoteLogger.HTTP_LOGGER.socketError(e);
+                CoyoteLogger.HTTP_APR_LOGGER.socketError(e);
             }
             recycledProcessors.offer(processor);
             return SocketState.CLOSED;
@@ -677,7 +675,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         Registry.getRegistry(null, null).registerComponent(rp, rpName, null);
                         rp.setRpName(rpName);
                     } catch (Exception e) {
-                        CoyoteLogger.HTTP_LOGGER.errorRegisteringRequest(e);
+                        CoyoteLogger.HTTP_APR_LOGGER.errorRegisteringRequest(e);
                     }
                 }
             }
@@ -693,7 +691,7 @@ public class Http11AprProtocol implements ProtocolHandler, MBeanRegistration {
                         Registry.getRegistry(null, null).unregisterComponent(rpName);
                         rp.setRpName(null);
                     } catch (Exception e) {
-                        CoyoteLogger.HTTP_LOGGER.errorUnregisteringRequest(e);
+                        CoyoteLogger.HTTP_APR_LOGGER.errorUnregisteringRequest(e);
                     }
                 }
             }

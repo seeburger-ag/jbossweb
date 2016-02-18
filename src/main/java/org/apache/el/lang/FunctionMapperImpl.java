@@ -17,6 +17,8 @@
 
 package org.apache.el.lang;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -102,10 +104,10 @@ public class FunctionMapperImpl extends FunctionMapper implements
          */
         public Function(String prefix, String localName, Method m) {
             if (localName == null) {
-                throw new NullPointerException("LocalName cannot be null");
+                throw MESSAGES.invalidNullLocalName();
             }
             if (m == null) {
-                throw new NullPointerException("Method cannot be null");
+                throw MESSAGES.invalidNullMethod();
             }
             this.prefix = prefix;
             this.localName = localName;

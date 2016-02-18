@@ -1,24 +1,21 @@
-/**
- * JBoss, Home of Professional Open Source. Copyright 2011, Red Hat, Inc., and
- * individual contributors as indicated by the @author tags. See the
- * copyright.txt file in the distribution for a full listing of individual
- * contributors.
- * 
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * 
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.coyote.http11;
 
 import java.io.IOException;
@@ -41,11 +38,11 @@ import org.apache.coyote.RequestInfo;
 import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.net.NioChannel;
 import org.apache.tomcat.util.net.NioEndpoint;
-import org.apache.tomcat.util.net.SSLImplementation;
 import org.apache.tomcat.util.net.SocketStatus;
 import org.apache.tomcat.util.net.jsse.NioJSSEImplementation;
 import org.apache.tomcat.util.net.jsse.NioJSSESocketChannelFactory;
 import org.jboss.web.CoyoteLogger;
+import org.jboss.web.NetworkUtils;
 
 /**
  * {@code Http11NioProtocol}
@@ -67,6 +64,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		setSoLinger(Constants.DEFAULT_CONNECTION_LINGER);
 		setSoTimeout(Constants.DEFAULT_CONNECTION_TIMEOUT);
 		setTcpNoDelay(Constants.DEFAULT_TCP_NO_DELAY);
+        setKeepAliveTimeout(Constants.DEFAULT_KEEP_ALIVE_TIMEOUT);
 	}
 
 	/*
@@ -92,13 +90,13 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		// Verify the validity of the configured socket factory
 		try {
 			if (isSSLEnabled()) {
-				sslImplementation = SSLImplementation.getInstance(NioJSSEImplementation.class
-						.getName());
-				socketFactory = sslImplementation.getServerSocketChannelFactory();
+				sslImplementation = new NioJSSEImplementation();
+				//Possible pluggability ? SSLImplementation.getInstance(NioJSSEImplementation.class.getName());
+				socketFactory = ((NioJSSEImplementation) sslImplementation).getServerSocketChannelFactory();
 				endpoint.setServerSocketChannelFactory(socketFactory);
 			}
 		} catch (Exception ex) {
-		    CoyoteLogger.HTTP_LOGGER.errorInitializingSocketFactory(ex);
+		    CoyoteLogger.HTTP_NIO_LOGGER.errorInitializingSocketFactory(ex);
 			throw ex;
 		}
 
@@ -115,11 +113,11 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 			// endpoint.setKeepAliveTimeout(this.timeout);
 			endpoint.init();
 		} catch (Exception ex) {
-		    CoyoteLogger.HTTP_LOGGER.errorInitializingEndpoint(ex);
+		    CoyoteLogger.HTTP_NIO_LOGGER.errorInitializingEndpoint(ex);
 			throw ex;
 		}
 
-        CoyoteLogger.HTTP_LOGGER.initHttpConnector(getName());
+        CoyoteLogger.HTTP_NIO_LOGGER.initHttpConnector(getName());
 	}
 
 	/*
@@ -132,22 +130,22 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		if (org.apache.tomcat.util.Constants.ENABLE_MODELER) {
 			if (this.domain != null) {
 				try {
-					tpOname = new ObjectName(domain + ":" + "type=ThreadPool,name=" + getName());
+					tpOname = new ObjectName(domain + ":" + "type=ThreadPool,name=" + getJmxName());
 					Registry.getRegistry(null, null).registerComponent(endpoint, tpOname, null);
 				} catch (Exception e) {
-				    CoyoteLogger.HTTP_LOGGER.errorRegisteringPool(e);
+				    CoyoteLogger.HTTP_NIO_LOGGER.errorRegisteringPool(e);
 				}
-				rgOname = new ObjectName(domain + ":type=GlobalRequestProcessor,name=" + getName());
+				rgOname = new ObjectName(domain + ":type=GlobalRequestProcessor,name=" + getJmxName());
 				Registry.getRegistry(null, null).registerComponent(cHandler.global, rgOname, null);
 			}
 		}
 		try {
 			endpoint.start();
 		} catch (Exception ex) {
-		    CoyoteLogger.HTTP_LOGGER.errorStartingEndpoint(ex);
+		    CoyoteLogger.HTTP_NIO_LOGGER.errorStartingEndpoint(ex);
 			throw ex;
 		}
-		CoyoteLogger.HTTP_LOGGER.startHttpConnector(getName());
+		CoyoteLogger.HTTP_NIO_LOGGER.startHttpConnector(getName());
 	}
 
 	/*
@@ -160,7 +158,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		try {
 			endpoint.pause();
 		} catch (Exception ex) {
-		    CoyoteLogger.HTTP_LOGGER.errorPausingEndpoint(ex);
+		    CoyoteLogger.HTTP_NIO_LOGGER.errorPausingEndpoint(ex);
 			throw ex;
 		}
 		canDestroy = false;
@@ -186,7 +184,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				canDestroy = true;
 			}
 		}
-		CoyoteLogger.HTTP_LOGGER.pauseHttpConnector(getName());
+		CoyoteLogger.HTTP_NIO_LOGGER.pauseHttpConnector(getName());
 	}
 
 	/*
@@ -199,10 +197,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		try {
 			endpoint.resume();
 		} catch (Exception ex) {
-		    CoyoteLogger.HTTP_LOGGER.errorResumingEndpoint(ex);
+		    CoyoteLogger.HTTP_NIO_LOGGER.errorResumingEndpoint(ex);
 			throw ex;
 		}
-		CoyoteLogger.HTTP_LOGGER.resumeHttpConnector(getName());
+		CoyoteLogger.HTTP_NIO_LOGGER.resumeHttpConnector(getName());
 	}
 
 	/*
@@ -212,11 +210,11 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 	 */
 	@Override
 	public void destroy() throws Exception {
-	    CoyoteLogger.HTTP_LOGGER.stopHttpConnector(getName());
+	    CoyoteLogger.HTTP_NIO_LOGGER.stopHttpConnector(getName());
 		if (canDestroy) {
 			endpoint.destroy();
 		} else {
-		    CoyoteLogger.HTTP_LOGGER.cannotDestroyHttpProtocol(getName());
+		    CoyoteLogger.HTTP_NIO_LOGGER.cannotDestroyHttpProtocol(getName());
 			try {
 				RequestInfo[] states = cHandler.global.getRequestProcessors();
 				for (int i = 0; i < states.length; i++) {
@@ -225,7 +223,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					}
 				}
 			} catch (Exception ex) {
-			    CoyoteLogger.HTTP_LOGGER.cannotDestroyHttpProtocolWithException(getName(), ex);
+			    CoyoteLogger.HTTP_NIO_LOGGER.cannotDestroyHttpProtocolWithException(getName(), ex);
 				throw ex;
 			}
 		}
@@ -249,7 +247,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
     public String getName() {
         String encodedAddr = "";
         if (getAddress() != null) {
-            encodedAddr = getAddress() + ":";
+            encodedAddr = NetworkUtils.formatIPAddressForURI(getAddress()) + ":";
         }
         return ("http-" + encodedAddr + endpoint.getPort());
     }
@@ -809,11 +807,11 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 		 * .AsynchronousSocketChannel, org.apache.tomcat.util.net.ChannelStatus)
 		 */
 		@Override
+		// FIXME: probably needs sync due to concurrent read/write possibilities
 		public SocketState event(NioChannel channel, SocketStatus status) {
 
 			Http11NioProcessor processor = connections.get(channel.getId());
 			SocketState state = SocketState.CLOSED;
-
 			if (processor != null) {
 				processor.startProcessing();
 				// Call the appropriate event
@@ -821,10 +819,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					state = processor.event(status);
 				} catch (java.net.SocketException e) {
 					// SocketExceptions are normal
-				    CoyoteLogger.HTTP_LOGGER.socketException(e);
+				    CoyoteLogger.HTTP_NIO_LOGGER.socketException(e);
 				} catch (java.io.IOException e) {
 					// IOExceptions are normal
-                    CoyoteLogger.HTTP_LOGGER.socketException(e);
+                    CoyoteLogger.HTTP_NIO_LOGGER.socketException(e);
 				}
 				// Future developers: if you discover any other
 				// rare-but-nonfatal exceptions, catch them here, and log as
@@ -833,7 +831,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					// any other exception or error is odd. Here we log it
 					// with "ERROR" level, so it will show up even on
 					// less-than-verbose logs.
-                    CoyoteLogger.HTTP_LOGGER.socketError(e);
+                    CoyoteLogger.HTTP_NIO_LOGGER.socketError(e);
 				} finally {
 					if (state != SocketState.LONG) {
 						connections.remove(channel.getId());
@@ -852,7 +850,9 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 												if (nBytes < 0) {
 													failed(new ClosedChannelException(), endpoint);
 												} else {
-													endpoint.processChannel(ch, null);
+													if (!endpoint.processChannel(ch, null)) {
+													    endpoint.closeChannel(ch);
+													}
 												}
 											}
 
@@ -865,15 +865,22 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 								// NOPE
 							}
 						}
+	                    processor.endProcessing();
 					} else {
-						if (proto.endpoint.isRunning()) {
-							proto.endpoint.addEventChannel(channel, processor.getTimeout(),
-									processor.getReadNotifications(),
-									processor.getWriteNotification(),
-									processor.getResumeNotification(), false);
-						}
+					    if (processor.isAvailable() && processor.getReadNotifications()) {
+					        // Call a read event right away
+					        state = event(channel, SocketStatus.OPEN_READ);
+		                    processor.endProcessing();
+					    } else if (proto.endpoint.isRunning()) {
+					        synchronized (processor) {
+					            proto.endpoint.addEventChannel(channel, processor.getTimeout(),
+					                    false,
+					                    processor.getWriteNotification(),
+					                    processor.getResumeNotification(), false);
+					            processor.endProcessing();
+					        }
+					    }
 					}
-					processor.endProcessing();
 				}
 			}
 
@@ -894,9 +901,10 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				if (processor == null) {
 					processor = createProcessor();
 				}
+                processor.startProcessing();
 
-				if (proto.secure && (proto.sslImplementation != null)) {
-					processor.setSSLSupport(proto.sslImplementation.getSSLSupport(channel));
+                if (proto.secure && (proto.sslImplementation != null)) {
+					processor.setSSLSupport(((NioJSSEImplementation) proto.sslImplementation).getSSLSupport(channel));
 				} else {
 					processor.setSSLSupport(null);
 				}
@@ -909,26 +917,31 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 					// a recycled processor.
 					connections.put(channel.getId(), processor);
 
-					if ( /* processor.isAvailable() && */processor.getReadNotifications()) {
+					if (processor.isAvailable() && processor.getReadNotifications()) {
 						// Call a read event right away
-						processor.inputBuffer.readAsync();
+					    state = event(channel, SocketStatus.OPEN_READ);
+		                processor.endProcessing();
 					} else {
-						proto.endpoint.addEventChannel(channel, processor.getTimeout(),
-								processor.getReadNotifications(), false,
-								processor.getResumeNotification(), false);
+					    synchronized (processor) {
+					        proto.endpoint.addEventChannel(channel, processor.getTimeout(),
+					                processor.getReadNotifications(), false,
+					                processor.getResumeNotification(), false);
+					        processor.endProcessing();
+					    }
 					}
 				} else {
 					recycledProcessors.offer(processor);
+	                processor.endProcessing();
 				}
 				return state;
 
 			} catch (IOException e) {
 				if (e instanceof java.net.SocketException) {
 					// SocketExceptions are normal
-                    CoyoteLogger.HTTP_LOGGER.socketException(e);
+                    CoyoteLogger.HTTP_NIO_LOGGER.socketException(e);
 				} else {
 					// IOExceptions are normal
-                    CoyoteLogger.HTTP_LOGGER.socketException(e);
+                    CoyoteLogger.HTTP_NIO_LOGGER.socketException(e);
 				}
 			}
 			// Future developers: if you discover any other
@@ -938,8 +951,9 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 				// any other exception or error is odd. Here we log it
 				// with "ERROR" level, so it will show up even on
 				// less-than-verbose logs.
-                CoyoteLogger.HTTP_LOGGER.socketError(e);
+                CoyoteLogger.HTTP_NIO_LOGGER.socketError(e);
 			}
+            processor.endProcessing();
 			recycledProcessors.offer(processor);
 			return SocketState.CLOSED;
 		}
@@ -981,7 +995,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 						Registry.getRegistry(null, null).registerComponent(rp, rpName, null);
 						rp.setRpName(rpName);
 					} catch (Exception e) {
-					    CoyoteLogger.HTTP_LOGGER.errorRegisteringRequest(e);
+					    CoyoteLogger.HTTP_NIO_LOGGER.errorRegisteringRequest(e);
 					}
 				}
 			}
@@ -1000,7 +1014,7 @@ public class Http11NioProtocol extends Http11AbstractProtocol {
 						Registry.getRegistry(null, null).unregisterComponent(rpName);
 						rp.setRpName(null);
 					} catch (Exception e) {
-					    CoyoteLogger.HTTP_LOGGER.errorUnregisteringRequest(e);
+					    CoyoteLogger.HTTP_NIO_LOGGER.errorUnregisteringRequest(e);
 					}
 				}
 			}

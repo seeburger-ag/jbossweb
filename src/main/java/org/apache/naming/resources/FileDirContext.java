@@ -18,6 +18,8 @@
 
 package org.apache.naming.resources;
 
+import static org.jboss.web.NamingMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,6 +49,7 @@ import org.apache.catalina.util.RequestUtil;
 import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
 import org.apache.naming.NamingEntry;
+import org.jboss.web.NamingLogger;
 
 /**
  * Filesystem Directory Context implementation helper class.
@@ -56,9 +59,6 @@ import org.apache.naming.NamingEntry;
  */
 
 public class FileDirContext extends BaseDirContext {
-
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( FileDirContext.class );
 
     // -------------------------------------------------------------- Constants
 
@@ -132,8 +132,7 @@ public class FileDirContext extends BaseDirContext {
 
     // Validate the format of the proposed document root
     if (docBase == null)
-        throw new IllegalArgumentException
-        (sm.getString("resources.null"));
+        throw MESSAGES.invalidNullDocumentBase();
 
     // Calculate a File object referencing this document base directory
     base = new File(docBase);
@@ -145,8 +144,7 @@ public class FileDirContext extends BaseDirContext {
 
     // Validate that the document base is an existing directory
     if (!base.exists() || !base.isDirectory() || !base.canRead())
-        throw new IllegalArgumentException
-        (sm.getString("fileResources.base", docBase));
+        throw MESSAGES.invalidBaseFolder(docBase);
         this.absoluteBase = base.getAbsolutePath();
         super.setDocBase(docBase);
 
@@ -213,7 +211,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name));
 
         if (file.isDirectory()) {
             FileDirContext tempContext = new FileDirContext(env);
@@ -251,11 +249,11 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name));
 
         if (!file.delete())
             throw new NamingException
-                (sm.getString("resources.unbindFailed", name));
+                (MESSAGES.resourceUnbindFailed(name));
 
     }
 
@@ -278,7 +276,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", oldName));
+                (MESSAGES.resourceNotFound(oldName));
 
         File newFile = new File(base, newName);
 
@@ -307,7 +305,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name));
 
         return new NamingContextEnumeration(list(file).iterator());
 
@@ -334,7 +332,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name));
 
         return new NamingContextBindingsEnumeration(list(file).iterator(),
                 this);
@@ -436,7 +434,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name));
 
         return new FileResourceAttributes(file);
 
@@ -506,7 +504,7 @@ public class FileDirContext extends BaseDirContext {
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
-                (sm.getString("resources.alreadyBound", name));
+                (MESSAGES.resourceAlreadyBound(name));
 
         rebind(name, obj, attrs);
 
@@ -551,15 +549,15 @@ public class FileDirContext extends BaseDirContext {
             if (file.exists()) {
                 if (!file.delete())
                     throw new NamingException
-                        (sm.getString("resources.bindFailed", name));
+                        (MESSAGES.resourceBindFailed(name));
             }
             if (!file.mkdir())
                 throw new NamingException
-                    (sm.getString("resources.bindFailed", name));
+                    (MESSAGES.resourceBindFailed(name));
         }
         if (is == null)
             throw new NamingException
-                (sm.getString("resources.bindFailed", name));
+                (MESSAGES.resourceBindFailed(name));
 
         // Open os
 
@@ -582,7 +580,7 @@ public class FileDirContext extends BaseDirContext {
             }
         } catch (IOException e) {
             NamingException ne = new NamingException
-                (sm.getString("resources.bindFailed", e));
+                (MESSAGES.resourceBindFailed(name));
             ne.initCause(e);
             throw ne;
         }
@@ -613,10 +611,10 @@ public class FileDirContext extends BaseDirContext {
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
-                (sm.getString("resources.alreadyBound", name));
+                (MESSAGES.resourceAlreadyBound(name));
         if (!file.mkdir())
             throw new NamingException
-                (sm.getString("resources.bindFailed", name));
+                (MESSAGES.resourceBindFailed(name));
         return (DirContext) lookup(name);
 
     }
@@ -843,8 +841,7 @@ public class FileDirContext extends BaseDirContext {
         if (names==null) {
             /* Some IO error occurred such as bad file permissions.
                Prevent a NPE with Arrays.sort(names) */
-            log.warn(sm.getString("fileResources.listingNull",
-                                  file.getAbsolutePath()));
+            NamingLogger.ROOT_LOGGER.failedListingFolder(file.getAbsolutePath());
             return entries;
         }
 

@@ -17,7 +17,10 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.PrintWriter;
+
 /**
  * Return the result associated with the supplied Server Variable.
  * 
@@ -49,11 +52,11 @@ public class SSIEcho implements SSICommand {
                 if (isValidEncoding(paramValue)) {
                     encoding = paramValue;
                 } else {
-                    ssiMediator.log("#echo--Invalid encoding: " + paramValue);
+                    ssiMediator.log(MESSAGES.ssiEchoInvlidEncoding(paramValue));
                     writer.write(errorMessage);
                 }
             } else {
-                ssiMediator.log("#echo--Invalid attribute: " + paramName);
+                ssiMediator.log(MESSAGES.ssiInvalidAttribute("echo", paramName));
                 writer.write(errorMessage);
             }
         }

@@ -17,6 +17,8 @@
 
 package org.apache.el.lang;
 
+import static org.jboss.web.ELMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 
 import javax.el.FunctionMapper;
@@ -32,7 +34,7 @@ public class FunctionMapperFactory extends FunctionMapper {
 
     public FunctionMapperFactory(FunctionMapper mapper) {
         if (mapper == null) {
-            throw new NullPointerException("FunctionMapper target cannot be null");
+            throw MESSAGES.invalidNullFunctionMapper();
         }
         this.target = mapper;
     }
