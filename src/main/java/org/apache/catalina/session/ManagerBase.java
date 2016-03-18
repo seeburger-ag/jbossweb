@@ -59,7 +59,10 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
         System.getProperty("org.apache.catalina.session.ManagerBase.SESSION_ID_ALPHABET", 
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_").toCharArray();
  
-     // ----------------------------------------------------- Instance Variables
+    public static final int SESSION_ID_LENGTH =
+        Integer.valueOf(System.getProperty("org.apache.catalina.session.ManagerBase.SESSION_ID_LENGTH", "18"));
+
+    // ----------------------------------------------------- Instance Variables
 
     /**
      * The Container with which this Manager is associated.
@@ -91,7 +94,7 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     /**
      * The session id length of Sessions created by this Manager.
      */
-    protected int sessionIdLength = 18;
+    protected int sessionIdLength = SESSION_ID_LENGTH;
 
 
     /**
