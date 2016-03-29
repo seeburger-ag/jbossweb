@@ -79,17 +79,7 @@ public class RewriteCond {
          */
         public int type = 0;
         public boolean evaluate(String value, Resolver resolver) {
-            switch (type) {
-            case 0:
-                return true;
-            case 1:
-                return true;
-            case 2:
-                return true;
-            default:
-                return false;
-            }
-                
+            return resolver.resolveResource(type, value);
         }
     }
     
