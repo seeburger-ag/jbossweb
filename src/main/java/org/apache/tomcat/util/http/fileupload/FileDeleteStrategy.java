@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.http.fileupload;
 
+import static org.jboss.web.FileUploadMessages.MESSAGES;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -92,7 +94,7 @@ public class FileDeleteStrategy {
      */
     public void delete(File fileToDelete) throws IOException {
         if (fileToDelete.exists() && doDelete(fileToDelete) == false) {
-            throw new IOException("Deletion failed: " + fileToDelete);
+            throw new IOException(MESSAGES.failedToDelete(fileToDelete.getAbsolutePath()));
         }
     }
 

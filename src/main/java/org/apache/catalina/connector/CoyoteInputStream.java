@@ -23,9 +23,9 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
-import javax.servlet.ServletInputStream;
-
 import org.apache.catalina.security.SecurityUtil;
+import org.apache.coyote.http11.upgrade.AbstractServletInputStream;
+import org.apache.coyote.http11.upgrade.servlet31.ReadListener;
 
 /**
  * This class handles reading bytes.
@@ -34,7 +34,7 @@ import org.apache.catalina.security.SecurityUtil;
  * @author Jean-Francois Arcand
  */
 public class CoyoteInputStream
-    extends ServletInputStream {
+    extends AbstractServletInputStream {
 
 
     // ----------------------------------------------------- Instance Variables
@@ -229,6 +229,20 @@ public class CoyoteInputStream
         } else {
              ib.close();
         }
+    }
+
+    public boolean isFinished() {
+        return ib.isEof();
+    }
+
+    public boolean isReady() {
+        return (ib.available() > 0);
+    }
+
+
+    @Override
+    public void setReadListener(ReadListener readListener) {
+        ib.setReadListener(readListener);
     }
 
 }

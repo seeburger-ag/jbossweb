@@ -16,6 +16,8 @@
  */
 package org.apache.tomcat.util.modeler.modules;
 
+import static org.jboss.web.CoyoteMessages.MESSAGES;
+
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.URL;
@@ -24,13 +26,11 @@ import java.util.List;
 
 import org.apache.tomcat.util.modeler.ManagedBean;
 import org.apache.tomcat.util.modeler.Registry;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger;
+import org.jboss.web.CoyoteLogger;
 
 
 public class MbeansDescriptorsSerSource extends ModelerSource
 {
-    private static Logger log = Logger.getLogger(MbeansDescriptorsSerSource.class);
     Registry registry;
     String location;
     String type;
@@ -81,7 +81,7 @@ public class MbeansDescriptorsSerSource extends ModelerSource
                 stream=(InputStream)source;
             }
             if( stream==null ) {
-                throw new Exception( "Can't process "+ source);
+                throw MESSAGES.invalidSource(source);
             }
             ObjectInputStream ois=new ObjectInputStream(stream);
             Thread.currentThread().setContextClassLoader(ManagedBean.class.getClassLoader());
@@ -94,11 +94,10 @@ public class MbeansDescriptorsSerSource extends ModelerSource
             }
 
         } catch( Exception ex ) {
-            log.error( "Error reading descriptors " + source + " " +  ex.toString(),
-                    ex);
+            CoyoteLogger.MODELER_LOGGER.errorReadingDescriptors(ex);
             throw ex;
         }
         long t2=System.currentTimeMillis();
-        log.info( "Reading descriptors ( ser ) " + (t2-t1));
+        CoyoteLogger.MODELER_LOGGER.debug( "Reading descriptors ( ser ) " + (t2-t1));
     }
 }
