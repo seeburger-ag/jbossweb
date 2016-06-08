@@ -440,4 +440,14 @@ public interface Wrapper extends Container {
      */
     public ServletSecurityElement getServletSecurity();
 
+    /**
+     * Is the Servlet overridable by a ServletContainerInitializer?
+     */
+    public boolean isOverridable();
+
+    /**
+     * Sets the overridable attribute for this Servlet.
+     */
+    public void setOverridable(boolean overridable);
+
 }

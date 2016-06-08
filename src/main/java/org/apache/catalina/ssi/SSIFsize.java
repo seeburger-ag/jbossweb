@@ -17,6 +17,8 @@
 package org.apache.catalina.ssi;
 
 
+import static org.jboss.web.CatalinaMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
@@ -57,12 +59,11 @@ public final class SSIFsize implements SSICommand {
                     String configSizeFmt = ssiMediator.getConfigSizeFmt();
                     writer.write(formatSize(size, configSizeFmt));
                 } else {
-                    ssiMediator.log("#fsize--Invalid attribute: " + paramName);
+                    ssiMediator.log(MESSAGES.ssiInvalidAttribute("fsize", paramName));
                     writer.write(configErrMsg);
                 }
             } catch (IOException e) {
-                ssiMediator.log("#fsize--Couldn't get size for file: "
-                        + substitutedValue, e);
+                ssiMediator.log(MESSAGES.ssiFsizeFailed(substitutedValue), e);
                 writer.write(configErrMsg);
             }
         }
@@ -72,7 +73,7 @@ public final class SSIFsize implements SSICommand {
 
     public String repeat(char aChar, int numChars) {
         if (numChars < 0) {
-            throw new IllegalArgumentException("Num chars can't be negative");
+            throw MESSAGES.invalidNumChars();
         }
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < numChars; i++) {

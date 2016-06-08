@@ -17,6 +17,7 @@
 
 package org.apache.tomcat.util.http;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -36,11 +37,20 @@ public class HttpMessages {
     protected static Properties statusMessages = new Properties();
     
     static {
+        InputStream is = null;
         try {
-            InputStream is = HttpMessages.class.getClassLoader().getResourceAsStream("org/apache/tomcat/util/http/HttpMessages.properties");
+            is = HttpMessages.class.getClassLoader().getResourceAsStream("org/apache/tomcat/util/http/HttpMessages.properties");
             statusMessages.load(is);
         } catch (Exception e) {
             CoyoteLogger.HTTP_LOGGER.errorLoadingMessages(e);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
     }
     

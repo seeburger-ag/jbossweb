@@ -18,6 +18,8 @@
 
 package org.apache.naming.resources;
 
+import static org.jboss.web.NamingMessages.MESSAGES;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +45,7 @@ import javax.naming.directory.SearchControls;
 import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
 import org.apache.naming.NamingEntry;
+import org.jboss.web.NamingLogger;
 
 /**
  * WAR Directory Context implementation.
@@ -53,9 +56,6 @@ import org.apache.naming.NamingEntry;
 
 public class WARDirContext extends BaseDirContext {
 
-    private static org.jboss.logging.Logger log=
-        org.jboss.logging.Logger.getLogger( WARDirContext.class );
-    
     // ----------------------------------------------------------- Constructors
 
 
@@ -114,26 +114,22 @@ public class WARDirContext extends BaseDirContext {
      */
     public void setDocBase(String docBase) {
 
-	// Validate the format of the proposed document root
-	if (docBase == null)
-	    throw new IllegalArgumentException
-		(sm.getString("resources.null"));
-	if (!(docBase.endsWith(".war")))
-	    throw new IllegalArgumentException
-		(sm.getString("warResources.notWar"));
+        // Validate the format of the proposed document root
+        if (docBase == null)
+            throw MESSAGES.invalidNullDocumentBase();
+        if (!(docBase.endsWith(".war")))
+            throw MESSAGES.docBaseNotWar(docBase);
 
-	// Calculate a File object referencing this document base directory
-	File base = new File(docBase);
+        // Calculate a File object referencing this document base directory
+        File base = new File(docBase);
 
-	// Validate that the document base is an existing directory
-	if (!base.exists() || !base.canRead() || base.isDirectory())
-	    throw new IllegalArgumentException
-		(sm.getString("warResources.invalidWar", docBase));
+        // Validate that the document base is an existing directory
+        if (!base.exists() || !base.canRead() || base.isDirectory())
+            throw MESSAGES.docBaseNotWar(docBase);
         try {
             this.base = new ZipFile(base);
         } catch (Exception e) {
-	    throw new IllegalArgumentException
-		(sm.getString("warResources.invalidWar", e.getMessage()));
+            throw MESSAGES.failedOpeningWar(e.getMessage());
         }
         super.setDocBase(docBase);
 
@@ -155,8 +151,7 @@ public class WARDirContext extends BaseDirContext {
             try {
                 base.close();
             } catch (IOException e) {
-                log.warn
-                    ("Exception closing WAR File " + base.getName(), e);
+                NamingLogger.ROOT_LOGGER.failedClosingWar(base.getName(), e);
             }
         }
         base = null;
@@ -198,7 +193,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name.toString()));
         ZipEntry zipEntry = entry.getEntry();
         if (zipEntry.isDirectory())
             return new WARDirContext(base, entry);
@@ -283,7 +278,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name.toString()));
         return new NamingContextEnumeration(list(entry).iterator());
     }
 
@@ -328,7 +323,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name.toString()));
         return new NamingContextBindingsEnumeration(list(entry).iterator(),
                 this);
     }
@@ -444,7 +439,7 @@ public class WARDirContext extends BaseDirContext {
             entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (MESSAGES.resourceNotFound(name.toString()));
         
         ZipEntry zipEntry = entry.getEntry();
 

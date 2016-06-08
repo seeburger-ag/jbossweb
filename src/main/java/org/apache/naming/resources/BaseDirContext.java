@@ -18,6 +18,8 @@
 
 package org.apache.naming.resources;
 
+import static org.jboss.web.NamingMessages.MESSAGES;
+
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -31,7 +33,6 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 
 import org.apache.naming.NameParserImpl;
-import org.apache.naming.StringManager;
 
 /**
  * Directory Context implementation helper class.
@@ -78,12 +79,6 @@ public abstract class BaseDirContext implements DirContext {
      * Environment.
      */
     protected Hashtable env;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected StringManager sm = StringManager.getManager(Constants.Package);
 
 
     /**
@@ -141,8 +136,7 @@ public abstract class BaseDirContext implements DirContext {
 
         // Validate the format of the proposed document root
         if (docBase == null)
-            throw new IllegalArgumentException
-                (sm.getString("resources.null"));
+            throw MESSAGES.invalidNullDocumentBase();
 
         // Change the document root property
         this.docBase = docBase;
