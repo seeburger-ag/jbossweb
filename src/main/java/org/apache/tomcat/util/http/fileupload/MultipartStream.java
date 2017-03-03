@@ -286,23 +286,35 @@ public class MultipartStream {
      * @param pNotifier The notifier, which is used for calling the
      *                  progress listener, if any.
      *
+     * @throws IllegalArgumentException If the buffer size is too small
+     *
      * @see #MultipartStream(InputStream, byte[],
      *     MultipartStream.ProgressNotifier)
      */
     MultipartStream(InputStream input,
             byte[] boundary,
             int bufSize,
-            ProgressNotifier pNotifier) {
-        this.input = input;
-        this.bufSize = bufSize;
-        this.buffer = new byte[bufSize];
-        this.notifier = pNotifier;
+            ProgressNotifier pNotifier) throws IllegalArgumentException {
 
+        if (boundary == null) {
+            throw new IllegalArgumentException("boundary may not be null");
+        }
         // We prepend CR/LF to the boundary to chop trailing CR/LF from
         // body-data tokens.
-        this.boundary = new byte[boundary.length + BOUNDARY_PREFIX.length];
         this.boundaryLength = boundary.length + BOUNDARY_PREFIX.length;
+        if (bufSize < this.boundaryLength + 1) {
+            throw new IllegalArgumentException(
+                    "The buffer size specified for the MultipartStream is too small");
+        }
+
+        this.input = input;
+        this.bufSize = Math.max(bufSize, boundaryLength*2);
+        this.buffer = new byte[this.bufSize];
+        this.notifier = pNotifier;
+
+        this.boundary = new byte[this.boundaryLength];
         this.keepRegion = this.boundary.length;
+
         System.arraycopy(BOUNDARY_PREFIX, 0, this.boundary, 0,
                 BOUNDARY_PREFIX.length);
         System.arraycopy(boundary, 0, this.boundary, BOUNDARY_PREFIX.length,
@@ -321,13 +333,14 @@ public class MultipartStream {
      *                 <code>encapsulations</code>.
      * @param pNotifier An object for calling the progress listener, if any.
      *
+     * @throws IllegalArgumentException If the buffer size is too small
      *
      * @see #MultipartStream(InputStream, byte[], int,
      *     MultipartStream.ProgressNotifier)
      */
     MultipartStream(InputStream input,
             byte[] boundary,
-            ProgressNotifier pNotifier) {
+            ProgressNotifier pNotifier) throws IllegalArgumentException {
         this(input, boundary, DEFAULT_BUFSIZE, pNotifier);
     }
 
@@ -538,8 +551,7 @@ public class MultipartStream {
      */
     public int readBodyData(OutputStream output)
             throws MalformedStreamException, IOException {
-        final InputStream istream = newInputStream();
-        return (int) Streams.copy(istream, output, false);
+        return (int) Streams.copy(newInputStream(), output, false); // N.B. Streams.copy closes the input stream
     }
 
     /**

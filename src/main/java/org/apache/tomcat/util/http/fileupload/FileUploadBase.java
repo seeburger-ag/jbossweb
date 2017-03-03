@@ -26,8 +26,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.tomcat.util.http.fileupload.MultipartStream.ItemInputStream;
 import org.apache.tomcat.util.http.fileupload.util.Closeable;
 import org.apache.tomcat.util.http.fileupload.util.FileItemHeadersImpl;
@@ -777,12 +775,12 @@ public abstract class FileUploadBase {
                         + contentType);
             }
 
-            InputStream input = ctx.getInputStream();
+            InputStream input = null; // N.B. this is eventually closed in MultipartStream processing
 
             if (sizeMax >= 0) {
                 int requestSize = ctx.getContentLength();
                 if (requestSize == -1) {
-                    input = new LimitedInputStream(input, sizeMax) {
+                    input = new LimitedInputStream(ctx.getInputStream(), sizeMax) {
                         @Override
                         protected void raiseError(long pSizeMax, long pCount)
                                 throws IOException {
@@ -808,6 +806,11 @@ public abstract class FileUploadBase {
                 }
             }
 
+            if (input == null)
+            {
+                input = ctx.getInputStream();
+            }
+
             String charEncoding = headerEncoding;
             if (charEncoding == null) {
                 charEncoding = ctx.getCharacterEncoding();
@@ -815,6 +818,7 @@ public abstract class FileUploadBase {
 
             boundary = getBoundary(contentType);
             if (boundary == null) {
+                IOUtils.closeQuietly(input); // avoid possible resource leak
                 throw new FileUploadException(
                         "the request was rejected because "
                         + "no multipart boundary was found");
@@ -822,7 +826,14 @@ public abstract class FileUploadBase {
 
             notifier = new MultipartStream.ProgressNotifier(listener,
                     ctx.getContentLength());
-            multi = new MultipartStream(input, boundary, notifier);
+            try {
+                multi = new MultipartStream(input, boundary, notifier);
+            } catch (IllegalArgumentException iae) {
+                IOUtils.closeQuietly(input); // avoid possible resource leak
+                throw new InvalidContentTypeException(
+                        String.format("The boundary specified in the %s header is too long", CONTENT_TYPE), iae);
+            }
+
             multi.setHeaderEncoding(charEncoding);
 
             skipPreamble = true;
@@ -996,7 +1007,7 @@ public abstract class FileUploadBase {
          * detail message.
          */
         public InvalidContentTypeException() {
-            // Nothing to do.
+            super();
         }
 
         /**
@@ -1007,6 +1018,10 @@ public abstract class FileUploadBase {
          */
         public InvalidContentTypeException(String message) {
             super(message);
+        }
+
+        public InvalidContentTypeException(String msg, Throwable cause) {
+            super(msg, cause);
         }
     }
 

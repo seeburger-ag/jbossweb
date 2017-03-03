@@ -721,6 +721,7 @@ public class DiskFileItem
         } else {
             FileInputStream input = new FileInputStream(dfosFile);
             IOUtils.copy(input, output);
+            input.close();
             dfosFile.delete();
             dfosFile = null;
         }
