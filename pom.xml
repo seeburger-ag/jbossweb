@@ -193,8 +193,8 @@
     </pluginRepositories>
 
     <scm>
-        <developerConnection>scm:git:ssh://github.com:seeburger-ag/jbossweb.git</developerConnection>
-        <connection>scm:git:ssh://github.com:seeburger-ag/jbossweb.git</connection>
+        <developerConnection>git@github.com:seeburger-ag/jbossweb.git</developerConnection>
+        <connection>git@github.com:seeburger-ag/jbossweb.git</connection>
         <url>https://github.com/seeburger-ag/jbossweb.git</url>
         <tag>HEAD</tag>
     </scm>
