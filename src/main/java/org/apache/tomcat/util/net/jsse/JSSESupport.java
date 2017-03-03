@@ -151,7 +151,7 @@ class JSSESupport implements SSLSupport {
         InputStream in = ssl.getInputStream();
         int oldTimeout = ssl.getSoTimeout();
         ssl.setSoTimeout(1000);
-        byte[] b = new byte[0];
+        byte[] b = new byte[1];
         listener.reset();
         ssl.startHandshake();
         int maxTries = 60; // 60 * 1000 = example 1 minute time out
