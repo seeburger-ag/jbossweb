@@ -2542,7 +2542,8 @@ public class Request
     // ------------------------------------------------------ Protected Methods
 
 
-    protected Session doGetSession(boolean create) {
+    protected Session doGetSession(boolean create)
+    {
 
         // There cannot be a session if no context has been assigned yet
         if (context == null)
@@ -2557,7 +2558,7 @@ public class Request
             }
             else if (!checkIPAndUserAgent(session))
             {
-                requestedSessionId = null; //Prevent session fixation
+                requestedSessionId = null; // Prevent session fixation
                 session = null;
             }
         }
@@ -2567,11 +2568,15 @@ public class Request
         // Return the requested session if it exists and is valid
         Manager manager = context.getManager();
         if (manager == null)
-            return (null);      // Sessions are not supported
-        if (requestedSessionId != null) {
-            try {
+            return (null); // Sessions are not supported
+        if (requestedSessionId != null)
+        {
+            try
+            {
                 session = manager.findSession(requestedSessionId);
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 session = null;
             }
             if (session != null)
@@ -2582,11 +2587,12 @@ public class Request
                 }
                 else if (!checkIPAndUserAgent(session))
                 {
-                    requestedSessionId = null; //Prevent session fixation
+                    requestedSessionId = null; // Prevent session fixation
                     session = null;
                 }
             }
-            if (session != null) {
+            if (session != null)
+            {
                 session.access();
                 return (session);
             }
@@ -2595,35 +2601,43 @@ public class Request
         // Create a new session if requested and the response is not committed
         if (!create)
             return (null);
-        if ((response != null) &&
-            context.getCookies() &&
-            response.getResponse().isCommitted()) {
-            throw new IllegalStateException
-              (sm.getString("coyoteRequest.sessionCreateCommitted"));
+        if ((response != null) && context.getCookies() && response.getResponse().isCommitted())
+        {
+            throw new IllegalStateException(sm.getString("coyoteRequest.sessionCreateCommitted"));
         }
 
         // Verify that the submitted session id exists in one of the host's web applications
         String sessionId = requestedSessionId;
-        if (sessionId != null) {
-            if (SESSION_ID_CHECK) {
+        if (sessionId != null)
+        {
+            if (SESSION_ID_CHECK)
+            {
                 boolean found = false;
-                try {
-                    if (!found) {
+                try
+                {
+                    if (!found)
+                    {
                         Container children[] = getHost().findChildren();
-                        for (int i = 0; (i < children.length) && !found; i++) {
-                            if ((children[i].getManager() != null)
-                                    && (children[i].getManager().findSession(sessionId) != null)) {
+                        for (int i = 0; (i < children.length) && !found; i++)
+                        {
+                            if ((children[i].getManager() != null) && (children[i].getManager().findSession(sessionId) != null))
+                            {
                                 found = true;
                             }
                         }
                     }
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     // Ignore: one manager is broken, and it will show up elsewhere again
                 }
-                if (!found) {
+                if (!found)
+                {
                     sessionId = null;
                 }
-            } else if (!isRequestedSessionIdFromCookie()) {
+            }
+            else if (!isRequestedSessionIdFromCookie())
+            {
                 sessionId = null;
             }
         }
@@ -2631,26 +2645,37 @@ public class Request
 
         // Creating a new session cookie based on that session
         // If there was no cookie with the current session id, add a cookie to the response
-        if ( (session != null) && context.getCookies()
-               && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(getRequestedSessionId()))) ) {
+        if ((session != null) && context.getCookies() && !(isRequestedSessionIdFromCookie() && (session.getIdInternal().equals(
+                                                                                                                               getRequestedSessionId()))))
+        {
             Cookie cookie = new Cookie(context.getSessionCookie().getName(), session.getIdInternal());
             configureSessionCookie(cookie);
             response.addCookieInternal(cookie);
         }
 
-        if (session != null) {
+        if (session != null)
+        {
             session.getSession().setAttribute("User-Agent", getHeader("User-Agent"));
-            String ipAddressRequest = getHeader("X-FORWARDED-FOR");
-            if (ipAddressRequest == null) {
-                ipAddressRequest = getRemoteAddr();
-            }
-            session.getSession().setAttribute("IpAddress", ipAddressRequest);
+            session.getSession().setAttribute("IpAddress", getOriginalRequestSender());
             session.access();
             return (session);
-        } else {
+        }
+        else
+        {
             return (null);
         }
 
+    }
+
+
+    private String getOriginalRequestSender()
+    {
+        String ipAddressRequest = getHeader("X-FORWARDED-FOR");
+        if (ipAddressRequest == null)
+        {
+            ipAddressRequest = getRemoteAddr();
+        }
+        return ipAddressRequest;
     }
 
 
@@ -2663,19 +2688,18 @@ public class Request
         String userAgentSession = session.getSession().getAttribute("User-Agent").toString();
         String ipAddressSession = session.getSession().getAttribute("IpAddress").toString();
         String userAgentRequest = getHeader("User-Agent");
-        String ipAddressRequest = getHeader("X-FORWARDED-FOR");
-        if (ipAddressRequest == null) {
-            ipAddressRequest = getRemoteAddr();
-        }
-        if (userAgentRequest == null || userAgentSession == null || ipAddressRequest == null || ipAddressSession == null)
+        String ipAddressRequest = getOriginalRequestSender();
+
+        //prevent all NPEs here
+        if ((userAgentRequest == null && userAgentSession != null) || ipAddressRequest == null )
         {
             return false;
         }
-        if (!userAgentRequest.equals(userAgentSession) || !ipAddressRequest.equals(ipAddressSession))
+        if (ipAddressRequest.equals(ipAddressSession) && ((userAgentRequest == null && userAgentSession == null) || userAgentRequest.equals(userAgentSession)))
         {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
