@@ -205,6 +205,9 @@ public class Substitution {
                         } else if (type.equals("HTTP")) {
                             newElement = new ServerVariableHttpElement();
                             ((ServerVariableHttpElement) newElement).key = sub.substring(colon + 1, close);
+						} else if (type.equals("SERVER")) {
+                            newElement = new ServerVariableElement();
+                            ((ServerVariableElement) newElement).key = sub.substring(colon + 1, close);
                         } else {
                             throw new IllegalArgumentException(sub + ": Bad type: " + type);
                         }
