@@ -56,6 +56,10 @@ public class TomcatResolver extends Resolver {
             return request.getHeader("forwarded");
         } else if (key.equals("HTTP_HOST")) {
             String host = request.getHeader("host");
+			if (host != null && host.startsWith("["))
+            {
+                return host.substring(0, host.indexOf(']')+1);
+            }
             int index = (host != null) ? host.indexOf(':') : -1;
             if (index != -1)
                 host = host.substring(0, index);
