@@ -25,7 +25,9 @@ package org.apache.coyote.http11;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URL;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
@@ -79,10 +81,10 @@ public class Http11Processor implements ActionHook {
     protected static StringManager sm =
         StringManager.getManager(Constants.Package);
 
-    
-    protected static final boolean CHUNK_ON_CLOSE = 
+
+    protected static final boolean CHUNK_ON_CLOSE =
         Boolean.valueOf(System.getProperty("org.apache.coyote.http11.Http11Processor.CHUNK_ON_CLOSE", "false")).booleanValue();
-    
+
 
     // ------------------------------------------------------------ Constructor
 
@@ -90,7 +92,7 @@ public class Http11Processor implements ActionHook {
     public Http11Processor(int headerBufferSize, JIoEndpoint endpoint) {
 
         this.endpoint = endpoint;
-        
+
         request = new Request();
         inputBuffer = new InternalInputBuffer(request, headerBufferSize);
         request.setInputBuffer(inputBuffer);
@@ -308,7 +310,7 @@ public class Http11Processor implements ActionHook {
      */
     protected String server = null;
 
-    
+
     /**
      * Event used.
      */
@@ -696,7 +698,7 @@ public class Http11Processor implements ActionHook {
     public boolean getResumeNotification() {
         return resumeNotification;
     }
-    
+
 
     /**
      * Set the socket buffer flag.
@@ -787,7 +789,7 @@ public class Http11Processor implements ActionHook {
      *
      * @param socket Socket from which the HTTP requests will be read
      *               and the HTTP responses will be written.
-     *  
+     *
      * @throws IOException error during an I/O operation
      */
     public SocketState process(Socket socket)
@@ -820,7 +822,7 @@ public class Http11Processor implements ActionHook {
         if (threadRatio > 75) {
             keepAliveLeft = 1;
         }
-        
+
         boolean keptAlive = false;
 
         while (!error && keepAlive && !event) {
@@ -942,7 +944,7 @@ public class Http11Processor implements ActionHook {
 
 
     public void endRequest() {
-        
+
         // Finish the handling of the request
         try {
             inputBuffer.endRequest();
@@ -964,8 +966,8 @@ public class Http11Processor implements ActionHook {
         }
 
     }
-    
-    
+
+
     public void recycle() {
         inputBuffer.recycle();
         outputBuffer.recycle();
@@ -1152,7 +1154,7 @@ public class Http11Processor implements ActionHook {
             }
         } else if (actionCode == ActionCode.ACTION_REQ_SET_BODY_REPLAY) {
             ByteChunk body = (ByteChunk) param;
-            
+
             InputFilter savedBody = new SavedRequestInputFilter(body);
             savedBody.setRequest(request);
 
@@ -1379,7 +1381,7 @@ public class Http11Processor implements ActionHook {
         parseHost(valueMB);
 
         if (!contentDelimitation) {
-            // If there's no content length 
+            // If there's no content length
             // (broken HTTP/1.0 or HTTP/1.1), assume
             // the client is not broken and didn't send a body
             inputBuffer.addActiveFilter
@@ -1396,14 +1398,24 @@ public class Http11Processor implements ActionHook {
     protected void parseHost(MessageBytes valueMB) {
 
         if (valueMB == null || valueMB.isNull()) {
-            // HTTP/1.0
-            // Default is what the socket tells us. Overriden if a host is
-            // found/parsed
-            request.setServerPort(socket.getLocalPort());
-            InetAddress localAddress = socket.getLocalAddress();
-            // Setting the socket-related fields. The adapter doesn't know
-            // about socket.
-            request.serverName().setString(localAddress.getHostName());
+            String contextURIProperty = System.getProperty("seefx.contextUri");
+            String hostName = "localhost";
+            int port = 80;
+            if (contextURIProperty != null && !contextURIProperty.isEmpty())
+            {
+                try
+                {
+                    URL url = new URL(contextURIProperty);
+                    hostName = url.getHost();
+                    port = url.getPort() == -1 ? getDefaultPortForProtocol(url.getProtocol()) : url.getPort();
+                }
+                catch (MalformedURLException e)
+                {
+                    log.warn(String.format("%s is not a valid URL!", contextURIProperty), e);
+                }
+            }
+            request.serverName().setString(hostName);
+            request.setServerPort(port);
             return;
         }
 
@@ -1462,6 +1474,12 @@ public class Http11Processor implements ActionHook {
 
         }
 
+    }
+
+
+    private int getDefaultPortForProtocol(String protocol)
+    {
+        return protocol.equals("https") ? 443 : 80;
     }
 
 
@@ -1672,7 +1690,7 @@ public class Http11Processor implements ActionHook {
         // Create and add the chunked filters.
         //inputBuffer.addFilter(new GzipInputFilter());
         outputBuffer.addFilter(new GzipOutputFilter());
-        
+
     }
 
 
