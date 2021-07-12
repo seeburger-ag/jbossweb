@@ -47,6 +47,9 @@
 package org.apache.catalina.connector;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.regex.Pattern;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
@@ -54,7 +57,6 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.SessionTrackingMode;
 
 import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
@@ -576,6 +578,28 @@ public class CoyoteAdapter
         MessageBytes redirectPathMB = request.getMappingData().redirectPath;
         if (!redirectPathMB.isNull()) {
             String redirectPath = urlEncoder.encode(redirectPathMB.toString());
+
+            if (!isAbsoluteUrl(redirectPath))
+            {
+                String contextURIProperty = System.getProperty("seefx.contextUri");
+                if (contextURIProperty != null && !contextURIProperty.isEmpty())
+                {
+                    try
+                    {
+                        URI contextURI = new URI(contextURIProperty);
+                        redirectPath = redirectPath.replace(request.getContextPath(),
+                                                            String.format("%s://%s%s",
+                                                                          contextURI.getScheme(),
+                                                                          contextURI.getAuthority(),
+                                                                          request.getContextPath()));
+                    }
+                    catch (URISyntaxException e)
+                    {
+                        log.warn(String.format("%s is not a valid URL!", contextURIProperty), e);
+                    }
+                }
+            }
+
             String query = request.getQueryString();
             if (request.isRequestedSessionIdFromURL()) {
                 // This is not optimal, but as this is not very common, it
@@ -602,6 +626,18 @@ public class CoyoteAdapter
 
 
     /**
+     * Checks if an URL is absolute
+     *
+     * @param url the url to check
+     * @return <code>true</code> if the url is absolute.
+     */
+    private boolean isAbsoluteUrl(String url)
+    {
+        return Pattern.compile("\\A[a-z.+-]+://.*", Pattern.CASE_INSENSITIVE).matcher(url).matches();
+    }
+
+
+     /**
      * Parse session id in URL.
      */
     protected void parseSessionId(org.apache.coyote.Request req, Request request) {
