@@ -49,6 +49,7 @@ package org.apache.catalina.connector;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import javax.servlet.AsyncEvent;
@@ -579,7 +580,7 @@ public class CoyoteAdapter
         if (!redirectPathMB.isNull()) {
             String redirectPath = urlEncoder.encode(redirectPathMB.toString());
 
-            if (!isAbsoluteUrl(redirectPath))
+            if (!isAbsoluteUrl(redirectPath) && !isHostNameAllowed(request))
             {
                 String contextURIProperty = System.getProperty("seefx.contextUri");
                 if (contextURIProperty != null && !contextURIProperty.isEmpty())
@@ -634,6 +635,30 @@ public class CoyoteAdapter
     private boolean isAbsoluteUrl(String url)
     {
         return Pattern.compile("\\A[a-z.+-]+://.*", Pattern.CASE_INSENSITIVE).matcher(url).matches();
+    }
+
+
+    /**
+     * Checks if the server name from the request is part of a configurable list of allowed hosts, <br>
+     * for which redirection will be allowed.
+     * 
+     * @param request the request
+     * @return <code>true</code> if the server name from the request is part of the allowed hosts list
+     */
+    private boolean isHostNameAllowed(Request request)
+    {
+        String host = request.getServerName();
+        if (host == null || host.isEmpty())
+        {
+            return false;
+        }
+        else
+        {
+            String allowedHosts = System.getProperty("bisfx.contextUri.hostnameHeader.allowlist", "");
+            return Arrays.stream(allowedHosts.split(","))
+                         .map(String::trim)
+                         .anyMatch(host.trim()::equalsIgnoreCase);
+        }
     }
 
 
