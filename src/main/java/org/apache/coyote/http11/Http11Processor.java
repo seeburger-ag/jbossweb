@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
@@ -1398,24 +1399,7 @@ public class Http11Processor implements ActionHook {
     protected void parseHost(MessageBytes valueMB) {
 
         if (valueMB == null || valueMB.isNull()) {
-            String contextURIProperty = System.getProperty("seefx.contextUri");
-            String hostName = "localhost";
-            int port = 80;
-            if (contextURIProperty != null && !contextURIProperty.isEmpty())
-            {
-                try
-                {
-                    URL url = new URL(contextURIProperty);
-                    hostName = url.getHost();
-                    port = url.getPort() == -1 ? getDefaultPortForProtocol(url.getProtocol()) : url.getPort();
-                }
-                catch (MalformedURLException e)
-                {
-                    log.warn(String.format("%s is not a valid URL!", contextURIProperty), e);
-                }
-            }
-            request.serverName().setString(hostName);
-            request.setServerPort(port);
+            setContextUriAsServerName();
             return;
         }
 
@@ -1442,7 +1426,7 @@ public class Http11Processor implements ActionHook {
                 }
             }
         }
-
+        String hostName;
         if (colonPos < 0) {
             if (sslSupport == null) {
                 // 80 - Default HTTP port
@@ -1451,10 +1435,10 @@ public class Http11Processor implements ActionHook {
                 // 443 - Default HTTPS port
                 request.setServerPort(443);
             }
-            request.serverName().setChars(hostNameC, 0, valueL);
+            hostName = new String(hostNameC).substring(0, valueL);
         } else {
 
-            request.serverName().setChars(hostNameC, 0, colonPos);
+            hostName = new String(hostNameC).substring(0, colonPos);
 
             int port = 0;
             int mult = 1;
@@ -1473,7 +1457,45 @@ public class Http11Processor implements ActionHook {
             request.setServerPort(port);
 
         }
+        setServerName(hostName);
+    }
 
+
+    private void setContextUriAsServerName()
+    {
+        String contextURIProperty = System.getProperty("seefx.contextUri");
+        String hostName = "localhost";
+        int port = 80;
+        if (contextURIProperty != null && !contextURIProperty.isEmpty())
+        {
+            try
+            {
+                URL url = new URL(contextURIProperty);
+                hostName = url.getHost();
+                port = url.getPort() == -1 ? getDefaultPortForProtocol(url.getProtocol()) : url.getPort();
+            }
+            catch (MalformedURLException e)
+            {
+                log.warn(String.format("%s is not a valid URL!", contextURIProperty), e);
+            }
+        }
+        request.serverName().setString(hostName);
+        request.setServerPort(port);
+    }
+
+
+    private void setServerName(String hostName)
+    {
+        String allowedHosts = System.getProperty("bisfx.contextUri.hostnameHeader.allowlist", "");
+        boolean isHostNameAllowed = Arrays.stream(allowedHosts.split(","))
+                                        .map(String::trim)
+                                        .anyMatch(hostName.trim()::equalsIgnoreCase);
+        if (allowedHosts.isEmpty() || isHostNameAllowed)
+        {
+            request.serverName().setString(hostName);
+            return;
+        }
+        setContextUriAsServerName();
     }
 
 
