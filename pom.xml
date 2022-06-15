@@ -34,7 +34,7 @@
 
     <groupId>org.jboss.web</groupId>
     <artifactId>jbossweb</artifactId>
-    <version>3.0.0-CR2.SEE9</version>
+    <version>3.0.0-CR2.SEE9-SNAPSHOT</version>
 
     <name>JBoss Web</name>
     <description>Servlet 3.0 container</description>
